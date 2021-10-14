@@ -1,4 +1,4 @@
-# Generalized Correlates of Risk/Protection Analysis and Reporting
+# Generalized Correlates Analysis Reporting
 
 ## Summary
 
