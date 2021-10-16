@@ -1,0 +1,15 @@
+# Day `r COR` Univariate CoR: Nonlinear modeling {#cor-nonlinear-Day`r COR`}
+
+
+To explore nonlinear association and threshold modeling, we fit smoothing spline models with degrees of freedom selected by cross-validation using the mgcv R package.
+<!-- and two-phase models using the chngpt R package. -->
+
+
+```{r, echo=FALSE, results='asis'}
+  for (a in assays) {
+    res = knitr::knit_child(c(here::here('cor_nonlinear', 'risk_plots.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+```
+
+
