@@ -3,11 +3,18 @@
 ## Summary
 
 This repository houses modular workflows for statistical analyses of correlates
-of risk and protection, and the automated reporting of analytic results. It is
-a generalized suite of tools based on the analyses originally developed for the
-analysis of the COVID-19 vaccine efficacy trials (archived at
-https://github.com/CoVPN/correlates_reporting_usgcove_archive/). See below for
-brief descriptions of each of the analysis modules.
+of risk / protection and automated reporting of analytic results. It serves as
+a generalized suite of tools, based on the analyses originally designed for the
+USG Biostatistics Response Team's analysis of COVID-19 vaccine efficacy trials
+(archived
+[here](https://github.com/CoVPN/correlates_reporting_usgcove_archive/)). See
+below for brief descriptions of each of the analysis modules.
+
+[![Build Status](https://app.travis-ci.com/CoVPN/correlates_reporting2.svg?branch=master)](https://app.travis-ci.com/CoVPN/correlates_reporting2)
+_Note:_ automated builds of the correlates of risk and protection analyses are
+evaluated by the [Travis CI](https://travis-ci.org/) continuous integration
+service and the PDF reports posted to this repository's [`gh-pages`
+branch](https://github.com/CoVPN/correlates_reporting2/tree/gh-pages).
 
 ## Contents
 
