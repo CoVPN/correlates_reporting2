@@ -1,12 +1,3 @@
-## immuno_analysis        : builds immunogenicity exploratory analyses
-immuno_analysis: 
-	$(MAKE) -k -C immuno_tabular all
-	$(MAKE) -k -C immuno_graphical all
-
-## immuno_report          : builds the CoVPN immunogenicity report
-immuno_report: immuno_analysis
-	bash ./_build.sh immuno
-
 ## risk_analysis          : builds Baseline Risk Score analysis
 risk_analysis: data_processed
 	$(MAKE) -k -C base_riskscore all
@@ -26,7 +17,6 @@ cor_analysis:
 # 	$(MAKE) -k -C cor_surrogates all
 #	$(MAKE) -k -C cor_nonpar all
 
-
 ## cor_analysis_noclean           : builds Correlates of Risk analyses
 cor_analysis_noclean: 
 	$(MAKE) -k -C cor_coxph cor_coxph
@@ -37,9 +27,6 @@ cor_analysis_noclean:
 # 	$(MAKE) -k -C cop_mediation all
 # 	$(MAKE) -k -C cor_surrogates all
 #	$(MAKE) -k -C cor_nonpar all
-
-
-
 
 ## cor_report             : builds the CoVPN correlates of risk report
 cor_report: cor_analysis

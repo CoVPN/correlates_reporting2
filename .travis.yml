@@ -19,8 +19,7 @@ cache:
 # which versions of R should we build on
 r:
   #- release
-  # NOTE: can we grab this from the renv.lockfile?
-  - 4.0.4
+  - 4.1.1
 
 # public key to allow Travis to push to gh-pages
 env:
@@ -48,45 +47,22 @@ jobs:
        #- make data_processed
        #- make risk_report
         - make cor_report
-    # - name: Moderna CoP Report
-    #   env:
-    #     - REPORT_TYPE=COP
-    #     - TRIAL=moderna_mock
-    #   script:
-    #     - echo "Building correlates of protection report"
-    #     - make data_processed
-    #     - make risk_report
-    #     - make cop_report
-    #- name: Janssen Data Processing
-    #  env:
-    #    - REPORT_TYPE=IMMUNO
-    #    - TRIAL=janssen_pooled_mock
-    #  script:
-    #    - echo "Processing data"
-    #    - make data_processed
-    #- name: Moderna Immuno Report
-    #  env:
-    #    - REPORT_TYPE=IMMUNO
-    #    - TRIAL=moderna_mock
-    #  script:
-    #    - echo "Building immunogenicity report"
-    #    - make data_processed
-    #    - make immuno_report
-    #- name: Janssen Pooled Immuno Report
-    #  env:
-    #    - REPORT_TYPE=IMMUNO
-    #    - TRIAL=janssen_pooled_mock
-    #  script:
-    #    - echo "Building immunogenicity report"
-    #    - make data_processed
-    #    - make immuno_report
-     # - name: Janssen Pooled Risk Score Report
-     # env:
-     #   - REPORT_TYPE=RISK
-     #   - TRIAL=janssen_pooled_mock
-     # script:
-     #   - echo "Building risk score report"
-     #   - make risk_report
+    - name: Moderna CoP Report
+      env:
+        - REPORT_TYPE=COP
+        - TRIAL=moderna_mock
+      script:
+        - echo "Building correlates of protection report"
+        - make data_processed
+        - make risk_report
+        - make cop_report
+    - name: Janssen Pooled Risk Score Report
+      env:
+        - REPORT_TYPE=RISK
+        - TRIAL=janssen_pooled_mock
+      script:
+        - echo "Building risk score report"
+        - make risk_report
 
 apt_packages:
   - libxml2-dev
