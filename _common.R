@@ -56,7 +56,7 @@ if (startsWith(tolower(study_name), "mock")) {
 }
 print(path_to_data)
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
-if (!file.exists(path_to_data)) stop ("dataset with risk score not available ")
+if (!file.exists(path_to_data)) warning ("dataset with risk score not available ")
 
 
 dat.mock <- read.csv(path_to_data)
