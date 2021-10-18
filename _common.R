@@ -48,15 +48,17 @@ has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
 data_name = paste0(attr(config, "config"), "_data_processed.csv")
 if (startsWith(tolower(study_name), "mock")) {
     data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
-    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting"), here::here("data_clean", data_name_updated), here::here("..", "data_clean", data_name_updated))
+    # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
+    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting2"), here::here("data_clean", data_name_updated), here::here("..", "data_clean", data_name_updated))
     data_name = data_name_updated    
 } else {
-    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting"), here::here("..", data_cleaned), here::here("..", "..", data_cleaned))
+    # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
+    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting2"), here::here("..", data_cleaned), here::here("..", "..", data_cleaned))
     data_name = path_to_data
 }
 print(path_to_data)
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
-if (!file.exists(path_to_data)) warning ("dataset with risk score not available ")
+if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not available ===========================================")
 
 
 dat.mock <- read.csv(path_to_data)
