@@ -188,11 +188,6 @@ if (config$is_ows_trial) {
 }
 
 
-assays_to_be_censored_at_uloq_cor <- c(
-  "bindSpike", "bindRBD", "pseudoneutid50", "pseudoneutid80"
-  # NOTE: the live neutralization marker will eventually be available
-  #"liveneutmn50"
-)
 
 ###############################################################################
 # figure labels and titles for markers

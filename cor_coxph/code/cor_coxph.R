@@ -58,7 +58,7 @@ if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
 # note that if delta are used, delta needs to be recomputed
 
 if (config$is_ows_trial) {
-    for (a in intersect(assays_to_be_censored_at_uloq_cor, assays)) {
+    for (a in assays) {
       for (t in c("B", "Day"%.%tpeak) ) {
         dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
       }
