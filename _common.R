@@ -117,6 +117,7 @@ if(config$is_ows_trial) {
 
 names(assays)=assays # add names so that lapply results will have names
 
+# uloqs etc are hardcoded for ows trials but driven by config for other trials
 if (config$is_ows_trial) {
 
     # For bAb, IU and BAU are the same thing
