@@ -1,6 +1,5 @@
 #if (exists(".DEF.COMMON")) stop ("_common.R has already been loaded") else .DEF.COMMON=TRUE
-
-
+    
 library(methods)
 library(dplyr)
 library(kyotil)
@@ -70,6 +69,7 @@ if (is.null(config.cor$tinterm)) {
     dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
     dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
     dat.mock$wt=dat.mock[[config.cor$wt]]
+    if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
@@ -182,15 +182,11 @@ if (config$is_ows_trial) {
 } else {
     pos.cutoffs=sapply(assays, function(a) -Inf)
     llods=sapply(assays, function(a) -Inf)
-    lloqs=sapply(assays, function(a) -Inf)
-    uloqs=sapply(assays, function(a) Inf)
+    #config$uloqs is a list before this processing
+    if (!is.null(config$uloqs)) config$uloqs=sapply(config$uloqs, function(x) ifelse(is.numeric(x), x, Inf))  else uloqs=sapply(assays, function(a) Inf)
+    if (!is.null(config$lloqs)) config$uloqs=sapply(config$lloqs, function(x) ifelse(is.numeric(x), x, -Inf)) else lloqs=sapply(assays, function(a) -Inf)
 }
 
-must_have_assays <- c(
-  "bindSpike", "bindRBD"
-  # NOTE: the live neutralization marker will eventually be available
-  #"liveneutmn50"
-)
 
 assays_to_be_censored_at_uloq_cor <- c(
   "bindSpike", "bindRBD", "pseudoneutid50", "pseudoneutid80"

@@ -14,6 +14,8 @@ hvtn705: &hvtn705
   subset_value: All
   assays: [ELCZ,ELMo,ADCPgp140C97ZAfib,IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_V1V2,IgG3gp4140delta,IgG340mdw_multi,IgG340mdw_gp120_gp140_vm,mdw_xassay]
   assay_labels: [IgG to VT-C (EU/ml), IgG to VT-M (EU/ml), Average phagocytosis score to gp140 C97ZA, IgG3 Net MFI to gp140 C97ZA, IgG3 Net MFI to gp140 Mosaic, IgG3 gp120 breadth (Weighted average log10 Net MFI), IgG3 gp140 breadth (Weighted average log10 Net MFI), IgG3 V1V2 breadth (Weighted average log10 Net MFI), IgG3 Net MFI to gp41, IgG3 multi-epitope breadth (Wt average log10 Net MFI), IgG3 gp120 + gp140 breadth (Wt average log10 Net MFI), Overall maximal diversity score]
+  uloqs: [14720,14608,16.11,22000,22000,NA,NA,NA,22000,NA,NA,NA]
+  lloqs: [40,50,2.87,1,1,NA,NA,NA,1,NA,NA,NA]
   primary_assays: [ELCZ,ELMo,ADCPgp140C97ZAfib,IgG3gp140C97ZAfibritin40delta] 
   times: [B, Day210] 
   time_labels: [Day 1, Day 210]
@@ -201,6 +203,7 @@ D210:
   ph2: Ph2ptids.D210
   wt: wt.D210
   WtStratum: Sampstratum.D210
+  tpsStratum: tps.stratum
   EventIndPrimary: Delta.D210   
   EventTimePrimary: Ttilde.D210
   tpeak: 210
