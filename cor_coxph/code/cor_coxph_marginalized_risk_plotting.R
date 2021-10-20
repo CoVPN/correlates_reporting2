@@ -313,7 +313,12 @@ time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
     
 lwd=2
 ylim=c(0,max(risk.0))
-x.time<-seq(0,tfinal.tpeak,by=30); if(tfinal.tpeak-last(x.time)>15) x.time=c(x.time, tfinal.tpeak) else x.time[length(x.time)]=tfinal.tpeak
+if (config$is_ows_trial) {
+    x.time<-seq(0,tfinal.tpeak,by=30)
+    if(tfinal.tpeak-last(x.time)>15) x.time=c(x.time, tfinal.tpeak) else x.time[length(x.time)]=tfinal.tpeak
+} else {
+    x.time<-seq(0,tfinal.tpeak,length=8)
+}
 #
 if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
 for (a in assays) {        

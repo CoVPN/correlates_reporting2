@@ -107,7 +107,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
 }    
 
 if(!file.exists(paste0(save.results.to, "marginalized.risk.",study_name,".Rdata"))) {    
-    print("make marginalized.risk")
+    cat("make marginalized.risk\n")
     
     # vaccine arm, conditional on continuous S=s
     risks.all.1=lapply(assays, function (a) {
