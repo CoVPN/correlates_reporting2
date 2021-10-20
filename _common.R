@@ -468,12 +468,16 @@ draw.x.axis.cor=function(xlim, llod){
 #        for (x in xx) axis(1, at=log10(x), labels=if (llod==x) "lod" else if (x %in% c(1000,10000)) bquote(10^.(log10(x))) else if (x==5000) bquote(.(x/1000)%*%10^3) else  x ) 
 #    } else {
         xx=seq(floor(xlim[1]), ceiling(xlim[2]))
-        if(config$case_cohort) for (x in xx) if (x>log10(llod*2)) axis(1, at=x, labels=if (log10(llod)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )
+        if(config$is_ows_trial) {
+            for (x in xx) if (x>log10(llod*2)) axis(1, at=x, labels=if (log10(llod)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )
+        } else {
+            for (x in xx) axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )
+        }
 #    }
     
     # plot llod if llod is not already plotted
     #if(!any(log10(llod)==xx)) 
-    if(config$case_cohort) axis(1, at=log10(llod), labels="lod")
+    if(config$is_ows_trial) axis(1, at=log10(llod), labels="lod")
     
 }
 
