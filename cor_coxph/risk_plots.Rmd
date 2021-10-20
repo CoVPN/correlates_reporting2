@@ -41,16 +41,19 @@
 
 \clearpage
 \setlength{\tabcolsep}{.5ex}
-\input{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_eq_`r study_name`}
+{\small
+\input{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_eq_`r study_name`}}
 
 
 \clearpage
 \setlength{\tabcolsep}{.5ex}
-\input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_eq_`r study_name`}
+{\small
+\input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_eq_`r study_name`}}
 
 \clearpage
 \setlength{\tabcolsep}{.5ex}
-\input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_sens_eq_`r study_name`}
+{\small
+\input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_sens_eq_`r study_name`}}
 
 
 \clearpage

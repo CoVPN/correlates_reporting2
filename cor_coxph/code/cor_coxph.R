@@ -57,13 +57,11 @@ if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
 # uloq censoring
 # note that if delta are used, delta needs to be recomputed
 
-if (config$is_ows_trial) {
-    for (a in assays) {
-      for (t in c("B", "Day"%.%tpeak) ) {
-        dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
-      }
-    }    
-}
+for (a in assays) {
+  for (t in "Day"%.%tpeak ) {
+    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
+  }
+}    
 
 # the following data frame define the phase 1 ptids
 # do this after uloq censoring
@@ -170,8 +168,6 @@ if (file.exists(tmp)) load(tmp)
 source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
 source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
 source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
-
-
 
 
 
