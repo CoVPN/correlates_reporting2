@@ -52,7 +52,7 @@ if (startsWith(tolower(study_name), "mock")) {
     data_name = data_name_updated    
 } else {
     # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
-    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting2"), here::here("..", data_cleaned), here::here("..", "..", data_cleaned))
+    path_to_data = data_cleaned
     data_name = path_to_data
 }
 print(path_to_data)
