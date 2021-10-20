@@ -5,7 +5,7 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 time.start=Sys.time()
-myprint(study_name_code)
+myprint(study_name)
     
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(parallel)
@@ -41,48 +41,6 @@ save.results.to = paste0(save.results.to, "/", COR,"/");
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
     
-    
-        
-####################################################################################################
-## read data_clean
-#    
-#data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
-#if (file.exists(here::here("..", "data_clean", data_name_updated))) {
-#    dat.mock <- read.csv(here::here("..", "data_clean", data_name_updated))
-#    data_name = data_name_updated
-#} else {
-#    dat.mock <- read.csv(here::here("..", "data_clean", data_name))
-#}
-#
-#
-#dat.mock$Region.f=as.factor(dat.mock$Region)
-#dat.mock$Region1=ifelse(dat.mock$Region==1, 1, 0)
-#dat.mock$Region2=ifelse(dat.mock$Region==2, 1, 0)
-    
-        
-###################################################################################################
-# uloq censoring
-# note that if delta are used, delta needs to be recomputed
-    
-if (config$is_ows_trial) {
-    for (a in assays) {
-      for (t in c("B", if(has57) "Day57", if(has29) "Day29") ) {
-        dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
-      }
-    }
-}
-    
-    
-###################################################################################################
-# set up based on whether to perform D29 or D57 analyses
-
-dat.mock$wt=dat.mock[[config.cor$wt]]
-dat.mock$ph1=dat.mock[[config.cor$ph1]]
-dat.mock$ph2=dat.mock[[config.cor$ph2]]
-dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
-dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
-
-
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
 B <-       config$num_boot_replicates 
 numPerm <- config$num_perm_replicates # number permutation replicates 1e4
@@ -90,15 +48,22 @@ myprint(B)
 myprint(numPerm)
     
     
+###################################################################################################
+# uloq censoring
+# note that if delta are used, delta needs to be recomputed
+    
+for (a in assays) {
+  for (t in "Day"%.%tpeak ) {
+    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
+  }
+}
+    
+
+
 # the following data frame define the phase 1 ptids
 # do this after uloq censoring
-if (config$is_ows_trial) {
-    dat.vac.seroneg=subset(dat.mock, Trt==1 & Bserostatus==0 & ph1)
-    dat.pla.seroneg=subset(dat.mock, Trt==0 & Bserostatus==0 & ph1)
-} else {
-    dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
-    dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
-}
+dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1==1)
+dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1==1)
 
     
 # define an alias for EventIndPrimaryDxx
@@ -114,20 +79,17 @@ if (tfinal.tpeak==0) {
 }
 myprint(tfinal.tpeak)
 
-    
-# formulae
-form.s = as.formula(paste0(config.cor$EventIndPrimary, " ~ 1"))
-if (endsWith(data_name, "riskscore.csv")) {
-    form.0.logistic = update (form.s, as.formula(config$covariates_riskscore))
-} else {
-    form.0.logistic = update (form.s, as.formula(config$covariates_norisksco)) 
-}
+
+form.s = EventIndPrimary ~ 1
+form.0.logistic = update (form.s, as.formula(config$covariates_riskscore))
 print(form.0.logistic)
+
+
 
 
 ####################################################################################################
 
-dat.vacc.pop.ph2 = subset(dat.vac.seroneg, ph2)
+dat.vacc.pop.ph2 = subset(dat.vac.seroneg, ph2==1)
 
 # there are two dependencies on cor_coxph
 

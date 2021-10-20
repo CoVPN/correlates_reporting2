@@ -4,7 +4,7 @@
 
 
 ```{r, echo=FALSE, message=FALSE}
-message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_nonlinear report ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_nonlinear report ~~~~~~~~~~~~~~~~~~~~~")
 ```
 
 
@@ -15,14 +15,13 @@ tt=timepoints
 
 <!-- \newif\ifCOVE -->
 <!-- \newif\ifENSEMBLE -->
-<!-- `r paste0("\\", study_name_code, "true")`  -->
 
 
 
 ```{r, echo=FALSE, results='asis'}
 
 data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
-covariates_adjusted = ifelse (file.exists(here::here("data_clean", data_name_updated)), covariates_riskscore, covariates_norisksco)
+covariates_adjusted = covariates_riskscore
 covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
 covariates_adjusted = sub("_","",covariates_adjusted)
 
