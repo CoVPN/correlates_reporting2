@@ -65,7 +65,7 @@ print(paste0("save.results.to equals ", save.results.to))
 # note that if delta are used, delta needs to be recomputed
     
 if (config$is_ows_trial) {
-    for (a in intersect(assays_to_be_censored_at_uloq_cor, assays)) {
+    for (a in assays) {
       for (t in c("B", if(has57) "Day57", if(has29) "Day29") ) {
         dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
       }

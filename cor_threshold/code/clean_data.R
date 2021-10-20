@@ -13,7 +13,7 @@ source(here::here("code", "params.R"))
  
   
   
-for (a in intersect(assays_to_be_censored_at_uloq_cor, assays)) {
+for (a in assays) {
   for (t in c(  if(has57) "Day57", if(has29) "Day29") ) {
     
     dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])

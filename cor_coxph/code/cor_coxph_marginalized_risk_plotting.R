@@ -47,14 +47,11 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
     mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks", ifelse(eq.geq==1,"_eq","_geq"), ifelse(w.wo.plac==1,"","_woplacebo"), "_"%.%study_name), mfrow=.mfrow)
     par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         risks=risks.all[[a]]
-        xlim=get.range.cor(dat.vac.seroneg, a, tpeak)
-        #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95), na.rm=T) 
         
         ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))
         
-        plot(prob~marker, risks, xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, 
-            ylab=paste0("Probability* of COVID-19 by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")
-    
+        xlim=get.range.cor(dat.vac.seroneg, a, tpeak) #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95), na.rm=T) 
+        plot(prob~marker, risks, xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")    
         draw.x.axis.cor(xlim, llods[a])
     
 #        # x axis
@@ -168,7 +165,7 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[pick.out],digits.risk), " (", formatDouble(ci.band[1,pick.out],digits.risk), ",", formatDouble(ci.band[2,pick.out],digits.risk), ")"))
     
             mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=ifelse(eq.geq==1,"red","white"), lwd=lwd, make.legend=F, 
-                ylab=paste0("Controlled VE against COVID-19 by Day ",tfinal.tpeak), 
+                ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by Day ",tfinal.tpeak), 
                 main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 xlab=labels.assays.short[a]%.%ifelse(eq.geq==1 | eq.geq==3," (=s)"," (>=s)"), 
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
@@ -329,7 +326,7 @@ for (a in assays) {
     q.a=marker.cutpoints[[a]][["Day"%.%tpeak]]
     
     if(length(out)==1) empty.plot() else {
-        mymatplot(out$time, out$risk, lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab="Probability* of COVID-19 by Day "%.%tfinal.tpeak, ylim=ylim, xlab="", las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
+        mymatplot(out$time, out$risk, lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak), ylim=ylim, xlab="", las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
         title(xlab="Days Since Day "%.%tpeak%.%" Visit", line=2)
         title(main=labels.title["Day"%.%tpeak,a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
@@ -365,7 +362,7 @@ for (a in assays) {
     mtext(paste0("High:"),side=1,outer=F,line=5.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.H,side=1,outer=FALSE,line=5.2,at=x.time,cex=cex.text)
     mtext(paste0("Plac:"),side=1,outer=F,line=6.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.P,side=1,outer=FALSE,line=6.2,at=x.time,cex=cex.text)
     
-    mtext(expression(bold("Cumulative No. of COVID-19 Endpoints")),side=1,outer=FALSE,line=7.4,at=-2,adj=0,cex=cex.text)
+    mtext(expression(bold(paste0("Cumulative No. of ",config.cor$txt.endpoint," Endpoints"))),side=1,outer=FALSE,line=7.4,at=-2,adj=0,cex=cex.text)
     mtext(paste0("Low:"),side=1,outer=FALSE,line=8.3,at=at.label,adj=0,cex=cex.text);  mtext(cum.L,side=1,outer=FALSE,line=8.3,at=x.time,cex=cex.text)
     mtext(paste0("Med:"),side=1,outer=FALSE,line=9.2,at=at.label,adj=0,cex=cex.text);  mtext(cum.M,side=1,outer=FALSE,line=9.2,at=x.time,cex=cex.text)
     mtext(paste0("High:"),side=1,outer=FALSE,line=10.1,at=at.label,adj=0,cex=cex.text);mtext(cum.H,side=1,outer=FALSE,line=10.1,at=x.time,cex=cex.text)

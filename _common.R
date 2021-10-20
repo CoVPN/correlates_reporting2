@@ -1,6 +1,5 @@
 #if (exists(".DEF.COMMON")) stop ("_common.R has already been loaded") else .DEF.COMMON=TRUE
-
-
+    
 library(methods)
 library(dplyr)
 library(kyotil)
@@ -70,6 +69,7 @@ if (is.null(config.cor$tinterm)) {
     dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
     dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
     dat.mock$wt=dat.mock[[config.cor$wt]]
+    if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
@@ -117,6 +117,7 @@ if(config$is_ows_trial) {
 
 names(assays)=assays # add names so that lapply results will have names
 
+# uloqs etc are hardcoded for ows trials but driven by config for other trials
 if (config$is_ows_trial) {
 
     # For bAb, IU and BAU are the same thing
@@ -180,23 +181,18 @@ if (config$is_ows_trial) {
     }
     
 } else {
-    pos.cutoffs=sapply(assays, function(a) -Inf)
-    llods=sapply(assays, function(a) -Inf)
-    lloqs=sapply(assays, function(a) -Inf)
-    uloqs=sapply(assays, function(a) Inf)
+    # get uloqs and lloqs from config
+    # config$uloqs is a list before this processing
+    if (!is.null(config$uloqs)) uloqs=sapply(config$uloqs, function(x) ifelse(is.numeric(x), x, Inf))  else uloqs=sapply(assays, function(a) Inf)
+    if (!is.null(config$lloqs)) lloqs=sapply(config$lloqs, function(x) ifelse(is.numeric(x), x, 1e-6)) else lloqs=sapply(assays, function(a) 1e-6)
+    names(uloqs)=assays # this is necessary because config$uloqs does not have names
+    names(lloqs)=assays
+    # pos.cutoffs and llods are hardcoded for now
+    pos.cutoffs=sapply(assays, function(a) NA)
+    llods=sapply(assays, function(a) NA)
 }
 
-must_have_assays <- c(
-  "bindSpike", "bindRBD"
-  # NOTE: the live neutralization marker will eventually be available
-  #"liveneutmn50"
-)
 
-assays_to_be_censored_at_uloq_cor <- c(
-  "bindSpike", "bindRBD", "pseudoneutid50", "pseudoneutid80"
-  # NOTE: the live neutralization marker will eventually be available
-  #"liveneutmn50"
-)
 
 ###############################################################################
 # figure labels and titles for markers
@@ -449,14 +445,16 @@ ggsave_custom <- function(filename = default_name(plot),
 
 
 get.range.cor=function(dat, assay=c("bindSpike", "bindRBD", "pseudoneutid50", "pseudoneutid80"), time) {
-    assay<-match.arg(assay)
     if(assay %in% c("bindSpike", "bindRBD")) {
         ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(llods[c("bindSpike","bindRBD")]/2), na.rm=T)
         ret[2]=ceiling(ret[2]) # round up
     } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
         ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
         ret[2]=ceiling(ret[2]) # round up
-    }  
+    } else {
+        #ret=range(dat[["Day"%.%time%.%assay]], log10(llods[assay]/2), log10(lloqs[assay]/2), log10(uloqs[assay]), na.rm=T)
+        ret=range(dat[["Day"%.%time%.%assay]], na.rm=T)
+    }
     delta=(ret[2]-ret[1])/20     
     c(ret[1]-delta, ret[2]+delta)
 }
@@ -470,12 +468,12 @@ draw.x.axis.cor=function(xlim, llod){
 #        for (x in xx) axis(1, at=log10(x), labels=if (llod==x) "lod" else if (x %in% c(1000,10000)) bquote(10^.(log10(x))) else if (x==5000) bquote(.(x/1000)%*%10^3) else  x ) 
 #    } else {
         xx=seq(floor(xlim[1]), ceiling(xlim[2]))
-        for (x in xx) if (x>log10(llod*2)) axis(1, at=x, labels=if (log10(llod)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )
+        if(config$case_cohort) for (x in xx) if (x>log10(llod*2)) axis(1, at=x, labels=if (log10(llod)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )
 #    }
     
     # plot llod if llod is not already plotted
     #if(!any(log10(llod)==xx)) 
-    axis(1, at=log10(llod), labels="lod")
+    if(config$case_cohort) axis(1, at=log10(llod), labels="lod")
     
 }
 
@@ -653,7 +651,7 @@ add.trichotomized.markers=function(dat, tpeak, wt.col.name) {
             if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(ind.t, "Day")) {
                 # if more than 1/3 of vaccine recipients have value > ULOQ
                 # let q.a be median among those < ULOQ and ULOQ
-                if (verbose) print("more than 1/3 of vaccine recipients have value > ULOQ")
+                if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")
                 q.a=c(  wtd.quantile(tmp.a[dat[[ind.t %.% a]]<=uppercut], 
                            weights = dat[[wt.col.name]][tmp.a<=uppercut], probs = c(1/2)), 
                         uppercut)
