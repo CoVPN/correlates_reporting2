@@ -52,16 +52,8 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         
         xlim=get.range.cor(dat.vac.seroneg, a, tpeak) #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95), na.rm=T) 
         plot(prob~marker, risks, xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")    
-        draw.x.axis.cor(xlim, llods[a])
-    
-#        # x axis
-#        xx=seq(floor(min(risks$marker)), ceiling(max(risks$marker)))
-#        #myprint(a, xx)
-#        for (x in xx) axis(1, at=x, labels=if (log10(llods[a])==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )
-#        if(last(xx)<5) for (x in c(250,500,2000,4000)) axis(1, at=log10(x), labels=if (x>=1000) bquote(.(x/1000)%*%10^3) else x )
-#        if(!any(log10(llods[a])==xx)) axis(1, at=log10(llods[a]), labels="lod")
-        
-        
+        draw.x.axis.cor(xlim, lloxs[a])
+            
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)
         
@@ -185,7 +177,7 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             #text(x=par("usr")[1], y=overall.ve[1]+(overall.ve[1]-overall.ve[2])/2,     "overall VE "%.%round(overall.ve[1]*100)%.%"%", adj=0)
         
             # x axis
-            draw.x.axis.cor(xlim, llods[a])
+            draw.x.axis.cor(xlim, lloxs[a])
                 
             # CVE
             est = 1 - risks$prob/res.plac.cont["est"]
@@ -202,7 +194,8 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             
             # legend
             tmp=formatDouble(overall.ve*100,1)%.%"%"        
-            mylegend(x=9,legend=c(paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), "Controlled VE",                   if(eq.geq==1) "Controlled VE Sens. Analysis"), 
+            legend.x=9; if(eq.geq %in% c(1,3) & config$low_efficacy) legend.x=1
+            mylegend(x=legend.x,legend=c(paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), "Controlled VE",                   if(eq.geq==1) "Controlled VE Sens. Analysis"), 
                             col=c("white",                                                  if(eq.geq==3) "black" else "pink", if(eq.geq==1) "red"                         ), 
                 lty=1, lwd=2, cex=.8)
         
