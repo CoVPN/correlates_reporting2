@@ -25,6 +25,7 @@ hvtn705: &hvtn705
   #data_cleaned: correlates_reporting2/data_clean/HVTN705_hybridrealmock_practicedata_Oct2021.csv
   num_boot_replicates: 10
   num_perm_replicates: 10
+  ve_ylim: [-1,1]
 
 
 ows_trial: &ows_trial
@@ -48,6 +49,7 @@ moderna_trial: &moderna_trial
   study_name_code: COVE
   covariates_riskscore: ~.+ MinorityInd + HighRiskInd + risk_score
   covariates_norisksco: ~.+ MinorityInd + HighRiskInd + Age
+  ve_ylim: [0,1]
 
 moderna_real: &moderna_real
   <<: *moderna_trial
@@ -76,6 +78,7 @@ janssen_trial: &janssen_trial
   time_labels: [Day 1, Day 29, D29 fold-rise over D1]
   data_raw_dir: janssen
   study_name_code: ENSEMBLE
+  ve_ylim: [0,1]
 
 janssen_trial_real: &janssen_trial_real
   <<: *janssen_trial
