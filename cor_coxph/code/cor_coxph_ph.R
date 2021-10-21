@@ -65,10 +65,10 @@ if(verbose) print("# multitesting adjustment for continuous and trichotomized ma
 
 p.unadj=c(cont=pvals.cont, tri=overall.p.tri)
 p.unadj.1 = p.unadj # save a copy for later use
-## we may only keep ID80 and bindSpike in multitesting adjustment because ID50 and ID80 are highly correlated, bindSpike and bindRBD are highly correlated
-#if (study_name=="COVE" | study_name=="MockCOVE") {
-#    p.unadj = p.unadj[endsWith(names(p.unadj), "pseudoneutid80") | endsWith(names(p.unadj), "bindSpike")]
-#}
+# only use primary assays in multitesting adjustment
+if (!is.null(config$primary_assays)) {
+    p.unadj = p.unadj[c("cont.Day"%.%tpeak%.%primary_assays, "tri.Day"%.%tpeak%.%primary_assays)]
+}
 
 #### Holm and FDR adjustment
 pvals.adj.fdr=p.adjust(p.unadj, method="fdr")

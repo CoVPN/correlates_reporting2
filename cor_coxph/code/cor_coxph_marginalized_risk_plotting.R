@@ -151,7 +151,14 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             Bias=controlled.risk.bias.factor(ss=risks$marker, s.cent=s.ref, s1=risks$marker[s1], s2=risks$marker[s2], RRud) 
             if (is.nan(Bias[1])) Bias=rep(1,length(Bias))
         
-            ylim=if(eq.geq==1 | eq.geq==3) c(0, 1) else c(ifelse(study_name=="COVE" | study_name=="MockCOVE", 0.8, 0.5), 1)
+            ylim=ve_ylim
+            if (eq.geq==2) {
+                if (study_name %in% c("COVE", "MockCOVE")) {
+                    ylim=c(0.8,1)
+                } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
+                    ylim=c(0.5,1)
+                } 
+            } 
             
             ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))        
             .subset=if(eq.geq==1 | eq.geq==3) rep(T, length(risks$marker)) else ncases>=5
@@ -170,7 +177,7 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
                 xlab=labels.assays.short[a]%.%ifelse(eq.geq==1 | eq.geq==3," (=s)"," (>=s)"), 
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
             # labels
-            yat=seq(.0,1,by=.1)
+            yat=seq(-1,1,by=.1)
             axis(side=2,at=yat,labels=(yat*100)%.%"%")
         
             # overall controlled VE
@@ -253,7 +260,7 @@ for(a in assays) {
     mytex(tab, file.name=paste0(a, "_controlled_ve_eq", "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
         longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", COR), caption=paste0("Controlled VE as functions of Day ",
             tpeak," ", labels.axis[1,a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
-            ncol(risks.all[[1]]$boot)," replicates).", "Overall cumulative incidence from ", tpeaklag, " to ",tfinal.tpeak," days post Day ",tpeak," was ",
+            ncol(risks.all[[1]]$boot)," replicates). ", "Overall cumulative incidence from ", tpeaklag, " to ",tfinal.tpeak," days post Day ",tpeak," was ",
             formatDouble(prev.vacc[1], 3, remove.leading0=F)," in vaccine recipients compared to ",
             formatDouble(prev.plac[1], 3, remove.leading0=F)," in placebo recipients, with cumulative vaccine efficacy ",
             formatDouble(overall.ve[1]*100,1),"\\% (95\\% CI ",formatDouble(overall.ve[2]*100,1)," to ",formatDouble(overall.ve[3]*100,1),"\\%).")
@@ -317,7 +324,7 @@ if (config$is_ows_trial) {
     x.time<-seq(0,tfinal.tpeak,by=30)
     if(tfinal.tpeak-last(x.time)>15) x.time=c(x.time, tfinal.tpeak) else x.time[length(x.time)]=tfinal.tpeak
 } else {
-    x.time<-seq(0,tfinal.tpeak,length=8)
+    x.time<-floor(seq(0,tfinal.tpeak,length=8))
 }
 #
 if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
