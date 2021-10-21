@@ -106,6 +106,8 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     list(marker=if(type==3) names(prob) else ss, prob=prob, boot=res, lb=ci.band[,1], ub=ci.band[,2])     
 }    
 
+
+
 if(!file.exists(paste0(save.results.to, "marginalized.risk.",study_name,".Rdata"))) {    
     cat("make marginalized.risk\n")
     
