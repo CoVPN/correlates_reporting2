@@ -453,3 +453,5 @@ cor_coxph/output/hvtn705/D210/cutpoints_Day210IgG3gp4140delta_HVTN705
 cor_coxph/output/hvtn705/D210/cutpoints_Day210mdw_xassay_HVTN705
 cor_coxph/output/hvtn705/D210/timepoints_cum_risk_HVTN705
 data_clean/~$TN705CorrelatesREADME.docx
+data_clean/adcc_risk_v2_21OCT2021.csv
+data_clean/HVTN705_analysis_data_set_spec_v2.xlsx
