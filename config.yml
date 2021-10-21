@@ -35,6 +35,7 @@ ows_trial: &ows_trial
   is_ows_trial: yes
   case_cohort: yes
   llox_label: lod
+  low_efficacy: no
 
 moderna_trial: &moderna_trial
   <<: *ows_trial
