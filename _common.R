@@ -475,11 +475,11 @@ get.labels.x.axis.cor=function(xlim, llox){
   xx=xx[xx>log10(llox*2)]
   x_ticks <- xx
   labels <- sapply(xx, function(x) {
-    if (log10(llox)==x) config$lox_label else if (x>=3) bquote(10^.(x)) else 10^x
+    if (log10(llox)==x) config$llox_label else if (x>=3) bquote(10^.(x)) else 10^x
   })
   #if(!any(log10(llox)==x_ticks)){
     x_ticks <- c(log10(llox), x_ticks)
-    labels <- c(config$lox_label, labels)
+    labels <- c(config$llox_label, labels)
   #}
   return(list(ticks = x_ticks, labels = labels))
 }
