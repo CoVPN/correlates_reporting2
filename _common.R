@@ -54,6 +54,8 @@ if (startsWith(tolower(study_name), "mock")) {
     # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
     path_to_data = data_cleaned
     data_name = path_to_data
+    # if path is relative, needs to do some processing
+    if(endsWith(here::here(), "correlates_reporting2") & startsWith(path_to_data,"..")) path_to_data=substr(path_to_data, 4, nchar(path_to_data))
 }
 print(path_to_data)
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
@@ -180,16 +182,15 @@ if (config$is_ows_trial) {
         uloqs["bindRBD"]=172.5755    
     }
     
+    lloxs=llods
+    
 } else {
     # get uloqs and lloqs from config
     # config$uloqs is a list before this processing
     if (!is.null(config$uloqs)) uloqs=sapply(config$uloqs, function(x) ifelse(is.numeric(x), x, Inf))  else uloqs=sapply(assays, function(a) Inf)
-    if (!is.null(config$lloqs)) lloqs=sapply(config$lloqs, function(x) ifelse(is.numeric(x), x, 1e-6)) else lloqs=sapply(assays, function(a) 1e-6)
+    if (!is.null(config$lloxs)) lloxs=sapply(config$lloxs, function(x) ifelse(is.numeric(x), x, 1e-6)) else lloqs=sapply(assays, function(a) 1e-6)
     names(uloqs)=assays # this is necessary because config$uloqs does not have names
-    names(lloqs)=assays
-    # pos.cutoffs and llods are hardcoded for now
-    pos.cutoffs=sapply(assays, function(a) NA)
-    llods=sapply(assays, function(a) NA)
+    names(lloxs)=assays
 }
 
 
@@ -459,40 +460,26 @@ get.range.cor=function(dat, assay=c("bindSpike", "bindRBD", "pseudoneutid50", "p
     c(ret[1]-delta, ret[2]+delta)
 }
 
-draw.x.axis.cor=function(xlim, llod){
-#    if(xlim[2]<3) {
-#        xx = (c(10,25,50,100,250,500,1000))
-#        for (x in xx) axis(1, at=log10(x), labels=if (llod==x) "lod" else if (x==1000) bquote(10^3) else x  ) 
-#    } else if(xlim[2]<4) {
-#        xx = (c(10,50,250,1000,5000,10000))
-#        for (x in xx) axis(1, at=log10(x), labels=if (llod==x) "lod" else if (x %in% c(1000,10000)) bquote(10^.(log10(x))) else if (x==5000) bquote(.(x/1000)%*%10^3) else  x ) 
-#    } else {
-        xx=seq(floor(xlim[1]), ceiling(xlim[2]))
-        if(config$is_ows_trial) {
-            for (x in xx) if (x>log10(llod*2)) axis(1, at=x, labels=if (log10(llod)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )
-        } else {
-            for (x in xx) axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )
-        }
-#    }
-    
-    # plot llod if llod is not already plotted
-    #if(!any(log10(llod)==xx)) 
-    if(config$is_ows_trial) axis(1, at=log10(llod), labels="lod")
-    
+draw.x.axis.cor=function(xlim, llox){
+    xx=seq(floor(xlim[1]), ceiling(xlim[2]))
+    for (x in xx) if (x>log10(llox*2)) axis(1, at=x, labels=if (log10(llox)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )    
+    # plot llox if llox is not already plotted
+    #if(!any(log10(llox)==xx)) 
+    axis(1, at=log10(llox), labels=config$llox_label)
 }
 
 ##### Copy of draw.x.axis.cor but returns the x-axis ticks and labels
 # This is necessary if one works with ggplot as the "axis" function does not work.
-get.labels.x.axis.cor=function(xlim, llod){
+get.labels.x.axis.cor=function(xlim, llox){
   xx=seq(floor(xlim[1]), ceiling(xlim[2]))
-  xx=xx[xx>log10(llod*2)]
+  xx=xx[xx>log10(llox*2)]
   x_ticks <- xx
   labels <- sapply(xx, function(x) {
-    if (log10(llod)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x
+    if (log10(llox)==x) config$llox_label else if (x>=3) bquote(10^.(x)) else 10^x
   })
-  #if(!any(log10(llod)==x_ticks)){
-    x_ticks <- c(log10(llod), x_ticks)
-    labels <- c("lod", labels)
+  #if(!any(log10(llox)==x_ticks)){
+    x_ticks <- c(log10(llox), x_ticks)
+    labels <- c(config$llox_label, labels)
   #}
   return(list(ticks = x_ticks, labels = labels))
 }
