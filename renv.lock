@@ -1203,7 +1203,7 @@
     },
     "marginalizedRisk": {
       "Package": "marginalizedRisk",
-      "Version": "2021.7-26",
+      "Version": "2021.10-22",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
