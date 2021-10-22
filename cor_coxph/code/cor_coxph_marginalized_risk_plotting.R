@@ -183,7 +183,7 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             est = 1 - risks$prob/res.plac.cont["est"]
             boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))        
-            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=if(eq.geq==3) "black" else "pink", lwd=lwd, make.legend=F, add=T)
+            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=if(eq.geq==3 | eq.geq==2) "black" else "pink", lwd=lwd, make.legend=F, add=T)
             if (config$is_ows_trial) {
                 # find marker values under specific VE
                 # if all report.ve.levels are out of range, tmp will be as long as the rows in ret
@@ -195,8 +195,11 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             # legend
             tmp=formatDouble(overall.ve*100,1)%.%"%"        
             legend.x=9; if(eq.geq %in% c(1,3) & config$low_efficacy) legend.x=1
-            mylegend(x=legend.x,legend=c(paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), "Controlled VE",                   if(eq.geq==1) "Controlled VE Sens. Analysis"), 
-                            col=c("white",                                                  if(eq.geq==3) "black" else "pink", if(eq.geq==1) "red"                         ), 
+            mylegend(x=legend.x,legend=c(
+                    paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), 
+                    "Controlled VE",
+                    if(eq.geq==1) "Controlled VE Sens. Analysis"), 
+                col=c("white", if(eq.geq==3 | eq.geq==2) "black" else "pink", if(eq.geq==1) "red"), 
                 lty=1, lwd=2, cex=.8)
         
             # add histogram
