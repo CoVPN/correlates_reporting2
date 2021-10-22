@@ -38,7 +38,7 @@ for (idx in 1:1) { # 1 with placebo lines, 2 without placebo lines. Implementati
         
         plot(fit, which=1, add.points=F, ylab="COVID-19 risk", xlab=labels.assays.short[a]%.%" (=s)", xaxt="n", xlim=xlim, ylim=ylim)
         
-        draw.x.axis.cor(xlim, llods[a])
+        draw.x.axis.cor(xlim, lloxs[a])
         
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)

@@ -188,7 +188,7 @@ if (config$is_ows_trial) {
     # get uloqs and lloqs from config
     # config$uloqs is a list before this processing
     if (!is.null(config$uloqs)) uloqs=sapply(config$uloqs, function(x) ifelse(is.numeric(x), x, Inf))  else uloqs=sapply(assays, function(a) Inf)
-    if (!is.null(config$lloxs)) lloxs=sapply(config$lloxs, function(x) ifelse(is.numeric(x), x, 1e-6)) else lloqs=sapply(assays, function(a) 1e-6)
+    if (!is.null(config$lloxs)) lloxs=sapply(config$lloxs, function(x) ifelse(is.numeric(x), x, NA))   else lloxs=sapply(assays, function(a) NA)
     names(uloqs)=assays # this is necessary because config$uloqs does not have names
     names(lloxs)=assays
 }
@@ -445,7 +445,7 @@ ggsave_custom <- function(filename = default_name(plot),
 ###################################################################################################
 
 
-get.range.cor=function(dat, assay=c("bindSpike", "bindRBD", "pseudoneutid50", "pseudoneutid80"), time) {
+get.range.cor=function(dat, assay, time) {
     if(assay %in% c("bindSpike", "bindRBD")) {
         ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(llods[c("bindSpike","bindRBD")]/2), na.rm=T)
         ret[2]=ceiling(ret[2]) # round up
@@ -453,8 +453,7 @@ get.range.cor=function(dat, assay=c("bindSpike", "bindRBD", "pseudoneutid50", "p
         ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
         ret[2]=ceiling(ret[2]) # round up
     } else {
-        #ret=range(dat[["Day"%.%time%.%assay]], log10(llods[assay]/2), log10(lloqs[assay]/2), log10(uloqs[assay]), na.rm=T)
-        ret=range(dat[["Day"%.%time%.%assay]], na.rm=T)
+        ret=range(dat[["Day"%.%time%.%assay]], log10(lloxs[assay]/2), na.rm=T)        
     }
     delta=(ret[2]-ret[1])/20     
     c(ret[1]-delta, ret[2]+delta)
@@ -462,25 +461,33 @@ get.range.cor=function(dat, assay=c("bindSpike", "bindRBD", "pseudoneutid50", "p
 
 draw.x.axis.cor=function(xlim, llox){
     xx=seq(floor(xlim[1]), ceiling(xlim[2]))
-    for (x in xx) if (x>log10(llox*2)) axis(1, at=x, labels=if (log10(llox)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )    
-    # plot llox if llox is not already plotted
-    #if(!any(log10(llox)==xx)) 
-    axis(1, at=log10(llox), labels=config$llox_label)
+    if (is.na(llox)) {
+        for (x in xx) axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )    
+    } else {
+        for (x in xx) if (x>log10(llox*1.8)) axis(1, at=x, labels=if (log10(llox)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )    
+        axis(1, at=log10(llox), labels=config$llox_label)
+    }
 }
 
 ##### Copy of draw.x.axis.cor but returns the x-axis ticks and labels
 # This is necessary if one works with ggplot as the "axis" function does not work.
 get.labels.x.axis.cor=function(xlim, llox){
   xx=seq(floor(xlim[1]), ceiling(xlim[2]))
-  xx=xx[xx>log10(llox*2)]
+  if (!is.na(llox)) xx=xx[xx>log10(llox*2)]
   x_ticks <- xx
-  labels <- sapply(xx, function(x) {
-    if (log10(llox)==x) config$llox_label else if (x>=3) bquote(10^.(x)) else 10^x
-  })
-  #if(!any(log10(llox)==x_ticks)){
-    x_ticks <- c(log10(llox), x_ticks)
-    labels <- c(config$llox_label, labels)
-  #}
+  if (is.na(llox)) {
+      labels <- sapply(xx, function(x) {
+        if (x>=3) bquote(10^.(x)) else 10^x
+      })
+  } else {
+      labels <- sapply(xx, function(x) {
+        if (log10(llox)==x) config$llox_label else if (x>=3) bquote(10^.(x)) else 10^x
+      })
+      #if(!any(log10(llox)==x_ticks)){
+        x_ticks <- c(log10(llox), x_ticks)
+        labels <- c(config$llox_label, labels)
+      #}
+  }
   return(list(ticks = x_ticks, labels = labels))
 }
 
