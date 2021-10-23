@@ -1,7 +1,7 @@
 # Day `r COR` Univariate CoR: Nonlinear modeling {#cor-nonlinear-Day`r COR`}
 
 
-To explore nonlinear association and threshold modeling, we fit smoothing spline models with degrees of freedom selected by cross-validation using the mgcv R package. Marginalized risks are predicted for marker values between 2.5 and 97.5 percentiles. 
+We fit smoothing spline models with degrees of freedom selected by cross-validation using the mgcv R package. Marginalized risk curves are drawn for marker values between 2.5 and 97.5 percentiles. 
 <!-- and two-phase models using the chngpt R package. -->
 
 
