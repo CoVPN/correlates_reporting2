@@ -81,6 +81,22 @@ if (is.null(config.cor$tinterm)) {
 #dat.mock$wt = ifelse(with(dat.mock, ph1), dat.mock$wt, NA) # the step above assigns weights for some subjects outside ph1. the next step makes them NA
 
 
+###################################################################################################
+# data integrity checks
+
+# missing values in variables that should have no missing values
+variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+
+# ph1 should not have NA in Wstratum
+ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+if(!ans) stop("Some Wstratum in ph1 are NA")
+
+
+
+###################################################################################################
+
 # some common graphing parameters
 if(config$is_ows_trial) {
     # maxed over Spike, RBD, N, restricting to Day 29 or 57
