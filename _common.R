@@ -76,15 +76,18 @@ if (is.null(config.cor$tinterm)) {
     if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
     
     # data integrity checks
-    
-    # missing values in variables that should have no missing values
-    variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
-    ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
-    if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
-    
-    # ph1 should not have NA in Wstratum
-    ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
-    if(!ans) stop("Some Wstratum in ph1 are NA")
+    if (!is.null(dat.mock$ph1)) {
+        # missing values in variables that should have no missing values
+        variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+        ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+        if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+        
+        # ph1 should not have NA in Wstratum
+        ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+        if(!ans) stop("Some Wstratum in ph1 are NA")
+    } else {
+        # may not be defined if COR is not provided in command line and used the default value
+    }
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
