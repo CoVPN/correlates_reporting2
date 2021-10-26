@@ -65,6 +65,8 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 dat.mock <- read.csv(path_to_data)
 
 if (is.null(config.cor$tinterm)) {
+##########################
+# single time point config
     dat.mock$ph1=dat.mock[[config.cor$ph1]]
     dat.mock$ph2=dat.mock[[config.cor$ph2]]
     dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
@@ -72,6 +74,17 @@ if (is.null(config.cor$tinterm)) {
     dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
     dat.mock$wt=dat.mock[[config.cor$wt]]
     if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
+    
+    # data integrity checks
+    
+    # missing values in variables that should have no missing values
+    variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+    ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+    if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+    
+    # ph1 should not have NA in Wstratum
+    ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+    if(!ans) stop("Some Wstratum in ph1 are NA")
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
@@ -81,17 +94,6 @@ if (is.null(config.cor$tinterm)) {
 #dat.mock$wt = ifelse(with(dat.mock, ph1), dat.mock$wt, NA) # the step above assigns weights for some subjects outside ph1. the next step makes them NA
 
 
-###################################################################################################
-# data integrity checks
-
-# missing values in variables that should have no missing values
-variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
-ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
-if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
-
-# ph1 should not have NA in Wstratum
-ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
-if(!ans) stop("Some Wstratum in ph1 are NA")
 
 
 
