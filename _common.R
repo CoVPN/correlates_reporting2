@@ -520,8 +520,6 @@ bootstrap.case.control.samples=function(dat.ph1, delta.name="EventIndPrimary", s
     dat.tmp=data.frame(ptid=1:nrow(dat.ph1), delta=dat.ph1[,delta.name], strata=dat.ph1[,strata.name], ph2=dat.ph1[,ph2.name])
     
     nn.ph1=with(dat.tmp, table(strata, delta))
-    nn.ph2=with(subset(dat.tmp, ph2==1), table(strata, delta))
-    if(!all(rownames(nn.ph1)==rownames(nn.ph2))) stop("ph2 strata differ from ph1 strata")
     strat=rownames(nn.ph1); names(strat)=strat
     # ctrl.ptids is a list of lists
     ctrl.ptids = with(subset(dat.tmp, delta==0), lapply(strat, function (i) list(ph2=ptid[strata==i & ph2], nonph2=ptid[strata==i & !ph2])))
