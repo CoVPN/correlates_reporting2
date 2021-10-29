@@ -65,6 +65,8 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 dat.mock <- read.csv(path_to_data)
 
 if (is.null(config.cor$tinterm)) {
+##########################
+# single time point config
     dat.mock$ph1=dat.mock[[config.cor$ph1]]
     dat.mock$ph2=dat.mock[[config.cor$ph2]]
     dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
@@ -72,6 +74,20 @@ if (is.null(config.cor$tinterm)) {
     dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
     dat.mock$wt=dat.mock[[config.cor$wt]]
     if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
+    
+    # data integrity checks
+    if (!is.null(dat.mock$ph1)) {
+        # missing values in variables that should have no missing values
+        variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+        ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+        if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+        
+        # ph1 should not have NA in Wstratum
+        ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+        if(!ans) stop("Some Wstratum in ph1 are NA")
+    } else {
+        # may not be defined if COR is not provided in command line and used the default value
+    }
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
@@ -80,6 +96,11 @@ if (is.null(config.cor$tinterm)) {
 #dat.mock$wt <- wts_norm[dat.mock$Wstratum %.% ""]
 #dat.mock$wt = ifelse(with(dat.mock, ph1), dat.mock$wt, NA) # the step above assigns weights for some subjects outside ph1. the next step makes them NA
 
+
+
+
+
+###################################################################################################
 
 # some common graphing parameters
 if(config$is_ows_trial) {
@@ -502,8 +523,6 @@ bootstrap.case.control.samples=function(dat.ph1, delta.name="EventIndPrimary", s
     dat.tmp=data.frame(ptid=1:nrow(dat.ph1), delta=dat.ph1[,delta.name], strata=dat.ph1[,strata.name], ph2=dat.ph1[,ph2.name])
     
     nn.ph1=with(dat.tmp, table(strata, delta))
-    nn.ph2=with(subset(dat.tmp, ph2==1), table(strata, delta))
-    if(!all(rownames(nn.ph1)==rownames(nn.ph2))) stop("ph2 strata differ from ph1 strata")
     strat=rownames(nn.ph1); names(strat)=strat
     # ctrl.ptids is a list of lists
     ctrl.ptids = with(subset(dat.tmp, delta==0), lapply(strat, function (i) list(ph2=ptid[strata==i & ph2], nonph2=ptid[strata==i & !ph2])))

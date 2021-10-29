@@ -1,11 +1,3 @@
-## risk_analysis          : builds Baseline Risk Score analysis
-risk_analysis: data_processed
-	$(MAKE) -k -C base_riskscore all
-
-## risk_report            : builds the CoVPN baseline risk score report
-risk_report: risk_analysis
-	bash ./_build.sh riskscore
-
 ## cor_analysis           : builds Correlates of Risk analyses
 cor_analysis: 
 	$(MAKE) -k -C cor_coxph all
@@ -43,19 +35,10 @@ cop_analysis:
 cop_report: cop_analysis
 	bash ./_build.sh cop
 
-## data_processed         : create processed data from raw data
-data_processed: check_raw_data make_clean_data check_clean_data
-
-check_raw_data: 
-	Rscript data_clean/make_raw_dat_check.R
-make_clean_data: check_raw_data
-	Rscript data_clean/make_dat_proc.R
 check_clean_data: make_clean_data
 	Rscript data_clean/make_clean_dat_check.R
 ## help_checks            : see a list of checks that are run on the data during cleaning
-help_tests: data_clean/make_clean_dat_check.R data_clean/make_raw_dat_check.R
-	@echo "\nTests on the raw data: \n"
-	@sed -n 's/^##//p' data_clean/make_raw_dat_check.R
+help_tests: data_clean/make_clean_dat_check.R 
 	@echo "\nTests on the clean data: \n"
 	@sed -n 's/^##//p' data_clean/make_clean_dat_check.R
 	@echo "\n"
@@ -68,5 +51,4 @@ style:
 help: Makefile
 	@sed -n 's/^##//p' $<
 
-.PHONY: style help immuno_analysis \
-  immuno_report cor_report cor_analysis data_processed
+.PHONY: style help cor_report cor_analysis
