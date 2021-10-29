@@ -11,7 +11,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
     if (class(save.seed)=="try-error") {set.seed(1); save.seed <- get(".Random.seed", .GlobalEnv) } 
     
-    data.ph2=subset(data, ph2)     
+    data.ph2=subset(data, ph2==1)     
     
     if (type==1) {
     # conditional on s
@@ -38,19 +38,23 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     } else stop("wrong type")
     
     # for use in bootstrap
-    ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (data)     
+    if(config$case_cohort) ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (data)     
     
     # bootstrap
     out=mclapply(1:B, mc.cores = numCores, FUN=function(seed) {   
     
-        dat.b = get.bootstrap.data.cor (data, ptids.by.stratum, seed) 
-        dat.b.ph2=subset(dat.b, ph2)     
-#hist(dat.b$EventTimePrimaryD14)
-#hist(dat.b$EventTimePrimaryD14[dat.b$EventIndPrimaryD14==1])
-#hist(dat.vac.seroneg$EventTimePrimaryD14)
-#hist(dat.vac.seroneg$EventTimePrimaryD14[dat.vac.seroneg$EventIndPrimaryD14==1])
-#get.marginalized.risk.no.marker(dat.b)
-#get.marginalized.risk.no.marker(dat.vac.seroneg)
+        if(config$case_cohort) {
+            dat.b = get.bootstrap.data.cor (data, ptids.by.stratum, seed) 
+        } else {
+            dat.b = bootstrap.case.control.samples(data, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2") 
+        }        
+        dat.b.ph2=subset(dat.b, ph2==1)     
+        #hist(dat.b$EventTimePrimaryD14)
+        #hist(dat.b$EventTimePrimaryD14[dat.b$EventIndPrimaryD14==1])
+        #hist(dat.vac.seroneg$EventTimePrimaryD14)
+        #hist(dat.vac.seroneg$EventTimePrimaryD14[dat.vac.seroneg$EventIndPrimaryD14==1])
+        #get.marginalized.risk.no.marker(dat.b)
+        #get.marginalized.risk.no.marker(dat.vac.seroneg)
            
         if(type==1) {
         # conditional on s
@@ -102,8 +106,10 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     list(marker=if(type==3) names(prob) else ss, prob=prob, boot=res, lb=ci.band[,1], ub=ci.band[,2])     
 }    
 
+
+
 if(!file.exists(paste0(save.results.to, "marginalized.risk.",study_name,".Rdata"))) {    
-    print("make marginalized.risk")
+    cat("make marginalized.risk\n")
     
     # vaccine arm, conditional on continuous S=s
     risks.all.1=lapply(assays, function (a) {

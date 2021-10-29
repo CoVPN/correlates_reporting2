@@ -12,11 +12,11 @@ marginalized.risk.gam.boot=function(formula, marker.name, type=1, data, B, ci.ty
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
     if (class(save.seed)=="try-error") {set.seed(1); save.seed <- get(".Random.seed", .GlobalEnv) }      
     
-    data.ph2 = subset(data, ph2)
+    data.ph2 = subset(data, ph2==1)
     
     if (type==1) {
     # conditional on S=s
-        ss=sort(c(seq(quantile(data[[marker.name]], 0.025, na.rm=TRUE), quantile(data[[marker.name]], 0.975, na.rm=TRUE), length=50)[-c(1,50)]))        
+        ss=sort(c(seq(quantile(data[[marker.name]], 0.025, na.rm=TRUE), quantile(data[[marker.name]], 0.975, na.rm=TRUE), length=50)))        
         #ss=sort(c(report.assay.values(data[[marker.name]], marker.name.to.assay(marker.name)), seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)]))
         
         f1=update(form.0.logistic, as.formula(paste0("~.+s(",marker.name,")")))        
@@ -30,13 +30,18 @@ marginalized.risk.gam.boot=function(formula, marker.name, type=1, data, B, ci.ty
     } else stop("wrong type")
     
     # for use in bootstrap
-    ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (data) 
+    if(config$case_cohort) ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (data) 
     
     # bootstrap
     out=mclapply(1:B, mc.cores = numCores, FUN=function(seed) {   
         # 
-        dat.b = get.bootstrap.data.cor (data, ptids.by.stratum, seed) 
-        dat.b.ph2=subset(dat.b, ph2)
+        if(config$case_cohort) {
+            dat.b = get.bootstrap.data.cor (data, ptids.by.stratum, seed) 
+        } else {
+            dat.b = bootstrap.case.control.samples(data, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2") 
+        }        
+
+        dat.b.ph2=subset(dat.b, ph2==1)
                 
         if(type==1) {
         # conditional on S=s
@@ -124,9 +129,9 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))
         
         plot(prob~marker, risks, xlab=labels.assays.short[a]%.%ifelse(ii==1," (=s)"," (>=s)"), xlim=xlim, 
-            ylab=paste0("Probability* of COVID-19 by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")
+            ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")
     
-        draw.x.axis.cor(xlim, llods[a])
+        draw.x.axis.cor(xlim, lloxs[a])
     
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)

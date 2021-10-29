@@ -151,7 +151,7 @@ Some basic commands:
 To clone the repo, 
 
 ```bash
-git clone https://usr@github.com/CoVPN/correlates_reporting.git
+git clone https://usr@github.com/CoVPN/correlates_reporting2.git
 ```
 
 

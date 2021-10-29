@@ -47,24 +47,13 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
     mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks", ifelse(eq.geq==1,"_eq","_geq"), ifelse(w.wo.plac==1,"","_woplacebo"), "_"%.%study_name), mfrow=.mfrow)
     par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         risks=risks.all[[a]]
-        xlim=get.range.cor(dat.vac.seroneg, a, tpeak)
-        #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95), na.rm=T) 
         
         ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))
         
-        plot(prob~marker, risks, xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, 
-            ylab=paste0("Probability* of COVID-19 by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")
-    
-        draw.x.axis.cor(xlim, llods[a])
-    
-#        # x axis
-#        xx=seq(floor(min(risks$marker)), ceiling(max(risks$marker)))
-#        #myprint(a, xx)
-#        for (x in xx) axis(1, at=x, labels=if (log10(llods[a])==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )
-#        if(last(xx)<5) for (x in c(250,500,2000,4000)) axis(1, at=log10(x), labels=if (x>=1000) bquote(.(x/1000)%*%10^3) else x )
-#        if(!any(log10(llods[a])==xx)) axis(1, at=log10(llods[a]), labels="lod")
-        
-        
+        xlim=get.range.cor(dat.vac.seroneg, a, tpeak) #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95), na.rm=T) 
+        plot(prob~marker, risks, xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")    
+        draw.x.axis.cor(xlim, lloxs[a])
+            
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)
         
@@ -154,7 +143,14 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             Bias=controlled.risk.bias.factor(ss=risks$marker, s.cent=s.ref, s1=risks$marker[s1], s2=risks$marker[s2], RRud) 
             if (is.nan(Bias[1])) Bias=rep(1,length(Bias))
         
-            ylim=if(eq.geq==1 | eq.geq==3) c(0, 1) else c(ifelse(study_name=="COVE" | study_name=="MockCOVE", 0.8, 0.5), 1)
+            ylim=ve_ylim
+            if (eq.geq==2) {
+                if (study_name %in% c("COVE", "MockCOVE")) {
+                    ylim=c(0.8,1)
+                } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
+                    ylim=c(0.5,1)
+                } 
+            } 
             
             ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))        
             .subset=if(eq.geq==1 | eq.geq==3) rep(T, length(risks$marker)) else ncases>=5
@@ -168,12 +164,12 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[pick.out],digits.risk), " (", formatDouble(ci.band[1,pick.out],digits.risk), ",", formatDouble(ci.band[2,pick.out],digits.risk), ")"))
     
             mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=ifelse(eq.geq==1,"red","white"), lwd=lwd, make.legend=F, 
-                ylab=paste0("Controlled VE against COVID-19 by Day ",tfinal.tpeak), 
+                ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by Day ",tfinal.tpeak), 
                 main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 xlab=labels.assays.short[a]%.%ifelse(eq.geq==1 | eq.geq==3," (=s)"," (>=s)"), 
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
             # labels
-            yat=seq(.0,1,by=.1)
+            yat=seq(-1,1,by=.1)
             axis(side=2,at=yat,labels=(yat*100)%.%"%")
         
             # overall controlled VE
@@ -181,22 +177,29 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             #text(x=par("usr")[1], y=overall.ve[1]+(overall.ve[1]-overall.ve[2])/2,     "overall VE "%.%round(overall.ve[1]*100)%.%"%", adj=0)
         
             # x axis
-            draw.x.axis.cor(xlim, llods[a])
+            draw.x.axis.cor(xlim, lloxs[a])
                 
             # CVE
             est = 1 - risks$prob/res.plac.cont["est"]
             boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))        
-            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=if(eq.geq==3) "black" else "pink", lwd=lwd, make.legend=F, add=T)
-            # find marker values under specific VE
-            tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
-            tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
-            ret=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))            
+            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=if(eq.geq==3 | eq.geq==2) "black" else "pink", lwd=lwd, make.legend=F, add=T)
+            if (config$is_ows_trial) {
+                # find marker values under specific VE
+                # if all report.ve.levels are out of range, tmp will be as long as the rows in ret
+                tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
+                tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
+                ret=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))            
+            }
             
             # legend
             tmp=formatDouble(overall.ve*100,1)%.%"%"        
-            mylegend(x=9,legend=c(paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), "Controlled VE",                   if(eq.geq==1) "Controlled VE Sens. Analysis"), 
-                            col=c("white",                                                  if(eq.geq==3) "black" else "pink", if(eq.geq==1) "red"                         ), 
+            legend.x=9; if(eq.geq %in% c(1,3) & config$low_efficacy) legend.x=1
+            mylegend(x=legend.x,legend=c(
+                    paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), 
+                    "Controlled VE",
+                    if(eq.geq==1) "Controlled VE Sens. Analysis"), 
+                col=c("white", if(eq.geq==3 | eq.geq==2) "black" else "pink", if(eq.geq==1) "red"), 
                 lty=1, lwd=2, cex=.8)
         
             # add histogram
@@ -245,18 +248,20 @@ for(a in assays) {
     tmp=10**risks$marker[pick.out]; tmp=c(round(tmp[1],1), round(tmp[-1]))
     ret = cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[pick.out],digits.risk), " (", formatDouble(ci.band[1,pick.out],digits.risk), ",", formatDouble(ci.band[2,pick.out],digits.risk), ")"))
 
-    # find marker values under specific VE
-    tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
-    tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
-    out=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))
-    
+    if (config$is_ows_trial) {
+        # find marker values under specific VE
+        tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
+        tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
+        out=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))
+    } else out=ret
+        
     while (nrow(out)%%4!=0) out=rbind(out, c("s"="", "Estimate"=""))
     tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])
 
     mytex(tab, file.name=paste0(a, "_controlled_ve_eq", "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
         longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", COR), caption=paste0("Controlled VE as functions of Day ",
             tpeak," ", labels.axis[1,a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
-            ncol(risks.all[[1]]$boot)," replicates).", "Overall cumulative incidence from ", tpeaklag, " to ",tfinal.tpeak," days post Day ",tpeak," was ",
+            ncol(risks.all[[1]]$boot)," replicates). ", "Overall cumulative incidence from ", tpeaklag, " to ",tfinal.tpeak," days post Day ",tpeak," was ",
             formatDouble(prev.vacc[1], 3, remove.leading0=F)," in vaccine recipients compared to ",
             formatDouble(prev.plac[1], 3, remove.leading0=F)," in placebo recipients, with cumulative vaccine efficacy ",
             formatDouble(overall.ve[1]*100,1),"\\% (95\\% CI ",formatDouble(overall.ve[2]*100,1)," to ",formatDouble(overall.ve[3]*100,1),"\\%).")
@@ -316,7 +321,12 @@ time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
     
 lwd=2
 ylim=c(0,max(risk.0))
-x.time<-seq(0,tfinal.tpeak,by=30); if(tfinal.tpeak-last(x.time)>15) x.time=c(x.time, tfinal.tpeak) else x.time[length(x.time)]=tfinal.tpeak
+if (config$is_ows_trial) {
+    x.time<-seq(0,tfinal.tpeak,by=30)
+    if(tfinal.tpeak-last(x.time)>15) x.time=c(x.time, tfinal.tpeak) else x.time[length(x.time)]=tfinal.tpeak
+} else {
+    x.time<-floor(seq(0,tfinal.tpeak,length=8))
+}
 #
 if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
 for (a in assays) {        
@@ -329,7 +339,7 @@ for (a in assays) {
     q.a=marker.cutpoints[[a]][["Day"%.%tpeak]]
     
     if(length(out)==1) empty.plot() else {
-        mymatplot(out$time, out$risk, lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab="Probability* of COVID-19 by Day "%.%tfinal.tpeak, ylim=ylim, xlab="", las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
+        mymatplot(out$time, out$risk, lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak), ylim=ylim, xlab="", las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
         title(xlab="Days Since Day "%.%tpeak%.%" Visit", line=2)
         title(main=labels.title["Day"%.%tpeak,a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
@@ -365,7 +375,7 @@ for (a in assays) {
     mtext(paste0("High:"),side=1,outer=F,line=5.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.H,side=1,outer=FALSE,line=5.2,at=x.time,cex=cex.text)
     mtext(paste0("Plac:"),side=1,outer=F,line=6.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.P,side=1,outer=FALSE,line=6.2,at=x.time,cex=cex.text)
     
-    mtext(expression(bold("Cumulative No. of COVID-19 Endpoints")),side=1,outer=FALSE,line=7.4,at=-2,adj=0,cex=cex.text)
+    mtext(expression(bold(paste0("Cumulative No. of ",config.cor$txt.endpoint," Endpoints"))),side=1,outer=FALSE,line=7.4,at=-2,adj=0,cex=cex.text)
     mtext(paste0("Low:"),side=1,outer=FALSE,line=8.3,at=at.label,adj=0,cex=cex.text);  mtext(cum.L,side=1,outer=FALSE,line=8.3,at=x.time,cex=cex.text)
     mtext(paste0("Med:"),side=1,outer=FALSE,line=9.2,at=at.label,adj=0,cex=cex.text);  mtext(cum.M,side=1,outer=FALSE,line=9.2,at=x.time,cex=cex.text)
     mtext(paste0("High:"),side=1,outer=FALSE,line=10.1,at=at.label,adj=0,cex=cex.text);mtext(cum.H,side=1,outer=FALSE,line=10.1,at=x.time,cex=cex.text)

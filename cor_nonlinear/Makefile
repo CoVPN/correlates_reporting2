@@ -13,6 +13,8 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_pooled_real  janssen_na_mock janssen_na_real janssen_la_mock janssen_la_real janssen_sa_mock janssen_sa_real))
 	Rscript code/cor_nonlinear.R D29
 	Rscript code/cor_nonlinear.R D29start1
+else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
+	Rscript code/cor_nonlinear.R D210
 endif
 
 before_script:

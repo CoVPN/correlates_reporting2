@@ -1,6 +1,5 @@
 #if (exists(".DEF.COMMON")) stop ("_common.R has already been loaded") else .DEF.COMMON=TRUE
-
-
+    
 library(methods)
 library(dplyr)
 library(kyotil)
@@ -48,26 +47,47 @@ has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
 data_name = paste0(attr(config, "config"), "_data_processed.csv")
 if (startsWith(tolower(study_name), "mock")) {
     data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
-    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting"), here::here("data_clean", data_name_updated), here::here("..", "data_clean", data_name_updated))
+    # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
+    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting2"), here::here("data_clean", data_name_updated), here::here("..", "data_clean", data_name_updated))
     data_name = data_name_updated    
 } else {
-    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting"), here::here("..", data_cleaned), here::here("..", "..", data_cleaned))
+    # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
+    path_to_data = data_cleaned
     data_name = path_to_data
+    # if path is relative, needs to do some processing
+    if(endsWith(here::here(), "correlates_reporting2") & startsWith(path_to_data,"..")) path_to_data=substr(path_to_data, 4, nchar(path_to_data))
 }
 print(path_to_data)
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
-if (!file.exists(path_to_data)) stop ("dataset with risk score not available ")
+if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not available ===========================================")
 
 
 dat.mock <- read.csv(path_to_data)
 
 if (is.null(config.cor$tinterm)) {
+##########################
+# single time point config
     dat.mock$ph1=dat.mock[[config.cor$ph1]]
     dat.mock$ph2=dat.mock[[config.cor$ph2]]
     dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
     dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
     dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
     dat.mock$wt=dat.mock[[config.cor$wt]]
+    if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
+    
+    # data integrity checks
+    if (!is.null(dat.mock$ph1)) {
+        # missing values in variables that should have no missing values
+        variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+        ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+        if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+        
+        # ph1 should not have NA in Wstratum
+        ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+        if(!ans) stop("Some Wstratum in ph1 are NA")
+    } else {
+        # may not be defined if COR is not provided in command line and used the default value
+    }
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
@@ -76,6 +96,11 @@ if (is.null(config.cor$tinterm)) {
 #dat.mock$wt <- wts_norm[dat.mock$Wstratum %.% ""]
 #dat.mock$wt = ifelse(with(dat.mock, ph1), dat.mock$wt, NA) # the step above assigns weights for some subjects outside ph1. the next step makes them NA
 
+
+
+
+
+###################################################################################################
 
 # some common graphing parameters
 if(config$is_ows_trial) {
@@ -115,6 +140,7 @@ if(config$is_ows_trial) {
 
 names(assays)=assays # add names so that lapply results will have names
 
+# uloqs etc are hardcoded for ows trials but driven by config for other trials
 if (config$is_ows_trial) {
 
     # For bAb, IU and BAU are the same thing
@@ -177,24 +203,18 @@ if (config$is_ows_trial) {
         uloqs["bindRBD"]=172.5755    
     }
     
+    lloxs=llods
+    
 } else {
-    pos.cutoffs=sapply(assays, function(a) -Inf)
-    llods=sapply(assays, function(a) -Inf)
-    lloqs=sapply(assays, function(a) -Inf)
-    uloqs=sapply(assays, function(a) Inf)
+    # get uloqs and lloqs from config
+    # config$uloqs is a list before this processing
+    if (!is.null(config$uloqs)) uloqs=sapply(config$uloqs, function(x) ifelse(is.numeric(x), x, Inf))  else uloqs=sapply(assays, function(a) Inf)
+    if (!is.null(config$lloxs)) lloxs=sapply(config$lloxs, function(x) ifelse(is.numeric(x), x, NA))   else lloxs=sapply(assays, function(a) NA)
+    names(uloqs)=assays # this is necessary because config$uloqs does not have names
+    names(lloxs)=assays
 }
 
-must_have_assays <- c(
-  "bindSpike", "bindRBD"
-  # NOTE: the live neutralization marker will eventually be available
-  #"liveneutmn50"
-)
 
-assays_to_be_censored_at_uloq_cor <- c(
-  "bindSpike", "bindRBD", "pseudoneutid50", "pseudoneutid80"
-  # NOTE: the live neutralization marker will eventually be available
-  #"liveneutmn50"
-)
 
 ###############################################################################
 # figure labels and titles for markers
@@ -446,50 +466,49 @@ ggsave_custom <- function(filename = default_name(plot),
 ###################################################################################################
 
 
-get.range.cor=function(dat, assay=c("bindSpike", "bindRBD", "pseudoneutid50", "pseudoneutid80"), time) {
-    assay<-match.arg(assay)
+get.range.cor=function(dat, assay, time) {
     if(assay %in% c("bindSpike", "bindRBD")) {
         ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(llods[c("bindSpike","bindRBD")]/2), na.rm=T)
         ret[2]=ceiling(ret[2]) # round up
     } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
         ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
         ret[2]=ceiling(ret[2]) # round up
-    }  
+    } else {
+        ret=range(dat[["Day"%.%time%.%assay]], log10(lloxs[assay]/2), na.rm=T)        
+    }
     delta=(ret[2]-ret[1])/20     
     c(ret[1]-delta, ret[2]+delta)
 }
 
-draw.x.axis.cor=function(xlim, llod){
-#    if(xlim[2]<3) {
-#        xx = (c(10,25,50,100,250,500,1000))
-#        for (x in xx) axis(1, at=log10(x), labels=if (llod==x) "lod" else if (x==1000) bquote(10^3) else x  ) 
-#    } else if(xlim[2]<4) {
-#        xx = (c(10,50,250,1000,5000,10000))
-#        for (x in xx) axis(1, at=log10(x), labels=if (llod==x) "lod" else if (x %in% c(1000,10000)) bquote(10^.(log10(x))) else if (x==5000) bquote(.(x/1000)%*%10^3) else  x ) 
-#    } else {
-        xx=seq(floor(xlim[1]), ceiling(xlim[2]))
-        for (x in xx) if (x>log10(llod*2)) axis(1, at=x, labels=if (log10(llod)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )
-#    }
-    
-    # plot llod if llod is not already plotted
-    #if(!any(log10(llod)==xx)) 
-    axis(1, at=log10(llod), labels="lod")
-    
+draw.x.axis.cor=function(xlim, llox){
+    xx=seq(floor(xlim[1]), ceiling(xlim[2]))
+    if (is.na(llox)) {
+        for (x in xx) axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )    
+    } else {
+        for (x in xx) if (x>log10(llox*1.8)) axis(1, at=x, labels=if (log10(llox)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )    
+        axis(1, at=log10(llox), labels=config$llox_label)
+    }
 }
 
 ##### Copy of draw.x.axis.cor but returns the x-axis ticks and labels
 # This is necessary if one works with ggplot as the "axis" function does not work.
-get.labels.x.axis.cor=function(xlim, llod){
+get.labels.x.axis.cor=function(xlim, llox){
   xx=seq(floor(xlim[1]), ceiling(xlim[2]))
-  xx=xx[xx>log10(llod*2)]
+  if (!is.na(llox)) xx=xx[xx>log10(llox*2)]
   x_ticks <- xx
-  labels <- sapply(xx, function(x) {
-    if (log10(llod)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x
-  })
-  #if(!any(log10(llod)==x_ticks)){
-    x_ticks <- c(log10(llod), x_ticks)
-    labels <- c("lod", labels)
-  #}
+  if (is.na(llox)) {
+      labels <- sapply(xx, function(x) {
+        if (x>=3) bquote(10^.(x)) else 10^x
+      })
+  } else {
+      labels <- sapply(xx, function(x) {
+        if (log10(llox)==x) config$llox_label else if (x>=3) bquote(10^.(x)) else 10^x
+      })
+      #if(!any(log10(llox)==x_ticks)){
+        x_ticks <- c(log10(llox), x_ticks)
+        labels <- c(config$llox_label, labels)
+      #}
+  }
   return(list(ticks = x_ticks, labels = labels))
 }
 
@@ -504,8 +523,6 @@ bootstrap.case.control.samples=function(dat.ph1, delta.name="EventIndPrimary", s
     dat.tmp=data.frame(ptid=1:nrow(dat.ph1), delta=dat.ph1[,delta.name], strata=dat.ph1[,strata.name], ph2=dat.ph1[,ph2.name])
     
     nn.ph1=with(dat.tmp, table(strata, delta))
-    nn.ph2=with(subset(dat.tmp, ph2==1), table(strata, delta))
-    if(!all(rownames(nn.ph1)==rownames(nn.ph2))) stop("ph2 strata differ from ph1 strata")
     strat=rownames(nn.ph1); names(strat)=strat
     # ctrl.ptids is a list of lists
     ctrl.ptids = with(subset(dat.tmp, delta==0), lapply(strat, function (i) list(ph2=ptid[strata==i & ph2], nonph2=ptid[strata==i & !ph2])))
@@ -651,7 +668,7 @@ add.trichotomized.markers=function(dat, tpeak, wt.col.name) {
             if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(ind.t, "Day")) {
                 # if more than 1/3 of vaccine recipients have value > ULOQ
                 # let q.a be median among those < ULOQ and ULOQ
-                if (verbose) print("more than 1/3 of vaccine recipients have value > ULOQ")
+                if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")
                 q.a=c(  wtd.quantile(tmp.a[dat[[ind.t %.% a]]<=uppercut], 
                            weights = dat[[wt.col.name]][tmp.a<=uppercut], probs = c(1/2)), 
                         uppercut)
