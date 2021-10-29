@@ -10,7 +10,6 @@ incNotMol <- ""  #"IncludeNotMolecConfirmed"
 
 source(here::here("code", "cor_process_function.R"))
 source(here::here("..", "_common.R"))
-COR=ifelse(grepl("ENSEMBLE", study_name), "D29", "D29D57") # will delete this hard code later
 library(scales)
 library(tidyverse)
 library(here)

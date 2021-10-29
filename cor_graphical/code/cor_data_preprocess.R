@@ -3,7 +3,6 @@
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R"))
-COR=ifelse(grepl("ENSEMBLE", study_name), "D29", "D29D57") # will delete this hard code later
 #-----------------------------------------------
 
 source(here::here("code", "cor_process_function.R"))
@@ -43,17 +42,18 @@ incNotMol <- ""  #"IncludeNotMolecConfirmed"
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")  {
+if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705")  {
   
-  intcur2 <- paste0("Day 15-", 28+tpeaklag, " Cases")
+  #intcur2 <- paste0("Day 15-", 28+tpeaklag, " Cases")
   
   dat <- dat %>%
     mutate(cohort_event = factor(
-      ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= 13, "Day 2-14 Cases",
-             ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) > 13 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= tpeaklag-1 + NumberdaysD1toD29, intcur2,
+      #ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= 13, "Day 2-14 Cases",
+      #       ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) > 13 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= tpeaklag-1 + NumberdaysD1toD29, intcur2,
                     ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D29")))==1 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D29"))) >= tpeaklag, "Post-Peak Cases",
-                           ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & EarlyendpointD29==0, "Non-Cases", NA)))),
-      levels = c("Day 2-14 Cases", intcur2, "Post-Peak Cases", "Non-Cases"))
+                           ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & EarlyendpointD29==0, "Non-Cases", NA)),
+      levels = c(#"Day 2-14 Cases", intcur2, 
+        "Post-Peak Cases", "Non-Cases"))
     )
 } else {
   dat <- dat %>%
@@ -127,15 +127,12 @@ dat.long$Dich_RaceEthnic = with(dat.long,
                                 ifelse(EthnicityHispanic==1, "Hispanic or Latino",
                                        ifelse(EthnicityHispanic==0 & EthnicityNotreported==0 & EthnicityUnknown==0, "Not Hispanic or Latino", NA)))
 
-# add LLoQ pos.cutoffs, and ULoQ value for response call and censoring - log10 scales
-dat.long$LLoQ = with(dat.long, log10(lloqs[as.character(assay)]))
-dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
-dat.long$ULoQ = with(dat.long, log10(uloqs[as.character(assay)]))
-
 # add label = LLoD / poscutoff, uloq values to show in the plot
 dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
+dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
 dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
 dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
+dat.long$ULoQ = with(dat.long, log10(uloqs[as.character(assay)]))
 dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay), "ULoQ", "")) 
 dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay), ULoQ, -99))
 
@@ -291,8 +288,13 @@ if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
 }
 
 # define response rates
-resp <- getResponder(dat.mock, cutoff.name="lloq", times=grep("Day", times, value=T), 
-             assays=assays, pos.cutoffs = pos.cutoffs)
+if (study_name=="HVTN705"){
+  resp <- getResponder(dat.mock, cutoff.name="lloq", times=grep("Day", times, value=T), 
+               assays=assays, pos.cutoffs = pos.cutoffs)
+} else {
+  resp <- getResponder(dat.mock, cutoff.name="llod", times=grep("Day", times, value=T), 
+                       assays=assays, pos.cutoffs = pos.cutoffs)
+}
 resp2 <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
   pivot_longer(!Ptid, names_to = "category", values_to = "response")
   
