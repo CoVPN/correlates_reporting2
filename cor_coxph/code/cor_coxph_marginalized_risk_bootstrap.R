@@ -1,11 +1,10 @@
 ###################################################################################################
 # bootstrap marginalized risks
-
 # type: 1 for S=s, 2 for S>=s, 3 for categorical S
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-# formula=form.0; marker.name="Day"%.%tpeak%.%a; data=dat.vac.seroneg; t=tfinal.tpeak; B=2; ci.type="quantile"; numCores=1; type=1
+#formula=form.0; marker.name="Day"%.%tpeak%.%a; type=1; data=dat.vac.seroneg; t=tfinal.tpeak; B=200; ci.type="quantile"; numCores=1
     
     # store the current rng state 
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -15,8 +14,11 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     
     if (type==1) {
     # conditional on s
-        #ss contains 1) every 5% to include s1 and s2 for sensitivity analyses, 2) lars quantiles so that to be consistent with his analyses, and 3_ equally spaced values so that the curves look good  
-        ss=sort(c(report.assay.values(data[[marker.name]], marker.name.to.assay(marker.name)), seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)]))
+        #ss contains 
+        ## lars quantiles so that to be consistent with his analyses + every 5% to include s1 and s2 for sensitivity analyses
+        ## equally spaced values so that the curves look good  
+        ss=sort(c(report.assay.values(data[[marker.name]][data$EventIndPrimary==1], marker.name.to.assay(marker.name)), 
+                  seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)]))
         f1=update(formula, as.formula(paste0("~.+",marker.name)))        
         tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
         fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
@@ -43,10 +45,12 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     # bootstrap
     out=mclapply(1:B, mc.cores = numCores, FUN=function(seed) {   
     
+        if (verbose>=2) myprint(seed)
+    
         if(config$case_cohort) {
             dat.b = get.bootstrap.data.cor (data, ptids.by.stratum, seed) 
         } else {
-            dat.b = bootstrap.case.control.samples(data, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2") 
+            dat.b = bootstrap.case.control.samples(data, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2") 
         }        
         dat.b.ph2=subset(dat.b, ph2==1)     
         #hist(dat.b$EventTimePrimaryD14)
@@ -66,7 +70,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
 #                    sort(dat.b.ph2$EventTimePrimaryD14[dat.b.ph2$EventIndPrimaryD14==1 & dat.b.ph2$Region==1])
 #                    hist(data.ph2$EventTimePrimaryD14[data.ph2$Region==1])
 #                    sort(data.ph2$EventTimePrimaryD14[data.ph2$EventIndPrimaryD14==1 & data.ph2$Region==1])
-
+    
             #fit.s=svyglm(f2, tmp.design)      
             if ( class (fit.risk.1)[1] != "try-error" ) {
                 marginalized.risk(fit.risk.1, marker.name, dat.b.ph2, t=t, ss=ss, weights=dat.b.ph2$wt, categorical.s=F)
@@ -93,6 +97,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     })
     res=do.call(cbind, out)
     res=res[,!is.na(res[1,])] # remove NA's
+    if (verbose) str(res)
     
     # restore rng state 
     assign(".Random.seed", save.seed, .GlobalEnv)    
@@ -112,18 +117,21 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.",study_name,".Rdata"
     cat("make marginalized.risk\n")
     
     # vaccine arm, conditional on continuous S=s
+    if (verbose) print("create risks.all.1")
     risks.all.1=lapply(assays, function (a) {
         if(verbose) myprint(a)
         marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a, type=1, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
     })    
     
     # vaccine arm, conditional on S>=s
+    if (verbose) print("create risks.all.2")
     risks.all.2=lapply(assays, function (a) {
         if(verbose) myprint(a)
         marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a, type=2, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)        
     }) 
     
     # vaccine arm, conditional on categorical S
+    if (verbose) print("create risks.all.3")
     risks.all.3=lapply(assays, function (a) {
         if(verbose) myprint(a)
         marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a%.%"cat", type=3, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                

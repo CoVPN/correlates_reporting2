@@ -38,7 +38,7 @@ marginalized.risk.gam.boot=function(formula, marker.name, type=1, data, B, ci.ty
         if(config$case_cohort) {
             dat.b = get.bootstrap.data.cor (data, ptids.by.stratum, seed) 
         } else {
-            dat.b = bootstrap.case.control.samples(data, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2") 
+            dat.b = bootstrap.case.control.samples(data, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2") 
         }        
 
         dat.b.ph2=subset(dat.b, ph2==1)
