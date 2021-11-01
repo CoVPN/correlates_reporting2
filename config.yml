@@ -14,7 +14,7 @@ hvtn705: &hvtn705
   subset_value: All
   assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay,ELMo,IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG3gp4140delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_multi]
   assay_labels: [IgG Vx-VT-C,ADCP Vx-C97ZA,IgG3 V1V2 breadth,IgG3 Env breadth,Multi-epitope functions,IgG Vx-VT-M,IgG3 gp140 Vx-C97ZA,IgG3 gp140 Vx-Mosaic,IgG3 gp41,IgG3 gp120 breadth,IgG3 gp140 breadth,IgG3 Multi-epitope]
-  lloxs: [40,NA,NA,NA,NA,50,1,1,1,NA,NA,NA]
+  lloxs: [40,NA,NA,NA,NA,50,NA,NA,NA,NA,NA,NA]
   uloqs: [14720,NA,NA,NA,NA,14608,22000,22000,22000,NA,NA,NA]
   primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay] 
   llox_label: loq
@@ -57,7 +57,7 @@ moderna_trial: &moderna_trial
 moderna_real: &moderna_real
   <<: *moderna_trial
   data_in_file: immune1.csv 
-  data_cleaned: /trials/covpn/p3001/analysis/correlates/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct20_2021.csv
+  data_cleaned: /trials/covpn/p3001/analysis/correlates/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv
   #data_cleaned: /trials/covpn/p3001/download_data/Moderna COVE mRNA 1273P301_immune_20210915/moderna_real_data_processed_with_riskscore.csv
   study_name: COVE
   num_boot_replicates: 1000

@@ -11,7 +11,8 @@ stopifnot(blas_get_num_procs() == 1L)
 omp_set_num_threads(1L)
 #
 set.seed(98109)
-verbose=Sys.getenv("VERBOSE")=="1"
+if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
+if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
     
 # COR defines the analysis to be done, e.g. D14
 Args <- commandArgs(trailingOnly=TRUE)
@@ -518,7 +519,9 @@ get.labels.x.axis.cor=function(xlim, llox){
 # Specifically,
 # 1) sample with replacement to get dat.b. From this dataset, take the cases and count ph2 and non-ph2 controls by strata
 # 2) sample with replacement ph2 and non-ph2 controls by strata
-bootstrap.case.control.samples=function(dat.ph1, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2") {
+bootstrap.case.control.samples=function(dat.ph1, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=1) {
+    
+    set.seed(seed)
     
     dat.tmp=data.frame(ptid=1:nrow(dat.ph1), delta=dat.ph1[,delta.name], strata=dat.ph1[,strata.name], ph2=dat.ph1[,ph2.name])
     
@@ -529,12 +532,13 @@ bootstrap.case.control.samples=function(dat.ph1, delta.name="EventIndPrimary", s
     
     # 1. resample dat.ph1 to get dat.b, but only take the cases 
     dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),]
-    nn.b=with(dat.b, table(strata, delta))
-    # if the bootstrap dataset lost a strata (both cases and controls), which is very very unlikely, we will redo the sampling
-    while(!all(rownames(nn.b)==strat)) {   
-        dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),]
-        nn.b=table(dat.b$strata, dat.b$delta)
+
+    # re-do resampling if the bootstrap dataset has too few samples in a cell in nn.ctrl.b
+    while(TRUE) {   
+        nn.ctrl.b=with(subset(dat.b, !delta), table(strata, ph2))
+        if (min(nn.ctrl.b)<min.cell.size) dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),] else break
     }
+
     # take the case ptids
     case.ptids.b = dat.b$ptid[dat.b$delta==1]
     
