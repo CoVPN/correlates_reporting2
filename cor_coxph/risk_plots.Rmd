@@ -58,9 +58,12 @@
 \setlength{\tabcolsep}{.5ex}
 \input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_eq_`r study_name`}
 
+\newif\ifshowsen
+\showsen`r ifelse(study_name=="HVTN705" & a!="IgG340mdw_V1V2", 'false', 'true')`
+\ifshowsen
 \clearpage
 \setlength{\tabcolsep}{.5ex}
 \input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_sens_eq_`r study_name`}
-
+\fi
 
 \clearpage
