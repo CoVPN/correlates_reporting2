@@ -6,6 +6,11 @@ get.marginalized.risk.no.marker=function(dat){
     mean(risks)
 }
 
+#fit.ve = coxph(Surv(EventTimePrimary, EventIndPrimary) ~ Trt, subset(dat.mock, ph1==1)) 
+#summary(fit.ve)
+
+
+
 ## these results are close to bootstrap results. they are not used later and only for sanity check
 ## compute overall risk regardless of markers in both arms by integrating over form.0. 
 ## the point estimate matche the results from bootstrap

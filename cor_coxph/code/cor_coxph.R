@@ -10,6 +10,8 @@ source(here::here("..", "_common.R"))
 
 #with(subset(dat.mock, Trt==1), table(Wstratum, ph2))
 #with(subset(dat.mock, Trt==1), table(Wstratum, wt.D210))
+#with(subset(dat.mock, ph1==1), table(EventIndPrimary, Trt))
+#with(subset(dat.mock, ph1==1), table(Delta.D210, Trt))
 
 
 library(kyotil) # p.adj.perm, getFormattedSummary
