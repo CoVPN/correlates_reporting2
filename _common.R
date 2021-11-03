@@ -521,6 +521,7 @@ get.labels.x.axis.cor=function(xlim, llox){
 # 1) sample with replacement to get dat.b. From this dataset, take the cases and count ph2 and non-ph2 controls by strata
 # 2) sample with replacement ph2 and non-ph2 controls by strata
 bootstrap.case.control.samples=function(dat.ph1, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=1) {
+#dat.ph1=dat.tmp; delta.name="EventIndPrimary"; strata.name="tps.stratum"; ph2.name="ph2"; min.cell.size=0
     
     set.seed(seed)
     
@@ -537,7 +538,7 @@ bootstrap.case.control.samples=function(dat.ph1, seed, delta.name="EventIndPrima
     # re-do resampling if the bootstrap dataset has too few samples in a cell in nn.ctrl.b
     while(TRUE) {   
         nn.ctrl.b=with(subset(dat.b, !delta), table(strata, ph2))
-        if (min(nn.ctrl.b)<min.cell.size) dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),] else break
+        if (min(nn.ctrl.b)<min.cell.size | ncol(nn.ctrl.b)<2) dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),] else break
     }
 
     # take the case ptids

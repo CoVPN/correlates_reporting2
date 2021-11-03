@@ -266,10 +266,10 @@ rv$tab.2=tab.nop12
 if(verbose) print("Multiple regression for primary assays")
 
 if (!is.null(config$primary_assays)) {
-    f= update(form.0, as.formula(paste0("~.+", concatList(paste0("Day",config$timepoints, config$primary_assays),"+"))))
+    f= update(form.0, as.formula(paste0("~.+", concatList(paste0("scale(Day",config$timepoints, config$primary_assays),")+"), ")")))
     fit=svycoxph(f, design=design.vacc.seroneg) 
     var.ind=length(coef(fit)) - length(config$primary_assays):1 + 1
-
+    
     fits=list(fit)
     est=getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=1)
     ci= getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=13)
@@ -287,5 +287,5 @@ if (!is.null(config$primary_assays)) {
     tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
     
     mytex(tab, file.name="CoR_multivariable_svycoxph_pretty_"%.%study_name, align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, )
-
+    
 }

@@ -320,7 +320,8 @@ risk.0= 1 - exp(-predict(fit.0, type="expected"))
 time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
     
 lwd=2
-ylim=c(0,max(risk.0))
+ylim=c(0,max(risk.0, max(sapply(assays, function(a) max(risks.all.ter[[a]]$risk)))))
+
 if (config$is_ows_trial) {
     x.time<-seq(0,tfinal.tpeak,by=30)
     if(tfinal.tpeak-last(x.time)>15) x.time=c(x.time, tfinal.tpeak) else x.time[length(x.time)]=tfinal.tpeak
