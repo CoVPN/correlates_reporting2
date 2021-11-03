@@ -66,6 +66,7 @@ moderna_real: &moderna_real
 moderna_mock: &moderna_mock
   <<: *moderna_trial
   data_in_file: COVID_VEtrial_practicedata_primarystage1.csv
+  data_cleaned: NA
   study_name: MockCOVE
   num_boot_replicates: 10
   num_perm_replicates: 10
@@ -87,6 +88,7 @@ janssen_trial: &janssen_trial
 janssen_trial_real: &janssen_trial_real
   <<: *janssen_trial
   data_in_file: COVID_ENSEMBLE_realdata.csv   #  ../../../mapping_immune_correlates/adata/COVID_ENSEMBLE_realdata.csv
+  data_cleaned: 
   study_name: ENSEMBLE
   num_boot_replicates: 1000
   num_perm_replicates: 10000
@@ -94,6 +96,7 @@ janssen_trial_real: &janssen_trial_real
 janssen_trial_mock: &janssen_trial_mock
   <<: *janssen_trial
   data_in_file: COVID_ENSEMBLE_practicedata.csv
+  data_cleaned: NA
   study_name: MockENSEMBLE
   num_boot_replicates: 10
   num_perm_replicates: 10
