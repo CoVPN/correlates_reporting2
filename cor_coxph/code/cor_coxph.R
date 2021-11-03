@@ -8,6 +8,10 @@ source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
 
+#with(subset(dat.mock, Trt==1), table(Wstratum, ph2))
+#with(subset(dat.mock, Trt==1), table(Wstratum, wt.D210))
+
+
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
 library(tools) # toTitleCase

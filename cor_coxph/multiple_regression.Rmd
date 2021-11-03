@@ -2,7 +2,7 @@
 
 
 \begin{table}[H]
-\caption{Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
+\caption{Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per standard deviation increment in the marker*}
 \begin{center}
     \input{`r pathCoRoutput`/CoR_multivariable_svycoxph_pretty_`r study_name`}\\
 \end{center}

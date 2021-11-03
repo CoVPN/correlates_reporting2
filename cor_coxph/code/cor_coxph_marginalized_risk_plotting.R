@@ -320,7 +320,8 @@ risk.0= 1 - exp(-predict(fit.0, type="expected"))
 time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
     
 lwd=2
-ylim=c(0,max(risk.0))
+ylim=c(0,max(risk.0, max(sapply(assays, function(a) max(risks.all.ter[[a]]$risk)))))
+
 if (config$is_ows_trial) {
     x.time<-seq(0,tfinal.tpeak,by=30)
     if(tfinal.tpeak-last(x.time)>15) x.time=c(x.time, tfinal.tpeak) else x.time[length(x.time)]=tfinal.tpeak
@@ -369,13 +370,13 @@ for (a in assays) {
     cex.text <- 0.7
     at.label=-tfinal.tpeak/6
     
-    mtext(expression(bold("No. at risk")),side=1,outer=FALSE,line=2.5,at=-2,adj=0,cex=cex.text)
+    mtext("No. at risk",side=1,outer=FALSE,line=2.5,at=-2,adj=0,cex=cex.text)
     mtext(paste0("Low:"),side=1,outer=F,line=3.4,at=at.label,adj=0,cex=cex.text);  mtext(n.risk.L,side=1,outer=FALSE,line=3.4,at=x.time,cex=cex.text)
     mtext(paste0("Med:"),side=1,outer=F,line=4.3,at=at.label,adj=0,cex=cex.text);  mtext(n.risk.M,side=1,outer=FALSE,line=4.3,at=x.time,cex=cex.text)
     mtext(paste0("High:"),side=1,outer=F,line=5.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.H,side=1,outer=FALSE,line=5.2,at=x.time,cex=cex.text)
     mtext(paste0("Plac:"),side=1,outer=F,line=6.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.P,side=1,outer=FALSE,line=6.2,at=x.time,cex=cex.text)
     
-    mtext(expression(bold(paste0("Cumulative No. of ",config.cor$txt.endpoint," Endpoints"))),side=1,outer=FALSE,line=7.4,at=-2,adj=0,cex=cex.text)
+    mtext(paste0("Cumulative No. of ",config.cor$txt.endpoint," Endpoints"),side=1,outer=FALSE,line=7.4,at=-2,adj=0,cex=cex.text)
     mtext(paste0("Low:"),side=1,outer=FALSE,line=8.3,at=at.label,adj=0,cex=cex.text);  mtext(cum.L,side=1,outer=FALSE,line=8.3,at=x.time,cex=cex.text)
     mtext(paste0("Med:"),side=1,outer=FALSE,line=9.2,at=at.label,adj=0,cex=cex.text);  mtext(cum.M,side=1,outer=FALSE,line=9.2,at=x.time,cex=cex.text)
     mtext(paste0("High:"),side=1,outer=FALSE,line=10.1,at=at.label,adj=0,cex=cex.text);mtext(cum.H,side=1,outer=FALSE,line=10.1,at=x.time,cex=cex.text)
