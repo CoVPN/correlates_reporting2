@@ -483,12 +483,18 @@ get.range.cor=function(dat, assay, time) {
 }
 
 draw.x.axis.cor=function(xlim, llox){
-    xx=seq(floor(xlim[1]), ceiling(xlim[2]))
+    xx=seq(ceiling(xlim[1]), floor(xlim[2]))
     if (is.na(llox)) {
         for (x in xx) axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )    
     } else {
         for (x in xx) if (x>log10(llox*1.8)) axis(1, at=x, labels=if (log10(llox)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )    
         axis(1, at=log10(llox), labels=config$llox_label)
+    }
+    if (length(xx)<=3) {
+        for (i in 2:length(xx)) {
+            x=xx[i-1]
+            axis(1, at=x+log10(3), labels=if (x>=3) bquote(3%*%10^.(x)) else 3*10^x )
+        }
     }
 }
 
