@@ -261,17 +261,17 @@ rv$tab.2=tab.nop12
 
 
 ###################################################################################################
-# multiple regression with all primary assays in one model
+# regression for multiple markers in one model
 
-if(verbose) print("Multiple regression for primary assays")
+if(verbose) print("Multiple regression")
 
-if (!is.null(config$primary_assays)) {
+if (!is.null(config$multivariate_assays)) {
     
     for (ind in 1:2) {
-        tmp=if(ind==1) concatList(paste0("Day",config$timepoints, config$primary_assays),"+") else concatList(paste0("scale(Day",config$timepoints, config$primary_assays),")+") %.% ")"
+        tmp=if(ind==1) concatList(paste0("Day",config$timepoints, config$multivariate_assays),"+") else concatList(paste0("scale(Day",config$timepoints, config$multivariate_assays),")+") %.% ")"
         f= update(form.0, as.formula(paste0("~.+", tmp)))
         fit=svycoxph(f, design=design.vacc.seroneg) 
-        var.ind=length(coef(fit)) - length(config$primary_assays):1 + 1
+        var.ind=length(coef(fit)) - length(config$multivariate_assays):1 + 1
         
         fits=list(fit)
         est=getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=1)
@@ -284,7 +284,7 @@ if (!is.null(config$primary_assays)) {
         p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
         
         tab=cbind(est, p)
-        rownames(tab)=c(labels.axis["Day"%.%tpeak, config$primary_assays])
+        rownames(tab)=c(labels.axis["Day"%.%tpeak, config$multivariate_assays])
         colnames(tab)=c("HR per "%.%ifelse(ind==1,"10 fold","sd")%.%" incr.", "P value")
         tab
         tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))

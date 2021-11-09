@@ -17,6 +17,7 @@ hvtn705: &hvtn705
   lloxs: [40,NA,NA,NA,NA,50,NA,NA,NA,NA,NA,NA]
   uloqs: [1884160,NA,NA,NA,NA,1869824,22000,22000,22000,NA,NA,NA]
   primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay] 
+  multivariate_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm] 
   llox_label: loq
   times: [B, Day210] 
   time_labels: [Day 1, Day 210]
