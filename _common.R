@@ -16,8 +16,8 @@ if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
     
 # COR defines the analysis to be done, e.g. D14
-Args <- commandArgs(trailingOnly=TRUE)
-if (length(Args)==0) Args=c(COR="D210") 
+if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
+if (length(Args)==0) stop("If running R from command line, provide an argument, e.g. D57, to the command. If you are running R interactively, do, e.g. Args=c(COR=\"D57\");  ")
 COR=Args[1]; myprint(COR)
 
 
