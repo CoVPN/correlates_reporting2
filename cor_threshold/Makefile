@@ -4,20 +4,28 @@ all: clean params data threshold plot
 allbutclean: params data threshold plot
 
 ## threshold        : run threshold analysis 
-threshold: code/Run_Threshold_analysis.R \
-  params  
-	Rscript code/Run_Threshold_analysis.R
+threshold:
+ifeq (ç,$(filter $(TRIAL), moderna_mock moderna_real))
+	Rscript code/Run_Threshold_analysis.R D29
+	Rscript code/Run_Threshold_analysis.R D57
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_pooled_real janssen_na_mock janssen_na_real janssen_la_mock janssen_la_real janssen_sa_mock janssen_sa_real))
+	Rscript code/Run_Threshold_analysis.R D29
+	Rscript code/Run_Threshold_analysis.R D29start1
+else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
+	Rscript code/Run_Threshold_analysis.R D210
+endif
 
 ## data             : prepare data for analysis
-data: code/clean_data.R params
+data: 
 	Rscript code/clean_data.R
 	
 ## plot             : plot results
-plot: code/plotting.R params
+plot:  
 	Rscript code/plotting.R
 
 # parameters that may vary across runs
-params: code/params.R 
+params:  
+	Rscript code/params.R
 
 ## clean            : delete contents of data_clean/ and figs/
 clean:
@@ -35,6 +43,8 @@ style:
 
 ## report        : create a standalone report
 report:
+	Rscript -e "rmarkdown::render('report.Rmd', output_file='cor_threshold_report_$(TRIAL).pdf')"
+
 
 # type 'make help' to show all make commands
 help: Makefile

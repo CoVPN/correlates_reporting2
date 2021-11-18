@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.1.1",
+    "Version": "4.0.3",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -218,6 +218,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "84dffc44f23c419537c1c79cc46347a5"
+    },
+    "TeachingDemos": {
+      "Package": "TeachingDemos",
+      "Version": "2.12",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "41e566d7eab7307a31b3dee3b203c7e0"
     },
     "VGAM": {
       "Package": "VGAM",
@@ -641,6 +648,13 @@
       "Repository": "CRAN",
       "Hash": "9a374a10e3c0dbf1a0e207af019bfcea"
     },
+    "earth": {
+      "Package": "earth",
+      "Version": "5.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "fccdc89d741234c23abeaa20f33c5c1e"
+    },
     "ellipsis": {
       "Package": "ellipsis",
       "Version": "0.3.2",
@@ -917,12 +931,12 @@
       "Version": "0.1.5",
       "Source": "GitHub",
       "RemoteType": "github",
+      "Remotes": "github::tlverse/hal9001@devel",
       "RemoteHost": "api.github.com",
-      "RemoteUsername": "nhejazi",
       "RemoteRepo": "haldensify",
+      "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "16350cc39b68e61566f03a11f633e08073405355",
-      "Remotes": "github::tlverse/hal9001@devel",
       "Hash": "47c34f41535fb9c16bd44e760d61cb67"
     },
     "haven": {
@@ -1448,6 +1462,20 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "cb57de933545960a86f03513e4bd2911"
+    },
+    "plotmo": {
+      "Package": "plotmo",
+      "Version": "3.6.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "81eed015ea891da0a3d8f42bb86ff820"
+    },
+    "plotrix": {
+      "Package": "plotrix",
+      "Version": "3.8-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2ebe8c2ec200da649738b0fc35a9b1a1"
     },
     "plyr": {
       "Package": "plyr",

@@ -234,7 +234,7 @@ get_task_list_TSM <- function(data, node_list, threshold_upper, threshold_lower)
   if (!missing(threshold_upper) && !is.null(threshold_upper)) {
     ind_upper <- as.numeric(A >= threshold_upper)
 
-    upper_var <- paste0(treatment, ">=", "u")
+    upper_var <- paste0(treatment,"Grtr", "u")
     data[[upper_var]] <- ind_upper
     cfu <- data.table::copy(data)
     cfu[[upper_var]] <- 1
@@ -336,10 +336,17 @@ get_preds_TSM <- function(task_list, lrnr_A = NULL, lrnr_Y = NULL, lrnr_Delta = 
     }
     lrnr_A_u <- NULL
     lrnr_Y_u <- NULL
+ 
+    
+    
+ 
+    
+    
     tryCatch({
        
     lrnr_A_u <- lrnr_A$train(task_list[["A"]][["train_u"]])
     }, error = function(cond) {
+     print(cond)
       lrnr_A <<- Lrnr_mean$new()
       lrnr_A_u <<- lrnr_A$train(task_list[["A"]][["train_u"]])
       print(table(task_A_train$Y))
@@ -347,10 +354,11 @@ get_preds_TSM <- function(task_list, lrnr_A = NULL, lrnr_Y = NULL, lrnr_Delta = 
       print("Default to unadjusted estimator")
     }
     )
-    
+   
     tryCatch({
       lrnr_Y_u <- lrnr_Y$train(task_list[["Y"]][["train_u"]])
     }, error = function(cond) {
+     print(cond)
       lrnr_Y <<- Lrnr_mean$new()
       lrnr_Y_u <<- lrnr_Y$train(task_list[["Y"]][["train_u"]])
       print(table(task_A_train$Y))
@@ -396,10 +404,10 @@ do_update_TSM <- function(preds, task_list, node_list) {
 
   if (!is.null(preds$g1_l)) {
     lower_var <- paste0(treatment, "<", "l")
-    preds$g1_l <- bound(preds$g1_l, 0.005)
+    preds$g1_l <- bound(preds$g1_l, 0.0005)
     H_l <- as.matrix(data[[lower_var]] / preds$g1_l)
     if (!is.null(node_list[["Delta"]])) {
-      G_l <- bound(G_l, 0.005)
+      G_l <- bound(G_l, 0.0005)
       H_l <- H_l * Delta / G_l
     }
     Q_l <- bound(preds[["Q_l"]], 0.00005)
@@ -417,8 +425,8 @@ do_update_TSM <- function(preds, task_list, node_list) {
   }
 
   if (!is.null(preds$g1_u)) {
-    upper_var <- paste0(treatment, ">=", "u")
-    preds$g1_u <- bound(preds$g1_u, 0.005)
+    upper_var <- paste0(treatment, "Grtr", "u")
+    preds$g1_u <- bound(preds$g1_u, 0.0005)
 
     H_u <- as.matrix(data[[upper_var]] / preds$g1_u)
 
