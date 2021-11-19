@@ -17,7 +17,6 @@ message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_threshold report ~~~~~~~~~~~
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-setwd("/Users/larsvanderlaan/correlates_reporting_forks/correlates_reporting2")
 library(here)
 library(dplyr)
 print(here::here())
