@@ -72,7 +72,8 @@ monotone <- FALSE
 ```
 
 ```{r, echo = F, include = F}
-TRIAL <- config::get(config = Sys.getenv("TRIAL"))
+TRIAL <- Sys.getenv("TRIAL")
+ 
 ENSEMBLE <- FALSE
 if(tolower(TRIAL) %in% c("janssen_pooled_mock", "janssen_pooled_real", "janssen_na_mock", "janssen_na_real", "janssen_la_mock", "janssen_la_real", "janssen_sa_mock", 'janssen_sa_real')) {
   ENSEMBLE <- TRUE
