@@ -75,7 +75,7 @@ if (file.exists(here::here("..", "data_clean", data_name_updated))) {
   covariates <- c("MinorityInd", "HighRiskInd") # , "BRiskScore") # Add "age"?
   
 }
-if(TRIAL =="hvtn705") {
+if(Sys.getenv("TRIAL") =="hvtn705") {
   covariates <- c("Riskscore",  "BMI", "RSA")
 }
  
