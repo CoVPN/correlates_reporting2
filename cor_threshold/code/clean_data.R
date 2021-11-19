@@ -13,11 +13,10 @@ source(here::here("code", "params.R"))
 #dat.mock <- read.csv(here::here("..", "data_clean", paste0(stringr::str_match(data_name,"(.+).csv")[,2],append_data,".csv")))
 
  
- 
-
 
 for (a in assays) {
   for (t in "Day"%.%tpeak ) {
+    
     print(t %.% a)
     print( log10(uloqs[a]))
     dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
