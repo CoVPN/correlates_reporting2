@@ -5,7 +5,7 @@ allbutclean: params data threshold plot
 
 ## threshold        : run threshold analysis 
 threshold:
-ifeq (ç,$(filter $(TRIAL), moderna_mock moderna_real))
+ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 	Rscript code/Run_Threshold_analysis.R D29
 	Rscript code/Run_Threshold_analysis.R D57
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_pooled_real janssen_na_mock janssen_na_real janssen_la_mock janssen_la_real janssen_sa_mock janssen_sa_real))
