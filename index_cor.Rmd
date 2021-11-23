@@ -31,6 +31,13 @@ knitr::asis_output("\\AddToShipoutPictureFG{
       \\scalebox{10}{\\texttransparent{0.3}{MOCK}}}}}}")
 ```
 
+```{r, include = knitr::is_latex_output() & (startsWith(study_name, "ENSEMBLE") & !contain(tolower(data_cleaned), "mock"))}
+knitr::asis_output("\\AddToShipoutPictureFG{
+  \\AtPageCenter{
+    \\makebox[0pt]{\\rotatebox[origin=c]{45}{
+      \\scalebox{10}{\\texttransparent{0.3}{Internal Use Only}}}}}}")
+```
+
 # Disclaimers
 
 `r if (!is_ows_trial)'<!--'`
