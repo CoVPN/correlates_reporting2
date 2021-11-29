@@ -11,7 +11,12 @@ source(here::here("..", "_common.R"))
 ## ----createRDAfiles_fromSLobjects---------
 library(readr)
 require(tidyverse)
+library(tidyr)
+library(purrr)
 library(here)
+library(stringr)
+suppressMessages(conflicted::conflict_prefer("filter", "dplyr"))
+suppressMessages(conflict_prefer("summarise", "dplyr"))
 source(here("code", "utils.R"))
 
 # Create fancy/tidy screen names for use in tables and figures
@@ -93,12 +98,24 @@ readin_SLobjects_fromFolder <- function(data_path, file_pattern, endpoint, trt){
 # Read CV.SL object and save relevant columns as dataframe
 # For vaccine, yd57 endpoint
 data_folder <- here("output")
-cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "*.rds", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
-  mutate(varset = str_replace(file, "CVSLaucs_vacc_EventIndPrimaryD57_", ""),
-         varset = str_replace(varset, "_varset", ""),
-         varset = str_replace(varset, ".rds", ""),
-         varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
-  arrange(varsetNo)
+if(study_name %in% c("COVE", "MockCOVE")){
+  cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "*.rds", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
+    mutate(varset = str_replace(file, "CVSLaucs_vacc_EventIndPrimaryD57_", ""),
+           varset = str_replace(varset, "_varset", ""),
+           varset = str_replace(varset, ".rds", ""),
+           varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
+    arrange(varsetNo)
+  
+  save(cvaucs_vacc, file = here("output", "cvaucs_vacc_EventIndPrimaryD57.rda"))
+}
 
-save(cvaucs_vacc, file = here("output", "cvaucs_vacc_EventIndPrimaryD57.rda"))
-
+if(study_name == "HVTN705"){
+  cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "*.rds", endpoint = "EventIndPrimaryD210", trt = "vaccine") %>%
+    mutate(varset = str_replace(file, "CVSLaucs_vacc_Delta.D210_", ""),
+           varset = str_replace(varset, "_varset", ""),
+           varset = str_replace(varset, ".rds", ""),
+           varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
+    arrange(varsetNo)
+  
+  save(cvaucs_vacc, file = here("output", "cvaucs_vacc_EventIndPrimaryD210.rda"))
+}

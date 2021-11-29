@@ -23,8 +23,9 @@ hvtn705: &hvtn705
   time_labels: [Day 1, Day 210]
   study_name: HVTN705
   covariates_riskscore: ~.+ RSA + Age + BMI + Riskscore
-  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_firstcasecontrolprocesseddata.csv
+  #data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_firstcasecontrolprocesseddata.csv
   #data_cleaned: ../data_clean/HVTN705_hybridrealmock_practicedata_Oct2021.csv
+  data_cleaned: ../../data/HVTN705_firstcasecontrolprocesseddata.csv
   num_boot_replicates: 1000
   num_perm_replicates: 10000
   ve_ylim: [-1,1]

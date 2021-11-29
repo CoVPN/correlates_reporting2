@@ -17,8 +17,10 @@ source(here::here("..", "_common.R"))
 rank_univariate_logistic_pval <- function(Y, X, family, obsWeights, id, ...) {
   ## logistic regression of outcome on each variable
   listp <- apply(X, 2, function(x, Y, family) {
-    summ <- coef(summary(glm(Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd,
-      family = family, weights = obsWeights
+    # summ <- coef(summary(glm(Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd,
+    #   family = family, weights = obsWeights
+    summ <- coef(summary(glm(Y ~ x + X$Riskscore + X$Age + X$BMI + X$RSA,
+                             family = family, weights = obsWeights
     )))
     ifelse(dim(summ)[1] > 1, summ[2, 4], 1)
   }, Y = Y, family = family)
@@ -26,7 +28,9 @@ rank_univariate_logistic_pval <- function(Y, X, family, obsWeights, id, ...) {
   ranked_vars <- rank(listp, ties = "average")
   # Give risk_score, HighRiskInd, and MinorityInd the lowest rank 
   # (will always set to TRUE anyways)
-  ranked_vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- 999
+  
+  #ranked_vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- 999
+  ranked_vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- 999
   return(ranked_vars)
 }
 
@@ -36,8 +40,10 @@ screen_all <- function(Y, X, family, obsWeights, id, nVar = maxVar, ...) {
   ## logistic regression of outcome on each variable
   vars <- rep(TRUE, ncol(X))
   listp <- apply(X, 2, function(x, Y, family) {
-    summ <- coef(summary(glm(Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd,
-      family = family, weights = obsWeights
+    # summ <- coef(summary(glm(Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd,
+    #   family = family, weights = obsWeights
+    summ <- coef(summary(glm(Y ~ x + X$Riskscore + X$Age + X$BMI + X$RSA,
+                             family = family, weights = obsWeights
     )))
     ifelse(dim(summ)[1] > 1, summ[2, 4], 1)
   }, Y = Y, family = family)
@@ -48,7 +54,10 @@ screen_all <- function(Y, X, family, obsWeights, id, nVar = maxVar, ...) {
   vars <- listp
   names(vars) <- names(X)
   # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  
+  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  
 #  print(paste0("vars is length: ", length(vars)))
 #  print(vars)
   return(vars)
@@ -63,7 +72,8 @@ screen_glmnet <- function(Y, X, family, obsWeights, id, alpha = 1,
                         nfolds = 10, nlambda = 100, ...)
   
   # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
   
   # keep only a max of nVar immune markers; rank by univariate p-value
   X_initial_screen <- X %>%
@@ -73,7 +83,10 @@ screen_glmnet <- function(Y, X, family, obsWeights, id, alpha = 1,
   vars[vars][ranked_vars > nVar] <- FALSE
   names(vars) <- names(X)
   # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+
+  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  
 #  print(paste0("vars is length: ", length(vars)))
 #  print(vars)
   return(vars)
@@ -85,27 +98,37 @@ screen_univariate_logistic_pval <- function(Y, X, family, obsWeights, id,
                                             nVar = maxVar, ...) {
   ## logistic regression of outcome on each variable
   listp <- apply(X, 2, function(x, Y, family) {
-    summ <- coef(summary(glm(Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd,
-      family = family, weights = obsWeights
+    # summ <- coef(summary(glm(Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd,
+    #   family = family, weights = obsWeights
+    summ <- coef(summary(glm(Y ~ x + X$Riskscore + X$Age + X$BMI + X$RSA,
+                             family = family, weights = obsWeights
     )))
     ifelse(dim(summ)[1] > 1, summ[2, 4], 1)
   }, Y = Y, family = family)
   vars <- (listp <= minPvalue)
   # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  
+  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  
   if (sum(vars) < minscreen) {
     warning("number of variables with p value less than minPvalue is less than minscreen")
     vars[rank(listp) <= minscreen] <- TRUE
   }
   # keep only a max of nVar immune markers; rank by univariate p-value
+  # X_initial_screen <- X %>%
+  #   select(names(X)[vars], "risk_score", "HighRiskInd", "MinorityInd")
   X_initial_screen <- X %>%
-    select(names(X)[vars], "risk_score", "HighRiskInd", "MinorityInd")
+    select(names(X)[vars], "Riskscore", "Age", "BMI", "RSA")
   ranked_vars <- rank_univariate_logistic_pval(Y, X_initial_screen, family,
                                                obsWeights, id)
 
   vars[vars][ranked_vars > nVar] <- FALSE
   # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  
+  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  
 #  print(paste0("vars is length: ", length(vars)))
 #  print(vars)
   return(vars)
@@ -123,7 +146,8 @@ screen_highcor_random <- function(Y, X, family, obsWeights, id, nVar = maxVar,
   # screen out those with r > 0.9
   vars <- apply(cor_less_0.9, 1, function(x) all(x, na.rm = TRUE))
   # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
   # if cor is greater than 0.9 for any pair of variables, pick up one of the variables at random!
   cormat <- cor_less_0.9
   long.cormat <- data.frame(
@@ -159,14 +183,18 @@ screen_highcor_random <- function(Y, X, family, obsWeights, id, nVar = maxVar,
   }
   
   # keep only a max of nVar immune markers; rank by univariate p-value
+  # X_initial_screen <- X %>%
+  #   select(names(X)[vars], "risk_score", "HighRiskInd", "MinorityInd")
   X_initial_screen <- X %>%
-    select(names(X)[vars], "risk_score", "HighRiskInd", "MinorityInd")
+    select(names(X)[vars], "Riskscore", "Age", "BMI", "RSA")
   ranked_vars <- rank_univariate_logistic_pval(Y, X_initial_screen, family,
                                                obsWeights, id)
 
   vars[vars][ranked_vars > nVar] <- FALSE
   # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
+  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  
 #  print(paste0("vars is length: ", length(vars)))
 #  print(vars)
   return(vars)
