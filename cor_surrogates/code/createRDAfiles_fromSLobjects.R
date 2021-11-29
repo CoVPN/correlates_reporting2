@@ -16,7 +16,7 @@ library(purrr)
 library(here)
 library(stringr)
 suppressMessages(conflicted::conflict_prefer("filter", "dplyr"))
-suppressMessages(conflict_prefer("summarise", "dplyr"))
+suppressMessages(conflicted::conflict_prefer("summarise", "dplyr"))
 source(here("code", "utils.R"))
 
 # Create fancy/tidy screen names for use in tables and figures

@@ -17,20 +17,16 @@ source(here::here("..", "_common.R"))
 rank_univariate_logistic_pval <- function(Y, X, family, obsWeights, id, ...) {
   ## logistic regression of outcome on each variable
   listp <- apply(X, 2, function(x, Y, family) {
-    # summ <- coef(summary(glm(Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd,
-    #   family = family, weights = obsWeights
-    summ <- coef(summary(glm(Y ~ x + X$Riskscore + X$Age + X$BMI + X$RSA,
+    summ <- coef(summary(glm(as.formula(briskfactors_correction),
                              family = family, weights = obsWeights
     )))
     ifelse(dim(summ)[1] > 1, summ[2, 4], 1)
   }, Y = Y, family = family)
   ## rank the p-values
   ranked_vars <- rank(listp, ties = "average")
-  # Give risk_score, HighRiskInd, and MinorityInd the lowest rank 
+  # Give briskfactors the lowest rank 
   # (will always set to TRUE anyways)
-  
-  #ranked_vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- 999
-  ranked_vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- 999
+  ranked_vars[names(X) %in% briskfactors] <- 999
   return(ranked_vars)
 }
 
@@ -40,9 +36,7 @@ screen_all <- function(Y, X, family, obsWeights, id, nVar = maxVar, ...) {
   ## logistic regression of outcome on each variable
   vars <- rep(TRUE, ncol(X))
   listp <- apply(X, 2, function(x, Y, family) {
-    # summ <- coef(summary(glm(Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd,
-    #   family = family, weights = obsWeights
-    summ <- coef(summary(glm(Y ~ x + X$Riskscore + X$Age + X$BMI + X$RSA,
+    summ <- coef(summary(glm(as.formula(briskfactors_correction),
                              family = family, weights = obsWeights
     )))
     ifelse(dim(summ)[1] > 1, summ[2, 4], 1)
@@ -53,10 +47,8 @@ screen_all <- function(Y, X, family, obsWeights, id, nVar = maxVar, ...) {
   listp[listp][rankedVars > nVar] <- FALSE
   vars <- listp
   names(vars) <- names(X)
-  # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  
-  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
-  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  # always keep the briskfactors columns of X 
+  vars[names(X) %in% briskfactors] <- TRUE
   
 #  print(paste0("vars is length: ", length(vars)))
 #  print(vars)
@@ -71,9 +63,8 @@ screen_glmnet <- function(Y, X, family, obsWeights, id, alpha = 1,
   vars <- screen.glmnet(Y, X, family, obsWeights, id, alpha = 1, minscreen = 2,
                         nfolds = 10, nlambda = 100, ...)
   
-  # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
-  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  # always keep the briskfactors columns of X 
+  vars[names(X) %in% briskfactors] <- TRUE
   
   # keep only a max of nVar immune markers; rank by univariate p-value
   X_initial_screen <- X %>%
@@ -82,10 +73,8 @@ screen_glmnet <- function(Y, X, family, obsWeights, id, alpha = 1,
                                                obsWeights, id)
   vars[vars][ranked_vars > nVar] <- FALSE
   names(vars) <- names(X)
-  # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-
-  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
-  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  # always keep the briskfactors columns of X 
+  vars[names(X) %in% briskfactors] <- TRUE
   
 #  print(paste0("vars is length: ", length(vars)))
 #  print(vars)
@@ -98,36 +87,28 @@ screen_univariate_logistic_pval <- function(Y, X, family, obsWeights, id,
                                             nVar = maxVar, ...) {
   ## logistic regression of outcome on each variable
   listp <- apply(X, 2, function(x, Y, family) {
-    # summ <- coef(summary(glm(Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd,
-    #   family = family, weights = obsWeights
-    summ <- coef(summary(glm(Y ~ x + X$Riskscore + X$Age + X$BMI + X$RSA,
+    summ <- coef(summary(glm(as.formula(briskfactors_correction),
                              family = family, weights = obsWeights
     )))
     ifelse(dim(summ)[1] > 1, summ[2, 4], 1)
   }, Y = Y, family = family)
   vars <- (listp <= minPvalue)
-  # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  
-  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
-  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  # always keep the briskfactors columns of X 
+  vars[names(X) %in% briskfactors] <- TRUE
   
   if (sum(vars) < minscreen) {
     warning("number of variables with p value less than minPvalue is less than minscreen")
     vars[rank(listp) <= minscreen] <- TRUE
   }
   # keep only a max of nVar immune markers; rank by univariate p-value
-  # X_initial_screen <- X %>%
-  #   select(names(X)[vars], "risk_score", "HighRiskInd", "MinorityInd")
   X_initial_screen <- X %>%
-    select(names(X)[vars], "Riskscore", "Age", "BMI", "RSA")
+    select(names(X)[vars], all_of(briskfactors))
   ranked_vars <- rank_univariate_logistic_pval(Y, X_initial_screen, family,
                                                obsWeights, id)
 
   vars[vars][ranked_vars > nVar] <- FALSE
-  # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  
-  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
-  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  # always keep the briskfactors columns of X 
+  vars[names(X) %in% briskfactors] <- TRUE
   
 #  print(paste0("vars is length: ", length(vars)))
 #  print(vars)
@@ -145,9 +126,8 @@ screen_highcor_random <- function(Y, X, family, obsWeights, id, nVar = maxVar,
   cor_less_0.9 <- (cors <= 0.9)
   # screen out those with r > 0.9
   vars <- apply(cor_less_0.9, 1, function(x) all(x, na.rm = TRUE))
-  # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
-  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  # always keep the briskfactors columns of X 
+  vars[names(X) %in% briskfactors] <- TRUE
   # if cor is greater than 0.9 for any pair of variables, pick up one of the variables at random!
   cormat <- cor_less_0.9
   long.cormat <- data.frame(
@@ -157,43 +137,55 @@ screen_highcor_random <- function(Y, X, family, obsWeights, id, nVar = maxVar,
   ) %>%
     filter(corr == "FALSE")
 
-  # Function to select markers based off priorities
-  get_priorities <- function(x){
-    if((str_detect(x[1], "mn50") & str_detect(x[2], "pseudo")) | (str_detect(x[2], "mn50") & str_detect(x[1], "pseudo"))){
-      selectVar = if_else(str_detect(x[1], "mn50"), x[1], x[2]) 
-    } else if((str_detect(x[1], "pseudo") & str_detect(x[2], "bind")) | (str_detect(x[2], "pseudo") & str_detect(x[1], "bind"))){
-      selectVar = if_else(str_detect(x[1], "pseudo"), x[1], x[2])
-    } else if((str_detect(x[1], "Spike") & str_detect(x[2], "RBD")) | (str_detect(x[2], "Spike") & str_detect(x[1], "RBD"))){
-      selectVar = if_else(str_detect(x[1], "Spike"), x[1], x[2])
-    } else if((str_detect(x[1], "id50") & str_detect(x[2], "id80")) | (str_detect(x[2], "id50") & str_detect(x[1], "id80"))){
-      selectVar = if_else(str_detect(x[1], "id50"), x[1], x[2])
-    } else {
-      selectVar = sample(c(x[1], x[2]), 1, replace = TRUE)
+  if(study_name %in% c("COVE", "MockCOVE")){
+    # Function to select markers based off priorities
+    get_priorities <- function(x){
+      if((str_detect(x[1], "mn50") & str_detect(x[2], "pseudo")) | (str_detect(x[2], "mn50") & str_detect(x[1], "pseudo"))){
+        selectVar = if_else(str_detect(x[1], "mn50"), x[1], x[2]) 
+      } else if((str_detect(x[1], "pseudo") & str_detect(x[2], "bind")) | (str_detect(x[2], "pseudo") & str_detect(x[1], "bind"))){
+        selectVar = if_else(str_detect(x[1], "pseudo"), x[1], x[2])
+      } else if((str_detect(x[1], "Spike") & str_detect(x[2], "RBD")) | (str_detect(x[2], "Spike") & str_detect(x[1], "RBD"))){
+        selectVar = if_else(str_detect(x[1], "Spike"), x[1], x[2])
+      } else if((str_detect(x[1], "id50") & str_detect(x[2], "id80")) | (str_detect(x[2], "id50") & str_detect(x[1], "id80"))){
+        selectVar = if_else(str_detect(x[1], "id50"), x[1], x[2])
+      } else {
+        selectVar = sample(c(x[1], x[2]), 1, replace = TRUE)
+      }
+      return(selectVar)
     }
-    return(selectVar)
+    
+    if(dim(long.cormat)[1] > 0) { # If there are high correlations between pair variables, give priority: liveneutmn50 > pseudoneutid80 > bAb
+      long.cormat$selectCol = apply(long.cormat, 1, function(x)  get_priorities(x))
+      # get the unique columns
+      selectCols = unique(long.cormat$selectCol)
+      vars[selectCols] <- TRUE
+    }
   }
   
-  
-  if(dim(long.cormat)[1] > 0) { # If there are high correlations between pair variables, give priority: liveneutmn50 > pseudoneutid80 > bAb
+  if(study_name == "HVTN705"){
+    # Function to select markers based off priorities
+    get_priorities <- function(x){
+      selectVar = sample(c(x[1], x[2]), 1, replace = TRUE)
+      return(selectVar)
+    }
     
-    long.cormat$selectCol = apply(long.cormat, 1, function(x)  get_priorities(x))
-    # get the unique columns
-    selectCols = unique(long.cormat$selectCol)
-    vars[selectCols] <- TRUE
+    if(dim(long.cormat)[1] > 0) { # If there are high correlations between pair variables, choose at random
+      long.cormat$selectCol = apply(long.cormat, 1, function(x)  get_priorities(x))
+      # get the unique columns
+      selectCols = unique(long.cormat$selectCol)
+      vars[selectCols] <- TRUE
+    }
   }
   
   # keep only a max of nVar immune markers; rank by univariate p-value
-  # X_initial_screen <- X %>%
-  #   select(names(X)[vars], "risk_score", "HighRiskInd", "MinorityInd")
   X_initial_screen <- X %>%
-    select(names(X)[vars], "Riskscore", "Age", "BMI", "RSA")
+    select(names(X)[vars], all_of(briskfactors))
   ranked_vars <- rank_univariate_logistic_pval(Y, X_initial_screen, family,
                                                obsWeights, id)
 
   vars[vars][ranked_vars > nVar] <- FALSE
-  # always keep the first three columns of X (correspond to risk_score, HighRiskInd, MinorityInd)
-  #vars[names(X) %in% c("risk_score", "HighRiskInd", "MinorityInd")] <- TRUE
-  vars[names(X) %in% c("Riskscore", "Age", "BMI", "RSA")] <- TRUE
+  # always keep the briskfactors columns of X 
+  vars[names(X) %in% briskfactors] <- TRUE
   
 #  print(paste0("vars is length: ", length(vars)))
 #  print(vars)
@@ -375,12 +367,42 @@ SL.ranger.yes <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), ca
 
 
 
+# ksvm with kernel = "rbfdot" or "polydot"
+SL.ksvm.rbfdot <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), kernel = "rbfdot", ...) {
+  SL.ksvm(Y = Y, X = X, newX = newX, family = family, obsWeights = obsWeights, kernel = kernel, ...)
+}
+SL.ksvm.polydot <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), kernel = "polydot", ...) {
+  SL.ksvm(Y = Y, X = X, newX = newX, family = family, obsWeights = obsWeights, kernel = kernel, ...)
+}
+
+
 # Lasso with alpha 0 or 1
 SL.glmnet.0 <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), alpha = 0, ...) {
   SL.glmnet(Y = Y, X = X, newX = newX, family = family, obsWeights = obsWeights, alpha = alpha, ...)
 }
 SL.glmnet.1 <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), alpha = 1, ...) {
   SL.glmnet(Y = Y, X = X, newX = newX, family = family, obsWeights = obsWeights, alpha = alpha, ...)
+}
+
+
+# naive bayes wrapper
+SL.naivebayes <- function(Y, X, newX, family, obsWeights, laplace = 0, ...){
+  SuperLearner:::.SL.require("e1071")
+  if(family$family == "gaussian"){
+    stop("SL.naivebayes only works with binary outcomes")
+  }else{
+    nb <- naiveBayes(y = Y, x = X, laplace = laplace)
+    pred <- predict(nb, newX, type = "raw")[,2]
+    out <- list(fit = list(object = nb), pred = pred)
+    class(out$fit) <- "SL.naivebayes"
+    return(out)
+  }
+}
+
+# predict method for naive bayes wrapper
+predict.SL.naivebayes <- function(object, newdata, ...){
+  pred <- predict(object$object, newdata = newdata, type = "raw")[,2]
+  return(pred)
 }
 
 #############################################################################################
@@ -423,12 +445,16 @@ SL.ranger.imp <- function (Y, X, newX, family, obsWeights, case.weights,
 if (run_prod) {
   # NOTE: fancier library for production run
   # learners in the method1 are also combined with no screen
-  methods1 <- c("SL.mean", "SL.glm", "SL.glmnet.0", "SL.glmnet.1", 
+  methods1 <- c("SL.mean", "SL.glm", 
+                #"SL.bayesglm", "SL.glm.interaction",
+                "SL.glmnet.0", "SL.glmnet.1", 
                 "SL.xgboost.2.no", "SL.xgboost.4.no", "SL.xgboost.2.yes", "SL.xgboost.4.yes",
-                "SL.ranger.no", "SL.ranger.yes")  
+                "SL.ranger.no", "SL.ranger.yes"
+                )  
 
   # learners in the method2 are learners that can have screens
-  methods2 <- c("SL.glm")
+  methods2 <- c("SL.glm") #, "SL.bayesglm", "SL.glm.interaction", "SL.gam", "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars"
+                
 } else {
   # NOTE: smaller library for ~faster~ demo run
   # learners in the method1 are also combined with no screen

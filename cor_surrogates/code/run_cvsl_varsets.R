@@ -45,10 +45,7 @@ run_prod <- !grepl("Mock", study_name)
 
 # load required files and functions 
 source(here("code", "day57or29analyses.R")) # set up analyses for markers
-if(study_name %in% c("COVE", "MockCOVE"))
-  source(here("code", "sl_screens_COVE.R")) # set up the screen/algorithm combinations
-if(study_name == "HVTN705")
-  source(here("code", "sl_screens_hvtn705.R")) # set up the screen/algorithm combinations
+source(here("code", "sl_screens.R")) # set up the screen/algorithm combinations
 source(here("code", "utils.R")) # get CV-AUC for all algs
 
 # SL optimal surrogate analysis: Superlearner code requires computing environment with more than 10 cores!
@@ -58,15 +55,8 @@ num_cores <- parallel::detectCores()
 ############ SETUP INPUT #######################
 # Read data_clean
 if(study_name %in% c("COVE", "MockCOVE")){
-  # data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
-  # if (file.exists(here::here("..", "data_clean", data_name_updated))) {
-  #   dat.mock <- read.csv(here::here("..", "data_clean", data_name_updated))
-  #   data_name = data_name_updated
-  # } else {
-  #   dat.mock <- read.csv(here::here("..", "data_clean", data_name))
-  # }
-
   briskfactors <- c("risk_score", "HighRiskInd", "MinorityInd")
+  briskfactors_correction <- "Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd"
   
   markerVars <- c("Day57bindSpike", "Delta57overBbindSpike", "Delta57overBbindSpike_2fold", "Delta57overBbindSpike_4fold",
                     "Day57bindRBD", "Delta57overBbindRBD", "Delta57overBbindRBD_2fold", "Delta57overBbindRBD_4fold",
@@ -116,10 +106,6 @@ if(study_name %in% c("COVE", "MockCOVE")){
 
 
 if(study_name == "HVTN705"){
-  # if (file.exists(here::here(data_name))) {
-  #   dat <- read.csv(here::here(data_name))
-  # } 
-  
   # Add BAMA antigen data
   dat.mock <- dat.mock %>% 
     left_join(read.csv("../../data/hvtn705_lum_pdata_assay_agnostic.csv") %>%
@@ -158,11 +144,12 @@ if(study_name == "HVTN705"){
            `Day210IgG3gp70.1394C9G1.V1V240delta` = `Day210_gp70-1394C9G1 V1V2`, 
            `Day210IgG3gp70.BF1266.431a.V1V240delta` = `Day210_gp70-BF1266_431a_V1V2`, 
            `Day210IgG3gp70.001428.2.42V1V240delta` = `Day210_gp70-001428.2.42 V1V2`, 
-           `Day210IgG3gp70.Ce1086.B2.V1V240delta` = `Day210_gp70-Ce1086_B2 V1V2`,
+           `Day210IgG3gp70.Ce1086.B2.V1V240delta` = `Day210_gp70-Ce1086_B2 V1V2`
            #Day210IgG3gp4140deltaNEW = Day210_gp41
            )
   
   briskfactors <- c("RSA", "Age", "BMI", "Riskscore")
+  briskfactors_correction <- "Y ~ x + X$Riskscore + X$Age + X$BMI + X$RSA"
   
   markerVars <- c("Day210ELCZ", "Day210ELMo", 
                   "Day210ADCPgp140C97ZAfib",
