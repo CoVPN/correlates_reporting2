@@ -16,9 +16,12 @@ if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
     
 # COR defines the analysis to be done, e.g. D14
-Args <- commandArgs(trailingOnly=TRUE)
-if (length(Args)==0) Args=c(COR="D210") 
-COR=Args[1]; myprint(COR)
+if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
+# if called from Rmd, there may not be a COR argument
+#if (length(Args)==0) stop("If running R from command line, provide an argument, e.g. D57, to the command. If you are running R interactively, do, e.g. Args=c(COR=\"D57\");  ")
+if (length(Args)>0) {
+    COR=Args[1]; myprint(COR)
+}
 
 
 ###################################################################################################
@@ -29,14 +32,17 @@ for(opt in names(config)){
   eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
 }
 # correlates analyses-related 
-config.cor <- config::get(config = COR)
-tpeak=as.integer(paste0(config.cor$tpeak))
-tpeaklag=as.integer(paste0(config.cor$tpeaklag))
-tfinal.tpeak=as.integer(paste0(config.cor$tfinal.tpeak))
-tinterm=as.integer(paste0(config.cor$tinterm))
-myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
-# some config may not have all fields
-if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
+
+if (length(Args)>0) {
+    config.cor <- config::get(config = COR)
+    tpeak=as.integer(paste0(config.cor$tpeak))
+    tpeaklag=as.integer(paste0(config.cor$tpeaklag))
+    tfinal.tpeak=as.integer(paste0(config.cor$tfinal.tpeak))
+    tinterm=as.integer(paste0(config.cor$tinterm))
+    myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
+    # some config may not have all fields
+    if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
+}
     
 # to be deprecated
 has57 = study_name %in% c("COVE","MockCOVE")
@@ -66,6 +72,7 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
+if (length(Args)>0) {
 if (is.null(config.cor$tinterm)) {
 ##########################
 # single time point config
@@ -90,6 +97,7 @@ if (is.null(config.cor$tinterm)) {
     } else {
         # may not be defined if COR is not provided in command line and used the default value
     }
+}
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note

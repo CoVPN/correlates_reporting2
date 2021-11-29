@@ -456,3 +456,17 @@ data_clean/~$TN705CorrelatesREADME.docx
 data_clean/adcc_risk_v2_21OCT2021.csv
 data_clean/HVTN705_analysis_data_set_spec_v2.xlsx
 data_clean/HVTN705_firstcasecontrolprocesseddata.csv
+cor_coxph/output/moderna_real/D57/avg_followup_COVE
+cor_coxph/output/moderna_real/D57/cutpoints_Day57bindRBD_COVE
+cor_coxph/output/moderna_real/D57/cutpoints_Day57bindSpike_COVE
+cor_coxph/output/moderna_real/D57/cutpoints_Day57pseudoneutid50_COVE
+cor_coxph/output/moderna_real/D57/cutpoints_Day57pseudoneutid80_COVE
+cor_coxph/output/moderna_real/D57/dose1_dose2_interval_summary_COVE.tex
+cor_coxph/output/moderna_real/D57/dose1_interval_summary_COVE.tex
+cor_coxph/output/moderna_real/D57/marginalized.risk.COVE.Rdata
+cor_coxph/output/moderna_real/D57/marginalized.risk.no.marker.COVE.Rdata
+cor_coxph/output/moderna_real/D57/num_vacc_cases_highid80_COVE
+cor_coxph/output/moderna_real/D57/quartiles_visit_intervals_immuno_1to29
+cor_coxph/output/moderna_real/D57/quartiles_visit_intervals_immuno_29to57
+cor_coxph/output/moderna_real/D57/timepoints_cum_risk_COVE
+cor_coxph/output/moderna_real/D57/bootstrap_replicates_COVE
