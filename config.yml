@@ -7,28 +7,41 @@ default: &default
   is_ows_trial: no
   case_cohort: no
 
-hvtn705: &hvtn705
+hvtn705base: &hvtn705base
   two_marker_timepoints: no
   timepoints: [210]
   subset_variable: None
   subset_value: All
+  llox_label: loq
+  times: [B, Day210] 
+  time_labels: [Day 1, Day 210]
+  study_name: HVTN705
+  covariates_riskscore: ~.+ RSA + Age + BMI + Riskscore
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  ve_ylim: [-1,1]
+  low_efficacy: yes # used to drive some plotting configurations
+
+
+hvtn705: &hvtn705
+  <<: *hvtn705base
   assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay,ELMo,IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG3gp4140delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_multi]
   assay_labels: [IgG Vx-VT-C,ADCP Vx-C97ZA,IgG3 V1V2 breadth,IgG3 Env breadth,Multi-epitope functions,IgG Vx-VT-M,IgG3 gp140 Vx-C97ZA,IgG3 gp140 Vx-Mosaic,IgG3 gp41,IgG3 gp120 breadth,IgG3 gp140 breadth,IgG3 Multi-epitope]
   lloxs: [40,NA,NA,NA,NA,50,NA,NA,NA,NA,NA,NA]
   uloqs: [1884160,NA,NA,NA,NA,1869824,22000,22000,22000,NA,NA,NA]
   primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay] 
   multivariate_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm] 
-  llox_label: loq
-  times: [B, Day210] 
-  time_labels: [Day 1, Day 210]
-  study_name: HVTN705
-  covariates_riskscore: ~.+ RSA + Age + BMI + Riskscore
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_firstcasecontrolprocesseddata.csv
-  #data_cleaned: ../data_clean/HVTN705_hybridrealmock_practicedata_Oct2021.csv
-  num_boot_replicates: 1000
-  num_perm_replicates: 10000
-  ve_ylim: [-1,1]
-  low_efficacy: yes # used to drive some plotting configurations
+
+hvtn705V1V2: &hvtn705V1V2
+  <<: *hvtn705base
+  assays: [IgG3AE.A244.V1V2.Tags.293F40delta,IgG3C.1086C.V1.V2.Tags40delta,IgG3gp70.001428.2.42.V1V240delta,IgG3gp70.1012.11.TC21.3257.V1V240delta,IgG3gp70.1394C9G1.V1V240delta,IgG3gp70.BF1266.431a.V1V240delta,IgG3gp70.Ce1086.B2.V1V240delta,IgG3gp70.B.CaseA.V1.V240delta]
+  assay_labels: [IgG3 V1V2 AE.A244.Tags,IgG3 V1V2 C.1086.Tags,IgG3 gp70 V1V2.001428.2.42,IgG3 gp70 V1V2.1012.11.TC21.3257,IgG3 gp70 V1V2.1394C9G1,IgG3 gp70 V1V2.BF1266.431a,IgG3 gp70 V1V2.Ce1086,IgG3 gp70 V1V2.B.CaseA]
+  lloxs: [1,1,1,1,1,1,1,1]
+  uloqs: [22000,22000,22000,22000,22000,22000,22000,22000]
+  primary_assays: [IgG3AE.A244.V1V2.Tags.293F40delta,IgG3C.1086C.V1.V2.Tags40delta,IgG3gp70.001428.2.42.V1V240delta,IgG3gp70.1012.11.TC21.3257.V1V240delta,IgG3gp70.1394C9G1.V1V240delta,IgG3gp70.BF1266.431a.V1V240delta,IgG3gp70.Ce1086.B2.V1V240delta,IgG3gp70.B.CaseA.V1.V240delta]
+  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_firstcasecontrolprocesseddata_withindividualV1V2markers.csv
+
 
 
 ows_trial: &ows_trial
