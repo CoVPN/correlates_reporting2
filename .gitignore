@@ -470,3 +470,14 @@ cor_coxph/output/moderna_real/D57/quartiles_visit_intervals_immuno_1to29
 cor_coxph/output/moderna_real/D57/quartiles_visit_intervals_immuno_29to57
 cor_coxph/output/moderna_real/D57/timepoints_cum_risk_COVE
 cor_coxph/output/moderna_real/D57/bootstrap_replicates_COVE
+data_clean/HVTN705_firstcasecontrolprocesseddata_withindividualV1V2markers.csv
+cor_coxph/output/hvtn705V1V2/D210/avg_followup_HVTN705
+cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3AE.A244.V1V2.Tags.293F40delta_HVTN705
+cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3C.1086C.V1.V2.Tags40delta_HVTN705
+cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3gp70.001428.2.42.V1V240delta_HVTN705
+cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3gp70.1012.11.TC21.3257.V1V240delta_HVTN705
+cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3gp70.1394C9G1.V1V240delta_HVTN705
+cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3gp70.B.CaseA.V1.V240delta_HVTN705
+cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3gp70.BF1266.431a.V1V240delta_HVTN705
+cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3gp70.Ce1086.B2.V1V240delta_HVTN705
+cor_coxph/output/hvtn705V1V2/D210/timepoints_cum_risk_HVTN705
