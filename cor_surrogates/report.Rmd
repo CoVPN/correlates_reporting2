@@ -4,7 +4,7 @@ header-includes:
    
 # title: "COVID-19 Optimal Surrogate Analysis Report"
 title: "HVTN-705 Optimal Surrogate Analysis Report"
-subtitle: 12th November 2021
+subtitle: "`r Sys.Date()`"
 
 output:
   pdf_document: default

@@ -29,7 +29,7 @@ if(endpoint=="EventIndPrimaryD29")
 if(endpoint=="Delta.D210")
   day = "Day 210"
 
-caption <- "All learner-screen combinations (28 in total) used as input to the Superlearner."
+caption <- "All learner-screen combinations (13 in total) used as input to the Superlearner."
 
 read.csv(here("cor_surrogates", "output", "learner-screens.csv"), row.names = 1,
          header = TRUE) %>%

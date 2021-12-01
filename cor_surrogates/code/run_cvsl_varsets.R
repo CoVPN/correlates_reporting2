@@ -550,12 +550,20 @@ if (study_name == "HVTN705"){
 set.seed(20210216)
 seeds <- round(runif(10, 1000, 10000)) # average over 10 random starts
 
-##solve cores issue
+# ##solve cores issue
+# library(RhpcBLASctl)
+# blas_get_num_procs()
+# blas_set_num_threads(1)
+# print(blas_get_num_procs())
+# stopifnot(blas_get_num_procs()==1)
+
+# disable parallelization in openBLAS and openMP 
 library(RhpcBLASctl)
 blas_get_num_procs()
-blas_set_num_threads(1)
-print(blas_get_num_procs())
-stopifnot(blas_get_num_procs()==1)
+blas_set_num_threads(1L)
+stopifnot(blas_get_num_procs() == 1L)
+omp_set_num_threads(1L)
+
 
 fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
                            Y = Y,

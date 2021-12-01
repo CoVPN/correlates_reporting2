@@ -1,5 +1,5 @@
 ## all           : clean saved results and get results to populate report
-all: clean run_cvsl_varsets createRDAfiles_fromSLobjects tables_figures 
+all: run_cvsl_varsets createRDAfiles_fromSLobjects tables_figures 
 
 ## clean         : delete all SL results
 clean:
@@ -7,7 +7,6 @@ clean:
 	rm -f figs/*
 
 run_cvsl_varsets: 
-	Rscript code/run_cvsl_varsets.R D210 1
 	Rscript code/run_cvsl_varsets.R D210 2
 	Rscript code/run_cvsl_varsets.R D210 3
 	Rscript code/run_cvsl_varsets.R D210 4
