@@ -481,3 +481,4 @@ cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3gp70.B.CaseA.V1.V240delta_
 cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3gp70.BF1266.431a.V1V240delta_HVTN705
 cor_coxph/output/hvtn705V1V2/D210/cutpoints_Day210IgG3gp70.Ce1086.B2.V1V240delta_HVTN705
 cor_coxph/output/hvtn705V1V2/D210/timepoints_cum_risk_HVTN705
+data_clean/janssen_pooled_real_data_processed_with_riskscore.csv

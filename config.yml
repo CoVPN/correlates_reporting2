@@ -87,9 +87,9 @@ janssen_trial: &janssen_trial
   <<: *ows_trial
   two_marker_timepoints: no
   timepoints: [29]
-  assays: [bindSpike, bindRBD]
-  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
-  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml)]
+  assays: [bindSpike, bindRBD, ADCP]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, Phagocytic Score]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Phagocytic Score]
   times: [B, Day29, Delta29overB]
   time_labels: [Day 1, Day 29, D29 fold-rise over D1]
   data_raw_dir: janssen
