@@ -536,7 +536,7 @@ plot_roc_curves <- function(predict, cvaucDAT, weights) {
       learnerScreen = paste0(learnerScreen, " (", AUCchar, ")"),
       learnerScreen = reorder(learnerScreen, -AUC)
     ) %>%
-    ggplot(aes(x = xval, y = yval, col = learnerScreen)) +
+    ggplot(aes(x = xval, y = yval, col = learnerScreen, linetype = learnerScreen)) +
     geom_step(lwd = 2) +
     theme(
       legend.position = "top",
@@ -548,8 +548,10 @@ plot_roc_curves <- function(predict, cvaucDAT, weights) {
       axis.text = element_text(size = 23),
       axis.title = element_text(size = 30)
     ) +
-    labs(x = "Cross-Validated False Positive Rate", y = "Cross-Validated True Positive Rate", col = "Model (CV-AUC)") +
-    geom_abline(intercept = 0, slope = 1)
+    labs(x = "Cross-Validated False Positive Rate", y = "Cross-Validated True Positive Rate", 
+         col = "Model (CV-AUC)", linetype = "Model (CV-AUC)") +
+    geom_abline(intercept = 0, slope = 1) +
+    scale_linetype_manual(values=c("dashed", "dotted", "dotdash", "twodash"))
 }
 
 
@@ -558,11 +560,17 @@ plot_roc_curves <- function(predict, cvaucDAT, weights) {
 # @param weights the inverse probability weights
 # @return ggplot object containing the predicted probability plots
 plot_predicted_probabilities <- function(pred, weights = rep(1, length(pred$pred))) {
-  if(study_name_code == "COVE"){
+  if(study_name %in% c("COVE", "MockCOVE")){
     cases = "Post Day 57 Cases"
+    disease_name = "COVID-19"
   }
-  if(study_name_code == "ENSEMBLE"){
+  if(study_name == "ENSEMBLE"){
     cases = "Post Day 29 Cases"
+    disease_name = "COVID-19"
+  }
+  if(study_name == "HVTN705"){
+    cases = "Post Day 210 Cases"
+    disease_name = "HIV"
   }
   pred %>%
     mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>% 
@@ -574,7 +582,7 @@ plot_predicted_probabilities <- function(pred, weights = rep(1, length(pred$pred
     #scale_color_manual(values = c("#56B4E9", "#E69F00")) +
     scale_color_manual(values = c("#00468B", "#8B0000")) +
     facet_wrap(vars(learnerScreen), ncol = 1, scales = "free") +
-    labs(y = "CV estimated predicted probability of COVID-19 disease", x = "") +
+    labs(y = paste0("CV estimated predicted probability of ", disease_name, " disease"), x = "") +
     theme(
       legend.position = "none",
       strip.text.x = element_text(size = 25),
@@ -707,6 +715,7 @@ make_forest_plot <- function(avgs){
     scale_y_continuous(breaks = seq(lowestXTick, max(highestXTick, 1), 0.1), labels = seq(lowestXTick, max(highestXTick, 1), 0.1), limits = c(lowestXTick, max(highestXTick, 1))) +
     theme_bw() +
     labs(y = "CV-AUC [95% CI]", x = "") +
+    geom_hline(yintercept = 0.5, lty = "dashed") +
     theme(panel.grid.major.x = element_blank(),
           panel.grid.minor.x = element_blank(),
           axis.title.y = element_blank(),
@@ -730,7 +739,7 @@ make_forest_plot <- function(avgs){
   top_learner_nms_plot <- ggplot(avgs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
     xlim(0.7,2) +
-    theme(plot.margin=unit(c(1.1,-0.15,1.75,-0.15),"cm"),
+    theme(plot.margin=unit(c(0.25,-0.15,0.9,-0.15),"cm"),
           axis.line=element_blank(),
           axis.text.y = element_blank(),
           axis.text.x = element_text(size = 2, color = "white"),
