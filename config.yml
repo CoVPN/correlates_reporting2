@@ -95,23 +95,15 @@ janssen_trial: &janssen_trial
 
 janssen_trial_real: &janssen_trial_real
   <<: *janssen_trial
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_real_data_processed_with_riskscore.csv
-  assays: [bindSpike, bindRBD, ADCP]
-  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, Phagocytic Score]
-  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Phagocytic Score]
-  study_name: ENSEMBLE
-  num_boot_replicates: 1000
-  num_perm_replicates: 10000
-
-janssen_trial_mock: &janssen_trial_mock
-  <<: *janssen_trial
-  data_cleaned: NA
+  #data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_real_data_processed_with_riskscore.csv
+  data_cleaned: D:/gdrive/Covid19/correlates_reporting2/data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
   assays: [bindSpike, bindRBD]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml)]
-  study_name: MockENSEMBLE
-  num_boot_replicates: 10
-  num_perm_replicates: 10
+  primary_assays: [] 
+  study_name: ENSEMBLE
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
 
 janssen_pooled_real: 
   <<: *janssen_trial_real
@@ -140,6 +132,36 @@ janssen_sa_real:
   subset_value: 2
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
+
+janssen_trial_realADCP: &janssen_trial_realADCP
+  <<: *janssen_trial
+  #data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_real_data_processed_with_riskscore.csv
+  data_cleaned: D:/gdrive/Covid19/correlates_reporting2/data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
+  assays: [ADCP]
+  assay_labels: [Phagocytic Score]
+  assay_labels_short: [Phagocytic Score]
+  primary_assays: [] 
+  study_name: ENSEMBLE
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+
+janssen_pooled_realADCP: 
+  <<: *janssen_trial_realADCP
+  subset_variable: None
+  subset_value: All
+  covariates_riskscore: ~.+ risk_score + as.factor(Region)
+  covariates_norisksco: ~.+ Age        + as.factor(Region)
+
+
+janssen_trial_mock: &janssen_trial_mock
+  <<: *janssen_trial
+  data_cleaned: NA
+  assays: [bindSpike, bindRBD]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml)]
+  study_name: MockENSEMBLE
+  num_boot_replicates: 10
+  num_perm_replicates: 10
 
 janssen_pooled_mock:
   <<: *janssen_trial_mock
