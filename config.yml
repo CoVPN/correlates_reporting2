@@ -135,8 +135,8 @@ janssen_sa_real:
 
 janssen_trial_realADCP: &janssen_trial_realADCP
   <<: *janssen_trial
-  #data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_real_data_processed_with_riskscore.csv
-  data_cleaned: D:/gdrive/Covid19/correlates_reporting2/data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_real_data_processed_with_riskscore.csv
+  #data_cleaned: D:/gdrive/Covid19/correlates_reporting2/data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
   assays: [ADCP]
   assay_labels: [Phagocytic Score]
   assay_labels_short: [Phagocytic Score]
