@@ -196,7 +196,7 @@ if (config$is_ows_trial) {
             LLOQ = 117.35,
             ULOQ = 18976.19)
         ,
-        adcp=c( 
+        ADCP=c( 
             pos.cutoff=11.57,# as same lod
             LLOD = 11.57,
             ULOD = NA,
