@@ -115,11 +115,13 @@ if (is.null(config.cor$tinterm)) {
 # some common graphing parameters
 if(config$is_ows_trial) {
     # maxed over Spike, RBD, N, restricting to Day 29 or 57
-    if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    
+    if("bindSpike" %in% assays & "bindRBD" %in% assays) {
+        if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    }
+        
     # maxed over ID50 and ID80, restricting to Day 29 or 57
     if("pseudoneutid50" %in% assays & "pseudoneutid80" %in% assays) {
         if(has29) MaxID50ID80Day29 = max(dat.mock[,paste0("Day29", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)
@@ -127,6 +129,15 @@ if(config$is_ows_trial) {
         if(has57) MaxID50ID80Day57 = max(dat.mock[,paste0("Day57", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)        
         if(has57) MaxID50ID80Delta57overB = max(dat.mock[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
     }
+    
+    # maxed over ADCP, restricting to Day 29 or 57
+    if("ADCP" %in% assays ) {
+        if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("ADCP"))], na.rm=T)
+        if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("ADCP"))], na.rm=T)
+        if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("ADCP"))], na.rm=T)
+        if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("ADCP"))], na.rm=T)
+    }
+            
 }     
 
 
