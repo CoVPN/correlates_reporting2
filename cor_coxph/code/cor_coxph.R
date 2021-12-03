@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "hvtn705"); Args=c(COR="D210"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "janssen_pooled_real"); Args=c(COR="D29"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
 renv::activate(project = here::here(".."))    
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
