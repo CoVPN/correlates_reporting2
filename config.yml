@@ -96,7 +96,6 @@ janssen_trial: &janssen_trial
 janssen_trial_real: &janssen_trial_real
   <<: *janssen_trial
   data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_real_data_processed_with_riskscore.csv
-  #data_cleaned: D:/gdrive/Covid19/correlates_reporting2/data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
   assays: [bindSpike, bindRBD]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml)]
@@ -135,12 +134,11 @@ janssen_sa_real:
 
 janssen_trial_realADCP: &janssen_trial_realADCP
   <<: *janssen_trial
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_real_data_processed_with_riskscore.csv
-  #data_cleaned: D:/gdrive/Covid19/correlates_reporting2/data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_realADCP_data_processed_with_riskscore.csv
   assays: [ADCP]
   assay_labels: [Phagocytic Score]
   assay_labels_short: [Phagocytic Score]
-  primary_assays: [] 
+  primary_assays: [] # have it be empty if no multitesting adjustment should be done
   study_name: ENSEMBLE
   num_boot_replicates: 1000
   num_perm_replicates: 10000
