@@ -1,9 +1,9 @@
 #!/bin/bash
 
-for T in janssen_trial_real janssen_trial_realADCP
+for T in janssen_pooled_real janssen_pooled_realADCP
 do
-	export TRIAL=$T	
-	echo $TRIAL
-	make -k -C $1 all
-	bash ./_build_chapter.sh $1
+    export TRIAL=$T 
+    echo $TRIAL
+    make -k -C $1 all
+    bash ./_build_chapter.sh $1
 done
