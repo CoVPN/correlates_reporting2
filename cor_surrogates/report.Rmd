@@ -2,12 +2,14 @@
 header-includes:
    - \usepackage{float}
    
-title: "COVID-19 Optimal Surrogate Analysis Report"
+# title: "COVID-19 Optimal Surrogate Analysis Report"
+title: "HVTN-705 Optimal Surrogate Analysis Report"
+subtitle: "`r Sys.Date()`"
 
 output:
   pdf_document: default
   html_document: default
-  citation_package: natbib
+  citation_package: natbib   
   number_sections: true
   extra_dependencies: ["caption", "subcaption", "graphicx"]
   toc: true
@@ -18,6 +20,20 @@ library(here)
 here::i_am("cor_surrogates/report.Rmd")
 ```
 
-```{r, child=here("cor_surrogates", 'report_sub.Rmd')}
+
+\section{Overview}
+
+This report summarizes the results of the Month 7 multivariable marker superlearner modeling analysis of vaccine recipients for the HVTN-705 HIV vaccine efficacy trial. This report will be updated once the ELISpot Any Env and ADCP Mosaic markers are available.
+
+The analysis presented in this report was performed on data from all vaccine recipients included in the case-control cohort. 
+
+Table 1 shows the 28 learner-screen combinations fed into the Superlearner. The variable sets that were used as input feature sets in the Superlearner are shown in Table 2. The first variable set, baseline risk factors, is taken to be the same baseline factors adjusted for in the other correlates objectives of the SAP (RSA, Age, BMI and baseline risk score). For each set of Month 7 markers, both primary and exploratory markers are included. This is done given the objective of this machine learning analysis is to be maximally inclusive and unbiased, including all of the primary and exploratory Month 7 immune markers. In addition, all Month 7 individual markers that are constituents for defining one or more of the 12 markers are included; for  example the antigen-specific breadth score variables aggregate over readouts to a set of antigens. Therefore, for example, the variable set “All BAMA IgG3 gp140 markers” in Table 2 includes all individual antigen IgG3 gp140 markers as well as the IgG3 gp140 breadth score marker.
+
+For each variable set, a point and 95% confidence interval estimate of CV-AUC from the Superlearner model fit is used to summarize classification accuracy (Table 3 and Figure 1).    
+
+The Appendix section of the report shows the results (forest plots, ROC curves and predicted probability plots) for each of the 15 variable sets in order of their performance CV-AUC.   
+
+
+```{r, child=here("cor_surrogates", 'report_sub_HVTN705.Rmd')}
 ```
 
