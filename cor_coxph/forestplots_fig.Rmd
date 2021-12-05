@@ -1,0 +1,17 @@
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{`r pathCoRoutput`/hr_forest_marginal_`r a`_`r study_name`}
+    \caption{Forest plots of hazard ratios per 10-fold increase in the Day `r tpeak` `r assay_labels[a]` markers among baseline negative vaccine recipients (top row) and different subpopulations with 95\% point-wise confidence intervals. `r special.note`}
+\end{figure}
+
+
+\ifShowCountry
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{`r pathCoRoutput`/hr_forest_countries_`r a`_`r study_name`}
+    \caption{Forest plots of hazard ratios per 10-fold increase in the Day `r tpeak` `r assay_labels[a]` markers among baseline negative vaccine recipients (top row) and different subpopulations with 95\% point-wise confidence intervals. `r special.note`}
+\end{figure}
+
+\fi
+
