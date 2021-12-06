@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.1.1",
+    "Version": "4.0.4",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -917,12 +917,12 @@
       "Version": "0.1.5",
       "Source": "GitHub",
       "RemoteType": "github",
+      "Remotes": "github::tlverse/hal9001@devel",
       "RemoteHost": "api.github.com",
-      "RemoteUsername": "nhejazi",
       "RemoteRepo": "haldensify",
+      "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "16350cc39b68e61566f03a11f633e08073405355",
-      "Remotes": "github::tlverse/hal9001@devel",
       "Hash": "47c34f41535fb9c16bd44e760d61cb67"
     },
     "haven": {
@@ -1334,15 +1334,15 @@
     },
     "natmed2": {
       "Package": "natmed2",
-      "Version": "0.9000",
+      "Version": "0.9001",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "natmed2",
       "RemoteUsername": "benkeser",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "158509db7e25e9b43b37f346fba29ad9df4d4ad3",
-      "Hash": "c6efffe9591b4db85d7ef315f8de3aa9"
+      "RemoteRef": "fx_dose",
+      "RemoteSha": "c59430b6de7d00384fda479803b7eb5fa10a26c1",
+      "Hash": "551b8f57ab60352f82c20de8a24cb8cd"
     },
     "nlme": {
       "Package": "nlme",
