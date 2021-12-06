@@ -16,9 +16,12 @@ if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
 
 # COR defines the analysis to be done, e.g. D14
-Args <- commandArgs(trailingOnly=TRUE)
-if (length(Args)==0) Args=c(COR="D210") 
-COR=Args[1]; myprint(COR)
+if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
+# if called from Rmd, there may not be a COR argument
+#if (length(Args)==0) stop("If running R from command line, provide an argument, e.g. D57, to the command. If you are running R interactively, do, e.g. Args=c(COR=\"D57\");  ")
+if (length(Args)>0) {
+  COR=Args[1]; myprint(COR)
+}
 
 
 ###################################################################################################
@@ -29,14 +32,17 @@ for(opt in names(config)){
   eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
 }
 # correlates analyses-related 
-config.cor <- config::get(config = COR)
-tpeak=as.integer(paste0(config.cor$tpeak))
-tpeaklag=as.integer(paste0(config.cor$tpeaklag))
-tfinal.tpeak=as.integer(paste0(config.cor$tfinal.tpeak))
-tinterm=as.integer(paste0(config.cor$tinterm))
-myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
-# some config may not have all fields
-if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
+
+if (length(Args)>0) {
+  config.cor <- config::get(config = COR)
+  tpeak=as.integer(paste0(config.cor$tpeak))
+  tpeaklag=as.integer(paste0(config.cor$tpeaklag))
+  tfinal.tpeak=as.integer(paste0(config.cor$tfinal.tpeak))
+  tinterm=as.integer(paste0(config.cor$tinterm))
+  myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
+  # some config may not have all fields
+  if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
+}
 
 # to be deprecated
 has57 = study_name %in% c("COVE","MockCOVE")
@@ -66,29 +72,31 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-if (is.null(config.cor$tinterm)) {
-  ##########################
-  # single time point config
-  dat.mock$ph1=dat.mock[[config.cor$ph1]]
-  dat.mock$ph2=dat.mock[[config.cor$ph2]]
-  dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
-  dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
-  dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
-  dat.mock$wt=dat.mock[[config.cor$wt]]
-  if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
-  
-  # data integrity checks
-  if (!is.null(dat.mock$ph1)) {
-    # missing values in variables that should have no missing values
-    variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
-    ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
-    if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+if (length(Args)>0) {
+  if (is.null(config.cor$tinterm)) {
+    ##########################
+    # single time point config
+    dat.mock$ph1=dat.mock[[config.cor$ph1]]
+    dat.mock$ph2=dat.mock[[config.cor$ph2]]
+    dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
+    dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
+    dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
+    dat.mock$wt=dat.mock[[config.cor$wt]]
+    if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
     
-    # ph1 should not have NA in Wstratum
-    ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
-    if(!ans) stop("Some Wstratum in ph1 are NA")
-  } else {
-    # may not be defined if COR is not provided in command line and used the default value
+    # data integrity checks
+    if (!is.null(dat.mock$ph1)) {
+      # missing values in variables that should have no missing values
+      variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+      ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+      if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+      
+      # ph1 should not have NA in Wstratum
+      ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+      if(!ans) stop("Some Wstratum in ph1 are NA")
+    } else {
+      # may not be defined if COR is not provided in command line and used the default value
+    }
   }
 }
 
@@ -107,10 +115,12 @@ if (is.null(config.cor$tinterm)) {
 # some common graphing parameters
 if(config$is_ows_trial) {
   # maxed over Spike, RBD, N, restricting to Day 29 or 57
-  if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-  if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-  if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-  if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+  if("bindSpike" %in% assays & "bindRBD" %in% assays) {
+    if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+  }
   
   # maxed over ID50 and ID80, restricting to Day 29 or 57
   if("pseudoneutid50" %in% assays & "pseudoneutid80" %in% assays) {
@@ -119,6 +129,15 @@ if(config$is_ows_trial) {
     if(has57) MaxID50ID80Day57 = max(dat.mock[,paste0("Day57", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)        
     if(has57) MaxID50ID80Delta57overB = max(dat.mock[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
   }
+  
+  # maxed over ADCP, restricting to Day 29 or 57
+  if("ADCP" %in% assays ) {
+    if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("ADCP"))], na.rm=T)
+    if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("ADCP"))], na.rm=T)
+    if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("ADCP"))], na.rm=T)
+    if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("ADCP"))], na.rm=T)
+  }
+  
 }     
 
 
@@ -187,6 +206,13 @@ if (config$is_ows_trial) {
       ULOD = NA,
       LLOQ = 117.35,
       ULOQ = 18976.19)
+    ,
+    ADCP=c( 
+      pos.cutoff=11.57,# as same lod
+      LLOD = 11.57,
+      ULOD = NA,
+      LLOQ = 8.87,
+      ULOQ = 211.56)
   )
   
   pos.cutoffs=sapply(tmp, function(x) unname(x["pos.cutoff"]))
