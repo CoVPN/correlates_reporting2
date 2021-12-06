@@ -95,7 +95,8 @@ janssen_trial: &janssen_trial
 
 janssen_trial_real: &janssen_trial_real
   <<: *janssen_trial
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_real_data_processed_with_riskscore.csv
+  #data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_real_data_processed_with_riskscore.csv
+  data_cleaned: ../data_clean/janssen_pooled_mock_data_processed_with_riskscore.csv
   assays: [bindSpike, bindRBD]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml)]

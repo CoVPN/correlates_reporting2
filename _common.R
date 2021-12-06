@@ -1,5 +1,5 @@
 #if (exists(".DEF.COMMON")) stop ("_common.R has already been loaded") else .DEF.COMMON=TRUE
-    
+study_name = "ENSEMBLE"
 library(methods)
 library(dplyr)
 library(kyotil)
@@ -9,6 +9,7 @@ blas_get_num_procs()
 blas_set_num_threads(1L)
 stopifnot(blas_get_num_procs() == 1L)
 omp_set_num_threads(1L)
+ 
 #
 set.seed(98109)
 verbose=0
@@ -22,7 +23,7 @@ if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
 if (length(Args)>0) {
     COR=Args[1]; myprint(COR)
 }
-
+ 
 
 ###################################################################################################
 # read config

@@ -1,71 +1,63 @@
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
-source(here::here("..", "_common.R"))
+
 #-----------------------------------------------
 # load parameters
+
 source(here::here("code", "params.R"))
+
+
 
 # load data
 #dat.mock <- read.csv(here::here("..", "data_clean", paste0(stringr::str_match(data_name,"(.+).csv")[,2],append_data,".csv")))
 
-
  
-  
-  
+
 for (a in assays) {
-  for (t in c(  if(has57) "Day57", if(has29) "Day29") ) {
+  for (t in "Day"%.%tpeak ) {
     
+    print(t %.% a)
+    print( log10(uloqs[a]))
     dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
   }
-}
-
-
-data <- dat.mock
-
+}    
 
 
  
+
+ 
+
 # Generate the outcome and censoring indicator variables
-for (key in keys) {
- 
-  short_key <- key_to_short[key]
- 
-   
+  
+  short_key <- COR
+  
+  
   data <- dat.mock
-  Ttilde <-  data[[Event_Time_variable[[short_key]]]]
-  Ttilde <- as.numeric(Ttilde)
-  # TO CHANGE
-  Delta <- data[[Event_Ind_variable[[short_key]]]]
-   
-  Delta <- as.numeric(Delta)
-  data$Ttilde <- Ttilde
-  data$Delta <- Delta
-
-
-  data$TwophasesampInd <- as.numeric(data[[twophaseind_variable[[short_key]]]])
-  data$wt <- data[[weight_variable[[short_key]]]]
+  data$Ttilde <- data$EventTimePrimary
+  data$Delta <- data$EventIndPrimary
+  data$TwophasesampInd <- data$ph2
   
   
-   
-   
   ##### Discretize time grid
+  
+  max_t <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2 == 1, "EventTimePrimary" ])
   size_time_grid <- 15
-  time_grid <- unique(sort(c( tf[[short_key]] ,quantile(data$Ttilde[data$Ttilde <= tf[[short_key]] + 5 & data$TwophasesampInd ==1 & !is.na(data$Delta)& data$Delta==1 ], seq(0,1, length = size_time_grid)))))
-  time_grid[which.min(abs(time_grid - tf[[short_key]]))[1]] <- tf[[short_key]]
+  time_grid <- unique(sort(c(max_t ,quantile(data$Ttilde[data$Ttilde <= max_t + 5 & data$TwophasesampInd ==1 & !is.na(data$Delta)& data$Delta==1 ], seq(0,1, length = size_time_grid)))))
+  time_grid[which.min(abs(time_grid -max_t))[1]] <- max_t
   time_grid <- sort(unique(time_grid))
-  print(time_grid)
+  
   Ttilde_discrete <- findInterval(data$Ttilde, time_grid, all.inside = TRUE)
-  target_time <- findInterval(tf[[short_key]], time_grid, all.inside = TRUE)
+  target_time <- findInterval(max_t, time_grid, all.inside = TRUE)
   data$Ttilde <- Ttilde_discrete
   data$target_time <- target_time
   data$J <- 1
-   
+  
   
   ####
   # Subset data
-  markers <- paste0(key_to_time[key], assays)
- 
+  
+  print(markers)
   variables_to_keep <-
     c(
       covariates,
@@ -78,17 +70,20 @@ for (key in keys) {
       "target_time",
       "J"
     )
-
+  # TEMPORARY
+  variables_to_keep <- intersect(variables_to_keep, colnames(data))
   
-    #keep <- data[[Earlyendpoint]] ==0 & data$Trt == 1 & data$Bserostatus == 0 & data$Perprotocol==1 & !is.na(data$wt) & data[[Event_Time_variable[[time]]]] >=7 & !is.na(data$Wstratum)
-  keep <- data[[ph1_id_list[[short_key]]]]==1 & data$Trt == 1  & data$Bserostatus == 0
- 
+  
+  
+  #keep <- data[[Earlyendpoint]] ==0 & data$Trt == 1 & data$Bserostatus == 0 & data$Perprotocol==1 & !is.na(data$wt) & data[[Event_Time_variable[[time]]]] >=7 & !is.na(data$Wstratum)
+  keep <- data[["ph1"]]==1 & data$Trt == 1  
+  
   
   data_firststage <- data[keep, variables_to_keep]
- 
+  
   #data_firststage <- na.omit(data_firststage)
-  data_secondstage <- na.omit(data_firststage[data_firststage$TwophasesampInd == 1, ])
-
+  data_secondstage <- data_firststage[data_firststage$TwophasesampInd == 1, ]
+  
   write.csv(data_firststage,
             here::here("data_clean", paste0("data_firststage_", short_key, ".csv")),
             row.names = F
@@ -97,7 +92,7 @@ for (key in keys) {
             here::here("data_clean", paste0("data_secondstage_", short_key, ".csv")),
             row.names = F
   )
-
+  
  
   thresholds_list <- list()
   for (marker in markers) {
@@ -109,15 +104,15 @@ for (key in keys) {
       # Upper threshold must be less than the 0.99 quantile
       thresh_grid <-
         unique(quantile(
-          data_secondstage[[marker]],
+          data_secondstage[[marker]][data_secondstage[["Delta"]]==1],
           seq(lower_quantile, upper_quantile, length.out = threshold_grid_size),
           na.rm = T
         ))
       
       
-      thresh_mand <- report.assay.values(data_secondstage[[marker]], marker)
-      
-      thresh_grid <- sort(union(thresh_mand, thresh_grid))
+      thresh_mand <- report.assay.values(data_secondstage[[marker]][data_secondstage[["Delta"]]==1], marker)
+      thresh_grid <- sort(unique(thresh_mand))
+      #thresh_grid <- sort(union(thresh_mand, thresh_grid))
     } else {
       
       thresh_grid <- sort(unique(data_secondstage[[marker]]))
@@ -128,10 +123,10 @@ for (key in keys) {
     
     #thresholds_list[[marker]] <- thresh_grid
   }
-   
-}
+  
 
 
 
 
- 
+
+
