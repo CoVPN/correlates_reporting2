@@ -4,38 +4,17 @@
 print("running cor_mediation report ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 ```
 
-
 ```{r cop-mediator-setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(here)
-# so it builds in either directory
-wd <- here()
-root_dir <- gsub("/cop_mediation*", "", wd)
-renv::activate(root_dir)
-source(paste0(root_dir, "/_common.R"))
-analysis_ran <- file.exists(paste0(root_dir, "/cop_mediation/output/full_result.rds"))
-if(analysis_ran){
-	full_result <- readRDS(paste0(root_dir, "/cop_mediation/output/full_result.rds"))
-	full_result_cat <- readRDS(paste0(root_dir, "/cop_mediation/output/full_result_cat.rds"))
+config <- config::get(config = Sys.getenv("TRIAL"))
+if(config$study_name_code == "ENSEMBLE"){
+	for(COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")){
+		for(full_config_name in c("janssen_pooled_real", "janssen_pooled_realADCP")){
+			res = knitr::knit_child(
+		    here::here('cop_mediation', 'report_sub.Rmd')
+			)
+		  cat(res, sep = '\n')
+		}	
+	}
 }
 ```
-
-```{r, mediation-kable-quantitative, output = "asis", eval = analysis_ran}
-init_kable <- knitr::kable(full_result, 
-            format = "latex", row.names = FALSE, booktabs = TRUE, escape = FALSE,
-            caption = paste0("Table of mediation effect estimates for quantitative markers with 95\\% confidence intervals. \\newline{} Direct VE = VE comparing vaccine vs. placebo with marker set to distribution in placebo. \\newline{} Indirect VE = VE in vaccinated comparing observed marker vs. hypothetical marker under placebo. \\newline{} Prop. mediated = fraction of total risk reduction from vaccine attributed to antibody response."),
-            linesep = c(rep("", length(assays)-1), "\\hline"))
-if(any(is.na(full_result))){
-	init_kable <- kableExtra::add_footnote(init_kable, "NA denotes insufficient overlap in antibody response between vaccinated and control participants.")
-}
-kableExtra::kable_styling(init_kable, latex_options = c("scale_down", "hold_position"))
-```
-
-```{r, mediation-kable-categorical, output = "asis", eval = analysis_ran}
-init_kable_cat <- knitr::kable(full_result_cat, 
-            format = "latex", row.names = FALSE, booktabs = TRUE, escape = FALSE,
-            caption = paste0("Table of mediation effect estimates for tertile markers with 95\\% confidence intervals. \\newline{} Direct VE = VE comparing vaccine vs. placebo with marker set to distribution in placebo. \\newline{} Indirect VE = VE in vaccinated comparing observed marker vs. hypothetical marker under placebo. \\newline{} Prop. mediated = fraction of total risk reduction from vaccine attributed to antibody response."),
-            linesep = c(rep("", length(assays)-1), "\\hline"))
-kableExtra::kable_styling(init_kable_cat, latex_options = c("scale_down", "hold_position"))
-```
-
-`r if(!analysis_ran) "No mediation analysis was performed for these data."`
