@@ -1,5 +1,4 @@
 #if (exists(".DEF.COMMON")) stop ("_common.R has already been loaded") else .DEF.COMMON=TRUE
-study_name = "ENSEMBLE"
 library(methods)
 library(dplyr)
 library(kyotil)
