@@ -9,12 +9,10 @@ library(here)
 config <- config::get(config = Sys.getenv("TRIAL"))
 if(config$study_name_code == "ENSEMBLE"){
 	for(COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")){
-		for(full_config_name in c("janssen_pooled_real", "janssen_pooled_realADCP")){
 			res = knitr::knit_child(
-		    here::here('cop_mediation', 'report_sub.Rmd')
+		  	here::here('cop_mediation', 'report_sub.Rmd')
 			)
 		  cat(res, sep = '\n')
-		}	
 	}
 }
 ```

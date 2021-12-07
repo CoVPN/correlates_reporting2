@@ -4,17 +4,15 @@ if(COR == "D29IncludeNotMolecConfirmed"){
     "Day 29 analysis including non-molecularly confirmed endpoints starting ",
     "seven days after first dose."
   )
+  title <- "Seven days after first dose"
 }else if(COR == "D29IncludeNotMolecConfirmed"){
   info <- paste0(
     "Day 29 analysis including non-molecularly confirmed endpoints starting ",
     "one day after first dose."
   )
+  title <- "One day after first dose"
 }
-if(full_config_name == "janssen_pooled_real"){
-  title <- "Binding Assays"
-}else if(full_config_name == "janssen_pooled_realADCP"){
-  title <- "ADCP"
-}
+
 ```
 
 ## `r title`
@@ -22,9 +20,13 @@ if(full_config_name == "janssen_pooled_real"){
 This section contains results from the `r info`.
 
 ```{r, mediation-kable-quantitative, output = "asis"}
-full_result <- readRDS(here::here("output",
-  paste0("full_result_", full_config_name, "_", COR, ".rds")
-)
+bind_result <- readRDS(here::here("output",
+  paste0("full_result_janssen_pooled_real_", COR, ".rds")
+))
+adcp_result <- readRDS(here::here("output",
+  paste0("full_result_janssen_pooled_realADCP_", COR, ".rds")
+))
+full_result <- rbind(bind_result, adcp_result)
 
 init_kable <- knitr::kable(full_result, 
             format = "latex", row.names = FALSE, booktabs = TRUE, escape = FALSE,
