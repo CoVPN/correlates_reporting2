@@ -51,7 +51,6 @@ variables_to_keep <- c(
 )
 
 data_keep <- data[!is.na(data[[config.cor$wt]]), variables_to_keep]
-# data_keep <- data_keep[data_keep$wt.D210 < Inf, ]
 
 sl_library <- list(
   c("SL.mean", "screen_all"),
@@ -98,7 +97,7 @@ for (marker in include_assays) {
 	)
 	this_row <- format_row(fit)
 	quant_result <- rbind(quant_result, this_row)
-  which_assay <- substr(marker, 7, nchar(marker))
+  which_assay <- substr(marker, 6, nchar(marker)) ## this could be written better
 	assay_col <- c(assay_col, gsub("\\%", "\\\\\\%", labels.assays[which_assay]))
 }
 
@@ -115,7 +114,20 @@ saveRDS(
   )
 )
 
-
-
-
-
+# # re-labeling
+# for(COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")){
+#   bind_result <- readRDS(here::here("output",
+#     paste0("full_result_janssen_pooled_real_", COR, ".rds")
+#   ))
+#   bind_result[,'Assay'] <- c("Binding Antibody to Spike", "Binding Antibody to RBD")
+#   saveRDS(bind_result, file = here::here("output",
+#     paste0("full_result_janssen_pooled_real_", COR, ".rds")
+#   ))
+#   adcp_result <- readRDS(here::here("output",
+#     paste0("full_result_janssen_pooled_realADCP_", COR, ".rds")
+#   ))
+#   adcp_result[,'Assay'] <- "Phagocytic Score"
+#   saveRDS(adcp_result, file = here::here("output",
+#     paste0("full_result_janssen_pooled_realADCP_", COR, ".rds")
+#   ))
+# }
