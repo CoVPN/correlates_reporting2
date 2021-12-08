@@ -185,6 +185,8 @@ for (a in assays) {
 # 0:pooled or 2:la
 if (study_name_code=="ENSEMBLE" & !subset_value %in% c(0,2)) {
 
+if(verbose) print("forest plots for different countries and regions")
+
 regions=  get("regions."  %.%study_name_code)
 countries=get("countries."%.%study_name_code)
 labels.regions=  get("labels.regions."  %.%study_name_code)
@@ -193,7 +195,10 @@ labels.countries=get("labels.countries."%.%study_name_code)
 countries.1 = countries[countries %in% unique(dat.vac.seroneg$Country)]
 
 designs=list(design.vacc.seroneg); names(designs)="All Vaccine"
-designs=append(designs, lapply(countries.1, function (i) twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, Country==i)))))
+designs=append(designs, lapply(countries.1, function (i) {
+    out=try(twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, Country==i))), silent=TRUE)
+    if (!inherits(out,"try-error")) out else NULL
+}))
 # add Latin America after united states if pooled
 if (config$subset_variable=="None") designs = append(designs, lapply(regions[2], function (i) twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, Region==i)))), after=2)
 fits.all.3=lapply(assays, function(a) {
@@ -205,10 +210,15 @@ nevents=nrow(subset(dat.vac.seroneg, yy==1))
 nevents=c(nevents, sapply(countries.1, function(i) nrow(subset(dat.vac.seroneg, yy==1 & Country==i))))
 if (config$subset_variable=="None") nevents=append(nevents, sapply(regions[2],   function(i) nrow(subset(dat.vac.seroneg, yy==1 & Region==i ))), after=2)
 
+select=sapply(designs,function(x) !is.null(x))
+designs=designs[select]
+nevents=nevents[select]
+
+
 rv$fr.3=list(nevents=nevents)
 for (a in assays) {
     fits = fits.all.3[[a]]
-    est.ci = sapply(fits, function (fit) {
+    est.ci = sapply(fits[select], function (fit) {
         if (length(fit)==1) return (rep(NA,4))
         tmp=getFixedEf(fit, exp=T, robust=T)
         tmp[nrow(tmp),c("HR", "(lower", "upper)", "p.value")]
