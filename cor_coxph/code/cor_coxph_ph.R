@@ -175,7 +175,7 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c
 )
 
 tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p))
-rownames(tab.1)=c(labels.axis["Day"%.%tab.1.nop12, assays])
+rownames(tab.1.nop12)=c(labels.axis["Day"%.%tpeak, assays])
 rv$tab.1=tab.1.nop12
 
 
