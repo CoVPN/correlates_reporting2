@@ -87,7 +87,7 @@ if (exists("COR")) {
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
 
         # followup time for the last case
-        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph1), max(EventTimePrimary, EventIndPrimary==1))
+        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary, EventIndPrimary==1))
         
         # data integrity checks
         if (!is.null(dat.mock$ph1)) {
