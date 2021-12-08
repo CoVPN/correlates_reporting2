@@ -1,10 +1,6 @@
 # Mediators of Vaccine Efficacy {#cop-mediators}
 
-```{r, echo=FALSE}
-print("running cor_mediation report ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-```
-
-```{r cop-mediator-setup, echo = FALSE, message = FALSE, warning = FALSE}
+```{r cop-mediator-setup, echo = FALSE, message = FALSE, warning = FALSE, results="asis"}
 library(here)
 config <- config::get(config = Sys.getenv("TRIAL"))
 if(config$study_name_code == "ENSEMBLE"){

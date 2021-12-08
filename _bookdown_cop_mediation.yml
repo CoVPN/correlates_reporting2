@@ -14,8 +14,7 @@ language:
 rmd_files: [
   "index_cor.Rmd",
   "cop_mediation/report.Rmd",
-  "references.Rmd",
-  "appendix.Rmd"
+  "references.Rmd"
 ]
 
 # # full cor report

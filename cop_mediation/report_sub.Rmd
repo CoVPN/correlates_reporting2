@@ -1,11 +1,11 @@
-```{r define-title, echo = FALSE}
+```{r, echo = FALSE}
 if(COR == "D29IncludeNotMolecConfirmed"){
   info <- paste0(
     "Day 29 analysis including non-molecularly confirmed endpoints starting ",
     "seven days after first dose."
   )
   title <- "Seven days after first dose"
-}else if(COR == "D29IncludeNotMolecConfirmed"){
+}else if(COR == "D29IncludeNotMolecConfirmedstart1"){
   info <- paste0(
     "Day 29 analysis including non-molecularly confirmed endpoints starting ",
     "one day after first dose."
@@ -19,11 +19,12 @@ if(COR == "D29IncludeNotMolecConfirmed"){
 
 This section contains results from the `r info`.
 
-```{r, mediation-kable-quantitative, output = "asis"}
-bind_result <- readRDS(here::here("output",
+```{r, results = "asis"}
+here::i_am("cop_mediation/report_sub.Rmd")
+bind_result <- readRDS(here::here("cop_mediation", "output",
   paste0("full_result_janssen_pooled_real_", COR, ".rds")
 ))
-adcp_result <- readRDS(here::here("output",
+adcp_result <- readRDS(here::here("cop_mediation", "output",
   paste0("full_result_janssen_pooled_realADCP_", COR, ".rds")
 ))
 full_result <- rbind(bind_result, adcp_result)
