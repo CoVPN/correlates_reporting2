@@ -31,8 +31,6 @@ myprint(verbose)
 
 all.markers=paste0("Day", tpeak, assays)
 
-if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
-
 
 # path for figures and tables etc
 save.results.to = here::here("output")
@@ -91,10 +89,6 @@ dat.vac.seroneg$yy=dat.vac.seroneg[[config.cor$EventIndPrimary]]
 dat.pla.seroneg$yy=dat.pla.seroneg[[config.cor$EventIndPrimary]]
     
 
-if (tfinal.tpeak==0) {
-    # followup time for the last case
-    tfinal.tpeak=max(dat.vac.seroneg[dat.vac.seroneg[[config.cor$EventIndPrimary]]==1, config.cor$EventTimePrimary])    
-}
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
 
