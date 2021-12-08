@@ -1,7 +1,7 @@
 # marginalized risk without marker
 get.marginalized.risk.no.marker=function(dat){
     fit.risk = coxph(form.0, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
-    dat[[config.cor$EventTimePrimary]]=tfinal.tpeak
+    dat$EventTimePrimary=tfinal.tpeak
     risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
     mean(risks)
 }
