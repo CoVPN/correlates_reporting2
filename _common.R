@@ -33,7 +33,7 @@ for(opt in names(config)){
 }
 # correlates analyses-related 
 
-if (length(Args)>0) {
+if (exists("COR")) {
     config.cor <- config::get(config = COR)
     tpeak=as.integer(paste0(config.cor$tpeak))
     tpeaklag=as.integer(paste0(config.cor$tpeaklag))
@@ -72,32 +72,40 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-if (length(Args)>0) {
-if (is.null(config.cor$tinterm)) {
-##########################
-# single time point config
-    dat.mock$ph1=dat.mock[[config.cor$ph1]]
-    dat.mock$ph2=dat.mock[[config.cor$ph2]]
-    dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
-    dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
-    dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
-    dat.mock$wt=dat.mock[[config.cor$wt]]
-    if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
-    
-    # data integrity checks
-    if (!is.null(dat.mock$ph1)) {
-        # missing values in variables that should have no missing values
-        variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
-        ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
-        if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+if (exists("COR")) {   
+    if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
+
+    if (is.null(config.cor$tinterm)) {
+    ##########################
+    # single time point config
+        dat.mock$ph1=dat.mock[[config.cor$ph1]]
+        dat.mock$ph2=dat.mock[[config.cor$ph2]]
+        dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
+        dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
+        dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
+        dat.mock$wt=dat.mock[[config.cor$wt]]
+        if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
+
+        # followup time for the last case
+        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph1), max(EventTimePrimary, EventIndPrimary==1))
         
-        # ph1 should not have NA in Wstratum
-        ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
-        if(!ans) stop("Some Wstratum in ph1 are NA")
-    } else {
-        # may not be defined if COR is not provided in command line and used the default value
+        # data integrity checks
+        if (!is.null(dat.mock$ph1)) {
+            # missing values in variables that should have no missing values
+            variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+            ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+            if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+            
+            # ph1 should not have NA in Wstratum
+            ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+            if(!ans) stop("Some Wstratum in ph1 are NA")
+        } else {
+            # may not be defined if COR is not provided in command line and used the default value
+        }
+        
     }
-}
+    
+    
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
