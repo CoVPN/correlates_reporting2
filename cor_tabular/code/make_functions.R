@@ -32,7 +32,7 @@ getResponder <- function(data,
       
       data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
       data[, post] <- pmin(data[, post], log10(uloqs[j]))
-      data[, delta] <- ifelse(10^data[, post] < lloqs[j], log10(lloqs[j]/2), data[, post])-ifelse(10^data[, bl] < lloqs[j], log10(lloqs[j]/2), data[, bl])
+      data[, delta] <- ifelse(10^data[, post] < cutoff[j], log10(cutoff[j]/2), data[, post])-ifelse(10^data[, bl] < cutoff[j], log10(cutoff[j]/2), data[, bl])
       
       for (k in folds){
         data[, paste0(post, k, cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
