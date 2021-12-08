@@ -59,15 +59,15 @@ endif
 
 # parameters that may vary across runs
 params:  
-	ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
-		Rscript code/params.R D29
-		Rscript code/params.R D57
-	else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_trial_real janssen_pooled_mock janssen_pooled_real janssen_na_mock janssen_na_real janssen_la_mock janssen_la_real janssen_sa_mock janssen_sa_real))
-		Rscript code/params.R D29
-		Rscript code/params.R D29start1
-	else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
-		Rscript code/params.R D210
-	endif
+ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
+	Rscript code/params.R D29
+	Rscript code/params.R D57
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_trial_real janssen_pooled_mock janssen_pooled_real janssen_na_mock janssen_na_real janssen_la_mock janssen_la_real janssen_sa_mock janssen_sa_real))
+	Rscript code/params.R D29
+	Rscript code/params.R D29start1
+else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
+	Rscript code/params.R D210
+endif
 
 
 ## clean            : delete contents of data_clean/ and figs/

@@ -13,7 +13,7 @@ source(here::here("code", "params.R"))
 #dat.mock <- read.csv(here::here("..", "data_clean", paste0(stringr::str_match(data_name,"(.+).csv")[,2],append_data,".csv")))
 
  
-
+print("HERE")
 for (a in assays) {
   for (t in "Day"%.%tpeak ) {
     
@@ -40,7 +40,7 @@ for (a in assays) {
   
   
   ##### Discretize time grid
-  
+  print(colnames(data))
   max_t <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2 == 1, "EventTimePrimary" ])
   size_time_grid <- 15
   time_grid <- unique(sort(c(max_t ,quantile(data$Ttilde[data$Ttilde <= max_t + 5 & data$TwophasesampInd ==1 & !is.na(data$Delta)& data$Delta==1 ], seq(0,1, length = size_time_grid)))))

@@ -1,4 +1,5 @@
 #if (exists(".DEF.COMMON")) stop ("_common.R has already been loaded") else .DEF.COMMON=TRUE
+
 library(methods)
 library(dplyr)
 library(kyotil)
@@ -8,21 +9,20 @@ blas_get_num_procs()
 blas_set_num_threads(1L)
 stopifnot(blas_get_num_procs() == 1L)
 omp_set_num_threads(1L)
- 
 #
 set.seed(98109)
 verbose=0
 if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
-    
+
 # COR defines the analysis to be done, e.g. D14
 if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
 # if called from Rmd, there may not be a COR argument
 #if (length(Args)==0) stop("If running R from command line, provide an argument, e.g. D57, to the command. If you are running R interactively, do, e.g. Args=c(COR=\"D57\");  ")
 if (length(Args)>0) {
-    COR=Args[1]; myprint(COR)
+  COR=Args[1]; myprint(COR)
 }
- 
+
 
 ###################################################################################################
 # read config
@@ -33,17 +33,17 @@ for(opt in names(config)){
 }
 # correlates analyses-related 
 
-if (length(Args)>0) {
-    config.cor <- config::get(config = COR)
-    tpeak=as.integer(paste0(config.cor$tpeak))
-    tpeaklag=as.integer(paste0(config.cor$tpeaklag))
-    tfinal.tpeak=as.integer(paste0(config.cor$tfinal.tpeak))
-    tinterm=as.integer(paste0(config.cor$tinterm))
-    myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
-    # some config may not have all fields
-    if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
+if (exists("COR")) {
+  config.cor <- config::get(config = COR)
+  tpeak=as.integer(paste0(config.cor$tpeak))
+  tpeaklag=as.integer(paste0(config.cor$tpeaklag))
+  tfinal.tpeak=as.integer(paste0(config.cor$tfinal.tpeak))
+  tinterm=as.integer(paste0(config.cor$tinterm))
+  myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
+  # some config may not have all fields
+  if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
 }
-    
+
 # to be deprecated
 has57 = study_name %in% c("COVE","MockCOVE")
 has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
@@ -54,16 +54,16 @@ has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
 
 data_name = paste0(attr(config, "config"), "_data_processed.csv")
 if (startsWith(tolower(study_name), "mock")) {
-    data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
-    # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
-    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting2"), here::here("data_clean", data_name_updated), here::here("..", "data_clean", data_name_updated))
-    data_name = data_name_updated    
+  data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
+  # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
+  path_to_data = ifelse (endsWith(here::here(), "correlates_reporting2"), here::here("data_clean", data_name_updated), here::here("..", "data_clean", data_name_updated))
+  data_name = data_name_updated    
 } else {
-    # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
-    path_to_data = data_cleaned
-    data_name = path_to_data
-    # if path is relative, needs to do some processing
-    if(endsWith(here::here(), "correlates_reporting2") & startsWith(path_to_data,"..")) path_to_data=substr(path_to_data, 4, nchar(path_to_data))
+  # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
+  path_to_data = data_cleaned
+  data_name = path_to_data
+  # if path is relative, needs to do some processing
+  if(endsWith(here::here(), "correlates_reporting2") & startsWith(path_to_data,"..")) path_to_data=substr(path_to_data, 4, nchar(path_to_data))
 }
 print(path_to_data)
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
@@ -72,10 +72,12 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-if (length(Args)>0) {
-if (is.null(config.cor$tinterm)) {
-##########################
-# single time point config
+if (exists("COR")) {   
+  if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
+  
+  if (is.null(config.cor$tinterm)) {
+    ##########################
+    # single time point config
     dat.mock$ph1=dat.mock[[config.cor$ph1]]
     dat.mock$ph2=dat.mock[[config.cor$ph2]]
     dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
@@ -84,20 +86,26 @@ if (is.null(config.cor$tinterm)) {
     dat.mock$wt=dat.mock[[config.cor$wt]]
     if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
     
+    # followup time for the last case
+    if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+    
     # data integrity checks
     if (!is.null(dat.mock$ph1)) {
-        # missing values in variables that should have no missing values
-        variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
-        ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
-        if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
-        
-        # ph1 should not have NA in Wstratum
-        ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
-        if(!ans) stop("Some Wstratum in ph1 are NA")
+      # missing values in variables that should have no missing values
+      variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+      ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+      if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+      
+      # ph1 should not have NA in Wstratum
+      ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+      if(!ans) stop("Some Wstratum in ph1 are NA")
     } else {
-        # may not be defined if COR is not provided in command line and used the default value
+      # may not be defined if COR is not provided in command line and used the default value
     }
-}
+    
+  }
+  
+  
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
@@ -114,30 +122,30 @@ if (is.null(config.cor$tinterm)) {
 
 # some common graphing parameters
 if(config$is_ows_trial) {
-    # maxed over Spike, RBD, N, restricting to Day 29 or 57
-    if("bindSpike" %in% assays & "bindRBD" %in% assays) {
-        if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-        if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-        if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-        if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    }
-        
-    # maxed over ID50 and ID80, restricting to Day 29 or 57
-    if("pseudoneutid50" %in% assays & "pseudoneutid80" %in% assays) {
-        if(has29) MaxID50ID80Day29 = max(dat.mock[,paste0("Day29", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)
-        if(has29) MaxID50ID80Delta29overB = max(dat.mock[,paste0("Delta29overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
-        if(has57) MaxID50ID80Day57 = max(dat.mock[,paste0("Day57", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)        
-        if(has57) MaxID50ID80Delta57overB = max(dat.mock[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
-    }
-    
-    # maxed over ADCP, restricting to Day 29 or 57
-    if("ADCP" %in% assays ) {
-        if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("ADCP"))], na.rm=T)
-        if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("ADCP"))], na.rm=T)
-        if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("ADCP"))], na.rm=T)
-        if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("ADCP"))], na.rm=T)
-    }
-            
+  # maxed over Spike, RBD, N, restricting to Day 29 or 57
+  if("bindSpike" %in% assays & "bindRBD" %in% assays) {
+    if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+  }
+  
+  # maxed over ID50 and ID80, restricting to Day 29 or 57
+  if("pseudoneutid50" %in% assays & "pseudoneutid80" %in% assays) {
+    if(has29) MaxID50ID80Day29 = max(dat.mock[,paste0("Day29", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)
+    if(has29) MaxID50ID80Delta29overB = max(dat.mock[,paste0("Delta29overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
+    if(has57) MaxID50ID80Day57 = max(dat.mock[,paste0("Day57", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)        
+    if(has57) MaxID50ID80Delta57overB = max(dat.mock[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
+  }
+  
+  # maxed over ADCP, restricting to Day 29 or 57
+  if("ADCP" %in% assays ) {
+    if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("ADCP"))], na.rm=T)
+    if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("ADCP"))], na.rm=T)
+    if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("ADCP"))], na.rm=T)
+    if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("ADCP"))], na.rm=T)
+  }
+  
 }     
 
 
@@ -153,7 +161,7 @@ if(config$is_ows_trial) {
 #    }
 #])))
 
-    
+
 
 
 
@@ -163,83 +171,83 @@ names(assays)=assays # add names so that lapply results will have names
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
 if (config$is_ows_trial) {
-
-    # For bAb, IU and BAU are the same thing
-    # limits for each assay (IU for bAb and pseudoneut, no need to convert again)
-    # the following are copied from SAP to avoid any mistake (get rid of commas)
-    tmp=list(
-        bindSpike=c(
-            pos.cutoff=10.8424,
-            LLOD = 0.3076,
-            ULOD = 172226.2,
-            LLOQ = 1.7968,
-            ULOQ = 10155.95)
-        ,
-        bindRBD=c(
-            pos.cutoff=14.0858,
-            LLOD = 1.593648,
-            ULOD = 223074,
-            LLOQ = 3.4263,
-            ULOQ = 16269.23)
-        ,
-        bindN=c( 
-            pos.cutoff=23.4711,
-            LLOD = 0.093744,
-            ULOD = 52488,
-            LLOQ = 4.4897,
-            ULOQ = 574.6783)
-        ,
-        pseudoneutid50=c( 
-            LLOD = 2.42,
-            ULOD = NA,
-            LLOQ = 4.477,
-            ULOQ = 10919)
-        ,
-        pseudoneutid80=c( 
-            LLOD = 15.02,
-            ULOD = NA,
-            LLOQ = 21.4786,
-            ULOQ = 15368)
-        ,
-        liveneutmn50=c( 
-            LLOD = 62.16,
-            ULOD = NA,
-            LLOQ = 117.35,
-            ULOQ = 18976.19)
-        ,
-        ADCP=c( 
-            pos.cutoff=11.57,# as same lod
-            LLOD = 11.57,
-            ULOD = NA,
-            LLOQ = 8.87,
-            ULOQ = 211.56)
-    )
+  
+  # For bAb, IU and BAU are the same thing
+  # limits for each assay (IU for bAb and pseudoneut, no need to convert again)
+  # the following are copied from SAP to avoid any mistake (get rid of commas)
+  tmp=list(
+    bindSpike=c(
+      pos.cutoff=10.8424,
+      LLOD = 0.3076,
+      ULOD = 172226.2,
+      LLOQ = 1.7968,
+      ULOQ = 10155.95)
+    ,
+    bindRBD=c(
+      pos.cutoff=14.0858,
+      LLOD = 1.593648,
+      ULOD = 223074,
+      LLOQ = 3.4263,
+      ULOQ = 16269.23)
+    ,
+    bindN=c( 
+      pos.cutoff=23.4711,
+      LLOD = 0.093744,
+      ULOD = 52488,
+      LLOQ = 4.4897,
+      ULOQ = 574.6783)
+    ,
+    pseudoneutid50=c( 
+      LLOD = 2.42,
+      ULOD = NA,
+      LLOQ = 4.477,
+      ULOQ = 10919)
+    ,
+    pseudoneutid80=c( 
+      LLOD = 15.02,
+      ULOD = NA,
+      LLOQ = 21.4786,
+      ULOQ = 15368)
+    ,
+    liveneutmn50=c( 
+      LLOD = 62.16,
+      ULOD = NA,
+      LLOQ = 117.35,
+      ULOQ = 18976.19)
+    ,
+    ADCP=c( 
+      pos.cutoff=11.57,# as same lod
+      LLOD = 11.57,
+      ULOD = NA,
+      LLOQ = 8.87,
+      ULOQ = 211.56)
+  )
+  
+  pos.cutoffs=sapply(tmp, function(x) unname(x["pos.cutoff"]))
+  llods=sapply(tmp, function(x) unname(x["LLOD"]))
+  lloqs=sapply(tmp, function(x) unname(x["LLOQ"]))
+  uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))
+  
+  # Per Sarah O'Connell, for ensemble, the positivity cut offs and LLODs will be identical, 
+  # as will the quantitative limits for N protein which are based on convalescent samples.
+  # But the RBD and Spike quantitation ranges will be different for the Janssen partial validation than for Moderna. 
+  if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
+    lloqs["bindSpike"]=1.8429 
+    lloqs["bindRBD"]=5.0243 
     
-    pos.cutoffs=sapply(tmp, function(x) unname(x["pos.cutoff"]))
-    llods=sapply(tmp, function(x) unname(x["LLOD"]))
-    lloqs=sapply(tmp, function(x) unname(x["LLOQ"]))
-    uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))
-    
-    # Per Sarah O'Connell, for ensemble, the positivity cut offs and LLODs will be identical, 
-    # as will the quantitative limits for N protein which are based on convalescent samples.
-    # But the RBD and Spike quantitation ranges will be different for the Janssen partial validation than for Moderna. 
-    if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
-        lloqs["bindSpike"]=1.8429 
-        lloqs["bindRBD"]=5.0243 
-        
-        uloqs["bindSpike"]=238.1165 
-        uloqs["bindRBD"]=172.5755    
-    }
-    
-    lloxs=llods
-    
+    uloqs["bindSpike"]=238.1165 
+    uloqs["bindRBD"]=172.5755    
+  }
+  
+  lloxs=llods
+  
 } else {
-    # get uloqs and lloqs from config
-    # config$uloqs is a list before this processing
-    if (!is.null(config$uloqs)) uloqs=sapply(config$uloqs, function(x) ifelse(is.numeric(x), x, Inf))  else uloqs=sapply(assays, function(a) Inf)
-    if (!is.null(config$lloxs)) lloxs=sapply(config$lloxs, function(x) ifelse(is.numeric(x), x, NA))   else lloxs=sapply(assays, function(a) NA)
-    names(uloqs)=assays # this is necessary because config$uloqs does not have names
-    names(lloxs)=assays
+  # get uloqs and lloqs from config
+  # config$uloqs is a list before this processing
+  if (!is.null(config$uloqs)) uloqs=sapply(config$uloqs, function(x) ifelse(is.numeric(x), x, Inf))  else uloqs=sapply(assays, function(a) Inf)
+  if (!is.null(config$lloxs)) lloxs=sapply(config$lloxs, function(x) ifelse(is.numeric(x), x, NA))   else lloxs=sapply(assays, function(a) NA)
+  names(uloqs)=assays # this is necessary because config$uloqs does not have names
+  names(lloxs)=assays
 }
 
 
@@ -315,10 +323,10 @@ labels.assays = config$assay_labels
 names(labels.assays) = config$assays
 
 if (is.null(config$assay_labels_short)) {
-    labels.assays.short=labels.assays
+  labels.assays.short=labels.assays
 } else {
-    labels.assays.short = config$assay_labels_short
-    names(labels.assays.short) = config$assays
+  labels.assays.short = config$assay_labels_short
+  names(labels.assays.short) = config$assays
 }
 
 # hacky fix for tabular, since unclear who else is using
@@ -356,33 +364,33 @@ Bstratum.labels <- c(
 
 # baseline stratum labeling
 if ((study_name=="COVE" | study_name=="MockCOVE")) {
-    demo.stratum.labels <- c(
-      "Age >= 65, URM",
-      "Age < 65, At risk, URM",
-      "Age < 65, Not at risk, URM",
-      "Age >= 65, White non-Hisp",
-      "Age < 65, At risk, White non-Hisp",
-      "Age < 65, Not at risk, White non-Hisp"
-    )
+  demo.stratum.labels <- c(
+    "Age >= 65, URM",
+    "Age < 65, At risk, URM",
+    "Age < 65, Not at risk, URM",
+    "Age >= 65, White non-Hisp",
+    "Age < 65, At risk, White non-Hisp",
+    "Age < 65, Not at risk, White non-Hisp"
+  )
 } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
-    demo.stratum.labels <- c(
-      "US URM, Age 18-59, Not at risk",
-      "US URM, Age 18-59, At risk",
-      "US URM, Age >= 60, Not at risk",
-      "US URM, Age >= 60, At risk",
-      "US White non-Hisp, Age 18-59, Not at risk",
-      "US White non-Hisp, Age 18-59, At risk",
-      "US White non-Hisp, Age >= 60, Not at risk",
-      "US White non-Hisp, Age >= 60, At risk",
-      "Latin America, Age 18-59, Not at risk",
-      "Latin America, Age 18-59, At risk",
-      "Latin America, Age >= 60, Not at risk",
-      "Latin America, Age >= 60, At risk",
-      "South Africa, Age 18-59, Not at risk",
-      "South Africa, Age 18-59, At risk",
-      "South Africa, Age >= 60, Not at risk",
-      "South Africa, Age >= 60, At risk"
-    )
+  demo.stratum.labels <- c(
+    "US URM, Age 18-59, Not at risk",
+    "US URM, Age 18-59, At risk",
+    "US URM, Age >= 60, Not at risk",
+    "US URM, Age >= 60, At risk",
+    "US White non-Hisp, Age 18-59, Not at risk",
+    "US White non-Hisp, Age 18-59, At risk",
+    "US White non-Hisp, Age >= 60, Not at risk",
+    "US White non-Hisp, Age >= 60, At risk",
+    "Latin America, Age 18-59, Not at risk",
+    "Latin America, Age 18-59, At risk",
+    "Latin America, Age >= 60, Not at risk",
+    "Latin America, Age >= 60, At risk",
+    "South Africa, Age 18-59, Not at risk",
+    "South Africa, Age 18-59, At risk",
+    "South Africa, Age >= 60, Not at risk",
+    "South Africa, Age >= 60, At risk"
+  )
 }
 
 labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
@@ -434,7 +442,7 @@ Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
 # overwrite options by output type
 if (knitr:::is_html_output()) {
   #options(width = 80)
-
+  
   # automatically create a bib database for R packages
   knitr::write_bib(c(
     .packages(), "bookdown", "knitr", "rmarkdown"
@@ -444,7 +452,7 @@ if (knitr:::is_latex_output()) {
   #knitr::opts_chunk$set(width = 67)
   #options(width = 67)
   options(cli.unicode = TRUE)
-
+  
   # automatically create a bib database for R packages
   knitr::write_bib(c(
     .packages(), "bookdown", "knitr", "rmarkdown"
@@ -456,14 +464,14 @@ if (knitr:::is_latex_output()) {
 theme_transparent <- function(...) {
   # use black-white theme as base
   ret <- ggplot2::theme_bw(...)
-
+  
   # modify with transparencies
   trans_rect <- ggplot2::element_rect(fill = "transparent", colour = NA)
   ret$panel.background  <- trans_rect
   ret$plot.background   <- trans_rect
   ret$legend.background <- trans_rect
   ret$legend.key        <- trans_rect
-
+  
   # always have legend below
   ret$legend.position <- "bottom"
   return(ret)
@@ -495,33 +503,33 @@ ggsave_custom <- function(filename = default_name(plot),
 
 
 get.range.cor=function(dat, assay, time) {
-    if(assay %in% c("bindSpike", "bindRBD")) {
-        ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(llods[c("bindSpike","bindRBD")]/2), na.rm=T)
-        ret[2]=ceiling(ret[2]) # round up
-    } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
-        ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
-        ret[2]=ceiling(ret[2]) # round up
-    } else {
-        ret=range(dat[["Day"%.%time%.%assay]], log10(lloxs[assay]/2), na.rm=T)        
-    }
-    delta=(ret[2]-ret[1])/20     
-    c(ret[1]-delta, ret[2]+delta)
+  if(assay %in% c("bindSpike", "bindRBD")) {
+    ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(llods[c("bindSpike","bindRBD")]/2), na.rm=T)
+    ret[2]=ceiling(ret[2]) # round up
+  } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
+    ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
+    ret[2]=ceiling(ret[2]) # round up
+  } else {
+    ret=range(dat[["Day"%.%time%.%assay]], log10(lloxs[assay]/2), na.rm=T)        
+  }
+  delta=(ret[2]-ret[1])/20     
+  c(ret[1]-delta, ret[2]+delta)
 }
 
 draw.x.axis.cor=function(xlim, llox){
-    xx=seq(ceiling(xlim[1]), floor(xlim[2]))
-    if (is.na(llox)) {
-        for (x in xx) axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )    
-    } else {
-        for (x in xx) if (x>log10(llox*1.8)) axis(1, at=x, labels=if (log10(llox)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )    
-        axis(1, at=log10(llox), labels=config$llox_label)
+  xx=seq(ceiling(xlim[1]), floor(xlim[2]))
+  if (is.na(llox)) {
+    for (x in xx) axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )    
+  } else {
+    for (x in xx) if (x>log10(llox*1.8)) axis(1, at=x, labels=if (log10(llox)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )    
+    axis(1, at=log10(llox), labels=config$llox_label)
+  }
+  if (length(xx)<=3) {
+    for (i in 2:length(xx)) {
+      x=xx[i-1]
+      axis(1, at=x+log10(3), labels=if (x>=3) bquote(3%*%10^.(x)) else 3*10^x )
     }
-    if (length(xx)<=3) {
-        for (i in 2:length(xx)) {
-            x=xx[i-1]
-            axis(1, at=x+log10(3), labels=if (x>=3) bquote(3%*%10^.(x)) else 3*10^x )
-        }
-    }
+  }
 }
 
 ##### Copy of draw.x.axis.cor but returns the x-axis ticks and labels
@@ -531,17 +539,17 @@ get.labels.x.axis.cor=function(xlim, llox){
   if (!is.na(llox)) xx=xx[xx>log10(llox*2)]
   x_ticks <- xx
   if (is.na(llox)) {
-      labels <- sapply(xx, function(x) {
-        if (x>=3) bquote(10^.(x)) else 10^x
-      })
+    labels <- sapply(xx, function(x) {
+      if (x>=3) bquote(10^.(x)) else 10^x
+    })
   } else {
-      labels <- sapply(xx, function(x) {
-        if (log10(llox)==x) config$llox_label else if (x>=3) bquote(10^.(x)) else 10^x
-      })
-      #if(!any(log10(llox)==x_ticks)){
-        x_ticks <- c(log10(llox), x_ticks)
-        labels <- c(config$llox_label, labels)
-      #}
+    labels <- sapply(xx, function(x) {
+      if (log10(llox)==x) config$llox_label else if (x>=3) bquote(10^.(x)) else 10^x
+    })
+    #if(!any(log10(llox)==x_ticks)){
+    x_ticks <- c(log10(llox), x_ticks)
+    labels <- c(config$llox_label, labels)
+    #}
   }
   return(list(ticks = x_ticks, labels = labels))
 }
@@ -553,41 +561,41 @@ get.labels.x.axis.cor=function(xlim, llox){
 # 1) sample with replacement to get dat.b. From this dataset, take the cases and count ph2 and non-ph2 controls by strata
 # 2) sample with replacement ph2 and non-ph2 controls by strata
 bootstrap.case.control.samples=function(dat.ph1, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=1) {
-#dat.ph1=dat.tmp; delta.name="EventIndPrimary"; strata.name="tps.stratum"; ph2.name="ph2"; min.cell.size=0
-    
-    set.seed(seed)
-    
-    dat.tmp=data.frame(ptid=1:nrow(dat.ph1), delta=dat.ph1[,delta.name], strata=dat.ph1[,strata.name], ph2=dat.ph1[,ph2.name])
-    
-    nn.ph1=with(dat.tmp, table(strata, delta))
-    strat=rownames(nn.ph1); names(strat)=strat
-    # ctrl.ptids is a list of lists
-    ctrl.ptids = with(subset(dat.tmp, delta==0), lapply(strat, function (i) list(ph2=ptid[strata==i & ph2], nonph2=ptid[strata==i & !ph2])))
-    
-    # 1. resample dat.ph1 to get dat.b, but only take the cases 
-    dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),]
-
-    # re-do resampling if the bootstrap dataset has too few samples in a cell in nn.ctrl.b
-    while(TRUE) {   
-        nn.ctrl.b=with(subset(dat.b, !delta), table(strata, ph2))
-        if (min(nn.ctrl.b)<min.cell.size | ncol(nn.ctrl.b)<2) dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),] else break
-    }
-
-    # take the case ptids
-    case.ptids.b = dat.b$ptid[dat.b$delta==1]
-    
-    # 2. resample controls in dat.ph1 (numbers determined by dat.b) stratified by strata and ph2/nonph2
-    # ph2 and non-ph2 controls by strata
+  #dat.ph1=dat.tmp; delta.name="EventIndPrimary"; strata.name="tps.stratum"; ph2.name="ph2"; min.cell.size=0
+  
+  set.seed(seed)
+  
+  dat.tmp=data.frame(ptid=1:nrow(dat.ph1), delta=dat.ph1[,delta.name], strata=dat.ph1[,strata.name], ph2=dat.ph1[,ph2.name])
+  
+  nn.ph1=with(dat.tmp, table(strata, delta))
+  strat=rownames(nn.ph1); names(strat)=strat
+  # ctrl.ptids is a list of lists
+  ctrl.ptids = with(subset(dat.tmp, delta==0), lapply(strat, function (i) list(ph2=ptid[strata==i & ph2], nonph2=ptid[strata==i & !ph2])))
+  
+  # 1. resample dat.ph1 to get dat.b, but only take the cases 
+  dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),]
+  
+  # re-do resampling if the bootstrap dataset has too few samples in a cell in nn.ctrl.b
+  while(TRUE) {   
     nn.ctrl.b=with(subset(dat.b, !delta), table(strata, ph2))
-    # sample the control ptids
-    ctrl.ptids.by.stratum.b=lapply(strat, function (i) {
-        c(sample(ctrl.ptids[[i]]$ph2, nn.ctrl.b[i,2], r=T),
-          sample(ctrl.ptids[[i]]$nonph2, nn.ctrl.b[i,1], r=T))
-    })
-    ctrl.ptids.b=do.call(c, ctrl.ptids.by.stratum.b)    
-    
-    # return data frame
-    dat.ph1[c(case.ptids.b, ctrl.ptids.b), ]
+    if (min(nn.ctrl.b)<min.cell.size | ncol(nn.ctrl.b)<2) dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),] else break
+  }
+  
+  # take the case ptids
+  case.ptids.b = dat.b$ptid[dat.b$delta==1]
+  
+  # 2. resample controls in dat.ph1 (numbers determined by dat.b) stratified by strata and ph2/nonph2
+  # ph2 and non-ph2 controls by strata
+  nn.ctrl.b=with(subset(dat.b, !delta), table(strata, ph2))
+  # sample the control ptids
+  ctrl.ptids.by.stratum.b=lapply(strat, function (i) {
+    c(sample(ctrl.ptids[[i]]$ph2, nn.ctrl.b[i,2], r=T),
+      sample(ctrl.ptids[[i]]$nonph2, nn.ctrl.b[i,1], r=T))
+  })
+  ctrl.ptids.b=do.call(c, ctrl.ptids.by.stratum.b)    
+  
+  # return data frame
+  dat.ph1[c(case.ptids.b, ctrl.ptids.b), ]
 }
 
 ## testing
@@ -627,125 +635,125 @@ bootstrap.case.control.samples=function(dat.ph1, seed, delta.name="EventIndPrima
 
 # for bootstrap use
 get.ptids.by.stratum.for.bootstrap = function(data) {
-    strat=sort(unique(data$tps.stratum))
-    ptids.by.stratum=lapply(strat, function (i) 
-        list(subcohort=subset(data, tps.stratum==i & SubcohortInd==1, Ptid, drop=TRUE), nonsubcohort=subset(data, tps.stratum==i & SubcohortInd==0, Ptid, drop=TRUE))
-    )    
-    # add a pseudo-stratum for subjects with NA in tps.stratum (not part of Subcohort). 
-    # we need this group because it contains some cases with missing tps.stratum
-    # if data is ph2 only, then this group is only cases because ph2 = subcohort + cases
-    tmp=list(subcohort=subset(data, is.na(tps.stratum), Ptid, drop=TRUE),               nonsubcohort=NULL)
-    ptids.by.stratum=append(ptids.by.stratum, list(tmp))    
-    ptids.by.stratum
+  strat=sort(unique(data$tps.stratum))
+  ptids.by.stratum=lapply(strat, function (i) 
+    list(subcohort=subset(data, tps.stratum==i & SubcohortInd==1, Ptid, drop=TRUE), nonsubcohort=subset(data, tps.stratum==i & SubcohortInd==0, Ptid, drop=TRUE))
+  )    
+  # add a pseudo-stratum for subjects with NA in tps.stratum (not part of Subcohort). 
+  # we need this group because it contains some cases with missing tps.stratum
+  # if data is ph2 only, then this group is only cases because ph2 = subcohort + cases
+  tmp=list(subcohort=subset(data, is.na(tps.stratum), Ptid, drop=TRUE),               nonsubcohort=NULL)
+  ptids.by.stratum=append(ptids.by.stratum, list(tmp))    
+  ptids.by.stratum
 }
 
 
 # data is assumed to contain only ph1 ptids
 get.bootstrap.data.cor = function(data, ptids.by.stratum, seed) {
-    set.seed(seed)    
-    
-    # For each sampling stratum, bootstrap samples in subcohort and not in subchort separately
-    tmp=lapply(ptids.by.stratum, function(x) c(sample(x$subcohort, r=TRUE), sample(x$nonsubcohort, r=TRUE)))
-    
-    dat.b=data[match(unlist(tmp), data$Ptid),]
-    
-    # compute weights
-    tmp=with(dat.b, table(Wstratum, ph2))
-    weights=rowSums(tmp)/tmp[,2]
-    dat.b$wt=weights[""%.%dat.b$Wstratum]
-    # we assume data only contains ph1 ptids, thus weights is defined for every bootstrapped ptids
-    
-    dat.b
+  set.seed(seed)    
+  
+  # For each sampling stratum, bootstrap samples in subcohort and not in subchort separately
+  tmp=lapply(ptids.by.stratum, function(x) c(sample(x$subcohort, r=TRUE), sample(x$nonsubcohort, r=TRUE)))
+  
+  dat.b=data[match(unlist(tmp), data$Ptid),]
+  
+  # compute weights
+  tmp=with(dat.b, table(Wstratum, ph2))
+  weights=rowSums(tmp)/tmp[,2]
+  dat.b$wt=weights[""%.%dat.b$Wstratum]
+  # we assume data only contains ph1 ptids, thus weights is defined for every bootstrapped ptids
+  
+  dat.b
 }
 
 # extract assay from marker name such as Day57pseudoneutid80, Bpseudoneutid80
 marker.name.to.assay=function(marker.name) {
-    if(endsWith(marker.name, "bindSpike")) {
-        "bindSpike"
-    } else if(endsWith(marker.name, "bindRBD")) {
-        "bindRBD"
-    } else if(endsWith(marker.name, "bindN")) {
-        "bindN"
-    } else if(endsWith(marker.name, "pseudoneutid50")) {
-        "pseudoneutid50"
-    } else if(endsWith(marker.name, "pseudoneutid80")) {
-        "pseudoneutid80"
-    } else if(endsWith(marker.name, "liveneutmn50")) {
-        "liveneutmn50"
-    } else stop("marker.name.to.assay: wrong marker.name")
+  if(endsWith(marker.name, "bindSpike")) {
+    "bindSpike"
+  } else if(endsWith(marker.name, "bindRBD")) {
+    "bindRBD"
+  } else if(endsWith(marker.name, "bindN")) {
+    "bindN"
+  } else if(endsWith(marker.name, "pseudoneutid50")) {
+    "pseudoneutid50"
+  } else if(endsWith(marker.name, "pseudoneutid80")) {
+    "pseudoneutid80"
+  } else if(endsWith(marker.name, "liveneutmn50")) {
+    "liveneutmn50"
+  } else stop("marker.name.to.assay: wrong marker.name")
 }
 
 
 # x is the marker values
 # assay is one of assays, e.g. pseudoneutid80
 report.assay.values=function(x, assay){
-    lars.quantiles=seq(0,1,length.out=30) [round(seq.int(1, 30, length.out = 10))]
-    sens.quantiles=c(0.15, 0.85)
-    # cannot have different lengths for different assays, otherwise downstream code may break
-    fixed.values = log10(c("500"=500, "1000"=1000))
-    # if we want to add "llox/2"=unname(lloxs[assay]/2))) to fixed.values, we have to get assay right, which will take some thought because marker.name.to.assay is hardcoded
-    out=sort(c(quantile(x, c(lars.quantiles,sens.quantiles), na.rm=TRUE), fixed.values[fixed.values<max(x, na.rm=T) & fixed.values>min(x, na.rm=T)]))    
-    out
-    #out[!duplicated(out)] # unique strips away the names. But don't take out duplicates because 15% may be needed and because we may want the same number of values for each assay
+  lars.quantiles=seq(0,1,length.out=30) [round(seq.int(1, 30, length.out = 10))]
+  sens.quantiles=c(0.15, 0.85)
+  # cannot have different lengths for different assays, otherwise downstream code may break
+  fixed.values = log10(c("500"=500, "1000"=1000))
+  # if we want to add "llox/2"=unname(lloxs[assay]/2))) to fixed.values, we have to get assay right, which will take some thought because marker.name.to.assay is hardcoded
+  out=sort(c(quantile(x, c(lars.quantiles,sens.quantiles), na.rm=TRUE), fixed.values[fixed.values<max(x, na.rm=T) & fixed.values>min(x, na.rm=T)]))    
+  out
+  #out[!duplicated(out)] # unique strips away the names. But don't take out duplicates because 15% may be needed and because we may want the same number of values for each assay
 }
 #report.assay.values (dat.vac.seroneg[["Day57pseudoneutid80"]], "pseudoneutid80")
 
 
 
 add.trichotomized.markers=function(dat, tpeak, wt.col.name) {
-    if(verbose) print("add.trichotomized.markers ...")
-    
-    marker.cutpoints <- list()    
-    for (a in assays) {
-        marker.cutpoints[[a]] <- list()    
-        #for (ind.t in times[-1]) {
-        for (ind.t in "Day"%.%tpeak) {        
-            if (verbose) myprint(a, ind.t, newline=F)
-            tmp.a=dat[[ind.t %.% a]]
-            
-            uppercut=log10(uloqs[a])*.9999
-            if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(ind.t, "Day")) {
-                # if more than 1/3 of vaccine recipients have value > ULOQ
-                # let q.a be median among those < ULOQ and ULOQ
-                if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")
-                q.a=c(  wtd.quantile(tmp.a[dat[[ind.t %.% a]]<=uppercut], 
-                           weights = dat[[wt.col.name]][tmp.a<=uppercut], probs = c(1/2)), 
-                        uppercut)
-            } else {
-                q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
-            }
-            tmp=try(factor(cut(tmp.a, breaks = c(-Inf, q.a, Inf))), silent=T)
-     
-            do.cut=FALSE # if TRUE, use cut function which does not use weights
-            # if there is a huge point mass, an error would occur, or it may not break into 3 groups
-            if (inherits(tmp, "try-error")) do.cut=TRUE else if(length(table(tmp)) != 3) do.cut=TRUE
-            
-            if(!do.cut) {
-                dat[[ind.t %.% a %.% "cat"]] <- tmp
-                marker.cutpoints[[a]][[ind.t]] <- q.a
-            } else {
-                myprint("\nfirst cut fails, call cut again with breaks=3 \n")
-                # cut is more robust but it does not incorporate weights
-                tmp=cut(tmp.a, breaks=3)
-                stopifnot(length(table(tmp))==3)
-                dat[[ind.t %.% a %.% "cat"]] = tmp
-                # extract cut points from factor level labels
-                tmpname = names(table(tmp))[2]
-                tmpname = substr(tmpname, 2, nchar(tmpname)-1)
-                marker.cutpoints[[a]][[ind.t]] <- as.numeric(strsplit(tmpname, ",")[[1]])
-            }
-            stopifnot(length(table(dat[[ind.t %.% a %.% "cat"]])) == 3)
-            if(verbose) {
-                print(table(dat[[ind.t %.% a %.% "cat"]]))
-                cat("\n")
-            }
-            
-        }
+  if(verbose) print("add.trichotomized.markers ...")
+  
+  marker.cutpoints <- list()    
+  for (a in assays) {
+    marker.cutpoints[[a]] <- list()    
+    #for (ind.t in times[-1]) {
+    for (ind.t in "Day"%.%tpeak) {        
+      if (verbose) myprint(a, ind.t, newline=F)
+      tmp.a=dat[[ind.t %.% a]]
+      
+      uppercut=log10(uloqs[a])*.9999
+      if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(ind.t, "Day")) {
+        # if more than 1/3 of vaccine recipients have value > ULOQ
+        # let q.a be median among those < ULOQ and ULOQ
+        if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")
+        q.a=c(  wtd.quantile(tmp.a[dat[[ind.t %.% a]]<=uppercut], 
+                             weights = dat[[wt.col.name]][tmp.a<=uppercut], probs = c(1/2)), 
+                uppercut)
+      } else {
+        q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
+      }
+      tmp=try(factor(cut(tmp.a, breaks = c(-Inf, q.a, Inf))), silent=T)
+      
+      do.cut=FALSE # if TRUE, use cut function which does not use weights
+      # if there is a huge point mass, an error would occur, or it may not break into 3 groups
+      if (inherits(tmp, "try-error")) do.cut=TRUE else if(length(table(tmp)) != 3) do.cut=TRUE
+      
+      if(!do.cut) {
+        dat[[ind.t %.% a %.% "cat"]] <- tmp
+        marker.cutpoints[[a]][[ind.t]] <- q.a
+      } else {
+        myprint("\nfirst cut fails, call cut again with breaks=3 \n")
+        # cut is more robust but it does not incorporate weights
+        tmp=cut(tmp.a, breaks=3)
+        stopifnot(length(table(tmp))==3)
+        dat[[ind.t %.% a %.% "cat"]] = tmp
+        # extract cut points from factor level labels
+        tmpname = names(table(tmp))[2]
+        tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+        marker.cutpoints[[a]][[ind.t]] <- as.numeric(strsplit(tmpname, ",")[[1]])
+      }
+      stopifnot(length(table(dat[[ind.t %.% a %.% "cat"]])) == 3)
+      if(verbose) {
+        print(table(dat[[ind.t %.% a %.% "cat"]]))
+        cat("\n")
+      }
+      
     }
-    
-    attr(dat, "marker.cutpoints")=marker.cutpoints
-    dat
-    
+  }
+  
+  attr(dat, "marker.cutpoints")=marker.cutpoints
+  dat
+  
 }
 
 
@@ -753,41 +761,41 @@ add.trichotomized.markers=function(dat, tpeak, wt.col.name) {
 # a function to print tables of cases counts with different marker availability
 # note that D57 cases and intercurrent cases may add up to more than D29 cases because ph1.D57 requires EarlyendpointD57==0 while ph1.D29 requires EarlyendpointD29==0
 make.case.count.marker.availability.table=function(dat) {
-    if (study_name=="COVE" | study_name=="MockCOVE" ) {
-        idx.trt=1:0
-        names(idx.trt)=c("vacc","plac")
-        cnts = sapply (idx.trt, simplify="array", function(trt) {
-             idx=1:3
-             names(idx)=c("Day 29 Cases", "Day 57 Cases", "Intercurrent Cases")
-             tab=t(sapply (idx, function(i) {           
-                tmp.1 = with(subset(dat, Trt==trt & Bserostatus==0 & (if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29) &   (if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases)), is.na(BbindSpike)     | is.na(BbindRBD) )
-                tmp.2 = with(subset(dat, Trt==trt & Bserostatus==0 & (if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29) &   (if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases)), is.na(Day29bindSpike) | is.na(Day29bindRBD))
-                tmp.3 = with(subset(dat, Trt==trt & Bserostatus==0 & (if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29) &   (if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases)), is.na(Day57bindSpike) | is.na(Day57bindRBD))    
-                
-                c(sum(tmp.1 & tmp.2 & tmp.3), sum(tmp.1 & tmp.2 & !tmp.3), sum(tmp.1 & !tmp.2 & tmp.3), sum(tmp.1 & !tmp.2 & !tmp.3), 
-                  sum(!tmp.1 & tmp.2 & tmp.3), sum(!tmp.1 & tmp.2 & !tmp.3), sum(!tmp.1 & !tmp.2 & tmp.3), sum(!tmp.1 & !tmp.2 & !tmp.3))
-            }))
-            colnames(tab)=c("---", "--+", "-+-", "-++", "+--", "+-+", "++-", "+++")
-            tab
-        })
-        cnts
-    } else if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" ) {
-        idx.trt=1:0
-        names(idx.trt)=c("vacc","plac")
-        cnts = sapply (idx.trt, simplify="array", function(trt) {
-             idx=1:1
-             tab=t(sapply (idx, function(i) {           
-                tmp.1 = with(subset(dat, Trt==trt & Bserostatus==0 & if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29 &   if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases), is.na(BbindSpike)     | is.na(BbindRBD) )
-                tmp.2 = with(subset(dat, Trt==trt & Bserostatus==0 & if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29 &   if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases), is.na(Day29bindSpike) | is.na(Day29bindRBD))
-                
-                c(sum(tmp.1 & tmp.2), sum(!tmp.1 & tmp.2), sum(tmp.1 & !tmp.2), sum(!tmp.1 & !tmp.2))
-             }))
-             colnames(tab)=c("--", "+-", "-+", "++")
-             tab
-        })
-        t(drop(cnts))
-    } else {
-        NA
-    }
+  if (study_name=="COVE" | study_name=="MockCOVE" ) {
+    idx.trt=1:0
+    names(idx.trt)=c("vacc","plac")
+    cnts = sapply (idx.trt, simplify="array", function(trt) {
+      idx=1:3
+      names(idx)=c("Day 29 Cases", "Day 57 Cases", "Intercurrent Cases")
+      tab=t(sapply (idx, function(i) {           
+        tmp.1 = with(subset(dat, Trt==trt & Bserostatus==0 & (if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29) &   (if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases)), is.na(BbindSpike)     | is.na(BbindRBD) )
+        tmp.2 = with(subset(dat, Trt==trt & Bserostatus==0 & (if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29) &   (if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases)), is.na(Day29bindSpike) | is.na(Day29bindRBD))
+        tmp.3 = with(subset(dat, Trt==trt & Bserostatus==0 & (if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29) &   (if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases)), is.na(Day57bindSpike) | is.na(Day57bindRBD))    
+        
+        c(sum(tmp.1 & tmp.2 & tmp.3), sum(tmp.1 & tmp.2 & !tmp.3), sum(tmp.1 & !tmp.2 & tmp.3), sum(tmp.1 & !tmp.2 & !tmp.3), 
+          sum(!tmp.1 & tmp.2 & tmp.3), sum(!tmp.1 & tmp.2 & !tmp.3), sum(!tmp.1 & !tmp.2 & tmp.3), sum(!tmp.1 & !tmp.2 & !tmp.3))
+      }))
+      colnames(tab)=c("---", "--+", "-+-", "-++", "+--", "+-+", "++-", "+++")
+      tab
+    })
+    cnts
+  } else if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" ) {
+    idx.trt=1:0
+    names(idx.trt)=c("vacc","plac")
+    cnts = sapply (idx.trt, simplify="array", function(trt) {
+      idx=1:1
+      tab=t(sapply (idx, function(i) {           
+        tmp.1 = with(subset(dat, Trt==trt & Bserostatus==0 & if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29 &   if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases), is.na(BbindSpike)     | is.na(BbindRBD) )
+        tmp.2 = with(subset(dat, Trt==trt & Bserostatus==0 & if(i==2) EventIndPrimaryD57 else EventIndPrimaryD29 &   if(i==2) ph1.D57 else if(i==1) ph1.D29 else ph1.intercurrent.cases), is.na(Day29bindSpike) | is.na(Day29bindRBD))
+        
+        c(sum(tmp.1 & tmp.2), sum(!tmp.1 & tmp.2), sum(tmp.1 & !tmp.2), sum(!tmp.1 & !tmp.2))
+      }))
+      colnames(tab)=c("--", "+-", "-+", "++")
+      tab
+    })
+    t(drop(cnts))
+  } else {
+    NA
+  }
 }
 #make.case.count.marker.availability.table(dat.mock)

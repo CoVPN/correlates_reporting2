@@ -4,7 +4,7 @@
 renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
-
+print("ADE")
 TRIAL <- Sys.getenv("TRIAL") 
 
 ### #####
@@ -52,7 +52,7 @@ time <- paste0("Day", tpeak)
 key <- COR
 markers <- paste0("Day", tpeak, assays)
  
- 
+ print("OK")
 markers <- intersect(markers, colnames(dat.mock) ) 
 print(markers)
 marker_to_assay <- sapply(markers, function(v) {

@@ -89,7 +89,7 @@ run_threshold_analysis <- function(marker, direction = "above") {
          Lrnr_earth$new(),
          Lrnr_mean$new()
        ), metalearner = Lrnr_cv_selector$new(loss_loglik_binomial))
-      lrnr <- Lrnr_glmnet$new()
+       
       esttmle_full <- thresholdTMLE(data_full, node_list, thresholds = thresholds, biased_sampling_strata = NULL, biased_sampling_indicator = "TwophasesampInd", 
                                     lrnr_A = lrnr
                                       , lrnr_Y = lrnr
