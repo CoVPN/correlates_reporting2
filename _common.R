@@ -86,7 +86,7 @@ if (exists("COR")) {
     dat.mock$wt=dat.mock[[config.cor$wt]]
     if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
     
-    # followup time for the last case
+    # followup time for the last case in ph2 in vaccine arm
     if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
     
     # data integrity checks
@@ -237,6 +237,10 @@ if (config$is_ows_trial) {
     
     uloqs["bindSpike"]=238.1165 
     uloqs["bindRBD"]=172.5755    
+    
+    # this done to make the plots free of too much white space since raw data are censored at pos.cutoff
+    llods["bindSpike"]=NA 
+    llods["bindRBD"]=NA 
   }
   
   lloxs=llods
@@ -505,10 +509,10 @@ ggsave_custom <- function(filename = default_name(plot),
 get.range.cor=function(dat, assay, time) {
   if(assay %in% c("bindSpike", "bindRBD")) {
     ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(llods[c("bindSpike","bindRBD")]/2), na.rm=T)
-    ret[2]=ceiling(ret[2]) # round up
+    ret[2]=(ret[2]) # round up
   } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
     ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
-    ret[2]=ceiling(ret[2]) # round up
+    ret[2]=(ret[2]) # round up
   } else {
     ret=range(dat[["Day"%.%time%.%assay]], log10(lloxs[assay]/2), na.rm=T)        
   }
