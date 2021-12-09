@@ -66,7 +66,7 @@ getResponder <- function(data,
 get_resp_by_group <- function(dat=dat, group=group){
   
   if( (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & !grepl("start1", COR)) {wt="wt.D29"
-  } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & grepl("start1", COR)) {wt=="wt.D29start1"
+  } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & grepl("start1", COR)) {wt="wt.D29start1"
     } else {wt=paste0("wt.D", tpeak)}
   
   complete <- complete.cases(dat[, group])
