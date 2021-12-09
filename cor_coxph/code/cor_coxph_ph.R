@@ -175,7 +175,7 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c
 )
 
 tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p))
-rownames(tab.1)=c(labels.axis["Day"%.%tab.1.nop12, assays])
+rownames(tab.1.nop12)=c(labels.axis["Day"%.%tpeak, assays])
 rv$tab.1=tab.1.nop12
 
 
@@ -229,7 +229,7 @@ tmp=rbind(c(labels.axis["Day"%.%tpeak, assays]), "", "")
 rownames(tab)=c(tmp)
 tab
 
-cond.plac=dat.pla.seroneg[[config.cor$EventTimePrimary]]<=tfinal.tpeak
+#cond.plac=dat.pla.seroneg[[config.cor$EventTimePrimary]]<=tfinal.tpeak # not used anymore
 mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_svycoxph_cat_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
     col.headers=paste0("\\hline\n 
          \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
@@ -239,8 +239,8 @@ mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_svycoxph_cat_pretty_"%.%st
     add.to.row=list(list(nrow(tab)), # insert at the beginning of table, and at the end of, say, the first table
         c(paste0(" \n \\multicolumn{8}{l}{} \\\\ \n", 
                   "\n \\multicolumn{2}{l}{Placebo} & ", 
-                 paste0(sum(dat.pla.seroneg$yy[cond.plac]), "/", format(nrow(dat.pla.seroneg), big.mark=",")), "&",  
-                 formatDouble(sum(dat.pla.seroneg$yy[cond.plac])/nrow(dat.pla.seroneg), digit=4, remove.leading0=F), "&",  
+                 paste0(sum(dat.pla.seroneg$yy), "/", format(nrow(dat.pla.seroneg), big.mark=",")), "&",  
+                 formatDouble(sum(dat.pla.seroneg$yy)/nrow(dat.pla.seroneg), digit=4, remove.leading0=F), "&",  
                  "\\multicolumn{4}{l}{}  \\\\ \n")
           #"\\hline\n \\multicolumn{4}{l}{Standard Deviation 1 mcg/mL}\\\\ \n"
          )

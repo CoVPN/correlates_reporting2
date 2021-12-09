@@ -121,7 +121,7 @@ for (a in assays) {
 # controlled VE curves for continuous markers
     
 for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same as 1 except that no sens curve is shown
-# eq.geq=3
+# eq.geq=2
     outs=lapply (assays, function(a) {        
         mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")),"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
             lwd=2.5

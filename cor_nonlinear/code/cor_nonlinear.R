@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "moderna_mock") # moderna_mock janssen_pooled_real
+#Sys.setenv(TRIAL = "janssen_pooled_realADCP");  Args=c(COR="D29");  # moderna_mock janssen_pooled_real
 renv::activate(project = here::here(".."))    
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))

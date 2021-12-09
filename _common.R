@@ -1,8 +1,9 @@
 #if (exists(".DEF.COMMON")) stop ("_common.R has already been loaded") else .DEF.COMMON=TRUE
-    
 library(methods)
 library(dplyr)
 library(kyotil)
+library(marginalizedRisk)
+library(survival)
 # disable lower level parallelization in favor of higher level of parallelization
 library(RhpcBLASctl)
 blas_get_num_procs()
@@ -33,7 +34,7 @@ for(opt in names(config)){
 }
 # correlates analyses-related 
 
-if (length(Args)>0) {
+if (exists("COR")) {
     config.cor <- config::get(config = COR)
     tpeak=as.integer(paste0(config.cor$tpeak))
     tpeaklag=as.integer(paste0(config.cor$tpeaklag))
@@ -72,32 +73,61 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-if (length(Args)>0) {
-if (is.null(config.cor$tinterm)) {
-##########################
-# single time point config
-    dat.mock$ph1=dat.mock[[config.cor$ph1]]
-    dat.mock$ph2=dat.mock[[config.cor$ph2]]
-    dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
-    dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
-    dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
-    dat.mock$wt=dat.mock[[config.cor$wt]]
-    if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
-    
-    # data integrity checks
-    if (!is.null(dat.mock$ph1)) {
-        # missing values in variables that should have no missing values
-        variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
-        ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
-        if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
-        
-        # ph1 should not have NA in Wstratum
-        ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
-        if(!ans) stop("Some Wstratum in ph1 are NA")
-    } else {
-        # may not be defined if COR is not provided in command line and used the default value
-    }
+# marginalized risk without marker
+get.marginalized.risk.no.marker=function(formula, dat, day){
+    fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
+    dat$EventTimePrimary=day
+    risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
+    mean(risks)
 }
+
+
+if (exists("COR")) {   
+    
+    if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
+
+    # formulae
+    form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
+    form.0 = update (form.s, as.formula(config$covariates_riskscore))
+    print(form.0)
+    
+    ###########################################################
+    # single time point config
+    if (is.null(config.cor$tinterm)) {
+    
+        dat.mock$ph1=dat.mock[[config.cor$ph1]]
+        dat.mock$ph2=dat.mock[[config.cor$ph2]]
+        dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
+        dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
+        dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
+        dat.mock$wt=dat.mock[[config.cor$wt]]
+        if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
+
+        # data integrity checks
+        if (!is.null(dat.mock$ph1)) {
+            # missing values in variables that should have no missing values
+            variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+            ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+            if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+            
+            # ph1 should not have NA in Wstratum
+            ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+            if(!ans) stop("Some Wstratum in ph1 are NA")
+        } else {
+            # may not be defined if COR is not provided in command line and used the default value
+        }
+        
+        # followup time for the last case in ph2 in vaccine arm
+        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+        
+        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
+        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
+        overall.ve = c(1 - prev.vacc/prev.plac)    
+        myprint(prev.plac, prev.vacc, overall.ve)
+        
+    }
+    
+    
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
@@ -115,11 +145,13 @@ if (is.null(config.cor$tinterm)) {
 # some common graphing parameters
 if(config$is_ows_trial) {
     # maxed over Spike, RBD, N, restricting to Day 29 or 57
-    if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    
+    if("bindSpike" %in% assays & "bindRBD" %in% assays) {
+        if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    }
+        
     # maxed over ID50 and ID80, restricting to Day 29 or 57
     if("pseudoneutid50" %in% assays & "pseudoneutid80" %in% assays) {
         if(has29) MaxID50ID80Day29 = max(dat.mock[,paste0("Day29", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)
@@ -127,6 +159,15 @@ if(config$is_ows_trial) {
         if(has57) MaxID50ID80Day57 = max(dat.mock[,paste0("Day57", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)        
         if(has57) MaxID50ID80Delta57overB = max(dat.mock[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
     }
+    
+    # maxed over ADCP, restricting to Day 29 or 57
+    if("ADCP" %in% assays ) {
+        if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("ADCP"))], na.rm=T)
+        if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("ADCP"))], na.rm=T)
+        if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("ADCP"))], na.rm=T)
+        if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("ADCP"))], na.rm=T)
+    }
+            
 }     
 
 
@@ -195,6 +236,13 @@ if (config$is_ows_trial) {
             ULOD = NA,
             LLOQ = 117.35,
             ULOQ = 18976.19)
+        ,
+        ADCP=c( 
+            pos.cutoff=11.57,# as same lod
+            LLOD = 11.57,
+            ULOD = NA,
+            LLOQ = 8.87,
+            ULOQ = 211.56)
     )
     
     pos.cutoffs=sapply(tmp, function(x) unname(x["pos.cutoff"]))
@@ -211,6 +259,10 @@ if (config$is_ows_trial) {
         
         uloqs["bindSpike"]=238.1165 
         uloqs["bindRBD"]=172.5755    
+        
+        # this done to make the plots free of too much white space since raw data are censored at pos.cutoff
+        llods["bindSpike"]=NA 
+        llods["bindRBD"]=NA 
     }
     
     lloxs=llods
@@ -479,10 +531,10 @@ ggsave_custom <- function(filename = default_name(plot),
 get.range.cor=function(dat, assay, time) {
     if(assay %in% c("bindSpike", "bindRBD")) {
         ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(llods[c("bindSpike","bindRBD")]/2), na.rm=T)
-        ret[2]=ceiling(ret[2]) # round up
+        ret[2]=(ret[2]) # round up
     } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
         ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
-        ret[2]=ceiling(ret[2]) # round up
+        ret[2]=(ret[2]) # round up
     } else {
         ret=range(dat[["Day"%.%time%.%assay]], log10(lloxs[assay]/2), na.rm=T)        
     }
