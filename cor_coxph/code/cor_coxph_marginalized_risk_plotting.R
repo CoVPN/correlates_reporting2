@@ -148,7 +148,7 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
                 if (study_name %in% c("COVE", "MockCOVE")) {
                     ylim=c(0.8,1)
                 } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
-                    ylim=c(0,1)
+                    ylim=c(0.5,1)
                 } 
             } 
             
