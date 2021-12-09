@@ -105,10 +105,6 @@ myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
 
     
-# formulae
-form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
-form.0 = update (form.s, as.formula(config$covariates_riskscore))
-print(form.0)
 
 
 ###################################################################################################

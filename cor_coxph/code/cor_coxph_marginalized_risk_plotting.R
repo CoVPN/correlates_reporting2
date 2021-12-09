@@ -318,7 +318,16 @@ for (a in assays) {
 fit.0=coxph(form.s, dat.pla.seroneg) 
 risk.0= 1 - exp(-predict(fit.0, type="expected"))
 time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
-    
+
+#fit.1=coxph(form.s, dat.vac.seroneg) 
+#risk.1= 1 - exp(-predict(fit.1, type="expected"))
+#time.1= dat.vac.seroneg[[config.cor$EventTimePrimary]]
+#mypdf(file="tmp")
+#    plot(time.1, risk.1)
+#    mylines(time.0, risk.0, col="gray", lwd=2)
+#    mylegend(x=1, legend=c("placebo","vaccine"), col=c("gray","black"), lty=1)
+#dev.off()
+
 lwd=2
 ylim=c(0,max(risk.0, max(sapply(assays, function(a) max(risks.all.ter[[a]]$risk)))))
 
