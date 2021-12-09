@@ -20,11 +20,6 @@ source(here::here("code", "make_functions.R"))
 # To select which tables are included in the report.
 # Also to modify the headers and footers for each table.
 
-cutoff.name <- case_when(study_name=="HVTN705" ~ "lloq", 
-                         TRUE ~ "llod")
-
-timepoints <- config$timepoints
-
 randomsubcohort <- case_when(study_name %in% c("COVE", "MockCOVE") ~ "This table summarizes the 
       random subcohort, which was randomly sampled from the per-protocol cohort. The 
       sampling was stratified by 24 strata defined by enrollment characteristics: Assigned 
@@ -145,6 +140,9 @@ covariate strata, calculated using inverse probability weighting."),
                         "Baseline SARS-CoV-2 Positive Placebo Recipients" = 8),
       col1="1cm"))
 
+cutoff.name <- config$llox_label
+
+timepoints <- config$timepoints
 
 labels.age <- case_when(study_name %in% c("COVE", "MockCOVE") ~ c("Age $<$ 65", "Age $\\geq$ 65"), 
                         study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Age 18 - 59", "Age $\\geq$ 60"))

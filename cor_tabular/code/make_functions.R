@@ -23,7 +23,7 @@ getResponder <- function(data,
                          responderFR = 4,
                          pos.cutoffs = pos.cutoffs) {
   
-  cutoff <- get(paste0(cutoff.name, "s"))
+  cutoff <- get(paste0("l", cutoff.name, "s"))
   for (i in times){
     for (j in assays){
       post <- paste0(i, j)
@@ -35,7 +35,7 @@ getResponder <- function(data,
       data[, delta] <- ifelse(10^data[, post] < cutoff[j], log10(cutoff[j]/2), data[, post])-ifelse(10^data[, bl] < cutoff[j], log10(cutoff[j]/2), data[, bl])
       
       for (k in folds){
-        data[, paste0(post, k, cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
+        data[, paste0(post, k, "l", cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
       }
       
       for (k in grtns){
