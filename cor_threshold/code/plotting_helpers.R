@@ -92,8 +92,10 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
     #main <- paste0(main, " with simultaneous confidence bands")
   }
   a <- marker_to_assay[[marker]]
-
+  print(marker)
+  print(a)
   xlim <- get.range.cor(data, a,   tpeak)
+  print(quantile(data[[marker]]))
   print(xlim)
   llod <- lloxs[a]
   labels_info <- get.labels.x.axis.cor(xlim, lloxs[a])
