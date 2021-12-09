@@ -65,7 +65,8 @@ colnames(tab2) <- c("Endpoint", "Vaccine", "n")
 
 summary_stats <- list(
   tab1 = tab1,
-  tab2 = tab2
+  tab2 = tab2,
+  day_of_analysis = tf_Day
 )
 saveRDS(
   summary_stats, 
