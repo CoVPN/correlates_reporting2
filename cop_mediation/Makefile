@@ -1,5 +1,9 @@
 ## all              : run threshold analysis and get plots
-all: results
+all:
+	Rscript code/mediation.R D29IncludeNotMolecConfirmed
+	Rscript code/mediation.R D29IncludeNotMolecConfirmedstart1
+
+
 
 ## data             : prepare data for analysis
 data_clean/data_Day57.rds: code/clean_data.R code/params.R
