@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_realADCP"); Args=c(COR="D29"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "janssen_pooled_real"); Args=c(COR="D29IncludeNotMolecConfirmed"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
 renv::activate(project = here::here(".."))    
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
@@ -7,12 +7,24 @@ source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
 
-#with(subset(dat.mock, Trt==1), table(Wstratum, ph2))
-#with(subset(dat.mock, Trt==1), table(Wstratum, wt.D210))
 #with(subset(dat.mock, ph1==1), table(EventIndPrimary, Trt))
+#with(subset(dat.mock, ph2==1), table(EventIndPrimary, Trt))
+#with(subset(dat.mock, Trt==1 & ph1), table(Wstratum, ph2))
+#with(subset(dat.mock, Trt==1 & ph1), table(tps.stratum, ph2))
+#with(subset(dat.mock, Trt==1), table(Wstratum, ph2))
+#with(subset(dat.mock, Trt==1), table(Wstratum, wt.D29))
 #with(subset(dat.mock, ph1==1), table(Delta.D210, Trt))
 #with(subset(dat.mock, ph2==1), corplot(Day210ELCZ,Day210ADCPgp140C97ZAfib))
 #with(subset(dat.mock, ph2==1), corr(cbind(Day210ELCZ,Day210ADCPgp140C97ZAfib), w = wt))
+
+##natrisk 
+#round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,ph2==1)        [["wt"]], subset(dat.vac.seroneg,ph2==1        )[a], sum, na.rm=T, drop=F)[,2] )))
+##nevents 
+#round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,yy==1 & ph2==1)[["wt"]], subset(dat.vac.seroneg,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] )))
+#
+#
+#round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(rep(1,nrow(subset(dat.vac.seroneg,yy==1 & ph2==1))), subset(dat.vac.seroneg,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] )))
+#nrow(subset(dat.vac.seroneg,yy==1 & ph1==1))
 
 
 
