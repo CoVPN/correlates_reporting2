@@ -10,8 +10,10 @@ message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_tabular report ~~~~~~~~~~~~~
 library(knitr)
 library(kableExtra)
 library(dplyr)
+config <- config::get(config = Sys.getenv("TRIAL"))
+
 here::i_am("cor_tabular/report.Rmd")
-base::load(here::here( "cor_tabular", "output", "Tables.Rdata"))
+base::load(here::here( "cor_tabular", "output", attr(config,"config"), "Tables.Rdata"))
 
 ```
 \captionsetup[table]{}
