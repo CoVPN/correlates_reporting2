@@ -49,7 +49,6 @@ ows_trial: &ows_trial
   is_ows_trial: yes
   case_cohort: yes
   llox_label: lod
-  low_efficacy: no
 
 moderna_trial: &moderna_trial
   <<: *ows_trial
@@ -67,6 +66,7 @@ moderna_trial: &moderna_trial
   covariates_riskscore: ~.+ MinorityInd + HighRiskInd + risk_score
   covariates_norisksco: ~.+ MinorityInd + HighRiskInd + Age
   ve_ylim: [0,1]
+  low_efficacy: no
 
 moderna_real: &moderna_real
   <<: *moderna_trial
@@ -92,6 +92,7 @@ janssen_trial: &janssen_trial
   data_raw_dir: janssen
   study_name_code: ENSEMBLE
   ve_ylim: [0,1]
+  low_efficacy: yes # used to drive some plotting configurations
 
 janssen_trial_real: &janssen_trial_real
   <<: *janssen_trial
@@ -100,6 +101,17 @@ janssen_trial_real: &janssen_trial_real
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml)]
   primary_assays: [] 
+  study_name: ENSEMBLE
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+
+janssen_trial_realADCP: &janssen_trial_realADCP
+  <<: *janssen_trial
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realADCP_data_processed_with_riskscore.csv
+  assays: [ADCP]
+  assay_labels: [Phagocytic Score]
+  assay_labels_short: [Phagocytic Score]
+  primary_assays: [] # have it be empty if no multitesting adjustment should be done
   study_name: ENSEMBLE
   num_boot_replicates: 1000
   num_perm_replicates: 10000
@@ -131,17 +143,6 @@ janssen_sa_real:
   subset_value: 2
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
-
-janssen_trial_realADCP: &janssen_trial_realADCP
-  <<: *janssen_trial
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realADCP_data_processed_with_riskscore.csv
-  assays: [ADCP]
-  assay_labels: [Phagocytic Score]
-  assay_labels_short: [Phagocytic Score]
-  primary_assays: [] # have it be empty if no multitesting adjustment should be done
-  study_name: ENSEMBLE
-  num_boot_replicates: 1000
-  num_perm_replicates: 10000
 
 janssen_pooled_realADCP: 
   <<: *janssen_trial_realADCP
