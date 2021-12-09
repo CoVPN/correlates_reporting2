@@ -88,8 +88,6 @@ if (exists("COR")) {
 
         # followup time for the last case in ph2 in vaccine arm
         if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        # truncate data at tfinal.tpeak
-        #dat.mock=subset(dat.mock, EventTimePrimary <= tfinal.tpeak)        
         
         # data integrity checks
         if (!is.null(dat.mock$ph1)) {
