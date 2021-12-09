@@ -92,7 +92,7 @@ if (exists("COR")) {
     print(form.0)
     
     ###########################################################
-    # single time point config
+    # single time point config such as D29
     if (is.null(config.cor$tinterm)) {
     
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
@@ -124,6 +124,18 @@ if (exists("COR")) {
         prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
         overall.ve = c(1 - prev.vacc/prev.plac)    
         myprint(prev.plac, prev.vacc, overall.ve)
+        
+#        # get VE in the first month or two of followup
+#        dat.tmp=dat.mock
+#        t.tmp=30
+#        # censor at t.tmp 
+#        dat.tmp$EventIndPrimary =ifelse(dat.tmp$EventTimePrimary<=t.tmp, dat.tmp$EventIndPrimary, 0)
+#        dat.tmp$EventTimePrimary=ifelse(dat.tmp$EventTimePrimary<=t.tmp, dat.tmp$EventTimePrimary, t.tmp)
+#        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==1 & ph1), t.tmp)
+#        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==0 & ph1), t.tmp)
+#        overall.ve = c(1 - prev.vacc/prev.plac)    
+#        myprint(prev.plac, prev.vacc, overall.ve)
+        
         
     }
     
