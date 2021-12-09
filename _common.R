@@ -238,7 +238,7 @@ if (config$is_ows_trial) {
         uloqs["bindSpike"]=238.1165 
         uloqs["bindRBD"]=172.5755    
         
-        # data are censored at pos.cutoff
+        # this done to make the plots free of too much white space since raw data are censored at pos.cutoff
         llods["bindSpike"]=NA 
         llods["bindRBD"]=NA 
     }
