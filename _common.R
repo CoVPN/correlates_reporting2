@@ -1,8 +1,9 @@
 #if (exists(".DEF.COMMON")) stop ("_common.R has already been loaded") else .DEF.COMMON=TRUE
-    
 library(methods)
 library(dplyr)
 library(kyotil)
+library(marginalizedRisk)
+library(survival)
 # disable lower level parallelization in favor of higher level of parallelization
 library(RhpcBLASctl)
 blas_get_num_procs()
@@ -72,12 +73,28 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
+# marginalized risk without marker
+get.marginalized.risk.no.marker=function(formula, dat, day){
+    fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
+    dat$EventTimePrimary=day
+    risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
+    mean(risks)
+}
+
+
 if (exists("COR")) {   
+    
     if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
 
-    if (is.null(config.cor$tinterm)) {
-    ##########################
+    # formulae
+    form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
+    form.0 = update (form.s, as.formula(config$covariates_riskscore))
+    print(form.0)
+    
+    ###########################################################
     # single time point config
+    if (is.null(config.cor$tinterm)) {
+    
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
         dat.mock$ph2=dat.mock[[config.cor$ph2]]
         dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
@@ -86,9 +103,6 @@ if (exists("COR")) {
         dat.mock$wt=dat.mock[[config.cor$wt]]
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
 
-        # followup time for the last case in ph2 in vaccine arm
-        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        
         # data integrity checks
         if (!is.null(dat.mock$ph1)) {
             # missing values in variables that should have no missing values
@@ -102,6 +116,14 @@ if (exists("COR")) {
         } else {
             # may not be defined if COR is not provided in command line and used the default value
         }
+        
+        # followup time for the last case in ph2 in vaccine arm
+        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+        
+        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
+        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
+        overall.ve = c(1 - prev.vacc/prev.plac)    
+        myprint(prev.plac, prev.vacc, overall.ve)
         
     }
     
