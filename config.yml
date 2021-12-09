@@ -49,7 +49,6 @@ ows_trial: &ows_trial
   is_ows_trial: yes
   case_cohort: yes
   llox_label: lod
-  low_efficacy: no
 
 moderna_trial: &moderna_trial
   <<: *ows_trial
@@ -67,6 +66,7 @@ moderna_trial: &moderna_trial
   covariates_riskscore: ~.+ MinorityInd + HighRiskInd + risk_score
   covariates_norisksco: ~.+ MinorityInd + HighRiskInd + Age
   ve_ylim: [0,1]
+  low_efficacy: no
 
 moderna_real: &moderna_real
   <<: *moderna_trial
@@ -92,6 +92,7 @@ janssen_trial: &janssen_trial
   data_raw_dir: janssen
   study_name_code: ENSEMBLE
   ve_ylim: [0,1]
+  low_efficacy: yes # used to drive some plotting configurations
 
 janssen_trial_real: &janssen_trial_real
   <<: *janssen_trial

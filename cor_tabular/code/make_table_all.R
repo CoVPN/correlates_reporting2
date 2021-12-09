@@ -150,7 +150,7 @@ labels.age <- case_when(study_name %in% c("COVE", "MockCOVE") ~ c("Age $<$ 65", 
                         study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Age 18 - 59", "Age $\\geq$ 60"))
 
 labels.minor <- case_when(study_name %in% c("COVE", "MockCOVE")~ c("Communities of Color", "White Non-Hispanic"), 
-                          study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Comm. of Color", "White Non-Hispanic"))
+                          study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Communities of Color", "White Non-Hispanic"))
 
 labels.BMI <- c("Underweight BMI < 18.5", "Normal 18.5 $\\leq$ BMI < 25", 
                 "Overweight 25 $\\leq$ BMI < 30", "Obese BMI $\\geq$ 30")
@@ -265,7 +265,7 @@ if(study_name %in% c("ENSEMBLE", "MockENSEMBLE")){
   ds_s <- ds_s %>% 
     mutate(CountryC=labels.countries.ENSEMBLE[Country+1],
            RegionC=labels.regions.ENSEMBLE[Region+1],
-           URMC = case_when(URMforsubcohortsampling == 1 & Country ==0 ~ "Comm. of Color",
+           URMC = case_when(URMforsubcohortsampling == 1 & Country ==0 ~ "Communities of Color",
                             URMforsubcohortsampling == 0 & Country ==0 ~ "White Non-Hispanic", 
                             TRUE ~ as.character(NA)),
            AgeURM = case_when(is.na(URMC) ~ as.character(NA), 
@@ -373,7 +373,7 @@ char_lev <- c(labels.age, "Mean (Range)","Mean $\\pm$ SD",
               paste(labels.age[1],"At-risk"), paste(labels.age[1], "Not at-risk"), 
               paste(labels.age[2],"At-risk"), paste(labels.age[2], "Not at-risk"),
               paste(labels.age[2], ""), 
-              # "Comm. of Color", "White Non-Hispanic",
+              # "Communities of Color", "White Non-Hispanic",
               labels.countries.ENSEMBLE,
               "Negative", "Positive", labels.BMI)
 
@@ -467,7 +467,7 @@ if (study_name %in% c("COVE", "MockCOVE")){
                 values_from=value) 
   
 } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
-  demo.stratum.ordered <- gsub("URM", "Comm. of Color", demo.stratum.ordered)
+  demo.stratum.ordered <- gsub("URM", "Communities of Color", demo.stratum.ordered)
   demo.stratum.ordered <- gsub("At risk", "Presence of comorbidities", demo.stratum.ordered)
   demo.stratum.ordered <- gsub("Not at risk", "Absence of comorbidities", demo.stratum.ordered)
   
@@ -689,4 +689,4 @@ print(paste0("save.results.to equals ", save.results.to))
 
 save(tlf, tab_dm_neg, tab_dm_pos, tab_strtm1, tab_strtm2, tab_case_cnt, 
      case_vacc_neg, case_vacc_pos, case_plcb_pos,
-     file = here::here("output", "Tables.Rdata"))
+     file = file.path(save.results.to, "Tables.Rdata"))
