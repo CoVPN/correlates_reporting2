@@ -51,6 +51,30 @@ variables_to_keep <- c(
 )
 
 data_keep <- data[!is.na(data[[config.cor$wt]]), variables_to_keep]
+W <- data_keep[, covariates, drop = FALSE]
+A <- data_keep$Trt
+R <- as.numeric(data_keep[[config.cor$ph2]])
+Y <- data_keep$outcome
+
+# summaries for report
+tab1 <- data.frame(table(Y[R == 1], A[R==1]))
+colnames(tab1) <- c("Endpoint", "Vaccine", "n")
+
+tab2 <- data.frame(table(Y, A))
+colnames(tab2) <- c("Endpoint", "Vaccine", "n")
+
+summary_stats <- list(
+  tab1 = tab1,
+  tab2 = tab2
+)
+saveRDS(
+  summary_stats, 
+  file = here::here("output", 
+    paste0("summary_stats_", 
+           attr(config,"config"), "_",
+           COR, ".rds")
+  )
+)
 
 sl_library <- list(
   c("SL.mean", "screen_all"),
@@ -74,12 +98,12 @@ for (marker in include_assays) {
   print(marker)
 
   fit <- natmed2::natmed2(
-    W = data_keep[, covariates, drop = FALSE],
-    A = data_keep$Trt,
-    R = as.numeric(data_keep[[config.cor$ph2]]),
+    W = W,
+    A = A,
+    R = R,
     S = data_keep[, marker, drop = TRUE],
     C = rep(1, nrow(data_keep)),
-    Y = data_keep$outcome,
+    Y = Y,
     gRn = 1 / data_keep$wt,
     glm_gA = ".",
     glm_gAS = NULL,
