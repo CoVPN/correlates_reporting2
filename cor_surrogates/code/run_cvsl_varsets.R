@@ -162,6 +162,7 @@ if(study_name == "HVTN705"){
                   "Day210IgG3BF1266gp140C.avi293F40delta", "Day210IgG39004Sgp140C.avi40delta", "Day210IgG3AEA244V1V2Tags.293F40delta", "Day210IgG3C1086CV1V2Tags40delta", 
                   "Day210IgG3gp70BCaseA.V1V240delta", "Day210IgG3gp70.1012.11.TC21.3257.V1V240delta", "Day210IgG3gp70.1394C9G1.V1V240delta", "Day210IgG3gp70.BF1266.431a.V1V240delta", 
                   "Day210IgG3gp70.001428.2.42V1V240delta", "Day210IgG3gp70.Ce1086.B2.V1V240delta", 
+                  "Day1IgG3gp4140delta", 
                   #Day210IgG3gp4140deltaNEW,
                   "Day210IgG3gp4140delta", 
                   #######
@@ -410,24 +411,24 @@ if(study_name == "HVTN705"){
   varset_M7_2_4 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),   
                                              grep("ADCP", markers, value=TRUE, perl=TRUE)))
   varset_M7_2_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),   
-                                             grep("(?=.*IgG3)(^((?!mdw).)*$)", markers, value=TRUE, perl=TRUE)))
+                                             grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
   # varset_M7_3_4 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),   
-  #                                            grep("(?=.*IgG3)(^((?!mdw).)*$)", markers, value=TRUE, perl=TRUE)))
+  #                                            grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
   # varset_M7_3_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),   
-  #                                            grep("(?=.*IgG3)(^((?!mdw).)*$)", markers, value=TRUE, perl=TRUE)))
+  #                                            grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
   varset_M7_4_5 <- create_varsets(markers, c(grep("ADCP", markers, value=TRUE, perl=TRUE),   
-                                             grep("(?=.*IgG3)(^((?!mdw).)*$)", markers, value=TRUE, perl=TRUE)))
+                                             grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
   # varset_M7_2_3_4 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),   
-  #                                            grep("(?=.*IgG3)(^((?!mdw).)*$)", markers, value=TRUE, perl=TRUE)))
+  #                                            grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
   # varset_M7_2_3_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),   
-  #                                            grep("(?=.*IgG3)(^((?!mdw).)*$)", markers, value=TRUE, perl=TRUE)))
+  #                                            grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
   # varset_M7_3_4_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),   
-  #                                              grep("(?=.*IgG3)(^((?!mdw).)*$)", markers, value=TRUE, perl=TRUE)))
+  #                                              grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
   # varset_M7_2_3_4_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),   
-  #                                              grep("(?=.*IgG3)(^((?!mdw).)*$)", markers, value=TRUE, perl=TRUE)))
+  #                                              grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
   varset_M7_2_4_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE), 
                                                grep("ADCP", markers, value=TRUE, perl=TRUE),  
-                                               grep("(?=.*IgG3)(^((?!mdw).)*$)", markers, value=TRUE, perl=TRUE)))
+                                               grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
   
   varset_names <- c("1_baselineFactors", "2_M7_ELISA", #"3_M7_ELISpot", 
                     "4_M7_ADCP", "5_M7_IgG3", 
