@@ -40,7 +40,7 @@ for (a in assays) {
   
   
   ##### Discretize time grid
-  print(colnames(data))
+  
   max_t <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2 == 1, "EventTimePrimary" ])
   size_time_grid <- 15
   time_grid <- unique(sort(c(max_t ,quantile(data$Ttilde[data$Ttilde <= max_t + 5 & data$TwophasesampInd ==1 & !is.na(data$Delta)& data$Delta==1 ], seq(0,1, length = size_time_grid)))))
@@ -105,13 +105,14 @@ for (a in assays) {
       thresh_grid <-
         unique(quantile(
           data_secondstage[[marker]][data_secondstage[["Delta"]]==1],
-          seq(lower_quantile, upper_quantile, length.out = threshold_grid_size),
+          seq(0,1,length.out=30),
           na.rm = T
         ))
       
-      
+       
       thresh_mand <- report.assay.values(data_secondstage[[marker]][data_secondstage[["Delta"]]==1], marker)
-      thresh_grid <- sort(unique(thresh_mand))
+      thresh_grid <- sort(union(thresh_grid, thresh_mand))
+       
       #thresh_grid <- sort(union(thresh_mand, thresh_grid))
     } else {
       
