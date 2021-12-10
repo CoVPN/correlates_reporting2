@@ -35,6 +35,9 @@ for(opt in names(config)){
 # correlates analyses-related 
 
 if (exists("COR")) {
+    # making sure we are inadvertently using the wrong COR
+    if(study_name=="ENSEMBLE" & COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
+
     config.cor <- config::get(config = COR)
     tpeak=as.integer(paste0(config.cor$tpeak))
     tpeaklag=as.integer(paste0(config.cor$tpeaklag))
