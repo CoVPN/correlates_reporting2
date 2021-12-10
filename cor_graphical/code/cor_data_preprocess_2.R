@@ -21,14 +21,20 @@ source(here("code", "params.R"))
 ################################################
 dat <- as.data.frame(dat.mock)
 
+Args <- commandArgs(trailingOnly=TRUE)
+COR=Args[1]
+if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"}
+else {incNotMol <- ""}
+
+
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
 if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")  {
   
   dat <- dat %>%
     mutate(cohort_event = factor(
-      ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & EventIndPrimaryD29==1 & EventTimePrimaryD29 >= tpeaklag, "Post-Peak Cases",
-             ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & EventIndPrimaryD1==0  & EarlyendpointD29==0, "Non-Cases", NA)),
+      ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D29")))==1 & eval(as.name(paste0("EventTimePrimary", incNotMol, "D29"))) >= tpeaklag, "Post-Peak Cases",
+             ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & EarlyendpointD29==0, "Non-Cases", NA)),
       levels = c("Post-Peak Cases", "Non-Cases"))
     )
 } else {
@@ -38,7 +44,7 @@ if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")  {
   dat <- dat %>%
     mutate(cohort_event = factor(
       ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1, "Post-Peak Cases", 
-             ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", second_tp)))==0 & (!!as.name(paste0("TwophasesampIndD", second_tp)))==1 & EventIndPrimaryD1==0, "Non-Cases", NA)),
+             ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", second_tp)))==0 & (!!as.name(paste0("TwophasesampIndD", second_tp)))==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0, "Non-Cases", NA)),
       levels = c("Post-Peak Cases", "Non-Cases"))
       )
 }
