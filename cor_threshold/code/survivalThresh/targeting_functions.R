@@ -120,10 +120,10 @@ target_N <- function(data, likelihoods, fits, node_list, target_times, n_full_sa
   surv_C <- hazard_to_survival(likelihoods$C, nt = nt, left = T)
   Ft <- survs$Ft
   St <-  survs$St 
- # print("St")
-  #print(quantile(St))
-  #print("Ft")
-  #print(quantile(Ft))
+ print("St")
+  print(quantile(St))
+print("Ft")
+  print(quantile(Ft))
   #stop("hi")
   Ft <- lapply(1:ncol(Ft), function(i) {
     v <- Ft[,i]
@@ -137,16 +137,17 @@ target_N <- function(data, likelihoods, fits, node_list, target_times, n_full_sa
     return(do.call(cbind, Hv))
   })
   Ft <- do.call(cbind, Ft)
-  #print("Ft")
-  #print(quantile(Ft))
+  print("Ft")
+  print(quantile(Ft))
   H <-  Ft /surv_C
-  #print("C")
-  #print(quantile(surv_C))
+  print("C")
+  print(quantile(surv_C))
   H_list <- list()
   for(i in 1:ncol(likelihoods$outcomes_A)) {
-    g <- pmax(likelihoods$A[[i]],0.0025)
-    #print("g")
-    #print(quantile(g))
+    g <- pmax(likelihoods$A[[i]],0.00025)
+    print("g")
+    print(quantile(g))
+    print(table(likelihoods$outcomes_A[[i]]))
     H_list[[i]] <- H*(likelihoods$outcomes_A[[i]]/g)
   }
   H <- as.matrix(do.call(cbind,H_list))
@@ -181,7 +182,8 @@ target_N <- function(data, likelihoods, fits, node_list, target_times, n_full_sa
 
   #print(direction*D_weights)
   norm <- sqrt(sum((direction*D_weights)^2)/length(direction))
-  print(norm)
+  print("Current scores: N")
+  print(apply(D_N, 2, mean))
   if(norm == 0){
       norm <- 1
   }
@@ -203,12 +205,12 @@ target_N <- function(data, likelihoods, fits, node_list, target_times, n_full_sa
   direction <- direction*D_weights
   direction <- direction / sqrt(mean(direction^2))#sqrt(mean(D_weights^2))
   direction[is.na(direction)|is.infinite(direction)] <- 0
-  H <- bound(H, c(-50,50))
+  H <- bound(H, c(-250,250))
   H_orig <- H
 
   H <- H %*% direction
   keep <- data$at_risk==1
-  lik_N <- bound(likelihoods$N[keep], 0.00001)
+  lik_N <- bound(likelihoods$N[keep], 0.0000001)
   dNt_train <- dNt[keep]
   H_train <- H[keep,]
   if(!is.null(node_list$weights)) {
@@ -220,7 +222,7 @@ target_N <- function(data, likelihoods, fits, node_list, target_times, n_full_sa
   risk <- function(epsilon) {
 
 
-      update <- bound(plogis(qlogis(lik_N) + as.vector(H_train) * epsilon ),0.00001)
+      update <- bound(plogis(qlogis(lik_N) + as.vector(H_train) * epsilon ),0.000000001)
 
     loss <- -1 * ifelse(dNt_train == 1, log(update), log(1 - update))
     
@@ -230,23 +232,28 @@ target_N <- function(data, likelihoods, fits, node_list, target_times, n_full_sa
 
   optim_fit <- optim(
     par = list(epsilon = max_eps), fn = risk,
-    lower = 0, upper = max_eps,
+    lower = -max_eps, upper = max_eps,
     method = "Brent"
   )
   epsilon <- optim_fit$par
-  #print(epsilon)
+  print(quantile(abs(H)))
+  print("EPSILON")
+  print(epsilon)
+  beta <- coef(glm(Y~ H_train - 1, data = list(Y = dNt_train, H_train = H_train), offset = qlogis(lik_N), family = binomial(), weights = weights))
+  print(beta)
   if(is.null(epsilon) || is.na(epsilon) || is.nan(epsilon) || !is.numeric(epsilon)) {
       epsilon <- 0
   }
-  if(abs(epsilon) <= max_eps*0.85) {
-    fits$max_eps <- abs(max_eps)*0.85
-  }
+  #if(abs(epsilon) <= max_eps*0.85) {
+   # fits$max_eps <- abs(max_eps)*0.85
+  #}
   # if(abs(epsilon) > max_eps*0.975) {
   #   fits$max_eps <- abs(max_eps)*1.3
   # }
 
-  likelihoods$N <- plogis(qlogis(bound(likelihoods$N, 0.00001)) + as.vector(H) * epsilon )
- # print(quantile(likelihoods$N))
+  likelihoods$N <- plogis(qlogis(bound(likelihoods$N, 0.0000001)) + as.vector(H) * epsilon )
+    print("N uantiles")
+  print(quantile(likelihoods$N))
   #print(quantile(H))
   full_epsilon <- epsilon * direction
   fits$epsilons_N <-c(fits$epsilons_N, list(full_epsilon))
@@ -396,16 +403,16 @@ sequential_targeting <- function(data, data_orig, data_full, fits, likelihoods, 
         if(length(node_list$W) > 0) {
           tryCatch({
           X <- (data_orig[,node_list$W, with = F])
-          X$g <- 1/pmax(likelihoods$A_full[,index, with = F][[1]], 0.0025)
+          X$g <- 1/pmax(likelihoods$A_full[,index, with = F][[1]], 0.00025)
           screen <- suppressWarnings(glmnet::cv.glmnet(as.matrix(X), Ft_AW, family = binomial(),weights = weights*drop, offset = qlogis(Ft_W_k)))
           coefs <- coef(screen, s = "lambda.min")[-1]
           keep <- union(colnames(X)[coefs!=0], "g")
           X <- X[, keep, with = F]
           }, error = function(cond) {
-            X <<- data.table(g = 1/pmax(likelihoods$A_full[,index, with = F][[1]], 0.0025))
+            X <<- data.table(g = 1/pmax(likelihoods$A_full[,index, with = F][[1]], 0.00025))
           })
         } else {
-          X <- data.table(g = 1/pmax(likelihoods$A_full[,index, with = F][[1]], 0.0025))
+          X <- data.table(g = 1/pmax(likelihoods$A_full[,index, with = F][[1]], 0.00025))
         }
         if(length(unique(Ft_AW)) > 1) {
         suppressWarnings(eps <- coef(glm(Y~X, data = list(Y = Ft_AW, X = as.matrix(X)), family = binomial(), weights = weights*drop, offset = qlogis(Ft_W_k))))

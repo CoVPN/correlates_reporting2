@@ -1,0 +1,139 @@
+
+<!-- D29start1 is ENSEMBLE specific -->
+
+```{r, echo=FALSE, results='asis'}
+
+########################################### Boxplots ########################################### 
+for (i in 1:2){
+  COR=currCOR=ifelse(i==1, "D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
+  
+  i <-1
+  
+  # Eventually will have to loop through assays, and combine each individual assay's boxplots into one figure
+  for(time in timepoints) {
+    
+    tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
+    tpsLabels <- labels.time[tps]
+    
+    for (tpNum in seq(tps)) {
+      
+      tp <- tps[tpNum]
+      tpLabel <- tpsLabels[tpNum]
+      lineText <- ifelse(grepl("Delta", tp), "", " The three dashed lines in each figure are ULOQ, LLOQ, and LLOD, from top to bottom respectively.")
+      
+      res = knitr::knit_child(c(here::here('cor_graphical', 'report_boxplots.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+      i = i + 1
+    }
+  }
+  
+  ########################################### Weighted RCDF plots ########################################### 
+  
+  # Eventually will have to loop through assays, and combine each individual assay's RCDFs into one figure
+  for(time in timepoints) {
+    
+    tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
+    tpsLabels <- labels.time[tps]
+    tp <- tps[!grepl("Delta", tps)]
+    tpLabel <- tpsLabels[!grepl("Delta", tps)]
+    
+    for (tpNum in seq(tps)) {
+      
+      tp <- tps[tpNum]
+      tpLabel <- tpsLabels[tpNum]
+      
+      res = knitr::knit_child(c(here::here('cor_graphical', 'report_marker_rcdf.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+      i = i + 1
+    }
+  }
+  
+  ############## Weighted RCDF plots of threshold correlate concentration for vaccine efficacy ########################## 
+  
+  assay.labels <- sapply(assays, function(assay) {
+    if(grepl("bind", assay)) { return ( paste0( gsub("bind", "anti-", assay), " binding Ab") ) } 
+    else if(grepl("pseudoneutid", assay)) { return ( gsub("pseudoneutid", "PsV-nAb ID", assay) ) } 
+    else return (assay)
+  })
+  
+  tpLabel <- tpsLabels[!grepl("Delta", tps)]
+  
+  # Only show figures if there are substantial cases
+  # (I haven't seen a scenario where there aren't, but keeping this from Kendrick)
+  for(time in timepoints) {
+    
+    tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
+    tpsLabels <- labels.time[tps]
+    tp <- tps[!grepl("Delta", tps)]
+    tpLabel <- tpsLabels[!grepl("Delta", tps)]
+    
+    if(plot_ve_curves[1]){
+      for (assayNum in seq(assays)) {
+        
+        assay <- assays[assayNum]
+        assayLabel <- assay.labels[assayNum]
+        
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+        i = i + 1
+      }
+    }
+  }
+  
+  
+  ############################################# Violin and line plots ###################################################
+  
+  i <-1
+  facets <- c("", "Age", "Risk", "Age_Risk", "Sex", "RaceEthnic", "Dich_RaceEthnic")
+  names(facets) <- c("", "age", "risk condition", "age and risk condition", "sex assigned at birth", "race and ethnic group", "dichotomous classification of race and ethnic group")
+  
+  for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
+    for (facet in facets) {
+    	for (ver in c("v1", "v2")) {
+    		for (type in c("linebox", "violinbox")) {
+    		  for (assay in gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays))))) {
+    		    for (trt in c("Placebo", "Vaccine")) {
+    		      
+    		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
+    		      cat(res, sep = '\n')
+    		      cat("\\clearpage", sep = '\n')
+    		      i = i + 1
+    		    }
+    		  }
+        }
+    	}
+    }
+  }
+  
+  ###################################################### Scatter plots ###################################################
+  
+  i <-1
+  labels.time.no.fold <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)]
+  
+  for (cohort in c("Vaccine_BaselineNeg", "all")) {
+  	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))) {
+      for (day in gsub(" ","", labels.time.no.fold)) {
+
+  		  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub2.Rmd')), quiet = TRUE)
+    		cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+        i = i + 1
+  		} 
+  	}
+  }
+  
+  for (cohort in c("Vaccine_BaselineNeg", "all")){
+  	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))){
+
+  	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
+  		cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+      i = i + 1
+  	}
+  }
+}
+
+```
