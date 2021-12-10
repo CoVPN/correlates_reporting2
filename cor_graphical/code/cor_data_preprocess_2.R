@@ -23,8 +23,8 @@ dat <- as.data.frame(dat.mock)
 
 Args <- commandArgs(trailingOnly=TRUE)
 COR=Args[1]
-if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"}
-else {incNotMol <- ""}
+if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"
+} else {incNotMol <- ""}
 
 
 ## label the subjects according to their case-control status

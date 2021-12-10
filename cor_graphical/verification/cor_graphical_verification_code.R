@@ -37,8 +37,8 @@ dat$wt.D29[is.na(dat$wt.D29)] <- 0
 Args <- commandArgs(trailingOnly=TRUE)
 COR=Args[1]
 
-if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"}
-else {incNotMol <- ""}
+if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"
+} else {incNotMol <- ""}
 
 
 dat <- dat %>% 
