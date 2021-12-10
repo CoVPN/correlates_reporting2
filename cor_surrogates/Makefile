@@ -7,6 +7,7 @@ clean:
 	rm -f figs/*
 
 run_cvsl_varsets: 
+	Rscript code/run_cvsl_varsets.R D210 1
 	Rscript code/run_cvsl_varsets.R D210 2
 	Rscript code/run_cvsl_varsets.R D210 3
 	Rscript code/run_cvsl_varsets.R D210 4
