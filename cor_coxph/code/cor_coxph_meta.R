@@ -10,10 +10,11 @@ library(xtable) # this is a dependency of kyotil
 #eq.geq=3
 #for (a in c("bindSpike")) {
 a="bindSpike"
- myfigure(file=paste0("output/", a, "_controlled_ve_curves_cove_ensemble"))
+ myfigure()
     par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
-    ylim=c(0, 1)
-    
+    ylim=c(0, 1)    
+    cols=c("blue","green")
+    studies=c("COVE","ENSEMBLE")
     
     ## combine xlim from different trials. do janssen first because we want to source _common.R for moderna last so that we get the proper lloxs
     ## source _commom.R
@@ -34,22 +35,24 @@ a="bindSpike"
     xlim=c(min(xlim.ls[[1]][1], xlim.ls[[2]][1]), max(xlim.ls[[1]][2], xlim.ls[[2]][2]))
     
     # depends on several variables from sourcing _common.R: lloxs, labels.assays, draw.x.axis.cor
+    overall.ve.ls=list()
     for (i in 1:2) {
         TRIAL=ifelse (i==1, "moderna_real", "janssen_pooled_real")
         COR=ifelse (i==1,"D57","D29IncludeNotMolecConfirmed")
-        study_name=ifelse (i==1,"COVE","ENSEMBLE")
+        study_name=studies[i]
 #        config <- config::get(config = Sys.getenv("TRIAL"))
 #        config.cor <- config::get(config = COR)
         
         load(here::here("output", TRIAL, COR, "marginalized.risk.no.marker."%.%study_name%.%".Rdata"))
         load(here::here("output", TRIAL, COR, "marginalized.risk."%.%study_name%.%".Rdata"))
         risks=get("risks.all.1")[[a]]        
+        overall.ve.ls[[i]]=overall.ve
         
         est = 1 - risks$prob/res.plac.cont["est"]
         boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
         ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))                
     
-        mymatplot(risks$marker, t(rbind(est, ci.band)), type="l", lty=c(1,2,2), lwd=2.5, make.legend=F, col=ifelse(i==1,"blue","green"), ylab=paste0("Controlled VE"), xlab=labels.assays.short[a]%.%" (=s)", 
+        mymatplot(risks$marker, t(rbind(est, ci.band)), type="l", lty=c(1,2,2), lwd=2.5, make.legend=F, col=cols[i], ylab=paste0("Controlled VE"), xlab=labels.assays.short[a]%.%" (=s)", 
             #main=paste0(labels.assays.long["Day"%.%tpeak,a]),
             ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, add=i==2)
         draw.x.axis.cor(xlim, lloxs[a])
@@ -66,15 +69,13 @@ a="bindSpike"
     }
     
     # legend
-    tmp=formatDouble(overall.ve*100,1)%.%"%"        
-    legend.x=9
-    mylegend(x=legend.x,legend=c(
-            paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), 
-            "Controlled VE",
-            if(eq.geq==1) "Controlled VE Sens. Analysis"), 
-        col=c("white", if(eq.geq==3 | eq.geq==2) "black" else "pink", if(eq.geq==1) "red"), 
-        lty=1, lwd=2, cex=.8)
+    tmp.1=formatDouble(overall.ve.ls[[1]]*100,1)%.%"%"        
+    tmp.2=formatDouble(overall.ve.ls[[2]]*100,1)%.%"%"        
+    mylegend(x=9, col=cols, legend=c(
+            paste0(studies[1], " Overall VE ",tmp.1[1]," (",tmp.1[2],", ",tmp.1[3],")"), 
+            paste0(studies[1], " Overall VE ",tmp.2[1]," (",tmp.2[2],", ",tmp.2[3],")")
+        ), lty=1, lwd=2, cex=.8)
 
-  mydev.off()
+  mydev.off(file=paste0("output/", a, "_controlled_ve_curves_cove_ensemble"))
 #} # end for
     
