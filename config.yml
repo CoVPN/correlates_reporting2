@@ -32,6 +32,7 @@ hvtn705: &hvtn705
   primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay] 
   multivariate_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm] 
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_firstcasecontrolprocesseddata.csv
+  #data_cleaned: ../../data/HVTN705_firstcasecontrolprocesseddata.csv
 
 hvtn705V1V2: &hvtn705V1V2
   <<: *hvtn705base
@@ -70,7 +71,7 @@ moderna_trial: &moderna_trial
 
 moderna_real: &moderna_real
   <<: *moderna_trial
-  data_cleaned: /trials/covpn/p3001/analysis/correlates/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv
+  data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv
   study_name: COVE
   num_boot_replicates: 1000
   num_perm_replicates: 10000
