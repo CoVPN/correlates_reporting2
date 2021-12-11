@@ -49,7 +49,7 @@ endif
 
 ## clean          : clean up data_clean and output folder
 clean:
-	rm -f data_clean/* && rm -rf output/*
+	rm -f data_clean/* && rm -rf output/$(TRIAL)/*
 
 ## report        : create a standalone report
 report:

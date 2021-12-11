@@ -7,8 +7,6 @@
 for (i in 1:2){
   COR=currCOR=ifelse(i==1, "D29", "D29start1")
   
-  i <-1
-  
   # Eventually will have to loop through assays, and combine each individual assay's boxplots into one figure
   for(time in timepoints) {
     
@@ -24,7 +22,7 @@ for (i in 1:2){
       res = knitr::knit_child(c(here::here('cor_graphical', 'report_boxplots.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
       cat("\\clearpage", sep = '\n')
-      i = i + 1
+
     }
   }
   
@@ -46,7 +44,7 @@ for (i in 1:2){
       res = knitr::knit_child(c(here::here('cor_graphical', 'report_marker_rcdf.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
       cat("\\clearpage", sep = '\n')
-      i = i + 1
+
     }
   }
   
@@ -78,7 +76,7 @@ for (i in 1:2){
         res = knitr::knit_child(c(here::here('cor_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
         cat(res, sep = '\n')
         cat("\\clearpage", sep = '\n')
-        i = i + 1
+
       }
     }
   }
@@ -86,7 +84,6 @@ for (i in 1:2){
   
   ############################################# Violin and line plots ###################################################
   
-  i <-1
   facets <- c("", "Age", "Risk", "Age_Risk", "Sex", "RaceEthnic", "Dich_RaceEthnic")
   names(facets) <- c("", "age", "risk condition", "age and risk condition", "sex assigned at birth", "race and ethnic group", "dichotomous classification of race and ethnic group")
   
@@ -100,7 +97,7 @@ for (i in 1:2){
     		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
     		      cat(res, sep = '\n')
     		      cat("\\clearpage", sep = '\n')
-    		      i = i + 1
+
     		    }
     		  }
         }
@@ -110,7 +107,6 @@ for (i in 1:2){
   
   ###################################################### Scatter plots ###################################################
   
-  i <-1
   labels.time.no.fold <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)]
   
   for (cohort in c("Vaccine_BaselineNeg", "all")) {
@@ -120,7 +116,7 @@ for (i in 1:2){
   		  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub2.Rmd')), quiet = TRUE)
     		cat(res, sep = '\n')
         cat("\\clearpage", sep = '\n')
-        i = i + 1
+
   		} 
   	}
   }
@@ -131,7 +127,7 @@ for (i in 1:2){
   	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
   		cat(res, sep = '\n')
       cat("\\clearpage", sep = '\n')
-      i = i + 1
+
   	}
   }
 }
