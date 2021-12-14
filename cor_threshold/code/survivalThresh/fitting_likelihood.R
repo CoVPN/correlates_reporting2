@@ -44,9 +44,10 @@ fit_likelihood <- function(data, node_list, grid_A, cutoffs_A, cutoffs_J, type_A
   if(verbose) {
     print("Fitting distribution of treatment...")
   }
+  grid_A <- sort(unique(grid_A))
   lrnr_A_RCDF <- Lrnr_density_discretize$new(Lrnr_pooled_hazards_fixed$new(lrnr_A), n_bins = length(grid_A), breaks = grid_A, predict_type = type)
 
-  grid_A <- sort(unique(grid_A))
+   
   task_A <- make_task_A(data, node_list, train = T, type = type_A, folds = folds_nt)
 
   lrnr_A_trained <- lrnr_A_RCDF$train(task_A)

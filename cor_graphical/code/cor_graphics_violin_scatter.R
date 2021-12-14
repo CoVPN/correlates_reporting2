@@ -5,7 +5,10 @@ renv::activate(project = here::here(".."))
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
     
-incNotMol <- ""  #"IncludeNotMolecConfirmed"
+Args <- commandArgs(trailingOnly=TRUE)
+COR=Args[1]
+if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"
+} else {incNotMol <- ""}
 #-----------------------------------------------
 
 source(here::here("code", "cor_process_function.R"))
