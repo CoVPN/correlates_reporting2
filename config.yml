@@ -32,6 +32,7 @@ hvtn705: &hvtn705
   primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay] 
   multivariate_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm] 
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_firstcasecontrolprocesseddata.csv
+  #data_cleaned: ../../data/HVTN705_firstcasecontrolprocesseddata.csv
 
 hvtn705V1V2: &hvtn705V1V2
   <<: *hvtn705base
@@ -49,7 +50,6 @@ ows_trial: &ows_trial
   is_ows_trial: yes
   case_cohort: yes
   llox_label: lod
-  low_efficacy: no
 
 moderna_trial: &moderna_trial
   <<: *ows_trial
@@ -67,10 +67,12 @@ moderna_trial: &moderna_trial
   covariates_riskscore: ~.+ MinorityInd + HighRiskInd + risk_score
   covariates_norisksco: ~.+ MinorityInd + HighRiskInd + Age
   ve_ylim: [0,1]
+  low_efficacy: no
 
 moderna_real: &moderna_real
   <<: *moderna_trial
-  data_cleaned: /trials/covpn/p3001/analysis/correlates/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv
+  data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv
+  #data_cleaned: ../data_clean/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv
   study_name: COVE
   num_boot_replicates: 1000
   num_perm_replicates: 10000
@@ -92,15 +94,27 @@ janssen_trial: &janssen_trial
   data_raw_dir: janssen
   study_name_code: ENSEMBLE
   ve_ylim: [0,1]
+  low_efficacy: yes # used to drive some plotting configurations
 
 janssen_trial_real: &janssen_trial_real
   <<: *janssen_trial
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_real_data_processed_with_riskscore.csv
-  #data_cleaned: D:/gdrive/Covid19/correlates_reporting2/data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_real_data_processed_with_riskscore.csv
+  #data_cleaned: ../data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
   assays: [bindSpike, bindRBD]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml)]
   primary_assays: [] 
+  study_name: ENSEMBLE
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+
+janssen_trial_realADCP: &janssen_trial_realADCP
+  <<: *janssen_trial
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realADCP_data_processed_with_riskscore.csv
+  assays: [ADCP]
+  assay_labels: [Phagocytic Score]
+  assay_labels_short: [Phagocytic Score]
+  primary_assays: [] # have it be empty if no multitesting adjustment should be done
   study_name: ENSEMBLE
   num_boot_replicates: 1000
   num_perm_replicates: 10000
@@ -132,18 +146,6 @@ janssen_sa_real:
   subset_value: 2
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
-
-janssen_trial_realADCP: &janssen_trial_realADCP
-  <<: *janssen_trial
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/adata/janssen_pooled_real_data_processed_with_riskscore.csv
-  #data_cleaned: D:/gdrive/Covid19/correlates_reporting2/data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
-  assays: [ADCP]
-  assay_labels: [Phagocytic Score]
-  assay_labels_short: [Phagocytic Score]
-  primary_assays: [] 
-  study_name: ENSEMBLE
-  num_boot_replicates: 1000
-  num_perm_replicates: 10000
 
 janssen_pooled_realADCP: 
   <<: *janssen_trial_realADCP

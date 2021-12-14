@@ -1,7 +1,8 @@
-#Sys.setenv(TRIAL = "moderna_mock") # moderna_mock janssen_pooled_real
+#Sys.setenv(TRIAL = "janssen_pooled_real"); Args=c(COR="D29IncludeNotMolecConfirmed"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
 renv::activate(project = here::here(".."))    
-# There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
-if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
+    # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
+    if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
+    
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 time.start=Sys.time()
@@ -73,15 +74,7 @@ dat.pla.seroneg$yy=dat.pla.seroneg[["EventIndPrimary"]]
 #hist(dat.vac.seroneg$EventTimePrimaryD29)
 #hist(dat.vac.seroneg$EventTimePrimaryD29[dat.vac.seroneg$EventIndPrimaryD29==1])
     
-if (tfinal.tpeak==0) {
-    # followup time for the last case, used to be called t0
-    tfinal.tpeak=max(dat.vac.seroneg[dat.vac.seroneg[[config.cor$EventIndPrimary]]==1, config.cor$EventTimePrimary])    
-}
-myprint(tfinal.tpeak)
-
-
-form.s = EventIndPrimary ~ 1
-form.0.logistic = update (form.s, as.formula(config$covariates_riskscore))
+form.0.logistic = update (EventIndPrimary ~ 1, as.formula(config$covariates_riskscore))
 print(form.0.logistic)
 
 
@@ -93,7 +86,7 @@ dat.vacc.pop.ph2 = subset(dat.vac.seroneg, ph2==1)
 
 # there are two dependencies on cor_coxph
 
-# load prev.plac, prev.vacc
+# load prev.plac, prev.vacc, with bootstrap CI
 tmp=paste0(here::here(".."), "/cor_coxph/output/",attr(config,"config"),"/", COR,"/", "marginalized.risk.no.marker."%.%study_name%.%".Rdata")
 if (file.exists(tmp)) load(tmp) else stop("")
 # if this does not exist, the code will throw error
