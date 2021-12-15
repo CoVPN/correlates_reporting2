@@ -1,23 +1,30 @@
-﻿# COVID-19 VE trial analysis
-# Method of Gilbert, Blette, Shepherd, Hudgens (2020, J Causal Inference)
-
-#-----------------------------------------------
-# obligatory to append to the top of each script
-renv::activate(project = here::here(".."))
+#Sys.setenv(TRIAL = "moderna_real"); Args=c(COR="D57"); Sys.setenv(VERBOSE = 1) 
+# TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+renv::activate(project = here::here(".."))    
+    # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
+    if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
+    
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
-library(here)
 
-####################################
+
+# path for figures and tables etc
+save.results.to = here::here("output"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(here::here("output"), "/", attr(config,"config")); if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", COR,"/"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
+print(paste0("save.results.to equals ", save.results.to))
+
+
+############################################################################################################
 # Principal stratification inference
+# Method of Gilbert, Blette, Shepherd, Hudgens (2020, J Causal Inference)
 
 # Bryan Blette's R package psbinary
 library(psbinary)
 library(xtable)
 #help(analyze_NEE)
 
-# This code carries out the real data analysis for the Moderna phase 3 trial.
-data <- read.csv("T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv")
+data <- dat.mock
 
 # The "NEE" and "NEH" methods are included in the code, the user specifies one or the other.
 # NEH is always the relevant one for COVID-19 vaccines.
@@ -34,27 +41,28 @@ method <- "NEH"
 # exclude participants with an early infection before time tau (tpeak visit).  
 # Need to set up the Y_tau variable for the Blette code to work properly.
 
-keep <- data$Perprotocol==1 & data$Bserostatus==0
-data <- data[keep,]
-Ph2ptids.tpeak <-   ifelse(data$ph2.D57,1,0)
+Ph2ptids.tpeak <-   ifelse(data$ph2,1,0)
 
 Trt <- data$Trt
 Delta.Day1 <- data$EventIndPrimaryD1
-Delta.tpeak <- data$EventIndPrimaryD57
-Ttilde.tpeak <- data$EventTimePrimaryD57
+Delta.tpeak <- data$EventIndPrimary
+Ttilde.tpeak <- data$EventTimePrimary
 
 # Define Y_tautpeak: takes value 1 if a SARS-CoV-2 infection or COVID-19 case by < tpeaklag days post tpeak visit
-Earlyinfectiontpeak <- data$EarlyinfectionD57
-Earlyendpointtpeak  <- data$EarlyendpointD57
-tpeaklag <- 7
-Y_tautpeak <- ifelse((Delta.tpeak==1 & Ttilde.tpeak < tpeaklag) | Earlyinfectiontpeak==1 | Earlyendpointtpeak==1,1,0)
-W1 <- data$wt.D57
+#Earlyinfectiontpeak <- data[["EarlyinfectionD"%.%tpeak]]
+#Earlyendpointtpeak  <- data[["EarlyendpointD"%.%tpeak]]
+#Y_tautpeak <- ifelse((Delta.tpeak==1 & Ttilde.tpeak < tpeaklag) | Earlyinfectiontpeak==1 | Earlyendpointtpeak==1,1,0)
+# YF: it may be better to define this variable as follows
+Y_tautpeak <- 1-data$ph1
+
+W1 <- data$wt
 W1[Ph2ptids.tpeak==0] <- 0
 
 #################################################################################
 # Analyze the set of biomarkers in the vector markersforanalysis (names in the 'data' data frame)
 
-markersforanalysis <- c("Day57bindSpike","Day57bindRBD","Day57pseudoneutid50","Day57pseudoneutid80")
+markersforanalysis <- paste0("Day", tpeak, assays)
+
 
 # Create binary markers by cutting at the fixed percentile analysispercs:
 # analysispercs <- c(0.2,0.3,0.4)
@@ -63,12 +71,18 @@ analysispercs <- c(0.4,0.5,0.6)
 # Conduct analyses for all markers in markersforanalysis for each dichotomization in analysispercs
 # The following parameters are used in plotting as well as in the inferential analyses
 
-labelsmarkersforanalysis <- c("D57Spike.4","D57RBD.4","D57ID50.4","D57ID80.4",
-                              "D57Spike.5","D57RBD.5","D57ID50.5","D57ID80.5",
-                              "D57Spike.6","D57RBD.6","D57ID50.6","D57ID80.6")
+#YF: not sure how to generalize .4, .5. .6
+labelsmarkersforanalysis <- paste0("D",tpeak,assays,".",rep(4:6,each=length(assays)))
+#labelsmarkersforanalysis <- c("D57Spike.4","D57RBD.4","D57ID50.4","D57ID80.4",
+#                              "D57Spike.5","D57RBD.5","D57ID50.5","D57ID80.5",
+#                              "D57Spike.6","D57RBD.6","D57ID50.6","D57ID80.6")
 
-axislabelsmarkers <- c("Day 57 IgG Spike (IU/ml)","Day 57 IgG RBD (IU/ml)","Day 57 nAb titer (IU50/ml)",
-                       "Day 57 nAb titer (IU80/ml)")
+
+#axislabelsmarkers <- c("Day 57 IgG Spike (IU/ml)","Day 57 IgG RBD (IU/ml)","Day 57 nAb titer (IU50/ml)",
+#                       "Day 57 nAb titer (IU80/ml)")
+axislabelsmarkers <- paste0("Day ", tpeak, " ", assay_labels_short)
+
+
 
 ################################################################################
 # Generic code for calling Bryan Blette's R package
@@ -235,7 +249,7 @@ colnames(datareportmarkerdata[[MM*(jj-1)+ii]]) <- c("Marker","Sens","Ilol","Ilou
 datareport <- do.call(rbind, datareportmarkerdata)
 
 # Write out the data results to a file
-write.table(datareport, file="T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/PSbinaryNEHCOVEresultsDay57.csv", row.names = F, sep=",")
+write.table(datareport, file=paste0(save.results.to, "PSbinaryNEHCOVEresultsDay57.csv"), row.names = F, sep=",")
 #write.table(datareport, file="H:/Coronavirus/HVTNstudies/ModernaProgram/ImmuneCorrelatesManuscript/PrincipalStratificationBinary/PSbinaryNEHresultsDay57.csv", row.names = F, sep=",")
 
 
@@ -249,26 +263,26 @@ comment$command <- paste0("\\hline \\hline
                           \\multicolumn{", NCOL(datareport), "}{l}{\\footnotesize \\quad High: beta sensitivity parameters log(0.5) and -log(0.5)}")
 
 print(xtable(datareport,
-caption=paste0("Moderna COVE: Correlates of Vaccine Efficacy Results by Gilbert et al. (2020) 
+caption=paste0(study_name, ": Correlates of Vaccine Efficacy Results by Gilbert et al. (2020) 
 Method for High vs. Low Marker Subgroups Under No Early Harm Assumption with 
 Sensitivity Analysis Scenarios*")), 
 caption.placement="top",
 add.to.row = comment,
 hline.after = c(-1,0),
-label= "tab:PrincstratbinaryD57markers",
-file="T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/tables/PSbinaryNEHresultsDay57.tex")
+label= paste0("tab:PrincstratbinaryD",tpeak,"markers"),
+file=paste0(save.results.to, "PSbinaryNEHresultsDay57.tex"))
 #file="H:/Coronavirus/HVTNstudies/ModernaProgram/ImmuneCorrelatesManuscript/PrincipalStratificationBinary/PSbinaryNEHresultsDay57.tex")
 
 cutpoints <- data.frame(round(10^cutpoints))
 colnames(cutpoints) <- c(paste("Perc.",analysispercs[1]),
                          paste("Perc.",analysispercs[2]),
                          paste("Perc.",analysispercs[3]))
-rownames(cutpoints) <- c("D57Spike","D57RBD","D57ID50","D57ID80")
+rownames(cutpoints) <- paste0("D", tpeak, assays)
 print(xtable(cutpoints,
-caption=paste0("Moderna COVE: Cut-points Defining High and Low Marker Subgroups")), 
+caption=paste0(study_name, ": Cut-points Defining High and Low Marker Subgroups")), 
 caption.placement="top",
-label= "tab:PrincstratbinaryD57markerscutpoints",
-file="T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/tables/PSbinaryNEHresultsDay57cutpoints.tex")
+label= paste0("tab:PrincstratbinaryD",tpeak,"markerscutpoints"),
+file=paste0(save.results.to, "PSbinaryNEHresultsDay57cutpoints.tex"))
 #file="H:/Coronavirus/HVTNstudies/ModernaProgram/ImmuneCorrelatesManuscript/PrincipalStratificationBinary/PSbinaryNEHresultsDay57cutpoints.tex")
 
 
@@ -390,29 +404,26 @@ dev.off()
 
 }
 
-markers <- c("Day57bindSpike","Day57bindRBD","Day57pseudoneutid50","Day57pseudoneutid80",
-             "Day57bindSpike","Day57bindRBD","Day57pseudoneutid50","Day57pseudoneutid80",
-             "Day57bindSpike","Day57bindRBD","Day57pseudoneutid50","Day57pseudoneutid80")
+markers <- rep(markersforanalysis, 3)
 
-figuretitlesmarkers      <- c(paste("VE by Day 57 IgG Spike > vs. <= ",cutpoints[1,1]," IU/ml"),
-                  paste("VE by Day 57 IgG RBD > vs. <= ",cutpoints[2,1],  " IU/ml"),
-                              paste("VE by Day 57 nAb ID50 > vs. <= ",cutpoints[3,1], " IU50/ml"),
-                              paste("VE by Day 57 nAb ID80 > vs. <= ",cutpoints[4,1], " IU80/ml"),
-                  paste("VE by Day 57 IgG Spike > vs. <= ",cutpoints[1,2]," IU/ml"),
-                  paste("VE by Day 57 IgG RBD > vs. <= ",cutpoints[2,2], " IU/ml"),
-                              paste("VE by Day 57 nAb ID50 > vs. <= ",cutpoints[3,2]," IU50/ml"),
-                              paste("VE by Day 57 nAb ID80 > vs. <= ",cutpoints[4,2]," IU80/ml"),
-                  paste("VE by Day 57 IgG Spike > vs. <= ",cutpoints[1,3]," IU/ml"),
-                  paste("VE by Day 57 IgG RBD > vs. <= ",cutpoints[2,3]," IU/ml"),
-                              paste("VE by Day 57 nAb ID50 > vs. <= ",cutpoints[3,3]," IU50/ml"),
-                              paste("VE by Day 57 nAb ID80 > vs. <= ",cutpoints[4,3]," IU80/ml"))
 
-axislabelsmarkers <- c("Day 57 IgG Spike (IU/ml)","Day 57 IgG RBD (IU/ml)",
-                       "Day 57 nAb titer (IU50/ml)","Day 57 nAb titer (IU80/ml)",
-                       "Day 57 IgG Spike (IU/ml)","Day 57 IgG RBD (IU/ml)",
-                       "Day 57 nAb titer (IU50/ml)","Day 57 nAb titer (IU80/ml)",
-                       "Day 57 IgG Spike (IU/ml)","Day 57 IgG RBD (IU/ml)",
-                       "Day 57 nAb titer (IU50/ml)","Day 57 nAb titer (IU80/ml)")
+assay_labels_short
+figuretitlesmarkers <- paste0("VE by ",axislabelsmarkers, " > vs. <= ",unlist(cutpoints))
+#figuretitlesmarkers      <- c(paste("VE by Day 57 IgG Spike > vs. <= ",cutpoints[1,1]," IU/ml"),
+#                              paste("VE by Day 57 IgG RBD   > vs. <= ",cutpoints[2,1],  " IU/ml"),
+#                              paste("VE by Day 57 nAb ID50  > vs. <= ",cutpoints[3,1], " IU50/ml"),
+#                              paste("VE by Day 57 nAb ID80  > vs. <= ",cutpoints[4,1], " IU80/ml"),
+#                              paste("VE by Day 57 IgG Spike > vs. <= ",cutpoints[1,2]," IU/ml"),
+#                              paste("VE by Day 57 IgG RBD > vs. <= ",cutpoints[2,2], " IU/ml"),
+#                              paste("VE by Day 57 nAb ID50 > vs. <= ",cutpoints[3,2]," IU50/ml"),
+#                              paste("VE by Day 57 nAb ID80 > vs. <= ",cutpoints[4,2]," IU80/ml"),
+#                              paste("VE by Day 57 IgG Spike > vs. <= ",cutpoints[1,3]," IU/ml"),
+#                              paste("VE by Day 57 IgG RBD > vs. <= ",cutpoints[2,3]," IU/ml"),
+#                              paste("VE by Day 57 nAb ID50 > vs. <= ",cutpoints[3,3]," IU50/ml"),
+#                              paste("VE by Day 57 nAb ID80 > vs. <= ",cutpoints[4,3]," IU80/ml"))
+
+axislabelsmarkers <- rep(axislabelsmarkers, 3)
+
 
 # Note: Transform to IU
 lowerlimits <- c(0.3076,1.593648,0.242,1.502,
@@ -435,18 +446,20 @@ expression(10^3),expression(10^4),expression(10^5))
 }
 
 
-filenamesplots <- c("T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57Spikecut1.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57RBDcut1.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID50cut1.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID80cut1.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57Spikecut2.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57RBDcut2.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID50cut2.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID80cut2.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57Spikecut3.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57RBDcut3.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID50cut3.pdf",
-"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID80cut3.pdf")
+filenamesplots <- paste0(save.results.to, "plotPSbin", study_name, "Day", tpeak, assays, "cut", rep(1:3, each=length(assays)),".pdf")
+
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57Spikecut1.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57RBDcut1.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID50cut1.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID80cut1.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57Spikecut2.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57RBDcut2.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID50cut2.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID80cut2.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57Spikecut3.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57RBDcut3.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID50cut3.pdf",
+#"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57ID80cut3.pdf")
 
 #filenamesplots <- c("H:/Coronavirus/HVTNstudies/ModernaProgram/ImmuneCorrelatesManuscript/PrincipalStratificationBinary/plotPSbinCOVEDay57Spikecut1.pdf",
 #"H:/Coronavirus/HVTNstudies/ModernaProgram/ImmuneCorrelatesManuscript/PrincipalStratificationBinary/plotPSbinCOVEDay57RBDcut1.pdf",
