@@ -1,6 +1,12 @@
 ﻿# COVID-19 VE trial analysis
 # Method of Gilbert, Blette, Shepherd, Hudgens (2020, J Causal Inference)
 
+#-----------------------------------------------
+# obligatory to append to the top of each script
+renv::activate(project = here::here(".."))
+source(here::here("..", "_common.R"))
+#-----------------------------------------------
+library(here)
 
 ####################################
 # Principal stratification inference
@@ -9,8 +15,6 @@
 library(psbinary)
 library(xtable)
 #help(analyze_NEE)
-
-rm(list = ls())
 
 # This code carries out the real data analysis for the Moderna phase 3 trial.
 data <- read.csv("T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv")
