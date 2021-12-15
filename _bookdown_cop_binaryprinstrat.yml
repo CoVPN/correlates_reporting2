@@ -1,0 +1,20 @@
+delete_merged_file: true
+before_chapter_script: 
+output_dir: "cop_binaryprinstrat"
+clean: packages.bib
+keep_tex: true
+language:
+  label:
+    fig: "FIGURE "
+    tab: "TABLE "
+  ui:
+    chapter_name: "Section "
+
+# abbreviated cor report
+rmd_files: [
+  "index_cor.Rmd",
+  "cop_binaryprinstrat/report.Rmd",
+  "references.Rmd",
+  "appendix.Rmd"
+]
+
