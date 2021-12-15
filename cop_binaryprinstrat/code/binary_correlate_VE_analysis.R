@@ -249,7 +249,7 @@ colnames(datareportmarkerdata[[MM*(jj-1)+ii]]) <- c("Marker","Sens","Ilol","Ilou
 datareport <- do.call(rbind, datareportmarkerdata)
 
 # Write out the data results to a file
-write.table(datareport, file=paste0(save.results.to, "PSbinaryNEHCOVEresultsDay57.csv"), row.names = F, sep=",")
+write.table(datareport, file=paste0(save.results.to, "PSbinaryNEH",study_name,"resultsDay",tpeak,".csv"), row.names = F, sep=",")
 #write.table(datareport, file="H:/Coronavirus/HVTNstudies/ModernaProgram/ImmuneCorrelatesManuscript/PrincipalStratificationBinary/PSbinaryNEHresultsDay57.csv", row.names = F, sep=",")
 
 
@@ -270,7 +270,7 @@ caption.placement="top",
 add.to.row = comment,
 hline.after = c(-1,0),
 label= paste0("tab:PrincstratbinaryD",tpeak,"markers"),
-file=paste0(save.results.to, "PSbinaryNEHresultsDay57.tex"))
+file=paste0(save.results.to, "PSbinaryNEHresultsDay",tpeak,".tex"))
 #file="H:/Coronavirus/HVTNstudies/ModernaProgram/ImmuneCorrelatesManuscript/PrincipalStratificationBinary/PSbinaryNEHresultsDay57.tex")
 
 cutpoints <- data.frame(round(10^cutpoints))
@@ -282,7 +282,7 @@ print(xtable(cutpoints,
 caption=paste0(study_name, ": Cut-points Defining High and Low Marker Subgroups")), 
 caption.placement="top",
 label= paste0("tab:PrincstratbinaryD",tpeak,"markerscutpoints"),
-file=paste0(save.results.to, "PSbinaryNEHresultsDay57cutpoints.tex"))
+file=paste0(save.results.to, "PSbinaryNEHresultsDay",tpeak,"cutpoints.tex"))
 #file="H:/Coronavirus/HVTNstudies/ModernaProgram/ImmuneCorrelatesManuscript/PrincipalStratificationBinary/PSbinaryNEHresultsDay57cutpoints.tex")
 
 
