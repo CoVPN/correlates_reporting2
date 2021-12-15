@@ -28,6 +28,7 @@ Glossary for output in the following results tables:
 
 \input{`r paste0(pathCoRoutput, "/")`PSbinaryNEHresultsDay`r tpeak`.tex}
 
+\clearpage
 
 ## Plots
 

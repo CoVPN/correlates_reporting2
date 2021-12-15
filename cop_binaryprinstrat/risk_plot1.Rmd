@@ -23,3 +23,5 @@
   \end{center}
   \caption{Principal stratification binary Day `r tpeak` `r a` cut at 60th percentile (Medium degree of selection bias)}
 \end{figure}
+
+\clearpage
