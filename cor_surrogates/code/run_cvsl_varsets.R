@@ -77,10 +77,10 @@ for (i in 1:length(seeds)) {
 
 # save off the output
 saveRDS(cvaucs, file = here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
-save(cvfits, file = here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rda")))
+saveRDS(cvfits, file = here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
 # only save these objects once
 if (job_id == 1) {
-  save(ph2_vacc_ptids, file = here("output", "ph2_vacc_ptids.rda"))
+  saveRDS(ph2_vacc_ptids, file = here("output", "ph2_vacc_ptids.rds"))
   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
        V_outer, file = here("output", "objects_for_running_SL.rda"))
 }
