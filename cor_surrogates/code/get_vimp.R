@@ -18,10 +18,13 @@ set.seed(20210216)
 seeds <- round(runif(10, 1000, 10000))
 # set up
 all_estimates <- NULL
-X <- bind_cols(dat.ph2 %>%
-  select(!!briskfactors), markers)
+X <- dat.ph2 %>%
+  select(!!briskfactors, markers)
+
+# read in the fits for the baseline risk factors
+baseline_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[1], ".rds")))
 # get VIMs etc.
-for (i in seq_len(nrow(varset_matrix) - 1)) {
+for (i in seq_len(nrow(varset_matrix))) {
   # the column indices of interest
   if (i == 1) {
     this_s <- which(briskfactors %in% names(X))
@@ -29,7 +32,7 @@ for (i in seq_len(nrow(varset_matrix) - 1)) {
     this_s <- which(varset_matrix[i, ]) + length(briskfactors)
   }
   # get the correct CV.SL lists
-  # full_fits <-
+  full_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[i], ".rds")))
   # reduced_fits <-
   list_of_indices <- as.list(seq_len(length(full_fits)))
   # get the common CV folds
