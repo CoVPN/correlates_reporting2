@@ -226,7 +226,7 @@ if (study_name == "HVTN705") {
 # Study-agnostic processing ----------------------------------------------------
 
 # Limit total variables that will be included in models
-nv <- sum(dat.ph2 %>% select(matches(endpoint)))
+nv <- sum(dat.ph2_init %>% select(matches(endpoint)))
 
 # Remove any predictor variables that are indicator variables and have fewer than 10  0's or 1's
 dat.ph2_drop_rare <- drop_riskVars_with_fewer_0s_or_1s(dat.ph2_init, c(briskfactors, markerVars))
