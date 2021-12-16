@@ -10,7 +10,7 @@ source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
 # common setup for CV super learners and variable importance
-source(here::here("cor_surrogates_setup.R"))
+source(here::here("code", "cor_surrogates_setup.R"))
 
 # get pooled VIMs, predictiveness for each comparison of interest --------------
 # get the same seeds as used for the initial CV SL fits
