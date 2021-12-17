@@ -120,8 +120,11 @@ for (a in assays) {
 ###################################################################################################
 # controlled VE curves for continuous markers
     
-for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same as 1 except that no sens curve is shown
-# eq.geq=2
+for (eq.geq in 1:3) {  
+# 1 conditional on s
+# 2 conditional on S>=s
+# 3 is same as 1 except that no sens curve is shown
+# eq.geq=1
     outs=lapply (assays, function(a) {        
         mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")),"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
             lwd=2.5
@@ -135,10 +138,8 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             xlim=get.range.cor(dat.vac.seroneg, a, tpeak)
             
             # compute Bias as a vector, which is a function of s
-            # choose a reference marker value
-            tmp=subset(dat.vac.seroneg, select=yy, drop=T)    
-            mean(tmp)
-            which=which.min(abs(risks$prob-mean(tmp)))
+            # choose a reference marker value based on matching the overall risk
+            which=which.min(abs(risks$prob-prev.vacc[1]))
             s.ref=risks$marker[which]
             Bias=controlled.risk.bias.factor(ss=risks$marker, s.cent=s.ref, s1=risks$marker[s1], s2=risks$marker[s2], RRud) 
             if (is.nan(Bias[1])) Bias=rep(1,length(Bias))
