@@ -1,0 +1,27 @@
+### `r a`
+
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[height=6.1in,angle=0]{`r paste0(pathCoRoutput, "/")`plotPSbin`r study_name`Day`r tpeak``r a`cut1.pdf}
+  \end{center}
+  \caption{Principal stratification binary Day `r tpeak` `r a` cut at 40th percentile (Medium degree of selection bias)}
+\end{figure}
+
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[height=6.1in,angle=0]{`r paste0(pathCoRoutput, "/")`plotPSbin`r study_name`Day`r tpeak``r a`cut2.pdf}
+  \end{center}
+  \caption{Principal stratification binary Day `r tpeak` `r a` cut at 50th percentile (Medium degree of selection bias)}
+\end{figure}
+
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[height=6.1in,angle=0]{`r paste0(pathCoRoutput, "/")`plotPSbin`r study_name`Day`r tpeak``r a`cut3.pdf}
+  \end{center}
+  \caption{Principal stratification binary Day `r tpeak` `r a` cut at 60th percentile (Medium degree of selection bias)}
+\end{figure}
+
+\clearpage
