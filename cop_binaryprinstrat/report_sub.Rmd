@@ -1,0 +1,42 @@
+# Day `r COR` Binary Principal Stratification Analysis {#cop-binaryprinstrat-Day`r COR`}
+
+## Tables
+
+
+\input{`r paste0(pathCoRoutput, "/")`PSbinaryNEHresultsDay`r tpeak`cutpoints.tex}
+
+\clearpage
+
+Glossary for output in the following results tables:
+
+\begin{itemize}
+    \item Ilol: Ignorance interval lower limit of VE for the vaccine subgroup with Lo marker level
+    \item Ilou: Ignorance interval upper limit of VE for the vaccine subgroup with Lo marker level
+    \item Elol: Estimated uncertainty interval lower limit of VE for the vaccine subgroup with Lo marker level
+    \item Elou: Estimated uncertainty interval upper limit of VE for the vaccine subgroup with Lo marker level
+    \item Ihil: Ignorance interval lower limit of VE for the vaccine subgroup with Hi marker level
+    \item Ihiu: Ignorance interval upper limit of VE for the vaccine subgroup with Hi marker level
+    \item Ehil: Estimated uncertainty interval lower limit of VE for the vaccine subgroup with Hi marker level
+    \item Ehiu: Estimated uncertainty interval upper limit of VE for the vaccine subgroup with Hi marker level
+    \item Icnl: Ignorance interval lower limit of the contrast ratio (1-VE(Lo))/(1-VE(Hi))
+    \item Icnu: Ignorance interval upper limit of the contrast ratio (1-VE(Lo))/(1-VE(Hi))
+    \item Ecnl: Estimated uncertainty interval lower limit of the contrast ratio (1-VE(Lo))/(1-VE(Hi)) 
+    \item Ecnu: Estimated uncertainty interval upper limit of the contrast ratio (1-VE(Lo))/(1-VE(Hi))
+\end{itemize}
+
+\clearpage
+
+\input{`r paste0(pathCoRoutput, "/")`PSbinaryNEHresultsDay`r tpeak`.tex}
+
+\clearpage
+
+## Plots
+
+```{r, echo=FALSE, results='asis'}
+  for (a in assays) {
+    res = knitr::knit_child(c(here::here('cop_binaryprinstrat', 'risk_plot1.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+```
+
+

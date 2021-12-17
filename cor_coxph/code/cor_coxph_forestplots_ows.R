@@ -115,7 +115,7 @@ for (a in assays) {
 i=i+2
 
 # HIV infection
-if (study_name_code=="ENSEMBLE") {
+if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) {
     design.1<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, HIVinfection==1)))
     design.2<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, HIVinfection==0)))        
     for (a in assays) {
@@ -135,7 +135,7 @@ for (a in assays) {
                              if (study_name_code!="ENSEMBLE") c("Comm. of color", "White Non-Hispanic"),
                              if (study_name_code=="ENSEMBLE" & !subset_value %in% c(1,2)) c("Comm. of color (US)", "White Non-Hispanic (US)"),
                              "Men", "Women",
-                             if (study_name_code=="ENSEMBLE") c("HIV infection Yes", "HIV infection No")
+                             if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) c("HIV infection Yes", "HIV infection No")
     )
 }    
 
@@ -152,7 +152,7 @@ nevents=c(nrow(subset(dat.vac.seroneg, yy==1)),
           if(study_name_code=="ENSEMBLE" & !subset_value %in% c(1,2)) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0 & Region==0)), 
           nrow(subset(dat.vac.seroneg, yy==1 & Sex==1)), 
           nrow(subset(dat.vac.seroneg, yy==1 & Sex==0)),
-          if (study_name_code=="ENSEMBLE") { c(
+          if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) { c(
               nrow(subset(dat.vac.seroneg, yy==1 & HIVinfection==1)), 
               nrow(subset(dat.vac.seroneg, yy==1 & HIVinfection==0)))
           }
@@ -219,8 +219,9 @@ rv$fr.3=list(nevents=nevents)
 for (a in assays) {
     fits = fits.all.3[[a]]
     est.ci = sapply(fits[select], function (fit) {
-        if (length(fit)==1) return (rep(NA,4))
+        if (length(fit)==1) return (rep(NA,4)) # fit is NA
         tmp=getFixedEf(fit, exp=T, robust=T)
+        if (tmp[nrow(tmp),1]>20)  return (rep(NA,4)) # coefficient is basically infinite
         tmp[nrow(tmp),c("HR", "(lower", "upper)", "p.value")]
     })
     # move latin american country names to the right by two spaces
