@@ -69,7 +69,7 @@ if (startsWith(tolower(study_name), "mock")) {
     # if path is relative, needs to do some processing
     if(endsWith(here::here(), "correlates_reporting2") & startsWith(path_to_data,"..")) path_to_data=substr(path_to_data, 4, nchar(path_to_data))
 }
-print(path_to_data)
+cat("Analysis-ready data: ", path_to_data, "\n")
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
 if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not available ===========================================")
 
@@ -267,6 +267,7 @@ if (config$is_ows_trial) {
     
     # Per Sarah O'Connell, for ensemble, the positivity cut offs and LLODs will be identical, 
     # as will the quantitative limits for N protein which are based on convalescent samples.
+    
     # But the RBD and Spike quantitation ranges will be different for the Janssen partial validation than for Moderna. 
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         lloqs["bindSpike"]=1.8429 
@@ -274,10 +275,10 @@ if (config$is_ows_trial) {
         
         uloqs["bindSpike"]=238.1165 
         uloqs["bindRBD"]=172.5755    
-        
-        # this done to make the plots free of too much white space since raw data are censored at pos.cutoff
-        llods["bindSpike"]=NA 
+                
+        llods["bindSpike"]=NA # set to NA to make the plots free of too much white space since raw data are censored at pos.cutoff
         llods["bindRBD"]=NA 
+        llods["pseudoneutid50"]=6
     }
     
     lloxs=llods

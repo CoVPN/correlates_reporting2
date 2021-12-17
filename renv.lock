@@ -219,6 +219,13 @@
       "Repository": "CRAN",
       "Hash": "84dffc44f23c419537c1c79cc46347a5"
     },
+    "TeachingDemos": {
+      "Package": "TeachingDemos",
+      "Version": "2.12",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "41e566d7eab7307a31b3dee3b203c7e0"
+    },
     "VGAM": {
       "Package": "VGAM",
       "Version": "1.1-5",
@@ -640,6 +647,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "9a374a10e3c0dbf1a0e207af019bfcea"
+    },
+    "earth": {
+      "Package": "earth",
+      "Version": "5.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "fccdc89d741234c23abeaa20f33c5c1e"
     },
     "ellipsis": {
       "Package": "ellipsis",
@@ -1449,6 +1463,20 @@
       "Repository": "CRAN",
       "Hash": "cb57de933545960a86f03513e4bd2911"
     },
+    "plotmo": {
+      "Package": "plotmo",
+      "Version": "3.6.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "81eed015ea891da0a3d8f42bb86ff820"
+    },
+    "plotrix": {
+      "Package": "plotrix",
+      "Version": "3.8-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2ebe8c2ec200da649738b0fc35a9b1a1"
+    },
     "plyr": {
       "Package": "plyr",
       "Version": "1.8.6",
@@ -1546,6 +1574,18 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "32620e2001c1dce1af49c49dccbb9420"
+    },
+    "psbinary": {
+      "Package": "psbinary",
+      "Version": "0.0.0.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "psbinary",
+      "RemoteUsername": "bblette1",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "360196be1d870ff56b6e84e76bbdd23f20fccc14",
+      "Hash": "82bb8fb4e778be26c509adecaeb49719"
     },
     "psych": {
       "Package": "psych",
@@ -1741,6 +1781,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "4f792e2f7c0f666584cc33336caae36c"
+    },
+    "rootSolve": {
+      "Package": "rootSolve",
+      "Version": "1.8.2.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b8fbe639ed0e0e4f4c80498f4411ec5f"
     },
     "roxygen2": {
       "Package": "roxygen2",
