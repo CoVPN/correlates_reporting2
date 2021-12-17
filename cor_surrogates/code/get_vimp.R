@@ -67,3 +67,9 @@ for (i in seq_len(nrow(varset_matrix))) {
   }
   all_estimates <- bind_rows(all_estimates, pooled_ests)
 }
+# add on the variable set name
+final_estimates <- all_estimates %>%
+  mutate(variable_set = rep(varset_names, each = 2), .before = "s")
+
+# save the output
+saveRDS(final_estimates, file = here::here("output", "vim_estimates.rds"))
