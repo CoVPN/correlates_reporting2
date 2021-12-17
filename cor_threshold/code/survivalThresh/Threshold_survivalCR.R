@@ -80,7 +80,7 @@ survivalThresh <- function(data, covariates, trt = "A", Ttilde = "Ttilde", Delta
   times <- 1:max(data_orig$Ttilde)
   nt <- length(times)
   n <- nrow(data_orig)
-  ngrid_A <- max(ngrid_A, length(cutoffs_A))+3
+  #ngrid_A <- max(ngrid_A, length(cutoffs_A))+3
   if(type_A=="equal") {
     stop("not allowed ")
     grid <- sort(unique(cutoffs_A))
@@ -89,10 +89,10 @@ survivalThresh <- function(data, covariates, trt = "A", Ttilde = "Ttilde", Delta
     #eps <- range(data_orig$A)/100
     #grid <- c(min(data_orig$A) - eps, seq(min(data_orig$A), max(data_orig$A), length = ngrid_A), max(data_orig$A) + eps)
     grid <- sort(unique(grid))
-    donothing <- sapply(cutoffs_A, function(c) {
-      grid[which.min(abs(c - grid))[1]] <<-c
-
-    })
+    # donothing <- sapply(cutoffs_A, function(c) {
+    #   grid[which.min(abs(c - grid))[1]] <<-c
+    # 
+    # })
     grid <- sort(unique(grid))
   }
   # Fit initial nuisance estimates
@@ -101,6 +101,10 @@ survivalThresh <- function(data, covariates, trt = "A", Ttilde = "Ttilde", Delta
   }
 
   fits <- fit_likelihood(data, node_list, grid, cutoffs_A, cutoffs_J, lrnr = lrnr, lrnr_A = lrnr_A, lrnr_C = lrnr_C, lrnr_N = lrnr_N, lrnr_J = lrnr_J, type_A = type_A, type_J = type_J, verbose = verbose)
+  grid <- sort(union(grid, cutoffs_A))
+  fits$grid_A <- grid
+  print("NEW GRID")
+  print(length(grid))
   # Get observed data likelihoods
   if(verbose) {
     print("Computing likelihoods...")
@@ -150,11 +154,13 @@ survivalThresh <- function(data, covariates, trt = "A", Ttilde = "Ttilde", Delta
         v <-  c(0,cumsum(v  * dA[i,] ))
         v <- v[length(v)] - v
         v <- v[-length(v)]
-        v[v!=0] <- v[v!=0] / bound(unlist(gA[i,])[v!=0],0.0025)
+        v[v!=0] <- v[v!=0] / bound(unlist(gA[i,])[v!=0],0.000025)
         return(v)
       }))
 
       Ft_W <- do.call(rbind, Ft_W_list)
+      print("Initial FTW")
+      print(head(Ft_W))
 
     }
     item <- list( Ft_W)
@@ -242,6 +248,8 @@ survivalThresh <- function(data, covariates, trt = "A", Ttilde = "Ttilde", Delta
         } else {
           X <- data.table(g = 1/pmax(likelihoods_tgt2$A_full[,index_grid_A, with = F][[1]], 0.001))
         }
+        X <- data.table(g = 1/pmax(likelihoods_tgt2$A_full[,index_grid_A, with = F][[1]], 0.001))
+        
         if(all(drop==0)) {
             update_psi_W_k <- rep(0,length(FtW_init))
         } else if(length(unique(Ft_AW_tgt)) > 1) {
@@ -262,7 +270,14 @@ survivalThresh <- function(data, covariates, trt = "A", Ttilde = "Ttilde", Delta
         EIC_N <- fits_tgt2$EIC_N[,index_t]
         EIC_A <- (Ft_AW_tgt - update_psi_W_k) * drop*X$g * weights
         EIC_W <- (update_psi_W_k - weighted.mean(update_psi_W_k, weights)) * weights
-
+        print("SCORE J")
+        print(mean(EIC_J))
+        print("SCORE N")
+        print(mean(EIC_N))
+        print("SCORE A")
+        print(mean(EIC_A))
+        print("SCORE W")
+        print(mean(EIC_W))
         psi <- weighted.mean(update_psi_W_k, weights)
         EIC <- EIC_W + EIC_A + EIC_N + EIC_J
         EIC_underlying <- EIC

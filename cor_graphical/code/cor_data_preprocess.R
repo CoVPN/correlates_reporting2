@@ -38,7 +38,11 @@ source(here("code", "params.R"))
 
 ################################################
 dat <- as.data.frame(dat.mock)
-incNotMol <- ""  #"IncludeNotMolecConfirmed"
+
+Args <- commandArgs(trailingOnly=TRUE)
+COR=Args[1]
+if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"
+} else {incNotMol <- ""}
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators

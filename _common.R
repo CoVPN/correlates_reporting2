@@ -1,8 +1,9 @@
 #if (exists(".DEF.COMMON")) stop ("_common.R has already been loaded") else .DEF.COMMON=TRUE
-    
 library(methods)
 library(dplyr)
 library(kyotil)
+library(marginalizedRisk)
+library(survival)
 # disable lower level parallelization in favor of higher level of parallelization
 library(RhpcBLASctl)
 blas_get_num_procs()
@@ -34,6 +35,9 @@ for(opt in names(config)){
 # correlates analyses-related 
 
 if (exists("COR")) {
+    # making sure we are inadvertently using the wrong COR
+    if(study_name=="ENSEMBLE" & COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
+
     config.cor <- config::get(config = COR)
     tpeak=as.integer(paste0(config.cor$tpeak))
     tpeaklag=as.integer(paste0(config.cor$tpeaklag))
@@ -65,19 +69,35 @@ if (startsWith(tolower(study_name), "mock")) {
     # if path is relative, needs to do some processing
     if(endsWith(here::here(), "correlates_reporting2") & startsWith(path_to_data,"..")) path_to_data=substr(path_to_data, 4, nchar(path_to_data))
 }
-print(path_to_data)
+cat("Analysis-ready data: ", path_to_data, "\n")
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
 if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not available ===========================================")
 
 
 dat.mock <- read.csv(path_to_data)
 
+# marginalized risk without marker
+get.marginalized.risk.no.marker=function(formula, dat, day){
+    fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
+    dat$EventTimePrimary=day
+    risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
+    mean(risks)
+}
+
+
 if (exists("COR")) {   
+    
     if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
 
+    # formulae
+    form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
+    form.0 = update (form.s, as.formula(config$covariates_riskscore))
+    print(form.0)
+    
+    ###########################################################
+    # single time point config such as D29
     if (is.null(config.cor$tinterm)) {
-    ##########################
-    # single time point config
+    
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
         dat.mock$ph2=dat.mock[[config.cor$ph2]]
         dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
@@ -86,9 +106,6 @@ if (exists("COR")) {
         dat.mock$wt=dat.mock[[config.cor$wt]]
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
 
-        # followup time for the last case in ph2 in vaccine arm
-        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        
         # data integrity checks
         if (!is.null(dat.mock$ph1)) {
             # missing values in variables that should have no missing values
@@ -102,6 +119,26 @@ if (exists("COR")) {
         } else {
             # may not be defined if COR is not provided in command line and used the default value
         }
+        
+        # followup time for the last case in ph2 in vaccine arm
+        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+        
+        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
+        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
+        overall.ve = c(1 - prev.vacc/prev.plac)    
+        myprint(prev.plac, prev.vacc, overall.ve)
+        
+#        # get VE in the first month or two of followup
+#        dat.tmp=dat.mock
+#        t.tmp=30
+#        # censor at t.tmp 
+#        dat.tmp$EventIndPrimary =ifelse(dat.tmp$EventTimePrimary<=t.tmp, dat.tmp$EventIndPrimary, 0)
+#        dat.tmp$EventTimePrimary=ifelse(dat.tmp$EventTimePrimary<=t.tmp, dat.tmp$EventTimePrimary, t.tmp)
+#        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==1 & ph1), t.tmp)
+#        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==0 & ph1), t.tmp)
+#        overall.ve = c(1 - prev.vacc/prev.plac)    
+#        myprint(prev.plac, prev.vacc, overall.ve)
+        
         
     }
     
