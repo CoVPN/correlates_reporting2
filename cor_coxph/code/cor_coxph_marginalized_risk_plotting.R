@@ -319,6 +319,9 @@ for (a in assays) {
 fit.0=coxph(form.s, dat.pla.seroneg) 
 risk.0= 1 - exp(-predict(fit.0, type="expected"))
 time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
+# risk.0 for 7 and 7+ are different
+risk.0 = risk.0[dat.pla.seroneg[[config.cor$EventIndPrimary]]==1]
+time.0 = time.0[dat.pla.seroneg[[config.cor$EventIndPrimary]]==1]
 
 #fit.1=coxph(form.s, dat.vac.seroneg) 
 #risk.1= 1 - exp(-predict(fit.1, type="expected"))
@@ -356,7 +359,7 @@ for (a in assays) {
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
         legend=c("Vaccine low","Vaccine medium","Vaccine high","Placebo")
         mylegend(x=1, legend=legend, lty=c(1:3,1), col=c("green3","green","darkgreen","gray"), lwd=2)
-        mylines(time.0, risk.0, col="gray", lwd=2)
+        mylines(time.0, risk.0, col="gray", lwd=2, type="l")
     }
     
     # add data ribbon    
