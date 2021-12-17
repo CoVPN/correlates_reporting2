@@ -9,12 +9,12 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
+# common setup for CV super learners and variable importance
+source(here::here("code", "cor_surrogates_setup.R"))
+
 # obtain the job id
 args <- commandArgs(trailingOnly = TRUE)
 job_id <- as.numeric(args[2])
-
-# common setup for CV super learners and variable importance
-source(here::here("code", "cor_surrogates_setup.R"))
 
 # grab the current variable set based on the job id
 this_var_set <- varset_matrix[job_id, ]
