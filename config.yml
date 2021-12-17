@@ -137,6 +137,20 @@ janssen_pooled_real:
   covariates_riskscore: ~.+ risk_score + as.factor(Region)
   covariates_norisksco: ~.+ Age        + as.factor(Region)
 
+janssen_pooled_realADCP: 
+  <<: *janssen_trial_realADCP
+  subset_variable: None
+  subset_value: All
+  covariates_riskscore: ~.+ risk_score + as.factor(Region)
+  covariates_norisksco: ~.+ Age        + as.factor(Region)
+
+janssen_pooled_realPsV: 
+  <<: *janssen_trial_realPsV
+  subset_variable: None
+  subset_value: All
+  covariates_riskscore: ~.+ risk_score + as.factor(Region)
+  covariates_norisksco: ~.+ Age        + as.factor(Region)
+  
 janssen_na_real: 
   <<: *janssen_trial_real
   subset_variable: Region
@@ -157,13 +171,6 @@ janssen_sa_real:
   subset_value: 2
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
-
-janssen_pooled_realADCP: 
-  <<: *janssen_trial_realADCP
-  subset_variable: None
-  subset_value: All
-  covariates_riskscore: ~.+ risk_score + as.factor(Region)
-  covariates_norisksco: ~.+ Age        + as.factor(Region)
 
 
 janssen_trial_mock: &janssen_trial_mock
