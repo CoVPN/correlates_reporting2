@@ -325,7 +325,7 @@ pool_cv_vim <- function (vim_lst, scale = "identity") {
   vim_pval <- vimp::vimp_hypothesis_test(predictiveness_full = pred_point_est, predictiveness_reduced = pred_reduced_point_est, se = vim_se, delta = 0, alpha = 0.05)$p_value
 
   output <- tibble::tibble(s = vim_lst[[1]]$s, quantity = c("VIM", "Predictiveness"), est = c(vim_point_est, pred_point_est), se = c(vim_se, pred_se)) %>%
-    bind_cols(as_tibble(rbind(vim_ci, pred_ci)), pval = c(vim_pval, NA))
+    bind_cols(as_tibble(rbind(vim_ci, pred_ci), .name_repair = ~ paste0("ci_", c("ll", "ul"))), pval = c(vim_pval, NA))
   return(output)
 }
 
