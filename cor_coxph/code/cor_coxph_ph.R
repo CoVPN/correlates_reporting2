@@ -173,6 +173,7 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c
          \\hline\n 
     ")
 )
+tab.cont=tab.1
 
 tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p))
 rownames(tab.1.nop12)=c(labels.axis["Day"%.%tpeak, assays])
@@ -228,6 +229,7 @@ tab=cbind(
 tmp=rbind(c(labels.axis["Day"%.%tpeak, assays]), "", "")
 rownames(tab)=c(tmp)
 tab
+tab.cat=tab[1:(nrow(tab)),]
 
 #cond.plac=dat.pla.seroneg[[config.cor$EventTimePrimary]]<=tfinal.tpeak # not used anymore
 mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_svycoxph_cat_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
@@ -246,6 +248,9 @@ mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_svycoxph_cat_pretty_"%.%st
          )
     )
 )
+# save two subjects for collate
+save.s.1=paste0(sum(dat.pla.seroneg$yy), "/", format(nrow(dat.pla.seroneg), big.mark=","))
+save.s.2=formatDouble(sum(dat.pla.seroneg$yy)/nrow(dat.pla.seroneg), digit=4, remove.leading0=F)
 
 
 tab.nop12=cbind(
@@ -293,3 +298,6 @@ if (!is.null(config$multivariate_assays)) {
     }
     
 }
+
+
+save (tab.cont, tab.cat, save.s.1, save.s.2, file=paste0(save.results.to, "coxph_slopes.Rdata"))
