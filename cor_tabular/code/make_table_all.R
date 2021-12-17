@@ -276,7 +276,7 @@ subgrp <- c(
 # Setup empty tables 
 tab_dm_neg <- tab_strtm1 <- tab_strtm2 <- tab_strtm2_1 <- tab_strtm2_2 <- tab_case_cnt <- NULL
 rpcnt_case1 <- rpcnt_case2 <- rgm_case1 <- rgm_case2 <- rgmt_case1 <- rgmt_case2 <- NULL
-case_vacc_neg <- case_vacc_pos <- case_plcb_pos <- NULL
+case_vacc_neg <- NULL
 
 if (study_name %in% c("COVE", "MockCOVE")) {
   num_v1 <- c("Age") # Summaries - Mean & Range
@@ -668,14 +668,6 @@ case_vacc_neg <- tab_case %>%
   dplyr::filter(Arm == "Vaccine" & `Baseline SARS-CoV-2` == "Negative") %>% 
   select(-c(Arm, `Baseline SARS-CoV-2`))
 
-case_vacc_pos <- tab_case %>% 
-  dplyr::filter(Arm == "Vaccine" & `Baseline SARS-CoV-2` == "Positive") %>% 
-  select(-c(Arm, `Baseline SARS-CoV-2`))
-
-case_plcb_pos <- tab_case %>% 
-  dplyr::filter(Arm == "Placebo" & `Baseline SARS-CoV-2` == "Positive") %>% 
-  select(-c(Arm, `Baseline SARS-CoV-2`))
-
 print("Done with all tables") 
 
 
@@ -687,7 +679,6 @@ save.results.to <- paste0(here::here("output"), "/", attr(config,"config"))
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
-save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, 
-     case_vacc_neg, case_vacc_pos, case_plcb_pos,
+save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, case_vacc_neg,
      file = file.path(save.results.to, "Tables.Rdata"))
 
