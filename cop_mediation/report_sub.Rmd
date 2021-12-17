@@ -87,7 +87,7 @@ knitr::kable(summary_stats_PsV$tab2, caption = paste0("Total endpoints by study 
 assay <- c("Binding", "ADCP", "PsV")
 day <- c(summary_stats$day_of_analysis,
          summary_stats_ADCP$day_of_analysis,
-         summary_stats_PsV$day_of_analysis,
-         caption = "The day used to generate binary endpoints in the mediation analysis")
-knitr::kable(data.frame(Assay = assay, `Analysis day` = day ))
+         summary_stats_PsV$day_of_analysis)
+knitr::kable(data.frame(Assay = assay, `Analysis day` = day ),
+             caption = "The day used to generate binary endpoints in the mediation analysis")
 ```
