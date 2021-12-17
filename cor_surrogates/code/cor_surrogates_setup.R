@@ -95,7 +95,7 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   # Identify the endpoint variable
   endpoint <- "EventIndPrimaryD57"
   wt <- "wt.D57"
-  ptidvar <- ptidvar
+  ptidvar <- "Ptid"
 
   # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
   # imputed values for markers (for phase 2 data) from dat.wide.v
@@ -208,7 +208,7 @@ if (study_name == "HVTN705") {
   # Identify the endpoint variable
   endpoint <- "Delta.D210"
   wt <- "wt.D210"
-  ptidvar <- ptidvar
+  ptidvar <- "Ptid"
 
   # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
   # imputed values for markers (for phase 2 data) from dat.wide.v
@@ -248,7 +248,7 @@ pred_vars <- dat.ph2 %>%
   colnames()
 
 # Save ptids to merge with predictions later
-ph2_vacc_all_of(ptidvar)s <- dat.ph2 %>%
+ph2_vacc_ptidvars <- dat.ph2 %>%
   select(all_of(ptidvar), all_of(endpoint), all_of(wt))
 
 # create "Z" matrix to use for (A)IPW efficient influence function computation
@@ -499,6 +499,13 @@ if (study_name == "HVTN705") {
                          varset_M7_2_4, varset_M7_2_5, # varset_M7_3_4, # varset_M7_3_5,
                          varset_M7_4_5, # varset_M7_2_3_4, varset_M7_2_3_5, varset_M7_3_4_5, varset_M7_2_3_4_5,
                          varset_M7_2_4_5)
+}
+
+# add on all of the individual marker variables
+for (i in seq_len(length(markers))) {
+  this_varset <- grepl(paste0("\\b", markers[i], "\\b"), markers, perl = TRUE)
+  varset_matrix <- rbind(varset_matrix, this_varset)
+  varset_names <- c(varset_names, markers[i])
 }
 
 # Study-agnostic set up of final data to pass to Super Learner -----------------
