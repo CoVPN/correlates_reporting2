@@ -74,7 +74,7 @@ knitr::kable(summary_stats_PsV$tab1, caption = paste0("Endpoints included in pha
 \clearpage
 
 
-```{r summ-tab2}
+```{r}
 knitr::kable(summary_stats$tab2, caption = paste0("Total endpoints by study arm in binding data set ", ifelse(is_start1, "starting 1 day after Day 29", "")))
 knitr::kable(summary_stats_ADCP$tab2, caption = paste0("Total endpoints by study arm in ADCP data set ", ifelse(is_start1, "starting 1 day after Day 29", "")))
 knitr::kable(summary_stats_PsV$tab2, caption = paste0("Total endpoints by study arm in PsV data set ", ifelse(is_start1, "starting 1 day after Day 29", "")))
