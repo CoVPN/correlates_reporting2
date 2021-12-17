@@ -329,7 +329,7 @@ vim_forest_plot <- est_vims %>%
   xlim(c(0, vim_text_pos + 0.1))
 
 ggsave(
-  vim_forest_plot, file = here::here("output", "vim_forest_plot.png"),
+  vim_forest_plot, file = here::here("figs", "vim_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
 
@@ -345,6 +345,6 @@ pred_forest_plot <- est_predictiveness %>%
   xlim(c(0, pred_text_pos + 0.1))
 
 ggsave(
-  pred_forest_plot, file = here::here("output", "pred_forest_plot.png"),
+  pred_forest_plot, file = here::here("figs", "pred_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
