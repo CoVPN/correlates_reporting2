@@ -18,11 +18,29 @@ set.seed(20210216)
 seeds <- round(runif(10, 1000, 10000))
 # set up
 all_estimates <- NULL
-X <- dat.ph2 %>%
-  select(!!briskfactors, markers)
+full_y <- dat.ph1 %>%
+  pull(!!endpoint)
+X <- dat.ph1 %>%
+  select(!!ptidvar, !!briskfactors) %>%
+  left_join(dat.ph2 %>%
+    select(!!ptidvar, all_of(markers)), by = ptidvar
+  ) %>%
+  select(-!!ptidvar)
 
 # read in the fits for the baseline risk factors
 baseline_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[1], ".rds")))
+
+# get the common CV folds
+list_of_indices <- as.list(seq_len(length(baseline_fits)))
+cf_folds <- lapply(list_of_indices, function(l) vimp::get_cv_sl_folds(baseline_fits[[l]]$folds))
+vim_V <- length(unique(cf_folds[[1]])) / 2
+
+# get common sample-splitting folds
+sample_splitting_folds <- lapply(list_of_indices, function(l) {
+  set.seed(seeds[l])
+  these_ss_folds <- vimp::make_folds(unique(cf_folds[[l]]), V = 2)
+})
+
 # get VIMs etc.
 for (i in seq_len(nrow(varset_matrix))) {
   # the column indices of interest
@@ -33,13 +51,13 @@ for (i in seq_len(nrow(varset_matrix))) {
   }
   # get the correct CV.SL lists
   full_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[i], ".rds")))
-  # reduced_fits <-
-  list_of_indices <- as.list(seq_len(length(full_fits)))
-  # get the common CV folds
-  cf_folds <- lapply(list_of_indices, function(l) vimp::get_cv_sl_folds(full_fits[[l]]$folds))
   # get variable importance for each fold
   vim_lst <- lapply(list_of_indices, function(l) {
-    get_cv_vim(seed = seeds[l], full_fit = full_fits[[l]], reduced_fit = reduced_fits[[l]], index = this_s, type = "auc", scale = "identity", )
+    get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = baseline_fits[[l]],
+               index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
+               sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
+               C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
+               ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment)
   })
   # pool variable importance and predictiveness over the list
   pooled_ests <- pool_cv_vim(vim_lst = vim_lst, scale = "identity")
