@@ -1,0 +1,15 @@
+
+<!-- D29start1 is ENSEMBLE specific -->
+
+```{r, echo=FALSE, results='asis'}
+  for (i in 1:2) {
+    tpeak <- tt[1]
+    COR <- ifelse(i==1, "D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count cases starting ", ifelse(i==1,7,1), " days post Day 29.")
+    pathCoRoutput <- paste0("cop_binaryprinstrat/output/", attr(config,"config"), "/", COR)
+    res = knitr::knit_child(c(here::here('cop_binaryprinstrat', 'report_sub.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+```

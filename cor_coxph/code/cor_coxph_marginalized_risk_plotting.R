@@ -120,8 +120,11 @@ for (a in assays) {
 ###################################################################################################
 # controlled VE curves for continuous markers
     
-for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same as 1 except that no sens curve is shown
-# eq.geq=3
+for (eq.geq in 1:3) {  
+# 1 conditional on s
+# 2 conditional on S>=s
+# 3 is same as 1 except that no sens curve is shown
+# eq.geq=1
     outs=lapply (assays, function(a) {        
         mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")),"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
             lwd=2.5
@@ -135,10 +138,8 @@ for (eq.geq in 1:3) {  # 1 conditional on s, 2 is conditional on S>=s, 3 is same
             xlim=get.range.cor(dat.vac.seroneg, a, tpeak)
             
             # compute Bias as a vector, which is a function of s
-            # choose a reference marker value
-            tmp=subset(dat.vac.seroneg, select=yy, drop=T)    
-            mean(tmp)
-            which=which.min(abs(risks$prob-mean(tmp)))
+            # choose a reference marker value based on matching the overall risk
+            which=which.min(abs(risks$prob-prev.vacc[1]))
             s.ref=risks$marker[which]
             Bias=controlled.risk.bias.factor(ss=risks$marker, s.cent=s.ref, s1=risks$marker[s1], s2=risks$marker[s2], RRud) 
             if (is.nan(Bias[1])) Bias=rep(1,length(Bias))
@@ -318,7 +319,16 @@ for (a in assays) {
 fit.0=coxph(form.s, dat.pla.seroneg) 
 risk.0= 1 - exp(-predict(fit.0, type="expected"))
 time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
-    
+
+#fit.1=coxph(form.s, dat.vac.seroneg) 
+#risk.1= 1 - exp(-predict(fit.1, type="expected"))
+#time.1= dat.vac.seroneg[[config.cor$EventTimePrimary]]
+#mypdf(file="tmp")
+#    plot(time.1, risk.1)
+#    mylines(time.0, risk.0, col="gray", lwd=2)
+#    mylegend(x=1, legend=c("placebo","vaccine"), col=c("gray","black"), lty=1)
+#dev.off()
+
 lwd=2
 ylim=c(0,max(risk.0, max(sapply(assays, function(a) max(risks.all.ter[[a]]$risk)))))
 

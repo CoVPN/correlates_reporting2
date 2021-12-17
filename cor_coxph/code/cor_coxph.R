@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_realADCP"); Args=c(COR="D29"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "janssen_pooled_realPsV"); Args=c(COR="D29IncludeNotMolecConfirmed"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
 renv::activate(project = here::here(".."))    
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
@@ -7,12 +7,24 @@ source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
 
-#with(subset(dat.mock, Trt==1), table(Wstratum, ph2))
-#with(subset(dat.mock, Trt==1), table(Wstratum, wt.D210))
 #with(subset(dat.mock, ph1==1), table(EventIndPrimary, Trt))
+#with(subset(dat.mock, ph2==1), table(EventIndPrimary, Trt))
+#with(subset(dat.mock, Trt==1 & ph1), table(Wstratum, ph2))
+#with(subset(dat.mock, Trt==1 & ph1), table(tps.stratum, ph2))
+#with(subset(dat.mock, Trt==1), table(Wstratum, ph2))
+#with(subset(dat.mock, Trt==1), table(Wstratum, wt.D29))
 #with(subset(dat.mock, ph1==1), table(Delta.D210, Trt))
 #with(subset(dat.mock, ph2==1), corplot(Day210ELCZ,Day210ADCPgp140C97ZAfib))
 #with(subset(dat.mock, ph2==1), corr(cbind(Day210ELCZ,Day210ADCPgp140C97ZAfib), w = wt))
+
+##natrisk 
+#round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,ph2==1)        [["wt"]], subset(dat.vac.seroneg,ph2==1        )[a], sum, na.rm=T, drop=F)[,2] )))
+##nevents 
+#round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,yy==1 & ph2==1)[["wt"]], subset(dat.vac.seroneg,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] )))
+#
+#
+#round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(rep(1,nrow(subset(dat.vac.seroneg,yy==1 & ph2==1))), subset(dat.vac.seroneg,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] )))
+#nrow(subset(dat.vac.seroneg,yy==1 & ph1==1))
 
 
 
@@ -30,8 +42,6 @@ myprint(study_name)
 myprint(verbose)
 
 all.markers=paste0("Day", tpeak, assays)
-
-if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
 
 
 # path for figures and tables etc
@@ -91,18 +101,10 @@ dat.vac.seroneg$yy=dat.vac.seroneg[[config.cor$EventIndPrimary]]
 dat.pla.seroneg$yy=dat.pla.seroneg[[config.cor$EventIndPrimary]]
     
 
-if (tfinal.tpeak==0) {
-    # followup time for the last case
-    tfinal.tpeak=max(dat.vac.seroneg[dat.vac.seroneg[[config.cor$EventIndPrimary]]==1, config.cor$EventTimePrimary])    
-}
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
 
     
-# formulae
-form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
-form.0 = update (form.s, as.formula(config$covariates_riskscore))
-print(form.0)
 
 
 ###################################################################################################
