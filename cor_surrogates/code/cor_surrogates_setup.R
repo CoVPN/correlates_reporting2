@@ -95,6 +95,7 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   # Identify the endpoint variable
   endpoint <- "EventIndPrimaryD57"
   wt <- "wt.D57"
+  ptidvar <- ptidvar
 
   # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
   # imputed values for markers (for phase 2 data) from dat.wide.v
@@ -152,7 +153,7 @@ if (study_name == "HVTN705") {
                        "Day210_gp70-1012.11.TC21.3257 V1V2", "Day210_gp70-1394C9G1 V1V2",
                        "Day210_gp70-BF1266_431a_V1V2", "Day210_gp70-001428.2.42 V1V2",
                        "Day210_gp70-Ce1086_B2 V1V2", "Day210_gp41"),
-              by = c("Subjectid" = "ptid")) %>%
+              by = c("Subjectid" = ptidvar)) %>%
     rename(`Day210IgG3Con6gp120B40delta` = `Day210_Con 6 gp120/B`,
            `Day210IgG31394C9G1.D11gp120.avi40delta` = `Day210_1394C9_G1.D11gp120.avi`,
            `Day210IgG31428D11gp120.avi293F40delta` = `Day210_1428_D11gp120.avi/293F`,
@@ -207,6 +208,7 @@ if (study_name == "HVTN705") {
   # Identify the endpoint variable
   endpoint <- "Delta.D210"
   wt <- "wt.D210"
+  ptidvar <- ptidvar
 
   # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
   # imputed values for markers (for phase 2 data) from dat.wide.v
@@ -233,7 +235,7 @@ dat.ph2_drop_rare <- drop_riskVars_with_fewer_0s_or_1s(dat.ph2_init, c(briskfact
 
 # Update predictor variables
 # pred_vars <- dat.ph2 %>%
-#   select(-Ptid, -Trt, -all_of(endpoint), -all_of(wt)) %>%
+#   select(-all_of(ptidvar), -Trt, -all_of(endpoint), -all_of(wt)) %>%
 #   colnames()
 
 # Remove any baseline risk factors with more than 5% missing values. Impute the missing
@@ -242,18 +244,18 @@ dat.ph2 <- drop_riskVars_with_high_total_missing_values(dat.ph2_drop_rare, brisk
 
 # Update risk_vars
 pred_vars <- dat.ph2 %>%
-  select(-Ptid, -Trt, -all_of(endpoint), -all_of(wt)) %>%
+  select(-all_of(ptidvar), -Trt, -all_of(endpoint), -all_of(wt)) %>%
   colnames()
 
 # Save ptids to merge with predictions later
-ph2_vacc_ptids <- dat.ph2 %>%
-  select(Ptid, all_of(endpoint), all_of(wt))
+ph2_vacc_all_of(ptidvar)s <- dat.ph2 %>%
+  select(all_of(ptidvar), all_of(endpoint), all_of(wt))
 
 # create "Z" matrix to use for (A)IPW efficient influence function computation
 Z_plus_weights <- dat.ph1 %>%
-  select(Ptid, all_of(endpoint), all_of(wt), Trt, all_of(briskfactors)) %>%
+  select(all_of(ptidvar), all_of(endpoint), all_of(wt), Trt, all_of(briskfactors)) %>%
   # Drop any observation with NA values in Ptid, Trt, briskfactors, endpoint or wt.D57
-  drop_na(Ptid, Trt, all_of(briskfactors), all_of(endpoint), all_of(wt))
+  drop_na(all_of(ptidvar), Trt, all_of(briskfactors), all_of(endpoint), all_of(wt))
 
 # Study-specific combination score creation ------------------------------------
 # This results in a dataset called "markers" with the final marker variables
@@ -264,11 +266,11 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   dat.ph2 <- dat.ph2 %>%
     # generate combination scores for d57
     left_join(get.pca.scores(dat.ph2 %>%
-                               select(Ptid, Day57bindSpike, Day57bindRBD,
+                               select(all_of(ptidvar), Day57bindSpike, Day57bindRBD,
                                  Day57pseudoneutid50, Day57pseudoneutid80)) %>%
                 rename(comb_PC1_d57 = PC1,
                        comb_PC2_d57 = PC2),
-              by = "Ptid") %>%
+              by = ptidvar) %>%
     mutate(
       comb_maxsig.div.score_d57 = get.maxSignalDivScore(
         dat.ph2 %>%
@@ -278,11 +280,11 @@ if (study_name %in% c("COVE", "MockCOVE")) {
     ) %>%
     # generate combination scores for d29
     left_join(get.pca.scores(dat.ph2 %>%
-                               select(Ptid, Day29bindSpike, Day29bindRBD,
+                               select(all_of(ptidvar), Day29bindSpike, Day29bindRBD,
                                  Day29pseudoneutid50, Day29pseudoneutid80)) %>%
                 rename(comb_PC1_d29 = PC1,
                        comb_PC2_d29 = PC2),
-              by = "Ptid") %>%
+              by = ptidvar) %>%
     mutate(
       comb_maxsig.div.score_d29 = get.maxSignalDivScore(
         dat.ph2 %>%
@@ -292,13 +294,13 @@ if (study_name %in% c("COVE", "MockCOVE")) {
     ) %>%
     # generate combination scores for both d57 and d29
     left_join(get.pca.scores(dat.ph2 %>%
-                               select(Ptid, Day57bindSpike, Day57bindRBD,
+                               select(all_of(ptidvar), Day57bindSpike, Day57bindRBD,
                                  Day57pseudoneutid50, Day57pseudoneutid80,
                                  Day29bindSpike, Day29bindRBD,
                                  Day29pseudoneutid50, Day29pseudoneutid80)) %>%
                 rename(comb_PC1_d57_d29 = PC1,
                        comb_PC2_d57_d29 = PC2),
-              by = "Ptid") %>%
+              by = ptidvar) %>%
     mutate(
       comb_maxsig.div.score_d57_d29 = get.maxSignalDivScore(
         dat.ph2 %>% select(Day57bindSpike, Day57bindRBD, Day57pseudoneutid50,
@@ -316,28 +318,28 @@ if (study_name %in% c("COVE", "MockCOVE")) {
       )
       # # generate non-linear combination scores for d57
       # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
-      #                                     select(Ptid, Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80)) %>%
+      #                                     select(all_of(ptidvar), Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80)) %>%
       #             rename(comb_nlPCA1_d57 = nlPCA1,
       #                    comb_nlPCA2_d57 = nlPCA2),
-      #           by = "Ptid") %>%
+      #           by = ptidvar) %>%
       # # generate non-linear combination scores for d29
       # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
-      #                                     select(Ptid, Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80)) %>%
+      #                                     select(all_of(ptidvar), Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80)) %>%
       #             rename(comb_nlPCA1_d29 = nlPCA1,
       #                    comb_nlPCA2_d29 = nlPCA2),
-      #           by = "Ptid") %>%
+      #           by = ptidvar) %>%
       # # generate non-linear combination scores for both d57 and d29
       # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
-      #                                     select(Ptid, Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80,
+      #                                     select(all_of(ptidvar), Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80,
       #                                            Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80)) %>%
       #             rename(comb_nlPCA1_d57_d29 = nlPCA1,
       #                    comb_nlPCA2_d57_d29 = nlPCA2),
-      #           by = "Ptid")
+      #           by = ptidvar)
   }
 
   # finalize marker data
   markers <- dat.ph2 %>%
-    select(-Ptid, -Trt, -risk_score, -HighRiskInd, -MinorityInd, -EventIndPrimaryD57, -wt.D57) %>%
+    select(-all_of(ptidvar), -Trt, -risk_score, -HighRiskInd, -MinorityInd, -EventIndPrimaryD57, -wt.D57) %>%
     colnames()
 
 }
@@ -346,7 +348,7 @@ if (study_name %in% c("COVE", "MockCOVE")) {
 if (study_name == "HVTN705") {
   # There are no combination scores in HVTN705
   markers <- dat.ph2 %>%
-    select(-Ptid, -Trt, -Riskscore, -Age, -BMI, -RSA, -all_of(endpoint), -all_of(wt)) %>%
+    select(-all_of(ptidvar), -Trt, -Riskscore, -Age, -BMI, -RSA, -all_of(endpoint), -all_of(wt)) %>%
     colnames()
 }
 
@@ -521,13 +523,13 @@ Y <- dat.ph2 %>% pull(endpoint)
 if (study_name %in% c("COVE", "MockCOVE")) {
   weights <- dat.ph2$wt.D57
   treatmentDAT <- dat.ph2 %>%
-    select(Ptid, Trt, wt.D57, EventIndPrimaryD57, all_of(c(briskfactors, markers))) %>%
+    select(all_of(ptidvar), Trt, wt.D57, EventIndPrimaryD57, all_of(c(briskfactors, markers))) %>%
     filter(Trt == 1) %>%
     select(-Trt)
 } else if (study_name == "HVTN705") {
   weights <- dat.ph2$wt.D210
   treatmentDAT <- dat.ph2 %>%
-    select(Ptid, Trt, wt.D210, Delta.D210, all_of(c(briskfactors, markers))) %>%
+    select(all_of(ptidvar), Trt, wt.D210, Delta.D210, all_of(c(briskfactors, markers))) %>%
     filter(Trt == 1) %>%
     select(-Trt)
 }
