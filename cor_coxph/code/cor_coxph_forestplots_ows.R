@@ -219,8 +219,9 @@ rv$fr.3=list(nevents=nevents)
 for (a in assays) {
     fits = fits.all.3[[a]]
     est.ci = sapply(fits[select], function (fit) {
-        if (length(fit)==1) return (rep(NA,4))
+        if (length(fit)==1) return (rep(NA,4)) # fit is NA
         tmp=getFixedEf(fit, exp=T, robust=T)
+        if (tmp[nrow(tmp),1]>20)  return (rep(NA,4)) # coefficient is basically infinite
         tmp[nrow(tmp),c("HR", "(lower", "upper)", "p.value")]
     })
     # move latin american country names to the right by two spaces
