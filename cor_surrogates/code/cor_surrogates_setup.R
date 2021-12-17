@@ -248,7 +248,7 @@ pred_vars <- dat.ph2 %>%
   colnames()
 
 # Save ptids to merge with predictions later
-ph2_vacc_ptidvars <- dat.ph2 %>%
+ph2_vacc_ptids <- dat.ph2 %>%
   select(all_of(ptidvar), all_of(endpoint), all_of(wt))
 
 # create "Z" matrix to use for (A)IPW efficient influence function computation
