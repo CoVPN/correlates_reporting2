@@ -28,13 +28,13 @@ source(here("code", "utils.R"))
 method <- "method.CC_nloglik" # since SuperLearner relies on this to be in GlobalEnv
 ggplot2::theme_set(theme_cowplot())
 
-if(study_name %in% c("COVE", "MockCOVE")){
-  load(file = here("output", "cvaucs_vacc_EventIndPrimaryD57.rda"))
+if (study_name %in% c("COVE", "MockCOVE")) {
+  cvaucs_vacc <- readRDS(file = here("output", "CVSLaucs_vacc_EventIndPrimaryD57.rds"))
 }
-if(study_name == "HVTN705"){
-  load(file = here("output", "cvaucs_vacc_EventIndPrimaryD210.rda"))
+if (study_name == "HVTN705") {
+  cvaucs_vacc <- readRDS(file = here("output", "cvaucs_vacc_EventIndPrimaryD210.rds"))
 }
-load(file = here("output", "ph2_vacc_ptids.rda"))
+ph2_vacc_ptids <- readRDS(file = here("output", "ph2_vacc_ptids.rds"))
 
 ## ----learner-screens, warning=kable_warnings--------------------------------------------------------------------------------------------------------------------------
 caption <- "All learner-screen combinations (28 in total) used as input to the Superlearner."
@@ -45,28 +45,28 @@ tab <- cvaucs_vacc %>%
   mutate(Screen = fct_relevel(Screen, c("all", "glmnet", "univar_logistic_pval",
                                         "highcor_random")),
          Learner = as.factor(Learner)) %>%
-  arrange(Learner, Screen) %>% 
+  arrange(Learner, Screen) %>%
   distinct(Learner, Screen) %>%
-  rename("Screen*" = Screen) 
+  rename("Screen*" = Screen)
 
 if(!grepl("Mock", study_name) & study_name == "COVE"){
   tab <- tab %>%
-    mutate(Learner = fct_relevel(Learner, c("SL.mean", "SL.glmnet.0", "SL.glmnet.1", "SL.xgboost.2.no", "SL.xgboost.4.no",  
+    mutate(Learner = fct_relevel(Learner, c("SL.mean", "SL.glmnet.0", "SL.glmnet.1", "SL.xgboost.2.no", "SL.xgboost.4.no",
                                             "SL.xgboost.2.yes", "SL.xgboost.4.yes", "SL.ranger.yes", "SL.ranger.no", "SL.glm"))) %>%
     arrange(Learner, `Screen*`)
 }else if(!grepl("Mock", study_name) & study_name == "HVTN705"){
   tab <- tab %>%
-    mutate(Learner = fct_relevel(Learner, c("SL.mean", #"SL.bayesglm", "SL.gam", 
-					    "SL.glm", #"SL.glm.interaction", 
+    mutate(Learner = fct_relevel(Learner, c("SL.mean", #"SL.bayesglm", "SL.gam",
+					    "SL.glm", #"SL.glm.interaction",
 					    "SL.glmnet.0",
-					    "SL.glmnet.1", 
+					    "SL.glmnet.1",
                                             #"SL.ksvm.polydot", "SL.ksvm.rbfdot",
-                                            #"SL.polymars", 
-                                            "SL.xgboost.2.no", 
-                                            "SL.xgboost.4.no",  
-                                            "SL.xgboost.2.yes", 
-					    "SL.xgboost.4.yes", 
-					    "SL.ranger.no", 
+                                            #"SL.polymars",
+                                            "SL.xgboost.2.no",
+                                            "SL.xgboost.4.no",
+                                            "SL.xgboost.2.yes",
+					    "SL.xgboost.4.yes",
+					    "SL.ranger.no",
                                             "SL.ranger.yes"))) %>%
     arrange(Learner, `Screen*`)
 }else{
@@ -80,17 +80,17 @@ tab %>% write.csv(here("output", "learner-screens.csv"))
 ## ----All 28 (34 if live MN50 titers included) variable sets --------------------------------------------------------------------------------------------------------------------
 if(study_name %in% c("COVE", "MockCOVE")){
   caption <- "The 28 variable sets on which an estimated optimal surrogate was built."
-  
+
   tab <- data.frame(`Variable Set Name` = c("1_baselineRiskFactors",
-                                            
+
                                             "2_bAbSpike_D57", "3_bAbRBD_D57", "4_pnabID50_D57", "5_pnabID80_D57",
                                             "6_bAb_pnabID50_D57", "7_bAb_pnabID80_D57", "8_bAb_combScores_D57",
                                             "9_allMarkers_D57", "10_allMarkers_combScores_D57",
-                                            
+
                                             "11_bAbSpike_D29", "12_bAbRBD_D29", "13_pnabID50_D29", "14_pnabID80_D29",
                                             "15_bAb_pnabID50_D29", "16_bAb_pnabID80_D29", "17_bAb_combScores_D29",
                                             "18_allMarkers_D29", "19_allMarkers_combScores_D29",
-                                            
+
                                             "20_bAbSpike_D29_D57", "21_bAbRBD_D29_D57", "22_pnabID50_D29_D57", "23_pnabID80_D29_D57",
                                             "24_bAb_pnabID50_D29_D57", "25_bAb_pnabID80_D29_D57", "26_bAb_combScores_D29_D57",
                                             "27_allMarkers_D29_D57", "28_allMarkers_combScores_D29_D57"),
@@ -105,7 +105,7 @@ if(study_name %in% c("COVE", "MockCOVE")){
 components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + all individual Day 57 marker variables",
                                                         "Baseline risk factors + all individual Day 57 marker variables and theri combination scores (Full model of Day 57 markers)",
-                                                        
+
                                                         "Baseline risk factors + Day 29 bAb anti-Spike markers",
                                                         "Baseline risk factors + Day 29 bAb anti-RBD markers",
                                                         "Baseline risk factors + Day 29 p-nAb ID50 markers",
@@ -116,7 +116,7 @@ components of nonlinear PCA), and the maximum signal diversity score]",
 components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + all individual Day 29 marker variables",
                                                         "Baseline risk factors + all individual Day 29 marker variables and their combination scores (Full model of Day 29 markers)",
-                                                        
+
                                                         "Baseline risk factors + Day 29 and Day 57 bAb anti-Spike markers",
                                                         "Baseline risk factors + Day 29 and Day 57 bAb anti-RBD markers",
                                                         "Baseline risk factors + Day 29 and Day 57 p-nAb ID50 markers",
@@ -127,15 +127,15 @@ components of nonlinear PCA), and the maximum signal diversity score]",
 components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + all individual Day 29 and Day 57 marker variables",
                                                         "Baseline risk factors + all individual Day 29 and Day 57 marker variables and their combination scores (Full model of Day 29 and Day 57 markers)"))
-  
+
 }
 if(study_name == "HVTN705"){
   caption <- "The 15 variable sets on which an estimated optimal surrogate was built."
-  
+
   tab <- data.frame(`Variable Set Name` = c("1_baselineRiskFactors",
-                                            "2_M7_ELISA", #"3_bAbRBD_D57", 
+                                            "2_M7_ELISA", #"3_bAbRBD_D57",
                                             "4_M7_ADCP", "5_M7_IgG3", "6_M7_IgG3gp140", "7_M7_IgG3gp120", "8_M7_IgG3V1V2", "9_M7_IgG3gp41", "10_M7_IgG3bScores",
-                                            "11_M7_IgG3multi", "12_M7_IgG3overall", #"13_pnabID50_D29", 
+                                            "11_M7_IgG3multi", "12_M7_IgG3overall", #"13_pnabID50_D29",
                                             "14_2+4", "15_2+5", #"16_bAb_pnabID80_D29", "17_bAb_combScores_D29",
                                             "18_4+5", "22_2+4+5"),
                     `Variables included in the set` = c("Baseline risk factors only (Reference model)",
@@ -153,7 +153,7 @@ if(study_name == "HVTN705"){
                                                         "Baseline risk factors + M7 ELISA + M7 IgG3",
                                                         "Baseline risk factors + M7 ADCP + M7 IgG3",
                                                         "Baseline risk factors + M7 ELISA + M7 ADCP + M7 IgG3"))
-  
+
 }
 
 tab %>% write.csv(here("output", "varsets.csv"))
@@ -175,7 +175,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 allSLs <- cvaucs_vacc %>% filter(Learner == "SL") %>%
   mutate(varsetNo = sapply(strsplit(varset, "_"), `[`, 1),
          varsetNo = as.numeric(varsetNo)) %>%
-  arrange(varsetNo) %>% 
+  arrange(varsetNo) %>%
   mutate(varset = fct_reorder(varset, AUC, .desc = F)) %>%
   arrange(-AUC)
 
@@ -199,7 +199,7 @@ top_learner_plot <- ggplot() +
         panel.border = element_blank(),
         axis.line = element_line(colour = "black"))
 
-total_learnerScreen_combos = length(allSLs$LearnerScreen)  
+total_learnerScreen_combos = length(allSLs$LearnerScreen)
 
 allSLs_withCoord <- allSLs %>%
   select(varset, AUCstr) %>%
@@ -222,16 +222,16 @@ top_learner_nms_plot <- ggplot(allSLs_withCoord, aes(x = xcoord, y = ycoord, lab
 top_learner <- list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot)
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
-  
+
 #################################################################################################################################
 #################################################################################################################################
 # plot ROC curve and pred.Prob with SL, Discrete SL and top 2 best-performing individual Learners for all 12 variable sets
 for(i in 1:length(unique(cvaucs_vacc$varset))) {
   variableSet = unique(cvaucs_vacc$varset)[i]
   dat <- cvaucs_vacc %>% filter(varset==variableSet)
-  
+
   top2 <- bind_rows(
-    dat %>% 
+    dat %>%
       arrange(-AUC) %>%
       filter(!Learner %in% c("SL", "Discrete SL")) %>%
       dplyr::slice(1:2),
@@ -243,7 +243,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
     mutate(LearnerScreen = ifelse(Learner == "SL", "Super Learner",
                                   ifelse(Learner == "Discrete SL", Learner,
                                          paste0(Learner, "_", Screen_fromRun))))
-  
+
   # Get cvsl fit and extract cv predictions
   if(study_name %in% c("COVE", "MockCOVE")){
     load(file = here("output", paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rda")))
@@ -251,7 +251,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
   if(study_name == "HVTN705"){
     load(file = here("output", paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rda")))
   }
-  
+
   pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2)
   # #Take average of predictions from the 10 random seeds
   # pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2) %>% rename(pred1 = pred) %>%
@@ -273,8 +273,8 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
   #     learnerScreen = paste0(learnerScreen, " (", AUCchar, ")"),
   #     learnerScreen = reorder(learnerScreen, -AUC)
   #   )
-  
-  
+
+
   # plot ROC curve
   options(bitmapType = "cairo")
   png(file = here("figs", paste0("ROCcurve_", variableSet, ".png")),
@@ -287,7 +287,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
   }
   print(p1)
   dev.off()
-  
+
   # plot pred prob plot
   options(bitmapType = "cairo")
   png(file = here("figs", paste0("predProb_", variableSet, ".png")),
@@ -299,8 +299,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 
 
 # Get top 2 Superlearner performers
-cvaucs_vacc %>% arrange(-AUC) %>% 
+cvaucs_vacc %>% arrange(-AUC) %>%
   filter(Learner == "SL") %>%
   select(varset, AUCstr) %>%
   write.csv(here("output", "SLperformance_allvarsets.csv"))
-  
