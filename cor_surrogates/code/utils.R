@@ -256,6 +256,8 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
 # Cross-validated variable importance ------------------------------------------
 # get the CV vim using pre-computed CV.SL objects
 # @param seed the random number seed (only useful if (A)IPW estimates of variable importance are desired)
+# @param Y the outcome (measured on all participants, including phase 1)
+# @param X the marker and baseline risk variables
 # @param full_fit the CV.SL object from a call to run_cv_sl_once (i.e., one cross-validated super learner)
 #         based on all covariates
 # @param reduced_fit the CV.SL object from a call to run_cv_sl_once (i.e., one cross-validated super learner)
@@ -266,10 +268,22 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
 # @param cross_fitting_folds the cross-fitting folds used to fit full_fit, reduced_fit
 # @param sample_splitting_folds folds for sample splitting (splits up cross-fitting folds into unique groups)
 # @param V the number of folds used for variable importance (equal to the number of folds for outer cross-fitting in the CV.SL / 2)
+# @param sl_library the Super Learner library, for IPW estimation of the efficient influence function
+# @param ipc_est_type whether to use IPW or AIPW for the EIF
+# @param ipc_weights the inverse probability weights for coarsened data
+# @param Z the predictors of the missingness mechanism (a character vector)
+# @param C the indicator of missing (0) or selected into phase 2 (1)
 # @return an object of class "vimp" with the results
-get_cv_vim <- function(seed = NULL, full_fit = NULL, reduced_fit = NULL, index = 1, type = "auc", scale = "logit",
-                       cross_fitting_folds = NULL, sample_splitting_folds = NULL, V = 2) {
+get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced_fit = NULL, index = 1, type = "auc", scale = "logit",
+                       cross_fitting_folds = NULL, sample_splitting_folds = NULL, V = 2,
+                       sl_library = c("SL.glmnet"), ipc_est_type = "ipw", ipc_weights = rep(1, length(cross_fitting_folds)), Z = NULL,
+                       C = NULL) {
 
+  # if not passing sample-splitting folds, create them
+  if (all(is.null(sample_splitting_folds))) {
+    set.seed(seed)
+    sample_splitting_folds <- vimp::make_folds(unique(cross_fitting_folds), V = 2)
+  }
   # extract independent predictions
   full_cv_preds <- vimp::extract_sampled_split_predictions(
     cvsl_obj = full_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
@@ -279,13 +293,16 @@ get_cv_vim <- function(seed = NULL, full_fit = NULL, reduced_fit = NULL, index =
     cvsl_obj = reduced_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
     full = FALSE
   )
+  set.seed(seed)
   # estimate variable importance
-  est_vim <- vimp::cv_vim(Y = full_fit$Y, cross_fitted_f1 = full_cv_preds,
+  est_vim <- vimp::cv_vim(Y = Y, X = X, cross_fitted_f1 = full_cv_preds,
                           cross_fitted_f2 = reduced_cv_preds, indx = index,
                           delta = 0, V = V, run_regression = FALSE,
                           sample_splitting = TRUE, cross_fitting_folds = cross_fitting_folds,
                           sample_splitting_folds = sample_splitting_folds,
-                          type = type, scale = scale)
+                          type = type, scale = scale,
+                          SL.library = sl_library, ipc_est_type = ipc_est_type,
+                          ipc_weights = ipc_weights, Z = Z, C = C)
   # return the vimp object
   return(est_vim)
 }
@@ -605,7 +622,7 @@ plot_roc_curves <- function(predict, cvaucDAT, weights) {
       axis.text = element_text(size = 23),
       axis.title = element_text(size = 30)
     ) +
-    labs(x = "Cross-Validated False Positive Rate", y = "Cross-Validated True Positive Rate", 
+    labs(x = "Cross-Validated False Positive Rate", y = "Cross-Validated True Positive Rate",
          col = "Model (CV-AUC)", linetype = "Model (CV-AUC)") +
     geom_abline(intercept = 0, slope = 1) +
     scale_linetype_manual(values=c("dashed", "dotted", "dotdash", "twodash"))
