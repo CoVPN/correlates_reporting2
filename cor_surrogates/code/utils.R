@@ -277,7 +277,7 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
 get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced_fit = NULL, index = 1, type = "auc", scale = "logit",
                        cross_fitting_folds = NULL, sample_splitting_folds = NULL, V = 2,
                        sl_library = c("SL.glmnet"), ipc_est_type = "ipw", ipc_weights = rep(1, length(cross_fitting_folds)), Z = NULL,
-                       C = NULL) {
+                       C = NULL, baseline = FALSE) {
 
   # if not passing sample-splitting folds, create them
   if (all(is.null(sample_splitting_folds))) {
@@ -289,10 +289,17 @@ get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced
     cvsl_obj = full_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
     full = TRUE
   )
-  reduced_cv_preds <- vimp::extract_sampled_split_predictions(
-    cvsl_obj = reduced_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
-    full = FALSE
-  )
+  if (baseline) {
+    reduced_cv_preds <- vimp::extract_sampled_split_predictions(
+      cvsl_obj = NULL, preds = reduced_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
+      full = FALSE, cross_fitting_folds = cross_fitting_folds
+    )
+  } else {
+    reduced_cv_preds <- vimp::extract_sampled_split_predictions(
+      cvsl_obj = reduced_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
+      full = FALSE
+    )
+  }
   set.seed(seed)
   # estimate variable importance
   est_vim <- vimp::cv_vim(Y = Y, X = X, cross_fitted_f1 = full_cv_preds,
@@ -313,19 +320,21 @@ get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced
 # @return a tibble, with: the quantity (predictiveness, VIM), the point estimate, SE, 95% CI, and a p-value for variable importance
 pool_cv_vim <- function (vim_lst, scale = "identity") {
   # for variable importance
-  vim_point_est <- mean(unlist(lapply(vim_lst, function(l) l$est)))
-  vim_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se ^ 2))))
+  vim_point_est <- mean(unlist(lapply(vim_lst, function(l) l$est)), na.rm = TRUE)
+  vim_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se ^ 2)), na.rm = TRUE))
   vim_ci <- vimp::vimp_ci(vim_point_est, vim_se, scale = scale, level = 0.95)
   # for predictiveness
-  pred_point_est <- mean(unlist(lapply(vim_lst, function(l) l$predictiveness_full)))
-  pred_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se_full ^ 2))))
+  pred_point_est <- mean(unlist(lapply(vim_lst, function(l) l$predictiveness_full)), na.rm = TRUE)
+  pred_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se_full ^ 2)), na.rm = TRUE))
   pred_ci <- vimp::vimp_ci(pred_point_est, pred_se, scale = scale, level = 0.95)
   # hypothesis test for variable importance
-  pred_reduced_point_est <- mean(unlist(lapply(vim_lst, function(l) l$predictiveness_reduced)))
-  vim_pval <- vimp::vimp_hypothesis_test(predictiveness_full = pred_point_est, predictiveness_reduced = pred_reduced_point_est, se = vim_se, delta = 0, alpha = 0.05)$p_value
-
-  output <- tibble::tibble(s = vim_lst[[1]]$s, quantity = c("VIM", "Predictiveness"), est = c(vim_point_est, pred_point_est), se = c(vim_se, pred_se)) %>%
-    bind_cols(as_tibble(rbind(vim_ci, pred_ci), .name_repair = ~ paste0("ci_", c("ll", "ul"))), pval = c(vim_pval, NA))
+  pred_reduced_point_est <- mean(unlist(lapply(vim_lst, function(l) l$predictiveness_reduced)), na.rm = TRUE)
+  vim_pval <- vimp::vimp_hypothesis_test(predictiveness_full = pred_point_est,
+    predictiveness_reduced = pred_reduced_point_est, se = vim_se, delta = 0, alpha = 0.05)$p_value
+  output <- tibble::tibble(s = vim_lst[[1]]$s, quantity = c("VIM", "Predictiveness"),
+                           est = c(vim_point_est, pred_point_est), se = c(vim_se, pred_se)) %>%
+    bind_cols(as_tibble(rbind(vim_ci, pred_ci), .name_repair = ~ paste0("ci_", c("ll", "ul"))), pval = c(vim_pval, NA),
+              group = grepl(",", s))
   return(output)
 }
 
