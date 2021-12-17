@@ -61,5 +61,9 @@ for (i in seq_len(nrow(varset_matrix))) {
   })
   # pool variable importance and predictiveness over the list
   pooled_ests <- pool_cv_vim(vim_lst = vim_lst, scale = "identity")
+  # if baseline risk variables, then vimp isn't meaningful
+  if (i == 1) {
+    pooled_ests[1, c("est", "se", "ci_ll", "ci_ul", "pval")] <- NA_real_
+  }
   all_estimates <- bind_rows(all_estimates, pooled_ests)
 }
