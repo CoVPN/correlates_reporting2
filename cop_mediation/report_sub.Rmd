@@ -65,7 +65,7 @@ summary_stats_PsV <- readRDS(
 is_start1 <- grepl("start1", COR)
 ```
 
-```{r, summ-tables1}
+```{r}
 knitr::kable(summary_stats$tab1, caption = paste0("Endpoints included in phase 2 by study arm, binding analysis ", ifelse(is_start1, "starting 1 day after Day 29", "")))
 knitr::kable(summary_stats_ADCP$tab1, caption = paste0("Endpoints included in phase 2 by study arm, ADCP analysis", ifelse(is_start1, "starting 1 day after Day 29", "")))
 knitr::kable(summary_stats_PsV$tab1, caption = paste0("Endpoints included in phase 2 by study arm, ADCP analysis", ifelse(is_start1, "starting 1 day after Day 29", "")))
@@ -83,7 +83,7 @@ knitr::kable(summary_stats_PsV$tab2, caption = paste0("Total endpoints by study 
 \clearpage
 
 
-```{r summ-tab3}
+```{r}
 assay <- c("Binding", "ADCP", "PsV")
 day <- c(summary_stats$day_of_analysis,
          summary_stats_ADCP$day_of_analysis,
