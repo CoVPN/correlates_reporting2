@@ -1,10 +1,3 @@
-# marginalized risk without marker
-get.marginalized.risk.no.marker=function(dat){
-    fit.risk = coxph(form.0, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
-    dat$EventTimePrimary=tfinal.tpeak
-    risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
-    mean(risks)
-}
 
 #fit.ve = coxph(Surv(EventTimePrimary, EventIndPrimary) ~ Trt, subset(dat.mock, ph1==1)) 
 #summary(fit.ve)
@@ -34,7 +27,7 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.",study_nam
     for (.trt in 0:1) {
         dat.tmp=if(.trt==1) dat.vac.seroneg else dat.pla.seroneg
         
-        prob=get.marginalized.risk.no.marker(dat.tmp)
+        prob=get.marginalized.risk.no.marker(form.0, dat.tmp, tfinal.tpeak)
         
         # bootstrapping
         # store the current rng state 
@@ -51,7 +44,7 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.",study_nam
             } else {
                 dat.b = bootstrap.case.control.samples(dat.tmp, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=0) 
             }
-            get.marginalized.risk.no.marker(dat.b)    
+            get.marginalized.risk.no.marker(form.0, dat.b, tfinal.tpeak)    
             
         })
         boot=do.call(cbind, out)

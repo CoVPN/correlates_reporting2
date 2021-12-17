@@ -15,7 +15,7 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 	Rscript code/CoR_assay_graphics.R D57
 	Rscript code/CoR_wrcdf_with_VE_lines.R D57
 
-else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_pooled_real janssen_na_mock janssen_na_real janssen_la_mock janssen_la_real janssen_sa_mock janssen_sa_real))
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janssen_la_mock janssen_sa_mock))
 	Rscript code/cor_data_preprocess.R D29 # Yiwen's
 	Rscript code/cor_graphics_violin_scatter.R D29
 	
@@ -30,11 +30,26 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_pooled_real j
 	Rscript code/CoR_assay_graphics.R D29start1
 	Rscript code/CoR_wrcdf_with_VE_lines.R D29start1
 	
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_real janssen_pooled_realADCP janssen_na_real janssen_la_real janssen_sa_real))
+	Rscript code/cor_data_preprocess.R D29IncludeNotMolecConfirmed # Yiwen's
+	Rscript code/cor_graphics_violin_scatter.R D29IncludeNotMolecConfirmed
+	
+	Rscript code/cor_data_preprocess.R D29IncludeNotMolecConfirmedstart1 # Yiwen's
+	Rscript code/cor_graphics_violin_scatter.R D29IncludeNotMolecConfirmedstart1
+	
+	Rscript code/cor_data_preprocess_2.R D29IncludeNotMolecConfirmed # Brian's
+	Rscript code/CoR_assay_graphics.R D29IncludeNotMolecConfirmed
+	Rscript code/CoR_wrcdf_with_VE_lines.R D29IncludeNotMolecConfirmed
+	
+	Rscript code/cor_data_preprocess_2.R D29IncludeNotMolecConfirmedstart1 # Brian's
+	Rscript code/CoR_assay_graphics.R D29IncludeNotMolecConfirmedstart1
+	Rscript code/CoR_wrcdf_with_VE_lines.R D29IncludeNotMolecConfirmedstart1
+	
 endif
 
 ## clean          : clean up data_clean and output folder
 clean:
-	rm -f data_clean/* && rm -rf output/*
+	rm -f data_clean/* && rm -rf output/$(TRIAL)/*
 
 ## report        : create a standalone report
 report:

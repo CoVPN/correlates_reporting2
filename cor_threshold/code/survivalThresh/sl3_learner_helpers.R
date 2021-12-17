@@ -41,7 +41,7 @@ Lrnr_density_discretize <- R6::R6Class(
   inherit = Lrnr_base, portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(categorical_learner = NULL, type = "equal_mass", n_bins = 20, predict_type = c("density", "CDF", "RCDF", "probability"), breaks = NULL, ...) {
+    initialize = function(categorical_learner = NULL, type = "equal_mass", n_bins = 20, predict_type = c("probability", "CDF", "RCDF", "density"), breaks = NULL, ...) {
       predict_type <- match.arg(predict_type)
       if (is.null(categorical_learner)) {
         categorical_learner <- make_learner(Lrnr_glmnet)
@@ -86,7 +86,8 @@ Lrnr_density_discretize <- R6::R6Class(
         factor(discretized$x_discrete)
       nodes <- task$nodes
       nodes$outcome <- "discrete_Y"
-      discrete_task <- sl3_Task$new(data = data, nodes = nodes, outcome_type  = "categorical", outcome_levels = self$fit_object$levels, row_index <- task$row_index, folds = task$folds)
+      levels <- factor(1:(length(discretized$breaks) ))
+      discrete_task <- sl3_Task$new(data = data, nodes = nodes, outcome_type  = "categorical", outcome_levels = levels, row_index = task$row_index, folds = task$folds)
 
 
       # fit categorical learner to discretized task
@@ -96,14 +97,14 @@ Lrnr_density_discretize <- R6::R6Class(
       fit_object <- list(
         categorical_fit = categorical_fit,
         breaks = discretized$breaks,
-        levels = levels(factor(discretized$x_discrete))
+        levels = levels
       )
       return(fit_object)
     },
 
     .predict = function(task) {
       predict_type <- self$params$predict_type
-
+      
       # make discretized task
       discretized <- sl3:::discretize_variable(task$Y,
                                                breaks = self$fit_object$breaks
@@ -113,7 +114,7 @@ Lrnr_density_discretize <- R6::R6Class(
         factor(discretized$x_discrete)
       nodes <- task$nodes
       nodes$outcome <- "discrete_Y"
-      discrete_task <- sl3_Task$new(data = data, nodes = nodes, outcome_type  = "categorical", outcome_levels = self$fit_object$levels, row_index <- task$row_index, folds = task$folds)
+      discrete_task <- sl3_Task$new(data = data, nodes = nodes, outcome_type  = "categorical", outcome_levels = self$fit_object$levels, row_index = task$row_index, folds = task$folds)
       # new_columns <-
       #   task$add_columns(data.table(
       #     discrete_Y =
@@ -128,7 +129,9 @@ Lrnr_density_discretize <- R6::R6Class(
       # predict categorical learner on discretized task
       raw_preds <- self$fit_object$categorical_fit$predict(discrete_task)
       predmat <- unpack_predictions(raw_preds)
+ 
       if(predict_type ==  "probability") {
+         
         obs_pred <- predmat[cbind(seq_len(task$nrow), discretized$x_discrete)]
       } else if(predict_type != "density") {
         predmat <- t(apply(predmat, 1, function(v) {

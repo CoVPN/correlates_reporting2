@@ -34,11 +34,17 @@ dat <- read.csv(
 dat$wt.D57[is.na(dat$wt.D57)] <- 0
 dat$wt.D29[is.na(dat$wt.D29)] <- 0
 
+Args <- commandArgs(trailingOnly=TRUE)
+COR=Args[1]
+
+if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"
+} else {incNotMol <- ""}
+
 
 dat <- dat %>% 
-  mutate(cohort_event = ifelse(Perprotocol==1 & Bserostatus==0 &  EarlyendpointD29==0 & TwophasesampIndD29==1 & EventIndPrimaryD29==1 & EventTimePrimaryD29 >=7 &  EventTimePrimaryD29 <= (6 + NumberdaysD1toD57 - NumberdaysD1toD29), "Intercurrent Cases",
+  mutate(cohort_event = ifelse(Perprotocol==1 & Bserostatus==0 &  EarlyendpointD29==0 & TwophasesampIndD29==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D29")))==1 & eval(as.name(paste0("EventTimePrimary", incNotMol, "D29"))) >=7 &  eval(as.name(paste0("EventTimePrimary", incNotMol, "D29"))) <= (6 + NumberdaysD1toD57 - NumberdaysD1toD29), "Intercurrent Cases",
                                ifelse(Perprotocol==1 & Bserostatus==0 & EarlyendpointD57==0 & TwophasesampIndD57==1 & EventIndPrimaryD57==1, "Post-Peak Cases",
-                                      ifelse(Perprotocol==1 &  Bserostatus==0 & EarlyendpointD57==0 & TwophasesampIndD57==1 & EventIndPrimaryD1==0, "Non-Cases", NA)
+                                      ifelse(Perprotocol==1 &  Bserostatus==0 & EarlyendpointD57==0 & TwophasesampIndD57==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0, "Non-Cases", NA)
                                )
   ))
 
@@ -131,7 +137,7 @@ dat.long <- rbind(dat1_bindSpike,dat1_bindRBD,dat1_pseudoneutid50,dat1_pseudoneu
          Bserostatus, 
          Fullvaccine, 
          Perprotocol,  
-         EventIndPrimaryD29, 
+         as.name(paste0("EventIndPrimary", incNotMol, "D29")), 
          EventIndPrimaryD57, 
          SubcohortInd, 
          age.geq.65, 
@@ -239,7 +245,7 @@ dat.cor.subset <- dat %>%
 
 
 dat.longer.cor.subset <- dat.long.cor.subset.twophase.intercurrent %>% select(
-  Ptid, Trt, Bserostatus, EventIndPrimaryD29, EventIndPrimaryD57, Perprotocol,
+  Ptid, Trt, Bserostatus, as.name(paste0("EventIndPrimary", incNotMol, "D29")), EventIndPrimaryD57, Perprotocol,
   cohort_event, Age, age_geq_65_label, highrisk_label, age_risk_label, sex_label,
   minority_label, Dich_RaceEthnic, assay, LLoD, LLoQ, ULoQ, wt.D57, wt.D29, wt.intercurrent.cases, B, Day29, Day57, Delta29overB, Delta57overB, pos.cutoffs,ph2.D57
 )
