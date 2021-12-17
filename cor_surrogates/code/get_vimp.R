@@ -41,6 +41,19 @@ sample_splitting_folds <- lapply(list_of_indices, function(l) {
   these_ss_folds <- vimp::make_folds(unique(cf_folds[[l]]), V = 2)
 })
 
+# get the naive predictor (outcome mean within each fold)
+naive_fits <- lapply(list_of_indices, function(l) {
+  these_folds <- cf_folds[[l]]
+  all_means <- lapply(seq_len(length(unique(these_folds))), function(i) {
+    rep(mean(Y[these_folds == i]), sum(these_folds == i))
+  })
+  this_mean <- vector("numeric", length(Y))
+  for (i in seq_len(length(unique(these_folds)))) {
+    this_mean[these_folds == i] <- all_means[[i]]
+  }
+  this_mean
+})
+
 # get VIMs etc.
 for (i in seq_len(nrow(varset_matrix))) {
   # the column indices of interest
@@ -51,20 +64,26 @@ for (i in seq_len(nrow(varset_matrix))) {
   }
   # get the correct CV.SL lists
   full_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[i], ".rds")))
-  # get variable importance for each fold
-  vim_lst <- lapply(list_of_indices, function(l) {
-    get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = baseline_fits[[l]],
-               index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
-               sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
-               C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
-               ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment)
-  })
+  if (i == 1) {
+    vim_lst <- lapply(list_of_indices, function(l) {
+      get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = naive_fits[[l]],
+                 index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
+                 sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
+                 C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
+                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, baseline = TRUE)
+    })
+  } else {
+    # get variable importance for each fold
+    vim_lst <- lapply(list_of_indices, function(l) {
+      get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = baseline_fits[[l]],
+                 index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
+                 sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
+                 C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
+                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment)
+    })
+  }
   # pool variable importance and predictiveness over the list
   pooled_ests <- pool_cv_vim(vim_lst = vim_lst, scale = "identity")
-  # if baseline risk variables, then vimp isn't meaningful
-  if (i == 1) {
-    pooled_ests[1, c("est", "se", "ci_ll", "ci_ul", "pval")] <- NA_real_
-  }
   all_estimates <- bind_rows(all_estimates, pooled_ests)
 }
 # add on the variable set name
