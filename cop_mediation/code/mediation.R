@@ -9,7 +9,7 @@ source(here::here("code", "sl_screen_fn.R"))
 source(here::here("code", "format_utils.R"))
 data <- dat.mock
 
-tf_Day <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & !is.na(data$wt), "EventTimePrimary" ])
+tf_Day <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2, "EventTimePrimary" ])
 print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)
 )
