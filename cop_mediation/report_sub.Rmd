@@ -39,7 +39,7 @@ init_kable <- knitr::kable(full_result,
 if(any(is.na(full_result))){
 	init_kable <- kableExtra::add_footnote(init_kable, "NA denotes insufficient overlap in antibody response between vaccinated and control participants.")
 }
-kableExtra::kable_styling(init_kable, latex_options = c("scale_down", "hold_position"))
+kableExtra::kable_styling(init_kable, latex_options = c("scale_down", "HOLD_position"))
 ```
 
 \clearpage
@@ -66,18 +66,38 @@ is_start1 <- grepl("start1", COR)
 ```
 
 ```{r}
-knitr::kable(summary_stats$tab1, caption = paste0("Endpoints included in phase 2 by study arm, binding analysis ", ifelse(is_start1, "starting 1 day after Day 29", "")))
-knitr::kable(summary_stats_ADCP$tab1, caption = paste0("Endpoints included in phase 2 by study arm, ADCP analysis", ifelse(is_start1, "starting 1 day after Day 29", "")))
-knitr::kable(summary_stats_PsV$tab1, caption = paste0("Endpoints included in phase 2 by study arm, ADCP analysis", ifelse(is_start1, "starting 1 day after Day 29", "")))
+kableExtra::kable_styling(
+  knitr::kable(summary_stats$tab1, caption = paste0("Endpoints included in phase 2 by study arm, binding analysis ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+  latex_options = "HOLD_position"
+)
+kableExtra::kable_styling(
+  knitr::kable(summary_stats_ADCP$tab1, caption = paste0("Endpoints included in phase 2 by study arm, ADCP analysis", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+  latex_options = "HOLD_position"
+)
+
+kableExtra::kable_styling(
+  knitr::kable(summary_stats_PsV$tab1, caption = paste0("Endpoints included in phase 2 by study arm, PsV analysis", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+  latex_options = "HOLD_position"
+)
 ```
 
 \clearpage
 
 
 ```{r}
-knitr::kable(summary_stats$tab2, caption = paste0("Total endpoints by study arm in binding data set ", ifelse(is_start1, "starting 1 day after Day 29", "")))
-knitr::kable(summary_stats_ADCP$tab2, caption = paste0("Total endpoints by study arm in ADCP data set ", ifelse(is_start1, "starting 1 day after Day 29", "")))
-knitr::kable(summary_stats_PsV$tab2, caption = paste0("Total endpoints by study arm in PsV data set ", ifelse(is_start1, "starting 1 day after Day 29", "")))
+kableExtra::kable_styling(
+  knitr::kable(summary_stats$tab2, caption = paste0("Total endpoints by study arm in binding data set ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+  latex_options = "HOLD_position"
+)
+kableExtra::kable_styling(
+  knitr::kable(summary_stats_ADCP$tab2, caption = paste0("Total endpoints by study arm in ADCP data set ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+  latex_options = "HOLD_position"
+)
+
+kableExtra::kable_styling(
+  knitr::kable(summary_stats_PsV$tab2, caption = paste0("Total endpoints by study arm in PsV data set ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+  latex_options = "HOLD_position"
+)
 ```
 
 \clearpage
@@ -88,6 +108,9 @@ assay <- c("Binding", "ADCP", "PsV")
 day <- c(summary_stats$day_of_analysis,
          summary_stats_ADCP$day_of_analysis,
          summary_stats_PsV$day_of_analysis)
-knitr::kable(data.frame(Assay = assay, `Analysis day` = day ),
-             caption = "The day used to generate binary endpoints in the mediation analysis")
+kableExtra::kable_styling(
+  knitr::kable(data.frame(Assay = assay, `Analysis day` = day ),
+             caption = "The day used to generate binary endpoints in the mediation analysis"),
+  latex_options = "HOLD_position"
+)
 ```
