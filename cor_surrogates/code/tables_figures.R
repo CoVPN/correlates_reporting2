@@ -308,6 +308,17 @@ cvaucs_vacc %>% arrange(-AUC) %>%
 
 
 # Variable importance forest plots ---------------------------------------------
+# save off all variable importance estimates as a table
+vim_estimates %>%
+  filter(quantity == "VIM") %>%
+  select(-group) %>%
+  write.csv(here("output", "vim_estimates.csv"))
+vim_estimates %>%
+  filter(quantity == "Predictiveness") %>%
+  select(-group) %>%
+  write.csv(here("output", "vim_predictiveness_estimates.csv"))
+
+
 num_digits <- 3
 plot_vim_init <- vim_estimates %>%
   mutate(text_ci = paste0(round(est, num_digits), " [",
