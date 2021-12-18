@@ -10,6 +10,7 @@ library(xtable) # this is a dependency of kyotil
 # 
 ve.az=read.csv("../data_clean/AZChAd26UKphase3FengetalCorrelates.csv")
 
+hist.shrink=c(bindSpike=2,pseudoneutid50=3)
 for (a in c("bindSpike","pseudoneutid50")) {
 #a="pseudoneutid50"
     myprint(a)
@@ -78,7 +79,7 @@ for (a in c("bindSpike","pseudoneutid50")) {
             # add histogram
     #        par(new=TRUE) #this changes ylim, so we cannot use it in this loop
             tmp=hist(marker[[i]],breaks=15,plot=F) # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
-            tmp$density=tmp$density/2 # so that it will fit vertically
+            tmp$density=tmp$density/hist.shrink[a] # so that it will fit vertically
             #tmp=hist(dat.vac.seroneg[["Day"%.%tpeak%.%a]],breaks=seq(min(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), max(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), len = 15),plot=F)
             plot(tmp,col=hist.col.ls[[i]],axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25)), add=T) 
         }
