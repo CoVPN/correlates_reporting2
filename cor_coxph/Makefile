@@ -23,8 +23,10 @@ endif
 
 
 ## report        : create a standalone report
-report:
-	Rscript -e "rmarkdown::render('cor_coxph_report.Rmd', output_file='cor_coxph_report_$(TRIAL).pdf')"
+meta_report:
+	Rscript code/cor_coxph_collate.R
+	Rscript code/cor_coxph_meta.R
+	Rscript -e "rmarkdown::render('meta_collate.Rmd', output_file='cor_coxph_meta_collate_$(TRIAL).pdf')"
 
 
 # type 'make help' to show all make commands

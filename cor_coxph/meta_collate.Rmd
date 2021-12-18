@@ -1,0 +1,75 @@
+---
+title: "CoR Coxph Meta and Collate Report"
+shorttitle: "Coxph Meta Collate"
+author:
+header-includes:
+   - \usepackage{float}
+date: "`r Sys.Date()`"
+output:
+  bookdown::pdf_document2:
+    citation_package: natbib
+    number_sections: true
+    extra_dependencies: ["caption", "subcaption", "graphicx"]
+    toc: false
+linkcolor: blue
+bibliography: ref.bib
+---
+
+```{r, include=FALSE}
+renv::activate(project = here::here(".."))    
+source(here::here("..", "_common.R"), local = knitr::knit_global())
+```
+
+
+\counterwithin{table}{section}
+\counterwithin{figure}{section}
+
+\clearpage
+
+<!-- these latex variables are used in report_sub -->
+\newif\ifCOVE
+\newif\ifENSEMBLE
+`r paste0("\\", study_name, "true")` 
+
+
+
+```{r, echo=FALSE, results='asis'}
+
+covariates_adjusted = covariates_riskscore
+covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
+covariates_adjusted = sub("_","",covariates_adjusted)
+
+if (study_name=="ENSEMBLE") {
+  for (i in 1:2) {
+      COR <- ifelse(i==1, "D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
+      config.cor <- config::get(config = COR)
+      for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+      special.note = paste0("$\\ddagger$ Count cases starting ", ifelse(i==1,7,1), " days post Day 29.")
+      pathCoRoutput <- paste0("output/janssen_pooled_real/", COR) # it does not matter which TRIAL we use here
+      res = knitr::knit_child(c(here::here('meta_collate_sub1.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+  }
+  
+}
+
+```
+
+
+
+
+\begin{figure}[H]
+  \center
+  \includegraphics[height=3.5in,width=3.5in]{output/meta_controlled_ve_curves_bindSpike.pdf}
+  \caption{Controlled VE curves (>=s). ENSEMBLE count cases starting 1 days post Day 29, COVE count cases starting 7 days post Day 57.}
+\end{figure}
+
+\begin{figure}
+  \center
+  \includegraphics[height=3.5in,width=3.5in]{output/meta_controlled_ve_curves_pseudoneutid50.pdf}
+  \caption{Controlled VE curves (>=s). ENSEMBLE count cases starting 1 days post Day 29, COVE count cases starting 7 days post Day 57.}
+\end{figure}
+
+
+
+
+
