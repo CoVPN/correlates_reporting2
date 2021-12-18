@@ -10,10 +10,9 @@ library(xtable) # this is a dependency of kyotil
 # 
 ve.az=read.csv("../data_clean/AZChAd26UKphase3FengetalCorrelates.csv")
 
-#eq.geq=3
-#for (a in c("bindSpike")) {
-a="bindSpike"
-
+for (a in c("bindSpike","pseudoneutid50")) {
+#a="pseudoneutid50"
+    myprint(a)
     ylim=c(0, 1)    
     cols=c("blue","green","orange")
     studies=c("COVE","ENSEMBLE","AZ-COV002")
@@ -31,8 +30,9 @@ a="bindSpike"
     xlim.ls=list()
     marker=list()
     for (i in 2:1) {        
-        Sys.setenv("TRIAL"=ifelse (i==1, "moderna_real", "janssen_pooled_real"))
-        COR=ifelse (i==1,"D57","D29IncludeNotMolecConfirmed")
+        TRIAL=ifelse (i==1, "moderna_real", ifelse(startsWith(a,"pseudo"), "janssen_pooled_realPsV", "janssen_pooled_real"))
+        Sys.setenv("TRIAL"=TRIAL)
+        COR=ifelse (i==1,"D57","D29IncludeNotMolecConfirmedstart1")
         source(here::here("..", "_common.R"))
         
         # uloq censoring    
@@ -53,8 +53,8 @@ a="bindSpike"
         # depends on several variables from sourcing _common.R: lloxs, labels.assays, draw.x.axis.cor
         overall.ve.ls=list()
         for (i in 1:2) {
-            TRIAL=ifelse (i==1, "moderna_real", "janssen_pooled_real")
-            COR=ifelse (i==1,"D57","D29IncludeNotMolecConfirmed")
+            TRIAL=ifelse (i==1, "moderna_real", ifelse(startsWith(a,"pseudo"), "janssen_pooled_realPsV", "janssen_pooled_real"))
+            COR=ifelse (i==1,"D57","D29IncludeNotMolecConfirmedstart1")
             study_name=studies[i]
     #        config <- config::get(config = Sys.getenv("TRIAL"))
     #        config.cor <- config::get(config = COR)
@@ -97,6 +97,7 @@ a="bindSpike"
                 paste0(studies[3], " (overall 66.7%)") # based on Feng et al
             ), lty=1, lwd=2, cex=.8)
     
-    mydev.off(file=paste0("output/", a, "_controlled_ve_curves_cove_ensemble"))
-#} # end assays
+    mydev.off(file=paste0("output/meta_controlled_ve_curves_",a))
+    
+} # end assays
     
