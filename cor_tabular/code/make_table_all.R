@@ -274,7 +274,7 @@ subgrp <- c(
 ###################################################
 
 # Setup empty tables 
-tab_dm_neg <- tab_strtm1 <- tab_strtm2 <- tab_strtm2_1 <- tab_strtm2_2 <- tab_case_cnt <- NULL
+tab_dm_neg <- tab_strtm2_1 <- tab_strtm2_2 <- tab_case_cnt <- NULL
 rpcnt_case1 <- rpcnt_case2 <- rgm_case1 <- rgm_case2 <- rgmt_case1 <- rgmt_case2 <- NULL
 case_vacc_neg <- NULL
 
@@ -489,7 +489,9 @@ if ((n_strtm1 <- ceiling(ncol(tab_strtm1)/2-1))!=0) {
                                    "Estimated = Estimated numbers of participants in the whole per-protocol cohort within baseline 
   covariate strata, calculated using inverse probability weighting.")
   
-} 
+} else {
+  tab_strtm2_1 <- NULL
+}
 
 if ((n_strtm2 <- ceiling(ncol(tab_strtm2)/2-1))!=0) {
   tlf$tab_strtm2$col_name <- colnames(tab_strtm2)[-1] %>%
@@ -535,7 +537,7 @@ if ((n_strtm2 <- ceiling(ncol(tab_strtm2)/2-1))!=0) {
       tlf[[paste0("tab_strtm2_", r)]]$table_header <- sprintf("Sample Sizes of Random Subcohort Strata (with antibody markers data at D29) Plus All Other Cases Outside the Random Subcohort in %s",
                                                               labels.regions.ENSEMBLE[as.character(r)])
       tlf[[paste0("tab_strtm2_", r)]]$header_above1 <- c(" "=1, "Baseline SARS-CoV-2 Negative" = sum(grepl("Negative", colnames(tab_strtm2i))), 
-                                        "Baseline SARS-CoV-2 Positive" = sum(grepl("Positive", colnames(tab_strtm2))))
+                                        "Baseline SARS-CoV-2 Positive" = sum(grepl("Positive", colnames(tab_strtm2i))))
       
       tlf[[paste0("tab_strtm2_", r)]]$header_above1 <- tlf[[paste0("tab_strtm2_", r)]]$header_above1[tlf[[paste0("tab_strtm2_", r)]]$header_above1!=0]
       tab_strtm_header2 <- ncol(tab_strtm2i)-1
@@ -557,7 +559,9 @@ if ((n_strtm2 <- ceiling(ncol(tab_strtm2)/2-1))!=0) {
     }
   }
 
-} 
+} else{
+  tab_strtm2_2 <- NULL
+}
 
 # Case counts by availability of markers at baseline, d29, d57
 
