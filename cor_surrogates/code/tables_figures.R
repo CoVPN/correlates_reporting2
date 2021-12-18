@@ -28,15 +28,18 @@ source(here("code", "utils.R"))
 method <- "method.CC_nloglik" # since SuperLearner relies on this to be in GlobalEnv
 ggplot2::theme_set(theme_cowplot())
 
-if(study_name %in% c("COVE", "MockCOVE")){
-  load(file = here("output", "cvaucs_vacc_EventIndPrimaryD57.rda"))
+# read in the results; note that createRDAfiles_fromSLobjects has to be run prior to this
+if (study_name %in% c("COVE", "MockCOVE")) {
+  cvaucs_vacc <- readRDS(file = here::here("output", "cvaucs_vacc_EventIndPrimaryD57.rds"))
 }
-if(study_name == "HVTN705"){
-  load(file = here("output", "cvaucs_vacc_EventIndPrimaryD210.rda"))
+if (study_name == "HVTN705") {
+  cvaucs_vacc <- readRDS(file = here::here("output", "cvaucs_vacc_EventIndPrimaryD210.rds"))
 }
-load(file = here("output", "ph2_vacc_ptids.rda"))
+ph2_vacc_ptids <- readRDS(file = here::here("output", "ph2_vacc_ptids.rds"))
+vim_estimates <- readRDS(file = here::here("output", "vim_estimates.rds"))
 
-## ----learner-screens, warning=kable_warnings--------------------------------------------------------------------------------------------------------------------------
+# Create tables ----------------------------------------------------------------
+# Table of learner/screen combinations
 caption <- "All learner-screen combinations (28 in total) used as input to the Superlearner."
 
 tab <- cvaucs_vacc %>%
@@ -45,31 +48,31 @@ tab <- cvaucs_vacc %>%
   mutate(Screen = fct_relevel(Screen, c("all", "glmnet", "univar_logistic_pval",
                                         "highcor_random")),
          Learner = as.factor(Learner)) %>%
-  arrange(Learner, Screen) %>% 
+  arrange(Learner, Screen) %>%
   distinct(Learner, Screen) %>%
-  rename("Screen*" = Screen) 
+  rename("Screen*" = Screen)
 
-if(!grepl("Mock", study_name) & study_name == "COVE"){
+if (!grepl("Mock", study_name) & study_name == "COVE") {
   tab <- tab %>%
-    mutate(Learner = fct_relevel(Learner, c("SL.mean", "SL.glmnet.0", "SL.glmnet.1", "SL.xgboost.2.no", "SL.xgboost.4.no",  
+    mutate(Learner = fct_relevel(Learner, c("SL.mean", "SL.glmnet.0", "SL.glmnet.1", "SL.xgboost.2.no", "SL.xgboost.4.no",
                                             "SL.xgboost.2.yes", "SL.xgboost.4.yes", "SL.ranger.yes", "SL.ranger.no", "SL.glm"))) %>%
     arrange(Learner, `Screen*`)
-}else if(!grepl("Mock", study_name) & study_name == "HVTN705"){
+} else if (!grepl("Mock", study_name) & study_name == "HVTN705") {
   tab <- tab %>%
-    mutate(Learner = fct_relevel(Learner, c("SL.mean", #"SL.bayesglm", "SL.gam", 
-					    "SL.glm", #"SL.glm.interaction", 
+    mutate(Learner = fct_relevel(Learner, c("SL.mean", #"SL.bayesglm", "SL.gam",
+					    "SL.glm", #"SL.glm.interaction",
 					    "SL.glmnet.0",
-					    "SL.glmnet.1", 
+					    "SL.glmnet.1",
                                             #"SL.ksvm.polydot", "SL.ksvm.rbfdot",
-                                            #"SL.polymars", 
-                                            "SL.xgboost.2.no", 
-                                            "SL.xgboost.4.no",  
-                                            "SL.xgboost.2.yes", 
-					    "SL.xgboost.4.yes", 
-					    "SL.ranger.no", 
+                                            #"SL.polymars",
+                                            "SL.xgboost.2.no",
+                                            "SL.xgboost.4.no",
+                                            "SL.xgboost.2.yes",
+					    "SL.xgboost.4.yes",
+					    "SL.ranger.no",
                                             "SL.ranger.yes"))) %>%
     arrange(Learner, `Screen*`)
-}else{
+} else {
   tab <- tab %>%
     mutate(Learner = fct_relevel(Learner, c("SL.mean", "SL.glm"))) %>%
     arrange(Learner, `Screen*`)
@@ -77,20 +80,20 @@ if(!grepl("Mock", study_name) & study_name == "COVE"){
 
 tab %>% write.csv(here("output", "learner-screens.csv"))
 
-## ----All 28 (34 if live MN50 titers included) variable sets --------------------------------------------------------------------------------------------------------------------
-if(study_name %in% c("COVE", "MockCOVE")){
+# Table of variable set definitions
+if (study_name %in% c("COVE", "MockCOVE")) {
   caption <- "The 28 variable sets on which an estimated optimal surrogate was built."
-  
+
   tab <- data.frame(`Variable Set Name` = c("1_baselineRiskFactors",
-                                            
+
                                             "2_bAbSpike_D57", "3_bAbRBD_D57", "4_pnabID50_D57", "5_pnabID80_D57",
                                             "6_bAb_pnabID50_D57", "7_bAb_pnabID80_D57", "8_bAb_combScores_D57",
                                             "9_allMarkers_D57", "10_allMarkers_combScores_D57",
-                                            
+
                                             "11_bAbSpike_D29", "12_bAbRBD_D29", "13_pnabID50_D29", "14_pnabID80_D29",
                                             "15_bAb_pnabID50_D29", "16_bAb_pnabID80_D29", "17_bAb_combScores_D29",
                                             "18_allMarkers_D29", "19_allMarkers_combScores_D29",
-                                            
+
                                             "20_bAbSpike_D29_D57", "21_bAbRBD_D29_D57", "22_pnabID50_D29_D57", "23_pnabID80_D29_D57",
                                             "24_bAb_pnabID50_D29_D57", "25_bAb_pnabID80_D29_D57", "26_bAb_combScores_D29_D57",
                                             "27_allMarkers_D29_D57", "28_allMarkers_combScores_D29_D57"),
@@ -105,7 +108,7 @@ if(study_name %in% c("COVE", "MockCOVE")){
 components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + all individual Day 57 marker variables",
                                                         "Baseline risk factors + all individual Day 57 marker variables and theri combination scores (Full model of Day 57 markers)",
-                                                        
+
                                                         "Baseline risk factors + Day 29 bAb anti-Spike markers",
                                                         "Baseline risk factors + Day 29 bAb anti-RBD markers",
                                                         "Baseline risk factors + Day 29 p-nAb ID50 markers",
@@ -116,7 +119,7 @@ components of nonlinear PCA), and the maximum signal diversity score]",
 components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + all individual Day 29 marker variables",
                                                         "Baseline risk factors + all individual Day 29 marker variables and their combination scores (Full model of Day 29 markers)",
-                                                        
+
                                                         "Baseline risk factors + Day 29 and Day 57 bAb anti-Spike markers",
                                                         "Baseline risk factors + Day 29 and Day 57 bAb anti-RBD markers",
                                                         "Baseline risk factors + Day 29 and Day 57 p-nAb ID50 markers",
@@ -127,15 +130,15 @@ components of nonlinear PCA), and the maximum signal diversity score]",
 components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + all individual Day 29 and Day 57 marker variables",
                                                         "Baseline risk factors + all individual Day 29 and Day 57 marker variables and their combination scores (Full model of Day 29 and Day 57 markers)"))
-  
+
 }
-if(study_name == "HVTN705"){
+if (study_name == "HVTN705") {
   caption <- "The 15 variable sets on which an estimated optimal surrogate was built."
-  
+
   tab <- data.frame(`Variable Set Name` = c("1_baselineRiskFactors",
-                                            "2_M7_ELISA", #"3_bAbRBD_D57", 
+                                            "2_M7_ELISA", #"3_bAbRBD_D57",
                                             "4_M7_ADCP", "5_M7_IgG3", "6_M7_IgG3gp140", "7_M7_IgG3gp120", "8_M7_IgG3V1V2", "9_M7_IgG3gp41", "10_M7_IgG3bScores",
-                                            "11_M7_IgG3multi", "12_M7_IgG3overall", #"13_pnabID50_D29", 
+                                            "11_M7_IgG3multi", "12_M7_IgG3overall", #"13_pnabID50_D29",
                                             "14_2+4", "15_2+5", #"16_bAb_pnabID80_D29", "17_bAb_combScores_D29",
                                             "18_4+5", "22_2+4+5"),
                     `Variables included in the set` = c("Baseline risk factors only (Reference model)",
@@ -153,13 +156,12 @@ if(study_name == "HVTN705"){
                                                         "Baseline risk factors + M7 ELISA + M7 IgG3",
                                                         "Baseline risk factors + M7 ADCP + M7 IgG3",
                                                         "Baseline risk factors + M7 ELISA + M7 ADCP + M7 IgG3"))
-  
+
 }
 
 tab %>% write.csv(here("output", "varsets.csv"))
 
-##############################################################################################################################
-##############################################################################################################################
+# Create figures ---------------------------------------------------------------
 # Forest plots for vaccine model
 # vaccine group
 options(bitmapType = "cairo")
@@ -175,7 +177,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 allSLs <- cvaucs_vacc %>% filter(Learner == "SL") %>%
   mutate(varsetNo = sapply(strsplit(varset, "_"), `[`, 1),
          varsetNo = as.numeric(varsetNo)) %>%
-  arrange(varsetNo) %>% 
+  arrange(varsetNo) %>%
   mutate(varset = fct_reorder(varset, AUC, .desc = F)) %>%
   arrange(-AUC)
 
@@ -199,7 +201,7 @@ top_learner_plot <- ggplot() +
         panel.border = element_blank(),
         axis.line = element_line(colour = "black"))
 
-total_learnerScreen_combos = length(allSLs$LearnerScreen)  
+total_learnerScreen_combos = length(allSLs$LearnerScreen)
 
 allSLs_withCoord <- allSLs %>%
   select(varset, AUCstr) %>%
@@ -222,16 +224,16 @@ top_learner_nms_plot <- ggplot(allSLs_withCoord, aes(x = xcoord, y = ycoord, lab
 top_learner <- list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot)
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
-  
+
 #################################################################################################################################
 #################################################################################################################################
 # plot ROC curve and pred.Prob with SL, Discrete SL and top 2 best-performing individual Learners for all 12 variable sets
 for(i in 1:length(unique(cvaucs_vacc$varset))) {
   variableSet = unique(cvaucs_vacc$varset)[i]
   dat <- cvaucs_vacc %>% filter(varset==variableSet)
-  
+
   top2 <- bind_rows(
-    dat %>% 
+    dat %>%
       arrange(-AUC) %>%
       filter(!Learner %in% c("SL", "Discrete SL")) %>%
       dplyr::slice(1:2),
@@ -243,15 +245,15 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
     mutate(LearnerScreen = ifelse(Learner == "SL", "Super Learner",
                                   ifelse(Learner == "Discrete SL", Learner,
                                          paste0(Learner, "_", Screen_fromRun))))
-  
+
   # Get cvsl fit and extract cv predictions
   if(study_name %in% c("COVE", "MockCOVE")){
-    load(file = here("output", paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rda")))
+    cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
   }
   if(study_name == "HVTN705"){
-    load(file = here("output", paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rda")))
+    cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
   }
-  
+
   pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2)
   # #Take average of predictions from the 10 random seeds
   # pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2) %>% rename(pred1 = pred) %>%
@@ -273,8 +275,8 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
   #     learnerScreen = paste0(learnerScreen, " (", AUCchar, ")"),
   #     learnerScreen = reorder(learnerScreen, -AUC)
   #   )
-  
-  
+
+
   # plot ROC curve
   options(bitmapType = "cairo")
   png(file = here("figs", paste0("ROCcurve_", variableSet, ".png")),
@@ -287,7 +289,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
   }
   print(p1)
   dev.off()
-  
+
   # plot pred prob plot
   options(bitmapType = "cairo")
   png(file = here("figs", paste0("predProb_", variableSet, ".png")),
@@ -299,8 +301,107 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 
 
 # Get top 2 Superlearner performers
-cvaucs_vacc %>% arrange(-AUC) %>% 
+cvaucs_vacc %>% arrange(-AUC) %>%
   filter(Learner == "SL") %>%
   select(varset, AUCstr) %>%
   write.csv(here("output", "SLperformance_allvarsets.csv"))
-  
+
+
+# Variable importance forest plots ---------------------------------------------
+# save off all variable importance estimates as a table
+vim_estimates %>%
+  filter(quantity == "VIM") %>%
+  select(-group) %>%
+  write.csv(here("output", "vim_estimates.csv"))
+vim_estimates %>%
+  filter(quantity == "Predictiveness") %>%
+  select(-group) %>%
+  write.csv(here("output", "vim_predictiveness_estimates.csv"))
+
+
+num_digits <- 3
+plot_vim_init <- vim_estimates %>%
+  mutate(text_ci = paste0(round(est, num_digits), " [",
+                        round(ci_ll, num_digits), ", ",
+                        round(ci_ul, num_digits), "]"))
+group_ests <- plot_vim_init %>%
+  filter(group)
+individual_ests <- plot_vim_init %>%
+  filter(!group)
+
+# Groups
+plot_group_vim <- group_ests %>%
+  mutate(plot_ord = as.numeric(gsub("_[^_]*", "", variable_set)),
+         plot_name = factor(plot_ord, levels = plot_ord, labels = variable_set))
+est_group_vims <- plot_group_vim %>% filter(quantity == "VIM")
+est_group_predictiveness <- plot_group_vim %>% filter(quantity == "Predictiveness")
+
+group_vim_text_pos <- round(max(est_group_vims$ci_ul, na.rm = TRUE), 2) + 0.05
+group_vim_forest_plot <- est_group_vims %>%
+  filter(!grepl("base", variable_set)) %>%
+  ggplot(aes(x = est, y = plot_name)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul)) +
+  geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims) - 1), label = text_ci), hjust = "left") +
+  ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
+  xlab("Estimated Difference in CV-AUC") +
+  ylab("Variable Set Name") +
+  xlim(c(0, group_vim_text_pos + 0.1))
+
+ggsave(
+  group_vim_forest_plot, file = here::here("figs", "group_vim_forest_plot.png"),
+  width = 11.5, height = 10, units = "in", dpi = 300
+)
+
+group_pred_text_pos <- round(max(est_group_predictiveness$ci_ul, na.rm = TRUE), 2) + 0.05
+group_pred_forest_plot <- est_group_predictiveness %>%
+  ggplot(aes(x = est, y = plot_name)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul)) +
+  geom_text(aes(x = rep(group_pred_text_pos, nrow(est_group_predictiveness)), label = text_ci), hjust = "left") +
+  ggtitle("Estimated Predictiveness") +
+  xlab("CV-AUC") +
+  ylab("Variable Set Name") +
+  xlim(c(0, group_pred_text_pos + 0.2))
+
+ggsave(
+  group_pred_forest_plot, file = here::here("figs", "group_pred_forest_plot.png"),
+  width = 11.5, height = 10, units = "in", dpi = 300
+)
+
+# Individual variables
+plot_individual_vim <- individual_ests
+est_individual_vims <- plot_individual_vim %>% filter(quantity == "VIM")
+est_individual_predictiveness <- plot_individual_vim %>% filter(quantity == "Predictiveness")
+
+individual_vim_text_pos <- round(max(est_individual_vims$ci_ul, na.rm = TRUE), 2) + 0.05
+individual_vim_forest_plot <- est_individual_vims %>%
+  ggplot(aes(x = est, y = variable_set)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul)) +
+  geom_text(aes(x = rep(individual_vim_text_pos, nrow(est_individual_vims)), label = text_ci), hjust = "left") +
+  ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
+  xlab("Estimated Difference in CV-AUC") +
+  ylab("Variable Set Name") +
+  xlim(c(0, individual_vim_text_pos + 0.1))
+
+ggsave(
+  individual_vim_forest_plot, file = here::here("figs", "individual_vim_forest_plot.png"),
+  width = 11.5, height = 10, units = "in", dpi = 300
+)
+
+individual_pred_text_pos <- round(max(est_individual_predictiveness$ci_ul, na.rm = TRUE), 2) + 0.05
+individual_pred_forest_plot <- est_individual_predictiveness %>%
+  ggplot(aes(x = est, y = variable_set)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul)) +
+  geom_text(aes(x = rep(individual_pred_text_pos, nrow(est_individual_predictiveness)), label = text_ci), hjust = "left") +
+  ggtitle("Estimated Predictiveness") +
+  xlab("CV-AUC") +
+  ylab("Variable Set Name") +
+  xlim(c(0, individual_pred_text_pos + 0.2))
+
+ggsave(
+  individual_pred_forest_plot, file = here::here("figs", "individual_pred_forest_plot.png"),
+  width = 11.5, height = 10, units = "in", dpi = 300
+)

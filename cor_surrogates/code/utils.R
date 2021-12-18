@@ -8,9 +8,8 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
-# --------------------------------------------------------------------
-# Cross-validated predictiveness
-# --------------------------------------------------------------------
+# Cross-validated predictiveness -----------------------------------------------
+
 # get the CV-AUC for a single learner's predicted values
 # @param preds the fitted values
 # @param Y the outcome
@@ -193,10 +192,8 @@ get_all_aucs <- function(sl_fit, scale = "identity",
   rbind(out, other_aucs)
 }
 
+# Run the CV Super Learner -----------------------------------------------------
 
-# -------------------------------------------------------------------------
-# Run the CV Super Learner
-# -------------------------------------------------------------------------
 # run CV.SuperLearner for one given random seed
 # @param seed the random number seed
 # @param Y the outcome
@@ -255,6 +252,91 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
   }
   return(list(cvaucs = ret_lst, cvfits = fit))
 }
+
+# Cross-validated variable importance ------------------------------------------
+# get the CV vim using pre-computed CV.SL objects
+# @param seed the random number seed (only useful if (A)IPW estimates of variable importance are desired)
+# @param Y the outcome (measured on all participants, including phase 1)
+# @param X the marker and baseline risk variables
+# @param full_fit the CV.SL object from a call to run_cv_sl_once (i.e., one cross-validated super learner)
+#         based on all covariates
+# @param reduced_fit the CV.SL object from a call to run_cv_sl_once (i.e., one cross-validated super learner)
+#         based on the reduced set of covariates
+# @param index the index of interest
+# @param type the type of importance (e.g., "auc")
+# @param scale the scale to measure importance/CIs on
+# @param cross_fitting_folds the cross-fitting folds used to fit full_fit, reduced_fit
+# @param sample_splitting_folds folds for sample splitting (splits up cross-fitting folds into unique groups)
+# @param V the number of folds used for variable importance (equal to the number of folds for outer cross-fitting in the CV.SL / 2)
+# @param sl_library the Super Learner library, for IPW estimation of the efficient influence function
+# @param ipc_est_type whether to use IPW or AIPW for the EIF
+# @param ipc_weights the inverse probability weights for coarsened data
+# @param Z the predictors of the missingness mechanism (a character vector)
+# @param C the indicator of missing (0) or selected into phase 2 (1)
+# @return an object of class "vimp" with the results
+get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced_fit = NULL, index = 1, type = "auc", scale = "logit",
+                       cross_fitting_folds = NULL, sample_splitting_folds = NULL, V = 2,
+                       sl_library = c("SL.glmnet"), ipc_est_type = "ipw", ipc_weights = rep(1, length(cross_fitting_folds)), Z = NULL,
+                       C = NULL, baseline = FALSE) {
+
+  # if not passing sample-splitting folds, create them
+  if (all(is.null(sample_splitting_folds))) {
+    set.seed(seed)
+    sample_splitting_folds <- vimp::make_folds(unique(cross_fitting_folds), V = 2)
+  }
+  # extract independent predictions
+  full_cv_preds <- vimp::extract_sampled_split_predictions(
+    cvsl_obj = full_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
+    full = TRUE
+  )
+  if (baseline) {
+    reduced_cv_preds <- vimp::extract_sampled_split_predictions(
+      cvsl_obj = NULL, preds = reduced_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
+      full = FALSE, cross_fitting_folds = cross_fitting_folds
+    )
+  } else {
+    reduced_cv_preds <- vimp::extract_sampled_split_predictions(
+      cvsl_obj = reduced_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
+      full = FALSE
+    )
+  }
+  set.seed(seed)
+  # estimate variable importance
+  est_vim <- vimp::cv_vim(Y = Y, X = X, cross_fitted_f1 = full_cv_preds,
+                          cross_fitted_f2 = reduced_cv_preds, indx = index,
+                          delta = 0, V = V, run_regression = FALSE,
+                          sample_splitting = TRUE, cross_fitting_folds = cross_fitting_folds,
+                          sample_splitting_folds = sample_splitting_folds,
+                          type = type, scale = scale,
+                          SL.library = sl_library, ipc_est_type = ipc_est_type,
+                          ipc_weights = ipc_weights, Z = Z, C = C)
+  # return the vimp object
+  return(est_vim)
+}
+
+# pool CV-VIM estimates over multiple random starts
+# @param vim_lst a list of vimp objects (from a call to get_cv_vim for each of a list of random number seeds)
+# @param scale the scale that intervals should be on (should match the scale used for estimation)
+# @return a tibble, with: the quantity (predictiveness, VIM), the point estimate, SE, 95% CI, and a p-value for variable importance
+pool_cv_vim <- function (vim_lst, scale = "identity") {
+  # for variable importance
+  vim_point_est <- mean(unlist(lapply(vim_lst, function(l) l$est)), na.rm = TRUE)
+  vim_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se ^ 2)), na.rm = TRUE))
+  vim_ci <- vimp::vimp_ci(vim_point_est, vim_se, scale = scale, level = 0.95)
+  # for predictiveness
+  pred_point_est <- mean(unlist(lapply(vim_lst, function(l) l$predictiveness_full)), na.rm = TRUE)
+  pred_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se_full ^ 2)), na.rm = TRUE))
+  pred_ci <- vimp::vimp_ci(pred_point_est, pred_se, scale = scale, level = 0.95)
+  # hypothesis test for variable importance
+  pred_reduced_point_est <- mean(unlist(lapply(vim_lst, function(l) l$predictiveness_reduced)), na.rm = TRUE)
+  vim_pval <- vimp::vimp_hypothesis_test(predictiveness_full = pred_point_est,
+    predictiveness_reduced = pred_reduced_point_est, se = vim_se, delta = 0, alpha = 0.05)$p_value
+  output <- tibble::tibble(s = vim_lst[[1]]$s, group = grepl(",", s), quantity = c("VIM", "Predictiveness"),
+                           est = c(vim_point_est, pred_point_est), se = c(vim_se, pred_se)) %>%
+    bind_cols(as_tibble(rbind(vim_ci, pred_ci), .name_repair = ~ paste0("ci_", c("ll", "ul"))), pval = c(vim_pval, NA))
+  return(output)
+}
+
 
 ##########################################################################################################
 get.pca.scores <- function(dat){
@@ -319,7 +401,7 @@ get.maxSignalDivScore <- function(dat, day){
     dat <- dat %>%
       mutate(max.signal.div.score = rowSums(.[1:8])) #rowSums(.[1:10]))
   }
-  
+
   return(dat$max.signal.div.score)
 }
 
@@ -510,7 +592,7 @@ ipw_roc_curves <- function(pred_obj, weights = rep(1, length(pred_obj@prediction
 # @return ggplot object containing the ROC curves
 plot_roc_curves <- function(predict, cvaucDAT, weights) {
   top3 <- choose_learners(cvaucDAT)
-  
+
   roc.obj <- predict %>%
     group_by(algo) %>%
     nest() %>%
@@ -523,7 +605,7 @@ plot_roc_curves <- function(predict, cvaucDAT, weights) {
         yval = .x@y.values[[1]]
       ))
     )
-  
+
   roc.obj %>%
     unnest(roc.dat) %>%
     select(algo, xval, yval) %>%
@@ -548,7 +630,7 @@ plot_roc_curves <- function(predict, cvaucDAT, weights) {
       axis.text = element_text(size = 23),
       axis.title = element_text(size = 30)
     ) +
-    labs(x = "Cross-Validated False Positive Rate", y = "Cross-Validated True Positive Rate", 
+    labs(x = "Cross-Validated False Positive Rate", y = "Cross-Validated True Positive Rate",
          col = "Model (CV-AUC)", linetype = "Model (CV-AUC)") +
     geom_abline(intercept = 0, slope = 1) +
     scale_linetype_manual(values=c("dashed", "dotted", "dotdash", "twodash"))
@@ -573,7 +655,7 @@ plot_predicted_probabilities <- function(pred, weights = rep(1, length(pred$pred
     disease_name = "HIV"
   }
   pred %>%
-    mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>% 
+    mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>%
     ggplot(aes(x = Ychar, y = pred, color = Ychar)) +
     geom_jitter(width = 0.06, size = 3, shape = 21, fill = "white") +
     geom_violin(alpha = 0.05, color = "black", lwd=1.0) +
@@ -725,9 +807,9 @@ make_forest_plot <- function(avgs){
           plot.margin=unit(c(1,-0.15,1,-0.15),"cm"),
           panel.border = element_blank(),
           axis.line = element_line(colour = "black"))
-  
+
   total_learnerScreen_combos = length(avgs$LearnerScreen)
-  
+
   avgs_withCoord <- avgs %>%
     select(Learner, Screen, AUCstr) %>%
     gather("columnVal", "strDisplay") %>%
@@ -735,7 +817,7 @@ make_forest_plot <- function(avgs){
                               columnVal=="Screen" ~ 1.5,
                               columnVal=="AUCstr" ~ 2),
            ycoord = rep(total_learnerScreen_combos:1, 3))
-  
+
   top_learner_nms_plot <- ggplot(avgs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
     xlim(0.7,2) +
@@ -745,7 +827,6 @@ make_forest_plot <- function(avgs){
           axis.text.x = element_text(size = 2, color = "white"),
           axis.ticks = element_blank(),
           axis.title = element_blank())
-  
+
   return(list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot))
 }
-
