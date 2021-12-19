@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_real"); Args=c(COR="D29IncludeNotMolecConfirmed"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "janssen_pooled_realPsV"); Args=c(COR="D29IncludeNotMolecConfirmedstart7"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
 renv::activate(project = here::here(".."))    
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
@@ -24,6 +24,10 @@ source(here::here("..", "_common.R"))
 #with(subset(dat.mock, ph1==1), table(Delta.D210, Trt))
 #with(subset(dat.mock, ph2==1), corplot(Day210ELCZ,Day210ADCPgp140C97ZAfib))
 #with(subset(dat.mock, ph2==1), corr(cbind(Day210ELCZ,Day210ADCPgp140C97ZAfib), w = wt))
+    
+#with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
+#with(subset(dat.mock, Trt==1 & ph2 & !EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
+
 
 
 library(kyotil) # p.adj.perm, getFormattedSummary
