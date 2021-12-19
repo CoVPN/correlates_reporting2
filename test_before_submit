@@ -4,9 +4,9 @@ for T in moderna_mock janssen_pooled_mock # janssen_pooled_real  janssen_pooled_
 do
 	export TRIAL=$T	
 	echo $TRIAL
-	if [[ "$1" == "cor_coxph" ]] 
+	if [[ "$1" == "cor_report" ]] 
 	then
-		make -k -C $1 cor_coxph # save some time
+		make cor_report
 	else
 		make -k -C $1 all
 	fi
