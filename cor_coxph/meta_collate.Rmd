@@ -67,6 +67,14 @@ if (study_name=="ENSEMBLE") {
 
 \begin{figure}
   \center
+  \includegraphics[width=6in]{output/meta_controlled_ve_curves_bindRBD.pdf}
+  \caption{Controlled VE curves. ENSEMBLE count cases starting 1 days post Day 29, COVE count cases starting 7 days post Day 57.}
+\end{figure}
+
+\clearpage
+
+\begin{figure}
+  \center
   \includegraphics[width=6in]{output/meta_controlled_ve_curves_pseudoneutid50.pdf}
   \caption{Controlled VE curves. ENSEMBLE count cases starting 1 days post Day 29, COVE count cases starting 7 days post Day 57.}
 \end{figure}
