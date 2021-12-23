@@ -52,7 +52,7 @@ for (a in assays) {
     xlim=c(min(xlim.ls[[1]][1], xlim.ls[[2]][1]), max(xlim.ls[[1]][2], xlim.ls[[2]][2]))
     myprint(xlim)
 
-    myfigure()
+    mypdf(file=paste0("output/meta_controlled_ve_curves_",a))
         par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         
         # depends on several variables from sourcing _common.R: lloxs, labels.assays, draw.x.axis.cor
@@ -104,6 +104,6 @@ for (a in assays) {
                 paste0(studies[3], " (overall 66.7%)") # based on Feng et al
             ), lty=1, lwd=2, cex=.7)
     
-    mydev.off(file=paste0("output/meta_controlled_ve_curves_",a))
+    dev.off()
 } # end assays
     

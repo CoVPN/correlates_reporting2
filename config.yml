@@ -106,7 +106,7 @@ janssen_trial_real: &janssen_trial_real
   primary_assays: [] 
   study_name: ENSEMBLE
   num_boot_replicates: 1000
-  num_perm_replicates: 10000
+  num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
 
 janssen_trial_realADCP: &janssen_trial_realADCP
   <<: *janssen_trial
@@ -117,7 +117,7 @@ janssen_trial_realADCP: &janssen_trial_realADCP
   primary_assays: [] # have it be empty if no multitesting adjustment should be done
   study_name: ENSEMBLE
   num_boot_replicates: 1000
-  num_perm_replicates: 10000
+  num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
 
 janssen_trial_realPsV: &janssen_trial_realPsV
   <<: *janssen_trial
@@ -128,7 +128,7 @@ janssen_trial_realPsV: &janssen_trial_realPsV
   primary_assays: [] # have it be empty if no multitesting adjustment should be done
   study_name: ENSEMBLE
   num_boot_replicates: 1000
-  num_perm_replicates: 10000
+  num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
 
 janssen_pooled_real: 
   <<: *janssen_trial_real
@@ -227,7 +227,8 @@ D57:
   wt: wt.D57
   WtStratum: Wstratum
   EventIndPrimary: EventIndPrimaryD57   
-  EventTimePrimary: EventTimePrimaryD57   
+  EventTimePrimary: EventTimePrimaryD57
+  Earlyendpoint: EarlyendpointD57  
   tpeak: 57
   tpeaklag: 7
   tfinal.tpeak: 0
@@ -242,6 +243,7 @@ D29:
   WtStratum: Wstratum
   EventIndPrimary: EventIndPrimaryD29  
   EventTimePrimary: EventTimePrimaryD29
+  Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7
   tfinal.tpeak: 0
@@ -256,6 +258,7 @@ D29start1:
   WtStratum: Wstratum
   EventIndPrimary: EventIndPrimaryD29  
   EventTimePrimary: EventTimePrimaryD29
+  Earlyendpoint: EarlyendpointD29start1
   tpeak: 29
   tpeaklag: 1
   tfinal.tpeak: 0
@@ -271,6 +274,7 @@ D29IncludeNotMolecConfirmed:
   WtStratum: Wstratum
   EventIndPrimary: EventIndPrimaryIncludeNotMolecConfirmedD29  
   EventTimePrimary: EventTimePrimaryIncludeNotMolecConfirmedD29
+  Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7
   tfinal.tpeak: 0
@@ -286,6 +290,7 @@ D29IncludeNotMolecConfirmedstart1:
   WtStratum: Wstratum
   EventIndPrimary: EventIndPrimaryIncludeNotMolecConfirmedD29  
   EventTimePrimary: EventTimePrimaryIncludeNotMolecConfirmedD29
+  Earlyendpoint: EarlyendpointD29start1
   tpeak: 29
   tpeaklag: 1
   tfinal.tpeak: 0

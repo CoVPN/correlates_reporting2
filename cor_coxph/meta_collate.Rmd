@@ -32,6 +32,7 @@ source(here::here("..", "_common.R"), local = knitr::knit_global())
 `r paste0("\\", study_name, "true")` 
 
 
+# Univariate Cox Models of Risk: Hazard Ratios
 
 ```{r, echo=FALSE, results='asis'}
 
@@ -55,7 +56,8 @@ if (study_name=="ENSEMBLE") {
 ```
 
 
-
+# Controlled VE Curves based on Cox Models
+\clearpage
 
 \begin{figure}[H]
   \center

@@ -162,7 +162,7 @@ p.2=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FDR" ], 3, remove.lead
 #}
 
 
-tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p), p.1, p.2)
+tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p), p.2, p.1)
 rownames(tab.1)=c(labels.axis["Day"%.%tpeak, assays])
 tab.1
 
@@ -224,7 +224,7 @@ tab=cbind(
     rep(c("Lower","Middle","Upper"), length(p)/3), 
     paste0(nevents, "/", format(natrisk, big.mark=",",digit=0, scientific=F)), 
     formatDouble(nevents/natrisk, digit=4, remove.leading0=F),
-    est, ci, p, overall.p.0, overall.p.1, overall.p.2
+    est, ci, p, overall.p.0, overall.p.2, overall.p.1
 )
 tmp=rbind(c(labels.axis["Day"%.%tpeak, assays]), "", "")
 rownames(tab)=c(tmp)
@@ -300,4 +300,4 @@ if (!is.null(config$multivariate_assays)) {
 }
 
 
-save (tab.cont, tab.cat, save.s.1, save.s.2, file=paste0(save.results.to, "coxph_slopes.Rdata"))
+save (tab.cont, tab.cat, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))
