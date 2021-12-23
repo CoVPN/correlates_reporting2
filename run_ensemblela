@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for T in janssen_pooled_real janssen_pooled_realADCP janssen_pooled_realPsV
+for T in janssen_la_real janssen_la_realADCP janssen_la_realPsV
 do
     export TRIAL=$T 
     echo $TRIAL

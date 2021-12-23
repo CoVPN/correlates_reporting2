@@ -96,7 +96,7 @@ janssen_trial: &janssen_trial
   ve_ylim: [0,1]
   low_efficacy: yes # used to drive some plotting configurations
 
-janssen_trial_real: &janssen_trial_real
+janssen_trial_real: &janssen_trial_real # binding Ab markers
   <<: *janssen_trial
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_real_data_processed_with_riskscore.csv
   #data_cleaned: ../data_clean/janssen_pooled_real_data_processed_with_riskscore.csv
@@ -158,6 +158,20 @@ janssen_na_real:
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
 
+janssen_na_realPsV: 
+  <<: *janssen_trial_realPsV
+  subset_variable: Region
+  subset_value: 0
+  covariates_riskscore: ~.+ risk_score
+  covariates_norisksco: ~.+ Age
+
+janssen_na_realADCP: 
+  <<: *janssen_trial_realADCP
+  subset_variable: Region
+  subset_value: 0
+  covariates_riskscore: ~.+ risk_score
+  covariates_norisksco: ~.+ Age
+
 janssen_la_real: 
   <<: *janssen_trial_real
   subset_variable: Region
@@ -165,8 +179,36 @@ janssen_la_real:
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
 
+janssen_la_realPsV: 
+  <<: *janssen_trial_realPsV
+  subset_variable: Region
+  subset_value: 1
+  covariates_riskscore: ~.+ risk_score
+  covariates_norisksco: ~.+ Age
+
+janssen_la_realADCP: 
+  <<: *janssen_trial_realADCP
+  subset_variable: Region
+  subset_value: 1
+  covariates_riskscore: ~.+ risk_score
+  covariates_norisksco: ~.+ Age
+
 janssen_sa_real: 
   <<: *janssen_trial_real
+  subset_variable: Region
+  subset_value: 2
+  covariates_riskscore: ~.+ risk_score
+  covariates_norisksco: ~.+ Age
+
+janssen_sa_realPsV: 
+  <<: *janssen_trial_realPsV
+  subset_variable: Region
+  subset_value: 2
+  covariates_riskscore: ~.+ risk_score
+  covariates_norisksco: ~.+ Age
+
+janssen_sa_realADCP: 
+  <<: *janssen_trial_realADCP
   subset_variable: Region
   subset_value: 2
   covariates_riskscore: ~.+ risk_score
