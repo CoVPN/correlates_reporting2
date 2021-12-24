@@ -320,8 +320,9 @@ fit.0=coxph(form.s, dat.pla.seroneg)
 risk.0= 1 - exp(-predict(fit.0, type="expected"))
 time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
 # risk.0 for 7 and 7+ are different
-risk.0 = risk.0[dat.pla.seroneg[[config.cor$EventIndPrimary]]==1]
-time.0 = time.0[dat.pla.seroneg[[config.cor$EventIndPrimary]]==1]
+keep=dat.pla.seroneg[[config.cor$EventIndPrimary]]==1 & time.0<=tfinal.tpeak
+risk.0 = risk.0[keep]
+time.0 = time.0[keep]
 
 #fit.1=coxph(form.s, dat.vac.seroneg) 
 #risk.1= 1 - exp(-predict(fit.1, type="expected"))
@@ -333,7 +334,7 @@ time.0 = time.0[dat.pla.seroneg[[config.cor$EventIndPrimary]]==1]
 #dev.off()
 
 lwd=2
-ylim=c(0,max(risk.0, max(sapply(assays, function(a) max(risks.all.ter[[a]]$risk)))))
+ylim=c(0,max(risk.0, max(sapply(assays, function(a) max(risks.all.ter[[a]]$risk[risks.all.ter[[a]]$time<=tfinal.tpeak,])))))
 
 if (config$is_ows_trial) {
     x.time<-seq(0,tfinal.tpeak,by=30)
@@ -353,7 +354,7 @@ for (a in assays) {
     q.a=marker.cutpoints[[a]][["Day"%.%tpeak]]
     
     if(length(out)==1) empty.plot() else {
-        mymatplot(out$time, out$risk, lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak), ylim=ylim, xlab="", las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
+        mymatplot(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,], lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak), ylim=ylim, xlab="", las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
         title(xlab="Days Since Day "%.%tpeak%.%" Visit", line=2)
         title(main=labels.title["Day"%.%tpeak,a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
