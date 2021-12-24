@@ -1,0 +1,15 @@
+#!/bin/bash
+
+for T in janssen_na_real janssen_na_realADCP janssen_na_realPsV janssen_la_real janssen_la_realADCP janssen_la_realPsV janssen_sa_real janssen_sa_realADCP janssen_sa_realPsV 
+do
+    export TRIAL=$T 
+    echo $TRIAL
+    if [[ "$1" == "cor_report" ]] 
+    then
+		make cor_report
+    else
+		make -k -C $1 all
+    	bash ./_build_chapter.sh $1
+    fi
+
+done

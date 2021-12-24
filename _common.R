@@ -77,14 +77,6 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-# subset on subset_variable
-if(!is.null(config$subset_variable) & !is.null(config$subset_value)){
-    if(subset_value != "All") {
-        include_in_subset <- dat.mock[[subset_variable]] == subset_value
-        dat.mock <- dat.mock[include_in_subset, , drop = FALSE]
-    }
-}
-
 
 ###################################################################################################
 #
@@ -135,8 +127,7 @@ if (exists("COR")) {
         
         # followup time for the last case in ph2 in vaccine arm
         if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        # a hack for some reason 58 is highly unstable, risk jumps to 0.5, but 57 is okay
-        if (attr(config, "config")=="janssen_la_realPsV") tfinal.tpeak=tfinal.tpeak-1
+        if (attr(config, "config")=="janssen_la_realPsV") tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027
         
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
         prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
