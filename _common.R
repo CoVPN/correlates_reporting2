@@ -127,7 +127,7 @@ if (exists("COR")) {
         
         # followup time for the last case in ph2 in vaccine arm
         if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        if (attr(config, "config")=="janssen_la_realPsV") tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027
+        if (startsWith(attr(config, "config"), "janssen_la_real")) tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027
         
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
         prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
@@ -404,13 +404,6 @@ labels.assays.long <- labels.title
 
 
 # baseline stratum labeling
-Bstratum.labels <- c(
-  "Age >= 65",
-  "Age < 65, At risk",
-  "Age < 65, Not at risk"
-)
-
-# baseline stratum labeling
 if ((study_name=="COVE" | study_name=="MockCOVE")) {
     demo.stratum.labels <- c(
       "Age >= 65, URM",
@@ -420,6 +413,13 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Age < 65, At risk, White non-Hisp",
       "Age < 65, Not at risk, White non-Hisp"
     )
+    
+    Bstratum.labels <- c(
+      "Age >= 65",
+      "Age < 65, At risk",
+      "Age < 65, Not at risk"
+    )
+    
 } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
     demo.stratum.labels <- c(
       "US URM, Age 18-59, Not at risk",
@@ -438,6 +438,13 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "South Africa, Age 18-59, At risk",
       "South Africa, Age >= 60, Not at risk",
       "South Africa, Age >= 60, At risk"
+    )
+
+    Bstratum.labels <- c(
+      "Age < 60, Not at risk",
+      "Age < 60, At risk",
+      "Age >= 60, Not at risk",
+      "Age >= 60, At risk"
     )
 }
 

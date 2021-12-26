@@ -268,9 +268,8 @@ rv$tab.2=tab.nop12
 ###################################################################################################
 # regression for multiple markers in one model
 
-if(verbose) print("Multiple regression")
-
 if (!is.null(config$multivariate_assays)) {
+    if(verbose) print("Multiple regression")
     
     for (ind in 1:2) {
         tmp=if(ind==1) concatList(paste0("Day",config$timepoints, config$multivariate_assays),"+") else concatList(paste0("scale(Day",config$timepoints, config$multivariate_assays),")+") %.% ")"
