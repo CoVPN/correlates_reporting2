@@ -14,7 +14,7 @@ omp_set_num_threads(1L)
     
 set.seed(98109)
     
-if(!exists(verbose)) verbose=0
+if(!exists("verbose")) verbose=0
 if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
     
@@ -24,10 +24,9 @@ if(!exists("COR")) {
     if (length(Args)>0) {
         COR=Args[1]
     } else {
-        warning("No COR, which can be defined through command line argument or in R script before _common.R is sourced.")
+        warning("No COR. This is okay if _common.R is sourced just to load common functions. If needed, COR can be defined through command line argument or in R script before _common.R is sourced.")
     }
 }
-myprint(COR)
 
 
 ###################################################################################################
@@ -41,6 +40,7 @@ for(opt in names(config)){
 
 # correlates analyses-related config
 if (exists("COR")) {
+    myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE" & COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
 
