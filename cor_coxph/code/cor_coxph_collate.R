@@ -32,14 +32,19 @@ dat.ense.0=load.data("janssen_pooled_real", "D29IncludeNotMolecConfirmedstart1",
 dat.cove.1=load.data("moderna_real", "D57")
 dat.cove.0=load.data("moderna_real", "D57", trt=0)
 
+dat.vac.seroneg.id50.na=load.data("janssen_na_realPsV", "D29IncludeNotMolecConfirmedstart1")
+dat.pla.seroneg.id50.na=load.data("janssen_na_realPsV", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.vac.seroneg.id50.la=load.data("janssen_la_realPsV", "D29IncludeNotMolecConfirmedstart1")
+dat.pla.seroneg.id50.la=load.data("janssen_la_realPsV", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.vac.seroneg.id50.sa=load.data("janssen_sa_realPsV", "D29IncludeNotMolecConfirmedstart1")
+dat.pla.seroneg.id50.sa=load.data("janssen_sa_realPsV", "D29IncludeNotMolecConfirmedstart1", trt=0)
 
 
 ###################################################################################################
 # make tables of HR that contain all markers
-
 for (region in c("pooled","na","la","sa")) {
     if(verbose) myprint(region)
-
+    
     trials=c("janssen_"%.%region%.%"_real", "janssen_"%.%region%.%"_realPsV", "janssen_"%.%region%.%"_realADCP")
     
     for (COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")) {
@@ -137,41 +142,85 @@ with(dat.cove.1, table(Day57pseudoneutid50cat, Day57pseudoneutid80cat))
 # compare controlled VE for ID50 <30, 100> between cove and ensemble
 
 # pick a day for cove such that the overall risk in placebo match that of ensemble: 89
+
 # placebo risk 0.053
 get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.0, day=89)
 # 0.0530523
-get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.1, day=89)
-# 0.00328746
-
+get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.0, day=70)
+# 0.039606
 get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.ense.0, day=66)
 # 0.0525176
+get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.pla.seroneg.id50.la, day=48)
+# 0.0393271
+
+get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.1, day=89)
+# 0.00328746
 get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.ense.1, day=66)
 # 0.0196666
+get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.la, day=48)
+# 0.0165755
 
 
-# ensemble
-dat.vac.seroneg.id50$Day29pseudoneutid50cat2=factor(cut(dat.vac.seroneg.id50$Day29pseudoneutid50, breaks=c(-Inf,log10(c(30,100)),Inf) ))
-f1=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) + Day29pseudoneutid50cat2
-tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg.id50)
-fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
-prob=marginalized.risk(fit.risk, "Day29pseudoneutid50cat2", data=subset(dat.vac.seroneg.id50, ph2=1), ss=NULL, weights=subset(dat.vac.seroneg.id50, ph2=1)$wt, t=66, categorical.s=T, verbose=F)        
-prob
-#(-Inf,1.48]    (1.48,2]    (2, Inf] 
-# 0.02776172  0.01533599  0.00675338 
+get.ve=function(form.0, dat.1, dat.0, marker.name, cuts=c(30,100), t) {
+    dat.1$discrete.marker=factor(cut(dat.1[[marker.name]], breaks=c(-Inf,log10(c(cuts[1],cuts[2])),Inf) ))
+    print(table(dat.1$discrete.marker, dat.1$EventIndPrimary)             )
+    f1=update(form.0, ~ . + discrete.marker)
+    tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.1)
+    fit.risk=try(svycoxph(f1, design=tmp.design))
+    if(inherits(fit.risk,"try-error")) stop("syvcoxph fit failed")
+    prob.vac=marginalized.risk(fit.risk, "discrete.marker", data=subset(dat.1, ph2=1), ss=NULL, weights=subset(dat.1, ph2=1)$wt, t=t, categorical.s=T, verbose=F)        
+    #print(prob.vac)
+    prev.plac = get.marginalized.risk.no.marker(form.0, dat.0, t)
+    ve = c(1 - prob.vac/prev.plac)    
+    ve
+}
 
-# moderna
-dat.cove.1$Day57pseudoneutid50cat2=factor(cut(dat.cove.1$Day57pseudoneutid50, breaks=c(-Inf,log10(c(30,100)),Inf) ))
-f1=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd + Day57pseudoneutid50cat2
-tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.cove.1)
-fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
-prob=marginalized.risk(fit.risk, "Day57pseudoneutid50cat2", data=subset(dat.cove.1, ph2=1), ss=NULL, weights=subset(dat.cove.1, ph2=1)$wt, t=89, categorical.s=T, verbose=F)        
-prob
-#(-Inf,1.48]    (1.48,2]    (2, Inf] 
-# 0.00832744  0.00780136  0.00234533 
-
-# Cannot do this analysis for north america/ensemble due to sparsit of data
-#> table(dat.ense.1.na$Day29pseudoneutid50cat2, dat.ense.1.na$EventIndPrimary)
+# COVE
+get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.1, dat.cove.0, "Day57pseudoneutid50", cuts=c(30,100), t=89)              
 #                0   1
-#  (-Inf,1.48] 299  22
-#  (1.48,2]     62   2
-#  (2, Inf]     22   0
+#  (-Inf,1.48]  21   3
+#  (1.48,2]    108   9
+#  (2, Inf]    919  28
+
+#(-Inf,1.48]    (1.48,2]    (2, Inf] 
+#   0.843034    0.852950    0.955792 
+        
+# ENSEMBLE, pooled
+get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.vac.seroneg.id50, dat.ense.0, "Day29pseudoneutid50", cuts=c(30,100), t=66) 
+#                0   1
+#  (-Inf,1.48] 590  76
+#  (1.48,2]    131  11
+#  (2, Inf]     57   2
+#(-Inf,1.48]    (1.48,2]    (2, Inf] 
+#   0.471382    0.707984    0.871407 
+get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.vac.seroneg.id50, dat.ense.0, "Day29pseudoneutid50", cuts=c(30,100), t=48) 
+#(-Inf,1.48]    (1.48,2]    (2, Inf] 
+#   0.580821    0.769225    0.898612
+   
+# ENSEMBLE NA. Cuts are chosen as 10, 30 because there are no data above 100
+get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.na, dat.pla.seroneg.id50.na, "Day29pseudoneutid50", cuts=c(10,30), t=66) 
+#                0   1
+#  (-Inf,1]    207  18
+#  (1,1.48]     92   4
+#  (1.48, Inf]  84   2
+#   (-Inf,1]    (1,1.48] (1.48, Inf] 
+#   0.689278    0.860325    0.857185 
+# Note 86% is close to 85%
+   
+#ENSEMBLE LA
+get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.la, dat.pla.seroneg.id50.la, "Day29pseudoneutid50", cuts=c(30,100), t=48) 
+#                0   1
+#  (-Inf,1.48] 153  39
+#  (1.48,2]     37   7
+#  (2, Inf]     18   2
+#(-Inf,1.48]    (1.48,2]    (2, Inf] 
+#   0.523627    0.728852    0.815163 
+   
+# ENSEMBLE SA. Cuts are chosen as 10, 30 because there are no data above 100
+get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.sa, dat.pla.seroneg.id50.sa, "Day29pseudoneutid50", cuts=c(10,30), t=26) 
+#                0   1
+#  (-Inf,1]    100  13
+#  (1,1.48]     38   2
+#  (1.48, Inf]  49   2
+#   (-Inf,1]    (1,1.48] (1.48, Inf] 
+#   0.219558    0.681159    0.776882 

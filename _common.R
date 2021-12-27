@@ -24,7 +24,7 @@ if(!exists("COR")) {
     if (length(Args)>0) {
         COR=Args[1]
     } else {
-        warning("No COR, which can be defined through command line argument or in R script before _common.R is sourced.")
+        warning("No COR. This is okay if _common.R is sourced just to load common functions. If needed, COR can be defined through command line argument or in R script before _common.R is sourced.")
     }
 }
 
