@@ -4,25 +4,30 @@ library(dplyr)
 library(kyotil)
 library(marginalizedRisk)
 library(survival)
+    
 # disable lower level parallelization in favor of higher level of parallelization
 library(RhpcBLASctl)
 blas_get_num_procs()
 blas_set_num_threads(1L)
 stopifnot(blas_get_num_procs() == 1L)
 omp_set_num_threads(1L)
-#
+    
 set.seed(98109)
-verbose=0
+    
+if(!exists(verbose)) verbose=0
 if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
     
 # COR defines the analysis to be done, e.g. D14
-if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
-# if called from Rmd, there may not be a COR argument
-#if (length(Args)==0) stop("If running R from command line, provide an argument, e.g. D57, to the command. If you are running R interactively, do, e.g. Args=c(COR=\"D57\");  ")
-if (length(Args)>0) {
-    COR=Args[1]; myprint(COR)
+if(!exists("COR")) {
+    if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
+    if (length(Args)>0) {
+        COR=Args[1]
+    } else {
+        warning("No COR, which can be defined through command line argument or in R script before _common.R is sourced.")
+    }
 }
+myprint(COR)
 
 
 ###################################################################################################
@@ -88,6 +93,7 @@ get.marginalized.risk.no.marker=function(formula, dat, day){
     risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
     mean(risks)
 }
+
 
 if (exists("COR")) {   
     
@@ -549,13 +555,7 @@ ggsave_custom <- function(filename = default_name(plot),
 
 
 
-
-
-
-###################################################################################################
-# utility functions
-###################################################################################################
-
+############## Utility func
 
 get.range.cor=function(dat, assay, time) {
     if(assay %in% c("bindSpike", "bindRBD")) {
