@@ -6,17 +6,29 @@ library(kyotil)
 library(Hmisc)
 library(tools) # toTitleCase
 library(xtable) # this is a dependency of kyotil
+get.trial=function(x, assay) {
+    if (startsWith(x,"janssen")) {
+        if(startsWith(assay,"pseudo")) x=paste0(x, "PsV")
+        if(startsWith(assay,"ADCP")) x=paste0(x, "ADCP")
+    }
+    x
+}
+verbose=1
+if(verbose) print("collate ...")
 
 
 ###################################################################################################
 # make tables of HR that contain all markers
 
 for (region in c("pooled","na","la","sa")) {
+    if(verbose) myprint(region)
 
     trials=c("janssen_"%.%region%.%"_real", "janssen_"%.%region%.%"_realPsV", "janssen_"%.%region%.%"_realADCP")
     
     for (COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")) {
+        if(verbose) myprint(COR)
         out=lapply(trials, function (trial) {
+            print(trial)
             load (file=paste0(here::here("output", trial, COR), "/coxph_slopes.Rdata")) 
             list(tab.cont, tab.cat, save.s.1, save.s.2, pvals.adj)
         })
@@ -64,3 +76,103 @@ for (region in c("pooled","na","la","sa")) {
     }
     
 }
+
+
+
+
+
+###################################################################################################
+# correlations between markers
+
+# reading in data for COVE and ENSEMBLE
+
+TRIAL="janssen_pooled_real"
+COR="D29IncludeNotMolecConfirmedstart1"
+Sys.setenv("TRIAL"=TRIAL)
+if(exists("Args")) rm("Args"); source(here::here("..", "_common.R"))
+# uloq censoring    
+for (a in assays) {
+    tmp="Day"%.%config.cor$tpeak %.% a
+    dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
+}
+dat.vac.seroneg.bAb=subset(dat.mock, Trt==1 & ph1)
+dat.vac.seroneg.bAb = add.trichotomized.markers (dat.vac.seroneg.bAb, tpeak, wt.col.name="wt")
+
+TRIAL="janssen_pooled_realPsV"
+COR="D29IncludeNotMolecConfirmedstart1"
+Sys.setenv("TRIAL"=TRIAL)
+if(exists("Args")) rm("Args"); source(here::here("..", "_common.R"))
+# uloq censoring    
+a=assays
+tmp="Day"%.%config.cor$tpeak %.% a
+dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
+dat.vac.seroneg.id50=subset(dat.mock, Trt==1 & ph1)
+dat.vac.seroneg.id50 = add.trichotomized.markers (dat.vac.seroneg.id50, tpeak, wt.col.name="wt")
+
+TRIAL="janssen_pooled_realADCP"
+COR="D29IncludeNotMolecConfirmedstart1"
+Sys.setenv("TRIAL"=TRIAL)
+if(exists("Args")) rm("Args"); source(here::here("..", "_common.R"))
+# uloq censoring    
+a=assays
+tmp="Day"%.%config.cor$tpeak %.% a
+dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
+dat.ense.0=subset(dat.mock, Trt==0 & ph1)
+dat.vac.seroneg.adcp=subset(dat.mock, Trt==1 & ph1)
+dat.vac.seroneg.adcp = add.trichotomized.markers (dat.vac.seroneg.adcp, tpeak, wt.col.name="wt")
+
+stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.bAb$ptid))
+stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.adcp$ptid))
+
+# combine markers into one data frame
+dat.ense.1=cbind(dat.vac.seroneg.bAb, 
+    Day29pseudoneutid50=dat.vac.seroneg.id50$Day29pseudoneutid50, 
+    Day29pseudoneutid50cat=dat.vac.seroneg.id50$Day29pseudoneutid50cat, 
+    Day29ADCP=dat.vac.seroneg.adcp$Day29ADCP, 
+    Day29ADCPcat=dat.vac.seroneg.adcp$Day29ADCPcat)
+    
+
+# COVE
+COR="D57"
+TRIAL="moderna_real"
+Sys.setenv("TRIAL"=TRIAL)
+if(exists("Args")) rm("Args"); source(here::here("..", "_common.R"))
+# uloq censoring    
+for (a in assays) {
+    tmp="Day"%.%config.cor$tpeak %.% a
+    dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
+}
+dat.cove.0=subset(dat.mock, Trt==0 & ph1)
+dat.cove.1=subset(dat.mock, Trt==1 & ph1)
+dat.cove.1 = add.trichotomized.markers (dat.cove.1, tpeak, wt.col.name="wt")
+
+
+# ENSEMBLE
+mypdf(mfrow=c(2,2), file="output/ensemble_corplot")
+with(dat.ense.1, {
+    corplot(Day29pseudoneutid50, Day29ADCP, xlab="ID50", ylab="ADCP")
+    corplot(Day29pseudoneutid50, Day29bindRBD, xlab="ID50", ylab="bAb RBD")
+    corplot(Day29bindSpike, Day29bindRBD, xlab="bAb Spike", ylab="bAb RBD")
+    corplot(Day29bindRBD, Day29ADCP, xlab="bAb RBD", ylab="ADCP")
+})
+dev.off()
+
+with(dat.ense.1, table(Day29pseudoneutid50cat, Day29ADCPcat))
+with(dat.ense.1, table(Day29pseudoneutid50cat, Day29bindRBDcat))
+with(dat.ense.1, table(Day29bindSpikecat, Day29bindRBDcat))
+with(dat.ense.1, table(Day29bindRBDcat, Day29ADCPcat))
+
+# COVE
+mypdf(mfrow=c(2,2), file="output/cove_corplot")
+with(dat.cove.1, {
+    corplot(Day57pseudoneutid50, Day57bindSpike, xlab="ID50", ylab="bAb Spike")
+    corplot(Day57pseudoneutid50, Day57bindRBD, xlab="ID50", ylab="bAb RBD")
+    corplot(Day57bindSpike, Day57bindRBD, xlab="bAb Spike", ylab="bAb RBD")
+    corplot(Day57pseudoneutid50, Day57pseudoneutid80, xlab="ID50", ylab="ID80")
+})
+dev.off()
+
+with(dat.cove.1, table(Day57pseudoneutid50cat, Day57bindSpikecat))
+with(dat.cove.1, table(Day57pseudoneutid50cat, Day57bindRBDcat))
+with(dat.cove.1, table(Day57bindSpikecat, Day57bindRBDcat))
+with(dat.cove.1, table(Day57pseudoneutid50cat, Day57pseudoneutid80cat))
