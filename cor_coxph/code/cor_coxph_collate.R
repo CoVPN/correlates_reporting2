@@ -4,17 +4,34 @@ renv::activate(project = here::here(".."))
     
 library(kyotil)
 library(Hmisc)
+library(marginalizedRisk)
 library(tools) # toTitleCase
 library(xtable) # this is a dependency of kyotil
-get.trial=function(x, assay) {
-    if (startsWith(x,"janssen")) {
-        if(startsWith(assay,"pseudo")) x=paste0(x, "PsV")
-        if(startsWith(assay,"ADCP")) x=paste0(x, "ADCP")
-    }
-    x
-}
-verbose=1
-if(verbose) print("collate ...")
+source(here::here("..", "_common.R"))
+source(here::here("code", "params.R"))
+Sys.setenv(VERBOSE=1)
+print("collate ...")
+
+
+
+# reading in data for COVE and ENSEMBLE
+dat.vac.seroneg.bAb=load.data("janssen_pooled_real", "D29IncludeNotMolecConfirmedstart1")
+dat.vac.seroneg.id50=load.data("janssen_pooled_realPsV", "D29IncludeNotMolecConfirmedstart1")
+dat.vac.seroneg.adcp=load.data("janssen_pooled_realADCP", "D29IncludeNotMolecConfirmedstart1")
+stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.bAb$ptid))
+stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.adcp$ptid))
+# combine markers into one data frame
+dat.ense.1=cbind(dat.vac.seroneg.bAb, 
+    Day29pseudoneutid50=dat.vac.seroneg.id50$Day29pseudoneutid50, 
+    Day29pseudoneutid50cat=dat.vac.seroneg.id50$Day29pseudoneutid50cat, 
+    Day29ADCP=dat.vac.seroneg.adcp$Day29ADCP, 
+    Day29ADCPcat=dat.vac.seroneg.adcp$Day29ADCPcat)
+
+dat.ense.0=load.data("janssen_pooled_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
+    
+dat.cove.1=load.data("moderna_real", "D57")
+dat.cove.0=load.data("moderna_real", "D57", trt=0)
+
 
 
 ###################################################################################################
@@ -84,69 +101,6 @@ for (region in c("pooled","na","la","sa")) {
 ###################################################################################################
 # correlations between markers
 
-# reading in data for COVE and ENSEMBLE
-
-TRIAL="janssen_pooled_real"
-COR="D29IncludeNotMolecConfirmedstart1"
-Sys.setenv("TRIAL"=TRIAL)
-if(exists("Args")) rm("Args"); source(here::here("..", "_common.R"))
-# uloq censoring    
-for (a in assays) {
-    tmp="Day"%.%config.cor$tpeak %.% a
-    dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
-}
-dat.vac.seroneg.bAb=subset(dat.mock, Trt==1 & ph1)
-dat.vac.seroneg.bAb = add.trichotomized.markers (dat.vac.seroneg.bAb, tpeak, wt.col.name="wt")
-
-TRIAL="janssen_pooled_realPsV"
-COR="D29IncludeNotMolecConfirmedstart1"
-Sys.setenv("TRIAL"=TRIAL)
-if(exists("Args")) rm("Args"); source(here::here("..", "_common.R"))
-# uloq censoring    
-a=assays
-tmp="Day"%.%config.cor$tpeak %.% a
-dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
-dat.vac.seroneg.id50=subset(dat.mock, Trt==1 & ph1)
-dat.vac.seroneg.id50 = add.trichotomized.markers (dat.vac.seroneg.id50, tpeak, wt.col.name="wt")
-
-TRIAL="janssen_pooled_realADCP"
-COR="D29IncludeNotMolecConfirmedstart1"
-Sys.setenv("TRIAL"=TRIAL)
-if(exists("Args")) rm("Args"); source(here::here("..", "_common.R"))
-# uloq censoring    
-a=assays
-tmp="Day"%.%config.cor$tpeak %.% a
-dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
-dat.ense.0=subset(dat.mock, Trt==0 & ph1)
-dat.vac.seroneg.adcp=subset(dat.mock, Trt==1 & ph1)
-dat.vac.seroneg.adcp = add.trichotomized.markers (dat.vac.seroneg.adcp, tpeak, wt.col.name="wt")
-
-stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.bAb$ptid))
-stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.adcp$ptid))
-
-# combine markers into one data frame
-dat.ense.1=cbind(dat.vac.seroneg.bAb, 
-    Day29pseudoneutid50=dat.vac.seroneg.id50$Day29pseudoneutid50, 
-    Day29pseudoneutid50cat=dat.vac.seroneg.id50$Day29pseudoneutid50cat, 
-    Day29ADCP=dat.vac.seroneg.adcp$Day29ADCP, 
-    Day29ADCPcat=dat.vac.seroneg.adcp$Day29ADCPcat)
-    
-
-# COVE
-COR="D57"
-TRIAL="moderna_real"
-Sys.setenv("TRIAL"=TRIAL)
-if(exists("Args")) rm("Args"); source(here::here("..", "_common.R"))
-# uloq censoring    
-for (a in assays) {
-    tmp="Day"%.%config.cor$tpeak %.% a
-    dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
-}
-dat.cove.0=subset(dat.mock, Trt==0 & ph1)
-dat.cove.1=subset(dat.mock, Trt==1 & ph1)
-dat.cove.1 = add.trichotomized.markers (dat.cove.1, tpeak, wt.col.name="wt")
-
-
 # ENSEMBLE
 mypdf(mfrow=c(2,2), file="output/ensemble_corplot")
 with(dat.ense.1, {
@@ -176,3 +130,48 @@ with(dat.cove.1, table(Day57pseudoneutid50cat, Day57bindSpikecat))
 with(dat.cove.1, table(Day57pseudoneutid50cat, Day57bindRBDcat))
 with(dat.cove.1, table(Day57bindSpikecat, Day57bindRBDcat))
 with(dat.cove.1, table(Day57pseudoneutid50cat, Day57pseudoneutid80cat))
+
+
+
+####################################################################
+# compare controlled VE for ID50 <30, 100> between cove and ensemble
+
+# pick a day for cove such that the overall risk in placebo match that of ensemble: 89
+# placebo risk 0.053
+get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.0, day=89)
+# 0.0530523
+get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.1, day=89)
+# 0.00328746
+
+get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.ense.0, day=66)
+# 0.0525176
+get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.ense.1, day=66)
+# 0.0196666
+
+
+# ensemble
+dat.vac.seroneg.id50$Day29pseudoneutid50cat2=factor(cut(dat.vac.seroneg.id50$Day29pseudoneutid50, breaks=c(-Inf,log10(c(30,100)),Inf) ))
+f1=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) + Day29pseudoneutid50cat2
+tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg.id50)
+fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
+prob=marginalized.risk(fit.risk, "Day29pseudoneutid50cat2", data=subset(dat.vac.seroneg.id50, ph2=1), ss=NULL, weights=subset(dat.vac.seroneg.id50, ph2=1)$wt, t=66, categorical.s=T, verbose=F)        
+prob
+#(-Inf,1.48]    (1.48,2]    (2, Inf] 
+# 0.02776172  0.01533599  0.00675338 
+
+# moderna
+dat.cove.1$Day57pseudoneutid50cat2=factor(cut(dat.cove.1$Day57pseudoneutid50, breaks=c(-Inf,log10(c(30,100)),Inf) ))
+f1=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd + Day57pseudoneutid50cat2
+tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.cove.1)
+fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
+prob=marginalized.risk(fit.risk, "Day57pseudoneutid50cat2", data=subset(dat.cove.1, ph2=1), ss=NULL, weights=subset(dat.cove.1, ph2=1)$wt, t=89, categorical.s=T, verbose=F)        
+prob
+#(-Inf,1.48]    (1.48,2]    (2, Inf] 
+# 0.00832744  0.00780136  0.00234533 
+
+# Cannot do this analysis for north america/ensemble due to sparsit of data
+#> table(dat.ense.1.na$Day29pseudoneutid50cat2, dat.ense.1.na$EventIndPrimary)
+#                0   1
+#  (-Inf,1.48] 299  22
+#  (1.48,2]     62   2
+#  (2, Inf]     22   0
