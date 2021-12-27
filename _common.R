@@ -27,7 +27,6 @@ if(!exists("COR")) {
         warning("No COR, which can be defined through command line argument or in R script before _common.R is sourced.")
     }
 }
-myprint(COR)
 
 
 ###################################################################################################
@@ -41,6 +40,7 @@ for(opt in names(config)){
 
 # correlates analyses-related config
 if (exists("COR")) {
+    myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE" & COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
 
