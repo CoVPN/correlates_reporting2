@@ -14,7 +14,7 @@ omp_set_num_threads(1L)
     
 set.seed(98109)
     
-if(!exists(verbose)) verbose=0
+if(!exists("verbose")) verbose=0
 if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
     
