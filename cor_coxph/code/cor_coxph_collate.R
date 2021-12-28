@@ -6,6 +6,7 @@ library(kyotil)
 library(Hmisc)
 library(marginalizedRisk)
 library(tools) # toTitleCase
+library(survey)
 library(xtable) # this is a dependency of kyotil
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
@@ -162,7 +163,7 @@ get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_s
 
 
 get.ve=function(form.0, dat.1, dat.0, marker.name, cuts=c(30,100), t) {
-    dat.1$discrete.marker=factor(cut(dat.1[[marker.name]], breaks=c(-Inf,log10(c(cuts[1],cuts[2])),Inf) ))
+    dat.1$discrete.marker=factor(cut(dat.1[[marker.name]], breaks=c(-Inf,log10(cuts),Inf) ))
     print(table(dat.1$discrete.marker, dat.1$EventIndPrimary)             )
     f1=update(form.0, ~ . + discrete.marker)
     tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.1)
@@ -176,7 +177,7 @@ get.ve=function(form.0, dat.1, dat.0, marker.name, cuts=c(30,100), t) {
 }
 
 # COVE
-get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.1, dat.cove.0, "Day57pseudoneutid50", cuts=c(30,100), t=89)              
+tab.1=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.1, dat.cove.0, "Day57pseudoneutid50", cuts=c(30,100), t=100)              
 #                0   1
 #  (-Inf,1.48]  21   3
 #  (1.48,2]    108   9
@@ -186,7 +187,7 @@ get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + High
 #   0.843034    0.852950    0.955792 
         
 # ENSEMBLE, pooled
-get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.vac.seroneg.id50, dat.ense.0, "Day29pseudoneutid50", cuts=c(30,100), t=66) 
+tab.2=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.vac.seroneg.id50, dat.ense.0, "Day29pseudoneutid50", cuts=c(30,100), t=66) 
 #                0   1
 #  (-Inf,1.48] 590  76
 #  (1.48,2]    131  11
@@ -198,29 +199,26 @@ get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region),
 #   0.580821    0.769225    0.898612
    
 # ENSEMBLE NA. Cuts are chosen as 10, 30 because there are no data above 100
-get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.na, dat.pla.seroneg.id50.na, "Day29pseudoneutid50", cuts=c(10,30), t=66) 
-#                0   1
-#  (-Inf,1]    207  18
-#  (1,1.48]     92   4
+tab.3=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.na, dat.pla.seroneg.id50.na, "Day29pseudoneutid50", cuts=c(30), t=66) 
+#               0   1
+#  (-Inf,1.48] 299  22
 #  (1.48, Inf]  84   2
-#   (-Inf,1]    (1,1.48] (1.48, Inf] 
-#   0.689278    0.860325    0.857185 
-# Note 86% is close to 85%
    
 #ENSEMBLE LA
-get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.la, dat.pla.seroneg.id50.la, "Day29pseudoneutid50", cuts=c(30,100), t=48) 
+tab.4=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.la, dat.pla.seroneg.id50.la, "Day29pseudoneutid50", cuts=c(30,100), t=48) 
 #                0   1
 #  (-Inf,1.48] 153  39
 #  (1.48,2]     37   7
 #  (2, Inf]     18   2
-#(-Inf,1.48]    (1.48,2]    (2, Inf] 
-#   0.523627    0.728852    0.815163 
    
 # ENSEMBLE SA. Cuts are chosen as 10, 30 because there are no data above 100
-get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.sa, dat.pla.seroneg.id50.sa, "Day29pseudoneutid50", cuts=c(10,30), t=26) 
+tab.5=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.sa, dat.pla.seroneg.id50.sa, "Day29pseudoneutid50", cuts=c(30), t=26) 
 #                0   1
 #  (-Inf,1]    100  13
 #  (1,1.48]     38   2
 #  (1.48, Inf]  49   2
-#   (-Inf,1]    (1,1.48] (1.48, Inf] 
-#   0.219558    0.681159    0.776882 
+
+tab=rbind(COVE=tab.1, "ENSEMBLE pooled"=tab.2, "ENSEMBLE NA"=c(tab.3,NA), "ENSEMBLE LA"=tab.4, "ENSEMBLE SA"=c(tab.5,NA))
+colnames(tab)=c("<=30",">30,<=100",">100")
+tab.1
+mytex(tab, file="id50_ve", align="c", save2input.only=T, input.foldername="output")
