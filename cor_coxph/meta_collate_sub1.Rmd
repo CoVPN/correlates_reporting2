@@ -5,7 +5,7 @@
 \begin{table}[H]
 \caption{All regions. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
 \begin{center}
-    \input{output/CoR_univariable_svycoxph_pretty_`r study_name`_`r COR`}\\
+    \input{output/meta/CoR_univariable_svycoxph_pretty_`r study_name`_pooled_`r COR`}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
 **`r txt.coxph.note2`\\
@@ -20,7 +20,7 @@
 \begin{center}
 \setlength{\tabcolsep}{.5ex}
 {\small
-\input{output/CoR_univariable_svycoxph_cat_pretty_`r study_name`_`r COR`}}\\
+\input{output/meta/CoR_univariable_svycoxph_cat_pretty_`r study_name`_pooled_`r COR`}}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days. 
 \\
@@ -39,7 +39,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \begin{table}[H]
 \caption{North America. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
 \begin{center}
-    \input{output/CoR_univariable_svycoxph_pretty_`r study_name`_na_`r COR`}\\
+    \input{output/meta/CoR_univariable_svycoxph_pretty_`r study_name`_na_`r COR`}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
 **`r txt.coxph.note2`\\
@@ -54,7 +54,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \begin{center}
 \setlength{\tabcolsep}{.5ex}
 {\small
-\input{output/CoR_univariable_svycoxph_cat_pretty_`r study_name`_na_`r COR`}}\\
+\input{output/meta/CoR_univariable_svycoxph_cat_pretty_`r study_name`_na_`r COR`}}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days. 
 \\
@@ -73,7 +73,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \begin{table}[H]
 \caption{Latin America. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
 \begin{center}
-    \input{output/CoR_univariable_svycoxph_pretty_`r study_name`_la_`r COR`}\\
+    \input{output/meta/CoR_univariable_svycoxph_pretty_`r study_name`_la_`r COR`}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
 **`r txt.coxph.note2`\\
@@ -88,7 +88,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \begin{center}
 \setlength{\tabcolsep}{.5ex}
 {\small
-\input{output/CoR_univariable_svycoxph_cat_pretty_`r study_name`_la_`r COR`}}\\
+\input{output/meta/CoR_univariable_svycoxph_cat_pretty_`r study_name`_la_`r COR`}}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days. 
 \\
@@ -107,7 +107,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \begin{table}[H]
 \caption{South Africa. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
 \begin{center}
-    \input{output/CoR_univariable_svycoxph_pretty_`r study_name`_sa_`r COR`}\\
+    \input{output/meta/CoR_univariable_svycoxph_pretty_`r study_name`_sa_`r COR`}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
 **`r txt.coxph.note2`\\
@@ -122,7 +122,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \begin{center}
 \setlength{\tabcolsep}{.5ex}
 {\small
-\input{output/CoR_univariable_svycoxph_cat_pretty_`r study_name`_sa_`r COR`}}\\
+\input{output/meta/CoR_univariable_svycoxph_cat_pretty_`r study_name`_sa_`r COR`}}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days. 
 \\

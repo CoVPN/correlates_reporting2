@@ -82,7 +82,7 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
 \begin{table}[H]
 \caption{Controlled VE for discretized Pseudovirus nAb ID50. COVE: starting 7 days and ending 100 days post Day 57. ENSEMBLE: starting 1 days post Day 29; pooled: ending 66 days; NA: ending 66 days; LA: ending 48 days; SA: ending 26 days.}
 \begin{center}
-    \input{output/id50_ve.tex}\\
+    \input{output/meta/id50_ve.tex}\\
 \end{center}
 \end{table}
 

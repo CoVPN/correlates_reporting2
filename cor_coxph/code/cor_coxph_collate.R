@@ -13,6 +13,11 @@ source(here::here("code", "params.R"))
 Sys.setenv(VERBOSE=1)
 print("collate ...")
 
+# path for figures and tables etc
+save.results.to = here::here("output")
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(here::here("output"), "/meta");
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
 
 
 # reading in data for COVE and ENSEMBLE
@@ -72,7 +77,7 @@ for (region in c("pooled","na","la","sa")) {
         tab.cat[,"overall.p.1"]=c(rbind(overall.p.1, NA,NA))
         tab.cat[,"overall.p.2"]=c(rbind(overall.p.2, NA,NA))
                 
-        mytex(tab.cont, file.name="CoR_univariable_svycoxph_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output"),
+        mytex(tab.cont, file.name="CoR_univariable_svycoxph_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
             col.headers=paste0("\\hline\n 
                  \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
                  \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
@@ -80,7 +85,7 @@ for (region in c("pooled","na","la","sa")) {
             ")
         )    
         
-        mytex(tab.cat, file.name="CoR_univariable_svycoxph_cat_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output"),
+        mytex(tab.cat, file.name="CoR_univariable_svycoxph_cat_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
             col.headers=paste0("\\hline\n 
                  \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
                  \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***} & \\multicolumn{1}{c}{value $\\dagger$} & \\multicolumn{1}{c}{FWER} \\\\ 
@@ -108,7 +113,7 @@ for (region in c("pooled","na","la","sa")) {
 # correlations between markers
 
 # ENSEMBLE
-mypdf(mfrow=c(2,2), file="output/ensemble_corplot")
+mypdf(mfrow=c(2,2), file="output/meta/ensemble_corplot")
 with(dat.ense.1, {
     corplot(Day29pseudoneutid50, Day29ADCP, xlab="ID50", ylab="ADCP")
     corplot(Day29pseudoneutid50, Day29bindRBD, xlab="ID50", ylab="bAb RBD")
@@ -123,7 +128,7 @@ with(dat.ense.1, table(Day29bindSpikecat, Day29bindRBDcat))
 with(dat.ense.1, table(Day29bindRBDcat, Day29ADCPcat))
 
 # COVE
-mypdf(mfrow=c(2,2), file="output/cove_corplot")
+mypdf(mfrow=c(2,2), file="output/meta/cove_corplot")
 with(dat.cove.1, {
     corplot(Day57pseudoneutid50, Day57bindSpike, xlab="ID50", ylab="bAb Spike")
     corplot(Day57pseudoneutid50, Day57bindRBD, xlab="ID50", ylab="bAb RBD")
@@ -221,4 +226,4 @@ tab.5=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seron
 tab=rbind(COVE=tab.1, "ENSEMBLE pooled"=tab.2, "ENSEMBLE NA"=c(tab.3,NA), "ENSEMBLE LA"=tab.4, "ENSEMBLE SA"=c(tab.5,NA))
 colnames(tab)=c("<=30",">30,<=100",">100")
 tab.1
-mytex(tab, file="id50_ve", align="c", save2input.only=T, input.foldername="output")
+mytex(tab, file="id50_ve", align="c", save2input.only=T, input.foldername="output/meta")

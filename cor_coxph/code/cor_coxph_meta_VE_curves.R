@@ -13,6 +13,13 @@ Sys.setenv(VERBOSE=1)
 print("meta ...")
 ve.az=read.csv("../data_clean/AZChAd26UKphase3FengetalCorrelates.csv")
 
+# path for figures and tables etc
+save.results.to = here::here("output")
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(here::here("output"), "/meta");
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
+
+
 
 # TRIALS is a subset of all.trials
 # a is an assay
@@ -56,7 +63,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE) {
     xlim=c(min(sapply(xlim.ls, function(x) x[1])), max(sapply(xlim.ls, function(x) x[2])))
     myprint(xlim)
     
-    mypdf(file=paste0("output/meta_controlled_ve_curves_",file.name,"_",a))
+    mypdf(file=paste0("output/meta/meta_controlled_ve_curves_",file.name,"_",a))
         par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         
         # need several variables from sourcing _common.R: lloxs, labels.assays, draw.x.axis.cor
