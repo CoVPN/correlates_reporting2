@@ -83,7 +83,13 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         par(new=TRUE) 
         col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
         col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
-        tmp=hist(dat.vac.seroneg[["Day"%.%tpeak%.%a]], breaks=15, plot=F)
+        tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
+        tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
+        # first call hist to get breaks, then call weighted.hist
+        tmp.1=hist(tmp.x, breaks=15, plot=F)
+        tmp=weighted.hist(tmp.x, tmp.w, breaks=tmp.1$breaks, plot=F)
+        attr(tmp,"class")="histogram" 
+        # plot
         plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F, xlim=xlim, ylim=c(0,max(tmp$density*1.25)))
         #axis(side=4, at=axTicks(side=4)[1:5])
         #mtext("Density", side=4, las=0, line=2, cex=1, at=.3)  

@@ -37,6 +37,7 @@ library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
 library(tools) # toTitleCase
 library(survey)
+library(plotrix) # weighted.hist
 library(parallel)
 library(forestplot)
 library(Hmisc) # wtd.quantile, cut2

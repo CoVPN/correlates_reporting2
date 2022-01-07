@@ -8,6 +8,7 @@ library(tools) # toTitleCase
 library(xtable) # this is a dependency of kyotil
 library(survey)
 library(Hmisc)
+library(plotrix) # wtd.hist
 source(here::here("code", "params.R"))
 Sys.setenv(VERBOSE=1)
 print("meta ...")
@@ -27,7 +28,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE) {
 #a="bindSpike"; TRIALS=c("moderna_real", "janssen_pooled_real"); file.name=1
     myprint(a)
     ylim=c(0, 1)    
-    hist.shrink=c(ADCP=3,pseudoneutid50=3,bindSpike=3,bindRBD=3)
+    hist.shrink=1/c(ADCP=2,pseudoneutid50=1.2,bindSpike=1.3,bindRBD=1.3)
     
     all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real", "AZ-COV002")
     studies=c("COVE","ENSEMBLE","ENSEMBLE NA","ENSEMBLE LA","ENSEMBLE SA","AZ-COV002"); names(studies)=all.trials
@@ -40,7 +41,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE) {
     ## get xlim by combining trials. Do ENSEMBLE first because we want to source _common.R for moderna last so that we get the proper lloxs
     ## source _commom.R
     xlim.ls=list()
-    marker=list()
+    markers.x=list()
+    weight=list()
     for (x in TRIALS) {    
         TRIAL=get.trial(x, a)
         myprint(TRIAL)
@@ -58,7 +60,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE) {
         delta=(xlim[2]-xlim[1])/20     
         xlim.ls[[x]]=c(xlim[1]-delta, xlim[2]+delta)
         
-        marker[[x]]=dat.vac.seroneg[[tmp]]
+        markers.x[[x]]=dat.vac.seroneg[[tmp]][dat.vac.seroneg$ph2]
+        weight[[x]]=dat.vac.seroneg[["wt"]][dat.vac.seroneg$ph2]
     }    
     xlim=c(min(sapply(xlim.ls, function(x) x[1])), max(sapply(xlim.ls, function(x) x[2])))
     myprint(xlim)
@@ -79,7 +82,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE) {
             boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))                
         
-            shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(marker[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(marker[[x]], 1-2.5/100, na.rm=T)
+            shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
             mymatplot(risks$marker[shown], t(rbind(est, ci.band))[shown,], type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE"), xlab=labels.assays.short[a]%.%" (=s)", 
                 #main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, add=x!=TRIALS[1])
@@ -88,8 +91,11 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE) {
             axis(side=2,at=yat,labels=(yat*100)%.%"%")            
         
             # add histogram
-    #        par(new=TRUE) #this changes ylim, so we cannot use it in this loop
-            tmp=hist(marker[[x]],breaks=ifelse(x=="moderna_real",25,15),plot=F) # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
+            #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
+            # first call hist to get breaks, then call weighted.hist
+            tmp.1=hist(markers.x[[x]],breaks=ifelse(x=="moderna_real",25,15),plot=F)  # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
+            tmp=weighted.hist(markers.x[[x]],weight[[x]], breaks=tmp.1$breaks, plot=F)
+            attr(tmp,"class")="histogram" 
             tmp$density=tmp$density/hist.shrink[a] # so that it will fit vertically
             #tmp=hist(dat.vac.seroneg[["Day"%.%tpeak%.%a]],breaks=seq(min(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), max(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), len = 15),plot=F)
             plot(tmp,col=hist.col.ls[[x]],axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25)), add=T) 
