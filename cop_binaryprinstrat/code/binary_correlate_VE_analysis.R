@@ -63,30 +63,69 @@ W1[Ph2ptids.tpeak==0] <- 0
 
 markersforanalysis <- paste0("Day", tpeak, assays)
 
+# UPDATE
+# The program can do the data analysis in two ways.  
+#
+# Approach 1: With binary markers defined by cutting each quantitative
+# marker at each of a fixed set of percentiles analysispercs. The same analysispercs
+# are applied across all of the antibody markers (e.g., IgG Spike, PsV nAb ID50, etc.) 
+#
+# Approach 2: With binary markers defined by a single cut-point for each antibody marker.  The former 
+# is useful for studying results varying over percentile cut-points, and the latter for focusing on a 
+# special cut-point of interest such as below vs. above the positivity cut-off (bAb) or below vs. above 
+# the LOD (neutralization and ADCP markers).
+#
+# The Boolean approach2 defines which approach is used.
 
-# Create binary markers by cutting at the fixed percentile analysispercs:
-# analysispercs <- c(0.2,0.3,0.4)
-analysispercs <- c(0.4,0.5,0.6)
+# Define the lower limits of the antibody markers (in IU), which are used for both Approach 1 and Approach 2
+# at least for plotting.
+lowerlimitsassays <- c(0.3076,1.593648,0.242,1.502)
+# Youyi: I need help with the line above, to make it grab from common.R the appropriate lower cutoffs for the 4 assays 
+#        used in the Moderna correlates (IgG Spike, IgG RBD, PsV nAb ID50, PsV nAb ID80).  And then similarly to grab the 
+#        appropriate lower cutoffs for the 4 assays used in the ENSEMBLE correlates (IgG Spike, IgG RBD, PsV nAb ID50, 
+#        ADCP).   
+#
+# Currently the code is set up to use Approach 1.  Changing approach2 to TRUE would implement the code using
+# Approach 2.
+
+approach2 <- FALSE
+
+# Approach 1:
+if(!approach2) {
+analysispercs <- c(0.4,0.5,0.6) }
+
+# Approach 2:
+if(approach2) {
+analysispercs <- 0.5 # Under Approach 2, the only info needed is that length(analysispercs)==1
+approach2cutpoints <- log10(lowerlimitsassays)
+}
+# END UPDATE
 
 # Conduct analyses for all markers in markersforanalysis for each dichotomization in analysispercs
 # The following parameters are used in plotting as well as in the inferential analyses
 
-#YF: not sure how to generalize .4, .5. .6
-labelsmarkersforanalysis <- paste0("D",tpeak,assays,".",rep(4:6,each=length(assays)))
+# UPDATE
+labelsmarkersforanalysis <- paste0("D",tpeak,assays,".",rep(round(10*analysispercs),each=length(assays)))
+# END UPDATE
+
 #labelsmarkersforanalysis <- c("D57Spike.4","D57RBD.4","D57ID50.4","D57ID80.4",
 #                              "D57Spike.5","D57RBD.5","D57ID50.5","D57ID80.5",
 #                              "D57Spike.6","D57RBD.6","D57ID50.6","D57ID80.6")
 
+# UPDATE
+if(approach2) { labelsmarkersforanalysis <- paste0("D",tpeak,assays,".",rep(L,each=length(assays))) }
+# END UPDATE
 
 #axislabelsmarkers <- c("Day 57 IgG Spike (IU/ml)","Day 57 IgG RBD (IU/ml)","Day 57 nAb titer (IU50/ml)",
 #                       "Day 57 nAb titer (IU80/ml)")
 axislabelsmarkers <- paste0("Day ", tpeak, " ", assay_labels_short)
 
-
-
 ################################################################################
 # Generic code for calling Bryan Blette's R package
 
+# UPDATE
+# MM is the number of markers considered (e.g., IgG Spike, IgG RBD, PsV nAb ID50, PsV nAb ID80)
+# END UPDATE
 MM <- length(markersforanalysis)
 
 datareportmarkerdata <- vector("list", MM*length(analysispercs))
@@ -102,17 +141,23 @@ R[Ph2ptids.tpeak==0] <- 0
 
 S_star <- data[,markersforanalysis[ii]]
 
+#UPDATE
+if(!approach2) {
 cutpt <- quantile(S_star[!is.na(S_star) & Delta.Day1==0],prob=analysispercs[jj])
 S_star <- ifelse(S_star > cutpt,1,0)
 S_star[is.na(S_star)] <- 0
 cutpoints[ii,jj] <- round(cutpt,4)
+}
+
+if(approach2) {
+cutpoints[ii,jj] <- approach2cutpoints[ii] }
 
 Z <- Trt
 Y <- Delta.tpeak
 Y_tau <- Y_tautpeak
 df <- data.frame(Z, S_star, R, Y_tau, Y)
 
-# Check have correct case counts:
+# Check that have correct case counts:
 cat(paste("Marker ",ii),"\n")
 cat(paste("Percentile defining cut point = ",analysispercs[jj]),"\n")
 cat(paste("Marker level cut point ",cutpoints[ii,jj]),"\n")
@@ -233,7 +278,7 @@ datareportmarkerdata[[MM*(jj-1)+ii]]  <- data.frame(marker=c(labelsmarkersforana
                           IIHighl=c(igintVEhigh_none[1],igintVEhigh_med[1],igintVEhigh_high[1]),
                           IIHighu=c(igintVEhigh_none[2],igintVEhigh_med[2],igintVEhigh_high[2]),
                           EUIHighl=c(euiintVEhigh_none[1],euiintVEhigh_med[1],euiintVEhigh_high[1]),
-              EUIHighu=c(euiintVEhigh_none[2],euiintVEhigh_med[2],euiintVEhigh_high[2]),
+                          EUIHighu=c(euiintVEhigh_none[2],euiintVEhigh_med[2],euiintVEhigh_high[2]),
                           IIcontrastl=c(igratioRRShighoverlow_none[1],igratioRRShighoverlow_med[1],igratioRRShighoverlow_high[1]),
               IIcontrastu=c(igratioRRShighoverlow_none[2],igratioRRShighoverlow_med[2],igratioRRShighoverlow_high[2]),
                           EUIcontrastl=c(euiratioRRShighoverlow_none[1],euiratioRRShighoverlow_med[1],euiratioRRShighoverlow_high[1]),
@@ -273,10 +318,26 @@ label= paste0("tab:PrincstratbinaryD",tpeak,"markers"),
 file=paste0(save.results.to, "PSbinaryNEHresultsDay",tpeak,".tex"))
 #file="H:/Coronavirus/HVTNstudies/ModernaProgram/ImmuneCorrelatesManuscript/PrincipalStratificationBinary/PSbinaryNEHresultsDay57.tex")
 
+# UPDATE  
+if(!approach2) {
 cutpoints <- data.frame(round(10^cutpoints))
-colnames(cutpoints) <- c(paste("Perc.",analysispercs[1]),
-                         paste("Perc.",analysispercs[2]),
-                         paste("Perc.",analysispercs[3]))
+#colnames(cutpoints) <- c(paste("Perc.",analysispercs[1]),
+#                         paste("Perc.",analysispercs[2]),
+#                         paste("Perc.",analysispercs[3]))
+# The code now accommodates an arbitrary length of analysispercs
+colnamescutpoints <- rep(NA,length(analysispercs))
+for (k in 1:length(analysispercs)) {
+colnamescutpoints[k] <- paste("Perc.",analysispercs[k]) }
+colnames(cutpoints) <- colnamescutpoints
+}
+if(approach2) {
+#cutpoints only has one column
+cutpoints <- data.frame(round(10^cutpoints))
+colnames(cutpoints) <- "LLimit"
+}
+# END UPDATE
+
+
 rownames(cutpoints) <- paste0("D", tpeak, assays)
 print(xtable(cutpoints,
 caption=paste0(study_name, ": Cut-points Defining High and Low Marker Subgroups")), 
@@ -404,8 +465,14 @@ dev.off()
 
 }
 
-markers <- rep(markersforanalysis, 3)
-
+# UPDATE
+# Note: These values are transformed to IU
+lowerlimits <- rep(lowerlimitsassays,length(analysispercs)) 
+#lowerlimits <- c(0.3076,1.593648,0.242,1.502,
+#                 0.3076,1.593648,0.242,1.502,
+#                 0.3076,1.593648,0.242,1.502)
+markers <- rep(markersforanalysis, length(analysispercs))
+# END UPDATE
 
 assay_labels_short
 figuretitlesmarkers <- paste0("VE by ",axislabelsmarkers, " > vs. <= ",unlist(cutpoints))
@@ -422,17 +489,15 @@ figuretitlesmarkers <- paste0("VE by ",axislabelsmarkers, " > vs. <= ",unlist(cu
 #                              paste("VE by Day 57 nAb ID50 > vs. <= ",cutpoints[3,3]," IU50/ml"),
 #                              paste("VE by Day 57 nAb ID80 > vs. <= ",cutpoints[4,3]," IU80/ml"))
 
-axislabelsmarkers <- rep(axislabelsmarkers, 3)
+# UPDATE
+axislabelsmarkers <- rep(axislabelsmarkers, length(analysispercs))
 
-
-# Note: Transform to IU
-lowerlimits <- c(0.3076,1.593648,0.242,1.502,
-                 0.3076,1.593648,0.242,1.502,
-                 0.3076,1.593648,0.242,1.502)
-
-cutpointsmarkers <- c(cutpoints[1,1],cutpoints[2,1],cutpoints[3,1],cutpoints[4,1],
-                      cutpoints[1,2],cutpoints[2,2],cutpoints[3,2],cutpoints[4,2],
-                      cutpoints[1,3],cutpoints[2,3],cutpoints[3,3],cutpoints[4,3])
+# This change takes away the colnames of the vector cutpointsmarkers
+cutpointsmarkers <- as.vector(cutpoints)
+#cutpointsmarkers <- c(cutpoints[1,1],cutpoints[2,1],cutpoints[3,1],cutpoints[4,1],
+#                      cutpoints[1,2],cutpoints[2,2],cutpoints[3,2],cutpoints[4,2],
+#                      cutpoints[1,3],cutpoints[2,3],cutpoints[3,3],cutpoints[4,3])
+# END UPDATE
 
 xlimsset <- list(NA,length(axislabelsmarkers))
 ataxisset <- list(NA,length(axislabelsmarkers))
@@ -446,7 +511,9 @@ expression(10^3),expression(10^4),expression(10^5))
 }
 
 
-filenamesplots <- paste0(save.results.to, "plotPSbin", study_name, "Day", tpeak, assays, "cut", rep(1:3, each=length(assays)),".pdf")
+# UPDATE
+filenamesplots <- paste0(save.results.to, "plotPSbin", study_name, "Day", tpeak, assays, "cut", rep(1:length(analysispercs)), each=length(assays)),".pdf")
+# END UPDATE
 
 #"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57Spikecut1.pdf",
 #"T:/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/reports/plots/plotPSbinCOVEDay57RBDcut1.pdf",
