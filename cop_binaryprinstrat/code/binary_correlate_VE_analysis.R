@@ -123,7 +123,7 @@ labelsmarkersforanalysis <- paste0("D",tpeak,assays,".",rep(round(10*analysisper
 #                              "D57Spike.6","D57RBD.6","D57ID50.6","D57ID80.6")
 
 # UPDATE
-if(approach2) { labelsmarkersforanalysis <- paste0("D",tpeak,assays,".",rep(L,each=length(assays))) }
+if(approach2) { labelsmarkersforanalysis <- paste0("D",tpeak,assays,".",rep(0,each=length(assays))) }
 # END UPDATE
 
 #axislabelsmarkers <- c("Day 57 IgG Spike (IU/ml)","Day 57 IgG RBD (IU/ml)","Day 57 nAb titer (IU50/ml)",
