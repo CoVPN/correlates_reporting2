@@ -88,11 +88,13 @@ markersforanalysis <- paste0("Day", tpeak, assays)
 
 # Define the lower limits of the antibody markers (in IU), which are used for both Approach 1 and Approach 2
 # at least for plotting.
-lowerlimitsassays <- c(0.3076,1.593648,0.242,1.502)
+#lowerlimitsassays <- c(0.3076,1.593648,0.242,1.502)
 # Youyi: I need help with the line above, to make it grab from common.R the appropriate lower cutoffs for the 4 assays 
 #        used in the Moderna correlates (IgG Spike, IgG RBD, PsV nAb ID50, PsV nAb ID80).  And then similarly to grab the 
 #        appropriate lower cutoffs for the 4 assays used in the ENSEMBLE correlates (IgG Spike, IgG RBD, PsV nAb ID50, 
 #        ADCP).   
+lowerlimitsassays <- llods[assays]
+
 #
 # Currently the code is set up to use Approach 1.  Changing approach2 to TRUE would implement the code using
 # Approach 2.
