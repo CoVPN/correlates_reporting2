@@ -72,7 +72,13 @@ moderna_trial: &moderna_trial
 moderna_real: &moderna_real
   <<: *moderna_trial
   data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv
-  #data_cleaned: ../data_clean/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv
+  study_name: COVE
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+
+moderna_realLVMN: &moderna_realLVMN
+  <<: *moderna_trial
+  data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_LVMN_2021-12-28.csv
   study_name: COVE
   num_boot_replicates: 1000
   num_perm_replicates: 10000

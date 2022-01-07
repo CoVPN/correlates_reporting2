@@ -83,9 +83,9 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         par(new=TRUE) 
         col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
         col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
-        # first call hist to get breaks, then call weighted.hist
         tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
         tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
+        # first call hist to get breaks, then call weighted.hist
         tmp.1=hist(tmp.x, breaks=15, plot=F)
         tmp=weighted.hist(tmp.x, tmp.w, breaks=tmp.1$breaks, plot=F)
         attr(tmp,"class")="histogram" 
