@@ -17,7 +17,7 @@ bibliography: ref.bib
 
 ```{r, include=FALSE}
 renv::activate(project = here::here(".."))    
-source(here::here("..", "_common.R"), local = knitr::knit_global())
+source(here::here("..", "_common.R"), local = knitr::knit_global()) # needed for collate coxph tables
 ```
 
 
@@ -32,6 +32,7 @@ source(here::here("..", "_common.R"), local = knitr::knit_global())
 `r paste0("\\", study_name, "true")` 
 
 
+# Univariate Cox Models of Risk: Hazard Ratios
 
 ```{r, echo=FALSE, results='asis'}
 
@@ -55,31 +56,34 @@ if (study_name=="ENSEMBLE") {
 ```
 
 
-
-
-\begin{figure}[H]
-  \center
-  \includegraphics[width=6in]{output/meta_controlled_ve_curves_bindSpike.pdf}
-  \caption{Controlled VE curves. ENSEMBLE count cases starting 1 days post Day 29, COVE count cases starting 7 days post Day 57.}
-\end{figure}
-
+# Controlled VE Curves based on Cox Models with Quantitatve Markers
 \clearpage
 
-\begin{figure}
-  \center
-  \includegraphics[width=6in]{output/meta_controlled_ve_curves_bindRBD.pdf}
-  \caption{Controlled VE curves. ENSEMBLE count cases starting 1 days post Day 29, COVE count cases starting 7 days post Day 57.}
-\end{figure}
-
-\clearpage
-
-\begin{figure}
-  \center
-  \includegraphics[width=6in]{output/meta_controlled_ve_curves_pseudoneutid50.pdf}
-  \caption{Controlled VE curves. ENSEMBLE count cases starting 1 days post Day 29, COVE count cases starting 7 days post Day 57.}
-\end{figure}
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub2.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
 
 
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub3.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
 
+
+
+
+# Controlled VE based on Cox Models with Discretized Markers
+
+\begin{table}[H]
+\caption{Controlled VE for discretized Pseudovirus nAb ID50. COVE: starting 7 days and ending 100 days post Day 57. ENSEMBLE: starting 1 days post Day 29; pooled: ending 66 days; NA: ending 66 days; LA: ending 48 days; SA: ending 26 days.}
+\begin{center}
+    \input{output/meta/id50_ve.tex}\\
+\end{center}
+\end{table}
 
 

@@ -4,37 +4,43 @@ library(dplyr)
 library(kyotil)
 library(marginalizedRisk)
 library(survival)
+    
 # disable lower level parallelization in favor of higher level of parallelization
 library(RhpcBLASctl)
 blas_get_num_procs()
 blas_set_num_threads(1L)
 stopifnot(blas_get_num_procs() == 1L)
 omp_set_num_threads(1L)
-#
+    
 set.seed(98109)
-verbose=0
+    
+if(!exists("verbose")) verbose=0
 if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
     
 # COR defines the analysis to be done, e.g. D14
-if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
-# if called from Rmd, there may not be a COR argument
-#if (length(Args)==0) stop("If running R from command line, provide an argument, e.g. D57, to the command. If you are running R interactively, do, e.g. Args=c(COR=\"D57\");  ")
-if (length(Args)>0) {
-    COR=Args[1]; myprint(COR)
+if(!exists("COR")) {
+    if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
+    if (length(Args)>0) {
+        COR=Args[1]
+    } else {
+        warning("No COR. This is okay if _common.R is sourced just to load common functions. If needed, COR can be defined through command line argument or in R script before _common.R is sourced.")
+    }
 }
 
 
 ###################################################################################################
 # read config
-# TRIAL-related 
+
+# TRIAL-related config
 config <- config::get(config = Sys.getenv("TRIAL"))
 for(opt in names(config)){
   eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
 }
-# correlates analyses-related 
 
+# correlates analyses-related config
 if (exists("COR")) {
+    myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE" & COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
 
@@ -76,6 +82,10 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
+
+###################################################################################################
+#
+
 # marginalized risk without marker
 get.marginalized.risk.no.marker=function(formula, dat, day){
     fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
@@ -105,6 +115,7 @@ if (exists("COR")) {
         dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
         dat.mock$wt=dat.mock[[config.cor$wt]]
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
+        if (!is.null(config.cor$Earlyendpoint)) dat.mock$Earlyendpoint=dat.mock[[config.cor$Earlyendpoint]]
 
         # data integrity checks
         if (!is.null(dat.mock$ph1)) {
@@ -122,6 +133,7 @@ if (exists("COR")) {
         
         # followup time for the last case in ph2 in vaccine arm
         if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+        if (startsWith(attr(config, "config"), "janssen_la_real")) tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027
         
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
         prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
@@ -398,13 +410,6 @@ labels.assays.long <- labels.title
 
 
 # baseline stratum labeling
-Bstratum.labels <- c(
-  "Age >= 65",
-  "Age < 65, At risk",
-  "Age < 65, Not at risk"
-)
-
-# baseline stratum labeling
 if ((study_name=="COVE" | study_name=="MockCOVE")) {
     demo.stratum.labels <- c(
       "Age >= 65, URM",
@@ -414,6 +419,13 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Age < 65, At risk, White non-Hisp",
       "Age < 65, Not at risk, White non-Hisp"
     )
+    
+    Bstratum.labels <- c(
+      "Age >= 65",
+      "Age < 65, At risk",
+      "Age < 65, Not at risk"
+    )
+    
 } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
     demo.stratum.labels <- c(
       "US URM, Age 18-59, Not at risk",
@@ -432,6 +444,13 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "South Africa, Age 18-59, At risk",
       "South Africa, Age >= 60, Not at risk",
       "South Africa, Age >= 60, At risk"
+    )
+
+    Bstratum.labels <- c(
+      "Age < 60, Not at risk",
+      "Age < 60, At risk",
+      "Age >= 60, Not at risk",
+      "Age >= 60, At risk"
     )
 }
 
@@ -536,13 +555,7 @@ ggsave_custom <- function(filename = default_name(plot),
 
 
 
-
-
-
-###################################################################################################
-# utility functions
-###################################################################################################
-
+############## Utility func
 
 get.range.cor=function(dat, assay, time) {
     if(assay %in% c("bindSpike", "bindRBD")) {

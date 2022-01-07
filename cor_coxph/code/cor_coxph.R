@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_realPsV"); Args=c(COR="D29IncludeNotMolecConfirmedstart7"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "janssen_la_realADCP"); Args=c(COR="D29IncludeNotMolecConfirmed"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
 renv::activate(project = here::here(".."))    
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
@@ -9,11 +9,15 @@ source(here::here("..", "_common.R"))
 
 #with(subset(dat.mock, Trt==1 & ph1), table(EventIndPrimary, useNA="ifany"))
 #with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary, useNA="ifany"))
-#par(mfrow=c(1,2))
+
+#par(mfrow=c(2,2))
+#with(subset(dat.mock, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="NA"))
+#with(subset(dat.mock, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="LA"))
+#with(subset(dat.mock, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
+#with(subset(dat.mock, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
+
 #with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==0], useNA="ifany"))
-#with(subset(dat.mock, Trt==1 & ph1), hist(EventTimePrimary[EventIndPrimary==0]))
 #with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==1], useNA="ifany"))
-#with(subset(dat.mock, Trt==1 & ph1), hist(EventTimePrimary[EventIndPrimary==1]))
 
 #with(subset(dat.mock, ph1==1), table(EventIndPrimary, Trt))
 #with(subset(dat.mock, ph2==1), table(EventIndPrimary, Trt))
@@ -29,11 +33,11 @@ source(here::here("..", "_common.R"))
 #with(subset(dat.mock, Trt==1 & ph2 & !EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
 
 
-
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
 library(tools) # toTitleCase
 library(survey)
+library(plotrix) # weighted.hist
 library(parallel)
 library(forestplot)
 library(Hmisc) # wtd.quantile, cut2
