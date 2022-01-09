@@ -57,9 +57,9 @@ moderna_trial: &moderna_trial
   timepoints: [29, 57]
   subset_variable: None
   subset_value: All
-  assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid80]
-  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 80% Titer]
-  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID80 (IU80/ml)]
+  assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid80, liveneutmn50]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 80% Titer, Live Virus Micro Neut 50% Titer]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID80 (IU80/ml), Live Virus-mnAb ID50 (IU50/ml)]
   times: [B, Day29, Day57, Delta29overB, Delta57overB, Delta57over29]
   time_labels: [Day 1, Day 29, Day 57, D29 fold-rise over D1, D57 fold-rise over D1, D57 fold-rise over D29]
   data_raw_dir: moderna
@@ -71,14 +71,7 @@ moderna_trial: &moderna_trial
 
 moderna_real: &moderna_real
   <<: *moderna_trial
-  data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_Oct28_2021.csv
-  study_name: COVE
-  num_boot_replicates: 1000
-  num_perm_replicates: 10000
-
-moderna_realLVMN: &moderna_realLVMN
-  <<: *moderna_trial
-  data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_LVMN_2021-12-28.csv
+  data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.0_lvmn_added_Jan7_2022.csv
   study_name: COVE
   num_boot_replicates: 1000
   num_perm_replicates: 10000
