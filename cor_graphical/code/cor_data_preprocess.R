@@ -261,9 +261,6 @@ dat.long$minority_label <-
            labels = c("White Non-Hispanic", "Comm. of Color")
     )
 
-# save a copy of dat.long.cor.subset for longer transformation
-dat.long.cor.subset.violin <- dat.long
-
 # For immunogenicity characterization, complete ignore any information on cases
 # vs. non-cases.  The goal is to characterize immunogenicity in the random
 # subcohort, which is a stratified sample of enrolled participants. So,
@@ -271,14 +268,12 @@ dat.long.cor.subset.violin <- dat.long
 
 # Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
 # since it should only happen for D57-related figures.
-dat.cor.subset <- dat %>%
-  dplyr::filter(ph2.D29==1)
 dat.long.cor.subset <- dat.long %>%
-  dplyr::filter(ph2.D29==1)
+  dplyr::filter(!!as.name(paste0("ph2.D29", ifelse(grepl("start1", COR), "start1","")))==1)
 
 
 # long to longer format by time
-dat.longer.cor.subset <- dat.long.cor.subset.violin %>%
+dat.longer.cor.subset <- dat.long.cor.subset %>%
   pivot_longer(cols = all_of(times), names_to = "time", values_to = "value")
 
 # phase 2 filters: 
@@ -348,18 +343,6 @@ saveRDS(dat.longer.cor.subset.plot3, file = here("data_clean", "longer_cor_data_
 plot.25sample3 <- get_sample_by_group(dat.longer.cor.subset.plot3, groupby_vars3)
 saveRDS(plot.25sample3, file = here("data_clean", "plot.25sample3.rds"))
 
-
-
-dat.long.cor.subset$Ptid <- as.character(dat.long.cor.subset$Ptid) 
-dat.cor.subset$Ptid <- as.character(dat.cor.subset$Ptid) 
-
-
-saveRDS(as.data.frame(dat.long.cor.subset),
-        file = here("data_clean", "long_cor_data.rds")
-)
-saveRDS(as.data.frame(dat.cor.subset),
-        file = here("data_clean", "cor_data.rds")
-)
 
 saveRDS(as.data.frame(dat.longer.cor.subset),
         file = here("data_clean", "longer_cor_data.rds"))
