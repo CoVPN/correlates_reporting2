@@ -12,6 +12,21 @@ source(here::here("..", "_common.R"))
 # common setup for CV super learners and variable importance
 source(here::here("code", "cor_surrogates_setup.R"))
 
+# drop "SL.xgboost.2.yes" and "SL.xgboost.4.yes" from SL_library as class-balancing learners in the variable 
+# importance computation doesn’t make sense – the regression we’re doing there (to account for the two-phase sampling) 
+# is based on a continuous outcome, not a binary outcome, so there shouldn’t be any imbalance. 
+for (i in 1:length(SL_library)) {
+  if(SL_library[[i]][1] %in% c("SL.xgboost.2.yes", "SL.xgboost.4.yes")){
+    if(!exists("vec"))
+      vec = vector()
+    vec = c(vec, i)
+  }
+}
+
+SL_library = SL_library[-vec]
+sl_lib = sl_lib[-vec]
+rm(vec)
+
 # get pooled VIMs, predictiveness for each comparison of interest --------------
 # get the same seeds as used for the initial CV SL fits
 set.seed(20210216)

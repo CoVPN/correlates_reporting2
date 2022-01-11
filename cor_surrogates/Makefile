@@ -7,21 +7,18 @@ clean:
 	rm -f figs/*
 
 run_cvsl_varsets:
-	Rscript code/run_cvsl_varsets.R D210 1
-	Rscript code/run_cvsl_varsets.R D210 2
-	Rscript code/run_cvsl_varsets.R D210 3
-	Rscript code/run_cvsl_varsets.R D210 4
-	Rscript code/run_cvsl_varsets.R D210 5
-	Rscript code/run_cvsl_varsets.R D210 6
-	Rscript code/run_cvsl_varsets.R D210 7
-	Rscript code/run_cvsl_varsets.R D210 8
-	Rscript code/run_cvsl_varsets.R D210 9
-	Rscript code/run_cvsl_varsets.R D210 10
-	Rscript code/run_cvsl_varsets.R D210 11
-	Rscript code/run_cvsl_varsets.R D210 12
-	Rscript code/run_cvsl_varsets.R D210 13
-	Rscript code/run_cvsl_varsets.R D210 14
-	Rscript code/run_cvsl_varsets.R D210 15
+	Rscript code/run_cvsl_varsets.R D210 36
+	Rscript code/run_cvsl_varsets.R D210 37
+	Rscript code/run_cvsl_varsets.R D210 38
+	Rscript code/run_cvsl_varsets.R D210 39
+	Rscript code/run_cvsl_varsets.R D210 40
+	Rscript code/run_cvsl_varsets.R D210 41
+	Rscript code/run_cvsl_varsets.R D210 42
+	Rscript code/run_cvsl_varsets.R D210 43
+	Rscript code/run_cvsl_varsets.R D210 44
+	Rscript code/run_cvsl_varsets.R D210 45
+	Rscript code/run_cvsl_varsets.R D210 46
+	Rscript code/run_cvsl_varsets.R D210 47
 
 get_vimp:
 	Rscript code/get_vimp.R

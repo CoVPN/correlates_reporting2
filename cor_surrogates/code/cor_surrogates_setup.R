@@ -153,7 +153,7 @@ if (study_name == "HVTN705") {
                        "Day210_gp70-1012.11.TC21.3257 V1V2", "Day210_gp70-1394C9G1 V1V2",
                        "Day210_gp70-BF1266_431a_V1V2", "Day210_gp70-001428.2.42 V1V2",
                        "Day210_gp70-Ce1086_B2 V1V2", "Day210_gp41"),
-              by = c("Subjectid" = ptidvar)) %>%
+              by = c("Subjectid" = "ptid")) %>%
     rename(`Day210IgG3Con6gp120B40delta` = `Day210_Con 6 gp120/B`,
            `Day210IgG31394C9G1.D11gp120.avi40delta` = `Day210_1394C9_G1.D11gp120.avi`,
            `Day210IgG31428D11gp120.avi293F40delta` = `Day210_1428_D11gp120.avi/293F`,
