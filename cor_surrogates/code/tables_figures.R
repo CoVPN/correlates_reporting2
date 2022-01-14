@@ -36,7 +36,8 @@ if (study_name == "HVTN705") {
   cvaucs_vacc <- readRDS(file = here::here("output", "cvaucs_vacc_EventIndPrimaryD210.rds"))
 }
 ph2_vacc_ptids <- readRDS(file = here::here("output", "ph2_vacc_ptids.rds"))
-vim_estimates <- readRDS(file = here::here("output", "vim_estimates.rds"))
+vim_estimates <- readRDS(file = here::here("output", "vim_estimates.rds")) %>%
+  mutate(group = ifelse(variable_set %in% c("4_M7_ADCP", "11_M7_IgG3multi", "12_M7_IgG3overall"), TRUE, group))
 
 # Create tables ----------------------------------------------------------------
 # Table of learner/screen combinations
@@ -197,7 +198,7 @@ top_learner_plot <- ggplot() +
         axis.text.x = element_text(size=16),
         axis.title.x = element_text(size=16),
         axis.text.y = element_blank(),
-        plot.margin=unit(c(0.8,0.2,0.8,-0.15),"cm"),
+        plot.margin=unit(c(1.8,0.2,0.8,-0.15),"cm"),
         panel.border = element_blank(),
         axis.line = element_line(colour = "black"))
 
@@ -214,12 +215,20 @@ allSLs_withCoord <- allSLs %>%
 top_learner_nms_plot <- ggplot(allSLs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
   geom_text(hjust=1, vjust=0, size=5) +
   xlim(0.7,2) +
-  theme(plot.margin=unit(c(0.75,-0.15,1.4,-0.15),"cm"),
+  theme(plot.margin=unit(c(0,-0.15,1.4,-0.15),"cm"),
         axis.line=element_blank(),
         axis.text.y = element_blank(),
         axis.text.x = element_text(size = 2, color = "white"),
         axis.ticks = element_blank(),
-        axis.title = element_blank())
+        axis.title = element_blank()) +
+  annotate("text", x = 1.5, y = 15.75, size = 5,
+           label = "Variable Set",
+           fontface = "bold",
+           hjust = 1) +
+  annotate("text", x = 2, y = 15.75, size = 5,
+           label = "CV-AUC [95% CI]",
+           fontface = "bold",
+           hjust = 1)
 
 top_learner <- list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot)
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
@@ -311,11 +320,11 @@ cvaucs_vacc %>% arrange(-AUC) %>%
 # save off all variable importance estimates as a table
 vim_estimates %>%
   filter(quantity == "VIM") %>%
-  select(-group) %>%
+  #select(-group) %>%
   write.csv(here("output", "vim_estimates.csv"))
 vim_estimates %>%
   filter(quantity == "Predictiveness") %>%
-  select(-group) %>%
+  #select(-group) %>%
   write.csv(here("output", "vim_predictiveness_estimates.csv"))
 
 
@@ -323,7 +332,8 @@ num_digits <- 3
 plot_vim_init <- vim_estimates %>%
   mutate(text_ci = paste0(round(est, num_digits), " [",
                         round(ci_ll, num_digits), ", ",
-                        round(ci_ul, num_digits), "]"))
+                        round(ci_ul, num_digits), "]")) 
+
 group_ests <- plot_vim_init %>%
   filter(group)
 individual_ests <- plot_vim_init %>%
@@ -339,14 +349,17 @@ est_group_predictiveness <- plot_group_vim %>% filter(quantity == "Predictivenes
 group_vim_text_pos <- round(max(est_group_vims$ci_ul, na.rm = TRUE), 2) + 0.05
 group_vim_forest_plot <- est_group_vims %>%
   filter(!grepl("base", variable_set)) %>%
+  mutate(plot_name = fct_reorder(plot_name, est, .desc = F)) %>%
   ggplot(aes(x = est, y = plot_name)) +
-  geom_point() +
-  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul)) +
+  geom_point(color = "blue") +
+  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
   geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims) - 1), label = text_ci), hjust = "left") +
   ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
-  xlab("Estimated Difference in CV-AUC") +
+  xlab("Estimated Difference in CV-AUC [95% CI]") +
   ylab("Variable Set Name") +
-  xlim(c(0, group_vim_text_pos + 0.1))
+  xlim(c(0, group_vim_text_pos + 0.1)) +
+  geom_vline(xintercept = 0.5, lty = "dashed") +
+  theme_bw()
 
 ggsave(
   group_vim_forest_plot, file = here::here("figs", "group_vim_forest_plot.png"),
@@ -355,14 +368,17 @@ ggsave(
 
 group_pred_text_pos <- round(max(est_group_predictiveness$ci_ul, na.rm = TRUE), 2) + 0.05
 group_pred_forest_plot <- est_group_predictiveness %>%
+  mutate(plot_name = fct_reorder(plot_name, est, .desc = F)) %>%
   ggplot(aes(x = est, y = plot_name)) +
-  geom_point() +
-  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul)) +
+  geom_point(color = "blue") +
+  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
   geom_text(aes(x = rep(group_pred_text_pos, nrow(est_group_predictiveness)), label = text_ci), hjust = "left") +
   ggtitle("Estimated Predictiveness") +
   xlab("CV-AUC") +
   ylab("Variable Set Name") +
-  xlim(c(0, group_pred_text_pos + 0.2))
+  xlim(c(0, group_pred_text_pos + 0.2)) +
+  geom_vline(xintercept = 0.5, lty = "dashed") +
+  theme_bw()
 
 ggsave(
   group_pred_forest_plot, file = here::here("figs", "group_pred_forest_plot.png"),
@@ -376,14 +392,17 @@ est_individual_predictiveness <- plot_individual_vim %>% filter(quantity == "Pre
 
 individual_vim_text_pos <- round(max(est_individual_vims$ci_ul, na.rm = TRUE), 2) + 0.05
 individual_vim_forest_plot <- est_individual_vims %>%
+  mutate(variable_set = fct_reorder(variable_set, est, .desc = F)) %>%
   ggplot(aes(x = est, y = variable_set)) +
-  geom_point() +
-  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul)) +
+  geom_point(color = "blue") +
+  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
   geom_text(aes(x = rep(individual_vim_text_pos, nrow(est_individual_vims)), label = text_ci), hjust = "left") +
   ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
   xlab("Estimated Difference in CV-AUC") +
-  ylab("Variable Set Name") +
-  xlim(c(0, individual_vim_text_pos + 0.1))
+  ylab("Variable Name") +
+  xlim(c(0, individual_vim_text_pos + 0.1)) +
+  geom_vline(xintercept = 0.5, lty = "dashed") +
+  theme_bw()
 
 ggsave(
   individual_vim_forest_plot, file = here::here("figs", "individual_vim_forest_plot.png"),
@@ -392,16 +411,20 @@ ggsave(
 
 individual_pred_text_pos <- round(max(est_individual_predictiveness$ci_ul, na.rm = TRUE), 2) + 0.05
 individual_pred_forest_plot <- est_individual_predictiveness %>%
+  mutate(variable_set = fct_reorder(variable_set, est, .desc = F)) %>%
   ggplot(aes(x = est, y = variable_set)) +
-  geom_point() +
-  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul)) +
+  geom_point(color = "blue") +
+  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
   geom_text(aes(x = rep(individual_pred_text_pos, nrow(est_individual_predictiveness)), label = text_ci), hjust = "left") +
   ggtitle("Estimated Predictiveness") +
   xlab("CV-AUC") +
-  ylab("Variable Set Name") +
-  xlim(c(0, individual_pred_text_pos + 0.2))
+  ylab("Variable Name") +
+  xlim(c(0, individual_pred_text_pos + 0.2)) +
+  geom_vline(xintercept = 0.5, lty = "dashed") +
+  theme_bw()
 
 ggsave(
   individual_pred_forest_plot, file = here::here("figs", "individual_pred_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
+
