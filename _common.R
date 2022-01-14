@@ -259,10 +259,11 @@ if (config$is_ows_trial) {
             ULOQ = 15368)
         ,
         liveneutmn50=c( 
-            LLOD = 82.1,
+            pos.cutoff=82.1*0.276,# as same lod
+            LLOD = 82.11*0.276,
             ULOD = NA,
-            LLOQ = 160,
-            ULOQ = 11173)
+            LLOQ =  159.79*0.276,
+            ULOQ = 11173.21*0.276)
         ,
         ADCP=c( 
             pos.cutoff=11.57,# as same lod
