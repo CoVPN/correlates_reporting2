@@ -130,3 +130,9 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
     draw.ve.curves(a, TRIALS=c(if(a!="ADCP") "moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="2", include.az=F)
 }
+
+
+# ENSEMBLE regions
+for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
+    draw.ve.curves(a, TRIALS=c("janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="3", include.az=F)
+}
