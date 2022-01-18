@@ -4,6 +4,9 @@ here::here("..")
 .libPaths()
 row.names(installed.packages())
 renv::activate(project = here::here("..")) #
+cat("after activate")
+.libPaths()
+row.names(installed.packages())
 source(here::here("..", "_common.R")) #
 ##################################################
 
