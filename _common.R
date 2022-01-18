@@ -221,9 +221,8 @@ names(assays)=assays # add names so that lapply results will have names
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
 if (config$is_ows_trial) {
 
+    # limits for each assay (IU)
     # For bAb, IU and BAU are the same thing
-    # limits for each assay (IU for bAb and pseudoneut, no need to convert again)
-    # the following are copied from SAP to avoid any mistake (get rid of commas)
     tmp=list(
         bindSpike=c(
             pos.cutoff=10.8424,
