@@ -48,7 +48,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE) {
         myprint(TRIAL)
         Sys.setenv("TRIAL"=TRIAL)
         COR = ifelse (x=="moderna_real","D57","D29IncludeNotMolecConfirmedstart1")
-        # keep to have local = T
+        # key to have local = T
         source(here::here("..", "_common.R"), local=T)
         
         # uloq censoring    
