@@ -1,5 +1,8 @@
 ##################################################
 # obligatory to append to the top of each script #
+here::here("..")
+.libPaths()
+row.names(installed.packages())
 renv::activate(project = here::here("..")) #
 source(here::here("..", "_common.R")) #
 ##################################################
