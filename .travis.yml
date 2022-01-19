@@ -37,7 +37,9 @@ apt_packages:
 before_install:
 - sudo apt-get install -y texlive-extra-utils ghostscript
 install:
-- cd .. && Rscript -e "install.packages(c('here', 'renv', 'tinytex'))"
+- cd .. && Rscript -e "install.packages(c('here', 'tinytex'))"
+- wget https://cran.r-project.org/src/contrib/Archive/renv/renv_0.14.0.tar.gz
+- R CMD INSTALL renv_0.14.0.tar.gz
 - echo insecure >> ~/.curlrc && Rscript -e "tinytex::install_tinytex()"
 - export PATH=$HOME/bin:${PATH}
 - cd $TRAVIS_BUILD_DIR && Rscript -e "renv::restore()"
