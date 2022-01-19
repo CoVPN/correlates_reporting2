@@ -3,7 +3,7 @@
 here::here("..")
 .libPaths()
 row.names(installed.packages())
-renv::activate(project = here::here("..")) #
+renv::activate(project = "/home/travis/build/CoVPN/correlates_reporting2")
 cat("after activate")
 .libPaths()
 row.names(installed.packages())
