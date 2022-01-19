@@ -45,6 +45,8 @@ before_script:
 - echo "B <- 5" >> $TRAVIS_BUILD_DIR/cor_coxph/code/params.R
 - echo "numPerm <- 5" >> $TRAVIS_BUILD_DIR/cor_coxph/code/params.R
 - echo "B <- 5" >> $TRAVIS_BUILD_DIR/cor_nonlinear/code/params.R
+- cd $TRAVIS_BUILD_DIR && Rscript -e "renv::status()"
+- cd $TRAVIS_BUILD_DIR && Rscript -e "row.names(installed.packages())"
 after_script:
 - chmod +x _deploy_reports.sh && ./_deploy_reports.sh
 notifications:
