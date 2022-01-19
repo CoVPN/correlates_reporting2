@@ -7,6 +7,11 @@ renv::activate(project = here::here("..")) #
 cat("after activate")
 .libPaths()
 row.names(installed.packages())
+print("Files in .libPaths() directory")
+print(.libPaths()[1])
+list.files(.libPaths()[1])
+print(.libPaths()[2])
+list.files(.libPaths()[2])
 source(here::here("..", "_common.R")) #
 ##################################################
 
