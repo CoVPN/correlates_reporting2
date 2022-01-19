@@ -1,17 +1,6 @@
 ##################################################
 # obligatory to append to the top of each script #
-here::here("..")
-.libPaths()
-row.names(installed.packages())
-renv::activate(project = "/home/travis/build/CoVPN/correlates_reporting2")
-cat("after activate")
-.libPaths()
-row.names(installed.packages())
-print("Files in .libPaths() directory")
-print(.libPaths()[1])
-list.files(.libPaths()[1])
-print(.libPaths()[2])
-list.files(.libPaths()[2])
+renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R")) #
 ##################################################
 
