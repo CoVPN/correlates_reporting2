@@ -155,9 +155,10 @@ dat.long$trt_bstatus_label <-
 # Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
 # since it should only happen for D57-related figures.
 dat.cor.subset <- dat %>%
-  dplyr::filter((!!as.name(paste0("ph2.D", tpeak)))==1)
+  dplyr::filter(!!as.name(paste0("ph2.D29", ifelse(grepl("start1", COR), "start1","")))==1)
 dat.long.cor.subset <- dat.long %>%
-  dplyr::filter((!!as.name(paste0("ph2.D", tpeak)))==1)
+  dplyr::filter(!!as.name(paste0("ph2.D29", ifelse(grepl("start1", COR), "start1","")))==1)
+
 
 
 saveRDS(as.data.frame(dat.long.cor.subset),
