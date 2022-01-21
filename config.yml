@@ -111,7 +111,7 @@ janssen_trial_real: &janssen_trial_real
 janssen_trial_realADCP: &janssen_trial_realADCP
   <<: *janssen_trial
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realADCP_data_processed_with_riskscore.csv
-  assays: [ADCP]
+ assays: [ADCP]
   assay_labels: [Phagocytic Score]
   assay_labels_short: [Phagocytic Score]
   primary_assays: [] # have it be empty if no multitesting adjustment should be done
