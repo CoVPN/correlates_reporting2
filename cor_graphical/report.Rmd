@@ -32,7 +32,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
     
     tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
     tpsLabels <- labels.time[tps]
-    currCOR <- paste0("D",time)
+    COR = currCOR <- paste0("D",time)
     
     for (tpNum in seq(tps)) {
       
@@ -55,7 +55,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
     tpsLabels <- labels.time[tps]
     tp <- tps[!grepl("Delta", tps)]
     tpLabel <- tpsLabels[!grepl("Delta", tps)]
-    currCOR <- paste0("D",time)
+    COR = currCOR <- paste0("D",time)
     
     for (tpNum in seq(tps)) {
       
@@ -86,7 +86,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
     tpsLabels <- labels.time[tps]
     tp <- tps[!grepl("Delta", tps)]
     tpLabel <- tpsLabels[!grepl("Delta", tps)]
-    currCOR <- paste0("D",time)
+    COR = currCOR <- paste0("D",time)
     
     if(plot_ve_curves[1]){
       for (assayNum in seq(assays)) {
