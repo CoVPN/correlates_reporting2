@@ -13,8 +13,8 @@ library(stringr)
 
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0
-# wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
-# for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
+wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
+for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
 
 # load parameters
 source(here("code", "params.R"))
