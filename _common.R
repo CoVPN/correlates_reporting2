@@ -19,13 +19,6 @@ if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
     
 # COR defines the analysis to be done, e.g. D14
-<<<<<<< HEAD
-if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
-# if called from Rmd, there may not be a COR argument
-#if (length(Args)==0) stop("If running R from command line, provide an argument, e.g. D57, to the command. If you are running R interactively, do, e.g. Args=c(COR=\"D57\");  ")
-if (length(Args)>0) {
-    COR=Args[1]; myprint(COR)
-=======
 if(!exists("COR")) {
     if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
     if (length(Args)>0) {
@@ -33,7 +26,6 @@ if(!exists("COR")) {
     } else {
         warning("No COR. This is okay if _common.R is sourced just to load common functions. If needed, COR can be defined through command line argument or in R script before _common.R is sourced.")
     }
->>>>>>> 01f9a5b95a15fbbd35392ca09e2abb1483d939bd
 }
 
 
@@ -48,10 +40,7 @@ for(opt in names(config)){
 
 # correlates analyses-related config
 if (exists("COR")) {
-<<<<<<< HEAD
-=======
     myprint(COR)
->>>>>>> 01f9a5b95a15fbbd35392ca09e2abb1483d939bd
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE" & COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
 
@@ -430,16 +419,11 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Age < 65, At risk, White non-Hisp",
       "Age < 65, Not at risk, White non-Hisp"
     )
-<<<<<<< HEAD
-=======
-    
     Bstratum.labels <- c(
       "Age >= 65",
       "Age < 65, At risk",
       "Age < 65, Not at risk"
     )
-    
->>>>>>> 01f9a5b95a15fbbd35392ca09e2abb1483d939bd
 } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
     demo.stratum.labels <- c(
       "US URM, Age 18-59, Not at risk",
@@ -459,16 +443,12 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "South Africa, Age >= 60, Not at risk",
       "South Africa, Age >= 60, At risk"
     )
-<<<<<<< HEAD
-=======
-
     Bstratum.labels <- c(
       "Age < 60, Not at risk",
       "Age < 60, At risk",
       "Age >= 60, Not at risk",
       "Age >= 60, At risk"
     )
->>>>>>> 01f9a5b95a15fbbd35392ca09e2abb1483d939bd
 }
 
 labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
