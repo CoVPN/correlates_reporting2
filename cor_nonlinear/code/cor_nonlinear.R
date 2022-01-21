@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_real"); Args=c(COR="D29IncludeNotMolecConfirmed"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "moderna_mock"); Args=c(COR="D57"); Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
 renv::activate(project = here::here(".."))    
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
@@ -87,12 +87,12 @@ dat.vacc.pop.ph2 = subset(dat.vac.seroneg, ph2==1)
 # there are two dependencies on cor_coxph
 
 # load prev.plac, prev.vacc, with bootstrap CI
-tmp=paste0(here::here(".."), "/cor_coxph/output/",attr(config,"config"),"/", COR,"/", "marginalized.risk.no.marker."%.%study_name%.%".Rdata")
-if (file.exists(tmp)) load(tmp) else stop("")
+tmp=paste0(here::here(".."), "/cor_coxph/output/",attr(config,"config"),"/", COR,"/", "marginalized.risk.no.marker.Rdata")
+if (file.exists(tmp)) load(tmp) else stop("cannot load prev.plac, prev.vacc")
 # if this does not exist, the code will throw error
 
 # load ylims.cor, which is a list of two: 1 with placebo lines, 2 without placebo lines.
-tmp=paste0(here::here(".."), "/cor_coxph/output/",attr(config,"config"),"/", COR,"/", "ylims.cor."%.%study_name%.%".Rdata")
+tmp=paste0(here::here(".."), "/cor_coxph/output/",attr(config,"config"),"/", COR,"/", "ylims.cor.Rdata")
 if (file.exists(tmp)) load(tmp)
 # if this does not exist, the code will find alternative ylim
 

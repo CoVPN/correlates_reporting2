@@ -21,7 +21,7 @@
 #})
 #prevs
 
-if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.",study_name,".Rdata"))) {    
+if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))) {    
     if (verbose) print("create marginalized.risk.no.marker Rdata")
 
     for (.trt in 0:1) {
@@ -65,8 +65,8 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.",study_nam
 
     print(cbind(prev.plac, prev.vacc, overall.ve))
     
-    save(res.plac.cont, res.vacc.cont, prev.plac, prev.vacc, overall.ve, file=paste0(save.results.to, "marginalized.risk.no.marker."%.%study_name%.%".Rdata"))
+    save(res.plac.cont, res.vacc.cont, prev.plac, prev.vacc, overall.ve, file=paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))
     
 } else {
-    load(paste0(save.results.to, "marginalized.risk.no.marker."%.%study_name%.%".Rdata"))
+    load(paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))
 }

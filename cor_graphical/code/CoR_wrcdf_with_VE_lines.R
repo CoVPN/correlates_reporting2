@@ -147,7 +147,7 @@ for (bstatus in 0:1) {
       ))
     } else {
       
-      if(!file.exists(paste0(here::here("..", "cor_coxph", "output"), "/", attr(config, "config"), "/"%.%COR%.%"/marginalized.risk.no.marker."%.%study_name%.%".Rdata"))) {
+      if(!file.exists(paste0(here::here("..", "cor_coxph", "output"), "/", attr(config, "config"), "/"%.%COR%.%"/marginalized.risk.no.marker.Rdata"))) {
          # compute ve. this works IF ve_dat is properly defined for computing ve
          cox_results <- coxph(Surv(time, event) ~ Trt, data = ve_dat)
          VE <- as.numeric(1 - exp(cox_results$coefficients))
@@ -159,7 +159,7 @@ for (bstatus in 0:1) {
       # use ve computed as part of cor_coxph, which is defined based on marginalized risks
       load(paste0(here::here("..", "cor_coxph", "output"), "/",
                   attr(config, "config"),
-                  "/"%.%COR%.%"/marginalized.risk.no.marker."%.%study_name%.%".Rdata"))
+                  "/"%.%COR%.%"/marginalized.risk.no.marker.Rdata"))
       VE <- overall.ve[1]
       VE_lb <- overall.ve[2]
       VE_ub <- overall.ve[3]

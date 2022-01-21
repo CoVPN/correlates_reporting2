@@ -113,7 +113,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
 
 
 
-if(!file.exists(paste0(save.results.to, "marginalized.risk.",study_name,".Rdata"))) {    
+if(!file.exists(paste0(save.results.to, "marginalized.risk.Rdata"))) {    
     cat("make marginalized.risk\n")
     
     # vaccine arm, conditional on continuous S=s
@@ -137,10 +137,10 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.",study_name,".Rdata"
         marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a%.%"cat", type=3, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
     })    
     
-    save(risks.all.1, risks.all.2, risks.all.3, file=paste0(save.results.to, "marginalized.risk."%.%study_name%.%".Rdata"))
+    save(risks.all.1, risks.all.2, risks.all.3, file=paste0(save.results.to, "marginalized.risk.Rdata"))
     
 } else {
-    load(paste0(save.results.to, "marginalized.risk."%.%study_name%.%".Rdata"))
+    load(paste0(save.results.to, "marginalized.risk.Rdata"))
 }
 write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_replicates_"%.%study_name))
 #rv$marginalized.risk.S.eq.s=list()

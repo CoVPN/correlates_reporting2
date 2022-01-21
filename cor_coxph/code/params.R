@@ -2,6 +2,35 @@ numCores <- unname(ifelse(Sys.info()["sysname"] == "Windows",
                           1, future::availableCores()))
 
 
+load.data=function(TRIAL, COR, trt=1) {
+    Sys.setenv("TRIAL"=TRIAL)
+    source(here::here("..", "_common.R"), local=T)
+    # uloq censoring    
+    for (a in assays) {
+        tmp="Day"%.%config.cor$tpeak %.% a
+        dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
+    }
+    if (trt==1) {
+        dat=subset(dat.mock, Trt==1 & ph1)
+        dat = add.trichotomized.markers (dat, tpeak, wt.col.name="wt")
+    } else {
+        dat=subset(dat.mock, Trt==0 & ph1)        
+    }
+    dat
+}
+
+
+get.trial=function(x, assay) {
+    if (startsWith(x,"janssen")) {
+        if(startsWith(assay,"pseudo")) x=paste0(x, "PsV")
+        if(startsWith(assay,"ADCP")) x=paste0(x, "ADCP")
+    }
+    x
+}
+
+
+
+
 #if (length(assays) %in% c(3,4)) {
 #  .mfrow <- c(2, 2)
 #} else if (length(assays) == 5) {
