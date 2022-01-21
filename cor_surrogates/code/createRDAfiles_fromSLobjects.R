@@ -55,7 +55,7 @@ convert_SLobject_to_Slresult_dataframe <- function(dat) {
 
   # Remove any iteration seeds that returned an error!
   newdat = drop_seeds_with_error(dat)
-    
+
   if (is.null(newdat[[1]])) {
     return( read.csv("empty_df.csv", stringsAsFactors = FALSE) %>% select(-X) %>% as_tibble() )
   }
@@ -84,9 +84,9 @@ convert_SLobject_to_Slresult_dataframe <- function(dat) {
 # @param trt string containing treatment arm (placebo or vaccine)
 # @return dataframe containing CV-AUCs
 readin_SLobjects_fromFolder <- function(data_path, file_pattern, endpoint, trt){
-  dir(data_path, pattern = file_pattern) %>%
+  list.files(data_path, pattern = file_pattern) %>%
     tibble(file = .) %>%
-    mutate(listdat = lapply(paste0(data_path, "/", file), readRDS)) %>% 
+    mutate(listdat = lapply(paste0(data_path, "/", file), readRDS)) %>%
     mutate(data = map(listdat, convert_SLobject_to_Slresult_dataframe)) %>%
     select(file, data) %>%
     unnest(data) %>%
@@ -99,23 +99,23 @@ readin_SLobjects_fromFolder <- function(data_path, file_pattern, endpoint, trt){
 # For vaccine, yd57 endpoint
 data_folder <- here("output")
 if(study_name %in% c("COVE", "MockCOVE")){
-  cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "*.rds", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
+  cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
     mutate(varset = str_replace(file, "CVSLaucs_vacc_EventIndPrimaryD57_", ""),
            varset = str_replace(varset, "_varset", ""),
            varset = str_replace(varset, ".rds", ""),
            varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
     arrange(varsetNo)
-  
-  save(cvaucs_vacc, file = here("output", "cvaucs_vacc_EventIndPrimaryD57.rda"))
+
+  saveRDS(cvaucs_vacc, file = here("output", "cvaucs_vacc_EventIndPrimaryD57.rds"))
 }
 
 if(study_name == "HVTN705"){
-  cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "*.rds", endpoint = "EventIndPrimaryD210", trt = "vaccine") %>%
+  cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryD210", trt = "vaccine") %>%
     mutate(varset = str_replace(file, "CVSLaucs_vacc_Delta.D210_", ""),
            varset = str_replace(varset, "_varset", ""),
            varset = str_replace(varset, ".rds", ""),
            varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
     arrange(varsetNo)
-  
-  save(cvaucs_vacc, file = here("output", "cvaucs_vacc_EventIndPrimaryD210.rda"))
+
+  saveRDS(cvaucs_vacc, file = here("output", "cvaucs_vacc_EventIndPrimaryD210.rds"))
 }

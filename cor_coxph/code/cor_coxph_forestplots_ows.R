@@ -1,3 +1,5 @@
+if(verbose) print("forest plots")
+
 ###################################################################################################
 # forest plots for different phase one baseline strata subgroups
 #  "Age >= 65",
@@ -15,7 +17,8 @@ for (a in assays) {
             # 0-2 cases
             fits[[k+1]]=NA
         } else {
-            design<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=subset(dat.vac.seroneg, Bstratum==k))            
+            design<-try(twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=subset(dat.vac.seroneg, Bstratum==k)),silent=TRUE)
+            if (inherits(design,"try-error")) design=NULL
             if (k==1) {
                 f = update(form.0, as.formula(paste0("~.+Day",tpeak, a)))
             } else {

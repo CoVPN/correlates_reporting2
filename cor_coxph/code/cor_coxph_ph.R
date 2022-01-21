@@ -162,7 +162,7 @@ p.2=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FDR" ], 3, remove.lead
 #}
 
 
-tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p), p.1, p.2)
+tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p), p.2, p.1)
 rownames(tab.1)=c(labels.axis["Day"%.%tpeak, assays])
 tab.1
 
@@ -173,6 +173,7 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c
          \\hline\n 
     ")
 )
+tab.cont=tab.1
 
 tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p))
 rownames(tab.1.nop12)=c(labels.axis["Day"%.%tpeak, assays])
@@ -223,11 +224,12 @@ tab=cbind(
     rep(c("Lower","Middle","Upper"), length(p)/3), 
     paste0(nevents, "/", format(natrisk, big.mark=",",digit=0, scientific=F)), 
     formatDouble(nevents/natrisk, digit=4, remove.leading0=F),
-    est, ci, p, overall.p.0, overall.p.1, overall.p.2
+    est, ci, p, overall.p.0, overall.p.2, overall.p.1
 )
 tmp=rbind(c(labels.axis["Day"%.%tpeak, assays]), "", "")
 rownames(tab)=c(tmp)
 tab
+tab.cat=tab[1:(nrow(tab)),]
 
 #cond.plac=dat.pla.seroneg[[config.cor$EventTimePrimary]]<=tfinal.tpeak # not used anymore
 mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_svycoxph_cat_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
@@ -246,6 +248,9 @@ mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_svycoxph_cat_pretty_"%.%st
          )
     )
 )
+# save two subjects for collate
+save.s.1=paste0(sum(dat.pla.seroneg$yy), "/", format(nrow(dat.pla.seroneg), big.mark=","))
+save.s.2=formatDouble(sum(dat.pla.seroneg$yy)/nrow(dat.pla.seroneg), digit=4, remove.leading0=F)
 
 
 tab.nop12=cbind(
@@ -263,9 +268,8 @@ rv$tab.2=tab.nop12
 ###################################################################################################
 # regression for multiple markers in one model
 
-if(verbose) print("Multiple regression")
-
 if (!is.null(config$multivariate_assays)) {
+    if(verbose) print("Multiple regression")
     
     for (ind in 1:2) {
         tmp=if(ind==1) concatList(paste0("Day",config$timepoints, config$multivariate_assays),"+") else concatList(paste0("scale(Day",config$timepoints, config$multivariate_assays),")+") %.% ")"
@@ -293,3 +297,6 @@ if (!is.null(config$multivariate_assays)) {
     }
     
 }
+
+
+save (tab.cont, tab.cat, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))

@@ -1,0 +1,97 @@
+---
+title: "CoR Coxph Meta and Collate Report"
+shorttitle: "Coxph Meta Collate"
+author:
+header-includes:
+   - \usepackage{float}
+date: "`r Sys.Date()`"
+output:
+  bookdown::pdf_document2:
+    citation_package: natbib
+    number_sections: true
+    extra_dependencies: ["caption", "subcaption", "graphicx"]
+    toc: false
+linkcolor: blue
+bibliography: ref.bib
+---
+
+```{r, include=FALSE}
+renv::activate(project = here::here(".."))    
+source(here::here("..", "_common.R"), local = knitr::knit_global()) # needed for collate coxph tables
+```
+
+
+\counterwithin{table}{section}
+\counterwithin{figure}{section}
+
+\clearpage
+
+<!-- these latex variables are used in report_sub -->
+\newif\ifCOVE
+\newif\ifENSEMBLE
+`r paste0("\\", study_name, "true")` 
+
+
+# Univariate Cox Models of Risk: Hazard Ratios
+
+```{r, echo=FALSE, results='asis'}
+
+covariates_adjusted = covariates_riskscore
+covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
+covariates_adjusted = sub("_","",covariates_adjusted)
+
+if (study_name=="ENSEMBLE") {
+  for (i in 1:2) {
+      COR <- ifelse(i==1, "D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
+      config.cor <- config::get(config = COR)
+      for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+      special.note = paste0("$\\ddagger$ Count cases starting ", ifelse(i==1,7,1), " days post Day 29.")
+      pathCoRoutput <- paste0("output/janssen_pooled_real/", COR) # it does not matter which TRIAL we use here
+      res = knitr::knit_child(c(here::here('meta_collate_sub1.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+  }
+  
+}
+
+```
+
+
+# Controlled VE Curves based on Cox Models with Quantitatve Markers
+\clearpage
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub2.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub3.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub4.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+
+
+
+# Controlled VE based on Cox Models with Discretized Markers
+
+\begin{table}[H]
+\caption{Controlled VE for discretized Pseudovirus nAb ID50. COVE: starting 7 days and ending 100 days post Day 57. ENSEMBLE: starting 1 days post Day 29; pooled: ending 66 days; NA: ending 66 days; LA: ending 48 days; SA: ending 26 days.}
+\begin{center}
+    \input{output/meta/id50_ve.tex}\\
+\end{center}
+\end{table}
+
+
