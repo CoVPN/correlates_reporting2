@@ -4,11 +4,15 @@
 library(here)
 config <- config::get(config = Sys.getenv("TRIAL"))
 if(config$study_name_code == "ENSEMBLE"){
-	for(COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")){
-			res = knitr::knit_child(
-		  	here::here('cop_mediation', 'report_sub.Rmd')
-			)
-		  cat(res, sep = '\n')
-	}
+	all_COR <- c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
+}else if(config$study_name_code == "COVE"){
+	all_COR <- c("D29")
+}
+
+for(COR in all_COR){
+	res = knitr::knit_child(
+  	here::here('cop_mediation', 'report_sub.Rmd')
+	)
+  cat(res, sep = '\n')
 }
 ```

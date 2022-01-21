@@ -11,6 +11,9 @@ if(COR == "D29IncludeNotMolecConfirmed"){
     "one day after first dose."
   )
   title <- "One day after first dose"
+}else if(COR == "D29"){
+  info <- "Day 29 analysis"
+  title <- "Day 29"
 }
 
 ```
@@ -21,16 +24,22 @@ This section contains results from the `r info`.
 
 ```{r, results = "asis"}
 here::i_am("cop_mediation/report_sub.Rmd")
-bind_result <- readRDS(here::here("cop_mediation", "output",
-  paste0("full_result_janssen_pooled_real_", COR, ".rds")
-))
-adcp_result <- readRDS(here::here("cop_mediation", "output",
-  paste0("full_result_janssen_pooled_realADCP_", COR, ".rds")
-))
-psv_result <- readRDS(here::here("cop_mediation", "output",
-  paste0("full_result_janssen_pooled_realPsV_", COR, ".rds")
-))
-full_result <- rbind(bind_result, psv_result, adcp_result)
+if(config$study_name_code == "ENSEMBLE"){
+  bind_result <- readRDS(here::here("cop_mediation", "output",
+    paste0("full_result_janssen_pooled_real_", COR, ".rds")
+  ))
+  adcp_result <- readRDS(here::here("cop_mediation", "output",
+    paste0("full_result_janssen_pooled_realADCP_", COR, ".rds")
+  ))
+  psv_result <- readRDS(here::here("cop_mediation", "output",
+    paste0("full_result_janssen_pooled_realPsV_", COR, ".rds")
+  ))
+  full_result <- rbind(bind_result, psv_result, adcp_result)
+}else if(config$study_name_code == "COVE"){
+  full_result <- readRDS(here::here("cop_mediation", "output",
+    paste0("full_result_moderna_real_", COR, ".rds")
+  ))
+}
 
 init_kable <- knitr::kable(full_result, 
             format = "latex", row.names = FALSE, booktabs = TRUE, escape = FALSE,
@@ -49,36 +58,48 @@ kableExtra::kable_styling(init_kable, latex_options = c("scale_down", "HOLD_posi
 ```{r}
 summary_stats <- readRDS(
   here::here("cop_mediation", "output", 
-    paste0("summary_stats_janssen_pooled_real_", COR, ".rds")
+    paste0("summary_stats_", attr(config,"config"),
+           "_", COR, ".rds")
   )
 )
-summary_stats_ADCP <- readRDS(
-  here::here("cop_mediation", "output", 
-    paste0("summary_stats_janssen_pooled_realADCP_", COR, ".rds")
+
+if(config$study_name_code == "ENSEMBLE"){
+  summary_stats_ADCP <- readRDS(
+    here::here("cop_mediation", "output", 
+      paste0("summary_stats_janssen_pooled_realADCP_", COR, ".rds")
+    )
   )
-)
-summary_stats_PsV <- readRDS(
-  here::here("cop_mediation", "output", 
-    paste0("summary_stats_janssen_pooled_realPsV_", COR, ".rds")
+  summary_stats_PsV <- readRDS(
+    here::here("cop_mediation", "output", 
+      paste0("summary_stats_janssen_pooled_realPsV_", COR, ".rds")
+    )
   )
-)
+  base_caption <- "Endpoints included in phase 2 by study arm, binding analysis "
+  base_caption2 <- "Total endpoints by study arm in binding data set "
+}else if(config$study_name_code == "COVE"){
+  base_caption <- "Endpoints included in phase 2 by study arm"
+  base_caption2 <- "Total endpoints by study arm"
+}
 is_start1 <- grepl("start1", COR)
 ```
 
 ```{r}
 kableExtra::kable_styling(
-  knitr::kable(summary_stats$tab1, caption = paste0("Endpoints included in phase 2 by study arm, binding analysis ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
-  latex_options = "HOLD_position"
-)
-kableExtra::kable_styling(
-  knitr::kable(summary_stats_ADCP$tab1, caption = paste0("Endpoints included in phase 2 by study arm, ADCP analysis", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+  knitr::kable(summary_stats$tab1, caption = paste0(base_caption, ifelse(is_start1, "starting 1 day after Day 29", ""))),
   latex_options = "HOLD_position"
 )
 
-kableExtra::kable_styling(
-  knitr::kable(summary_stats_PsV$tab1, caption = paste0("Endpoints included in phase 2 by study arm, PsV analysis", ifelse(is_start1, "starting 1 day after Day 29", ""))),
-  latex_options = "HOLD_position"
-)
+if(config$study_name_code == "ENSEMBLE"){
+  kableExtra::kable_styling(
+    knitr::kable(summary_stats_ADCP$tab1, caption = paste0("Endpoints included in phase 2 by study arm, ADCP analysis", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+    latex_options = "HOLD_position"
+  )
+
+  kableExtra::kable_styling(
+    knitr::kable(summary_stats_PsV$tab1, caption = paste0("Endpoints included in phase 2 by study arm, PsV analysis", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+    latex_options = "HOLD_position"
+  )
+}
 ```
 
 \clearpage
@@ -86,28 +107,37 @@ kableExtra::kable_styling(
 
 ```{r}
 kableExtra::kable_styling(
-  knitr::kable(summary_stats$tab2, caption = paste0("Total endpoints by study arm in binding data set ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
-  latex_options = "HOLD_position"
-)
-kableExtra::kable_styling(
-  knitr::kable(summary_stats_ADCP$tab2, caption = paste0("Total endpoints by study arm in ADCP data set ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+  knitr::kable(summary_stats$tab2, caption = paste0(base_caption2, ifelse(is_start1, "starting 1 day after Day 29", ""))),
   latex_options = "HOLD_position"
 )
 
-kableExtra::kable_styling(
-  knitr::kable(summary_stats_PsV$tab2, caption = paste0("Total endpoints by study arm in PsV data set ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
-  latex_options = "HOLD_position"
-)
+if(study_name_code == "ENSEMBLE"){
+  kableExtra::kable_styling(
+    knitr::kable(summary_stats_ADCP$tab2, caption = paste0("Total endpoints by study arm in ADCP data set ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+    latex_options = "HOLD_position"
+  )
+
+  kableExtra::kable_styling(
+    knitr::kable(summary_stats_PsV$tab2, caption = paste0("Total endpoints by study arm in PsV data set ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
+    latex_options = "HOLD_position"
+  )
+}
 ```
 
 \clearpage
 
 
 ```{r}
-assay <- c("Binding", "ADCP", "PsV")
-day <- c(summary_stats$day_of_analysis,
-         summary_stats_ADCP$day_of_analysis,
-         summary_stats_PsV$day_of_analysis)
+if(config$study_name_code == "ENSEMBLE"){
+  assay <- c("Binding", "ADCP", "PsV")
+  day <- c(summary_stats$day_of_analysis,
+           summary_stats_ADCP$day_of_analysis,
+           summary_stats_PsV$day_of_analysis)  
+}else if(config$study_name_code == "COVE"){
+  assay <- "All assays"
+  day <- summary_stats$day_of_analysis
+}
+
 kableExtra::kable_styling(
   knitr::kable(data.frame(Assay = assay, `Analysis day` = day ),
              caption = "The day used to generate binary endpoints in the mediation analysis"),

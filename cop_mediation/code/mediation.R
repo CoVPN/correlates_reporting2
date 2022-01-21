@@ -19,7 +19,8 @@ if(config$study_name_code == "ENSEMBLE"){
   data$Region1 <- as.numeric(data$Region == 1)
   data$Region2 <- as.numeric(data$Region == 2)
 }else if(config$study_name_code == "COVE"){
-  times <- "Day29"
+  times <- c("Day29") # Day57 all have positivity issues
+  covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
 }
 
 include_assays <- NULL
