@@ -111,7 +111,12 @@ janssen_trial_real: &janssen_trial_real # binding Ab markers
 
 janssen_trial_realADCP: &janssen_trial_realADCP
   <<: *janssen_trial
+<<<<<<< HEAD
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realADCP_data_processed_with_riskscore.csv
+ assays: [ADCP]
+=======
   assays: [ADCP]
+>>>>>>> e26a1edd84d8f62f9e6fc1a9eb7ed78eab70ff56
   assay_labels: [Phagocytic Score]
   assay_labels_short: [Phagocytic Score]
   primary_assays: [] # have it be empty if no multitesting adjustment should be done
@@ -132,7 +137,7 @@ janssen_trial_realPsV: &janssen_trial_realPsV
 
 janssen_trial_realPsV: &janssen_trial_realPsV
   <<: *janssen_trial
-  data_cleaned: ../data_clean/janssen_pooled_realPsV_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realPsV_data_processed_with_riskscore.csv
   assays: [pseudoneutid50]
   assay_labels: [PsV Neutralization 50% Titer]
   assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
