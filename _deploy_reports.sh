@@ -24,22 +24,22 @@ then
 elif [ "$REPORT_TYPE" == "COR" ]
 then
   echo "copying baseline risk score and CoR reports"
-  ls -s $TRAVIS_BUILD_DIR/_report_riskscore
+  #ls -s $TRAVIS_BUILD_DIR/_report_riskscore
   ls -s $TRAVIS_BUILD_DIR/_report_cor
-  cp -rf $TRAVIS_BUILD_DIR/_report_riskscore/* ./
+  #cp -rf $TRAVIS_BUILD_DIR/_report_riskscore/* ./
   cp -rf $TRAVIS_BUILD_DIR/_report_cor/* ./
 elif [ "$REPORT_TYPE" == "COP" ]
 then
   echo "copying baseline risk score and CoP reports"
-  ls -s $TRAVIS_BUILD_DIR/_report_riskscore
+  #ls -s $TRAVIS_BUILD_DIR/_report_riskscore
   ls -s $TRAVIS_BUILD_DIR/_report_cop
-  cp -rf $TRAVIS_BUILD_DIR/_report_riskscore/* ./
+  #cp -rf $TRAVIS_BUILD_DIR/_report_riskscore/* ./
   cp -rf $TRAVIS_BUILD_DIR/_report_cop/* ./
 elif [ "$REPORT_TYPE" == "RISK" ]
 then
-  echo "copying baseline risk score report"
-  ls -s $TRAVIS_BUILD_DIR/_report_riskscore
-  cp -rf $TRAVIS_BUILD_DIR/_report_riskscore/* ./
+  #echo "copying baseline risk score report"
+  #ls -s $TRAVIS_BUILD_DIR/_report_riskscore
+  #cp -rf $TRAVIS_BUILD_DIR/_report_riskscore/* ./
 fi
 echo "Reports built with R version $TRAVIS_R_VERSION"
 
