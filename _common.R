@@ -275,25 +275,36 @@ if (config$is_ows_trial) {
     pos.cutoffs=sapply(tmp, function(x) unname(x["pos.cutoff"]))
     llods=sapply(tmp, function(x) unname(x["LLOD"]))
     lloqs=sapply(tmp, function(x) unname(x["LLOQ"]))
-    uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))
+    uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))    
+    lloxs=llods 
     
-    # Per Sarah O'Connell, for ensemble, the positivity cut offs and LLODs will be identical, 
-    # as will the quantitative limits for N protein which are based on convalescent samples.
-    
-    # But the RBD and Spike quantitation ranges will be different for the Janssen partial validation than for Moderna. 
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
-        lloqs["bindSpike"]=1.8429 
-        lloqs["bindRBD"]=5.0243 
         
+        # data less than pos cutoff is set to pos.cutoff/2 in the raw data
+        # lod set to NA to make the plots free of too much white space
+        llods["bindSpike"]=NA 
         uloqs["bindSpike"]=238.1165 
+
+        llods["bindRBD"]=NA 
         uloqs["bindRBD"]=172.5755    
                 
-        llods["bindSpike"]=NA # set to NA to make the plots free of too much white space since raw data are censored at pos.cutoff
-        llods["bindRBD"]=NA 
-        llods["pseudoneutid50"]=6
-    }
+        llods["pseudoneutid50"]=6 # based on data, SAP says 5.712
+        uloqs["pseudoneutid50"]=1354.315
+        
+        lloxs=llods 
+        
+    } else if(study_name=="PREVENT-19") {
+        
+        # data less than lloq is set to lloq/2 in the raw data
+        llods["bindSpike"]=NA 
+        lloqs["bindSpike"]=150.4*convf["bindSpike"]
+        pos.cutoffs["bindSpike"]=lloqs["bindSpike"]
+        uloqs["bindSpike"]=770464.6 *convf["bindSpike"]
+        
+        lloxs=lloqs 
     
-    lloxs=llods
+    }
+
     
 } else {
     # get uloqs and lloqs from config
