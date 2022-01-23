@@ -10,22 +10,32 @@ for (a in all.markers) {
     f= update(form.0, as.formula(paste0("~.+", a)))
     fits[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
+fits=fits[1:length(assays)] # for now, we don't need the delta (multitesting adjustment results are affected)
+# scaled marker
+fits.scaled=list()
+for (a in all.markers) {
+    f= update(form.0, as.formula(paste0("~.+scale(", a, ")")))
+    fits.scaled[[a]]=svycoxph(f, design=design.vacc.seroneg) 
+}
+fits.scaled=fits.scaled[1:length(assays)] # for now, we don't need the delta (multitesting adjustment results are affected)
 
 natrisk=nrow(dat.vac.seroneg)
 nevents=sum(dat.vac.seroneg$yy==1)
 
 # make pretty table
-fits=fits[1:length(assays)] # for now, we don't need the delta (multitesting adjustment results are affected)
 rows=length(coef(fits[[1]]))
 est=getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=1)
 ci= getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=13)
 p=  getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=10)
+est.scaled=getFormattedSummary(fits.scaled, exp=T, robust=T, rows=rows, type=1)
+ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=T, rows=rows, type=13)
 
 pvals.cont = sapply(fits, function(x) {
     tmp=getFixedEf(x)
     p.val.col=which(startsWith(tolower(colnames(tmp)),"p"))
     tmp[nrow(tmp),p.val.col]
 })
+
 
 
 ## not used anymore
@@ -44,8 +54,8 @@ for (a in c("Day"%.%tpeak%.%assays, "Delta"%.%tpeak%.%"overB"%.%assays)) {
     f= update(form.0, as.formula(paste0("~.+", a, "cat")))
     fits.tri[[a]]=run.svycoxph(f, design=design.vacc.seroneg) 
 }
-
 fits.tri=fits.tri[1:length(assays)]
+
 rows=length(coef(fits.tri[[1]]))-1:0
 # get generalized Wald p values
 overall.p.tri=sapply(fits.tri, function(fit) {
@@ -165,7 +175,6 @@ p.2=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FDR" ], 3, remove.lead
 tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p), p.2, p.1)
 rownames(tab.1)=c(labels.axis["Day"%.%tpeak, assays])
 tab.1
-
 mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
     col.headers=paste0("\\hline\n 
          \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
@@ -178,6 +187,19 @@ tab.cont=tab.1
 tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p))
 rownames(tab.1.nop12)=c(labels.axis["Day"%.%tpeak, assays])
 rv$tab.1=tab.1.nop12
+
+# scaled markers
+tab.1.scaled=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est.scaled), t(ci.scaled), t(p), p.2, p.1)
+rownames(tab.1.scaled)=c(labels.axis["Day"%.%tpeak, assays])
+tab.1.scaled
+mytex(tab.1.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
+    col.headers=paste0("\\hline\n 
+         \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
+         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
+         \\hline\n 
+    ")
+)
+tab.cont.scaled=tab.1.scaled
 
 
 
@@ -230,7 +252,6 @@ tmp=rbind(c(labels.axis["Day"%.%tpeak, assays]), "", "")
 rownames(tab)=c(tmp)
 tab
 tab.cat=tab[1:(nrow(tab)),]
-
 #cond.plac=dat.pla.seroneg[[config.cor$EventTimePrimary]]<=tfinal.tpeak # not used anymore
 mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_svycoxph_cat_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
     col.headers=paste0("\\hline\n 
@@ -248,6 +269,8 @@ mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_svycoxph_cat_pretty_"%.%st
          )
     )
 )
+
+
 # save two subjects for collate
 save.s.1=paste0(sum(dat.pla.seroneg$yy), "/", format(nrow(dat.pla.seroneg), big.mark=","))
 save.s.2=formatDouble(sum(dat.pla.seroneg$yy)/nrow(dat.pla.seroneg), digit=4, remove.leading0=F)
@@ -299,4 +322,4 @@ if (!is.null(config$multivariate_assays)) {
 }
 
 
-save (tab.cont, tab.cat, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))
+save (tab.cont, tab.cat, tab.cont.scaled, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))
