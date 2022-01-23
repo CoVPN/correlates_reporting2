@@ -96,7 +96,7 @@ janssen_trial: &janssen_trial
   low_efficacy: yes # used to drive some plotting configurations
 
 
-janssen_trial_real: &janssen_trial_real # binding Ab markers
+janssen_trial_realbAb: &janssen_trial_realbAb # binding Ab markers
   <<: *janssen_trial
   assays: [bindSpike, bindRBD]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
@@ -127,9 +127,9 @@ janssen_trial_realPsV: &janssen_trial_realPsV
   num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
 
 
-janssen_pooled_real: 
-  <<: *janssen_trial_real
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_real_data_processed_with_riskscore.csv
+janssen_pooled_realbAb: 
+  <<: *janssen_trial_realbAb
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realbAb_data_processed_with_riskscore.csv
   subset_variable: None
   subset_value: All
   covariates_riskscore: ~.+ risk_score + as.factor(Region)
@@ -152,8 +152,8 @@ janssen_pooled_realADCP:
   covariates_norisksco: ~.+ Age        + as.factor(Region)
 
 
-janssen_na_real: 
-  <<: *janssen_trial_real
+janssen_na_realbAb: 
+  <<: *janssen_trial_realbAb
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_real_data_processed_with_riskscore.csv
   subset_variable: Region
   subset_value: 0
@@ -177,8 +177,8 @@ janssen_na_realADCP:
   covariates_norisksco: ~.+ Age
 
 
-janssen_la_real: 
-  <<: *janssen_trial_real
+janssen_la_realbAb: 
+  <<: *janssen_trial_realbAb
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_real_data_processed_with_riskscore.csv
   subset_variable: Region
   subset_value: 1
@@ -202,8 +202,8 @@ janssen_la_realADCP:
   covariates_norisksco: ~.+ Age
 
 
-janssen_sa_real: 
-  <<: *janssen_trial_real
+janssen_sa_realbAb: 
+  <<: *janssen_trial_realbAb
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_real_data_processed_with_riskscore.csv
   subset_variable: Region
   subset_value: 2

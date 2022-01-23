@@ -153,3 +153,10 @@ if (tpeak=="57") {
     write(paste0(res[2], " (", res[1], "-", res[3], ")"), file=paste0(save.results.to, "quartiles_visit_intervals_immuno_1to29"))
     
 }
+
+
+
+#if (attr(config,"config")=="") {
+#    km <- survfit(f1, subset(dat.vac.seroneg, ph2==1), weights=wt)
+#    
+#}
