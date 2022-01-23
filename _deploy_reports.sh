@@ -37,6 +37,7 @@ then
   cp -rf $TRAVIS_BUILD_DIR/_report_cop/* ./
 elif [ "$REPORT_TYPE" == "RISK" ]
 then
+  echo "nothing to copy here"
   #echo "copying baseline risk score report"
   #ls -s $TRAVIS_BUILD_DIR/_report_riskscore
   #cp -rf $TRAVIS_BUILD_DIR/_report_riskscore/* ./
