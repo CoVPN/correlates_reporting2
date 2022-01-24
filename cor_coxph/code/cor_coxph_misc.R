@@ -155,8 +155,16 @@ if (tpeak=="57") {
 }
 
 
-
-#if (attr(config,"config")=="") {
-#    km <- survfit(f1, subset(dat.vac.seroneg, ph2==1), weights=wt)
-#    
-#}
+# understand different follow-up periods in different regions
+if (attr(config,"config")=="janssen_pooled_realbAb") {   
+    form = Surv(EventTimePrimary, EventIndPrimary) ~ Region
+    
+    par(mfrow=c(1,2))
+    
+    km <- survfit(form, subset(dat.mock, Trt==1 & ph1))
+    plot(km, ylim=c(.96,1), col=1:3, main="ph1", xlim=c(0,100))
+    
+    km <- survfit(form, subset(dat.mock, Trt==1 & ph2))
+    plot(km, ylim=c(0.6,1), col=1:3, main="ph2", xlim=c(0,100))
+    
+}
