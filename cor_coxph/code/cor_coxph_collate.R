@@ -1,3 +1,4 @@
+# Sys.setenv(TRIAL = "janssen_pooled_realbAb") # just so that _common.R can run
 renv::activate(project = here::here(".."))    
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
@@ -21,7 +22,7 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 
 
 # reading in data for COVE and ENSEMBLE
-dat.vac.seroneg.bAb=load.data("janssen_pooled_real", "D29IncludeNotMolecConfirmedstart1")
+dat.vac.seroneg.bAb=load.data("janssen_pooled_realbAb", "D29IncludeNotMolecConfirmedstart1")
 dat.vac.seroneg.id50=load.data("janssen_pooled_realPsV", "D29IncludeNotMolecConfirmedstart1")
 dat.vac.seroneg.adcp=load.data("janssen_pooled_realADCP", "D29IncludeNotMolecConfirmedstart1")
 stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.bAb$ptid))
@@ -33,7 +34,7 @@ dat.ense.1=cbind(dat.vac.seroneg.bAb,
     Day29ADCP=dat.vac.seroneg.adcp$Day29ADCP, 
     Day29ADCPcat=dat.vac.seroneg.adcp$Day29ADCPcat)
 
-dat.ense.0=load.data("janssen_pooled_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.ense.0=load.data("janssen_pooled_realbAb", "D29IncludeNotMolecConfirmedstart1", trt=0)
     
 dat.cove.1=load.data("moderna_real", "D57")
 dat.cove.0=load.data("moderna_real", "D57", trt=0)
@@ -107,7 +108,14 @@ for (region in c("pooled","na","la","sa")) {
 
 
 
+###################################################################################################
+# cross tabulation (cases x non-cases) x (have bnAb data) x (have PsV ID50 data)
 
+with(dat.ense.1, table(!is.na(Day29bindSpike) & !is.na(BbindSpike), !is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50), EventIndPrimaryIncludeNotMolecConfirmedD29))
+
+with(dat.ense.1, table(!is.na(Day29bindSpike) & !is.na(BbindSpike), !is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50), EventIndPrimaryD29))
+
+tmp=subset(dat.ense.1, !(!is.na(Day29bindSpike) & !is.na(BbindSpike)) & !(!is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50)) & EventIndPrimary==1)
 
 ###################################################################################################
 # correlations between markers

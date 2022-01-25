@@ -187,13 +187,6 @@ if(config$is_ows_trial) {
         if(has57) MaxID50ID80Delta57overB = max(dat.mock[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
     }
     
-    # maxed over ADCP, restricting to Day 29 or 57
-    if("ADCP" %in% assays ) {
-        if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("ADCP"))], na.rm=T)
-        if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("ADCP"))], na.rm=T)
-        if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("ADCP"))], na.rm=T)
-        if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("ADCP"))], na.rm=T)
-    }
             
 }     
 
