@@ -14,6 +14,7 @@ if (!exists("ylims.cor")) {
 }
 #
 report.ve.levels=c(.65,.9,.95)
+digits.risk=4
 
 
 ###################################################################################################
@@ -102,7 +103,6 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
 save(ylims.cor, file=paste0(save.results.to, "ylims.cor."%.%study_name%.%".Rdata"))
 
 # show the results at select assay values
-digits.risk=4
 risks.all=get("risks.all.1")
 for (a in assays) {
     risks=risks.all[[a]]
@@ -126,13 +126,17 @@ for (a in assays) {
 ###################################################################################################
 # controlled VE curves for continuous markers
     
-for (eq.geq in 1:3) {  
+for (eq.geq in 1:4) {  
 # 1 conditional on s
 # 2 conditional on S>=s
-# 3 is same as 1 except that no sens curve is shown
-# eq.geq=1
+# 3 same as 1 except that no sens curve is shown
+# 4 same as 3 except that y axis on log scale
+# eq.geq=4
     outs=lapply (assays, function(a) {        
-        mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")),"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
+        tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus"))
+        if(eq.geq==4) tmp=4
+        mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp,"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
+ 
             lwd=2.5
             par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
             
@@ -150,17 +154,20 @@ for (eq.geq in 1:3) {
             Bias=controlled.risk.bias.factor(ss=risks$marker, s.cent=s.ref, s1=risks$marker[s1], s2=risks$marker[s2], RRud) 
             if (is.nan(Bias[1])) Bias=rep(1,length(Bias))
         
-            ylim=ve_ylim
             if (eq.geq==2) {
                 if (study_name %in% c("COVE", "MockCOVE")) {
                     ylim=c(0.8,1)
                 } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
                     ylim=c(0.5,1)
                 } 
-            } 
+            } else if (eq.geq==4) {
+                ylim=unlist(ve_ylim_log)
+            } else {
+                ylim=ve_ylim
+            }
             
             ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))        
-            .subset=if(eq.geq==1 | eq.geq==3) rep(T, length(risks$marker)) else ncases>=5
+            .subset=if(eq.geq!=2) rep(T, length(risks$marker)) else ncases>=5
             
             # CVE with sensitivity analysis
             est = 1 - risks$prob*Bias/res.plac.cont["est"]
@@ -170,12 +177,15 @@ for (eq.geq in 1:3) {
             tmp=10**risks$marker[pick.out]; tmp=c(round(tmp[1],1), round(tmp[-1]))
             ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[pick.out],digits.risk), " (", formatDouble(ci.band[1,pick.out],digits.risk), ",", formatDouble(ci.band[2,pick.out],digits.risk), ")"))
     
-            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=ifelse(eq.geq==1,"red","white"), lwd=lwd, make.legend=F, 
+            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), 
+                col=ifelse(eq.geq==1,"red","white"), # white is no plot
+                lwd=lwd, make.legend=F, 
                 ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by Day ",tfinal.tpeak), 
                 main=paste0(labels.assays.long["Day"%.%tpeak,a]),
-                xlab=labels.assays.short[a]%.%ifelse(eq.geq==1 | eq.geq==3," (=s)"," (>=s)"), 
-                ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
-            # labels
+                xlab=labels.assays.short[a]%.%ifelse(eq.geq!=2," (=s)"," (>=s)"), 
+                ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F,
+                log=ifelse(eq.geq==4, "y", ""))
+            # y axis labels
             yat=seq(-1,1,by=.1)
             axis(side=2,at=yat,labels=(yat*100)%.%"%")
         
@@ -190,7 +200,7 @@ for (eq.geq in 1:3) {
             est = 1 - risks$prob/res.plac.cont["est"]
             boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))        
-            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=if(eq.geq==3 | eq.geq==2) "black" else "pink", lwd=lwd, make.legend=F, add=T)
+            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=if(eq.geq!=1) "black" else "pink", lwd=lwd, make.legend=F, add=T)
             if (config$is_ows_trial) {
                 # find marker values under specific VE
                 # if all report.ve.levels are out of range, tmp will be as long as the rows in ret

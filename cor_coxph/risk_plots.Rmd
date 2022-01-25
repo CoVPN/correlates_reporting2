@@ -21,17 +21,23 @@
 \subfloat[][Controlled VE as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates_`r study_name`} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r llox_label` =`r round(lloxs[a],1)`.]{\includegraphics
 [height=3.5in,width=3.5in]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_eq_manus_`r study_name`}}
 
+\subfloat[][Controlled VE as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates_`r study_name`} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r llox_label` =`r round(lloxs[a],1)`.]{\includegraphics
+[height=3.5in,width=3.5in]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves4_`r study_name`}}
+
+\caption{Controlled VE curves (=s). `r special.note`}
+\end{figure}
+\clearpage
+
 \newif\ifshowsen
 \showsen`r ifelse(study_name=="HVTN705" & a!="IgG340mdw_V1V2", 'false', 'true')`
 
 \ifshowsen
-\subfloat[][Controlled VE with sensitivity analysis as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates_`r study_name`} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r llox_label` =`r round(lloxs[a],1)`.]{\includegraphics
-[height=3.5in,width=3.5in]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_eq_`r study_name`}}
-\fi
-
-
-\caption{Controlled VE curves (=s). `r special.note`}
+\begin{figure}
+\center
+\includegraphics[height=3.5in,width=3.5in]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_eq_`r study_name`}
+\caption{Controlled VE curves (=s) with sensitivity analysis as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates_`r study_name`} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r llox_label` =`r round(lloxs[a],1)`. `r special.note`}
 \end{figure}
+\fi
 
 
 \begin{figure}

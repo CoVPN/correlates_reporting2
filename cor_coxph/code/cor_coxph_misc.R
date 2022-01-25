@@ -1,3 +1,46 @@
+#with(subset(dat.mock, Trt==1 & ph1), table(EventIndPrimary, useNA="ifany"))
+#with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary, useNA="ifany"))
+
+#par(mfrow=c(2,2))
+#with(subset(dat.mock, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="NA"))
+#with(subset(dat.mock, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="LA"))
+#with(subset(dat.mock, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
+#with(subset(dat.mock, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
+
+#with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==0], useNA="ifany"))
+#with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==1], useNA="ifany"))
+
+#with(subset(dat.mock, ph1==1), table(EventIndPrimary, Trt))
+#with(subset(dat.mock, ph2==1), table(EventIndPrimary, Trt))
+#with(subset(dat.mock, Trt==1 & ph1), table(Wstratum, ph2))
+#with(subset(dat.mock, Trt==1 & ph1), table(tps.stratum, ph2))
+#with(subset(dat.mock, Trt==1), table(Wstratum, ph2))
+#with(subset(dat.mock, Trt==1), table(Wstratum, wt.D29))
+#with(subset(dat.mock, ph1==1), table(Delta.D210, Trt))
+#with(subset(dat.mock, ph2==1), corplot(Day210ELCZ,Day210ADCPgp140C97ZAfib))
+#with(subset(dat.mock, ph2==1), corr(cbind(Day210ELCZ,Day210ADCPgp140C97ZAfib), w = wt))
+    
+#with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
+#with(subset(dat.mock, Trt==1 & ph2 & !EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
+
+
+
+# Average follow-up of vaccine recipients starting at tpeaklag days post visit
+write(round(mean(subset(dat.mock, Trt==1 & ph1, EventTimePrimary, drop=T), na.rm=T)-tpeaklag), file=paste0(save.results.to, "avg_followup_"%.%study_name))
+
+
+## experimenting with multitesting
+## based on moderna_mock
+## make their correlation 0.98
+#dat.vac.seroneg$Day57bindRBD = dat.vac.seroneg$Day57bindSpike + rnorm(nrow(dat.vac.seroneg), sd=.1)
+#dat.vac.seroneg$Day57pseudoneutid50 = dat.vac.seroneg$Day57pseudoneutid80 + rnorm(nrow(dat.vac.seroneg), sd=.1)
+## switch 50 and 80
+#tmp=dat.vac.seroneg$Day57pseudoneutid50
+#dat.vac.seroneg$Day57pseudoneutid50=dat.vac.seroneg$Day57pseudoneutid80
+#dat.vac.seroneg$Day57pseudoneutid80=tmp
+
+
+
 ## commented out now because it won't run with the real processed moderna dataset, which did not include baseline pos
 ## Decile immunogenicity table
 ## do this before uloq censoring
