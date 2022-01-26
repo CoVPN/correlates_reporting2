@@ -21,13 +21,13 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2))
 	Rscript code/cor_coxph.R D210
 endif
 
-
-## report        : create a standalone report
-meta_report:
+collate:
 	Rscript code/cor_coxph_collate.R
+	Rscript -e "rmarkdown::render('collate_ensemble.Rmd', output_file='covpn_correlates_cor_coxph_janssen_collated.pdf')"
+
+meta:
 	Rscript code/cor_coxph_meta_VE_curves.R
-	Rscript -e "rmarkdown::render('meta_cve.Rmd', output_file='covpn_correlates_cor_coxph_meta_cve.pdf')"
-	Rscript -e "rmarkdown::render('collate_ensemble.Rmd', output_file='covpn_correlates_cor_coxph_ensemble_collated.pdf')"
+	Rscript -e "rmarkdown::render('meta_cve.Rmd', output_file='covpn_correlates_cor_coxph_1meta.pdf')"
 
 
 # type 'make help' to show all make commands

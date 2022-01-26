@@ -17,7 +17,6 @@ bibliography: ref.bib
 
 ```{r, include=FALSE}
 renv::activate(project = here::here(".."))    
-source(here::here("..", "_common.R"), local = knitr::knit_global()) # needed for collate coxph tables
 ```
 
 

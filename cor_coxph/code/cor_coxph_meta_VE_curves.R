@@ -25,9 +25,9 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 # TRIALS is a subset of all.trials
 # a is an assay
 draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
-#a="pseudoneutid50"; TRIALS=c("moderna_real", "janssen_pooled_real"); file.name=1; include.az=T; log=""
+#a="pseudoneutid50"; TRIALS=c("moderna_real", "janssen_pooled_real"); file.name=1; include.az=T; log="y"
     myprint(a)
-    if(log=="") ylim=c(0, 1) else ylim=c(0.1, 1)
+    if(log=="") ylim=c(0, 1) else ylim=-log(1-c(0,.98))
     hist.shrink=1/c(ADCP=2,pseudoneutid50=1.2,bindSpike=1.3,bindRBD=1.3)
     
     all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real", "AZ-COV002")
@@ -82,12 +82,19 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))                
         
             shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
-            mymatplot(risks$marker[shown], t(rbind(est, ci.band))[shown,], type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE"), xlab=labels.assays.short[a]%.%" (=s)", 
+            y=t(rbind(est, ci.band))[shown,]
+            if(log=="y") y=-log(1-y)
+            mymatplot(risks$marker[shown], y, type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE"), xlab=labels.assays.short[a]%.%" (=s)", 
                 #main=paste0(labels.assays.long["Day"%.%tpeak,a]),
-                ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, add=x!=TRIALS[1], log=log)
+                ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, add=x!=TRIALS[1])
             draw.x.axis.cor(xlim, NA)
-            yat=seq(-1,1,by=.1)
-            axis(side=2,at=yat,labels=(yat*100)%.%"%")            
+            if (log=="") {
+                yat=seq(-1,1,by=.1)
+                axis(side=2,at=yat,labels=(yat*100)%.%"%")            
+            } else {
+                yat=c(seq(0,.90,by=.1),.95)
+                axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
+            }
         
             # add histogram
             #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
@@ -95,7 +102,11 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
             tmp.1=hist(markers.x[[x]],breaks=ifelse(x=="moderna_real",25,15),plot=F)  # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
             tmp=weighted.hist(markers.x[[x]],weight[[x]], breaks=tmp.1$breaks, plot=F)
             attr(tmp,"class")="histogram" 
-            tmp$density=tmp$density/hist.shrink[a] # so that it will fit vertically
+            if (log=="") {
+                tmp$density=tmp$density/hist.shrink[a] # so that it will fit vertically
+            } else{
+                tmp$density=tmp$density/hist.shrink[a]*3 # so that it will fit vertically
+            }
             #tmp=hist(dat.vac.seroneg[["Day"%.%tpeak%.%a]],breaks=seq(min(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), max(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), len = 15),plot=F)
             plot(tmp,col=hist.col.ls[[x]],axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25)), add=T) 
             
@@ -112,7 +123,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
         # legend
         legend=paste0(studies[TRIALS], ", ",sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%")[1,])
         if (include.az) legend=c(legend, "AZ-COV002, 66.7%")
-        mylegend(x=6, col=cols[c(TRIALS, if(include.az) "AZ-COV002")], legend=legend, lty=1, lwd=2, cex=.7)
+        mylegend(x=ifelse(log=="",6,1), col=cols[c(TRIALS, if(include.az) "AZ-COV002")], legend=legend, lty=1, lwd=2, cex=.7)
     
     dev.off()    
     

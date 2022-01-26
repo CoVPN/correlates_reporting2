@@ -9,6 +9,7 @@ library(marginalizedRisk)
 library(tools) # toTitleCase
 library(survey)
 library(xtable) # this is a dependency of kyotil
+Sys.setenv("TRIAL"="janssen_pooled_realbAb") # value does not matter since we just need to load the common functions in _common.R
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
 Sys.setenv(VERBOSE=1)
