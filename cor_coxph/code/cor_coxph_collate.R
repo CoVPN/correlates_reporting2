@@ -52,14 +52,14 @@ dat.pla.seroneg.id50.sa=load.data("janssen_sa_realPsV", "D29IncludeNotMolecConfi
 for (region in c("pooled","na","la","sa")) {
     if(verbose) myprint(region)
     
-    trials=c("janssen_"%.%region%.%"_real", "janssen_"%.%region%.%"_realPsV", "janssen_"%.%region%.%"_realADCP")
+    trials=c("janssen_"%.%region%.%"_realbAb", "janssen_"%.%region%.%"_realPsV", "janssen_"%.%region%.%"_realADCP")
     
     for (COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")) {
         if(verbose) myprint(COR)
         out=lapply(trials, function (trial) {
             print(trial)
             load (file=paste0(here::here("output", trial, COR), "/coxph_slopes.Rdata")) 
-            list(tab.cont, tab.cat, save.s.1, save.s.2, pvals.adj)
+            list(tab.cont, tab.cat, save.s.1, save.s.2, pvals.adj, tab.cont.scaled)
         })
     
         pvals.adj=do.call(rbind, sapply(out, function (res) res[[5]]))
@@ -72,6 +72,12 @@ for (region in c("pooled","na","la","sa")) {
         tab.cont[,"p.1"]=p.1
         tab.cont[,"p.2"]=p.2
         
+        tab.cont.scaled=do.call(rbind, sapply(out, function (res) res[[6]]))
+        p.1=formatDouble(pvals.adj.hol[startsWith(names(pvals.adj.hol), "cont.")], 3, remove.leading0=F); p.1=sub("0.000","<0.001",p.1)
+        p.2=formatDouble(pvals.adj.fdr[startsWith(names(pvals.adj.fdr), "cont.")], 3, remove.leading0=F); p.2=sub("0.000","<0.001",p.2)
+        tab.cont.scaled[,"p.1"]=p.1
+        tab.cont.scaled[,"p.2"]=p.2
+        
         tab.cat=do.call(rbind, sapply(out, function (res) res[[2]]))
         overall.p.1=formatDouble(pvals.adj.hol[startsWith(names(pvals.adj.hol), "tri.")], 3, remove.leading0=F); p.1=sub("0.000","<0.001",p.1)
         overall.p.2=formatDouble(pvals.adj.fdr[startsWith(names(pvals.adj.fdr), "tri.")], 3, remove.leading0=F); p.2=sub("0.000","<0.001",p.2)
@@ -81,6 +87,14 @@ for (region in c("pooled","na","la","sa")) {
         mytex(tab.cont, file.name="CoR_univariable_svycoxph_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
             col.headers=paste0("\\hline\n 
                  \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
+                 \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
+                 \\hline\n 
+            ")
+        )    
+        
+        mytex(tab.cont.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
+            col.headers=paste0("\\hline\n 
+                 \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
                  \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
                  \\hline\n 
             ")

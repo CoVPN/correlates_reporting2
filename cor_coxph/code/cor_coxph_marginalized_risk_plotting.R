@@ -127,11 +127,11 @@ for (a in assays) {
 # controlled VE curves for continuous markers
     
 for (eq.geq in 1:4) {  
+# eq.geq=4
 # 1 conditional on s
 # 2 conditional on S>=s
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on log scale
-# eq.geq=4
     outs=lapply (assays, function(a) {        
         tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus"))
         if(eq.geq==4) tmp=4
@@ -232,7 +232,7 @@ for (eq.geq in 1:4) {
         ret        
     })
     
-
+    
     if(eq.geq==1) {
         # show the results at select assay values
         for (a in assays) { 
@@ -257,14 +257,14 @@ for(a in assays) {
     risks=risks.all[[a]]
     #pick.out=names(risks$marker)!=""
     pick.out=rep(T, length(risks$marker))
-
+    
     est = 1 - risks$prob/res.plac.cont["est"]
     boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
     ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))        
     
     tmp=10**risks$marker[pick.out]; tmp=c(round(tmp[1],1), round(tmp[-1]))
     ret = cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[pick.out],digits.risk), " (", formatDouble(ci.band[1,pick.out],digits.risk), ",", formatDouble(ci.band[2,pick.out],digits.risk), ")"))
-
+    
     if (config$is_ows_trial) {
         # find marker values under specific VE
         tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
@@ -274,7 +274,7 @@ for(a in assays) {
         
     while (nrow(out)%%4!=0) out=rbind(out, c("s"="", "Estimate"=""))
     tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])
-
+    
     mytex(tab, file.name=paste0(a, "_controlled_ve_eq", "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
         longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", COR), caption=paste0("Controlled VE as functions of Day ",
             tpeak," ", labels.axis[1,a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
@@ -284,7 +284,7 @@ for(a in assays) {
             formatDouble(overall.ve[1]*100,1),"\\% (95\\% CI ",formatDouble(overall.ve[2]*100,1)," to ",formatDouble(overall.ve[3]*100,1),"\\%).")
         #, col.headers=paste0("\\hline\n", concatList(paste0("\\multicolumn{2}{c}{", labels.axis[1,], "}"), "&"), "\\\\\n")
         )
-
+    
 }
 
 
