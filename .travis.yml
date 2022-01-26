@@ -1,19 +1,23 @@
 branches:
   only:
   - master
-language: r
+
 sudo: required
-cran: http://cran.rstudio.com
 latex: false
 pandoc: true
 warnings_are_errors: false
+
+language: r
+cran: http://cran.rstudio.com
+r:
+  - 4.1.1
+
 cache:
   directories:
   - "$HOME/.local/share/renv"
   - "$TRAVIS_BUILD_DIR/renv/library"
   - "$HOME/.TinyTeX/"
-r:
-- 4.1.1
+
 jobs:
   include:
   - name: Moderna CoR Report
@@ -30,27 +34,33 @@ jobs:
     script:
     - echo "Building correlates of risk report"
     - make cor_report
+
 apt_packages:
-- libxml2-dev
-- libssl-dev
-- libcurl4-openssl-dev
+  - libxml2-dev
+  - libssl-dev
+  - libcurl4-openssl-dev
+
 before_install:
-- sudo apt-get install -y texlive-extra-utils ghostscript
+  - sudo apt-get install -y texlive-extra-utils ghostscript
+
 install:
-- cd .. && Rscript -e "install.packages(c('here', 'tinytex'))"
-- wget https://cran.r-project.org/src/contrib/Archive/renv/renv_0.14.0.tar.gz
-- R CMD INSTALL renv_0.14.0.tar.gz
-- echo insecure >> ~/.curlrc && Rscript -e "tinytex::install_tinytex()"
-- export PATH=$HOME/bin:${PATH}
-- cd $TRAVIS_BUILD_DIR && Rscript -e "renv::restore()"
+  - cd .. && Rscript -e "install.packages(c('here', 'tinytex'))"
+  - wget https://cran.r-project.org/src/contrib/Archive/renv/renv_0.14.0.tar.gz
+  - R CMD INSTALL renv_0.14.0.tar.gz
+  - echo insecure >> ~/.curlrc && Rscript -e "tinytex::install_tinytex()"
+  - export PATH=$HOME/bin:${PATH}
+  - cd $TRAVIS_BUILD_DIR && Rscript -e "renv::restore()"
+
 before_script:
-- echo "B <- 5" >> $TRAVIS_BUILD_DIR/cor_coxph/code/params.R
-- echo "numPerm <- 5" >> $TRAVIS_BUILD_DIR/cor_coxph/code/params.R
-- echo "B <- 5" >> $TRAVIS_BUILD_DIR/cor_nonlinear/code/params.R
-- cd $TRAVIS_BUILD_DIR && Rscript -e "renv::status()"
-- cd $TRAVIS_BUILD_DIR && Rscript -e "row.names(installed.packages())"
+  - echo "B <- 5" >> $TRAVIS_BUILD_DIR/cor_coxph/code/params.R
+  - echo "numPerm <- 5" >> $TRAVIS_BUILD_DIR/cor_coxph/code/params.R
+  - echo "B <- 5" >> $TRAVIS_BUILD_DIR/cor_nonlinear/code/params.R
+  - cd $TRAVIS_BUILD_DIR && Rscript -e "renv::status()"
+  - cd $TRAVIS_BUILD_DIR && Rscript -e "row.names(installed.packages())"
+
 after_script:
-- chmod +x _deploy_reports.sh && ./_deploy_reports.sh
+  - chmod +x _deploy_reports.sh && ./_deploy_reports.sh
+
 notifications:
   email:
     on_success: change
@@ -58,6 +68,7 @@ notifications:
     recipients:
     - benkeser@emory.edu
     - nh@nimahejazi.org
+
 env:
   global:
   - secure: IXw0hUcYZNyqZWKsvVvPPHQ4OvjmMrEcpJvTRyl0r8X7IDHBWRloN/KCsRKPRzWa5btH7bow6dUNZmDeX1Cl3hPwnIp4yirVvD+XqfjWiBut2+FpkYfgU4p8AAqwsj+ZhhNwTeTKuSwXevKg5J1bJYRoXWe91iJHNoaM4S9VgHmaoLw1rDPtg/26HGfqFVs64JqR54fAqCmn8DNk1X5dgCqoXAPekEdHXS8NupxucoEJUjQls6fVzixbnmkfJbFzpCxpCFe/xkPtMe68uKgvJLh8GGJBo3HB5Tte9BBKW8/Ebn5XrJ7czTxT+v2xpmPl1iNiJ4nkqIkEcwRACG2o2Sc3l7d9pqeDcWL/GBpj12q/DJ8Hiv4n6qU9BZqa/zml7e854xUhfsZxs5iMPxz7Ey22U6VrwG3qCLv7333MWOVBBnkmgefjTlBjrqCat5X+VgqbTi/ySs7dHDeCWBE+j1nj8CnCrWqVQ+CiYOHo7lW1gJj0FBkcUdM3nzRI5MGmEJuUzOcaCxQlbfdvtV2SgY0oaS3QTRf1eOKHvav/CzFsENfFMim0Elh/quRHDyAAMPqJixoQ1TWlS6AMXFfAp7uj1020qx4Kr+Ibs62JYAUqD8nQB9UMCV01ROwhAytD4gBZbI3IMx/RDkNWWYUgh4/3HbeZMLJnSDKD0eRk3uE=
