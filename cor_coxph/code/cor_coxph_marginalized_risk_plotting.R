@@ -126,15 +126,15 @@ for (a in assays) {
 ###################################################################################################
 # controlled VE curves for continuous markers
     
-for (eq.geq in 1:4) {  
-# eq.geq=4
 # 1 conditional on s
 # 2 conditional on S>=s
 # 3 same as 1 except that no sens curve is shown
-# 4 same as 3 except that y axis on log scale
+# 4 same as 3 except that y axis on -log(1-) scale
+for (eq.geq in 1:4) {  
+# eq.geq=4; a=assays[1]
+
     outs=lapply (assays, function(a) {        
-        tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus"))
-        if(eq.geq==4) tmp=4
+        tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp=4
         mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp,"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
  
             lwd=2.5
@@ -161,7 +161,7 @@ for (eq.geq in 1:4) {
                     ylim=c(0.5,1)
                 } 
             } else if (eq.geq==4) {
-                ylim=unlist(ve_ylim_log)
+                ylim=-log(1-ve_ylim_log)
             } else {
                 ylim=ve_ylim
             }
@@ -183,11 +183,16 @@ for (eq.geq in 1:4) {
                 ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by Day ",tfinal.tpeak), 
                 main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 xlab=labels.assays.short[a]%.%ifelse(eq.geq!=2," (=s)"," (>=s)"), 
-                ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F,
-                log=ifelse(eq.geq==4, "y", ""))
+                ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
             # y axis labels
-            yat=seq(-1,1,by=.1)
-            axis(side=2,at=yat,labels=(yat*100)%.%"%")
+            if (eq.geq!=4) {
+                yat=seq(-1,1,by=.1)
+                axis(side=2,at=yat,labels=(yat*100)%.%"%")            
+            } else {
+                yat=c(seq(0,.90,by=.1),.95)
+                axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
+            }
+
         
             # overall controlled VE
             abline(h=overall.ve, col="gray", lwd=2, lty=c(1,3,3))
@@ -199,8 +204,10 @@ for (eq.geq in 1:4) {
             # CVE
             est = 1 - risks$prob/res.plac.cont["est"]
             boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
-            ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))        
-            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), col=if(eq.geq!=1) "black" else "pink", lwd=lwd, make.legend=F, add=T)
+            ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))  
+            y= t(rbind(est, ci.band))[.subset,]
+            if(eq.geq==4) y=-log(1-y)
+            mymatplot(risks$marker[.subset], y, type="l", lty=c(1,2,2), col=if(eq.geq!=1) "black" else "pink", lwd=lwd, make.legend=F, add=T)
             if (config$is_ows_trial) {
                 # find marker values under specific VE
                 # if all report.ve.levels are out of range, tmp will be as long as the rows in ret
@@ -211,7 +218,7 @@ for (eq.geq in 1:4) {
             
             # legend
             tmp=formatDouble(overall.ve*100,1)%.%"%"        
-            legend.x=9; if(eq.geq %in% c(1,3) & config$low_efficacy) legend.x=1
+            legend.x=9; if(eq.geq %in% c(1,3) & config$low_efficacy) legend.x=1; if(eq.geq==4) legend.x=1
             mylegend(x=legend.x,legend=c(
                     paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), 
                     "Controlled VE",
@@ -225,6 +232,7 @@ for (eq.geq in 1:4) {
             col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
             tmp=hist(dat.vac.seroneg[["Day"%.%tpeak%.%a]],breaks=15,plot=F) # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
             #tmp=hist(dat.vac.seroneg[["Day"%.%tpeak%.%a]],breaks=seq(min(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), max(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), len = 15),plot=F)
+            if(eq.geq==4) tmp$density=tmp$density*3
             plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25))) 
             
         dev.off()    
