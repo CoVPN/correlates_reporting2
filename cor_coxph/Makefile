@@ -26,7 +26,8 @@ endif
 meta_report:
 	Rscript code/cor_coxph_collate.R
 	Rscript code/cor_coxph_meta_VE_curves.R
-	Rscript -e "rmarkdown::render('meta_collate.Rmd', output_file='cor_coxph_meta_collate.pdf')"
+	Rscript -e "rmarkdown::render('meta_cve.Rmd', output_file='covpn_correlates_cor_coxph_meta_cve.pdf')"
+	Rscript -e "rmarkdown::render('collate_ensemble.Rmd', output_file='covpn_correlates_cor_coxph_ensemble_collated.pdf')"
 
 
 # type 'make help' to show all make commands
