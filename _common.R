@@ -213,9 +213,6 @@ names(assays)=assays # add names so that lapply results will have names
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
 if (config$is_ows_trial) {
-
-    # limits for each assay (IU)
-    # For bAb, IU and BAU are the same thing
     tmp=list(
         bindSpike=c(
             pos.cutoff=10.8424,
@@ -239,12 +236,14 @@ if (config$is_ows_trial) {
             ULOQ = 574.6783)
         ,
         pseudoneutid50=c( 
+            pos.cutoff=2.42,# as same lod
             LLOD = 2.42,
             ULOD = NA,
             LLOQ = 4.477,
             ULOQ = 10919)
         ,
         pseudoneutid80=c( 
+            pos.cutoff=15.02,# as same lod
             LLOD = 15.02,
             ULOD = NA,
             LLOQ = 21.4786,
@@ -269,15 +268,15 @@ if (config$is_ows_trial) {
     llods=sapply(tmp, function(x) unname(x["LLOD"]))
     lloqs=sapply(tmp, function(x) unname(x["LLOQ"]))
     uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))    
-    lloxs=llods 
+    lloxs=llods # llox is for plotting and can be either llod or lloq depending on trials
     
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         
-        # data less than pos cutoff is set to pos.cutoff/2 in the raw data
-        # lod set to NA to make the plots free of too much white space
-        llods["bindSpike"]=NA 
+        # data less than pos cutoff is set to pos.cutoff/2 in the raw data        
+        llods["bindSpike"]=NA # lod set to NA to make the plots free of too much white space
         uloqs["bindSpike"]=238.1165 
-
+    
+        # data less than pos cutoff is set to pos.cutoff/2 in the raw data        
         llods["bindRBD"]=NA 
         uloqs["bindRBD"]=172.5755    
                 
@@ -290,14 +289,13 @@ if (config$is_ows_trial) {
         
         # data less than lloq is set to lloq/2 in the raw data
         llods["bindSpike"]=NA 
-        lloqs["bindSpike"]=150.4*convf["bindSpike"]
+        lloqs["bindSpike"]=150.4*0.0090
         pos.cutoffs["bindSpike"]=lloqs["bindSpike"]
-        uloqs["bindSpike"]=770464.6 *convf["bindSpike"]
+        uloqs["bindSpike"]=770464.6*0.0090
         
         lloxs=lloqs 
     
     }
-
     
 } else {
     # get uloqs and lloqs from config
