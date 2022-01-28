@@ -295,7 +295,7 @@ if (!is.null(config$multivariate_assays)) {
     if(verbose) print("Multiple regression")
     
     for (ind in 1:2) {
-        tmp=if(ind==1) concatList(paste0("Day",config$timepoints, config$multivariate_assays),"+") else concatList(paste0("scale(Day",config$timepoints, config$multivariate_assays),")+") %.% ")"
+        tmp=if(ind==1) concatList(paste0("Day",tpeak, config$multivariate_assays),"+") else concatList(paste0("scale(Day",tpeak, config$multivariate_assays),")+") %.% ")"
         f= update(form.0, as.formula(paste0("~.+", tmp)))
         fit=svycoxph(f, design=design.vacc.seroneg) 
         var.ind=length(coef(fit)) - length(config$multivariate_assays):1 + 1
