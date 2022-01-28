@@ -274,7 +274,7 @@ subgrp <- c(
 ###################################################
 
 # Setup empty tables 
-tab_dm_neg <- tab_strtm2_1 <- tab_strtm2_2 <- tab_case_cnt <- NULL
+tab_dm_neg <- tab_strtm1 <- tab_strtm2 <- tab_strtm2_1 <- tab_strtm2_2 <- tab_case_cnt <- NULL
 rpcnt_case1 <- rpcnt_case2 <- rgm_case1 <- rgm_case2 <- rgmt_case1 <- rgmt_case2 <- NULL
 case_vacc_neg <- NULL
 
@@ -563,6 +563,8 @@ if ((n_strtm2 <- ceiling(ncol(tab_strtm2)/2-1))!=0) {
   tab_strtm2_2 <- NULL
 }
 
+if (ncol(tab_strtm2)==2) tab_strtm2 <- NULL
+
 # Case counts by availability of markers at baseline, d29, d57
 
 if (study_name %in% c("COVE", "MockCOVE")){
@@ -672,8 +674,8 @@ case_vacc_neg <- tab_case %>%
   dplyr::filter(Arm == "Vaccine" & `Baseline SARS-CoV-2` == "Negative") %>% 
   select(-c(Arm, `Baseline SARS-CoV-2`))
 
-print("Done with all tables") 
 
+print("Done with all tables") 
 
 # path for tables
 save.results.to <- here::here("output")
@@ -683,6 +685,6 @@ save.results.to <- paste0(here::here("output"), "/", attr(config,"config"))
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
-save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, case_vacc_neg,
+save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, case_vacc_neg, 
      file = file.path(save.results.to, "Tables.Rdata"))
 
