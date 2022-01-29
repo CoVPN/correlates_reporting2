@@ -195,7 +195,7 @@ for (eq.geq in 1:4) {
 
         
             # overall controlled VE
-            abline(h=overall.ve, col="gray", lwd=2, lty=c(1,3,3))
+            abline(h=if(eq.geq==4) -log(1-overall.ve) else overall.ve, col="gray", lwd=2, lty=c(1,3,3))
             #text(x=par("usr")[1], y=overall.ve[1]+(overall.ve[1]-overall.ve[2])/2,     "overall VE "%.%round(overall.ve[1]*100)%.%"%", adj=0)
         
             # x axis
@@ -223,7 +223,7 @@ for (eq.geq in 1:4) {
                     paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), 
                     "Controlled VE",
                     if(eq.geq==1) "Controlled VE Sens. Analysis"), 
-                col=c("white", if(eq.geq==3 | eq.geq==2) "black" else "pink", if(eq.geq==1) "red"), 
+                col=c("gray", if(eq.geq==3 | eq.geq==2) "black" else "pink", if(eq.geq==1) "red"), 
                 lty=1, lwd=2, cex=.8)
         
             # add histogram

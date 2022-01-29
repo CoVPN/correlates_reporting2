@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "moderna_real"); COR="D57"; Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "janssen_pooled_realPsV"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -72,6 +72,7 @@ rv=list()
 rv$marker.cutpoints=marker.cutpoints
 
 
+
 ###################################################################################################
 # run PH models
 ###################################################################################################
@@ -80,7 +81,6 @@ rv$marker.cutpoints=marker.cutpoints
 design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
 
 source(here::here("code", "cor_coxph_ph.R"))
-
 
 # optional forest plots
 if(length(config$forestplot_script)==1) {
