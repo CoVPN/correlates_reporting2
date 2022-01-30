@@ -268,32 +268,24 @@ if (config$is_ows_trial) {
     llods=sapply(tmp, function(x) unname(x["LLOD"]))
     lloqs=sapply(tmp, function(x) unname(x["LLOQ"]))
     uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))    
-    lloxs=llods # llox is for plotting and can be either llod or lloq depending on trials
     
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         
         # data less than pos cutoff is set to pos.cutoff/2 in the raw data        
-        llods["bindSpike"]=NA # lod set to NA to make the plots free of too much white space
         uloqs["bindSpike"]=238.1165 
     
         # data less than pos cutoff is set to pos.cutoff/2 in the raw data        
-        llods["bindRBD"]=NA 
         uloqs["bindRBD"]=172.5755    
                 
-        llods["pseudoneutid50"]=6 # based on data, SAP says 5.712
+        llods["pseudoneutid50"]=5.99761 # based on data, SAP says 5.712
         uloqs["pseudoneutid50"]=1354.315
-        
-        lloxs=llods 
         
     } else if(study_name=="PREVENT-19") {
         
         # data less than lloq is set to lloq/2 in the raw data
-        llods["bindSpike"]=NA 
         lloqs["bindSpike"]=150.4*0.0090
         pos.cutoffs["bindSpike"]=lloqs["bindSpike"]
         uloqs["bindSpike"]=770464.6*0.0090
-        
-        lloxs=lloqs 
     
     }
     
@@ -306,6 +298,14 @@ if (config$is_ows_trial) {
     names(lloxs)=assays
 }
 
+
+# llox is for plotting and can be either llod or lloq depending on trials
+lloxs=llods 
+# set to NA to make the plots free of too much white space
+if(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "PREVENT-19")) {    
+    lloxs["bindSpike"]=NA 
+    lloxs["bindRBD"]=NA                 
+}
 
 
 ###############################################################################
