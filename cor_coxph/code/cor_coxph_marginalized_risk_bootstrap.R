@@ -90,10 +90,11 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
             if ( class (fit.risk)[1] != "try-error" ) {
                 marginalized.risk(fit.risk, marker.name, dat.b.ph2, t=t, ss=NULL, weights=dat.b.ph2$wt, categorical.s=T)
             } else {
-                rep(NA, length(ss))
+                rep(NA, 3)
             }
             
         } else stop("wrong type")
+        
     })
     res=do.call(cbind, out)
     res=res[,!is.na(res[1,])] # remove NA's
