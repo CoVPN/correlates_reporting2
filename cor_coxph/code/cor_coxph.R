@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_sa_realADCP"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "janssen_pooled_realbAb"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -21,12 +21,9 @@ myprint(verbose)
 all.markers=paste0("Day", tpeak, assays)
 
 # path for figures and tables etc
-save.results.to = here::here("output")
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
-save.results.to = paste0(here::here("output"), "/", attr(config,"config"));
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
-save.results.to = paste0(save.results.to, "/", COR,"/");
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = here::here("output");                                if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", attr(config,"config")); if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", COR,"/");               if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
 # some exploratory code

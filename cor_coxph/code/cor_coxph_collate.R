@@ -50,11 +50,16 @@ dat.pla.seroneg.id50.sa=load.data("janssen_sa_realPsV", "D29IncludeNotMolecConfi
 
 ###################################################################################################
 # make tables of HR that contain all markers
+
 for (region in c("pooled","na","la","sa")) {
+        
+for (ind in 1:ifelse(region=="pooled",2,1)) {
+# 1 include ADCP and 2 does not
+    
     if(verbose) myprint(region)
     
-    trials=c("janssen_"%.%region%.%"_realbAb", "janssen_"%.%region%.%"_realPsV", "janssen_"%.%region%.%"_realADCP")
-    
+    trials=c("janssen_"%.%region%.%"_realbAb", "janssen_"%.%region%.%"_realPsV", if(ind==1) "janssen_"%.%region%.%"_realADCP") 
+        
     for (COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")) {
         if(verbose) myprint(COR)
         out=lapply(trials, function (trial) {
@@ -85,7 +90,7 @@ for (region in c("pooled","na","la","sa")) {
         tab.cat[,"overall.p.1"]=c(rbind(overall.p.1, NA,NA))
         tab.cat[,"overall.p.2"]=c(rbind(overall.p.2, NA,NA))
                 
-        mytex(tab.cont, file.name="CoR_univariable_svycoxph_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
+        mytex(tab.cont, file.name="CoR_univariable"%.%ifelse(ind==2,"NoADCP","")%.%"_svycoxph_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
             col.headers=paste0("\\hline\n 
                  \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
                  \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
@@ -93,7 +98,7 @@ for (region in c("pooled","na","la","sa")) {
             ")
         )    
         
-        mytex(tab.cont.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
+        mytex(tab.cont.scaled, file.name="CoR_univariable"%.%ifelse(ind==2,"NoADCP","")%.%"_svycoxph_pretty_scaled_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
             col.headers=paste0("\\hline\n 
                  \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
                  \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
@@ -101,7 +106,7 @@ for (region in c("pooled","na","la","sa")) {
             ")
         )    
         
-        mytex(tab.cat, file.name="CoR_univariable_svycoxph_cat_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
+        mytex(tab.cat, file.name="CoR_univariable"%.%ifelse(ind==2,"NoADCP","")%.%"_svycoxph_cat_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
             col.headers=paste0("\\hline\n 
                  \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
                  \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***} & \\multicolumn{1}{c}{value $\\dagger$} & \\multicolumn{1}{c}{FWER} \\\\ 
@@ -120,6 +125,10 @@ for (region in c("pooled","na","la","sa")) {
     }
     
 }
+    
+}
+
+
 
 
 
@@ -137,11 +146,11 @@ tmp=subset(dat.ense.1, !(!is.na(Day29bindSpike) & !is.na(BbindSpike)) & !(!is.na
 
 # ENSEMBLE
 mypdf(mfrow=c(2,2), file="output/meta/ensemble_corplot")
-with(dat.ense.1, {
-    corplot(Day29pseudoneutid50, Day29ADCP, xlab="ID50", ylab="ADCP")
-    corplot(Day29pseudoneutid50, Day29bindRBD, xlab="ID50", ylab="bAb RBD")
-    corplot(Day29bindSpike, Day29bindRBD, xlab="bAb Spike", ylab="bAb RBD")
-    corplot(Day29bindRBD, Day29ADCP, xlab="bAb RBD", ylab="ADCP")
+with(subset(dat.ense.1, SubcohortInd==1), {
+    corplot(Day29pseudoneutid50, Day29ADCP, xlab="ID50", ylab="ADCP", method="s")
+    corplot(Day29pseudoneutid50, Day29bindRBD, xlab="ID50", ylab="bAb RBD", method="s")
+    corplot(Day29bindSpike, Day29bindRBD, xlab="bAb Spike", ylab="bAb RBD", method="s")
+    corplot(Day29bindRBD, Day29ADCP, xlab="bAb RBD", ylab="ADCP", method="s")
 })
 dev.off()
 
@@ -152,7 +161,7 @@ with(dat.ense.1, table(Day29bindRBDcat, Day29ADCPcat))
 
 # COVE
 mypdf(mfrow=c(2,2), file="output/meta/cove_corplot")
-with(dat.cove.1, {
+with(subset(dat.cove.1, SubcohortInd==1), {
     corplot(Day57pseudoneutid50, Day57bindSpike, xlab="ID50", ylab="bAb Spike")
     corplot(Day57pseudoneutid50, Day57bindRBD, xlab="ID50", ylab="bAb RBD")
     corplot(Day57bindSpike, Day57bindRBD, xlab="bAb Spike", ylab="bAb RBD")
