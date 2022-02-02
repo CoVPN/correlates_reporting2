@@ -561,7 +561,7 @@ ggsave_custom <- function(filename = default_name(plot),
 
 get.range.cor=function(dat, assay, time) {
     if(assay %in% c("bindSpike", "bindRBD")) {
-        ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(llods[c("bindSpike","bindRBD")]/2), na.rm=T)
+        ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(lloxs[c("bindSpike","bindRBD")]/2), na.rm=T)
         ret[2]=(ret[2]) # round up
     } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
         ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
@@ -856,3 +856,13 @@ make.case.count.marker.availability.table=function(dat) {
     }
 }
 #make.case.count.marker.availability.table(dat.mock)
+
+
+# get histogram object to add to VE plots etc
+get.marker.histogram=function(marker, wt, trial) {
+    # first call hist to get breaks, then call weighted.hist
+    tmp.1=hist(marker,breaks=ifelse(trial=="moderna_real",25,15),plot=F)  # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
+    tmp=weighted.hist(marker,wt, breaks=tmp.1$breaks, plot=F)
+    attr(tmp,"class")="histogram" 
+    tmp
+}

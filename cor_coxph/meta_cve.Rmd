@@ -27,7 +27,6 @@ renv::activate(project = here::here(".."))
 
 
 # COVE + ENSEMBLE + AZ
-\clearpage
 
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
@@ -37,7 +36,6 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 ```
 
 # COVE + ENSEMBLE regions
-\clearpage
 
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
@@ -47,7 +45,6 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 ```
 
 # ENSEMBLE regions
-\clearpage
 
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
@@ -57,7 +54,6 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
 ```
 
 # COVE + ENSEMBLE/US + AZ
-\clearpage
 
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
@@ -67,11 +63,19 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 ```
 
 # COVE + ENSEMBLE/US
-\clearpage
 
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub5.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# COVE + ENSEMBLE regions + AZ
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub6.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```

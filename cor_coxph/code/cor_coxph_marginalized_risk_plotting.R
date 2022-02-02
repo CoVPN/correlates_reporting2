@@ -86,10 +86,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
         tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
         tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
-        # first call hist to get breaks, then call weighted.hist
-        tmp.1=hist(tmp.x, breaks=15, plot=F)
-        tmp=weighted.hist(tmp.x, tmp.w, breaks=tmp.1$breaks, plot=F)
-        attr(tmp,"class")="histogram" 
+        tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
         # plot
         plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F, xlim=xlim, ylim=c(0,max(tmp$density*1.25)))
         #axis(side=4, at=axTicks(side=4)[1:5])
@@ -229,9 +226,10 @@ for (eq.geq in 1:4) {
             # add histogram
             par(new=TRUE) 
             col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
-            col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
-            tmp=hist(dat.vac.seroneg[["Day"%.%tpeak%.%a]],breaks=15,plot=F) # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
-            #tmp=hist(dat.vac.seroneg[["Day"%.%tpeak%.%a]],breaks=seq(min(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), max(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), len = 15),plot=F)
+            col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)            
+            tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
+            tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
+            tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
             if(eq.geq==4) tmp$density=tmp$density*3
             plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25))) 
             
