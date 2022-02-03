@@ -1,4 +1,5 @@
 # Sys.setenv(TRIAL = "hvtn705")
+# Sys.setenv(TRIAL = "moderna_real")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -67,6 +68,7 @@ fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
                            mc.cores = num_cores
 )
 
+
 # compile all CV-AUCs and CV-SL fits
 cvaucs <- list()
 cvfits <- list()
@@ -82,5 +84,24 @@ saveRDS(cvfits, file = here("output", paste0("CVSLfits_vacc_", endpoint, "_", va
 if (job_id == 1) {
   saveRDS(ph2_vacc_ptids, file = here("output", "ph2_vacc_ptids.rds"))
   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
-       V_outer, file = here("output", "objects_for_running_SL.rda"))
+       V_outer, varset_names, file = here("output", "objects_for_running_SL.rda"))
 }
+
+
+# # compile all CV-AUCs and CV-SL fits
+# #cvaucs <- list()
+# cvfits <- list()
+# for (i in 1:length(seeds)) {
+#   #cvaucs[[i]] = fits[[i]]$cvaucs$aucs
+#   cvfits[[i]] = fits[[i]]$cvfits
+# }
+# 
+# # save off the output
+# #saveRDS(cvaucs, file = here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+# saveRDS(cvfits, file = here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+# # only save these objects once
+# if (job_id == 27) {
+#   saveRDS(ph2_vacc_ptids, file = here("output", "ph2_vacc_ptids.rds"))
+#   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
+#        V_outer, varset_names, file = here("output", "objects_for_running_SL.rda"))
+# }

@@ -1,4 +1,6 @@
 figs/*.png
+figs/*.*
 output/*.csv
 output/*.rda
 output/*.rds
+output/*.*
