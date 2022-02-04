@@ -273,33 +273,37 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
 # @param ipc_weights the inverse probability weights for coarsened data
 # @param Z the predictors of the missingness mechanism (a character vector)
 # @param C the indicator of missing (0) or selected into phase 2 (1)
+# @param baseline should we get predictiveness of the baseline risk factors (TRUE) or of the risk factors + variables of interest?
+# @param use_ensemble should we use the ensemble SL (TRUE) or the discrete SL (FALSE)?
 # @return an object of class "vimp" with the results
 get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced_fit = NULL, index = 1, type = "auc", scale = "logit",
                        cross_fitting_folds = NULL, sample_splitting_folds = NULL, V = 2,
                        sl_library = c("SL.glmnet"), ipc_est_type = "ipw", ipc_weights = rep(1, length(cross_fitting_folds)), Z = NULL,
-                       C = NULL, baseline = FALSE) {
+                       C = NULL, baseline = FALSE, use_ensemble = TRUE) {
 
   # if not passing sample-splitting folds, create them
   if (all(is.null(sample_splitting_folds))) {
     set.seed(seed)
     sample_splitting_folds <- vimp::make_folds(unique(cross_fitting_folds), V = 2)
   }
+  full_cv_fit <- switch(as.numeric(use_ensemble) + 1, full_fit$discreteSL.predict, full_fit$SL.predict)
+  if (baseline) {
+      reduced_cv_fit <- reduced_fit
+  } else {
+      reduced_cv_fit <- switch(as.numeric(use_ensemble) + 1, reduced_fit$discreteSL.predict, full_fit$SL.predict)
+  }
+  if (is.null(cross_fitting_folds)) {
+    cross_fitting_folds <- full_cv_fit$folds
+  }
   # extract independent predictions
   full_cv_preds <- vimp::extract_sampled_split_predictions(
-    cvsl_obj = full_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
-    full = TRUE
+    cvsl_obj = NULL, preds = full_cv_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
+    full = TRUE, cross_fitting_folds = cross_fitting_folds
   )
-  if (baseline) {
-    reduced_cv_preds <- vimp::extract_sampled_split_predictions(
-      cvsl_obj = NULL, preds = reduced_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
-      full = FALSE, cross_fitting_folds = cross_fitting_folds
-    )
-  } else {
-    reduced_cv_preds <- vimp::extract_sampled_split_predictions(
-      cvsl_obj = reduced_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
-      full = FALSE
-    )
-  }
+  reduced_cv_preds <- vimp::extract_sampled_split_predictions(
+    cvsl_obj = NULL, preds = reduced_cv_fit, sample_splitting = TRUE, sample_splitting_folds = sample_splitting_folds,
+    full = FALSE, cross_fitting_folds = cross_fitting_folds
+  )
   set.seed(seed)
   # estimate variable importance
   est_vim <- vimp::cv_vim(Y = Y, X = X, cross_fitted_f1 = full_cv_preds,
@@ -818,8 +822,8 @@ make_forest_plot <- function(avgs){
                               columnVal=="AUCstr" ~ 2),
            ycoord = rep(total_learnerScreen_combos:1, 3))
   # %>%
-  #   bind_rows(data.frame(columnVal = c('Learner','Screen','AUCstr'), 
-  #                        strDisplay = c('Learner','Screen','CV-AUC [95% CI]'), 
+  #   bind_rows(data.frame(columnVal = c('Learner','Screen','AUCstr'),
+  #                        strDisplay = c('Learner','Screen','CV-AUC [95% CI]'),
   #                        xcoord = c(1, 1.5, 2),
   #                        ycoord = c(rep(16, 3))))
 
