@@ -12,9 +12,9 @@ source(here::here("..", "_common.R"))
 # common setup for CV super learners and variable importance
 source(here::here("code", "cor_surrogates_setup.R"))
 
-# drop "SL.xgboost.2.yes" and "SL.xgboost.4.yes" from SL_library as class-balancing learners in the variable 
-# importance computation doesn’t make sense – the regression we’re doing there (to account for the two-phase sampling) 
-# is based on a continuous outcome, not a binary outcome, so there shouldn’t be any imbalance. 
+# drop "SL.xgboost.2.yes" and "SL.xgboost.4.yes" from SL_library as class-balancing learners in the variable
+# importance computation doesn’t make sense – the regression we’re doing there (to account for the two-phase sampling)
+# is based on a continuous outcome, not a binary outcome, so there shouldn’t be any imbalance.
 for (i in 1:length(SL_library)) {
   if(SL_library[[i]][1] %in% c("SL.xgboost.2.yes", "SL.xgboost.4.yes")){
     if(!exists("vec"))
@@ -85,7 +85,8 @@ for (i in seq_len(nrow(varset_matrix))) {
                  index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
                  sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
                  C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
-                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, baseline = TRUE)
+                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, baseline = TRUE,
+                 use_ensemble = use_ensemble_sl)
     })
   } else {
     # get variable importance for each fold
@@ -94,7 +95,7 @@ for (i in seq_len(nrow(varset_matrix))) {
                  index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
                  sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
                  C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
-                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment)
+                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, use_ensemble = use_ensemble_sl)
     })
   }
   # pool variable importance and predictiveness over the list
