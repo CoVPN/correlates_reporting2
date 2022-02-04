@@ -80,6 +80,54 @@ convert_SLobject_to_Slresult_dataframe <- function(dat) {
 
 
 
+
+convert_SLobject_to_Slresult_dataframe_UPDATE_cvauc_for_DiscreteSL <- function(dat) {
+  
+  # Remove any iteration seeds that returned an error!
+  newdat = drop_seeds_with_error(dat)
+  
+  if (is.null(newdat[[1]])) {
+    return( read.csv("empty_df.csv", stringsAsFactors = FALSE) %>% select(-X) %>% as_tibble() )
+  }
+  
+  # For each seed, get the best performing individual Learner and assign it as "Discrete SL". Average the CV-AUC of Discrete SL across 10 seeds to get CV-AUC of Discrete SL
+  get_bestLearner_for_each_seed <- function(cvaucs){
+    cvaucs %>%
+      filter(!Learner %in% c("SL", "Discrete SL")) %>%
+      top_n(1, AUC) %>%
+      distinct(AUC, .keep_all = T) %>%
+      mutate(Learner = "Discrete SL",
+             Screen = "All")
+  }
+  
+  if (!is.null(newdat[[1]])) {
+    as_tibble(do.call(rbind.data.frame, lapply(newdat, function(x) x))) %>%
+      filter(!is.na(ci_ll) | !is.na(ci_ul)) %>%    # drop learners that have NA for ci_ul or ci_ll for certain seeds!
+      group_by(Learner, Screen) %>%
+      summarize(AUC = mean(AUC), ci_ll = mean(ci_ll), ci_ul = mean(ci_ul), .groups = 'drop') %>%
+      ungroup()  %>%
+      filter(Learner != "Discrete SL") %>%
+      bind_rows(# For each seed, get the best performing individual Learner and assign it as "Discrete SL"
+        newdat %>% 
+          map(~ get_bestLearner_for_each_seed(.x)) %>% 
+          map_dfr(~ as.data.frame(.)) %>%
+          select(-se) %>%
+          group_by(Learner, Screen) %>%
+          summarise_all(mean, na.rm = TRUE) %>%
+          data.frame()) %>%
+      arrange(-AUC) %>%
+      mutate(AUCstr = paste0(format(round(AUC, 3), nsmall=3), " [", format(round(ci_ll, 3), nsmall=3), ", ", format(round(ci_ul, 3), nsmall=3), "]"),
+             Learner = as.character(Learner),
+             Screen = as.character(Screen),
+             LearnerScreen = paste(Learner, Screen)) %>%
+      get_fancy_screen_names() %>%
+      rename(Screen_fromRun = Screen,
+             Screen = fancyScreen)
+  }
+}
+
+
+
 # Read in SL objects from folder, get AUCs in a dataframe
 # @param data_file RDS file containing all 10 fits from the CV.Superlearner with folds and auc information
 # @param trt string containing treatment arm (placebo or vaccine)
@@ -89,6 +137,7 @@ readin_SLobjects_fromFolder <- function(data_path, file_pattern, endpoint, trt){
     tibble(file = .) %>%
     mutate(listdat = lapply(paste0(data_path, "/", file), readRDS)) %>%
     mutate(data = map(listdat, convert_SLobject_to_Slresult_dataframe)) %>%
+    mutate(data = map(listdat, convert_SLobject_to_Slresult_dataframe_UPDATE_cvauc_for_DiscreteSL)) %>%
     select(file, data) %>%
     unnest(data) %>%
     mutate(endpoint = endpoint,
