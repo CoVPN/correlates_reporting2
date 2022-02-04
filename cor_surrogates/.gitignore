@@ -4,3 +4,4 @@ output/*.csv
 output/*.rda
 output/*.rds
 output/*.*
+report.pdf
