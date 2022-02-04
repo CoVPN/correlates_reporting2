@@ -137,7 +137,7 @@ screen_highcor_random <- function(Y, X, family, obsWeights, id, nVar = maxVar,
   ) %>%
     filter(corr == "FALSE")
 
-  if(study_name %in% c("COVE", "MockCOVE")){
+  if(study_name != "HVTN705"){
     # Function to select markers based off priorities
     get_priorities <- function(x){
       if((str_detect(x[1], "mn50") & str_detect(x[2], "pseudo")) | (str_detect(x[2], "mn50") & str_detect(x[1], "pseudo"))){
@@ -145,7 +145,7 @@ screen_highcor_random <- function(Y, X, family, obsWeights, id, nVar = maxVar,
       } else if((str_detect(x[1], "pseudo") & str_detect(x[2], "bind")) | (str_detect(x[2], "pseudo") & str_detect(x[1], "bind"))){
         selectVar = if_else(str_detect(x[1], "pseudo"), x[1], x[2])
       } else if((str_detect(x[1], "Spike") & str_detect(x[2], "RBD")) | (str_detect(x[2], "Spike") & str_detect(x[1], "RBD"))){
-        selectVar = if_else(str_detect(x[1], "Spike"), x[1], x[2])
+        selectVar = if_else(str_detect(x[1], "RBD"), x[1], x[2])
       } else if((str_detect(x[1], "id50") & str_detect(x[2], "id80")) | (str_detect(x[2], "id50") & str_detect(x[1], "id80"))){
         selectVar = if_else(str_detect(x[1], "id50"), x[1], x[2])
       } else {

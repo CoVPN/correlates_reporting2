@@ -1,4 +1,4 @@
-# Sys.setenv(TRIAL = "hvtn705")
+# Sys.setenv(TRIAL = "moderna_real")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -43,14 +43,12 @@ suppressPackageStartupMessages(library(conflicted, warn.conflicts = FALSE))
 suppressMessages(conflicted::conflict_prefer("filter", "dplyr"))
 suppressMessages(conflict_prefer("summarise", "dplyr"))
 
-
 # Define code version to run
 # the demo version is simpler and runs faster!
 # the production version runs SL with a diverse set of learners
 run_prod <- !grepl("Mock", study_name)
 
 # load required files and functions
-source(here("code", "day57or29analyses.R")) # set up analyses for markers
 source(here("code", "sl_screens.R")) # set up the screen/algorithm combinations
 source(here("code", "utils.R")) # get CV-AUC for all algs
 
@@ -75,22 +73,27 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   briskfactors_correction <- "Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd"
 
   # markers of interest
-  markerVars <- c("Day57bindSpike", "Delta57overBbindSpike",
+  markerVars <- c("Day57bindSpike", #"Delta57overBbindSpike",
                   "Delta57overBbindSpike_2fold", "Delta57overBbindSpike_4fold",
-                  "Day57bindRBD", "Delta57overBbindRBD",
+                  "Day57bindRBD", #"Delta57overBbindRBD",
                   "Delta57overBbindRBD_2fold", "Delta57overBbindRBD_4fold",
-                  "Day57pseudoneutid50", "Delta57overBpseudoneutid50",
+                  "Day57pseudoneutid50", #"Delta57overBpseudoneutid50",
                   "Delta57overBpseudoneutid50_2fold", "Delta57overBpseudoneutid50_4fold",
-                  "Day57pseudoneutid80", "Delta57overBpseudoneutid80",
+                  "Day57pseudoneutid80", #"Delta57overBpseudoneutid80",
                   "Delta57overBpseudoneutid80_2fold", "Delta57overBpseudoneutid80_4fold",
-                  "Day29bindSpike", "Delta29overBbindSpike",
+                  "Day57liveneutmn50", #"Delta57overBliveneutmn50",
+                  "Delta57overBliveneutmn50_2fold", "Delta57overBliveneutmn50_4fold",
+                  
+                  "Day29bindSpike", #"Delta29overBbindSpike",
                   "Delta29overBbindSpike_2fold", "Delta29overBbindSpike_4fold",
-                  "Day29bindRBD", "Delta29overBbindRBD",
+                  "Day29bindRBD", #"Delta29overBbindRBD",
                   "Delta29overBbindRBD_2fold", "Delta29overBbindRBD_4fold",
-                  "Day29pseudoneutid50", "Delta29overBpseudoneutid50",
+                  "Day29pseudoneutid50", #"Delta29overBpseudoneutid50",
                   "Delta29overBpseudoneutid50_2fold", "Delta29overBpseudoneutid50_4fold",
-                  "Day29pseudoneutid80", "Delta29overBpseudoneutid80",
-                  "Delta29overBpseudoneutid80_2fold", "Delta29overBpseudoneutid80_4fold")
+                  "Day29pseudoneutid80", #"Delta29overBpseudoneutid80",
+                  "Delta29overBpseudoneutid80_2fold", "Delta29overBpseudoneutid80_4fold",
+                  "Day29liveneutmn50", #"Delta29overBliveneutmn50",
+                  "Delta29overBliveneutmn50_2fold", "Delta29overBliveneutmn50_4fold")
 
   # Identify the endpoint variable
   endpoint <- "EventIndPrimaryD57"
@@ -109,6 +112,8 @@ if (study_name %in% c("COVE", "MockCOVE")) {
            Delta57overBpseudoneutid50_4fold = ifelse(Day57pseudoneutid50 > (Bpseudoneutid50  + log10(4)), 1, 0),
            Delta57overBpseudoneutid80_2fold = ifelse(Day57pseudoneutid80 > (Bpseudoneutid80  + log10(2)), 1, 0),
            Delta57overBpseudoneutid80_4fold = ifelse(Day57pseudoneutid80 > (Bpseudoneutid80  + log10(4)), 1, 0),
+           Delta57overBliveneutmn50_2fold = ifelse(Day57liveneutmn50 > (Bliveneutmn50  + log10(2)), 1, 0),
+           Delta57overBliveneutmn50_4fold = ifelse(Day57liveneutmn50 > (Bliveneutmn50  + log10(4)), 1, 0),
 
            Delta29overBbindSpike_2fold = ifelse(Day29bindSpike > (BbindSpike + log10(2)), 1, 0),
            Delta29overBbindSpike_4fold = ifelse(Day29bindSpike > (BbindSpike + log10(4)), 1, 0),
@@ -117,7 +122,9 @@ if (study_name %in% c("COVE", "MockCOVE")) {
            Delta29overBpseudoneutid50_2fold = ifelse(Day29pseudoneutid50 > (Bpseudoneutid50  + log10(2)), 1, 0),
            Delta29overBpseudoneutid50_4fold = ifelse(Day29pseudoneutid50 > (Bpseudoneutid50  + log10(4)), 1, 0),
            Delta29overBpseudoneutid80_2fold = ifelse(Day29pseudoneutid80 > (Bpseudoneutid80  + log10(2)), 1, 0),
-           Delta29overBpseudoneutid80_4fold = ifelse(Day29pseudoneutid80 > (Bpseudoneutid80  + log10(4)), 1, 0)) %>%
+           Delta29overBpseudoneutid80_4fold = ifelse(Day29pseudoneutid80 > (Bpseudoneutid80  + log10(4)), 1, 0),
+           Delta29overBliveneutmn50_2fold = ifelse(Day29liveneutmn50 > (Bliveneutmn50  + log10(2)), 1, 0),
+           Delta29overBliveneutmn50_4fold = ifelse(Day29liveneutmn50 > (Bliveneutmn50  + log10(4)), 1, 0)) %>%
     # Drop any observation with NA values in Ptid, Trt, briskfactors, endpoint and wt.D57
     drop_na(Ptid, Trt, all_of(briskfactors), all_of(endpoint), all_of(wt)) %>%
     arrange(desc(get(endpoint)))
@@ -126,7 +133,7 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   dat.ph2_init <- dat.ph1 %>%
     filter(TwophasesampIndD57 == TRUE) %>%
     select(Ptid, Trt, all_of(briskfactors), all_of(endpoint), all_of(wt), any_of(markerVars)) %>%
-    drop_na(Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80) %>%
+    #drop_na(Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80) %>%
     arrange(desc(get(endpoint)))
 }
 # Read in data from HVTN705
@@ -222,7 +229,6 @@ if (study_name == "HVTN705") {
   dat.ph2_init <- dat.ph1 %>%
     filter(Ph2ptids.D210 == 1) %>%
     select(Ptid, Trt, all_of(briskfactors), all_of(endpoint), all_of(wt), any_of(markerVars)) %>%
-    #drop_na(Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80) %>%
     arrange(desc(get(endpoint)))
 }
 # Study-agnostic processing ----------------------------------------------------
@@ -267,74 +273,74 @@ if (study_name %in% c("COVE", "MockCOVE")) {
     # generate combination scores for d57
     left_join(get.pca.scores(dat.ph2 %>%
                                select(all_of(ptidvar), Day57bindSpike, Day57bindRBD,
-                                 Day57pseudoneutid50, Day57pseudoneutid80)) %>%
+                                 Day57pseudoneutid50, Day57pseudoneutid80, Day57liveneutmn50)) %>%
                 rename(comb_PC1_d57 = PC1,
                        comb_PC2_d57 = PC2),
               by = ptidvar) %>%
     mutate(
       comb_maxsig.div.score_d57 = get.maxSignalDivScore(
         dat.ph2 %>%
-          select(Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80),
+          select(Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80, Day57liveneutmn50),
           "Day57"
       )
     ) %>%
     # generate combination scores for d29
     left_join(get.pca.scores(dat.ph2 %>%
                                select(all_of(ptidvar), Day29bindSpike, Day29bindRBD,
-                                 Day29pseudoneutid50, Day29pseudoneutid80)) %>%
+                                 Day29pseudoneutid50, Day29pseudoneutid80, Day29liveneutmn50)) %>%
                 rename(comb_PC1_d29 = PC1,
                        comb_PC2_d29 = PC2),
               by = ptidvar) %>%
     mutate(
       comb_maxsig.div.score_d29 = get.maxSignalDivScore(
         dat.ph2 %>%
-          select(Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80),
+          select(Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80, Day29liveneutmn50),
           "Day29"
       )
     ) %>%
     # generate combination scores for both d57 and d29
     left_join(get.pca.scores(dat.ph2 %>%
                                select(all_of(ptidvar), Day57bindSpike, Day57bindRBD,
-                                 Day57pseudoneutid50, Day57pseudoneutid80,
+                                 Day57pseudoneutid50, Day57pseudoneutid80, Day57liveneutmn50,
                                  Day29bindSpike, Day29bindRBD,
-                                 Day29pseudoneutid50, Day29pseudoneutid80)) %>%
+                                 Day29pseudoneutid50, Day29pseudoneutid80, Day29liveneutmn50)) %>%
                 rename(comb_PC1_d57_d29 = PC1,
                        comb_PC2_d57_d29 = PC2),
               by = ptidvar) %>%
     mutate(
       comb_maxsig.div.score_d57_d29 = get.maxSignalDivScore(
-        dat.ph2 %>% select(Day57bindSpike, Day57bindRBD, Day57pseudoneutid50,
-          Day57pseudoneutid80, Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80),
+        dat.ph2 %>% select(Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80, Day57liveneutmn50,
+                           Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80, Day29liveneutmn50),
           "Day57_29"
       )
     )
 
   if (run_prod) {
     dat.ph2 <- dat.ph2 %>%
-      mutate(
-        comb_nlPCA1_d57 = comb_PC1_d57, comb_nlPCA2_d57 = comb_PC2_d57,
-        comb_nlPCA1_d29 = comb_PC1_d29, comb_nlPCA2_d29 = comb_PC2_d29,
-        comb_nlPCA1_d57_d29 = comb_PC1_d57_d29, comb_nlPCA2_d57_d29 = comb_PC1_d57_d29
-      )
-      # # generate non-linear combination scores for d57
-      # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
-      #                                     select(all_of(ptidvar), Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80)) %>%
-      #             rename(comb_nlPCA1_d57 = nlPCA1,
-      #                    comb_nlPCA2_d57 = nlPCA2),
-      #           by = ptidvar) %>%
-      # # generate non-linear combination scores for d29
-      # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
-      #                                     select(all_of(ptidvar), Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80)) %>%
-      #             rename(comb_nlPCA1_d29 = nlPCA1,
-      #                    comb_nlPCA2_d29 = nlPCA2),
-      #           by = ptidvar) %>%
-      # # generate non-linear combination scores for both d57 and d29
-      # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
-      #                                     select(all_of(ptidvar), Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80,
-      #                                            Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80)) %>%
-      #             rename(comb_nlPCA1_d57_d29 = nlPCA1,
-      #                    comb_nlPCA2_d57_d29 = nlPCA2),
-      #           by = ptidvar)
+      # mutate(
+      #   comb_nlPCA1_d57 = comb_PC1_d57, comb_nlPCA2_d57 = comb_PC2_d57,
+      #   comb_nlPCA1_d29 = comb_PC1_d29, comb_nlPCA2_d29 = comb_PC2_d29,
+      #   comb_nlPCA1_d57_d29 = comb_PC1_d57_d29, comb_nlPCA2_d57_d29 = comb_PC1_d57_d29
+      # )
+      # generate non-linear combination scores for d57
+      left_join(get.nonlinearPCA.scores(dat.ph2 %>%
+                                          select(all_of(ptidvar), Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80, Day57liveneutmn50)) %>%
+                  rename(comb_nlPCA1_d57 = nlPCA1,
+                         comb_nlPCA2_d57 = nlPCA2),
+                by = ptidvar) %>%
+      # generate non-linear combination scores for d29
+      left_join(get.nonlinearPCA.scores(dat.ph2 %>%
+                                          select(all_of(ptidvar), Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80, Day29liveneutmn50)) %>%
+                  rename(comb_nlPCA1_d29 = nlPCA1,
+                         comb_nlPCA2_d29 = nlPCA2),
+                by = ptidvar) %>%
+      # generate non-linear combination scores for both d57 and d29
+      left_join(get.nonlinearPCA.scores(dat.ph2 %>%
+                                          select(all_of(ptidvar), Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80, Day57liveneutmn50,
+                                                 Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29pseudoneutid80, Day29liveneutmn50)) %>%
+                  rename(comb_nlPCA1_d57_d29 = nlPCA1,
+                         comb_nlPCA2_d57_d29 = nlPCA2),
+                by = ptidvar)
   }
 
   # finalize marker data
@@ -367,13 +373,13 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   varset_bAbRBD_D57 <- create_varsets(markers, grep("(?=.*57)(?=.*bindRBD)", markers, value=TRUE, perl=TRUE))
   varset_pnabID50_D57 <- create_varsets(markers, grep("(?=.*57)(?=.*id50)", markers, value=TRUE, perl=TRUE))
   varset_pnabID80_D57 <- create_varsets(markers, grep("(?=.*57)(?=.*id80)", markers, value=TRUE, perl=TRUE))
-  #varset_lnabMN50_D57 <- create_varsets(markers, grep("(?=.*57)(?=.*mn50)", markers, value=TRUE, perl=TRUE))
+  varset_lnabMN50_D57 <- create_varsets(markers, grep("(?=.*57)(?=.*mn50)", markers, value=TRUE, perl=TRUE))
   varset_bAb_pnabID50_D57 <- create_varsets(markers, c(grep("(?=.*57)(?=.*bind)", markers, value=TRUE, perl=TRUE),
                                                        grep("(?=.*57)(?=.*id50)", markers, value=TRUE, perl=TRUE)))
   varset_bAb_pnabID80_D57 <- create_varsets(markers, c(grep("(?=.*57)(?=.*bind)", markers, value=TRUE, perl=TRUE),
                                                        grep("(?=.*57)(?=.*id80)", markers, value=TRUE, perl=TRUE)))
-  # varset_bAb_lnabMN50_D57 <- create_varsets(markers, grep(paste(c('bindSpike', 'bindRBD', 'liveneutmn50'),
-  #                                                           collapse="|"), markers, value=TRUE, perl=TRUE))
+  varset_bAb_lnabMN50_D57 <- create_varsets(markers, c(grep("(?=.*57)(?=.*bind)", markers, value=TRUE, perl=TRUE),
+                                                       grep("(?=.*57)(?=.*mn50)", markers, value=TRUE, perl=TRUE)))
   varset_bAb_combScores_D57 <- create_varsets(markers, c(grep("(?=.*57)(?=.*bind)", markers, value=TRUE, perl=TRUE),
                                                          grep("(?=.*57)(?=.*comb)(^((?!29).)*$)", markers, value=TRUE, perl=TRUE)))
   varset_allMarkers_D57 <- create_varsets(markers, grep("(?=.*57)(^((?!comb).)*$)", markers, value=TRUE, perl=TRUE))
@@ -384,13 +390,13 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   varset_bAbRBD_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*bindRBD)", markers, value=TRUE, perl=TRUE))
   varset_pnabID50_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*id50)", markers, value=TRUE, perl=TRUE))
   varset_pnabID80_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*id80)", markers, value=TRUE, perl=TRUE))
-  #varset_lnabMN50_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*mn50)", markers, value=TRUE, perl=TRUE))
+  varset_lnabMN50_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*mn50)", markers, value=TRUE, perl=TRUE))
   varset_bAb_pnabID50_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)", markers, value=TRUE, perl=TRUE),
                                                        grep("(?=.*29)(?=.*id50)", markers, value=TRUE, perl=TRUE)))
   varset_bAb_pnabID80_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)", markers, value=TRUE, perl=TRUE),
                                                        grep("(?=.*29)(?=.*id80)", markers, value=TRUE, perl=TRUE)))
-  # varset_bAb_lnabMN50_D29 <- create_varsets(markers, grep(paste(c('bindSpike', 'bindRBD', 'liveneutmn50'),
-  #                                                           collapse="|"), markers, value=TRUE, perl=TRUE))
+  varset_bAb_lnabMN50_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)", markers, value=TRUE, perl=TRUE),
+                                                       grep("(?=.*29)(?=.*mn50)", markers, value=TRUE, perl=TRUE)))
   varset_bAb_combScores_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)", markers, value=TRUE, perl=TRUE),
                                                          grep("(?=.*29)(?=.*comb)(^((?!57).)*$)", markers, value=TRUE, perl=TRUE)))
   varset_allMarkers_D29 <- create_varsets(markers, grep("(?=.*29)(^((?!comb).)*$)", markers, value=TRUE, perl=TRUE))
@@ -401,13 +407,13 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   varset_bAbRBD_D29_D57 <- create_varsets(markers, grep("(?=.*bindRBD)", markers, value=TRUE, perl=TRUE))
   varset_pnabID50_D29_D57 <- create_varsets(markers, grep("(?=.*id50)", markers, value=TRUE, perl=TRUE))
   varset_pnabID80_D29_D57 <- create_varsets(markers, grep("(?=.*id80)", markers, value=TRUE, perl=TRUE))
-  #varset_lnabMN50_D29_D57 <- create_varsets(markers, grep("(?=.*mn50)", markers, value=TRUE, perl=TRUE))
+  varset_lnabMN50_D29_D57 <- create_varsets(markers, grep("(?=.*mn50)", markers, value=TRUE, perl=TRUE))
   varset_bAb_pnabID50_D29_D57 <- create_varsets(markers, c(grep("(?=.*bind)", markers, value=TRUE, perl=TRUE),
                                                        grep("(?=.*id50)", markers, value=TRUE, perl=TRUE)))
   varset_bAb_pnabID80_D29_D57 <- create_varsets(markers, c(grep("(?=.*bind)", markers, value=TRUE, perl=TRUE),
                                                            grep("(?=.*id80)", markers, value=TRUE, perl=TRUE)))
-  # varset_bAb_lnabMN50_D29_D57 <- create_varsets(markers, c(grep("(?=.*bind)", markers, value=TRUE, perl=TRUE),
-  #                                                           grep("(?=.*mn50)", markers, value=TRUE, perl=TRUE)))
+  varset_bAb_lnabMN50_D29_D57 <- create_varsets(markers, c(grep("(?=.*bind)", markers, value=TRUE, perl=TRUE),
+                                                            grep("(?=.*mn50)", markers, value=TRUE, perl=TRUE)))
   varset_bAb_combScores_D29_D57 <- create_varsets(markers, c(grep("(?=.*bind)", markers, value=TRUE, perl=TRUE),
                                                          grep("(?=.*comb)(?=.*d57_d29)", markers, value=TRUE, perl=TRUE)))
   varset_allMarkers_D29_D57 <- create_varsets(markers, grep("(^((?!comb).)*$)", markers, value=TRUE, perl=TRUE))
@@ -416,25 +422,29 @@ if (study_name %in% c("COVE", "MockCOVE")) {
 
   varset_names <- c("1_baselineRiskFactors",
                     "2_bAbSpike_D57", "3_bAbRBD_D57", "4_pnabID50_D57",
-                    "5_pnabID80_D57", "6_bAb_pnabID50_D57", "7_bAb_pnabID80_D57",
-                    "8_bAb_combScores_D57", "9_allMarkers_D57", "10_allMarkers_combScores_D57",
-                    "11_bAbSpike_D29", "12_bAbRBD_D29", "13_pnabID50_D29",
-                    "14_pnabID80_D29", "15_bAb_pnabID50_D29", "16_bAb_pnabID80_D29",
-                    "17_bAb_combScores_D29", "18_allMarkers_D29", "19_allMarkers_combScores_D29",
-                    "20_bAbSpike_D29_D57", "21_bAbRBD_D29_D57", "22_pnabID50_D29_D57",
-                    "23_pnabID80_D29_D57", "24_bAb_pnabID50_D29_D57", "25_bAb_pnabID80_D29_D57",
-                    "26_bAb_combScores_D29_D57", "27_allMarkers_D29_D57", "28_allMarkers_combScores_D29_D57")
+                    "5_pnabID80_D57", "6_lnabMN50_D57", "7_bAb_pnabID50_D57", "8_bAb_pnabID80_D57", "9_bAb_lnabMN50_D57",
+                    "10_bAb_combScores_D57", "11_allMarkers_D57", "12_allMarkers_combScores_D57",
+                    
+                    "13_bAbSpike_D29", "14_bAbRBD_D29", "15_pnabID50_D29",
+                    "16_pnabID80_D29", "17_lnabMN50_D29", "18_bAb_pnabID50_D29", "19_bAb_pnabID80_D29", "20_bAb_lnabMN50_D29",
+                    "21_bAb_combScores_D29", "22_allMarkers_D29", "23_allMarkers_combScores_D29",
+                    
+                    "24_bAbSpike_D29_D57", "25_bAbRBD_D29_D57", "26_pnabID50_D29_D57",
+                    "27_pnabID80_D29_D57", "28_lnabMN50_D29_D57", "29_bAb_pnabID50_D29_D57", "30_bAb_pnabID80_D29_D57", "31_bAb_lnabMN50_D29_D57",
+                    "32_bAb_combScores_D29_D57", "33_allMarkers_D29_D57", "34_allMarkers_combScores_D29_D57")
 
   # set up a matrix of all
   varset_matrix <- rbind(varset_baselineRiskFactors,
                          varset_bAbSpike_D57, varset_bAbRBD_D57, varset_pnabID50_D57,
-                         varset_pnabID80_D57, varset_bAb_pnabID50_D57, varset_bAb_pnabID80_D57,
+                         varset_pnabID80_D57, varset_lnabMN50_D57, varset_bAb_pnabID50_D57, varset_bAb_pnabID80_D57, varset_bAb_lnabMN50_D57, 
                          varset_bAb_combScores_D57, varset_allMarkers_D57, varset_allMarkers_combScores_D57,
+                         
                          varset_bAbSpike_D29, varset_bAbRBD_D29, varset_pnabID50_D29,
-                         varset_pnabID80_D29, varset_bAb_pnabID50_D29, varset_bAb_pnabID80_D29,
+                         varset_pnabID80_D29, varset_lnabMN50_D29, varset_bAb_pnabID50_D29, varset_bAb_pnabID80_D29, varset_bAb_lnabMN50_D29,
                          varset_bAb_combScores_D29, varset_allMarkers_D29, varset_allMarkers_combScores_D29,
+                         
                          varset_bAbSpike_D29_D57, varset_bAbRBD_D29_D57, varset_pnabID50_D29_D57,
-                         varset_pnabID80_D29_D57, varset_bAb_pnabID50_D29_D57, varset_bAb_pnabID80_D29_D57,
+                         varset_pnabID80_D29_D57, varset_lnabMN50_D29_D57, varset_bAb_pnabID50_D29_D57, varset_bAb_pnabID80_D29_D57, varset_bAb_lnabMN50_D29_D57,
                          varset_bAb_combScores_D29_D57, varset_allMarkers_D29_D57, varset_allMarkers_combScores_D29_D57)
 }
 
