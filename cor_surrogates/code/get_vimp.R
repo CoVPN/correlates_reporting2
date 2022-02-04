@@ -44,6 +44,12 @@ X <- dat.ph1 %>%
 
 # read in the fits for the baseline risk factors
 baseline_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[1], ".rds")))
+baseline_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[1], ".rds")))
+if (!use_ensemble_sl) {
+  baseline_fits <- lapply(as.list(1:length(baseline_fits)), function(i) {
+    make_discrete_sl_auc(cvsl_fit = baseline_fits[[i]], all_aucs = baseline_aucs[[i]])
+  })
+}
 
 # get the common CV folds
 list_of_indices <- as.list(seq_len(length(baseline_fits)))
@@ -79,6 +85,12 @@ for (i in seq_len(nrow(varset_matrix))) {
   }
   # get the correct CV.SL lists
   full_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[i], ".rds")))
+  full_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[i], ".rds")))
+  if (!use_ensemble_sl) {
+    full_fits <- lapply(as.list(1:length(baseline_fits)), function(i) {
+      make_discrete_sl_auc(cvsl_fit = full_fits[[i]], all_aucs = full_aucs[[i]])
+    })
+  }
   if (i == 1) {
     vim_lst <- lapply(list_of_indices, function(l) {
       get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = naive_fits[[l]],

@@ -100,6 +100,45 @@ get_cv_sl_folds <- function(cv_sl_folds) {
   folds_df <- data.table::rbindlist(folds_with_row_nums)
   folds_df$fold[order(folds_df$row_nums)]
 }
+
+# get the CV-AUC for an individual learner in the SL
+# @param sl_fit the fitted SL
+# @param col the column of interest (corresponds to a fitted algorithm)
+# @param scale scale for EIF estimation
+# @param weights IPC weights
+# @param C the censoring indicator
+# @param Z data observed on all participants
+# @param ... other arguments to pass to Super Learner (for EIF estimation)
+get_individual_auc <- function(sl_fit, col, scale = "identity",
+                               weights = rep(1, length(sl_fit$Y)),
+                               C = rep(1, length(sl_fit$Y)), Z = NULL, ...) {
+  if (any(is.na(sl_fit$library.predict[, col]))) {
+    return(NULL)
+  }
+  alg_auc <- cv_auc(
+    preds = sl_fit$library.predict[, col], Y = sl_fit$Y,
+    scale = scale,
+    folds = sl_fit$folds, weights = weights,
+    C = C, Z = Z, ...
+  )
+  # get the regexp object
+  alg_screen_string <- strsplit(colnames(sl_fit$library.predict)[col], "_",
+    fixed = TRUE
+  )[[1]]
+  alg <- tail(alg_screen_string[grepl(".", alg_screen_string,
+    fixed = TRUE
+  )], n = 1)
+  screen <- paste0(alg_screen_string[!grepl(alg, alg_screen_string,
+    fixed = TRUE
+  )],
+  collapse = "_"
+  )
+  data.frame(
+    Learner = alg, Screen = screen, AUC = alg_auc$auc,
+    se = alg_auc$se,
+    ci_ll = alg_auc$ci[1], ci_ul = alg_auc$ci[2]
+  )
+}
 # get the CV-AUC for all learners fit with SL
 # @param sl_fit the super learner fit object
 # @param scale what scale should the IPCW correction be applied on?
@@ -147,36 +186,6 @@ get_all_aucs <- function(sl_fit, scale = "identity",
   ))
 
   # Get the cvauc of the individual learners in the library
-  get_individual_auc <- function(sl_fit, col, scale = "identity",
-                                 weights = rep(1, length(sl_fit$Y)),
-                                 C = rep(1, length(sl_fit$Y)), Z = NULL, ...) {
-    if (any(is.na(sl_fit$library.predict[, col]))) {
-      return(NULL)
-    }
-    alg_auc <- cv_auc(
-      preds = sl_fit$library.predict[, col], Y = sl_fit$Y,
-      scale = scale,
-      folds = sl_fit$folds, weights = weights,
-      C = C, Z = Z, ...
-    )
-    # get the regexp object
-    alg_screen_string <- strsplit(colnames(sl_fit$library.predict)[col], "_",
-      fixed = TRUE
-    )[[1]]
-    alg <- tail(alg_screen_string[grepl(".", alg_screen_string,
-      fixed = TRUE
-    )], n = 1)
-    screen <- paste0(alg_screen_string[!grepl(alg, alg_screen_string,
-      fixed = TRUE
-    )],
-    collapse = "_"
-    )
-    data.frame(
-      Learner = alg, Screen = screen, AUC = alg_auc$auc,
-      se = alg_auc$se,
-      ci_ll = alg_auc$ci[1], ci_ul = alg_auc$ci[2]
-    )
-  }
   other_aucs <- plyr::ldply(
     1:ncol(sl_fit$library.predict),
     function(x) {
@@ -192,8 +201,18 @@ get_all_aucs <- function(sl_fit, scale = "identity",
   rbind(out, other_aucs)
 }
 
-# Run the CV Super Learner -----------------------------------------------------
+# determine the discrete Super Learner using CV-AUC
+# @param cvsl_fit the CV.SL object
+# @param all_aucs the estimated CV-AUCs for that CV.SL object
+make_discrete_sl_auc <- function(cvsl_fit, all_aucs) {
+    individual_aucs <- all_aucs %>%
+      filter(!(Learner %in% c("SL", "Discrete SL")))
+    which_discrete_sl <- which.max(individual_aucs$AUC)
+    cvsl_fit$discreteSL.predict <- cvsl_fit$library.predict[, which_discrete_sl]
+    return(cvsl_fit)
+}
 
+# Run the CV Super Learner -----------------------------------------------------
 # run CV.SuperLearner for one given random seed
 # @param seed the random number seed
 # @param Y the outcome
@@ -241,7 +260,7 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
     innerCvControl = innerCvControl,
     verbose = FALSE
   )
-  
+
   aucs <- get_all_aucs(sl_fit = fit, scale = scale, weights = all_weights,
                        C = C, Z = Z, SL.library = z_lib, ipc_est_type = ipc_est_type, family = gaussian())
 
@@ -745,7 +764,7 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
     arrange(varsetNo) %>%
     mutate(varset = fct_reorder(varset, AUC, .desc = F)) %>%
     arrange(-AUC)
-  
+
   lowestXTick <- floor(min(allSLs$ci_ll)*10)/10
   highestXTick <- ceiling(max(allSLs$ci_ul)*10)/10
   top_learner_plot <- ggplot() +
@@ -764,9 +783,9 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
           plot.margin=unit(c(2.25,0.2,0.8,-0.15),"cm"),
           panel.border = element_blank(),
           axis.line = element_line(colour = "black"))
-  
+
   total_learnerScreen_combos = length(allSLs$LearnerScreen)
-  
+
   allSLs_withCoord <- allSLs %>%
     select(varset, AUCstr) %>%
     mutate(varset = as.character(varset)) %>%
@@ -774,7 +793,7 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
     mutate(xcoord = case_when(columnVal=="varset" ~ 1.5,
                               columnVal=="AUCstr" ~ 2),
            ycoord = rep(total_learnerScreen_combos:1, 2))
-  
+
   top_learner_nms_plot <- ggplot(allSLs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
     xlim(0.7,2) +
@@ -792,7 +811,7 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
              label = "CV-AUC [95% CI]",
              fontface = "bold",
              hjust = 1)
-  
+
   return(list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot))
 }
 
