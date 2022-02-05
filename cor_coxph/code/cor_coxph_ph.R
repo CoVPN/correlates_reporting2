@@ -294,11 +294,12 @@ rv$tab.2=tab.nop12
 if (!is.null(config$multivariate_assays)) {
     if(verbose) print("Multiple regression")
     
-    for (ind in 1:2) {
-        tmp=if(ind==1) concatList(paste0("Day",config$timepoints, config$multivariate_assays),"+") else concatList(paste0("scale(Day",config$timepoints, config$multivariate_assays),")+") %.% ")"
+    for (a in config$multivariate_assays) {
+        aa=trim(strsplit(a, "\\+")[[1]])
+        tmp=concatList(paste0("scale(Day",tpeak, aa),")+") %.% ")"
         f= update(form.0, as.formula(paste0("~.+", tmp)))
         fit=svycoxph(f, design=design.vacc.seroneg) 
-        var.ind=length(coef(fit)) - length(config$multivariate_assays):1 + 1
+        var.ind=length(coef(fit)) - length(aa):1 + 1
         
         fits=list(fit)
         est=getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=1)
@@ -311,12 +312,12 @@ if (!is.null(config$multivariate_assays)) {
         p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
         
         tab=cbind(est, p)
-        rownames(tab)=c(labels.axis["Day"%.%tpeak, config$multivariate_assays])
-        colnames(tab)=c("HR per "%.%ifelse(ind==1,"10 fold","sd")%.%" incr.", "P value")
+        rownames(tab)=c(labels.axis["Day"%.%tpeak, aa])
+        colnames(tab)=c("HR per sd incr.", "P value")
         tab
         tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
         
-        mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", ind, "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to )
+        mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays)), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to )
     }
     
 }

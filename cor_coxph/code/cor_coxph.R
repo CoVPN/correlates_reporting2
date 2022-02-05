@@ -21,12 +21,9 @@ myprint(verbose)
 all.markers=paste0("Day", tpeak, assays)
 
 # path for figures and tables etc
-save.results.to = here::here("output")
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
-save.results.to = paste0(here::here("output"), "/", attr(config,"config"));
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
-save.results.to = paste0(save.results.to, "/", COR,"/");
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = here::here("output");                                if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", attr(config,"config")); if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", COR,"/");               if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
 # some exploratory code
@@ -72,6 +69,7 @@ rv=list()
 rv$marker.cutpoints=marker.cutpoints
 
 
+
 ###################################################################################################
 # run PH models
 ###################################################################################################
@@ -80,7 +78,6 @@ rv$marker.cutpoints=marker.cutpoints
 design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
 
 source(here::here("code", "cor_coxph_ph.R"))
-
 
 # optional forest plots
 if(length(config$forestplot_script)==1) {

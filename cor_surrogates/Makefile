@@ -6,19 +6,8 @@ clean:
 	rm -f output/*
 	rm -f figs/*
 
-run_cvsl_varsets:
-	Rscript code/run_cvsl_varsets.R D210 36
-	Rscript code/run_cvsl_varsets.R D210 37
-	Rscript code/run_cvsl_varsets.R D210 38
-	Rscript code/run_cvsl_varsets.R D210 39
-	Rscript code/run_cvsl_varsets.R D210 40
-	Rscript code/run_cvsl_varsets.R D210 41
-	Rscript code/run_cvsl_varsets.R D210 42
-	Rscript code/run_cvsl_varsets.R D210 43
-	Rscript code/run_cvsl_varsets.R D210 44
-	Rscript code/run_cvsl_varsets.R D210 45
-	Rscript code/run_cvsl_varsets.R D210 46
-	Rscript code/run_cvsl_varsets.R D210 47
+run_cvsl_varsets12:
+	Rscript code/run_cvsl_varsets.R D57 12
 
 get_vimp:
 	Rscript code/get_vimp.R

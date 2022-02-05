@@ -27,7 +27,10 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
 #a="pseudoneutid50"; TRIALS=c("moderna_real", "janssen_pooled_real"); file.name=1; include.az=T; log="y"
     myprint(a)
-    if(log=="") ylim=c(0, 1) else ylim=-log(1-c(0,.98))
+    
+    transf=if(log=="y") function(y) -log(1-y) else identity 
+    
+    ylim=if(log=="y") transf(c(0,.98)) else c(0, 1) 
     hist.shrink=1/c(ADCP=2,pseudoneutid50=1.2,bindSpike=1.3,bindRBD=1.3)
     
     all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real", "AZ-COV002")
@@ -36,6 +39,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.3, maxColorValue=255)})
     
     .subset=match(TRIALS, all.trials)
+    
     
     ## get markers data
     ## get xlim by combining trials. Do ENSEMBLE first because we want to source _common.R for moderna last so that we get the proper lloxs
@@ -55,7 +59,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
         dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
         
         dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
-        xlim=range(dat.vac.seroneg[[tmp]], log10(llods[a]/2), na.rm=T)
+        xlim=range(dat.vac.seroneg[[tmp]], log10(lloxs[a]/2), na.rm=T)
         delta=(xlim[2]-xlim[1])/20     
         xlim.ls[[x]]=c(xlim[1]-delta, xlim[2]+delta)
         
@@ -82,9 +86,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))                
         
             shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
-            y=t(rbind(est, ci.band))[shown,]
-            if(log=="y") y=-log(1-y)
-            mymatplot(risks$marker[shown], y, type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE"), xlab=labels.assays.short[a]%.%" (=s)", 
+            mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE"), xlab=labels.assays.short[a]%.%" (=s)", 
                 #main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, add=x!=TRIALS[1])
             draw.x.axis.cor(xlim, NA)
@@ -93,31 +95,27 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
                 axis(side=2,at=yat,labels=(yat*100)%.%"%")            
             } else {
                 yat=c(seq(0,.90,by=.1),.95)
-                axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
+                axis(side=2,at=transf(yat),labels=(yat*100)%.%"%")            
             }
         
             # add histogram
             #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
-            # first call hist to get breaks, then call weighted.hist
-            tmp.1=hist(markers.x[[x]],breaks=ifelse(x=="moderna_real",25,15),plot=F)  # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
-            tmp=weighted.hist(markers.x[[x]],weight[[x]], breaks=tmp.1$breaks, plot=F)
-            attr(tmp,"class")="histogram" 
+            tmp=get.marker.histogram(markers.x[[x]], weight[[x]], x)
             if (log=="") {
                 tmp$density=tmp$density/hist.shrink[a] # so that it will fit vertically
             } else{
                 tmp$density=tmp$density/hist.shrink[a]*3 # so that it will fit vertically
-            }
-            #tmp=hist(dat.vac.seroneg[["Day"%.%tpeak%.%a]],breaks=seq(min(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), max(dat.vac.seroneg[["Day"%.%tpeak%.%a]],na.rm=T), len = 15),plot=F)
-            plot(tmp,col=hist.col.ls[[x]],axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25)), add=T) 
+            }            
+            plot(tmp,col=hist.col.ls[[x]],axes=F,labels=F,border=0,freq=F,add=T) 
             
             overall.ve.ls[[x]]=overall.ve
         }        
     
         # add az curve
         if(include.az) {
-            lines(log10(ve.az[[a]]), ve.az$VE/100, col=cols["AZ-COV002"], lwd=2.5)
-            lines(log10(ve.az[[a%.%"LL"]]), ve.az$VE/100, col=cols["AZ-COV002"], lwd=2.5, lty=3)
-            lines(log10(ve.az[[a%.%"UL"]]), ve.az$VE/100, col=cols["AZ-COV002"], lwd=2.5, lty=3)
+            lines(log10(ve.az[[a]]),        transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5)
+            lines(log10(ve.az[[a%.%"LL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
+            lines(log10(ve.az[[a%.%"UL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
         }
     
         # legend
@@ -136,13 +134,11 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_pooled_real"), file.name="1", include.az=T, log="y")
 }
 
-
 # COVE + ENSEMBLE regions
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="2", include.az=F)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="2", include.az=F, log="y")
 }
-
 
 # ENSEMBLE regions
 for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
@@ -160,4 +156,10 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real"), file.name="5", include.az=F)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real"), file.name="5", include.az=F, log="y")
+}
+
+# COVE + ENSEMBLE regions + AZ
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="6", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="6", include.az=T, log="y")
 }

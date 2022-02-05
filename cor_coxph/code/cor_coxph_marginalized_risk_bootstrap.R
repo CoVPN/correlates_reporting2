@@ -4,7 +4,7 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-#formula=form.0; marker.name="Day"%.%tpeak%.%a; type=1; data=dat.vac.seroneg; t=tfinal.tpeak; B=200; ci.type="quantile"; numCores=1
+#formula=form.0; marker.name="Day"%.%tpeak%.%a%.%"cat"; type=3; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
     
     # store the current rng state 
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -90,10 +90,11 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
             if ( class (fit.risk)[1] != "try-error" ) {
                 marginalized.risk(fit.risk, marker.name, dat.b.ph2, t=t, ss=NULL, weights=dat.b.ph2$wt, categorical.s=T)
             } else {
-                rep(NA, length(ss))
+                rep(NA, 3)
             }
             
         } else stop("wrong type")
+        
     })
     res=do.call(cbind, out)
     res=res[,!is.na(res[1,])] # remove NA's

@@ -241,7 +241,7 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
     innerCvControl = innerCvControl,
     verbose = FALSE
   )
-
+  
   aucs <- get_all_aucs(sl_fit = fit, scale = scale, weights = all_weights,
                        C = C, Z = Z, SL.library = z_lib, ipc_est_type = ipc_est_type, family = gaussian())
 
@@ -731,6 +731,66 @@ make_forest_plot_demo <- function(avgs) {
   return(list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot))
 }
 
+# Create forest plot for all variable sets for either SL or discrete SL
+# @param cvaucs_vacc dataframe containing Variable Sets, Screen, Learner, AUC estimates and CIs as columns
+# @return list of 2 ggplot objects: one containing forest plot and the other containing labels (Variable Sets and CV-AUCs)
+make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
+  allSLs <- dat %>% filter(Learner == learner.choice) %>%
+    mutate(varsetNo = sapply(strsplit(varset, "_"), `[`, 1),
+           varsetNo = as.numeric(varsetNo)) %>%
+    arrange(varsetNo) %>%
+    mutate(varset = fct_reorder(varset, AUC, .desc = F)) %>%
+    arrange(-AUC)
+  
+  lowestXTick <- floor(min(allSLs$ci_ll)*10)/10
+  highestXTick <- ceiling(max(allSLs$ci_ul)*10)/10
+  top_learner_plot <- ggplot() +
+    geom_pointrange(allSLs %>% mutate(varset = fct_reorder(varset, AUC, .desc = F)), mapping=aes(x=varset, y=AUC, ymin=ci_ll, ymax=ci_ul), size = 1, color="blue", fill="blue", shape=20) +
+    coord_flip() +
+    scale_y_continuous(breaks = seq(lowestXTick, max(highestXTick, 1), 0.1), labels = seq(lowestXTick, max(highestXTick, 1), 0.1), limits = c(lowestXTick, max(highestXTick, 1))) +
+    theme_bw() +
+    labs(y = "CV-AUC [95% CI]", x = "") +
+    geom_hline(yintercept = 0.5, lty = "dashed") +
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size=16),
+          axis.title.x = element_text(size=16),
+          axis.text.y = element_blank(),
+          plot.margin=unit(c(2.25,0.2,0.8,-0.15),"cm"),
+          panel.border = element_blank(),
+          axis.line = element_line(colour = "black"))
+  
+  total_learnerScreen_combos = length(allSLs$LearnerScreen)
+  
+  allSLs_withCoord <- allSLs %>%
+    select(varset, AUCstr) %>%
+    mutate(varset = as.character(varset)) %>%
+    tidyr::gather("columnVal", "strDisplay") %>%
+    mutate(xcoord = case_when(columnVal=="varset" ~ 1.5,
+                              columnVal=="AUCstr" ~ 2),
+           ycoord = rep(total_learnerScreen_combos:1, 2))
+  
+  top_learner_nms_plot <- ggplot(allSLs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
+    geom_text(hjust=1, vjust=0, size=5) +
+    xlim(0.7,2) +
+    theme(plot.margin=unit(c(0.1,-0.15,0.65,-0.15),"cm"),
+          axis.line=element_blank(),
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(size = 2, color = "white"),
+          axis.ticks = element_blank(),
+          axis.title = element_blank()) +
+    annotate("text", x = 1.5, y = 35.2, size = 5,
+             label = "Variable Set",
+             fontface = "bold",
+             hjust = 1) +
+    annotate("text", x = 2, y = 35.2, size = 5,
+             label = "CV-AUC [95% CI]",
+             fontface = "bold",
+             hjust = 1)
+  
+  return(list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot))
+}
 
 
 # Create forest plot for prod run
