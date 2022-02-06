@@ -9,6 +9,7 @@ library(marginalizedRisk)
 library(tools) # toTitleCase
 library(survey)
 library(xtable) # this is a dependency of kyotil
+library(WeightedROC)
 Sys.setenv("TRIAL"="janssen_pooled_realbAb") # value does not matter since we just need to load the common functions in _common.R
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
@@ -32,8 +33,13 @@ stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.adcp$ptid))
 dat.ense.1=cbind(dat.vac.seroneg.bAb, 
     Day29pseudoneutid50=dat.vac.seroneg.id50$Day29pseudoneutid50, 
     Day29pseudoneutid50cat=dat.vac.seroneg.id50$Day29pseudoneutid50cat, 
+    ph2.D29start1id50=dat.vac.seroneg.id50$ph2.D29start1, 
+    wt.D29start1id50=dat.vac.seroneg.id50$wt.D29start1, 
     Day29ADCP=dat.vac.seroneg.adcp$Day29ADCP, 
-    Day29ADCPcat=dat.vac.seroneg.adcp$Day29ADCPcat)
+    Day29ADCPcat=dat.vac.seroneg.adcp$Day29ADCPcat,
+    ph2.D29start1ADCP=dat.vac.seroneg.adcp$ph2.D29start1,
+    wt.D29start1ADCP=dat.vac.seroneg.adcp$wt.D29start1
+    )
 
 dat.ense.0=load.data("janssen_pooled_realbAb", "D29IncludeNotMolecConfirmedstart1", trt=0)
     
@@ -46,6 +52,8 @@ dat.vac.seroneg.id50.la=load.data("janssen_la_realPsV", "D29IncludeNotMolecConfi
 dat.pla.seroneg.id50.la=load.data("janssen_la_realPsV", "D29IncludeNotMolecConfirmedstart1", trt=0)
 dat.vac.seroneg.id50.sa=load.data("janssen_sa_realPsV", "D29IncludeNotMolecConfirmedstart1")
 dat.pla.seroneg.id50.sa=load.data("janssen_sa_realPsV", "D29IncludeNotMolecConfirmedstart1", trt=0)
+
+
 
 
 ###################################################################################################
@@ -141,16 +149,19 @@ with(dat.ense.1, table(!is.na(Day29bindSpike) & !is.na(BbindSpike), !is.na(Day29
 
 tmp=subset(dat.ense.1, !(!is.na(Day29bindSpike) & !is.na(BbindSpike)) & !(!is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50)) & EventIndPrimary==1)
 
+
 ###################################################################################################
 # correlations between markers
 
 # ENSEMBLE
-mypdf(mfrow=c(2,2), file="output/meta/ensemble_corplot")
+mypdf(mfrow=c(2,3), file="output/meta/ensemble_corplot")
 with(subset(dat.ense.1, SubcohortInd==1), {
-    corplot(Day29pseudoneutid50, Day29ADCP, xlab="ID50", ylab="ADCP", method="s")
-    corplot(Day29pseudoneutid50, Day29bindRBD, xlab="ID50", ylab="bAb RBD", method="s")
-    corplot(Day29bindSpike, Day29bindRBD, xlab="bAb Spike", ylab="bAb RBD", method="s")
-    corplot(Day29bindRBD, Day29ADCP, xlab="bAb RBD", ylab="ADCP", method="s")
+    corplot(Day29pseudoneutid50, Day29ADCP, xlab="ID50", ylab="ADCP", method="s", add.diagonal.line=T)
+    corplot(Day29pseudoneutid50, Day29bindRBD, xlab="ID50", ylab="bAb RBD", method="s", add.diagonal.line=T)
+    corplot(Day29pseudoneutid50, Day29bindSpike, xlab="ID50", ylab="bAb Spike", method="s", add.diagonal.line=T)
+    corplot(Day29bindSpike, Day29bindRBD, xlab="bAb Spike", ylab="bAb RBD", method="s", add.diagonal.line=T)
+    corplot(Day29bindSpike, Day29ADCP, xlab="bAb Spike", ylab="ADCP", method="s", add.diagonal.line=T)
+    corplot(Day29bindRBD, Day29ADCP, xlab="bAb RBD", ylab="ADCP", method="s", add.diagonal.line=T)
 })
 dev.off()
 
@@ -159,13 +170,22 @@ with(dat.ense.1, table(Day29pseudoneutid50cat, Day29bindRBDcat))
 with(dat.ense.1, table(Day29bindSpikecat, Day29bindRBDcat))
 with(dat.ense.1, table(Day29bindRBDcat, Day29ADCPcat))
 
+with(subset(dat.ense.1, ph2.D29start1==1), WeightedAUC(WeightedROC(-Day29bindSpike, EventIndPrimary, weight = wt.D29start1)))
+#0.55435
+with(subset(dat.ense.1, ph2.D29start1==1), WeightedAUC(WeightedROC(-Day29bindRBD, EventIndPrimary, weight = wt.D29start1)))
+#0.560554
+with(subset(dat.ense.1, ph2.D29start1id50==1), WeightedAUC(WeightedROC(-Day29pseudoneutid50, EventIndPrimary, weight = wt.D29start1id50)))
+#0.594511
+with(subset(dat.ense.1, ph2.D29start1ADCP==1), WeightedAUC(WeightedROC(-Day29ADCP, EventIndPrimary, weight = wt.D29start1ADCP)))
+#0.590071
+
 # COVE
 mypdf(mfrow=c(2,2), file="output/meta/cove_corplot")
 with(subset(dat.cove.1, SubcohortInd==1), {
-    corplot(Day57pseudoneutid50, Day57bindSpike, xlab="ID50", ylab="bAb Spike")
-    corplot(Day57pseudoneutid50, Day57bindRBD, xlab="ID50", ylab="bAb RBD")
-    corplot(Day57bindSpike, Day57bindRBD, xlab="bAb Spike", ylab="bAb RBD")
-    corplot(Day57pseudoneutid50, Day57pseudoneutid80, xlab="ID50", ylab="ID80")
+    corplot(Day57pseudoneutid50, Day57bindSpike, xlab="ID50", ylab="bAb Spike", add.diagonal.line=F)
+    corplot(Day57pseudoneutid50, Day57bindRBD, xlab="ID50", ylab="bAb RBD", add.diagonal.line=F)
+    corplot(Day57bindSpike, Day57bindRBD, xlab="bAb Spike", ylab="bAb RBD", add.diagonal.line=T)
+    corplot(Day57pseudoneutid50, Day57pseudoneutid80, xlab="ID50", ylab="ID80", add.diagonal.line=T)
 })
 dev.off()
 
@@ -174,32 +194,34 @@ with(dat.cove.1, table(Day57pseudoneutid50cat, Day57bindRBDcat))
 with(dat.cove.1, table(Day57bindSpikecat, Day57bindRBDcat))
 with(dat.cove.1, table(Day57pseudoneutid50cat, Day57pseudoneutid80cat))
 
+with(subset(dat.cove.1, ph2.D57==1), WeightedAUC(WeightedROC(-Day57bindSpike, EventIndPrimary, weight = wt.D57)))
+#0.658508
+with(subset(dat.cove.1, ph2.D57==1), WeightedAUC(WeightedROC(-Day57bindRBD, EventIndPrimary, weight = wt.D57)))
+#0.647224
+with(subset(dat.cove.1, ph2.D57==1), WeightedAUC(WeightedROC(-Day57pseudoneutid50, EventIndPrimary, weight = wt.D57)))
+#0.628095
+with(subset(dat.cove.1, ph2.D57==1), WeightedAUC(WeightedROC(-Day57pseudoneutid80, EventIndPrimary, weight = wt.D57)))
+#0.618422
+
+
+
+
 
 
 ####################################################################
 # compare controlled VE for ID50 <30, 100> between cove and ensemble
 
-# pick a day for cove such that the overall risk in placebo match that of ensemble: 89
+10**wtd.quantile(dat.vac.seroneg.id50[["Day29pseudoneutid50"]], dat.vac.seroneg.id50$wt, probs = c(0.025, 0.05,0.90,0.95,.975))
 
-# placebo risk 0.053
-get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.0, day=89)
-# 0.0530523
-get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.0, day=70)
-# 0.039606
-get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.ense.0, day=66)
-# 0.0525176
-get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.pla.seroneg.id50.la, day=48)
-# 0.0393271
+# 102 is 95% percentile in US. No weights used because weights are derived for pooled data
+10**quantile(dat.vac.seroneg.id50.na[["Day29pseudoneutid50"]], c(0.025, 0.05,0.90,0.95,.975), na.rm=T)
 
-get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.1, day=89)
-# 0.00328746
-get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.ense.1, day=66)
-# 0.0196666
-get.marginalized.risk.no.marker(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.la, day=48)
-# 0.0165755
+# 32 is 2.5% percentile in COVE
+10**wtd.quantile(dat.cove.1[["Day57pseudoneutid50"]], dat.cove.1$wt, probs = c(0.025,0.05,0.1,0.95,0.975))
 
+lcut=32; ucut=102
 
-get.ve=function(form.0, dat.1, dat.0, marker.name, cuts=c(30,100), t) {
+get.ve=function(form.0, dat.1, dat.0, marker.name, cuts=c(lcut,ucut), t) {
     dat.1$discrete.marker=factor(cut(dat.1[[marker.name]], breaks=c(-Inf,log10(cuts),Inf) ))
     print(table(dat.1$discrete.marker, dat.1$EventIndPrimary)             )
     f1=update(form.0, ~ . + discrete.marker)
@@ -214,48 +236,52 @@ get.ve=function(form.0, dat.1, dat.0, marker.name, cuts=c(30,100), t) {
 }
 
 # COVE
-tab.1=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.1, dat.cove.0, "Day57pseudoneutid50", cuts=c(30,100), t=100)              
+tab.1=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd + HighRiskInd, dat.cove.1, dat.cove.0, "Day57pseudoneutid50", t=100); tab.1
 #                0   1
-#  (-Inf,1.48]  21   3
-#  (1.48,2]    108   9
-#  (2, Inf]    919  28
-
-#(-Inf,1.48]    (1.48,2]    (2, Inf] 
-#   0.843034    0.852950    0.955792 
-        
-# ENSEMBLE, pooled
-tab.2=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.vac.seroneg.id50, dat.ense.0, "Day29pseudoneutid50", cuts=c(30,100), t=66) 
-#                0   1
-#  (-Inf,1.48] 590  76
-#  (1.48,2]    131  11
-#  (2, Inf]     57   2
-#(-Inf,1.48]    (1.48,2]    (2, Inf] 
-#   0.471382    0.707984    0.871407 
-get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.vac.seroneg.id50, dat.ense.0, "Day29pseudoneutid50", cuts=c(30,100), t=48) 
-#(-Inf,1.48]    (1.48,2]    (2, Inf] 
-#   0.580821    0.769225    0.898612
+#  (-Inf,1.51]  22   3
+#  (1.51,2.01] 111   9
+#  (2.01, Inf] 915  28
+#(-Inf,1.51] (1.51,2.01] (2.01, Inf] 
+#   0.836539    0.827545    0.946230 
    
-# ENSEMBLE NA. Cuts are chosen as 10, 30 because there are no data above 100
-tab.3=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.na, dat.pla.seroneg.id50.na, "Day29pseudoneutid50", cuts=c(30), t=66) 
-#               0   1
-#  (-Inf,1.48] 299  22
-#  (1.48, Inf]  84   2
+
+# ENSEMBLE, pooled
+tab.2=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.vac.seroneg.id50, dat.ense.0, "Day29pseudoneutid50", t=66); tab.2
+#                0   1
+#  (-Inf,1.51] 601  76
+#  (1.51,2.01] 120   9
+#  (2.01, Inf]  54   3
+#(-Inf,1.51] (1.51,2.01] (2.01, Inf] 
+#   0.473873    0.727231    0.793189 
+        
+   
+# ENSEMBLE NA. Only one cut b/c no data above 102
+tab.3=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.na, dat.pla.seroneg.id50.na, "Day29pseudoneutid50", cuts=c(32), t=66); tab.3
+#                0   1
+#  (-Inf,1.51] 304  22
+#  (1.51, Inf]  76   2
+#(-Inf,1.51] (1.51, Inf] 
+#   0.764128    0.815223 
    
 #ENSEMBLE LA
-tab.4=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.la, dat.pla.seroneg.id50.la, "Day29pseudoneutid50", cuts=c(30,100), t=48) 
+tab.4=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.la, dat.pla.seroneg.id50.la, "Day29pseudoneutid50", t=48); tab.4
 #                0   1
-#  (-Inf,1.48] 153  39
-#  (1.48,2]     37   7
-#  (2, Inf]     18   2
-   
+#  (-Inf,1.51] 158  39
+#  (1.51,2.01]  32   5
+#  (2.01, Inf]  18   3
+#(-Inf,1.51] (1.51,2.01] (2.01, Inf] 
+#   0.515871    0.766733    0.708168 
+      
 # ENSEMBLE SA. Cuts are chosen as 10, 30 because there are no data above 100
-tab.5=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.sa, dat.pla.seroneg.id50.sa, "Day29pseudoneutid50", cuts=c(30), t=26) 
+tab.5=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.sa, dat.pla.seroneg.id50.sa, "Day29pseudoneutid50", cuts=c(32), t=26); tab.5
 #                0   1
-#  (-Inf,1]    100  13
-#  (1,1.48]     38   2
-#  (1.48, Inf]  49   2
+#  (-Inf,1.51] 139  15
+#  (1.51, Inf]  48   2
+#(-Inf,1.51] (1.51, Inf] 
+#   0.350872    0.768693
+
 
 tab=rbind(COVE=tab.1, "ENSEMBLE pooled"=tab.2, "ENSEMBLE NA"=c(tab.3,NA), "ENSEMBLE LA"=tab.4, "ENSEMBLE SA"=c(tab.5,NA))
-colnames(tab)=c("<=30",">30,<=100",">100")
-tab.1
+colnames(tab)=c("<=32",">32,<=102",">102")
+tab
 mytex(tab, file="id50_ve", align="c", save2input.only=T, input.foldername="output/meta")

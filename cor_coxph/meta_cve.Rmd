@@ -85,7 +85,9 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 # Controlled VE based on Cox Models with Discretized Markers
 
 \begin{table}[H]
-\caption{Controlled VE for discretized Pseudovirus nAb ID50. COVE: starting 7 days and ending 100 days post Day 57. ENSEMBLE: starting 1 days post Day 29; pooled: ending 66 days; NA: ending 66 days; LA: ending 48 days; SA: ending 26 days.}
+\caption{Controlled VE for discretized Pseudovirus nAb ID50. COVE: starting 7 days and ending 100 days post Day 57. ENSEMBLE: starting 1 days post Day 29; pooled: ending 66 days; NA: ending 66 days; LA: ending 48 days; SA: ending 26 days.
+32 is the 2.5\% weighted percentile of ID50 in COVE. 102 is the 95\% percentile of ID50 in ENSEMBLE US (no weights used because weights are derived from pooled data). Note that we only cut ENSE US and SA ID50 into two levels by 32 since there are no cases above 102 and if we cut at 32 and 102, the model estimates a much lower VE for the 32 to 102 level.
+}
 \begin{center}
     \input{output/meta/id50_ve.tex}\\
 \end{center}
