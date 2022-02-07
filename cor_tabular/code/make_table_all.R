@@ -82,8 +82,8 @@ tlf <-
       per-protocol cohort (vaccine recipients)",
       table_footer =c(
         paste(paste(sprintf("Cases for Day %s markers are baseline negative per-protocol vaccine recipients 
-      with the symptomatic infection COVID-19 primary endpoint diagnosed starting 7 days 
-      after the Day %s study visit.", timepoints, timepoints), collapse=" "),
+      with the symptomatic infection COVID-19 primary endpoint diagnosed starting %s day(s) 
+      after the Day %s study visit.", timepoints, config.cor$tpeaklag, timepoints), collapse=" "),
           "Non-cases/Controls are baseline negative per-protocol vaccine recipients sampled into the random subcohort 
       with no COVID-19 endpoint diagnosis by the time of data-cut."),
           "N is the number of cases sampled into the subcohort within baseline covariate strata.",
@@ -116,6 +116,7 @@ labels.time <- labels.time[times]
 # hacky fix
 
 if ("BbindN" %in% names(dat.mock) & any(grepl("bind", assays))) assays <- union(assays, "bindN")
+
 
 bindN <- "Anti N IgG (BAU/ml)"
 names(bindN) <- "bindN"
@@ -162,6 +163,7 @@ labels_all <- full_join(labels.assays, resp.lb, by = c("time", "marker")) %>%
   mutate(mag_cat = colname, resp_cat = paste0(colname, ind))
 
 
+
 ###################################################
 #                Clean the Data                   #
 ###################################################
@@ -175,14 +177,6 @@ labels_all <- full_join(labels.assays, resp.lb, by = c("time", "marker")) %>%
 
 # dat.mock was made in _common.R
 dat <- dat.mock
-
-has29 <- 29 %in% timepoints
-has57 <- 57 %in% timepoints
-
-# Read in original data
-#data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
-#dat <- dat_proc <- read.csv(here::here("..", "data_clean", data_name))
-#load(here::here("..", "data_clean/", paste0(attr(config,"config"), "_params.Rdata")))  # file removed. objects moved to _common.R
 
 
 # The stratified random cohort for immunogenicity
@@ -275,7 +269,7 @@ subgrp <- c(
 
 # Setup empty tables 
 tab_dm_neg <- tab_strtm1 <- tab_strtm2 <- tab_strtm2_1 <- tab_strtm2_2 <- tab_case_cnt <- NULL
-rpcnt_case1 <- rpcnt_case2 <- rgm_case1 <- rgm_case2 <- rgmt_case1 <- rgmt_case2 <- NULL
+rpcnt_case <- rgm_case <- rgmt_case <- NULL
 case_vacc_neg <- NULL
 
 if (study_name %in% c("COVE", "MockCOVE")) {
@@ -379,33 +373,24 @@ print("Done with table 1")
 
 # Added table: 
 
-if (has57) {
-ds <- mutate(ds, 
-             Case.D57 = case_when(
-               Perprotocol==1 & EarlyendpointD57==0 & 
-                 TwophasesampIndD57==1 & EventIndPrimaryD57==1 ~ "Cases", 
-               Perprotocol==1 & EarlyendpointD57==0 & 
-                 TwophasesampIndD57==1 & EventIndPrimaryD1==0 ~ "Non-Cases")
-             )
-}
-
-if (has29){
-  if (study_name %in% c("COVE", "MockCOVE")){
-    ds <- mutate(ds,
-                 Case.D29 = case_when(
-                   Perprotocol==1 & EarlyendpointD29==0 & 
-                     TwophasesampIndD29==1 & EventIndPrimaryD29==1~"Cases", 
-                   Perprotocol==1 & EarlyendpointD57==0 & 
-                     TwophasesampIndD57==1 & EventIndPrimaryD1==0 ~"Non-Cases")
-               )
-  } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")){
-    ds <- mutate(ds,
-                 Case.D29 = case_when(
-                   Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & 
-                     EventIndPrimaryD29==1 & EventTimePrimaryD29 >= 7 ~"Cases", 
-                   Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & 
-                     EventIndPrimaryD1==0  & EarlyendpointD29==0  ~"Non-Cases")
-    )
+for (d in timepoints){
+  if (study_name %in% c("COVE", "MockCOVE")) {
+    ds <- mutate(ds, 
+                 "Case.D{d}" := case_when(Perprotocol==1 & 
+                                            !!as.name(config.cor$Earlyendpoint)==0 & 
+                                            !!as.name(paste0("TwophasesampIndD", d))==1 & 
+                                            !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+                                          Perprotocol==1 & EarlyendpointD57==0 & 
+                                            TwophasesampIndD57==1 & EventIndPrimaryD1==0 ~ "Non-Cases"))
+    }
+  if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
+    ds <- mutate(ds, "Case.D{d}" := case_when(Perprotocol==1 & Bserostatus==0 & 
+                                                !!as.name(paste0("TwophasesampIndD", d))==1 & 
+                                                !!as.name(config.cor$EventIndPrimary)==1 & 
+                                                !!as.name(config.cor$EventTimePrimary) >= config.cor$tpeaklag ~ "Cases", 
+                                              Perprotocol==1 & Bserostatus==0 & EventIndPrimaryD1==0 & 
+                                                !!as.name(paste0("TwophasesampIndD", d))==1 & 
+                                                !!as.name(config.cor$Earlyendpoint)==0 ~ "Non-Cases"))
   }
 }
 
@@ -432,15 +417,16 @@ if (study_name %in% c("COVE", "MockCOVE")){
   demo.stratum.ordered <- gsub("At risk", "Presence of comorbidities", demo.stratum.ordered)
   demo.stratum.ordered <- gsub("Not at risk", "Absence of comorbidities", demo.stratum.ordered)
   
-  tab_strtm <- ds %>% 
+  tab_strtm <- ds %>%
     group_by(demo.stratum.ordered, Arm, `Baseline SARS-CoV-2`) %>%
-    summarise(`Day 29 Cases`=sum(Case.D29=="Cases", na.rm=T), 
-              `Non-Cases`=sum(Case.D29=="Non-Cases", na.rm=T)) %>% 
-    pivot_longer(cols=c(`Day 29 Cases`, `Non-Cases`)) %>% 
-    arrange(`Baseline SARS-CoV-2`, demo.stratum.ordered) %>% 
-    pivot_wider(id_cols=c(Arm, name), 
-                names_from = c(`Baseline SARS-CoV-2`, demo.stratum.ordered), 
-                values_from=value) 
+    summarise(`Day 29 Cases`=sum(Case.D29=="Cases", na.rm=T),
+              `Non-Cases`=sum(Case.D29=="Non-Cases", na.rm=T)) %>%
+    pivot_longer(cols=c(`Day 29 Cases`, `Non-Cases`)) %>%
+    arrange(`Baseline SARS-CoV-2`, demo.stratum.ordered) %>%
+    pivot_wider(id_cols=c(Arm, name),
+                names_from = c(`Baseline SARS-CoV-2`, demo.stratum.ordered),
+                values_from=value)
+
   strtms <- ds %>% distinct(Region, demo.stratum.ordered) %>% arrange(demo.stratum.ordered)
 
 }
@@ -586,38 +572,23 @@ if (study_name %in% c("COVE", "MockCOVE")){
 
 sub.by <- c("Arm", "`Baseline SARS-CoV-2`")
 
-if(has57){
-ds.D57 <- filter(ds, ph1.D57)
-resp.v.57 <- intersect(grep("Resp", names(ds), value = T),
-                       grep("57", names(ds), value = T))
-gm.v.57 <- intersect(assays_col, grep("57", names(ds), value = T))
-
-subs <- "Case.D57"
-comp_i <- c("Cases", "Non-Cases")
-
-rpcnt_case1 <- get_rr(ds.D57, resp.v.57, subs, sub.by, strata="Wstratum", weights="wt.D57", subset="ph2.D57") 
-rgm_case1 <- get_gm(ds.D57, gm.v.57, subs, sub.by, strata="Wstratum", weights="wt.D57", "ph2.D57") 
-rgmt_case1 <- get_rgmt(ds.D57, gm.v.57, subs, comp_lev=comp_i, sub.by, "Wstratum", "wt.D57", "ph2.D57") 
-}
-print("Done with table 2 & 3") 
-
-if(has29){
-  ds.D29 <- filter(ds, ph1.D29)
-  subs <- "Case.D29"
+for (d in timepoints) {
+  ds.i <- filter(ds, !!as.name(config.cor$ph1))
+  resp.v <- intersect(grep("Resp", names(ds), value = T), 
+                      grep(d, names(ds), value = T))
+  gm.v <- intersect(assays_col, grep(d, names(ds), value = T))
+  
+  subs <- paste0("Case.D", d)
   comp_i <- c("Cases", "Non-Cases")
   
-  resp.v.29 <- intersect(grep("Resp", names(ds), value = T),
-                         grep("29", names(ds), value = T))
-  gm.v.29 <- intersect(assays_col, grep("29", names(ds), value = T))
+  rpcnt_case.i <- get_rr(ds.i, resp.v, subs, sub.by, strata=config.cor$WtStratum, weights=config.cor$wt, subset=config.cor$ph2) 
+  rgm_case.i <- get_gm(ds.i, gm.v, subs, sub.by, strata=config.cor$WtStratum, weights=config.cor$wt, subset=config.cor$ph2) 
+  rgmt_case.i <- get_rgmt(ds.i, gm.v, subs, comp_lev=comp_i, sub.by, strata=config.cor$WtStratum, weights=config.cor$wt, subset=config.cor$ph2) 
   
-  rpcnt_case2 <- get_rr(ds.D29, resp.v.29, subs, sub.by, "Wstratum", "wt.D29", "ph2.D29")
-  rgm_case2 <- get_gm(ds.D29, gm.v.29, subs, sub.by, "Wstratum", "wt.D29", "ph2.D29")
-  rgmt_case2 <- get_rgmt(ds.D29, gm.v.29, subs, comp_lev=comp_i, sub.by, "Wstratum", "wt.D29", "ph2.D29")
+  rpcnt_case <- bind_rows(rpcnt_case, rpcnt_case.i)
+  rgm_case <- bind_rows(rgm_case, rgm_case.i)
+  rgmt_case <- bind_rows(rgmt_case, rgmt_case.i)
 }
-
-  rpcnt_case <- bind_rows(rpcnt_case1, rpcnt_case2)
-  rgm_case <- bind_rows(rgm_case1, rgm_case2)
-  rgmt_case <- bind_rows(rgmt_case1, rgmt_case2)
   
   print("Done with table 2b & 3b") 
 
@@ -674,7 +645,6 @@ case_vacc_neg <- tab_case %>%
   dplyr::filter(Arm == "Vaccine" & `Baseline SARS-CoV-2` == "Negative") %>% 
   select(-c(Arm, `Baseline SARS-CoV-2`))
 
-
 print("Done with all tables") 
 
 # path for tables
@@ -686,5 +656,5 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
 save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, case_vacc_neg, 
-     file = file.path(save.results.to, "Tables.Rdata"))
+     file = file.path(save.results.to, sprintf("Tables%s.Rdata", ifelse(exists("COR"), COR, ""))))
 
