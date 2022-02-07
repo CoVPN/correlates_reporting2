@@ -572,7 +572,7 @@ if (study_name %in% c("COVE", "MockCOVE")){
 
 sub.by <- c("Arm", "`Baseline SARS-CoV-2`")
 
-for (d in timepoints) {
+for (d in config.cor$tpeak) {
   ds.i <- filter(ds, !!as.name(config.cor$ph1))
   resp.v <- intersect(grep("Resp", names(ds), value = T), 
                       grep(d, names(ds), value = T))
