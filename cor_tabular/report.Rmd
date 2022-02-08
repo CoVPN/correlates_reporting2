@@ -23,7 +23,7 @@ for (d in dats){
 base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
   d_lab <- sprintf("(%s)", substr(d, 7, nchar(d)-6)) # name always starts with "Tables" and ends with ".Rdata"
   for (i in 1:length(tlf)) {
-  if (i == 2) {
+  if (i == 3) {
     cat("\n\n\\newgeometry{top=0.1in, bottom=0.1in, left=1in, right=1in}")
     cat("\n\n\\begin{landscape}\n")
   }
@@ -67,8 +67,8 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
   colnames(tab) <- gsub("%", "\\\\%", colnames(tab))
   colnames(tab) <- gsub("Baseline SARS-CoV-2", "Baseline\nSARS\\-CoV\\-2",
                         colnames(tab))
-  colnames(tab) <- gsub("% Greater than 2xLLOQ", "% Greater than\n2 $\\\\times$ LLOQ", colnames(tab))
-  colnames(tab) <- gsub("% Greater than 4xLLOQ", "% Greater than\n4 $\\\\times$ LLOQ", colnames(tab))                        
+  colnames(tab) <- gsub("% Greater than 2xLLO", "% Greater than\n2 $\\\\times$ LLO", colnames(tab))
+  colnames(tab) <- gsub("% Greater than 4xLLO", "% Greater than\n4 $\\\\times$ LLO", colnames(tab))                        
 
   col_name <- if ("col_name" %in% tlf_args) {
     tlf_labels[["col_name"]]
@@ -97,7 +97,7 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
                      col.names = linebreak(col_name, align="l"),
                      caption = caption.i) %>%
         column_spec(1, width = ifelse("col1"%in%tlf_args, tlf_labels[["col1"]],"2.7cm")) %>% 
-        kable_styling(latex_options = "repeat_header", 
+        kable_styling(latex_options = c("repeat_header", "scale_down"), 
                       repeat_header_method = "replace") %>%
         footnote(general_title = "", general = footer_i, threeparttable = TRUE,
         escape = FALSE)
