@@ -152,22 +152,10 @@ dat.long$trt_bstatus_label <-
 # subcohort, which is a stratified sample of enrolled participants. So,
 # immunogenicity analysis is always done in ppts that meet all of the criteria.
 
-# Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
-# since it should only happen for D57-related figures.
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705"){ # one timepoint study: ph2.tpeak
-  dat.cor.subset <- dat %>%
-    dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
-  dat.long.cor.subset <- dat.long %>%
-    dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
-} else { # two timepoints study: ph2.tinterm
-  dat.cor.subset <- dat %>%
-    dplyr::filter(!!as.name(paste0("ph2.D", tinterm, ifelse(grepl("start1", COR), "start1","")))==1)
-  dat.long.cor.subset <- dat.long %>%
-    dplyr::filter(!!as.name(paste0("ph2.D", tinterm, ifelse(grepl("start1", COR), "start1","")))==1)
-}
-
-
-
+dat.cor.subset <- dat %>%
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
+dat.long.cor.subset <- dat.long %>%
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 
 
 saveRDS(as.data.frame(dat.long.cor.subset),
