@@ -54,8 +54,8 @@ if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705") 
     mutate(cohort_event = factor(
       #ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= 13, "Day 2-14 Cases",
       #       ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) > 13 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= tpeaklag-1 + NumberdaysD1toD29, intcur2,
-                    ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D29")))==1 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D29"))) >= tpeaklag, "Post-Peak Cases",
-                           ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & EarlyendpointD29==0, "Non-Cases", NA)),
+                    ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D", tpeak)))==1 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D", tpeak))) >= tpeaklag, "Post-Peak Cases",
+                           ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & (!!as.name(paste0("EarlyendpointD", tpeak, ifelse(grepl("start1", COR), "start1",""))))==0, "Non-Cases", NA)),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
     )
@@ -268,8 +268,13 @@ dat.long$minority_label <-
 
 # Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
 # since it should only happen for D57-related figures.
-dat.long.cor.subset <- dat.long %>%
-  dplyr::filter(!!as.name(paste0("ph2.D29", ifelse(grepl("start1", COR), "start1","")))==1)
+if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705"){ # one timepoint study: ph2.tpeak
+  dat.long.cor.subset <- dat.long %>%
+    dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
+} else { # two timepoints study: ph2.tinterm
+  dat.long.cor.subset <- dat.long %>%
+    dplyr::filter(!!as.name(paste0("ph2.D", tinterm, ifelse(grepl("start1", COR), "start1","")))==1)
+}
 
 
 # long to longer format by time

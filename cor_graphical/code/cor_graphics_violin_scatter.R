@@ -46,14 +46,20 @@ names(maxs) <- min_max_plot$assay
 
 # labels
 if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE"){
-  x_lb <- c("Day 1", "Day 29", "Day 2-14\nCases", paste0("Day 15-", 28+tpeaklag, "\nCases"), "Post-Peak\nCases", "Non-Cases")
-  names(x_lb) <- c("Day 1", "Day 29", "Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), "Post-Peak Cases", "Non-Cases")
+  x_lb <- c("Day 1", paste0("Day ", tpeak), #"Day 2-14\nCases", paste0("Day 15-", 28+tpeaklag, "\nCases"), 
+            "Post-Peak\nCases", "Non-Cases")
+  names(x_lb) <- c("Day 1", paste0("Day ", tpeak), #"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
+                   "Post-Peak Cases", "Non-Cases")
   
-  col_lb <- c("#FF5EBF", "#0AB7C9", "#FF6F1B", "#810094")
-  names(col_lb) <- c("Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), "Post-Peak Cases", "Non-Cases")
+  col_lb <- c(#"#FF5EBF", "#0AB7C9", 
+    "#FF6F1B", "#810094")
+  names(col_lb) <- c(#"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
+    "Post-Peak Cases", "Non-Cases")
   
-  shp_lb <- c(18, 16, 17, 15)
-  names(shp_lb) <- c("Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), "Post-Peak Cases", "Non-Cases")
+  shp_lb <- c(#18, 16, 
+    17, 15)
+  names(shp_lb) <- c(#"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
+    "Post-Peak Cases", "Non-Cases")
 } else {
   x_lb <- c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), "Intercurrent\nCases", "Post-Peak\nCases", "Non-Cases")
   names(x_lb) <- c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), "Intercurrent Cases", "Post-Peak Cases", "Non-Cases")
@@ -367,7 +373,8 @@ for (i in 1:length(plots)) {
       ds.tmp$size <- with(ds.tmp, ifelse(cohort_event == "Non-Cases", 2.5, 4))
       
       if (timesls[[2]][d]==tail(timesls[[2]], n=1)) {ds.tmp <- ds.tmp %>% 
-        filter(!(time==tail(timesls[[2]], n=1) & cohort_event %in% c("Intercurrent Cases","Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"))) %>%
+        filter(!(time==tail(timesls[[2]], n=1) & cohort_event %in% c("Intercurrent Cases"#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
+                                                                     ))) %>%
         mutate(cohort_event = factor(cohort_event, levels = tail(levels(cohort_event), 2)))
       }
       
@@ -411,7 +418,8 @@ for (i in 1:length(plots)) {
     
     ds.tmp <- longer_cor_data %>%
       filter(assay==plots[i]) %>%
-      filter(!(time==timesince[2] & cohort_event %in% c("Intercurrent Cases","Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"))) %>% 
+      filter(!(time==timesince[2] & cohort_event %in% c("Intercurrent Cases"#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
+                                                        ))) %>% 
       # case only and remove "intercurrent" cases from the last timepoint
       filter(time %in% timesince) %>%
       filter(!cohort_event == "Non-Cases") %>% 
