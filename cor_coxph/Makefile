@@ -19,6 +19,8 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_realbAb janssen_pooled_rea
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmedstart1
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2))
 	Rscript code/cor_coxph.R D210
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
+	Rscript code/cor_coxph.R D35
 endif
 
 collate:

@@ -205,8 +205,9 @@ designs=append(designs, lapply(countries.1, function (i) {
 # add Latin America after united states if pooled
 if (config$subset_variable=="None") designs = append(designs, lapply(regions[2], function (i) twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, Region==i)))), after=2)
 fits.all.3=lapply(assays, function(a) {
-    f= update(update(form.0, ~.-as.factor(Region)), as.formula(paste0("~.+Day",tpeak, a)))
-    lapply(designs, function (d) run.svycoxph(f, design=d))
+    f=  update(update(form.0, ~.-as.factor(Region)), as.formula(paste0("~.+Day",tpeak, a)))
+    f.1=update(form.0, as.formula(paste0("~.+Day",tpeak, a))) # keep Region for All vaccine
+    lapply(1:length(designs), function (i) if(i==1) run.svycoxph(f.1, design=designs[[1]]) else run.svycoxph(f, design=designs[[i]]) )
 })
 
 nevents=nrow(subset(dat.vac.seroneg, yy==1))
