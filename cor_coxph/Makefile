@@ -24,7 +24,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 endif
 
 collate:
-	Rscript code/cor_coxph_collate.R
+	Rscript code/cor_coxph_collate_meta_VE.R
 	Rscript -e "rmarkdown::render('collate_ensemble.Rmd', output_file='covpn_correlates_cor_coxph_janssen_collated.pdf')"
 
 meta:
