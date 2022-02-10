@@ -207,7 +207,9 @@ if (config$subset_variable=="None") designs = append(designs, lapply(regions[2],
 fits.all.3=lapply(assays, function(a) {
     f=  update(update(form.0, ~.-as.factor(Region)), as.formula(paste0("~.+Day",tpeak, a)))
     f.1=update(form.0, as.formula(paste0("~.+Day",tpeak, a))) # keep Region for All vaccine
-    lapply(1:length(designs), function (i) if(i==1) run.svycoxph(f.1, design=designs[[1]]) else run.svycoxph(f, design=designs[[i]]) )
+    out=lapply(1:length(designs), function (i) if(i==1) run.svycoxph(f.1, design=designs[[1]]) else run.svycoxph(f, design=designs[[i]]) )
+    names(out)=names(designs)
+    out
 })
 
 nevents=nrow(subset(dat.vac.seroneg, yy==1))
