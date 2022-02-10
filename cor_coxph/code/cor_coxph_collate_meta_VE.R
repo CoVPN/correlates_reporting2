@@ -211,19 +211,21 @@ with(subset(dat.cove.1, ph2.D57==1), WeightedAUC(WeightedROC(-Day57pseudoneutid8
 ####################################################################
 # compare controlled VE for ID50 <30, 100> between cove and ensemble
 
-10**wtd.quantile(dat.vac.seroneg.id50[["Day29pseudoneutid50"]], dat.vac.seroneg.id50$wt, probs = c(0.025, 0.05,0.90,0.95,.975))
-
-# 102 is 95% percentile in US. No weights used because weights are derived for pooled data
-10**quantile(dat.vac.seroneg.id50.na[["Day29pseudoneutid50"]], c(0.025, 0.05,0.90,0.95,.975), na.rm=T)
-
-# 32 is 2.5% percentile in COVE
 10**wtd.quantile(dat.cove.1[["Day57pseudoneutid50"]], dat.cove.1$wt, probs = c(0.025,0.05,0.1,0.95,0.975))
+#    2.5%      5.0%     10.0%     95.0%     97.5% 
+#  31.5829   60.4836   88.0196 1090.9402 1308.6377 
 
-lcut=32; ucut=102
+10**wtd.quantile(dat.vac.seroneg.id50.na[["Day29pseudoneutid50"]], dat.vac.seroneg.id50.na$wt, c(0.025, 0.05,0.90,0.95,.975))
+#   2.5%     5.0%    90.0%    95.0%    97.5% 
+#  2.9988   2.9988  51.2652  88.1076 213.3432 
+
+
+
+lcut=31.5829; ucut=213.3432
 
 get.ve=function(form.0, dat.1, dat.0, marker.name, cuts=c(lcut,ucut), t) {
     dat.1$discrete.marker=factor(cut(dat.1[[marker.name]], breaks=c(-Inf,log10(cuts),Inf) ))
-    print(table(dat.1$discrete.marker, dat.1$EventIndPrimary)             )
+    print(table(dat.1$discrete.marker, dat.1$EventIndPrimary, useNA="ifany")             )
     f1=update(form.0, ~ . + discrete.marker)
     tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.1)
     fit.risk=try(svycoxph(f1, design=tmp.design))
@@ -256,7 +258,7 @@ tab.2=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Re
         
    
 # ENSEMBLE NA. Only one cut b/c no data above 102
-tab.3=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.na, dat.pla.seroneg.id50.na, "Day29pseudoneutid50", cuts=c(32), t=66); tab.3
+tab.3=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score, dat.vac.seroneg.id50.na, dat.pla.seroneg.id50.na, "Day29pseudoneutid50", cuts=31.5829, t=66); tab.3
 #                0   1
 #  (-Inf,1.51] 304  22
 #  (1.51, Inf]  76   2

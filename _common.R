@@ -278,6 +278,7 @@ if (config$is_ows_trial) {
         uloqs["bindRBD"]=172.5755    
                 
         llods["pseudoneutid50"]=5.99761 # based on data, SAP says 5.712
+        pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
         uloqs["pseudoneutid50"]=1354.315
         
     } else if(study_name=="PREVENT-19") {

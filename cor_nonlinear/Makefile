@@ -18,6 +18,8 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_real janssen_pooled_realAD
 	Rscript code/cor_nonlinear.R D29IncludeNotMolecConfirmedstart1
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
 	Rscript code/cor_nonlinear.R D210
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
+	Rscript code/cor_nonlinear.R D35
 endif
 
 before_script:
