@@ -292,13 +292,8 @@ if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
 }
 
 # define response rates
-if (study_name=="HVTN705"){
-  resp <- getResponder(dat.mock, cutoff.name="lloq", times=grep("Day", times, value=T), 
+resp <- getResponder(dat.mock, cutoff.name="llox", times=grep("Day", times, value=T), 
                assays=assays, pos.cutoffs = pos.cutoffs)
-} else {
-  resp <- getResponder(dat.mock, cutoff.name="llod", times=grep("Day", times, value=T), 
-                       assays=assays, pos.cutoffs = pos.cutoffs)
-}
 resp2 <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
   pivot_longer(!Ptid, names_to = "category", values_to = "response")
   
