@@ -36,7 +36,14 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
         fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
         prob=marginalized.risk(fit.risk, marker.name, data=data.ph2, ss=NULL, weights=data.ph2$wt, t=t, categorical.s=T, verbose=F)        
-       
+        
+    } else if (type==4) {
+    # conditional on s
+    # coef only
+        f1=update(formula, as.formula(paste0("~.+",marker.name)))        
+        tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
+        fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
+    
     } else stop("wrong type")
     
     # for use in bootstrap
@@ -91,6 +98,17 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
                 marginalized.risk(fit.risk, marker.name, dat.b.ph2, t=t, ss=NULL, weights=dat.b.ph2$wt, categorical.s=T)
             } else {
                 rep(NA, 3)
+            }
+            
+        } else if (type==4) {
+        # conditional on s
+        # coef
+            tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)
+            fit.risk.b=try(svycoxph(f1, design=tmp.design))
+            if ( class (fit.risk.b)[1] != "try-error" ) {
+                exp(coef(fit.risk.b))
+            } else {
+                rep(NA, length(coef(fit.risk)))
             }
             
         } else stop("wrong type")

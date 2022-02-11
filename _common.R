@@ -212,6 +212,8 @@ if(config$is_ows_trial) {
 names(assays)=assays # add names so that lapply results will have names
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
+# For bAb, IU and BAU are the same thing
+# all values on BAU or IU
 if (config$is_ows_trial) {
     tmp=list(
         bindSpike=c(
@@ -271,15 +273,17 @@ if (config$is_ows_trial) {
     
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         
-        # data less than pos cutoff is set to pos.cutoff/2 in the raw data        
+        # data less than pos cutoff is set to pos.cutoff/2
         uloqs["bindSpike"]=238.1165 
     
-        # data less than pos cutoff is set to pos.cutoff/2 in the raw data        
+        # data less than pos cutoff is set to pos.cutoff/2
         uloqs["bindRBD"]=172.5755    
                 
-        llods["pseudoneutid50"]=5.99761 # based on data, SAP says 5.712
-        pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
-        uloqs["pseudoneutid50"]=1354.315
+        # data less than lloq is set to lloq/2
+        llods["pseudoneutid50"]=NA  
+        lloqs["pseudoneutid50"]=2.7426  
+        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
+        uloqs["pseudoneutid50"]=619.3052 
         
     } else if(study_name=="PREVENT-19") {
         
@@ -288,6 +292,14 @@ if (config$is_ows_trial) {
         pos.cutoffs["bindSpike"]=lloqs["bindSpike"]
         uloqs["bindSpike"]=770464.6*0.0090
     
+    }
+    
+    # llox is for plotting and can be either llod or lloq depending on trials
+    lloxs=llods 
+    # set to NA to make the plots free of too much white space
+    if(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "PREVENT-19")) {    
+        lloxs["bindSpike"]=NA 
+        lloxs["bindRBD"]=NA                 
     }
     
 } else {
@@ -299,14 +311,6 @@ if (config$is_ows_trial) {
     names(lloxs)=assays
 }
 
-
-# llox is for plotting and can be either llod or lloq depending on trials
-lloxs=llods 
-# set to NA to make the plots free of too much white space
-if(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "PREVENT-19")) {    
-    lloxs["bindSpike"]=NA 
-    lloxs["bindRBD"]=NA                 
-}
 
 
 ###############################################################################
