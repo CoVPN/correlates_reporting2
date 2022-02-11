@@ -274,9 +274,11 @@ if (config$is_ows_trial) {
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         
         # data less than pos cutoff is set to pos.cutoff/2
+        llods["bindSpike"]=NA 
         uloqs["bindSpike"]=238.1165 
     
         # data less than pos cutoff is set to pos.cutoff/2
+        llods["bindRBD"]=NA                 
         uloqs["bindRBD"]=172.5755    
                 
         # data less than lloq is set to lloq/2
@@ -285,9 +287,10 @@ if (config$is_ows_trial) {
         pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         uloqs["pseudoneutid50"]=619.3052 
         
-    } else if(study_name=="PREVENT-19") {
+    } else if(study_name=="PREVENT19") {
         
         # data less than lloq is set to lloq/2 in the raw data
+        llods["bindSpike"]=NA 
         lloqs["bindSpike"]=150.4*0.0090
         pos.cutoffs["bindSpike"]=lloqs["bindSpike"]
         uloqs["bindSpike"]=770464.6*0.0090
@@ -296,11 +299,6 @@ if (config$is_ows_trial) {
     
     # llox is for plotting and can be either llod or lloq depending on trials
     lloxs=llods 
-    # set to NA to make the plots free of too much white space
-    if(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "PREVENT-19")) {    
-        lloxs["bindSpike"]=NA 
-        lloxs["bindRBD"]=NA                 
-    }
     
 } else {
     # get uloqs and lloqs from config
