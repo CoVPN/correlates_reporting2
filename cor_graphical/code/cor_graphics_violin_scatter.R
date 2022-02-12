@@ -45,7 +45,7 @@ names(maxs) <- min_max_plot$assay
 
 
 # labels
-if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE"){
+if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19"){
   x_lb <- c("Day 1", paste0("Day ", tpeak), #"Day 2-14\nCases", paste0("Day 15-", 28+tpeaklag, "\nCases"), 
             "Post-Peak\nCases", "Non-Cases")
   names(x_lb) <- c("Day 1", paste0("Day ", tpeak), #"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 

@@ -46,7 +46,7 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705")  {
+if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705" | study_name=="PREVENT19")  {
   
   #intcur2 <- paste0("Day 15-", 28+tpeaklag, " Cases")
   
@@ -268,7 +268,7 @@ dat.long$minority_label <-
 
 # Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
 # since it should only happen for D57-related figures.
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705"){ # one timepoint study: ph2.tpeak
+if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705" | study_name=="PREVENT19"){ # one timepoint study: ph2.tpeak
   dat.long.cor.subset <- dat.long %>%
     dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 } else { # two timepoints study: ph2.tinterm
@@ -286,7 +286,7 @@ dat.longer.cor.subset <- dat.long.cor.subset %>%
 #    include only +++ at D57 for intercurrent cases and Post-Peak Cases
 #    non-cases is defined as +++
 #    for intercurrent cases at D57, Day 2-14 Cases & Day 15-35 Cases at D29, can't use ph2.D57/ph2.D29 because they are before D57/D29
-if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
+if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")) {
   dat.longer.cor.subset <- dat.longer.cor.subset %>% 
     filter(!(cohort_event %in% c("Intercurrent Cases", "Post-Peak Cases") & time == paste0("Day", tpeak) & (!!as.name(paste0("TwophasesampIndD", tpeak)))==0))
 }
@@ -346,3 +346,4 @@ saveRDS(plot.25sample3, file = here("data_clean", "plot.25sample3.rds"))
 
 saveRDS(as.data.frame(dat.longer.cor.subset),
         file = here("data_clean", "longer_cor_data.rds"))
+

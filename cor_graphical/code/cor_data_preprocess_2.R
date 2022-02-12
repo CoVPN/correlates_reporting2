@@ -29,7 +29,7 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")  {
+if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")  {
   
   dat <- dat %>%
     mutate(cohort_event = factor(
@@ -164,3 +164,4 @@ saveRDS(as.data.frame(dat.long.cor.subset),
 saveRDS(as.data.frame(dat.cor.subset),
         file = here("data_clean", "cor_data.rds")
 )
+
