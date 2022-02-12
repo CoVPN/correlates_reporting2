@@ -45,6 +45,14 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_realbAb janssen_pooled_rea
 	Rscript code/CoR_assay_graphics.R D29IncludeNotMolecConfirmedstart1
 	Rscript code/CoR_wrcdf_with_VE_lines.R D29IncludeNotMolecConfirmedstart1
 	
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
+	Rscript code/cor_data_preprocess.R D35 # Yiwen's
+	Rscript code/cor_graphics_violin_scatter.R D35
+	
+	Rscript code/cor_data_preprocess_2.R D35 # Brian's
+	Rscript code/CoR_assay_graphics.R D35
+	Rscript code/CoR_wrcdf_with_VE_lines.R D35
+	
 endif
 
 ## clean          : clean up data_clean and output folder
