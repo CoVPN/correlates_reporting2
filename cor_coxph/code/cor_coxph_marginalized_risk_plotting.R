@@ -18,7 +18,7 @@ digits.risk=4
 
 
 ###################################################################################################
-# marginalized risk curves for continuous markers
+# COR: marginalized risk curves for continuous markers
     
 for (eq.geq in 1:2) {  # 1 conditional on s,   2 is conditional on S>=s
 for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
@@ -128,7 +128,7 @@ for (a in assays) {
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on -log(1-) scale
 for (eq.geq in 1:4) {  
-# eq.geq=3; a=assays[1]
+# eq.geq=2; a=assays[1]
 
     outs=lapply (assays, function(a) {        
         tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp=4
@@ -137,9 +137,9 @@ for (eq.geq in 1:4) {
             lwd=2.5
             par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
             
-            risks=get("risks.all."%.%ifelse(eq.geq==2,2,1))[[a]]        
-            #pick.out=names(risks$marker)!=""
-            pick.out=rep(T, length(risks$marker))
+            # load risks
+            risks=get("risks.all."%.%ifelse(eq.geq==2,2,1))[[a]]                    
+            pick.out=rep(T, length(risks$marker)) #pick.out=names(risks$marker)!=""
         
             #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95),na.rm=T)
             xlim=get.range.cor(dat.vac.seroneg, a, tpeak)
@@ -166,6 +166,7 @@ for (eq.geq in 1:4) {
             ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))        
             .subset=if(eq.geq!=2) rep(T, length(risks$marker)) else ncases>=5
             
+            
             # CVE with sensitivity analysis
             est = 1 - risks$prob*Bias/res.plac.cont["est"]
             boot = 1 - t( t(risks$boot*Bias)/res.plac.cont[2:(1+ncol(risks$boot))] ) # res.plac.cont may have more bootstrap replicates than risks$boot
@@ -189,14 +190,14 @@ for (eq.geq in 1:4) {
                 yat=c(seq(0,.90,by=.1),.95)
                 axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
             }
-
+            # x axis
+            draw.x.axis.cor(xlim, lloxs[a])
+            
         
-            # overall controlled VE
+            # overall CVE
             abline(h=if(eq.geq==4) -log(1-overall.ve) else overall.ve, col="gray", lwd=2, lty=c(1,3,3))
             #text(x=par("usr")[1], y=overall.ve[1]+(overall.ve[1]-overall.ve[2])/2,     "overall VE "%.%round(overall.ve[1]*100)%.%"%", adj=0)
         
-            # x axis
-            draw.x.axis.cor(xlim, lloxs[a])
                 
             # CVE
             est = 1 - risks$prob/res.plac.cont["est"]
@@ -212,6 +213,7 @@ for (eq.geq in 1:4) {
                 tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
                 ret=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))            
             }
+            
             
             # legend
             tmp=formatDouble(overall.ve*100,1)%.%"%"        
