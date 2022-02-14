@@ -1,0 +1,96 @@
+---
+title: "Controlled VE Curves based on Cox Models with Quantitatve Markers"
+shorttitle: "Coxph CVE"
+author:
+header-includes:
+   - \usepackage{float}
+date: "`r Sys.Date()`"
+output:
+  bookdown::pdf_document2:
+    citation_package: natbib
+    number_sections: true
+    extra_dependencies: ["caption", "subcaption", "graphicx"]
+    toc: false
+linkcolor: blue
+bibliography: ref.bib
+---
+
+```{r, include=FALSE}
+renv::activate(project = here::here(".."))    
+```
+
+
+\counterwithin{table}{section}
+\counterwithin{figure}{section}
+
+\clearpage
+
+
+# COVE + ENSEMBLE + AZ
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub1.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# COVE + ENSEMBLE regions
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub2.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# ENSEMBLE regions
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub3.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# COVE + ENSEMBLE/US + AZ
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub4.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# COVE + ENSEMBLE/US
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub5.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# COVE + ENSEMBLE regions + AZ
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub6.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+
+
+# Controlled VE based on Cox Models with Discretized Markers
+
+\begin{table}[H]
+\caption{Controlled VE for discretized Pseudovirus nAb ID50. COVE: starting 7 days and ending 100 days post Day 57. ENSEMBLE: starting 1 days post Day 29; pooled: ending 66 days; NA: ending 66 days; LA: ending 48 days; SA: ending 26 days.
+32 is the 2.5\% weighted percentile of ID50 in COVE. 102 is the 95\% percentile of ID50 in ENSEMBLE US (no weights used because weights are derived from pooled data). Note that we only cut ENSE US and SA ID50 into two levels by 32 since there are no cases above 102 and if we cut at 32 and 102, the model estimates a much lower VE for the 32 to 102 level.
+}
+\begin{center}
+    \input{output/meta/id50_ve.tex}\\
+\end{center}
+\end{table}
+
+

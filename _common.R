@@ -187,13 +187,6 @@ if(config$is_ows_trial) {
         if(has57) MaxID50ID80Delta57overB = max(dat.mock[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
     }
     
-    # maxed over ADCP, restricting to Day 29 or 57
-    if("ADCP" %in% assays ) {
-        if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("ADCP"))], na.rm=T)
-        if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("ADCP"))], na.rm=T)
-        if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("ADCP"))], na.rm=T)
-        if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("ADCP"))], na.rm=T)
-    }
             
 }     
 
@@ -219,10 +212,9 @@ if(config$is_ows_trial) {
 names(assays)=assays # add names so that lapply results will have names
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
+# For bAb, IU and BAU are the same thing
+# all values on BAU or IU
 if (config$is_ows_trial) {
-
-    # limits for each assay (IU)
-    # For bAb, IU and BAU are the same thing
     tmp=list(
         bindSpike=c(
             pos.cutoff=10.8424,
@@ -246,12 +238,14 @@ if (config$is_ows_trial) {
             ULOQ = 574.6783)
         ,
         pseudoneutid50=c( 
+            pos.cutoff=2.42,# as same lod
             LLOD = 2.42,
             ULOD = NA,
             LLOQ = 4.477,
             ULOQ = 10919)
         ,
         pseudoneutid80=c( 
+            pos.cutoff=15.02,# as same lod
             LLOD = 15.02,
             ULOD = NA,
             LLOQ = 21.4786,
@@ -275,25 +269,36 @@ if (config$is_ows_trial) {
     pos.cutoffs=sapply(tmp, function(x) unname(x["pos.cutoff"]))
     llods=sapply(tmp, function(x) unname(x["LLOD"]))
     lloqs=sapply(tmp, function(x) unname(x["LLOQ"]))
-    uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))
+    uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))    
     
-    # Per Sarah O'Connell, for ensemble, the positivity cut offs and LLODs will be identical, 
-    # as will the quantitative limits for N protein which are based on convalescent samples.
-    
-    # But the RBD and Spike quantitation ranges will be different for the Janssen partial validation than for Moderna. 
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
-        lloqs["bindSpike"]=1.8429 
-        lloqs["bindRBD"]=5.0243 
         
+        # data less than pos cutoff is set to pos.cutoff/2
+        llods["bindSpike"]=NA 
         uloqs["bindSpike"]=238.1165 
+    
+        # data less than pos cutoff is set to pos.cutoff/2
+        llods["bindRBD"]=NA                 
         uloqs["bindRBD"]=172.5755    
                 
-        llods["bindSpike"]=NA # set to NA to make the plots free of too much white space since raw data are censored at pos.cutoff
-        llods["bindRBD"]=NA 
-        llods["pseudoneutid50"]=6
+        # data less than lloq is set to lloq/2
+        llods["pseudoneutid50"]=NA  
+        lloqs["pseudoneutid50"]=2.7426  
+        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
+        uloqs["pseudoneutid50"]=619.3052 
+        
+    } else if(study_name=="PREVENT19") {
+        
+        # data less than lloq is set to lloq/2 in the raw data
+        llods["bindSpike"]=NA 
+        lloqs["bindSpike"]=150.4*0.0090
+        pos.cutoffs["bindSpike"]=lloqs["bindSpike"]
+        uloqs["bindSpike"]=770464.6*0.0090
+    
     }
     
-    lloxs=llods
+    # llox is for plotting and can be either llod or lloq depending on trials
+    lloxs=llods 
     
 } else {
     # get uloqs and lloqs from config
@@ -556,7 +561,7 @@ ggsave_custom <- function(filename = default_name(plot),
 
 get.range.cor=function(dat, assay, time) {
     if(assay %in% c("bindSpike", "bindRBD")) {
-        ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(llods[c("bindSpike","bindRBD")]/2), na.rm=T)
+        ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(lloxs[c("bindSpike","bindRBD")]/2), na.rm=T)
         ret[2]=(ret[2]) # round up
     } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
         ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
@@ -851,3 +856,13 @@ make.case.count.marker.availability.table=function(dat) {
     }
 }
 #make.case.count.marker.availability.table(dat.mock)
+
+
+# get histogram object to add to VE plots etc
+get.marker.histogram=function(marker, wt, trial) {
+    # first call hist to get breaks, then call weighted.hist
+    tmp.1=hist(marker,breaks=ifelse(trial=="moderna_real",25,15),plot=F)  # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
+    tmp=weighted.hist(marker,wt, breaks=tmp.1$breaks, plot=F)
+    attr(tmp,"class")="histogram" 
+    tmp
+}

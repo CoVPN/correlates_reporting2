@@ -7,6 +7,7 @@ local({
   # the project directory
   project <- getwd()
 
+<<<<<<< HEAD
   # figure out whether the autoloader is enabled
   enabled <- local({
 
@@ -40,6 +41,24 @@ local({
   # avoid recursion
   if (identical(getOption("renv.autoloader.running"), TRUE)) {
     warning("ignoring recursive attempt to run renv autoloader")
+=======
+  # allow environment variable to control activation
+  activate <- Sys.getenv("RENV_ACTIVATE_PROJECT")
+  if (!nzchar(activate)) {
+
+    # don't auto-activate when R CMD INSTALL is running
+    if (nzchar(Sys.getenv("R_INSTALL_PKG")))
+      return(FALSE)
+
+  }
+
+  # bail if activation was explicitly disabled
+  if (tolower(activate) %in% c("false", "f", "0"))
+    return(FALSE)
+
+  # avoid recursion
+  if (nzchar(Sys.getenv("RENV_R_INITIALIZING")))
+>>>>>>> de016b7a8bd48bb7bc89e28d8ba7a350d8797450
     return(invisible(TRUE))
   }
 

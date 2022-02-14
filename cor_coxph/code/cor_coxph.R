@@ -1,37 +1,9 @@
-#Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "janssen_pooled_realPsV"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
-    if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
-    
+    if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
 source(here::here("..", "_common.R"))
-#-----------------------------------------------
-
-
-#with(subset(dat.mock, Trt==1 & ph1), table(EventIndPrimary, useNA="ifany"))
-#with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary, useNA="ifany"))
-
-#par(mfrow=c(2,2))
-#with(subset(dat.mock, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="NA"))
-#with(subset(dat.mock, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="LA"))
-#with(subset(dat.mock, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
-#with(subset(dat.mock, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
-
-#with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==0], useNA="ifany"))
-#with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==1], useNA="ifany"))
-
-#with(subset(dat.mock, ph1==1), table(EventIndPrimary, Trt))
-#with(subset(dat.mock, ph2==1), table(EventIndPrimary, Trt))
-#with(subset(dat.mock, Trt==1 & ph1), table(Wstratum, ph2))
-#with(subset(dat.mock, Trt==1 & ph1), table(tps.stratum, ph2))
-#with(subset(dat.mock, Trt==1), table(Wstratum, ph2))
-#with(subset(dat.mock, Trt==1), table(Wstratum, wt.D29))
-#with(subset(dat.mock, ph1==1), table(Delta.D210, Trt))
-#with(subset(dat.mock, ph2==1), corplot(Day210ELCZ,Day210ADCPgp140C97ZAfib))
-#with(subset(dat.mock, ph2==1), corr(cbind(Day210ELCZ,Day210ADCPgp140C97ZAfib), w = wt))
-    
-#with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
-#with(subset(dat.mock, Trt==1 & ph2 & !EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
-
 
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
@@ -49,16 +21,15 @@ myprint(verbose)
 
 all.markers=paste0("Day", tpeak, assays)
 
-
 # path for figures and tables etc
-save.results.to = here::here("output")
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
-save.results.to = paste0(here::here("output"), "/", attr(config,"config"));
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
-save.results.to = paste0(save.results.to, "/", COR,"/");
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = here::here("output");                                if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", attr(config,"config")); if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", COR,"/");               if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
-    
+
+# some exploratory code
+if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
+
 
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
 B <-       config$num_boot_replicates 
@@ -66,60 +37,27 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B)
 myprint(numPerm)
 
-
-###################################################################################################
-# get some summary info about event time etc
-# do before uloq censoring
-
-# Average follow-up of vaccine recipients starting at tpeaklag days post visit
-write(round(mean(subset(dat.mock, Trt==1 & ph1, EventTimePrimary, drop=T), na.rm=T)-tpeaklag), file=paste0(save.results.to, "avg_followup_"%.%study_name))
-
-if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
-
-
-###################################################################################################
-# uloq censoring
+# uloq censoring, done here b/c should not be done for immunogenicity reports
 # note that if delta are used, delta needs to be recomputed
-
 for (a in assays) {
   for (t in "Day"%.%tpeak ) {
     dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
   }
 }    
 
-# the following data frame define the phase 1 ptids
-# do this after uloq censoring
 dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
-
-## temp: experimenting with multitesting
-## based on moderna_mock
-## make their correlation 0.98
-#dat.vac.seroneg$Day57bindRBD = dat.vac.seroneg$Day57bindSpike + rnorm(nrow(dat.vac.seroneg), sd=.1)
-#dat.vac.seroneg$Day57pseudoneutid50 = dat.vac.seroneg$Day57pseudoneutid80 + rnorm(nrow(dat.vac.seroneg), sd=.1)
-## switch 50 and 80
-#tmp=dat.vac.seroneg$Day57pseudoneutid50
-#dat.vac.seroneg$Day57pseudoneutid50=dat.vac.seroneg$Day57pseudoneutid80
-#dat.vac.seroneg$Day57pseudoneutid80=tmp
 
 # define an alias for EventIndPrimaryDxx
 dat.vac.seroneg$yy=dat.vac.seroneg[[config.cor$EventIndPrimary]]
 dat.pla.seroneg$yy=dat.pla.seroneg[[config.cor$EventIndPrimary]]
-    
 
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
-
     
-
-
-###################################################################################################
 # define trichotomized markers
-
 dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, tpeak, wt.col.name="wt")
 marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
-
-cutpoints=list()
 for (a in assays) {        
     for (t in "Day"%.%tpeak) {
         q.a=marker.cutpoints[[a]][[t]]
@@ -127,29 +65,23 @@ for (a in assays) {
     }
 }
     
-
-###################################################################################################
-#create design object
-design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
-
-
-###################################################################################################
 # create verification object to be populated by the following scripts
 rv=list() 
 rv$marker.cutpoints=marker.cutpoints
 
 
 
-
 ###################################################################################################
 # run PH models
 ###################################################################################################
-    
+
+#create twophase design object
+design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
+
 source(here::here("code", "cor_coxph_ph.R"))
 
-
 # optional forest plots
-if(length(config$forestplot_script)==1) {
+if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
     
@@ -157,9 +89,9 @@ if(length(config$forestplot_script)==1) {
     if (study_name == "MockCOVE") {
         tmp.1=c(sapply(rv$fr.2[-1], function (x) x[c("HR","p.value"),1])) # concatList(tmp.1, ", ")
         if (tpeak=="29") {
-            tmp.2=c(0.108597757170056, 5.43752655185657e-08, 0.36780637981061, 0.00247181982840213, 0.254935175616226, 0.00165223736237864, 0.237238216154369, 0.000114032270111453)
+            tmp.2=c(2.19803e-01,3.42813e-06,4.00791e-01,1.55780e-03,2.64497e-01,2.90077e-04,2.52391e-01,3.38292e-04,3.68861e-01,6.24978e-03)
         } else if (tpeak=="57") {
-           tmp.2=c(0.0708841997340482, 9.49081021373306e-14, 0.346285251104243, 4.6061705367641e-05, 0.19452649895182, 1.36571069435975e-06, 0.208025081398608, 7.69730801008827e-06)
+            tmp.2=c(1.17284e-01,4.73761e-11,3.91017e-01,7.49144e-04,2.84943e-01,1.36601e-05,2.44480e-01,9.03454e-06,2.77729e-01,8.84152e-06)
         }
         assertthat::assert_that(
             max(abs(tmp.1-tmp.2)/abs(tmp.2))<1e-5,
@@ -167,8 +99,6 @@ if(length(config$forestplot_script)==1) {
         print("Passed sanity check")    
     }
 }
-
-
 
 
 

@@ -1,0 +1,242 @@
+## Day `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
+
+\clearpage
+
+\begin{table}[H]
+\caption{All regions. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariableNoADCP_svycoxph_pretty_`r study_name`_pooled_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{All regions. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*}
+\begin{center}
+\setlength{\tabcolsep}{.5ex}
+{\small
+\input{output/meta/CoR_univariableNoADCP_svycoxph_cat_pretty_`r study_name`_pooled_`r COR`}}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days. 
+\\
+**`r txt.coxph.note2`\\
+***Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.\\
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+
+    %\label{tab:CoR_univariable_svycoxph_cat_pretty_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{All regions. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per SD increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariableNoADCP_svycoxph_pretty_scaled_`r study_name`_pooled_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
+\end{table}
+
+\clearpage
+
+\begin{table}[H]
+\caption{All regions. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariable_svycoxph_pretty_`r study_name`_pooled_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{All regions. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*}
+\begin{center}
+\setlength{\tabcolsep}{.5ex}
+{\small
+\input{output/meta/CoR_univariable_svycoxph_cat_pretty_`r study_name`_pooled_`r COR`}}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days. 
+\\
+**`r txt.coxph.note2`\\
+***Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.\\
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+
+    %\label{tab:CoR_univariable_svycoxph_cat_pretty_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{All regions. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per SD increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariable_svycoxph_pretty_scaled_`r study_name`_pooled_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
+\end{table}
+
+
+\clearpage
+
+
+
+\begin{table}[H]
+\caption{North America. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariable_svycoxph_pretty_`r study_name`_na_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{North America. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per SD increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariable_svycoxph_pretty_scaled_`r study_name`_na_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{North America. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*}
+\begin{center}
+\setlength{\tabcolsep}{.5ex}
+{\small
+\input{output/meta/CoR_univariable_svycoxph_cat_pretty_`r study_name`_na_`r COR`}}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days. 
+\\
+**`r txt.coxph.note2`\\
+***Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.\\
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+
+    %\label{tab:CoR_univariable_svycoxph_cat_pretty_`r study_name`}
+\end{table}
+
+\clearpage
+
+
+
+\begin{table}[H]
+\caption{Latin America. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariable_svycoxph_pretty_`r study_name`_la_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{Latin America. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per SD increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariable_svycoxph_pretty_scaled_`r study_name`_la_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{Latin America. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*}
+\begin{center}
+\setlength{\tabcolsep}{.5ex}
+{\small
+\input{output/meta/CoR_univariable_svycoxph_cat_pretty_`r study_name`_la_`r COR`}}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days. 
+\\
+**`r txt.coxph.note2`\\
+***Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.\\
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+
+    %\label{tab:CoR_univariable_svycoxph_cat_pretty_`r study_name`}
+\end{table}
+
+\clearpage
+
+
+
+\begin{table}[H]
+\caption{South Africa. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariable_svycoxph_pretty_`r study_name`_sa_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{South Africa. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per SD increment in the marker*}
+\begin{center}
+    \input{output/meta/CoR_univariable_svycoxph_pretty_scaled_`r study_name`_sa_`r COR`}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+**`r txt.coxph.note2`\\
+***q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+    %\label{tab:CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
+\end{table}
+
+
+\begin{table}[H]
+\caption{South Africa. Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*}
+\begin{center}
+\setlength{\tabcolsep}{.5ex}
+{\small
+\input{output/meta/CoR_univariable_svycoxph_cat_pretty_`r study_name`_sa_`r COR`}}\\
+\end{center}
+*Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days. 
+\\
+**`r txt.coxph.note2`\\
+***Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.\\
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using Benjamini and Hochberg's method and Holm's method.\\
+`r special.note`
+
+    %\label{tab:CoR_univariable_svycoxph_cat_pretty_`r study_name`}
+\end{table}
+
+\clearpage
+
+
+
+
+
+
+
