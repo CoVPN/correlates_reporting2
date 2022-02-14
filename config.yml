@@ -6,6 +6,7 @@
 default: &default
   is_ows_trial: no
   case_cohort: no
+  use_ensemble_sl: no
 
 hvtn705base: &hvtn705base
   two_marker_timepoints: no
@@ -13,7 +14,7 @@ hvtn705base: &hvtn705base
   subset_variable: None
   subset_value: All
   llox_label: loq
-  times: [B, Day210] 
+  times: [B, Day210]
   time_labels: [Day 1, Day 210]
   study_name: HVTN705
   covariates_riskscore: ~.+ RSA + Age + BMI + Riskscore
@@ -30,8 +31,8 @@ hvtn705: &hvtn705
   assay_labels: [IgG Vx-VT-C,ADCP Vx-C97ZA,IgG3 V1V2 breadth,IgG3 Env breadth,Multi-epitope functions,IgG Vx-VT-M,IgG3 gp140 Vx-C97ZA,IgG3 gp140 Vx-Mosaic,IgG3 gp41,IgG3 gp120 breadth,IgG3 gp140 breadth,IgG3 Multi-epitope]
   lloxs: [40,NA,NA,NA,NA,50,NA,NA,NA,NA,NA,NA]
   uloqs: [1884160,NA,NA,NA,NA,1869824,22000,22000,22000,NA,NA,NA]
-  primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay] 
-  multivariate_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm] 
+  primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay]
+  multivariate_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm]
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_firstcasecontrolprocesseddata.csv
 
 hvtn705V1V2: &hvtn705V1V2
@@ -73,8 +74,9 @@ moderna_trial: &moderna_trial
 moderna_real: &moderna_real
   <<: *moderna_trial
   data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.1_lvmn_added_Jan14_2022.csv
+  #data_cleaned: ../../data/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.1_lvmn_added_Jan14_2022.csv
   study_name: COVE
-  multivariate_assays: [bindRBD + pseudoneutid50 + liveneutmn50, pseudoneutid50 + liveneutmn50] 
+  multivariate_assays: [bindRBD + pseudoneutid50 + liveneutmn50, pseudoneutid50 + liveneutmn50]
   num_boot_replicates: 1000
   num_perm_replicates: 10000
 
@@ -125,7 +127,7 @@ janssen_trial_realbAb: &janssen_trial_realbAb # binding Ab markers
   assays: [bindSpike, bindRBD]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml)]
-  primary_assays: [] 
+  primary_assays: []
   study_name: ENSEMBLE
   num_boot_replicates: 1000
   num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
@@ -151,7 +153,7 @@ janssen_trial_realPsV: &janssen_trial_realPsV
   num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
 
 
-janssen_pooled_realbAb: 
+janssen_pooled_realbAb:
   <<: *janssen_trial_realbAb
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realbAb_data_processed_with_riskscore.csv
   subset_variable: None
@@ -159,15 +161,15 @@ janssen_pooled_realbAb:
   covariates_riskscore: ~.+ risk_score + as.factor(Region)
   covariates_norisksco: ~.+ Age        + as.factor(Region)
 
-janssen_pooled_realPsV: 
+janssen_pooled_realPsV:
   <<: *janssen_trial_realPsV
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realPsV_data_processed_with_riskscore.csv
   subset_variable: None
   subset_value: All
   covariates_riskscore: ~.+ risk_score + as.factor(Region)
   covariates_norisksco: ~.+ Age        + as.factor(Region)
-  
-janssen_pooled_realADCP: 
+
+janssen_pooled_realADCP:
   <<: *janssen_trial_realADCP
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realADCP_data_processed_with_riskscore.csv
   subset_variable: None
@@ -176,7 +178,7 @@ janssen_pooled_realADCP:
   covariates_norisksco: ~.+ Age        + as.factor(Region)
 
 
-janssen_na_realbAb: 
+janssen_na_realbAb:
   <<: *janssen_trial_realbAb
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_realbAb_data_processed_with_riskscore.csv
   subset_variable: Region
@@ -184,7 +186,7 @@ janssen_na_realbAb:
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
 
-janssen_na_realPsV: 
+janssen_na_realPsV:
   <<: *janssen_trial_realPsV
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_realPsV_data_processed_with_riskscore.csv
   subset_variable: Region
@@ -192,7 +194,7 @@ janssen_na_realPsV:
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
 
-janssen_na_realADCP: 
+janssen_na_realADCP:
   <<: *janssen_trial_realADCP
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_realADCP_data_processed_with_riskscore.csv
   subset_variable: Region
@@ -201,7 +203,7 @@ janssen_na_realADCP:
   covariates_norisksco: ~.+ Age
 
 
-janssen_la_realbAb: 
+janssen_la_realbAb:
   <<: *janssen_trial_realbAb
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_realbAb_data_processed_with_riskscore.csv
   subset_variable: Region
@@ -209,7 +211,7 @@ janssen_la_realbAb:
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
 
-janssen_la_realPsV: 
+janssen_la_realPsV:
   <<: *janssen_trial_realPsV
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_realPsV_data_processed_with_riskscore.csv
   subset_variable: Region
@@ -217,7 +219,7 @@ janssen_la_realPsV:
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
 
-janssen_la_realADCP: 
+janssen_la_realADCP:
   <<: *janssen_trial_realADCP
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_realADCP_data_processed_with_riskscore.csv
   subset_variable: Region
@@ -226,7 +228,7 @@ janssen_la_realADCP:
   covariates_norisksco: ~.+ Age
 
 
-janssen_sa_realbAb: 
+janssen_sa_realbAb:
   <<: *janssen_trial_realbAb
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_realbAb_data_processed_with_riskscore.csv
   subset_variable: Region
@@ -234,7 +236,7 @@ janssen_sa_realbAb:
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
 
-janssen_sa_realPsV: 
+janssen_sa_realPsV:
   <<: *janssen_trial_realPsV
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_realPsV_data_processed_with_riskscore.csv
   subset_variable: Region
@@ -242,7 +244,7 @@ janssen_sa_realPsV:
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
 
-janssen_sa_realADCP: 
+janssen_sa_realADCP:
   <<: *janssen_trial_realADCP
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_realADCP_data_processed_with_riskscore.csv
   subset_variable: Region
@@ -304,9 +306,9 @@ D57:
   ph2: ph2.D57
   wt: wt.D57
   WtStratum: Wstratum
-  EventIndPrimary: EventIndPrimaryD57   
+  EventIndPrimary: EventIndPrimaryD57
   EventTimePrimary: EventTimePrimaryD57
-  Earlyendpoint: EarlyendpointD57  
+  Earlyendpoint: EarlyendpointD57
   tpeak: 57
   tpeaklag: 7
   tfinal.tpeak: 0
@@ -319,7 +321,7 @@ D29:
   ph2: ph2.D29
   wt: wt.D29
   WtStratum: Wstratum
-  EventIndPrimary: EventIndPrimaryD29  
+  EventIndPrimary: EventIndPrimaryD29
   EventTimePrimary: EventTimePrimaryD29
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
@@ -348,7 +350,7 @@ D29start1:
   ph2: ph2.D29start1
   wt: wt.D29start1
   WtStratum: Wstratum
-  EventIndPrimary: EventIndPrimaryD29  
+  EventIndPrimary: EventIndPrimaryD29
   EventTimePrimary: EventTimePrimaryD29
   Earlyendpoint: EarlyendpointD29start1
   tpeak: 29
@@ -364,7 +366,7 @@ D29IncludeNotMolecConfirmed:
   ph2: ph2.D29
   wt: wt.D29
   WtStratum: Wstratum
-  EventIndPrimary: EventIndPrimaryIncludeNotMolecConfirmedD29  
+  EventIndPrimary: EventIndPrimaryIncludeNotMolecConfirmedD29
   EventTimePrimary: EventTimePrimaryIncludeNotMolecConfirmedD29
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
@@ -380,7 +382,7 @@ D29IncludeNotMolecConfirmedstart1:
   ph2: ph2.D29start1
   wt: wt.D29start1
   WtStratum: Wstratum
-  EventIndPrimary: EventIndPrimaryIncludeNotMolecConfirmedD29  
+  EventIndPrimary: EventIndPrimaryIncludeNotMolecConfirmedD29
   EventTimePrimary: EventTimePrimaryIncludeNotMolecConfirmedD29
   Earlyendpoint: EarlyendpointD29start1
   tpeak: 29
@@ -395,7 +397,7 @@ D210:
   wt: wt.D210
   WtStratum: Sampstratum.D210
   tpsStratum: tps.stratum
-  EventIndPrimary: Delta.D210   
+  EventIndPrimary: Delta.D210
   EventTimePrimary: Ttilde.D210
   tpeak: 210
   tpeaklag: 1
@@ -403,9 +405,9 @@ D210:
   txt.endpoint: HIV
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. per-protocol vaccine recipients not infected through 1 days post Month 7 visit; no. cases = number of this cohort with an observed endpoint.
 
-  
+
 ####################
-# two time points 
+# two time points
 
 D29D57:
   tinterm: 29

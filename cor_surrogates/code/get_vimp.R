@@ -12,9 +12,9 @@ source(here::here("..", "_common.R"))
 # common setup for CV super learners and variable importance
 source(here::here("code", "cor_surrogates_setup.R"))
 
-# drop "SL.xgboost.2.yes" and "SL.xgboost.4.yes" from SL_library as class-balancing learners in the variable 
-# importance computation doesn’t make sense – the regression we’re doing there (to account for the two-phase sampling) 
-# is based on a continuous outcome, not a binary outcome, so there shouldn’t be any imbalance. 
+# drop "SL.xgboost.2.yes" and "SL.xgboost.4.yes" from SL_library as class-balancing learners in the variable
+# importance computation doesn’t make sense – the regression we’re doing there (to account for the two-phase sampling)
+# is based on a continuous outcome, not a binary outcome, so there shouldn’t be any imbalance.
 for (i in 1:length(SL_library)) {
   if(SL_library[[i]][1] %in% c("SL.xgboost.2.yes", "SL.xgboost.4.yes")){
     if(!exists("vec"))
@@ -44,6 +44,12 @@ X <- dat.ph1 %>%
 
 # read in the fits for the baseline risk factors
 baseline_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[1], ".rds")))
+baseline_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[1], ".rds")))
+if (!use_ensemble_sl) {
+  baseline_fits <- lapply(as.list(1:length(baseline_fits)), function(i) {
+    make_discrete_sl_auc(cvsl_fit = baseline_fits[[i]], all_aucs = baseline_aucs[[i]])
+  })
+}
 
 # get the common CV folds
 list_of_indices <- as.list(seq_len(length(baseline_fits)))
@@ -79,13 +85,20 @@ for (i in seq_len(nrow(varset_matrix))) {
   }
   # get the correct CV.SL lists
   full_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[i], ".rds")))
+  full_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[i], ".rds")))
+  if (!use_ensemble_sl) {
+    full_fits <- lapply(as.list(1:length(baseline_fits)), function(i) {
+      make_discrete_sl_auc(cvsl_fit = full_fits[[i]], all_aucs = full_aucs[[i]])
+    })
+  }
   if (i == 1) {
     vim_lst <- lapply(list_of_indices, function(l) {
       get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = naive_fits[[l]],
                  index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
                  sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
                  C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
-                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, baseline = TRUE)
+                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, baseline = TRUE,
+                 use_ensemble = use_ensemble_sl)
     })
   } else {
     # get variable importance for each fold
@@ -94,7 +107,7 @@ for (i in seq_len(nrow(varset_matrix))) {
                  index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
                  sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
                  C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
-                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment)
+                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, use_ensemble = use_ensemble_sl)
     })
   }
   # pool variable importance and predictiveness over the list
