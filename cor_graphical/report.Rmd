@@ -107,21 +107,19 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
   facets <- c("", "Age", "Risk", "Age_Risk", "Sex", "RaceEthnic", "Dich_RaceEthnic")
   names(facets) <- c("", "age", "risk condition", "age and risk condition", "sex assigned at birth", "race and ethnic group", "dichotomous classification of race and ethnic group")
   
-  for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
-    for (facet in facets) {
-    	for (ver in c("v1", "v2")) {
-    		for (type in c("linebox", "violinbox")) {
-    		  for (assay in gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays))))) {
-    		    for (trt in c("Placebo", "Vaccine")) {
-              COR="D29D57"
-    		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
-    		      cat(res, sep = '\n')
-    		      cat("\\clearpage", sep = '\n')
-    		    }
-    		  }
-        }
-    	}
-    }
+  for (facet in facets) {
+  	for (ver in c("v1", "v2")) {
+  		for (type in c("linebox", "violinbox")) {
+  		  for (assay in gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays))))) {
+  		    for (trt in c("Placebo", "Vaccine")) {
+            if (length(timepoints)==1){COR=paste0("D",timepoints)} else {COR="D29D57"}
+  		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
+  		      cat(res, sep = '\n')
+  		      cat("\\clearpage", sep = '\n')
+  		    }
+  		  }
+      }
+  	}
   }
   
   ###################################################### Scatter plots ###################################################
@@ -131,7 +129,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
   for (cohort in c("Vaccine_BaselineNeg", "all")) {
   	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))) {
       for (day in gsub(" ","", labels.time.no.fold)) {
-        COR="D29D57"
+        if (length(timepoints)==1){COR=paste0("D",timepoints)} else {COR="D29D57"}
   		  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub2.Rmd')), quiet = TRUE)
     		cat(res, sep = '\n')
         cat("\\clearpage", sep = '\n')
@@ -141,7 +139,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
   
   for (cohort in c("Vaccine_BaselineNeg", "all")){
   	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))){
-  		COR="D29D57"
+      if (length(timepoints)==1){COR=paste0("D",timepoints)} else {COR="D29D57"}
   	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
   		cat(res, sep = '\n')
       cat("\\clearpage", sep = '\n')
