@@ -309,3 +309,9 @@ tmp[order(tmp[,2]),]
 
 tmp=subset(dat.vac.seroneg.id50.sa, ph2==1, select=c(EventIndPrimary, EventTimePrimary))
 tmp[order(tmp[,2]),]
+
+#tmp=subset(dat.b.ph2, Region==1, select=c(EventIndPrimary, EventTimePrimary))
+#tmp[order(tmp[,2]),]
+#
+#
+#subset(dat.b.ph2, Region==1 & EventTimePrimary==58)
