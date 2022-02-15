@@ -113,7 +113,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
     		for (type in c("linebox", "violinbox")) {
     		  for (assay in gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays))))) {
     		    for (trt in c("Placebo", "Vaccine")) {
-              COR="D29D57"
+              if (length(timepoints)==1){COR=paste0("D",timepoints)} else {COR="D29D57"}
     		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
     		      cat(res, sep = '\n')
     		      cat("\\clearpage", sep = '\n')
@@ -131,7 +131,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
   for (cohort in c("Vaccine_BaselineNeg", "all")) {
   	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))) {
       for (day in gsub(" ","", labels.time.no.fold)) {
-        COR="D29D57"
+        if (length(timepoints)==1){COR=paste0("D",timepoints)} else {COR="D29D57"}
   		  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub2.Rmd')), quiet = TRUE)
     		cat(res, sep = '\n')
         cat("\\clearpage", sep = '\n')
@@ -141,7 +141,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
   
   for (cohort in c("Vaccine_BaselineNeg", "all")){
   	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))){
-  		COR="D29D57"
+      if (length(timepoints)==1){COR=paste0("D",timepoints)} else {COR="D29D57"}
   	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
   		cat(res, sep = '\n')
       cat("\\clearpage", sep = '\n')
