@@ -31,11 +31,15 @@ randomsubcohort <- case_when(study_name %in% c("COVE", "MockCOVE") ~ "This table
                              
       study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ "This table summarizes characteristics of 
       per-protocol participants in the immunogenicity subcohort, which was randomly 
-      sampled from the study cohort. The sampling was The sampling was stratified by 
+      sampled from the study cohort. The sampling was stratified by 
       strata defined by enrollment characteristics: Assigned randomization arm $\\\\times$ 
       Baseline SARS-CoV-2 seronegative vs. seropositive $\\\\times$ Randomization strata. 
       The U.S. subcohort includes 8 baseline demographic strata; the Latin America 
-      and South Africa subcohorts each include 4 baseline demographic strata.")
+      and South Africa subcohorts each include 4 baseline demographic strata.",
+      
+      TRUE~"This table summarizes characteristics of 
+      per-protocol participants in the immunogenicity subcohort, which was randomly 
+      sampled from the study cohort.")
 
 
 tlf <-
@@ -93,60 +97,8 @@ tlf <-
                         "Comparison" = 2),
       header_above2 = c(" "=2,
                         "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
-      col1="1cm"),
-    
-    case_vacc_pos = list(
-      table_header = "Antibody levels in the baseline SARS-CoV-2 positive
-      per-protocol cohort (vaccine recipients)",
-      table_footer =  c(
-        paste("The SAP does not specify correlates analyses in baseline positive vaccine recipients. 
-      This table summarizes descriptively the same information for baseline positive vaccine 
-      recipients that was summarized for baseline negative vaccine recipients.",  
-              "Cases for Day 29 markers are baseline positive per-protocol vaccine recipients 
-      with the symptomatic infection COVID-19 primary endpoint diagnosed starting 7 days 
-      after the Day 29 study visit."[has29],
-              "Cases for Day 57 markers are baseline positive 
-      per-protocol vaccine recipients with the symptomatic infection COVID-19 primary 
-      endpoint diagnosed starting 7 days after the Day 57 study visit."[has57],
-              "Non-cases/Controls are baseline positive per-protocol vaccine recipients sampled into the random subcohort 
-      with no COVID-19 endpoint diagnosis by the time of data-cut."),
-        "N is the number of cases sampled into the subcohort within baseline covariate strata.",
-        "The denominator in Resp Rate is the number of participants in the whole per-protocol cohort within baseline
-covariate strata, calculated using inverse probability weighting."),
-      
-      col_name = c("Visit", "Marker", "N", "Resp rate", "GMT/GMC", "N",
-                   "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/GMCR"),
-      header_above1 = c(" "=2, "Cases*" = 3, "Non-Cases/Control" = 3, 
-                        "Comparison" = 2),
-      header_above2 = c(" "=2,
-                        "Baseline SARS-CoV-2 Positive Vaccine Recipients" = 8),
-      col1="1cm"),
-    
-    case_plcb_pos = list(
-      table_header = "Antibody levels in the baseline SARS-CoV-2 positive
-      per-protocol cohort (placebo recipients)",
-      table_footer = c(
-        paste("Cases for Day 29 markers are baseline positive per-protocol placebo recipients 
-      with the symptomatic infection COVID-19 primary endpoint diagnosed starting 7 days 
-      after the Day 29 study visit."[has29],
-              "Cases for Day 57 markers are baseline positive 
-      per-protocol placebo recipients with the symptomatic infection COVID-19 primary 
-      endpoint diagnosed starting 7 days after the Day 57 study visit."[has57],
-              "Non-cases/Controls are baseline positive per-protocol placebo recipients sampled into the random subcohort 
-      with no COVID-19 endpoint diagnosis by the time of data-cut."),
-        "N is the number of cases sampled into the subcohort within baseline covariate strata.",
-        "The denominator in Resp Rate is the number of participants in the whole per-protocol cohort within baseline
-covariate strata, calculated using inverse probability weighting."),
-      
-      col_name = c("Visit", "Marker", "N", "Resp rate", "GMT/GMC", "N",
-                   "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/GMCR"),
-      header_above1 = c(" "=2,  "Cases*" = 3, "Non-Cases/Control" = 3,
-                        "Comparison" = 2),
-      header_above2 = c(" "=2,
-                        "Baseline SARS-CoV-2 Positive Placebo Recipients" = 8),
       col1="1cm"))
     
-
 cutoff.name <- config$llox_label
 
 timepoints <- config$timepoints
@@ -154,8 +106,7 @@ timepoints <- config$timepoints
 labels.age <- case_when(study_name %in% c("COVE", "MockCOVE") ~ c("Age $<$ 65", "Age $\\geq$ 65"), 
                         study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Age 18 - 59", "Age $\\geq$ 60"))
 
-labels.minor <- case_when(study_name %in% c("COVE", "MockCOVE")~ c("Communities of Color", "White Non-Hispanic"), 
-                          study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Communities of Color", "White Non-Hispanic"))
+labels.minor <- c("Communities of Color", "White Non-Hispanic")
 
 labels.BMI <- c("Underweight BMI < 18.5", "Normal 18.5 $\\leq$ BMI < 25", 
                 "Overweight 25 $\\leq$ BMI < 30", "Obese BMI $\\geq$ 30")
@@ -328,6 +279,10 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   num_v2 <- NULL # Summaries - Mean & St.d
   cat_v <- c("AgeC", "SexC", "raceC", "ethnicityC", 
              "HighRiskC", "AgeRiskC", "URMC",  "CountryC", "HIVC", "BMI")
+} else{ # Keeping the minimal
+  num_v1 <- c("Age") # Summaries - Mean & Range
+  num_v2 <- NULL # Summaries - Mean & St.d
+  cat_v <- c("AgeC", "SexC", "raceC", "ethnicityC", "HighRiskC", "AgeRiskC")
 }
 
 ds_long_ttl <- ds %>%
@@ -437,12 +392,13 @@ if (study_name %in% c("COVE", "MockCOVE")){
   demo.stratum.ordered <- gsub("URM", "Minority", demo.stratum.ordered)
   demo.stratum.ordered <- gsub("White non-Hisp", "Non-Minority", demo.stratum.ordered)
   demo.stratum.ordered[7:9] <- c("Age $\\\\geq$ 65, Unknown", "Age < 65, At risk, Unknown", "Age < 65, Not at risk, Unknown")
- 
 } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
   demo.stratum.ordered <- gsub("URM", "Communities of Color", demo.stratum.ordered)
   demo.stratum.ordered <- gsub("At risk", "Presence of comorbidities", demo.stratum.ordered)
   demo.stratum.ordered <- gsub("Not at risk", "Absence of comorbidities", demo.stratum.ordered)
 }
+
+strtm_cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE"), length(demo.stratum.ordered)/2, length(demo.stratum.ordered))
 
 tab_strtm <- ds %>% 
   group_by(demo.stratum.ordered, Arm, `Baseline SARS-CoV-2`) %>%
@@ -454,8 +410,6 @@ tab_strtm <- ds %>%
               names_from = c(`Baseline SARS-CoV-2`, demo.stratum.ordered), 
               values_from=value) 
 
-
-strtm_cutoff <- length(demo.stratum.ordered)/2
 
 tab_strtm1 <- tab_strtm %>% select(Arm, name, any_of(paste0("Negative_", 1:strtm_cutoff)), 
                                    any_of(paste0("Positive_", 1:strtm_cutoff)))
@@ -512,7 +466,7 @@ if (ncol(tab_strtm2)==2) tab_strtm2 <- NULL
 
 if ((Numberdays <- paste0("NumberdaysD1toD", config.cor$tpeak)) %in% names(ds)) {
   tab_days <- ds %>% 
-    filter(!!as.name(config.cor$ph2)) %>% 
+    filter(!!as.name(config.cor$ph2), !is.na(Case)) %>% 
     mutate(Visit = paste("Day", config.cor$tpeak)) %>% 
     bind_rows(., mutate(., Case = "Total")) %>% 
     group_by(Visit, Arm, Case) %>% 
@@ -610,14 +564,6 @@ case_vacc_neg <- tab_case %>%
   dplyr::filter(Arm == "Vaccine" & `Baseline SARS-CoV-2` == "Negative") %>% 
   select(-c(Arm, `Baseline SARS-CoV-2`))
 
-case_vacc_pos <- tab_case %>% 
-  dplyr::filter(Arm == "Vaccine" & `Baseline SARS-CoV-2` == "Positive") %>% 
-  select(-c(Arm, `Baseline SARS-CoV-2`))
-
-case_plcb_pos <- tab_case %>% 
-  dplyr::filter(Arm == "Placebo" & `Baseline SARS-CoV-2` == "Positive") %>% 
-  select(-c(Arm, `Baseline SARS-CoV-2`))
-
 print("Done with all tables") 
 
 # path for tables
@@ -628,6 +574,6 @@ save.results.to <- paste0(here::here("output"), "/", attr(config,"config"))
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
-save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, tab_days, case_vacc_neg, case_vacc_pos, case_plcb_pos,
+save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, tab_days, case_vacc_neg, 
      file = file.path(save.results.to, sprintf("Tables%s.Rdata", ifelse(exists("COR"), COR, ""))))
 
