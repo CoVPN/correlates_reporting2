@@ -211,9 +211,3 @@ if (attr(config,"config")=="janssen_pooled_realbAb") {
     plot(km, ylim=c(0.6,1), col=1:3, main="ph2", xlim=c(0,100))
     
 }
-
-
-#ID50.old=read.csv("/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_realdata_20211220.csv")
-#ID50.new=read.csv("/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_realdata_20220125.csv")
-#
-#rbind(subset(ID50.old, Subjectid=="VAC31518COV3001-1155419"), subset(ID50.new, Subjectid=="VAC31518COV3001-1155419"))
