@@ -103,8 +103,8 @@ cutoff.name <- config$llox_label
 
 timepoints <- config$timepoints
 
-labels.age <- case_when(study_name %in% c("COVE", "MockCOVE") ~ c("Age $<$ 65", "Age $\\geq$ 65"), 
-                        study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Age 18 - 59", "Age $\\geq$ 60"))
+labels.age <- case_when(study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Age 18 - 59", "Age $\\geq$ 60"), 
+                        TRUE~ c("Age $<$ 65", "Age $\\geq$ 65"))
 
 labels.minor <- c("Communities of Color", "White Non-Hispanic")
 
