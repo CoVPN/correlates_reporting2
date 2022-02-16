@@ -287,31 +287,3 @@ tab=rbind(COVE=tab.1, "ENSEMBLE pooled"=tab.2, "ENSEMBLE NA"=c(tab.3,NA), "ENSEM
 colnames(tab)=c("<=32",">32,<=102",">102")
 tab
 mytex(tab, file="id50_ve", align="c", save2input.only=T, input.foldername="output/meta")
-
-
-
-###################################################################################################
-# misc
-
-10**with(dat.vac.seroneg.id50.na, wtd.quantile(Day29pseudoneutid50, wt, c(0.025, 0.975)))
-10**with(dat.cove.1, wtd.quantile(Day57pseudoneutid50, wt, c(0.025, 0.975)))
-
-
-with(dat.vac.seroneg.id50.la, summary(EventTimePrimary))
-with(subset(dat.vac.seroneg.id50.la, ph2==1), summary(EventTimePrimary))
-with(subset(dat.vac.seroneg.id50.la, ph2==1 & EventIndPrimary==0), summary(EventTimePrimary))
-
-tmp=subset(dat.vac.seroneg.id50.na, ph2==1, select=c(EventIndPrimary, EventTimePrimary))
-tmp[order(tmp[,2]),]
-
-tmp=subset(dat.vac.seroneg.id50.la, ph2==1, select=c(EventIndPrimary, EventTimePrimary))
-tmp[order(tmp[,2]),]
-
-tmp=subset(dat.vac.seroneg.id50.sa, ph2==1, select=c(EventIndPrimary, EventTimePrimary))
-tmp[order(tmp[,2]),]
-
-#tmp=subset(dat.b.ph2, Region==1, select=c(EventIndPrimary, EventTimePrimary))
-#tmp[order(tmp[,2]),]
-#
-#
-#subset(dat.b.ph2, Region==1 & EventTimePrimary==58)
