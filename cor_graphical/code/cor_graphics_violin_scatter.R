@@ -181,7 +181,7 @@ for (i in 1:length(plots)) {
         for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
         
           y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-          y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+          y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 0.25)
           rate.y.pos <- max(y.lim)
           
           ll.cex <- 8.16
