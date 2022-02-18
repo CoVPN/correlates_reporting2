@@ -31,11 +31,15 @@ randomsubcohort <- case_when(study_name %in% c("COVE", "MockCOVE") ~ "This table
                              
       study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ "This table summarizes characteristics of 
       per-protocol participants in the immunogenicity subcohort, which was randomly 
-      sampled from the study cohort. The sampling was The sampling was stratified by 
+      sampled from the study cohort. The sampling was stratified by 
       strata defined by enrollment characteristics: Assigned randomization arm $\\\\times$ 
       Baseline SARS-CoV-2 seronegative vs. seropositive $\\\\times$ Randomization strata. 
       The U.S. subcohort includes 8 baseline demographic strata; the Latin America 
-      and South Africa subcohorts each include 4 baseline demographic strata.")
+      and South Africa subcohorts each include 4 baseline demographic strata.",
+      
+      TRUE~"This table summarizes characteristics of 
+      per-protocol participants in the immunogenicity subcohort, which was randomly 
+      sampled from the study cohort.")
 
 
 tlf <-
@@ -59,16 +63,6 @@ tlf <-
       pack_row = "Arm"
     ),
     
-    tab_strtm2_1 = list(
-      deselect = "Arm",
-      pack_row = "Arm"
-    ),
-    
-    tab_strtm2_2 = list(
-      deselect = "Arm",
-      pack_row = "Arm"
-    ),
-    
     tab_case_cnt = list(
       table_header = "Availability of immunogenicity data by case status",
       deselect = "Arm",
@@ -83,7 +77,6 @@ tlf <-
       deselect = "Arm",
       pack_row = "Arm"
     ),
-    
     
     case_vacc_neg = list(
       table_header = "Antibody levels in the baseline SARS-CoV-2 negative
@@ -104,24 +97,42 @@ tlf <-
                         "Comparison" = 2),
       header_above2 = c(" "=2,
                         "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
+      col1="1cm"),
+    
+    case_plcb_neg = list(
+      table_header = "Antibody levels in the baseline SARS-CoV-2 negative
+      per-protocol cohort (placebo recipients)",
+      table_footer =c(
+        paste(paste(sprintf("Cases for Day %s markers are baseline negative per-protocol placebo recipients 
+      with the symptomatic infection COVID-19 primary endpoint diagnosed starting %s day(s) 
+      after the Day %s study visit.", config.cor$tpeak, config.cor$tpeaklag, config.cor$tpeak), collapse=" "),
+              "Non-cases/Controls are baseline negative per-protocol placebo recipients sampled into the random subcohort 
+      with no COVID-19 endpoint diagnosis by the time of data-cut."),
+        "N is the number of cases sampled into the subcohort within baseline covariate strata.",
+        "The denominator in Resp Rate is the number of participants in the whole per-protocol cohort within baseline 
+      covariate strata, calculated using inverse probability weighting."),
+      
+      col_name = c("Visit", "Marker", "N", "Resp rate", "GMT/GMC", "N",
+                   "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/GMCR"),
+      header_above1 = c(" "=2, "Cases*" = 3, "Non-Cases/Control" = 3,
+                        "Comparison" = 2),
+      header_above2 = c(" "=2,
+                        "Baseline SARS-CoV-2 Negative Placebo Recipients" = 8),
       col1="1cm"))
     
-
 cutoff.name <- config$llox_label
 
 timepoints <- config$timepoints
 
-labels.age <- case_when(study_name %in% c("COVE", "MockCOVE") ~ c("Age $<$ 65", "Age $\\geq$ 65"), 
-                        study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Age 18 - 59", "Age $\\geq$ 60"))
+labels.age <- case_when(study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Age 18 - 59", "Age $\\geq$ 60"), 
+                        TRUE~ c("Age $<$ 65", "Age $\\geq$ 65"))
 
-labels.minor <- case_when(study_name %in% c("COVE", "MockCOVE")~ c("Communities of Color", "White Non-Hispanic"), 
-                          study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Communities of Color", "White Non-Hispanic"))
+labels.minor <- c("Communities of Color", "White Non-Hispanic")
 
 labels.BMI <- c("Underweight BMI < 18.5", "Normal 18.5 $\\leq$ BMI < 25", 
                 "Overweight 25 $\\leq$ BMI < 30", "Obese BMI $\\geq$ 30")
 
 labels.time <- labels.time[times]
-# hacky fix
 
 if ("BbindN" %in% names(dat.mock) & any(grepl("bind", assays))) assays <- union(assays, "bindN")
 
@@ -289,6 +300,10 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   num_v2 <- NULL # Summaries - Mean & St.d
   cat_v <- c("AgeC", "SexC", "raceC", "ethnicityC", 
              "HighRiskC", "AgeRiskC", "URMC",  "CountryC", "HIVC", "BMI")
+} else{ # Keeping the minimal
+  num_v1 <- c("Age") # Summaries - Mean & Range
+  num_v2 <- NULL # Summaries - Mean & St.d
+  cat_v <- c("AgeC", "SexC", "raceC", "ethnicityC", "HighRiskC", "AgeRiskC")
 }
 
 ds_long_ttl <- ds %>%
@@ -380,26 +395,16 @@ print("Done with table 1")
 
 
 # Cases & Non-cases
-for (d in timepoints){
-  if (study_name %in% c("COVE", "MockCOVE")) {
-    ds <- mutate(ds, 
-                 "Case.D{d}" := case_when(Perprotocol==1 & 
-                                            !!as.name(config.cor$Earlyendpoint)==0 & 
-                                            !!as.name(paste0("TwophasesampIndD", d))==1 & 
-                                            !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
-                                          Perprotocol==1 & EarlyendpointD57==0 & 
-                                            TwophasesampIndD57==1 & EventIndPrimaryD1==0 ~ "Non-Cases"))
-    }
-  if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
-    ds <- mutate(ds, "Case.D{d}" := case_when(Perprotocol==1 & Bserostatus==0 & 
-                                                !!as.name(paste0("TwophasesampIndD", d))==1 & 
-                                                !!as.name(config.cor$EventIndPrimary)==1 & 
-                                                !!as.name(config.cor$EventTimePrimary) >= config.cor$tpeaklag ~ "Cases", 
-                                              Perprotocol==1 & Bserostatus==0 & EventIndPrimaryD1==0 & 
-                                                !!as.name(paste0("TwophasesampIndD", d))==1 & 
-                                                !!as.name(config.cor$Earlyendpoint)==0 ~ "Non-Cases"))
-  }
-}
+ds <- ds %>% 
+  mutate(Case = case_when(Perprotocol==1 & 
+                            !!as.name(config.cor$Earlyendpoint)==0 & 
+                            !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
+                            !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+                          Perprotocol==1 & 
+                            !!as.name(ifelse(length(timepoints)>1, paste0("EarlyendpointD",timepoints[length(timepoints)]), config.cor$Earlyendpoint))==0 & 
+                            !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
+                            EventIndPrimaryD1==0 ~ "Non-Cases"))
+
 
 # Added table: 
 demo.stratum.ordered <- gsub(">=", "$\\\\geq$", demo.stratum.labels, fixed=T)
@@ -408,70 +413,59 @@ if (study_name %in% c("COVE", "MockCOVE")){
   demo.stratum.ordered <- gsub("URM", "Minority", demo.stratum.ordered)
   demo.stratum.ordered <- gsub("White non-Hisp", "Non-Minority", demo.stratum.ordered)
   demo.stratum.ordered[7:9] <- c("Age $\\\\geq$ 65, Unknown", "Age < 65, At risk, Unknown", "Age < 65, Not at risk, Unknown")
- 
-  tab_strtm <- ds %>% 
-    group_by(demo.stratum.ordered, Arm, `Baseline SARS-CoV-2`) %>%
-    summarise(`Day 29 Cases`=sum(Case.D29=="Cases", na.rm=T), 
-              `Day 57 Cases`=sum(Case.D57=="Cases", na.rm=T),
-              `Non-Cases`=sum(Case.D57=="Non-Cases", na.rm=T)) %>% 
-    pivot_longer(cols=c(`Day 29 Cases`,`Day 57 Cases`, `Non-Cases`)) %>% 
-    arrange(`Baseline SARS-CoV-2`, demo.stratum.ordered) %>% 
-    pivot_wider(id_cols=c(Arm, name), 
-                names_from = c(`Baseline SARS-CoV-2`, demo.stratum.ordered), 
-                values_from=value) 
-  
 } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
   demo.stratum.ordered <- gsub("URM", "Communities of Color", demo.stratum.ordered)
   demo.stratum.ordered <- gsub("At risk", "Presence of comorbidities", demo.stratum.ordered)
   demo.stratum.ordered <- gsub("Not at risk", "Absence of comorbidities", demo.stratum.ordered)
-  
-  tab_strtm <- ds %>%
-    group_by(demo.stratum.ordered, Arm, `Baseline SARS-CoV-2`) %>%
-    summarise(`Day 29 Cases`=sum(Case.D29=="Cases", na.rm=T),
-              `Non-Cases`=sum(Case.D29=="Non-Cases", na.rm=T)) %>%
-    pivot_longer(cols=c(`Day 29 Cases`, `Non-Cases`)) %>%
-    arrange(`Baseline SARS-CoV-2`, demo.stratum.ordered) %>%
-    pivot_wider(id_cols=c(Arm, name),
-                names_from = c(`Baseline SARS-CoV-2`, demo.stratum.ordered),
-                values_from=value)
-
-  strtms <- ds %>% distinct(Region, demo.stratum.ordered) %>% arrange(demo.stratum.ordered)
-
 }
 
-strtm_cutoff <- case_when(study_name %in% c("COVE", "MockCOVE") ~ 9, 
-                          study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ 8)
+strtm_cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE"), length(demo.stratum.ordered)/2, length(demo.stratum.ordered))
+
+tab_strtm <- ds %>% 
+  group_by(demo.stratum.ordered, Arm, `Baseline SARS-CoV-2`) %>%
+  summarise("Day {tpeak} Cases":=sum(Case=="Cases", na.rm=T), 
+            `Non-Cases`=sum(Case=="Non-Cases", na.rm=T)) %>% 
+  pivot_longer(cols=c(!!as.name(paste("Day", tpeak, "Cases")), `Non-Cases`)) %>% 
+  arrange(`Baseline SARS-CoV-2`, demo.stratum.ordered) %>% 
+  pivot_wider(id_cols=c(Arm, name), 
+              names_from = c(`Baseline SARS-CoV-2`, demo.stratum.ordered), 
+              values_from=value) 
+
 
 tab_strtm1 <- tab_strtm %>% select(Arm, name, any_of(paste0("Negative_", 1:strtm_cutoff)), 
                                    any_of(paste0("Positive_", 1:strtm_cutoff)))
 tab_strtm2 <- tab_strtm %>% select(Arm, name, any_of(paste0("Negative_", (strtm_cutoff+1):(strtm_cutoff*2))), 
                                    any_of(paste0("Positive_", (strtm_cutoff+1):(strtm_cutoff*2))))
 
-if ((n_strtm1 <- ceiling(ncol(tab_strtm1)/2-1))!=0) {
-  tlf$tab_strtm1$col_name <- colnames(tab_strtm1)[-1] %>%
+ls_strtm <- list(tab_strtm1, tab_strtm2)
+
+for (i in 1:2){
+  if ((n_strtm.i <- ceiling(ncol(ls_strtm[[i]])/2-1))!=0) {
+  tlf[[paste0("tab_strtm", i)]]$col_name <- colnames(ls_strtm[[i]])[-1] %>%
     gsub("name", " ", .) %>% 
     gsub("Negative_", "", .) %>% 
     gsub("Positive_", "", .) 
   
-  tlf$tab_strtm1$table_header <- sprintf("Sample Sizes of Random Subcohort Strata %sPlus All Other Cases Outside the Random Subcohort %s",
-                                         case_when(study_name %in% c("COVE", "MockCOVE") ~ sprintf("(with antibody markers data at D%s) ", config.cor$tpeak), 
-                                                   study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ ""),
-                                         case_when(study_name %in% c("COVE", "MockCOVE") ~ "", 
-                                                   study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ "in U.S. "))
-  tlf$tab_strtm1$header_above1 <- c(" "=1, "Baseline SARS-CoV-2 Negative" = sum(grepl("Negative", colnames(tab_strtm1))), 
-                                    "Baseline SARS-CoV-2 Positive" = sum(grepl("Positive", colnames(tab_strtm1))))
+  ds.i <- filter(ds, demo.stratum.ordered %in% ((i-1)*strtm_cutoff+1):(i*strtm_cutoff))
   
-  tlf$tab_strtm1$header_above1 <- tlf$tab_strtm1$header_above1[ tlf$tab_strtm1$header_above1!=0]
+  tlf[[paste0("tab_strtm", i)]]$table_header <- 
+    sprintf("Sample Sizes of Random Subcohort Strata (with antibody markers data at D%s) Plus All Other Cases Outside the Random Subcohort %s",
+            config.cor$tpeak, ifelse(is.null(ds.i$Region), "", paste("in", paste(sort(unique(ds.i$RegionC))))))
   
-  tab_strtm_header2 <- ncol(tab_strtm1)-1
+  tlf[[paste0("tab_strtm", i)]]$header_above1 <- c(" "=1, "Baseline SARS-CoV-2 Negative" = sum(grepl("Negative", colnames(ls_strtm[[i]]))), 
+                                    "Baseline SARS-CoV-2 Positive" = sum(grepl("Positive", colnames(ls_strtm[[i]]))))
+  
+  tlf[[paste0("tab_strtm", i)]]$header_above1 <- tlf[[paste0("tab_strtm", i)]]$header_above1[tlf[[paste0("tab_strtm", i)]]$header_above1!=0]
+  
+  tab_strtm_header2 <- ncol(ls_strtm[[i]])-1
   names(tab_strtm_header2) <- sprintf("%s\nSample Sizes (N=%s Participants) (%s Trial)", 
-                                      tlf$tab_strtm1$table_header,
+                                      tlf[[paste0("tab_strtm", i)]]$table_header,
                                       sum(ds[ds$demo.stratum.ordered%in%1:strtm_cutoff, ]$ph2.immuno), 
                                       stringr::str_to_title(data_raw_dir))
-  tlf$tab_strtm1$header_above2 <- tab_strtm_header2
-  tlf$tab_strtm1$table_footer <- c("Demographic covariate strata:",
-                                   paste(sort(unique(ds$demo.stratum.ordered[ds$demo.stratum.ordered <= strtm_cutoff])), 
-                                         demo.stratum.ordered[sort(unique(ds$demo.stratum.ordered[ds$demo.stratum.ordered <= strtm_cutoff]))], 
+  tlf[[paste0("tab_strtm", i)]]$header_above2 <- tab_strtm_header2
+  tlf[[paste0("tab_strtm", i)]]$table_footer <- c("Demographic covariate strata:",
+                                   paste(sort(unique(ds.i$demo.stratum.ordered)), 
+                                         demo.stratum.ordered[sort(unique(ds.i$demo.stratum.ordered))], 
                                          sep=". "),
                                    " ",
                                    "Minority includes Blacks or African Americans, Hispanics or Latinos, American Indians or
@@ -482,79 +476,7 @@ if ((n_strtm1 <- ceiling(ncol(tab_strtm1)/2-1))!=0) {
                                    "Observed = Numbers of participants sampled into the subcohort within baseline covariate strata.",
                                    "Estimated = Estimated numbers of participants in the whole per-protocol cohort within baseline 
   covariate strata, calculated using inverse probability weighting.")
-  
-} else {
-  tab_strtm2_1 <- NULL
-}
-
-if ((n_strtm2 <- ceiling(ncol(tab_strtm2)/2-1))!=0) {
-  tlf$tab_strtm2$col_name <- colnames(tab_strtm2)[-1] %>%
-    gsub("name", " ", .) %>% 
-    gsub("Negative_", "", .) %>% 
-    gsub("Positive_", " ", .) 
-  
-  tlf$tab_strtm2$table_header <- sprintf("Sample Sizes of Random Subcohort Strata (with antibody markers data at D29) Plus All Other Cases Outside the Random Subcohort in %s",
-                                         paste(c("Latin America", "South Africa")[sort(unique(ds$Region))], collapse=" and "))
-  tlf$tab_strtm2$header_above1 <- c(" "=1, "Baseline SARS-CoV-2 Negative" = sum(grepl("Negative", colnames(tab_strtm2))), 
-                                    "Baseline SARS-CoV-2 Positive" = sum(grepl("Positive", colnames(tab_strtm2))))
-  
-  tlf$tab_strtm2$header_above1 <- tlf$tab_strtm2$header_above1[tlf$tab_strtm2$header_above1!=0]
-  tab_strtm_header2 <- ncol(tab_strtm2)-1
-  names(tab_strtm_header2) <- sprintf("%s\nSample Sizes (N=%s Participants) (%s Trial)",
-                                      tlf$tab_strtm2$table_header,
-                                      sum(ds[ds$demo.stratum.ordered%in%(strtm_cutoff+1):(strtm_cutoff*2), ]$ph2.immuno), 
-                                      stringr::str_to_title(data_raw_dir))
-  tlf$tab_strtm2$header_above2 <- tab_strtm_header2
-  tlf$tab_strtm2$table_footer <- c("Demographic covariate strata:",
-                                   paste(sort(unique(ds$demo.stratum.ordered[ds$demo.stratum.ordered > strtm_cutoff])), 
-                                         demo.stratum.ordered[sort(unique(ds$demo.stratum.ordered[ds$demo.stratum.ordered > strtm_cutoff]))], 
-                                         sep=". "),
-                                   " ",
-                                   "Observed = Numbers of participants sampled into the subcohort within baseline covariate strata.",
-                                   "Estimated = Estimated numbers of participants in the whole per-protocol cohort within baseline 
-  covariate strata, calculated using inverse probability weighting.")
-  
-  rgs <- sort(unique(dplyr::filter(ds, demo.stratum.ordered>!!strtm_cutoff)$Region))
-  if (n_distinct(rgs)>1){ # More than one region
-    for(r in rgs){
-      tab_strtm2i <- tab_strtm2 %>% 
-        select("Arm", "name", paste0("Negative_", strtms$demo.stratum.ordered[strtms$Region==r]))
-      
-      assign(paste0("tab_strtm2_", r), tab_strtm2i)
-      
-      
-      tlf[[paste0("tab_strtm2_", r)]]$col_name <- colnames(tab_strtm2i)[-1] %>%
-        gsub("name", " ", .) %>% 
-        gsub("Negative_", "", .) %>% 
-        gsub("Positive_", " ", .) 
-      
-      tlf[[paste0("tab_strtm2_", r)]]$table_header <- sprintf("Sample Sizes of Random Subcohort Strata (with antibody markers data at D29) Plus All Other Cases Outside the Random Subcohort in %s",
-                                                              labels.regions.ENSEMBLE[as.character(r)])
-      tlf[[paste0("tab_strtm2_", r)]]$header_above1 <- c(" "=1, "Baseline SARS-CoV-2 Negative" = sum(grepl("Negative", colnames(tab_strtm2i))), 
-                                        "Baseline SARS-CoV-2 Positive" = sum(grepl("Positive", colnames(tab_strtm2i))))
-      
-      tlf[[paste0("tab_strtm2_", r)]]$header_above1 <- tlf[[paste0("tab_strtm2_", r)]]$header_above1[tlf[[paste0("tab_strtm2_", r)]]$header_above1!=0]
-      tab_strtm_header2 <- ncol(tab_strtm2i)-1
-      names(tab_strtm_header2) <- sprintf("%s\nSample Sizes (N=%s Participants) (%s Trial)",
-                                          tlf[[paste0("tab_strtm2_", r)]]$table_header,
-                                          sum(ds[ds$demo.stratum.ordered%in%(strtm_cutoff+1):(strtm_cutoff*2), ]$ph2.immuno), 
-                                          stringr::str_to_title(data_raw_dir))
-      tlf[[paste0("tab_strtm2_", r)]]$header_above2 <- tab_strtm_header2
-      tlf[[paste0("tab_strtm2_", r)]]$table_footer <- c("Demographic covariate strata:",
-                                       paste(sort(unique(ds$demo.stratum.ordered[ds$Region==r])), 
-                                             demo.stratum.ordered[sort(unique(ds$demo.stratum.ordered[ds$Region==r]))], 
-                                             sep=". "),
-                                       " ",
-                                       "Observed = Numbers of participants sampled into the subcohort within baseline covariate strata.",
-                                       "Estimated = Estimated numbers of participants in the whole per-protocol cohort within baseline 
-  covariate strata, calculated using inverse probability weighting.")
-      
-      
-    }
-  }
-
-} else{
-  tab_strtm2_2 <- NULL
+  } 
 }
 
 if (ncol(tab_strtm1)==2) tab_strtm1 <- NULL
@@ -565,14 +487,13 @@ if (ncol(tab_strtm2)==2) tab_strtm2 <- NULL
 
 if ((Numberdays <- paste0("NumberdaysD1toD", config.cor$tpeak)) %in% names(ds)) {
   tab_days <- ds %>% 
-    filter(!!as.name(config.cor$ph2), !is.na(!!as.name(paste0("Case.D", config.cor$tpeak)))) %>% 
+    filter(!!as.name(config.cor$ph2), !is.na(Case)) %>% 
     mutate(Visit = paste("Day", config.cor$tpeak)) %>% 
-    bind_rows(., mutate(., "Case.D{config.cor$tpeak}" :="Total")) %>% 
-    group_by(Visit, Arm, !!as.name(paste0("Case.D", config.cor$tpeak))) %>% 
+    bind_rows(., mutate(., Case = "Total")) %>% 
+    group_by(Visit, Arm, Case) %>% 
     summarise(N=n(), dmed=median(!!as.name(Numberdays), na.rm=T), iqr=IQR(!!as.name(Numberdays))) %>% 
-    select(Visit, Arm, ` `=!!as.name(paste0("Case.D", config.cor$tpeak)), 
+    select(Visit, Arm, ` `=Case, 
            N, `Median\n(days)`=dmed, `Interquatile Range\n(days)`=iqr)
-  
 } else {
   tab_days <- NULL
 }
@@ -596,34 +517,27 @@ if (study_name %in% c("COVE", "MockCOVE")){
 # (Per Peter's email Feb 5, 2021)
 # Cases vs Non-cases
 
-sub.by <- c("Arm", "`Baseline SARS-CoV-2`")
-
-for (d in config.cor$tpeak) {
+  sub.by <- c("Arm", "`Baseline SARS-CoV-2`")
   ds.i <- filter(ds, !!as.name(config.cor$ph1))
   resp.v <- intersect(grep("Resp", names(ds), value = T), 
-                      grep(d, names(ds), value = T))
-  gm.v <- intersect(assays_col, grep(d, names(ds), value = T))
+                      grep(config.cor$tpeak, names(ds), value = T))
+  gm.v <- intersect(assays_col, grep(config.cor$tpeak, names(ds), value = T))
   
-  subs <- paste0("Case.D", d)
-  comp_i <- c("Cases", "Non-Cases")
+  subs <- "Case"
+  comp.i <- c("Cases", "Non-Cases")
   
-  rpcnt_case.i <- get_rr(ds.i, resp.v, subs, sub.by, strata=config.cor$WtStratum, weights=config.cor$wt, subset=config.cor$ph2) 
-  rgm_case.i <- get_gm(ds.i, gm.v, subs, sub.by, strata=config.cor$WtStratum, weights=config.cor$wt, subset=config.cor$ph2) 
-  rgmt_case.i <- get_rgmt(ds.i, gm.v, subs, comp_lev=comp_i, sub.by, strata=config.cor$WtStratum, weights=config.cor$wt, subset=config.cor$ph2) 
-  
-  rpcnt_case <- bind_rows(rpcnt_case, rpcnt_case.i)
-  rgm_case <- bind_rows(rgm_case, rgm_case.i)
-  rgmt_case <- bind_rows(rgmt_case, rgmt_case.i)
-}
+  rpcnt_case <- get_rr(ds.i, resp.v, subs, sub.by, strata=config.cor$WtStratum, weights=config.cor$wt, subset=config.cor$ph2) 
+  rgm_case <- get_gm(ds.i, gm.v, subs, sub.by, strata=config.cor$WtStratum, weights=config.cor$wt, subset=config.cor$ph2) 
+  rgmt_case <- get_rgmt(ds.i, gm.v, subs, comp_lev=comp.i, sub.by, strata=config.cor$WtStratum, weights=config.cor$wt, subset=config.cor$ph2) 
   
   print("Done with table 2b & 3b") 
 
 
 rrdiff_case <- rpcnt_case %>% 
   # dplyr::filter(subgroup %in% subs & grepl("Resp",resp_cat)) %>% 
-  mutate(groupn = 2-match(Group, comp_i)%%2) %>%
+  mutate(groupn = 2-match(Group, comp.i)%%2) %>%
   pivot_wider(id_cols = c(subgroup, `Baseline SARS-CoV-2`, Arm, Visit, Marker, Ind),
-              names_from = groupn, values_from = c(response, ci_l, ci_u), names_sep = "") # %>% 
+              names_from = groupn, values_from = c(response, ci_l, ci_u), names_sep = "") 
 
   responseNA <- setdiff(as.vector(outer(c("response", "ci_l", "ci_u"), 1:2, paste0)), names(rrdiff_case))
   rrdiff_case[, responseNA] <- NA
@@ -647,7 +561,7 @@ tab_case <- full_join(rpcnt_case, rgm_case,
   full_join(rrdiff_case, by = c("Arm", "Baseline SARS-CoV-2", "Marker", "Visit")) %>% 
   full_join(rgmt_case, by = c("Arm", "Baseline SARS-CoV-2", "Marker", "Visit"))
 
-if(length(comp_NA <- setdiff(comp_i, rpcnt_case$Group))!=0){
+if(length(comp_NA <- setdiff(comp.i, rpcnt_case$Group))!=0){
   tab_case <- tab_case %>% 
     mutate(!!paste0("N_", comp_NA) := 0, 
            !!paste0("rslt_", comp_NA) := "-",
@@ -671,6 +585,10 @@ case_vacc_neg <- tab_case %>%
   dplyr::filter(Arm == "Vaccine" & `Baseline SARS-CoV-2` == "Negative") %>% 
   select(-c(Arm, `Baseline SARS-CoV-2`))
 
+case_plcb_neg <- tab_case %>% 
+  dplyr::filter(Arm == "Placebo" & `Baseline SARS-CoV-2` == "Negative") %>% 
+  select(-c(Arm, `Baseline SARS-CoV-2`))
+
 print("Done with all tables") 
 
 # path for tables
@@ -681,6 +599,6 @@ save.results.to <- paste0(here::here("output"), "/", attr(config,"config"))
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
-save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, tab_days, case_vacc_neg, 
+save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, tab_days, case_vacc_neg, case_plcb_neg,
      file = file.path(save.results.to, sprintf("Tables%s.Rdata", ifelse(exists("COR"), COR, ""))))
 
