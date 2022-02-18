@@ -1,3 +1,25 @@
+Sys.setenv(TRIAL = "janssen_pooled_realPsV"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
+renv::activate(project = here::here(".."))     
+    # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
+    if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
+source(here::here("..", "_common.R"))
+library(kyotil) # p.adj.perm, getFormattedSummary
+library(marginalizedRisk)
+library(survey)
+source(here::here("code", "params.R"))
+# uloq censoring, done here b/c should not be done for immunogenicity reports
+# note that if delta are used, delta needs to be recomputed
+for (a in assays) {
+  for (t in "Day"%.%tpeak ) {
+    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
+  }
+}    
+dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
+dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
+
+
+
 # dat.vac.seroneg.id50.na etc are defined in cor_coxph_collate_meta_VE.R
 
 #ID50.old=read.csv("/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_realdata_20211220.csv")
@@ -118,8 +140,6 @@ weighted.mean(1 - exp(-pred), tmp$wt)
 
 
 
-###################################################################################################
-# misc
 
 10**with(dat.vac.seroneg.id50.na, wtd.quantile(Day29pseudoneutid50, wt, c(0.025, 0.975)))
 10**with(dat.cove.1, wtd.quantile(Day57pseudoneutid50, wt, c(0.025, 0.975)))
@@ -150,3 +170,11 @@ tmp[order(tmp[,2]),]
 #
 #
 #subset(dat.b.ph2, Region==1 & EventTimePrimary==58)
+
+
+with(dat.vac.seroneg, table(EventIndPrimary, !is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50) ))
+with(dat.vac.seroneg, table(SevereEventIndPrimaryIncludeNotMolecConfirmedD29, !is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50) ))
+
+
+with(dat.vac.seroneg, table(EventIndPrimary, !is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50) ))
+with(dat.vac.seroneg, table(SevereEventIndPrimaryIncludeNotMolecConfirmedD29, !is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50) ))
