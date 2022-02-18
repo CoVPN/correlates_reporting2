@@ -178,3 +178,6 @@ with(dat.vac.seroneg, table(SevereEventIndPrimaryIncludeNotMolecConfirmedD29, !i
 
 with(dat.vac.seroneg, table(EventIndPrimary, !is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50) ))
 with(dat.vac.seroneg, table(SevereEventIndPrimaryIncludeNotMolecConfirmedD29, !is.na(Day29pseudoneutid50) & !is.na(Bpseudoneutid50) ))
+
+
+with(dat.vac.seroneg, summary(Day35bindSpike))
