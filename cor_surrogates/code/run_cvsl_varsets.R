@@ -6,7 +6,7 @@ renv::activate(project = here::here(".."))
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
-
+COR = "D57"
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
@@ -14,8 +14,9 @@ source(here::here("..", "_common.R"))
 source(here::here("code", "cor_surrogates_setup.R"))
 
 # obtain the job id
-args <- commandArgs(trailingOnly = TRUE)
-job_id <- as.numeric(args[2])
+#args <- commandArgs(trailingOnly = TRUE)
+# job_id <- as.numeric(args[1])
+job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 # grab the current variable set based on the job id
 this_var_set <- varset_matrix[job_id, ]
@@ -87,21 +88,3 @@ if (job_id == 1) {
        V_outer, varset_names, file = here("output", "objects_for_running_SL.rda"))
 }
 
-
-# # compile all CV-AUCs and CV-SL fits
-# #cvaucs <- list()
-# cvfits <- list()
-# for (i in 1:length(seeds)) {
-#   #cvaucs[[i]] = fits[[i]]$cvaucs$aucs
-#   cvfits[[i]] = fits[[i]]$cvfits
-# }
-# 
-# # save off the output
-# #saveRDS(cvaucs, file = here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
-# saveRDS(cvfits, file = here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
-# # only save these objects once
-# if (job_id == 27) {
-#   saveRDS(ph2_vacc_ptids, file = here("output", "ph2_vacc_ptids.rds"))
-#   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
-#        V_outer, varset_names, file = here("output", "objects_for_running_SL.rda"))
-# }

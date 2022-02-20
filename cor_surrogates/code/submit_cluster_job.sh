@@ -5,4 +5,4 @@ virtualenv ./pytorch
 pip install -r requirements.txt
 ml jbigkit
 #sbatch -c10 --mem 11G --time=7-0 --constraint=gizmok code/run_cvsl_varsets.sh
-sbatch -c10 --mem 11G --time=7-0 --array=5-10 --constraint=gizmok code/run_cvsl_varsets.sh
+sbatch -c10 --mem 11G --time=7-0 --array=56 --constraint=gizmok code/run_cvsl_varsets.sh
