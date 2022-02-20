@@ -19,10 +19,12 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_realbAb janssen_pooled_rea
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmedstart1
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2))
 	Rscript code/cor_coxph.R D210
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
+	Rscript code/cor_coxph.R D35
 endif
 
 collate:
-	Rscript code/cor_coxph_collate.R
+	Rscript code/cor_coxph_collate_meta_VE.R
 	Rscript -e "rmarkdown::render('collate_ensemble.Rmd', output_file='covpn_correlates_cor_coxph_janssen_collated.pdf')"
 
 meta:

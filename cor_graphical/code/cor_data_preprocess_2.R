@@ -29,12 +29,12 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")  {
+if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")  {
   
   dat <- dat %>%
     mutate(cohort_event = factor(
-      ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D29")))==1 & eval(as.name(paste0("EventTimePrimary", incNotMol, "D29"))) >= tpeaklag, "Post-Peak Cases",
-             ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & EarlyendpointD29==0, "Non-Cases", NA)),
+      ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D", tpeak)))==1 & eval(as.name(paste0("EventTimePrimary", incNotMol, "D", tpeak))) >= tpeaklag, "Post-Peak Cases",
+             ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & (!!as.name(paste0("EarlyendpointD", tpeak, ifelse(grepl("start1", COR), "start1",""))))==0, "Non-Cases", NA)),
       levels = c("Post-Peak Cases", "Non-Cases"))
     )
 } else {
@@ -152,13 +152,10 @@ dat.long$trt_bstatus_label <-
 # subcohort, which is a stratified sample of enrolled participants. So,
 # immunogenicity analysis is always done in ppts that meet all of the criteria.
 
-# Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
-# since it should only happen for D57-related figures.
 dat.cor.subset <- dat %>%
-  dplyr::filter(!!as.name(paste0("ph2.D29", ifelse(grepl("start1", COR), "start1","")))==1)
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 dat.long.cor.subset <- dat.long %>%
-  dplyr::filter(!!as.name(paste0("ph2.D29", ifelse(grepl("start1", COR), "start1","")))==1)
-
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 
 
 saveRDS(as.data.frame(dat.long.cor.subset),
@@ -167,3 +164,4 @@ saveRDS(as.data.frame(dat.long.cor.subset),
 saveRDS(as.data.frame(dat.cor.subset),
         file = here("data_clean", "cor_data.rds")
 )
+

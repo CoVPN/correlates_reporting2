@@ -212,6 +212,8 @@ if(config$is_ows_trial) {
 names(assays)=assays # add names so that lapply results will have names
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
+# For bAb, IU and BAU are the same thing
+# all values on BAU or IU
 if (config$is_ows_trial) {
     tmp=list(
         bindSpike=c(
@@ -271,23 +273,32 @@ if (config$is_ows_trial) {
     
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         
-        # data less than pos cutoff is set to pos.cutoff/2 in the raw data        
+        # data less than pos cutoff is set to pos.cutoff/2
+        llods["bindSpike"]=NA 
         uloqs["bindSpike"]=238.1165 
     
-        # data less than pos cutoff is set to pos.cutoff/2 in the raw data        
+        # data less than pos cutoff is set to pos.cutoff/2
+        llods["bindRBD"]=NA                 
         uloqs["bindRBD"]=172.5755    
                 
-        llods["pseudoneutid50"]=5.99761 # based on data, SAP says 5.712
-        uloqs["pseudoneutid50"]=1354.315
+        # data less than lloq is set to lloq/2
+        llods["pseudoneutid50"]=NA  
+        lloqs["pseudoneutid50"]=2.7426  
+        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
+        uloqs["pseudoneutid50"]=619.3052 
         
-    } else if(study_name=="PREVENT-19") {
+    } else if(study_name=="PREVENT19") {
         
         # data less than lloq is set to lloq/2 in the raw data
+        llods["bindSpike"]=NA 
         lloqs["bindSpike"]=150.4*0.0090
-        pos.cutoffs["bindSpike"]=lloqs["bindSpike"]
+        pos.cutoffs["bindSpike"]=10.8424
         uloqs["bindSpike"]=770464.6*0.0090
     
     }
+    
+    # llox is for plotting and can be either llod or lloq depending on trials
+    lloxs=llods 
     
 } else {
     # get uloqs and lloqs from config
@@ -298,14 +309,6 @@ if (config$is_ows_trial) {
     names(lloxs)=assays
 }
 
-
-# llox is for plotting and can be either llod or lloq depending on trials
-lloxs=llods 
-# set to NA to make the plots free of too much white space
-if(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "PREVENT-19")) {    
-    lloxs["bindSpike"]=NA 
-    lloxs["bindRBD"]=NA                 
-}
 
 
 ###############################################################################
@@ -413,6 +416,30 @@ labels.assays.long <- labels.title
 
 # baseline stratum labeling
 if ((study_name=="COVE" | study_name=="MockCOVE")) {
+    Bstratum.labels <- c(
+      "Age >= 65",
+      "Age < 65, At risk",
+      "Age < 65, Not at risk"
+    )
+    
+} else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
+    Bstratum.labels <- c(
+      "Age < 60, Not at risk",
+      "Age < 60, At risk",
+      "Age >= 60, Not at risk",
+      "Age >= 60, At risk"
+    )
+} else if ((study_name=="PREVENT19")) {
+    Bstratum.labels <- c(
+      "Age >= 65",
+      "Age < 65"
+    )
+} else stop("unknown study_name")
+
+
+
+# baseline stratum labeling
+if ((study_name=="COVE" | study_name=="MockCOVE")) {
     demo.stratum.labels <- c(
       "Age >= 65, URM",
       "Age < 65, At risk, URM",
@@ -421,13 +448,6 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Age < 65, At risk, White non-Hisp",
       "Age < 65, Not at risk, White non-Hisp"
     )
-    
-    Bstratum.labels <- c(
-      "Age >= 65",
-      "Age < 65, At risk",
-      "Age < 65, Not at risk"
-    )
-    
 } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
     demo.stratum.labels <- c(
       "US URM, Age 18-59, Not at risk",
@@ -447,14 +467,20 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "South Africa, Age >= 60, Not at risk",
       "South Africa, Age >= 60, At risk"
     )
-
-    Bstratum.labels <- c(
-      "Age < 60, Not at risk",
-      "Age < 60, At risk",
-      "Age >= 60, Not at risk",
-      "Age >= 60, At risk"
+} else if ((study_name=="PREVENT19")) {
+    demo.stratum.labels <- c(
+      "US White non-Hisp, Age 18-64, Not at risk",
+      "US White non-Hisp, Age 18-64, At risk",
+      "US White non-Hisp, Age >= 65, Not at risk",
+      "US White non-Hisp, Age >= 65, At risk",
+      "US URM, Age 18-64, Not at risk",
+      "US URM, Age 18-64, At risk",
+      "US URM, Age >= 65, Not at risk",
+      "US URM, Age >= 65, At risk",
+      "Mexico, Age 18-64",
+      "Mexico, Age >= 65"
     )
-}
+} else stop("unknown study_name")
 
 labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
 regions.ENSEMBLE=0:2

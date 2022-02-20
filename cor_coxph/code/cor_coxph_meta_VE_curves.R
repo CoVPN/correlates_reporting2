@@ -25,7 +25,7 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 # TRIALS is a subset of all.trials
 # a is an assay
 draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
-#a="pseudoneutid50"; TRIALS=c("moderna_real", "janssen_pooled_real"); file.name=1; include.az=T; log="y"
+#a="bindSpike"; TRIALS=c("moderna_real", "janssen_pooled_real", "prevent19"); file.name=1; include.az=T; log=""
     myprint(a)
     
     transf=if(log=="y") function(y) -log(1-y) else identity 
@@ -33,9 +33,9 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     ylim=if(log=="y") transf(c(0,.98)) else c(0, 1) 
     hist.shrink=1/c(ADCP=2,pseudoneutid50=1.2,bindSpike=1.3,bindRBD=1.3)
     
-    all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real", "AZ-COV002")
-    studies=c("COVE","ENSEMBLE","ENSEMBLE US","ENSEMBLE LA","ENSEMBLE SA","AZ-COV002"); names(studies)=all.trials
-    cols=  c("blue","green","green","olivedrab3","darkseagreen4","orange"); names(cols)=all.trials
+    all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real", "AZ-COV002", "prevent19")
+    studies=c("COVE","ENSEMBLE","ENSEMBLE US","ENSEMBLE LA","ENSEMBLE SA","AZ-COV002", "PREVENT19"); names(studies)=all.trials
+    cols=  c("blue","green","green","olivedrab3","darkseagreen4","orange","cyan"); names(cols)=all.trials
     hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.3, maxColorValue=255)})
     
     .subset=match(TRIALS, all.trials)
@@ -50,7 +50,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     for (x in TRIALS) {    
         TRIAL=get.trial(x, a)
         Sys.setenv("TRIAL"=TRIAL)
-        COR = ifelse (x=="moderna_real","D57","D29IncludeNotMolecConfirmedstart1")
+        COR = switch(x, moderna_real="D57", prevent19="D35", "D29IncludeNotMolecConfirmedstart1")
         # key to have local = T
         source(here::here("..", "_common.R"), local=T)
         
@@ -76,7 +76,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
         overall.ve.ls=list()
         for (x in TRIALS) {    
             TRIAL=get.trial(x, a)
-            COR=ifelse (x=="moderna_real","D57","D29IncludeNotMolecConfirmedstart1")            
+            COR = switch(x, moderna_real="D57", prevent19="D35", "D29IncludeNotMolecConfirmedstart1")
             load(here::here("output", TRIAL, COR, "marginalized.risk.no.marker.Rdata"))
             load(here::here("output", TRIAL, COR, "marginalized.risk.Rdata"))
             risks=get("risks.all.1")[[a]]        
@@ -86,7 +86,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))                
         
             shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
-            mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE"), xlab=labels.assays.short[a]%.%" (=s)", 
+            mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE against COVID-19"), xlab=labels.assays.short[a]%.%" (=s)", 
                 #main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, add=x!=TRIALS[1])
             draw.x.axis.cor(xlim, NA)
@@ -162,4 +162,10 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="6", include.az=T)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="6", include.az=T, log="y")
+}
+
+# COVE + ENSEMBLE/US + AZ + PREVENT19
+for (a in c("bindSpike")) {
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="7", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="7", include.az=T, log="y")
 }

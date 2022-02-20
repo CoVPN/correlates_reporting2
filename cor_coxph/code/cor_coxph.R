@@ -1,4 +1,5 @@
-#Sys.setenv(TRIAL = "janssen_pooled_realbAb"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) # TRIAL: moderna_mock  moderna_real  janssen_pooled_mock  janssen_pooled_real  janssen_na_mock  hvtn705
+#Sys.setenv(TRIAL = "janssen_pooled_realPsV"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -80,7 +81,7 @@ design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subse
 source(here::here("code", "cor_coxph_ph.R"))
 
 # optional forest plots
-if(length(config$forestplot_script)==1) {
+if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
     

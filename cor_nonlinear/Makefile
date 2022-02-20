@@ -13,11 +13,13 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janssen_la_mock janssen_sa_mock))
 	Rscript code/cor_nonlinear.R D29
 	Rscript code/cor_nonlinear.R D29start1
-else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_real janssen_pooled_realADCP janssen_pooled_realPsV janssen_na_real janssen_la_real janssen_sa_real))
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_realbAb janssen_pooled_realPsV janssen_pooled_realADCP janssen_na_realbAb janssen_na_realPsV janssen_na_realADCP janssen_la_realbAb janssen_la_realPsV janssen_la_realADCP janssen_sa_realbAb janssen_sa_realPsV janssen_sa_realADCP))
 	Rscript code/cor_nonlinear.R D29IncludeNotMolecConfirmed
 	Rscript code/cor_nonlinear.R D29IncludeNotMolecConfirmedstart1
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
 	Rscript code/cor_nonlinear.R D210
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
+	Rscript code/cor_nonlinear.R D35
 endif
 
 before_script:
