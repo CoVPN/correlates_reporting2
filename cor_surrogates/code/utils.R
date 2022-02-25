@@ -556,15 +556,21 @@ choose_learners <- function(cvaucDAT) {
 # @param cv_fit fit from running CV.Superlearner
 # @param cvaucDAT a dataframe containing Learner, Screen, and AUC
 # @return a dataframe with predictions for each subject for each Learner/Learner-Screen combination present in cvaucDAT
-get_cv_predictions <- function(cv_fit, cvaucDAT) {
+get_cv_predictions <- function(cv_fit, cvaucDAT, markerDAT = NULL) {
   top3 <- choose_learners(cvaucDAT)
 
   predict <- cv_fit[["library.predict"]] %>%
     as.data.frame() %>%
     bind_cols(cv_fit[["discreteSL.predict"]] %>% as.data.frame() %>% `colnames<-`(c("Discrete SL"))) %>%
     bind_cols(cv_fit[["SL.predict"]] %>% as.data.frame() %>% `colnames<-`(c("Super Learner"))) %>%
-    bind_cols(cv_fit[["Y"]] %>% as.data.frame() %>% `colnames<-`(c("Y"))) %>%
-    gather("algo", "pred", -Y) %>%
+    bind_cols(cv_fit[["Y"]] %>% as.data.frame() %>% `colnames<-`(c("Y"))) 
+  
+  if(!is.null(markerDAT)){
+    predict <- predict %>% bind_cols(markerDAT)
+  }
+  
+  predict <- predict %>%
+    gather("algo", "pred", -c(Y, names(markerDAT))) %>%
     filter(algo %in% c(top3$LearnerScreen))
 
   predict %>%
