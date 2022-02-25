@@ -1,4 +1,3 @@
 #!/bin/bash
 ml fhR/4.1.0-foss-2020b
-Rscript code/run_cvsl_varsets.R
-  
+Rscript code/run_cvsl_varsets.R D57

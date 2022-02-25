@@ -6,7 +6,7 @@ renv::activate(project = here::here(".."))
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
-COR = "D57"
+
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
@@ -15,7 +15,7 @@ source(here::here("code", "cor_surrogates_setup.R"))
 
 # obtain the job id
 #args <- commandArgs(trailingOnly = TRUE)
-# job_id <- as.numeric(args[1])
+#job_id <- as.numeric(args[2])
 job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 # grab the current variable set based on the job id
@@ -85,6 +85,5 @@ saveRDS(cvfits, file = here("output", paste0("CVSLfits_vacc_", endpoint, "_", va
 if (job_id == 1) {
   saveRDS(ph2_vacc_ptids, file = here("output", "ph2_vacc_ptids.rds"))
   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
-       V_outer, varset_names, file = here("output", "objects_for_running_SL.rda"))
+       V_outer, varset_names, individualMarkers, file = here("output", "objects_for_running_SL.rda"))
 }
-

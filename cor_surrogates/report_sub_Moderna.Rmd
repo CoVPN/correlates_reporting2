@@ -15,7 +15,7 @@ toc: true
 \clearpage
 \section{Overview}
 
-This report summarizes the results of the Day 29 and Day 57 multivariable marker Super Learner modeling <!-- and variable importance  --> analysis of vaccine recipients for the Moderna vaccine efficacy trial.  
+This report summarizes the results of the Day 29 and Day 57 multivariable marker Super Learner modeling and variable importance analysis of vaccine recipients for the Moderna vaccine efficacy trial.  
 
 The analysis presented in this report was performed on data from all vaccine recipients included in the case-control cohort. 
 
@@ -134,22 +134,22 @@ knitr::include_graphics(here::here("cor_surrogates/figs/forest_vacc_cvaucs_allDi
 ```{r vim-estimates-grp, warning=FALSE, echo=FALSE, message=FALSE}
 caption <- "Estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each variable set relative to baseline risk factors."
 
-read.csv(here::here("cor_surrogates", "output", "vim_estimates.csv"), 
+read.csv(here::here("cor_surrogates", "output", "vim_estimates.csv"),
          row.names = 1,
          header = TRUE) %>%
   filter(group) %>%
   filter(!grepl("base", variable_set)) %>%
-  arrange(-as.numeric(est)) %>% 
+  arrange(-as.numeric(est)) %>%
   mutate(est = format(round(est, 3), nsmall = 3),
          ci_ll = format(round(ci_ll, 3), nsmall = 3),
          ci_ul = format(round(ci_ul, 3), nsmall = 3),
          se = format(round(se, 3), nsmall = 3),
          pval = format(round(pval, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% 
+         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
   select(variable_set, estCI, se, pval) %>%
   rename(`Variable set` = variable_set,
          `VIM estimate [95% CI]` = estCI,
-         `std.error` = se, 
+         `std.error` = se,
          `p-value` = pval) %>%
   kable(
     booktabs = TRUE,
@@ -175,16 +175,16 @@ knitr::include_graphics(here::here("cor_surrogates", "figs", "group_vim_forest_p
 ```{r vim-predictiveness-grp, warning=FALSE, echo=FALSE, message=FALSE}
 caption <- "Estimated predictiveness (CV-AUC with 95\\% CI) for all 34 variable sets derived upon sample splitting. Discrepancies between these CV-AUC estimates and the estimates provided in Table 3 and Figure 1 are expected to diminish with increase in sample size."
 
-read.csv(here::here("cor_surrogates", "output", "vim_predictiveness_estimates.csv"), 
+read.csv(here::here("cor_surrogates", "output", "vim_predictiveness_estimates.csv"),
          row.names = 1,
          header = TRUE) %>%
   filter(group) %>%
-  arrange(-as.numeric(est)) %>% 
+  arrange(-as.numeric(est)) %>%
   mutate(est = format(round(est, 3), nsmall = 3),
          ci_ll = format(round(ci_ll, 3), nsmall = 3),
          ci_ul = format(round(ci_ul, 3), nsmall = 3),
          se = format(round(se, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% 
+         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
   select(variable_set, estCI, se) %>%
   rename(`Variable set` = variable_set,
          `Predictiveness estimate [95% CI]` = estCI,
@@ -214,22 +214,22 @@ knitr::include_graphics(here::here("cor_surrogates", "figs", "group_pred_forest_
 ```{r vim-estimates-vars, warning=FALSE, echo=FALSE, message=FALSE}
 caption <- "Estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each individual variable relative to baseline risk factors."
 
-read.csv(here::here("cor_surrogates", "output", "vim_estimates.csv"), 
+read.csv(here::here("cor_surrogates", "output", "vim_estimates.csv"),
          row.names = 1,
          header = TRUE) %>%
   filter(!group) %>%
   filter(!grepl("base", variable_set)) %>%
-  arrange(-as.numeric(est)) %>% 
+  arrange(-as.numeric(est)) %>%
   mutate(est = format(round(est, 3), nsmall = 3),
          ci_ll = format(round(ci_ll, 3), nsmall = 3),
          ci_ul = format(round(ci_ul, 3), nsmall = 3),
          se = format(round(se, 3), nsmall = 3),
          pval = format(round(pval, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% 
+         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
   select(variable_set, estCI, se, pval) %>%
   rename(`Variable name` = variable_set,
          `VIM estimate [95% CI]` = estCI,
-         `std.error` = se, 
+         `std.error` = se,
          `p-value` = pval) %>%
   kable(
     booktabs = TRUE,
@@ -255,16 +255,16 @@ knitr::include_graphics(here::here("cor_surrogates", "figs", "individual_vim_for
 ```{r vim-predictiveness-vars, warning=FALSE, echo=FALSE, message=FALSE}
 caption <- "Estimated predictiveness (CV-AUC with 95\\% CI) of each individual variable derived upon sample splitting."
 
-read.csv(here::here("cor_surrogates", "output", "vim_predictiveness_estimates.csv"), 
+read.csv(here::here("cor_surrogates", "output", "vim_predictiveness_estimates.csv"),
          row.names = 1,
          header = TRUE) %>%
   filter(!group) %>%
-  arrange(-as.numeric(est)) %>% 
+  arrange(-as.numeric(est)) %>%
   mutate(est = format(round(est, 3), nsmall = 3),
          ci_ll = format(round(ci_ll, 3), nsmall = 3),
          ci_ul = format(round(ci_ul, 3), nsmall = 3),
          se = format(round(se, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% 
+         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
   select(variable_set, estCI, se) %>%
   rename(`Variable name` = variable_set,
          `Predictiveness estimate [95% CI]` = estCI,

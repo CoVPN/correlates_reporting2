@@ -5,3 +5,5 @@ output/*.rda
 output/*.rds
 output/*.*
 report.pdf
+slurm*.out
+core

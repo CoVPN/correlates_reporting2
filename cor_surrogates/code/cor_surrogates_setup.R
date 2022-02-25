@@ -71,6 +71,17 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   # baseline risk factors
   briskfactors <- c("risk_score", "HighRiskInd", "MinorityInd")
   briskfactors_correction <- "Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd"
+  
+  individualMarkers <- c("Day57bindSpike", 
+                         "Day57bindRBD", 
+                         "Day57pseudoneutid50", 
+                         "Day57pseudoneutid80", 
+                         "Day57liveneutmn50",
+                         "Day29bindSpike", 
+                         "Day29bindRBD", 
+                         "Day29pseudoneutid50",
+                         "Day29pseudoneutid80", 
+                         "Day29liveneutmn50")
 
   # markers of interest
   markerVars <- c("Day57bindSpike", #"Delta57overBbindSpike",
