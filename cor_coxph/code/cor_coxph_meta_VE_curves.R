@@ -169,3 +169,9 @@ for (a in c("bindSpike")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="7", include.az=T)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="7", include.az=T, log="y")
 }
+
+# COVE + ENSEMBLE/US + PREVENT19
+for (a in c("bindSpike")) {
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="8", include.az=F)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="8", include.az=F, log="y")
+}

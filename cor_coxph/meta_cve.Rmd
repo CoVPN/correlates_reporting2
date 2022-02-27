@@ -90,6 +90,15 @@ for (a in c("bindSpike")) {
 }
 ```
 
+# COVE + ENSEMBLE regions + PREVENT19
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub8.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
 
 
 # Controlled VE based on Cox Models with Discretized Markers

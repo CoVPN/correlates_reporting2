@@ -7,7 +7,7 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-#formula=form.0; marker.name="Day"%.%tpeak%.%a; type=2; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
+#formula=form.0; marker.name="Day"%.%tpeak%.%a; type=1; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
     
     # store the current rng state 
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 

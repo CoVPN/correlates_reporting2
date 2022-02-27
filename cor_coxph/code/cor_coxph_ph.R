@@ -75,84 +75,94 @@ if(verbose) print("# multitesting adjustment for continuous and trichotomized ma
 
 p.unadj=c(cont=pvals.cont, tri=overall.p.tri)
 p.unadj.1 = p.unadj # save a copy for later use
-# only use primary assays in multitesting adjustment
-if (!is.null(config$primary_assays)) {
-    p.unadj = p.unadj[c("cont.Day"%.%tpeak%.%primary_assays, "tri.Day"%.%tpeak%.%primary_assays)]
+if (!is.null(config$primary_assays)) p.unadj = p.unadj[c("cont.Day"%.%tpeak%.%primary_assays, "tri.Day"%.%tpeak%.%primary_assays)]
+if (study_name=="PREVENT19") {
+    # bindSpike tertiary has no cases in the upper tertile, cannot do P value
+    p.unadj = p.unadj[startsWith(names(p.unadj), "cont."), drop=F]
 }
 
 #### Holm and FDR adjustment
 pvals.adj.fdr=p.adjust(p.unadj, method="fdr")
 pvals.adj.hol=p.adjust(p.unadj, method="holm")
 
-#### Westfall and Young permutation-based adjustment
-if(!file.exists(paste0(save.results.to, "pvals.perm.",study_name,".Rdata"))) {
+if (length(p.unadj)>1) {
+        
+    #### Westfall and Young permutation-based adjustment
+    if(!file.exists(paste0(save.results.to, "pvals.perm.",study_name,".Rdata"))) {
+        
+        dat.ph2 = design.vacc.seroneg$phase1$sample$variables
+        design.vacc.seroneg.perm=design.vacc.seroneg
+        #design.vacc.seroneg.perm$phase1$full$variables
     
-    dat.ph2 = design.vacc.seroneg$phase1$sample$variables
-    design.vacc.seroneg.perm=design.vacc.seroneg
-    #design.vacc.seroneg.perm$phase1$full$variables
-
-#    # if want to only do multitesting when liveneutmn50 is included
-#    if (!"liveneutmn50" %in% assays) numPerm=5
-
-    out=mclapply(1:numPerm, mc.cores = numCores, FUN=function(seed) {   
-        # store the current rng state 
-        save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
-        if (class(save.seed)=="try-error") {set.seed(1); save.seed <- get(".Random.seed", .GlobalEnv) }          
-        set.seed(seed)        
+    #    # if want to only do multitesting when liveneutmn50 is included
+    #    if (!"liveneutmn50" %in% assays) numPerm=5
+    
+        out=mclapply(1:numPerm, mc.cores = numCores, FUN=function(seed) {   
+            # store the current rng state 
+            save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
+            if (class(save.seed)=="try-error") {set.seed(1); save.seed <- get(".Random.seed", .GlobalEnv) }          
+            set.seed(seed)        
+            
+            # permute markers in design.vacc.seroneg.perm
+            new.idx=sample(1:nrow(dat.ph2))
+            tmp=dat.ph2
+            for (a in "Day"%.%tpeak%.%assays) {
+                tmp[[a]]=tmp[[a]][new.idx]
+                tmp[[a%.%"cat"]]=tmp[[a%.%"cat"]][new.idx]
+            }
+            design.vacc.seroneg.perm$phase1$sample$variables = tmp
+            
+            out=c(
+                cont=sapply ("Day"%.%tpeak%.%assays, function(a) {
+                    f= update(form.0, as.formula(paste0("~.+", a)))
+                    fit=run.svycoxph(f, design=design.vacc.seroneg.perm) 
+                    if (length(fit)==1) NA else last(c(getFixedEf(fit)))
+                })        
+                ,    
+                tri=sapply ("Day"%.%tpeak%.%assays, function(a) {
+                    f= update(form.0, as.formula(paste0("~.+", a, "cat")))
+                    fit=run.svycoxph(f, design=design.vacc.seroneg.perm) 
+                    if (length(fit)==1) NA else last(c(getFixedEf(fit)))
+                })
+            )
+            
+            # restore rng state 
+            assign(".Random.seed", save.seed, .GlobalEnv)    
+            
+            out
+        })
+        pvals.perm=do.call(rbind, out)
+        save(pvals.perm, file=paste0(save.results.to, "pvals.perm."%.%study_name%.%".Rdata"))
         
-        # permute markers in design.vacc.seroneg.perm
-        new.idx=sample(1:nrow(dat.ph2))
-        tmp=dat.ph2
-        for (a in "Day"%.%tpeak%.%assays) {
-            tmp[[a]]=tmp[[a]][new.idx]
-            tmp[[a%.%"cat"]]=tmp[[a%.%"cat"]][new.idx]
-        }
-        design.vacc.seroneg.perm$phase1$sample$variables = tmp
-        
-        out=c(
-            cont=sapply ("Day"%.%tpeak%.%assays, function(a) {
-                f= update(form.0, as.formula(paste0("~.+", a)))
-                fit=run.svycoxph(f, design=design.vacc.seroneg.perm) 
-                if (length(fit)==1) NA else last(c(getFixedEf(fit)))
-            })        
-            ,    
-            tri=sapply ("Day"%.%tpeak%.%assays, function(a) {
-                f= update(form.0, as.formula(paste0("~.+", a, "cat")))
-                fit=run.svycoxph(f, design=design.vacc.seroneg.perm) 
-                if (length(fit)==1) NA else last(c(getFixedEf(fit)))
-            })
-        )
-        
-        # restore rng state 
-        assign(".Random.seed", save.seed, .GlobalEnv)    
-        
-        out
-    })
-    pvals.perm=do.call(rbind, out)
-    save(pvals.perm, file=paste0(save.results.to, "pvals.perm."%.%study_name%.%".Rdata"))
+    } else {
+        load(file=paste0(save.results.to, "pvals.perm."%.%study_name%.%".Rdata"))
+    }
+    # save number of permutation replicates
+    write(nrow(pvals.perm), file=paste0(save.results.to, "permutation_replicates_"%.%study_name))
+    
+    
+    if(any(is.na(p.unadj))) {
+        pvals.adj = cbind(p.unadj=p.unadj, p.FWER=NA, p.FDR=NA)
+    } else {
+        pvals.adj = p.adj.perm (p.unadj, pvals.perm[,names(p.unadj)], alpha=1)  
+    }
+    if(verbose) print(pvals.adj)
     
 } else {
-    load(file=paste0(save.results.to, "pvals.perm."%.%study_name%.%".Rdata"))
+    print("not doing Westfall and Young")
+    pvals.adj=cbind(p.unadj, p.FWER=pvals.adj.hol, p.FDR=pvals.adj.fdr)
+    myprint(pvals.adj)
 }
-# save number of permutation replicates
-write(nrow(pvals.perm), file=paste0(save.results.to, "permutation_replicates_"%.%study_name))
 
-
-if(any(is.na(p.unadj))) {
-    pvals.adj = cbind(p.unadj=p.unadj, p.FWER=NA, p.FDR=NA)
-} else {
-    pvals.adj = p.adj.perm (p.unadj, pvals.perm[,names(p.unadj)], alpha=1)  
-}
-if(verbose) print(pvals.adj)
-
-## alternatively we will not use Westfall and Young
-#pvals.adj=cbind(p.unadj, p.FWER=pvals.adj.hol, p.FDR=pvals.adj.fdr)
 
 
 # since we take ID80 out earlier, we may need to add it back for the table and we do it with the help of p.unadj.1
-pvals.adj = cbind(p.unadj=p.unadj.1, pvals.adj[match(names(p.unadj.1), rownames(pvals.adj)),2:3])
+pvals.adj = cbind(p.unadj=p.unadj.1, pvals.adj[match(names(p.unadj.1), rownames(pvals.adj)),2:3, drop=F])
 
-
+if (study_name=="PREVENT19") {
+    # bindSpike tertiary has no cases in the upper tertile, cannot do P value
+    pvals.adj=rbind(pvals.adj, tri.Day35bindSpike=c(NA,NA,NA))
+}
 
 ###################################################################################################
 # make continuous markers table
@@ -206,23 +216,8 @@ tab.cont.scaled=tab.1.scaled
 ###################################################################################################
 # make trichotomized markers table
 
-#overall.p.1=formatDouble(pvals.adj.fdr[1:length(assays)+length(assays)], 3);   overall.p.1=sub(".000","<0.001",overall.p.1)
-#overall.p.2=formatDouble(pvals.adj.fdr[1:length(assays)+length(assays)], 3);   overall.p.2=sub(".000","<0.001",overall.p.2)
-# or
 overall.p.1=formatDouble(pvals.adj["tri."%.%names(pvals.cont),"p.FWER"], 3, remove.leading0=F);   overall.p.1=sub("0.000","<0.001",overall.p.1)
 overall.p.2=formatDouble(pvals.adj["tri."%.%names(pvals.cont),"p.FDR" ], 3, remove.leading0=F);   overall.p.2=sub("0.000","<0.001",overall.p.2)
-#if (study_name=="COVE" | study_name=="MockCOVE") {
-#    overall.p.1[endsWith(names(overall.p.1), "pseudoneutid50")] = "N/A"
-#    overall.p.2[endsWith(names(overall.p.2), "pseudoneutid50")] = "N/A"
-#    overall.p.1[endsWith(names(overall.p.1), "bindRBD")] = "N/A"
-#    overall.p.2[endsWith(names(overall.p.2), "bindRBD")] = "N/A"
-#}
-
-## if want to only do multitesting when liveneutmn50 is included
-#if (!"liveneutmn50" %in% assays) {
-#    for (i in 1:length(p.1)) overall.p.1[i]<-overall.p.2[i]<-"N/A"    
-#}
-
 
 # add space
 overall.p.1=c(rbind(overall.p.1, NA,NA))

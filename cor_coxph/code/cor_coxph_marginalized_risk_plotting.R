@@ -128,7 +128,7 @@ for (a in assays) {
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on -log(1-) scale
 for (eq.geq in 1:4) {  
-# eq.geq=3; a=assays[1]
+# eq.geq=1; a=assays[1]
 
     outs=lapply (assays, function(a) {        
         tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp=4
