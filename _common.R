@@ -731,6 +731,7 @@ get.ptids.by.stratum.for.bootstrap = function(data) {
 }
 
 
+# bootstrap case cohort samples
 # data is assumed to contain only ph1 ptids
 get.bootstrap.data.cor = function(data, ptids.by.stratum, seed) {
     set.seed(seed)    
