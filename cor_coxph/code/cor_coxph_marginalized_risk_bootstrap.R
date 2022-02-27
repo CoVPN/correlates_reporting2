@@ -7,7 +7,7 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-#formula=form.0; marker.name="Day"%.%tpeak%.%a; type=1; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
+# type=4; formula=form.0; marker.name="Day"%.%tpeak%.%a; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
     
     # store the current rng state 
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -16,7 +16,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     data.ph2=subset(data, ph2==1)     
     
     if (type==1) {
-    # conditional on s
+    # conditional on S=s (quantitative)
         #ss contains 
         ## lars quantiles so that to be consistent with his analyses + every 5% to include s1 and s2 for sensitivity analyses
         ## equally spaced values so that the curves look good  
@@ -25,7 +25,9 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         f1=update(formula, as.formula(paste0("~.+",marker.name)))        
         tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
         fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
-        prob=marginalized.risk(fit.risk, marker.name, data=data.ph2, ss=ss, weights=data.ph2$wt, t=t, categorical.s=F)        
+        prob=marginalized.risk(fit.risk, marker.name, data=data.ph2, ss=ss, weights=data.ph2$wt, t=t, categorical.s=F)    
+        # Follmann (2018) ratio of sample sizes
+        n.dean = last(coef(fit.risk)/sqrt(diag(fit.risk$var))) * sqrt(fit.risk$n)
         
     } else if (type==2) {
     # conditional on S>=s
@@ -34,15 +36,14 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         prob=marginalized.risk.threshold (formula, marker.name, data=data.ph2, weights=data.ph2$wt, t=t, ss=ss)
        
     } else if (type==3) {
-    # conditional on a categorical S
+    # conditional on S=s (categorical)
         f1=update(formula, as.formula(paste0("~.+",marker.name)))        
         tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
         fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
         prob=marginalized.risk(fit.risk, marker.name, data=data.ph2, ss=NULL, weights=data.ph2$wt, t=t, categorical.s=T, verbose=F)        
         
     } else if (type==4) {
-    # conditional on s
-    # coef only
+    # conditional on S=s (quantitative)
         f1=update(formula, as.formula(paste0("~.+",marker.name)))        
         tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
         fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
@@ -83,7 +84,8 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     
             #fit.s=svyglm(f2, tmp.design)      
             if ( class (fit.risk.1)[1] != "try-error" ) {
-                marginalized.risk(fit.risk.1, marker.name, dat.b.ph2, t=t, ss=ss, weights=dat.b.ph2$wt, categorical.s=F)
+                n.dean = last(coef(fit.risk.1)/sqrt(diag(fit.risk.1$var))) * sqrt(fit.risk.1$n)
+                c(n.dean, marginalized.risk(fit.risk.1, marker.name, dat.b.ph2, t=t, ss=ss, weights=dat.b.ph2$wt, categorical.s=F))
             } else {
                 rep(NA, length(ss))
             }
@@ -104,20 +106,21 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
             }
             
         } else if (type==4) {
-        # conditional on s
-        # coef
+        # conditional on S=s (quantitative)
             tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)
             fit.risk.b=try(svycoxph(f1, design=tmp.design))
             if ( class (fit.risk.b)[1] != "try-error" ) {
-                exp(coef(fit.risk.b))
             } else {
-                rep(NA, length(coef(fit.risk)))
+                NA
             }
             
         } else stop("wrong type")
         
     })
     res=do.call(cbind, out)
+    # the first row is n.dean
+    boot.n.dean=res[1,]
+    res=res[-1,]
     res=res[,!is.na(res[1,])] # remove NA's
     if (verbose) str(res)
     
@@ -130,7 +133,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         stop("only quantile bootstrap CI supported for now")
     }
     
-    list(marker=if(type==3) names(prob) else ss, prob=prob, boot=res, lb=ci.band[,1], ub=ci.band[,2])     
+    list(marker=if(type==3) names(prob) else ss, prob=prob, boot=res, lb=ci.band[,1], ub=ci.band[,2], n.dean=c(n.dean, boot.n.dean))     
 }    
 
 
