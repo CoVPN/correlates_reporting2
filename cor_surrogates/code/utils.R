@@ -323,12 +323,18 @@ get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced
     cvsl_obj = NULL, preds = reduced_cv_fit, sample_splitting = sample_splitting, sample_splitting_folds = switch(as.numeric(sample_splitting) + 1, rep(2, V), sample_splitting_folds),
     full = FALSE, cross_fitting_folds = cross_fitting_folds
   )
+  # add on CV folds for the people only sampled into phase 1
+  if (is.null(Z)) {
+    cf_folds <- cross_fitting_folds
+  } else {
+    cf_folds <- c(cross_fitting_folds, sample(seq_len(length(unique(cross_fitting_folds))), length(C) - length(cross_fitting_folds), replace = TRUE))
+  }
   set.seed(seed)
   # estimate variable importance
   est_vim <- vimp::cv_vim(Y = Y, X = X, cross_fitted_f1 = full_cv_preds,
                           cross_fitted_f2 = reduced_cv_preds, indx = index,
                           delta = 0, V = V, run_regression = FALSE,
-                          sample_splitting = sample_splitting, cross_fitting_folds = cross_fitting_folds,
+                          sample_splitting = sample_splitting, cross_fitting_folds = cf_folds,
                           sample_splitting_folds = sample_splitting_folds,
                           type = type, scale = scale,
                           SL.library = sl_library, ipc_est_type = ipc_est_type,
