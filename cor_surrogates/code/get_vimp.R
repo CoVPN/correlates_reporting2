@@ -61,6 +61,10 @@ sample_splitting_folds <- lapply(list_of_indices, function(l) {
   set.seed(seeds[l])
   these_ss_folds <- vimp::make_folds(unique(cf_folds[[l]]), V = 2)
 })
+# flip the sample splitting folds for the baseline comparison so that we're comparing the correct splits
+sample_splitting_folds_baseline <- lapply(sample_splitting_folds, function(l) {
+    (-1) * l + 3
+})
 
 # get the naive predictor (outcome mean within each fold)
 naive_fits <- lapply(list_of_indices, function(l) {
@@ -95,7 +99,7 @@ for (i in seq_len(nrow(varset_matrix))) {
     vim_lst <- lapply(list_of_indices, function(l) {
       get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = naive_fits[[l]],
                  index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
-                 sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
+                 sample_splitting_folds = sample_splitting_folds_baseline[[l]], V = vim_V,
                  C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
                  ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, baseline = TRUE,
                  use_ensemble = use_ensemble_sl)
