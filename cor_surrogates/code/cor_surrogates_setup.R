@@ -71,16 +71,16 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   # baseline risk factors
   briskfactors <- c("risk_score", "HighRiskInd", "MinorityInd")
   briskfactors_correction <- "Y ~ x + X$risk_score + X$HighRiskInd + X$MinorityInd"
-  
-  individualMarkers <- c("Day57bindSpike", 
-                         "Day57bindRBD", 
-                         "Day57pseudoneutid50", 
-                         "Day57pseudoneutid80", 
+
+  individualMarkers <- c("Day57bindSpike",
+                         "Day57bindRBD",
+                         "Day57pseudoneutid50",
+                         "Day57pseudoneutid80",
                          "Day57liveneutmn50",
-                         "Day29bindSpike", 
-                         "Day29bindRBD", 
+                         "Day29bindSpike",
+                         "Day29bindRBD",
                          "Day29pseudoneutid50",
-                         "Day29pseudoneutid80", 
+                         "Day29pseudoneutid80",
                          "Day29liveneutmn50")
 
   # markers of interest
@@ -94,7 +94,7 @@ if (study_name %in% c("COVE", "MockCOVE")) {
                   "Delta57overBpseudoneutid80_2fold", "Delta57overBpseudoneutid80_4fold",
                   "Day57liveneutmn50", #"Delta57overBliveneutmn50",
                   "Delta57overBliveneutmn50_2fold", "Delta57overBliveneutmn50_4fold",
-                  
+
                   "Day29bindSpike", #"Delta29overBbindSpike",
                   "Delta29overBbindSpike_2fold", "Delta29overBbindSpike_4fold",
                   "Day29bindRBD", #"Delta29overBbindRBD",
@@ -435,11 +435,11 @@ if (study_name %in% c("COVE", "MockCOVE")) {
                     "2_bAbSpike_D57", "3_bAbRBD_D57", "4_pnabID50_D57",
                     "5_pnabID80_D57", "6_lnabMN50_D57", "7_bAb_pnabID50_D57", "8_bAb_pnabID80_D57", "9_bAb_lnabMN50_D57",
                     "10_bAb_combScores_D57", "11_allMarkers_D57", "12_allMarkers_combScores_D57",
-                    
+
                     "13_bAbSpike_D29", "14_bAbRBD_D29", "15_pnabID50_D29",
                     "16_pnabID80_D29", "17_lnabMN50_D29", "18_bAb_pnabID50_D29", "19_bAb_pnabID80_D29", "20_bAb_lnabMN50_D29",
                     "21_bAb_combScores_D29", "22_allMarkers_D29", "23_allMarkers_combScores_D29",
-                    
+
                     "24_bAbSpike_D29_D57", "25_bAbRBD_D29_D57", "26_pnabID50_D29_D57",
                     "27_pnabID80_D29_D57", "28_lnabMN50_D29_D57", "29_bAb_pnabID50_D29_D57", "30_bAb_pnabID80_D29_D57", "31_bAb_lnabMN50_D29_D57",
                     "32_bAb_combScores_D29_D57", "33_allMarkers_D29_D57", "34_allMarkers_combScores_D29_D57")
@@ -447,13 +447,13 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   # set up a matrix of all
   varset_matrix <- rbind(varset_baselineRiskFactors,
                          varset_bAbSpike_D57, varset_bAbRBD_D57, varset_pnabID50_D57,
-                         varset_pnabID80_D57, varset_lnabMN50_D57, varset_bAb_pnabID50_D57, varset_bAb_pnabID80_D57, varset_bAb_lnabMN50_D57, 
+                         varset_pnabID80_D57, varset_lnabMN50_D57, varset_bAb_pnabID50_D57, varset_bAb_pnabID80_D57, varset_bAb_lnabMN50_D57,
                          varset_bAb_combScores_D57, varset_allMarkers_D57, varset_allMarkers_combScores_D57,
-                         
+
                          varset_bAbSpike_D29, varset_bAbRBD_D29, varset_pnabID50_D29,
                          varset_pnabID80_D29, varset_lnabMN50_D29, varset_bAb_pnabID50_D29, varset_bAb_pnabID80_D29, varset_bAb_lnabMN50_D29,
                          varset_bAb_combScores_D29, varset_allMarkers_D29, varset_allMarkers_combScores_D29,
-                         
+
                          varset_bAbSpike_D29_D57, varset_bAbRBD_D29_D57, varset_pnabID50_D29_D57,
                          varset_pnabID80_D29_D57, varset_lnabMN50_D29_D57, varset_bAb_pnabID50_D29_D57, varset_bAb_pnabID80_D29_D57, varset_bAb_lnabMN50_D29_D57,
                          varset_bAb_combScores_D29_D57, varset_allMarkers_D29_D57, varset_allMarkers_combScores_D29_D57)
@@ -571,6 +571,11 @@ all_non_cc_treatment <- Z_plus_weights %>%
 # put them back together
 phase_1_data_treatmentDAT <- dplyr::bind_rows(all_cc_treatment, all_non_cc_treatment) %>%
   select(-Trt)
+# indicator of observed in phase 2
+C <- (phase_1_data_treatmentDAT$Ptid %in% treatmentDAT$Ptid)
+# all outcomes; first come outcomes in phase 2 sample, then the remainder
+full_y <- phase_1_data_treatmentDAT %>%
+  pull(!!endpoint)
 
 if (study_name %in% c("COVE", "MockCOVE")) {
   Z_treatmentDAT <- phase_1_data_treatmentDAT %>%
@@ -583,8 +588,6 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   all_ipw_weights_treatment <- phase_1_data_treatmentDAT %>%
     pull(wt.D210)
 }
-
-C <- (phase_1_data_treatmentDAT$Ptid %in% treatmentDAT$Ptid)
 
 # set up outer folds for cv variable importance; do stratified sampling
 V_outer <- 5

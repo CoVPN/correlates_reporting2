@@ -33,9 +33,7 @@ set.seed(20210216)
 seeds <- round(runif(10, 1000, 10000))
 # set up
 all_estimates <- NULL
-full_y <- dat.ph1 %>%
-  pull(!!endpoint)
-X <- dat.ph1 %>%
+X <- phase_1_data_treatmentDAT %>%
   select(!!ptidvar, !!briskfactors) %>%
   left_join(dat.ph2 %>%
     select(!!ptidvar, all_of(markers)), by = ptidvar
