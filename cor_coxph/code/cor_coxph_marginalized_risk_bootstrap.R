@@ -118,10 +118,12 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         
     })
     res=do.call(cbind, out)
-    # the first row is n.dean
-    boot.n.dean=res[1,]
-    res=res[-1,]
     res=res[,!is.na(res[1,])] # remove NA's
+    if (type==1) {
+        # the first row is n.dean
+        boot.n.dean=res[1,]
+        res=res[-1,]
+    }
     if (verbose) str(res)
     
     # restore rng state 
@@ -133,7 +135,9 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         stop("only quantile bootstrap CI supported for now")
     }
     
-    list(marker=if(type==3) names(prob) else ss, prob=prob, boot=res, lb=ci.band[,1], ub=ci.band[,2], n.dean=c(n.dean, boot.n.dean))     
+    ret = list(marker=if(type==3) names(prob) else ss, prob=prob, boot=res, lb=ci.band[,1], ub=ci.band[,2], if(type==1) n.dean=c(n.dean, boot.n.dean))   
+    if (type==1) names(ret)[length(ret)]="n.dean" # this is necessary because when using if, that element won't have a name
+    ret  
 }    
 
 
@@ -146,7 +150,8 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.Rdata"))) {
     risks.all.1=lapply(assays, function (a) {
         if(verbose) myprint(a)
         marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a, type=1, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
-    })    
+    })
+    risks.all.1.a=lapply(assays, function (a) risks.all.1[[a]])
     
     # vaccine arm, conditional on S>=s
     if (verbose) print("create risks.all.2")
