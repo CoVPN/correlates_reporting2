@@ -13,6 +13,9 @@ COR=Args[2]
 
 if (study.name=="COVE") {
     load(paste0("output/moderna_real/", COR, "/marginalized.risk.Rdata"))
+    tmp=lapply(risks.all.1, function(x) x$n.dean)
+    
+    
 } else if (study.name=="ENSEMBLE") {
     
 } 
