@@ -7,7 +7,7 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-# type=4; formula=form.0; marker.name="Day"%.%tpeak%.%a; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
+# type=1; formula=form.0; marker.name="Day"%.%tpeak%.%a; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
     
     # store the current rng state 
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -55,7 +55,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     
     # bootstrap
     out=mclapply(1:B, mc.cores = numCores, FUN=function(seed) {   
-    
+    seed=seed+560
         if (verbose>=2) myprint(seed)
     
         if(config$case_cohort) {
@@ -73,8 +73,8 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
            
         if(type==1) {
         # conditional on s
-            tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)
-            fit.risk.1=try(svycoxph(f1, design=tmp.design))
+            # inline design object b/c it may also throw an error
+            fit.risk.1=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)))
 #                    summary(survfit(fit.risk.1))
 #                    par(mfrow=c(2,2))
 #                    hist(dat.b.ph2$EventTimePrimaryD14[dat.b.ph2$Region==1])
@@ -87,7 +87,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
                 n.dean = last(coef(fit.risk.1)/sqrt(diag(fit.risk.1$var))) * sqrt(fit.risk.1$n)
                 c(n.dean, marginalized.risk(fit.risk.1, marker.name, dat.b.ph2, t=t, ss=ss, weights=dat.b.ph2$wt, categorical.s=F))
             } else {
-                rep(NA, length(ss))
+                rep(NA, 1+length(ss))
             }
             
         } else if (type==2) {
@@ -97,8 +97,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
             
         } else if (type==3) {
         # conditional on a categorical S
-            tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)
-            fit.risk=try(svycoxph(f1, design=tmp.design))
+            fit.risk=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)))
             if ( class (fit.risk)[1] != "try-error" ) {
                 marginalized.risk(fit.risk, marker.name, dat.b.ph2, t=t, ss=NULL, weights=dat.b.ph2$wt, categorical.s=T)
             } else {
@@ -107,8 +106,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
             
         } else if (type==4) {
         # conditional on S=s (quantitative)
-            tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)
-            fit.risk.b=try(svycoxph(f1, design=tmp.design))
+            fit.risk.b=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)))
             if ( class (fit.risk.b)[1] != "try-error" ) {
             } else {
                 NA
@@ -151,7 +149,6 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.Rdata"))) {
         if(verbose) myprint(a)
         marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a, type=1, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
     })
-    risks.all.1.a=lapply(assays, function (a) risks.all.1[[a]])
     
     # vaccine arm, conditional on S>=s
     if (verbose) print("create risks.all.2")
