@@ -1,7 +1,7 @@
 numCores <- unname(ifelse(Sys.info()["sysname"] == "Windows",
                           1, future::availableCores()))
 
-
+ 
 load.data=function(TRIAL, COR, trt=1) {
     Sys.setenv("TRIAL"=TRIAL)
     source(here::here("..", "_common.R"), local=T)

@@ -24,34 +24,28 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 
 
 # reading in data for COVE and ENSEMBLE
-dat.vac.seroneg.bAb=load.data("janssen_pooled_realbAb", "D29IncludeNotMolecConfirmedstart1")
-dat.vac.seroneg.id50=load.data("janssen_pooled_realPsV", "D29IncludeNotMolecConfirmedstart1")
+dat.vac.seroneg.bAbID50=load.data("janssen_pooled_real", "D29IncludeNotMolecConfirmedstart1")
 dat.vac.seroneg.adcp=load.data("janssen_pooled_realADCP", "D29IncludeNotMolecConfirmedstart1")
-stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.bAb$ptid))
-stopifnot(all(dat.vac.seroneg.id50$ptid==dat.vac.seroneg.adcp$ptid))
+stopifnot(all(dat.vac.seroneg.bAbID50$ptid==dat.vac.seroneg.adcp$ptid))
 # combine markers into one data frame
-dat.ense.1=cbind(dat.vac.seroneg.bAb, 
-    Day29pseudoneutid50=dat.vac.seroneg.id50$Day29pseudoneutid50, 
-    Day29pseudoneutid50cat=dat.vac.seroneg.id50$Day29pseudoneutid50cat, 
-    ph2.D29start1id50=dat.vac.seroneg.id50$ph2.D29start1, 
-    wt.D29start1id50=dat.vac.seroneg.id50$wt.D29start1, 
+dat.ense.1=cbind(dat.vac.seroneg.bAbID50, 
     Day29ADCP=dat.vac.seroneg.adcp$Day29ADCP, 
     Day29ADCPcat=dat.vac.seroneg.adcp$Day29ADCPcat,
     ph2.D29start1ADCP=dat.vac.seroneg.adcp$ph2.D29start1,
     wt.D29start1ADCP=dat.vac.seroneg.adcp$wt.D29start1
     )
 
-dat.ense.0=load.data("janssen_pooled_realbAb", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.ense.0=load.data("janssen_pooled_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
     
 dat.cove.1=load.data("moderna_real", "D57")
 dat.cove.0=load.data("moderna_real", "D57", trt=0)
 
-dat.vac.seroneg.id50.na=load.data("janssen_na_realPsV", "D29IncludeNotMolecConfirmedstart1")
-dat.pla.seroneg.id50.na=load.data("janssen_na_realPsV", "D29IncludeNotMolecConfirmedstart1", trt=0)
-dat.vac.seroneg.id50.la=load.data("janssen_la_realPsV", "D29IncludeNotMolecConfirmedstart1")
-dat.pla.seroneg.id50.la=load.data("janssen_la_realPsV", "D29IncludeNotMolecConfirmedstart1", trt=0)
-dat.vac.seroneg.id50.sa=load.data("janssen_sa_realPsV", "D29IncludeNotMolecConfirmedstart1")
-dat.pla.seroneg.id50.sa=load.data("janssen_sa_realPsV", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.vac.seroneg.id50.na=load.data("janssen_na_real", "D29IncludeNotMolecConfirmedstart1")
+dat.pla.seroneg.id50.na=load.data("janssen_na_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.vac.seroneg.id50.la=load.data("janssen_la_real", "D29IncludeNotMolecConfirmedstart1")
+dat.pla.seroneg.id50.la=load.data("janssen_la_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.vac.seroneg.id50.sa=load.data("janssen_sa_real", "D29IncludeNotMolecConfirmedstart1")
+dat.pla.seroneg.id50.sa=load.data("janssen_sa_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
 
 
 
