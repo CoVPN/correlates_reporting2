@@ -74,8 +74,16 @@ overall.p.0=formatDouble(c(rbind(overall.p.tri, NA,NA)), digits=3, remove.leadin
 if(verbose) print("# multitesting adjustment for continuous and trichotomized markers together")
 
 p.unadj=c(cont=pvals.cont, tri=overall.p.tri)
-p.unadj.1 = p.unadj # save a copy for later use
-if (!is.null(config$primary_assays)) p.unadj = p.unadj[c("cont.Day"%.%tpeak%.%primary_assays, "tri.Day"%.%tpeak%.%primary_assays)]
+# save a copy for later use
+p.unadj.1 = p.unadj 
+# pick out a subset based on config
+if (!is.null(config$primary_assays)) {
+    if (length(config$primary_assays)>0) {
+        p.unadj = p.unadj[c("cont.Day"%.%tpeak%.%primary_assays, "tri.Day"%.%tpeak%.%primary_assays)]
+    } else {
+        p.unadj=c()
+    }
+}
 if (study_name=="PREVENT19") {
     # bindSpike tertiary has no cases in the upper tertile, cannot do P value
     p.unadj = p.unadj[startsWith(names(p.unadj), "cont."), drop=F]
@@ -151,7 +159,6 @@ if (length(p.unadj)>1) {
 } else {
     print("not doing Westfall and Young")
     pvals.adj=cbind(p.unadj, p.FWER=pvals.adj.hol, p.FDR=pvals.adj.fdr)
-    myprint(pvals.adj)
 }
 
 

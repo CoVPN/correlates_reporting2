@@ -222,7 +222,7 @@ for (eq.geq in 1:4) {
                     paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), 
                     "Controlled VE",
                     if(eq.geq==1) "Controlled VE Sens. Analysis"), 
-                col=c("gray", if(eq.geq==3 | eq.geq==2) "black" else "pink", if(eq.geq==1) "red"), 
+                col=c("gray", if(eq.geq==1) "pink" else "black", if(eq.geq==1) "red"), 
                 lty=1, lwd=2, cex=.8)
         
             # add histogram
