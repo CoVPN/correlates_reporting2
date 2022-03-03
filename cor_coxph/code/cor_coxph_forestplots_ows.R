@@ -118,19 +118,19 @@ for (a in assays) {
 i=i+2
 
 # HIV infection
-if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) {
+if (study_name_code=="ENSEMBLE") {
     design.1<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, HIVinfection==1)))
     design.2<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, HIVinfection==0)))        
     for (a in assays) {
+        if (startsWith(a, "pseudoneut")) next
         f= update(form.0, as.formula(paste0("~.+Day",tpeak, a)))
         fits.all.2[[a]][[i]]=run.svycoxph(f, design=design.1) 
         fits.all.2[[a]][[i+1]]=run.svycoxph(f, design=design.2) 
     }
-    i=i+2
 }
 
 
-age.threshold=switch(study_name_code,COVE=65,ENSEMBLE=60)
+age.threshold=switch(study_name_code,COVE=65,ENSEMBLE=60,stop("age threshold undefined"))
 for (a in assays) {    
     names(fits.all.2[[a]])=c("All Vaccine", 
                              "Age >= "%.%age.threshold, "Age < "%.%age.threshold, 
@@ -143,28 +143,26 @@ for (a in assays) {
 }    
 
 
-nevents=c(nrow(subset(dat.vac.seroneg, yy==1)),
-          nrow(subset(dat.vac.seroneg, yy==1 & Senior==1)), 
-          nrow(subset(dat.vac.seroneg, yy==1 & Senior==0)), 
-          nrow(subset(dat.vac.seroneg, yy==1 & HighRiskInd==1)), 
-          nrow(subset(dat.vac.seroneg, yy==1 & HighRiskInd==0)), 
-          # MinorityInd also makes sense for US in ensemble
-          if(study_name_code!="ENSEMBLE") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1)), 
-          if(study_name_code!="ENSEMBLE") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0)), 
-          if(study_name_code=="ENSEMBLE" & !subset_value %in% c(1,2)) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1 & Region==0)), 
-          if(study_name_code=="ENSEMBLE" & !subset_value %in% c(1,2)) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0 & Region==0)), 
-          nrow(subset(dat.vac.seroneg, yy==1 & Sex==1)), 
-          nrow(subset(dat.vac.seroneg, yy==1 & Sex==0)),
-          if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) { c(
-              nrow(subset(dat.vac.seroneg, yy==1 & HIVinfection==1)), 
-              nrow(subset(dat.vac.seroneg, yy==1 & HIVinfection==0)))
-          }
-)
-
-
-
 rv$fr.2=list(nevents=nevents)
 for (a in assays) {
+    nevents=c(nrow(subset(dat.vac.seroneg, yy==1)),
+              nrow(subset(dat.vac.seroneg, yy==1 & Senior==1)), 
+              nrow(subset(dat.vac.seroneg, yy==1 & Senior==0)), 
+              nrow(subset(dat.vac.seroneg, yy==1 & HighRiskInd==1)), 
+              nrow(subset(dat.vac.seroneg, yy==1 & HighRiskInd==0)), 
+              # MinorityInd also makes sense for US in ensemble
+              if(study_name_code!="ENSEMBLE") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1)), 
+              if(study_name_code!="ENSEMBLE") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0)), 
+              if(study_name_code=="ENSEMBLE" & !subset_value %in% c(1,2)) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1 & Region==0)), 
+              if(study_name_code=="ENSEMBLE" & !subset_value %in% c(1,2)) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0 & Region==0)), 
+              nrow(subset(dat.vac.seroneg, yy==1 & Sex==1)), 
+              nrow(subset(dat.vac.seroneg, yy==1 & Sex==0)),
+              if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) { c(
+                  nrow(subset(dat.vac.seroneg, yy==1 & HIVinfection==1)), 
+                  nrow(subset(dat.vac.seroneg, yy==1 & HIVinfection==0)))
+              }
+    )
+    
     fits = fits.all.2[[a]]
     est.ci = sapply(fits, function (fit) {
         if (length(fit)==1) return (rep(NA,4))

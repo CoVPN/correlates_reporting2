@@ -287,3 +287,18 @@ tab=rbind(COVE=tab.1, "ENSEMBLE pooled"=tab.2, "ENSEMBLE NA"=c(tab.3,NA), "ENSEM
 colnames(tab)=c("<=32",">32,<=102",">102")
 tab
 mytex(tab, file="id50_ve", align="c", save2input.only=T, input.foldername="output/meta")
+
+
+# missingness
+
+with(dat.ense.1, table(!is.na(Day29bindSpike), !is.na(Day29bindRBD), EventIndPrimaryIncludeNotMolecConfirmedD29)) # same missingness
+with(dat.ense.1, table(!is.na(Day29pseudoneutid50), !is.na(Day29bindRBD), EventIndPrimaryIncludeNotMolecConfirmedD29))
+with(dat.ense.1, table(!is.na(Day29pseudoneutid50), !is.na(Day29bindRBD), Region))
+with(dat.ense.1, table(!is.na(Day29pseudoneutid50), !is.na(Day29bindRBD)))
+
+with(dat.ense.1, table(!is.na(BbindSpike), !is.na(BbindRBD))) # same missingness
+with(dat.ense.1, table(!is.na(Bpseudoneutid50), !is.na(BbindRBD)))
+with(dat.ense.1, table(!is.na(Bpseudoneutid50), !is.na(Day29pseudoneutid50), EventIndPrimaryIncludeNotMolecConfirmedD29))
+with(dat.ense.1, table(!is.na(BbindSpike), !is.na(Day29bindSpike), EventIndPrimaryIncludeNotMolecConfirmedD29)) 
+
+with(dat.cove.1, table(!is.na(Day57pseudoneutid50), !is.na(Day57bindRBD), EventIndPrimaryD57))
