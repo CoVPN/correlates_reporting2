@@ -1,14 +1,7 @@
 \begin{figure}
   \center
-  \includegraphics[width=6in]{output/meta/meta_controlled_ve_curves_4_`r a`.pdf}
+  \includegraphics[width=4.5in]{output/meta/meta_controlled_ve_curveslog_4_`r a`.pdf}
+  \includegraphics[width=4.5in]{output/meta/meta_controlled_ve_curves_4_`r a`.pdf}
   \caption{Controlled VE curves. COVE: starting 7 days and ending 100 days post Day 57. ENSEMBLE US: starting 1 days post Day 29; pooled: ending 66 days.}
 \end{figure}
-\clearpage
-
-\begin{figure}
-  \center
-  \includegraphics[width=6in]{output/meta/meta_controlled_ve_curveslog_4_`r a`.pdf}
-  \caption{Controlled VE curves. COVE: starting 7 days and ending 100 days post Day 57. ENSEMBLE US: starting 1 days post Day 29; pooled: ending 66 days.}
-\end{figure}
-
 \clearpage

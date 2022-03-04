@@ -1,3 +1,5 @@
+# 2022.3.3 collate is not necessary anymore because we combined bAb and PsV into one data file
+
 # Sys.setenv(TRIAL = "janssen_pooled_realbAb") # just so that _common.R can run
 renv::activate(project = here::here(".."))    
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
