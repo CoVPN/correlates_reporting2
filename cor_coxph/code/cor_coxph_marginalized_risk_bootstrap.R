@@ -54,7 +54,8 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     if(config$case_cohort) ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (data)     
     
     # bootstrap
-    out=mclapply(1:B, mc.cores = numCores, FUN=function(seed) {   
+    seeds=1:B; names(seeds)=seeds
+    out=mclapply(seeds, mc.cores = numCores, FUN=function(seed) {   
     seed=seed+560
         if (verbose>=2) myprint(seed)
     
@@ -116,12 +117,12 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         
     })
     res=do.call(cbind, out)
-    res=res[,!is.na(res[1,])] # remove NA's
     if (type==1) {
         # the first row is n.dean
         boot.n.dean=res[1,]
         res=res[-1,]
     }
+    res=res[,!is.na(res[1,])] # remove NA's
     if (verbose) str(res)
     
     # restore rng state 
