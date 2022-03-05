@@ -56,6 +56,21 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
     %\label{tab:CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
 \end{table}
 
+
+
+\begin{table}[H]
+\caption{Estimated sample size ratios (Follmann 2018)}
+\begin{center}
+    \input{`r pathCoRoutput`/follmann2018_samplesizeratio}\\
+    (lb, ub)\\
+    \input{`r pathCoRoutput`/follmann2018_samplesizeratio_lbub}\\
+\end{center}
+`r special.note`
+    %\label{tab:follmann2018_samplesizeratio}
+\end{table}
+
+
+
 \clearpage
 
 <!-- Forest plots -->

@@ -52,7 +52,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))
         
         xlim=get.range.cor(dat.vac.seroneg, a, tpeak) #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95), na.rm=T) 
-        shown=risks$marker>=ifelse(study_name=="moderna_real",log10(10),quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], 2.5/100, na.rm=T)) & risks$marker<=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], 1-2.5/100, na.rm=T)
+        shown=risks$marker>=ifelse(study_name=="COVE",log10(10),quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], 2.5/100, na.rm=T)) & risks$marker<=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], 1-2.5/100, na.rm=T)
         plot(risks$marker[shown], risks$prob[shown], xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, 
             type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")    
         draw.x.axis.cor(xlim, lloxs[a])
@@ -167,7 +167,7 @@ for (eq.geq in 1:4) {
             
             ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))        
             .subset=if(eq.geq!=2) {
-                risks$marker>=ifelse(study_name=="moderna_real",log10(10),quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], 2.5/100, na.rm=T)) & risks$marker<=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], 1-2.5/100, na.rm=T)
+                risks$marker>=ifelse(study_name=="COVE",log10(10),quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], 2.5/100, na.rm=T)) & risks$marker<=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], 1-2.5/100, na.rm=T)
             } else ncases>=5
             
             
