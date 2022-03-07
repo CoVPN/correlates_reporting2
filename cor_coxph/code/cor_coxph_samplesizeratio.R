@@ -1,29 +1,27 @@
 # one at a time, only used for debugging
 get.n.ratio.1=function(beta.1, beta.2, version=c("","L","U")) {   
-    beta.1=-beta.1; beta.2=-beta.2
     version=match.arg(version)
-    if        (beta.1>0 & beta.2>0) {
+    if        (beta.1<0 & beta.2<0) {
         (beta.1/beta.2)**2
-    } else if (beta.1<0 & beta.2>0) {
-        0
-    } else if (beta.1<0 & beta.2<0) {
-        if(version=="") NA else if (version=="L") 0 else if (version=="U") Inf else stop("wrong version in get.n.ratio")
     } else if (beta.1>0 & beta.2<0) {
+        0
+    } else if (beta.1>0 & beta.2>0) {
+        if(version=="") NA else if (version=="L") 0 else if (version=="U") Inf else stop("wrong version in get.n.ratio")
+    } else if (beta.1<0 & beta.2>0) {
         Inf
     } else stop("something wrong in get.n.ratio")        
 }
 
 # vectorized
 get.n.ratio=function(beta.1, beta.2, version=c("","L","U")) {
-    beta.1=-beta.1; beta.2=-beta.2
     version=match.arg(version)
-    ifelse (beta.1>0 & beta.2>0, 
+    ifelse (beta.1<0 & beta.2<0, 
         (beta.1/beta.2)**2,
-    ifelse (beta.1<0 & beta.2>0, 
-        0, 
-    ifelse (beta.1<0 & beta.2<0,
-        if(version=="") NA else if (version=="L") 0 else if (version=="U") Inf,
     ifelse (beta.1>0 & beta.2<0, 
+        0, 
+    ifelse (beta.1>0 & beta.2>0,
+        if(version=="") NA else if (version=="L") 0 else if (version=="U") Inf,
+    ifelse (beta.1<0 & beta.2>0, 
         Inf, -Inf) # -Inf would only appear when either beta is 0
         )
         )
