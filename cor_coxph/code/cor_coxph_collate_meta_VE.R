@@ -1,4 +1,4 @@
-# 2022.3.3 collate is not necessary anymore because we combined bAb and PsV into one data file
+# 2022.3.3 collate is not as necessary as before because we combined bAb and PsV into one data file
 
 # Sys.setenv(TRIAL = "janssen_pooled_realbAb") # just so that _common.R can run
 renv::activate(project = here::here(".."))    
@@ -12,7 +12,7 @@ library(tools) # toTitleCase
 library(survey)
 library(xtable) # this is a dependency of kyotil
 library(WeightedROC)
-Sys.setenv("TRIAL"="janssen_pooled_realbAb") # value does not matter since we just need to load the common functions in _common.R
+Sys.setenv("TRIAL"="janssen_pooled_real") # value does not matter since we just need to load the common functions in _common.R
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
 Sys.setenv(VERBOSE=1)

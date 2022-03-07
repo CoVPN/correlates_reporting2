@@ -59,7 +59,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 
 
 \begin{table}[H]
-\caption{Estimated sample size ratios (Follmann 2018)}
+\caption{The ratio of sample sizes required to power a future trial for the column marker compared to the row marker (Follmann 2018). Confidence intervals are based on $10^3$ bootstrap replicates. }
 \begin{center}
     \input{`r pathCoRoutput`/follmann2018_samplesizeratio}\\
     (lb, ub)\\
