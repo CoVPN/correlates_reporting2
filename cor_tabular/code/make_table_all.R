@@ -422,6 +422,7 @@ if (study_name %in% c("COVE", "MockCOVE")){
 strtm_cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE"), length(demo.stratum.ordered)/2, length(demo.stratum.ordered))
 
 tab_strtm <- ds %>% 
+  filter(ph2.immuno) %>% 
   group_by(demo.stratum.ordered, Arm, `Baseline SARS-CoV-2`) %>%
   summarise("Day {tpeak} Cases":=sum(Case=="Cases", na.rm=T), 
             `Non-Cases`=sum(Case=="Non-Cases", na.rm=T)) %>% 
