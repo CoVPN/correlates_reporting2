@@ -27,7 +27,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
         prob=marginalized.risk(fit.risk, marker.name, data=data.ph2, ss=ss, weights=data.ph2$wt, t=t, categorical.s=F)    
         # Follmann (2018) ratio of sample sizes
-        n.dean = last(coef(fit.risk)/sqrt(diag(fit.risk$var))) * sqrt(fit.risk$n)
+        n.dean = last(coef(fit.risk)/sqrt(diag(fit.risk$var))) * sqrt(1/fit.risk$n + 1/fit.risk$nevent)
         
     } else if (type==2) {
     # conditional on S>=s
@@ -85,7 +85,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     
             #fit.s=svyglm(f2, tmp.design)      
             if ( class (fit.risk.1)[1] != "try-error" ) {
-                n.dean = last(coef(fit.risk.1)/sqrt(diag(fit.risk.1$var))) * sqrt(fit.risk.1$n)
+                n.dean = last(coef(fit.risk.1)/sqrt(diag(fit.risk.1$var))) * sqrt(1/fit.risk.1$n + 1/fit.risk.1$nevent)
                 c(n.dean, marginalized.risk(fit.risk.1, marker.name, dat.b.ph2, t=t, ss=ss, weights=dat.b.ph2$wt, categorical.s=F))
             } else {
                 rep(NA, 1+length(ss))
