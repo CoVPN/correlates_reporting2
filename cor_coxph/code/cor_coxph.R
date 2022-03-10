@@ -1,3 +1,4 @@
+#Sys.setenv(TRIAL = "moderna_real"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 renv::activate(project = here::here(".."))     
@@ -80,6 +81,7 @@ design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subse
 
 source(here::here("code", "cor_coxph_ph.R"))
 
+
 # optional forest plots
 if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
     tmp=here::here("code", config$forestplot_script)
@@ -114,6 +116,7 @@ if (file.exists(tmp)) load(tmp)
 source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
 source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
 source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
+if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_real")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
 
 
 

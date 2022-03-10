@@ -27,7 +27,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
         prob=marginalized.risk(fit.risk, marker.name, data=data.ph2, ss=ss, weights=data.ph2$wt, t=t, categorical.s=F)    
         # Follmann (2018) ratio of sample sizes
-        n.dean = last(coef(fit.risk)/sqrt(diag(fit.risk$var))) * sqrt(fit.risk$n)
+        n.dean = last(coef(fit.risk)/sqrt(diag(fit.risk$var))) * sqrt(1/fit.risk$n + 1/fit.risk$nevent)
         
     } else if (type==2) {
     # conditional on S>=s
@@ -54,7 +54,8 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     if(config$case_cohort) ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (data)     
     
     # bootstrap
-    out=mclapply(1:B, mc.cores = numCores, FUN=function(seed) {   
+    seeds=1:B; names(seeds)=seeds
+    out=mclapply(seeds, mc.cores = numCores, FUN=function(seed) {   
     seed=seed+560
         if (verbose>=2) myprint(seed)
     
@@ -84,7 +85,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     
             #fit.s=svyglm(f2, tmp.design)      
             if ( class (fit.risk.1)[1] != "try-error" ) {
-                n.dean = last(coef(fit.risk.1)/sqrt(diag(fit.risk.1$var))) * sqrt(fit.risk.1$n)
+                n.dean = last(coef(fit.risk.1)/sqrt(diag(fit.risk.1$var))) * sqrt(1/fit.risk.1$n + 1/fit.risk.1$nevent)
                 c(n.dean, marginalized.risk(fit.risk.1, marker.name, dat.b.ph2, t=t, ss=ss, weights=dat.b.ph2$wt, categorical.s=F))
             } else {
                 rep(NA, 1+length(ss))
@@ -116,12 +117,12 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
         
     })
     res=do.call(cbind, out)
-    res=res[,!is.na(res[1,])] # remove NA's
     if (type==1) {
         # the first row is n.dean
         boot.n.dean=res[1,]
         res=res[-1,]
     }
+    res=res[,!is.na(res[1,])] # remove NA's
     if (verbose) str(res)
     
     # restore rng state 

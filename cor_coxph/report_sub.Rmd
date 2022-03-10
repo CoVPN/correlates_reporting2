@@ -56,6 +56,22 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
     %\label{tab:CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
 \end{table}
 
+
+`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_real")) '<!--'`
+\begin{table}[H]
+\caption{The ratio of sample sizes required to power a future trial for the column marker compared to the row marker (Follmann 2018). Confidence intervals are based on $10^3$ bootstrap replicates. }
+\begin{center}
+    \input{`r pathCoRoutput`/follmann2018_samplesizeratio}\\
+    (lb, ub)\\
+    \input{`r pathCoRoutput`/follmann2018_samplesizeratio_lbub}\\
+\end{center}
+`r special.note`
+    %\label{tab:follmann2018_samplesizeratio}
+\end{table}
+`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_real"))'-->'`
+
+
+
 \clearpage
 
 <!-- Forest plots -->
@@ -66,6 +82,7 @@ if(file.exists(here::here('cor_coxph', paste0('forestplots_', tolower(study_name
   message ("forest plots")
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
+  cat("\\clearpage\n")
 }
 ```
 

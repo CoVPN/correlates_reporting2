@@ -19,6 +19,7 @@ bibliography: ref.bib
 renv::activate(project = here::here(".."))    
 ```
 
+\pagenumbering{gobble}
 
 \counterwithin{table}{section}
 \counterwithin{figure}{section}
@@ -81,7 +82,7 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 ```
 
 
-# COVE + ENSEMBLE regions + AZ + PREVENT19
+# COVE + ENSEMBLE US + AZ + PREVENT19
 
 ```{r, echo=FALSE, results='asis'}
 for (a in c("bindSpike")) {
@@ -90,7 +91,7 @@ for (a in c("bindSpike")) {
 }
 ```
 
-# COVE + ENSEMBLE regions + PREVENT19
+# COVE + ENSEMBLE US + PREVENT19
 
 ```{r, echo=FALSE, results='asis'}
 for (a in c("bindSpike")) {

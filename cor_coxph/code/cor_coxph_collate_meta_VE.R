@@ -1,3 +1,5 @@
+# 2022.3.3 collate is not as necessary as before because we combined bAb and PsV into one data file
+
 # Sys.setenv(TRIAL = "janssen_pooled_realbAb") # just so that _common.R can run
 renv::activate(project = here::here(".."))    
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -10,7 +12,7 @@ library(tools) # toTitleCase
 library(survey)
 library(xtable) # this is a dependency of kyotil
 library(WeightedROC)
-Sys.setenv("TRIAL"="janssen_pooled_realbAb") # value does not matter since we just need to load the common functions in _common.R
+Sys.setenv("TRIAL"="janssen_pooled_real") # value does not matter since we just need to load the common functions in _common.R
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
 Sys.setenv(VERBOSE=1)
@@ -53,14 +55,12 @@ dat.pla.seroneg.id50.sa=load.data("janssen_sa_real", "D29IncludeNotMolecConfirme
 ###################################################################################################
 # make tables of HR that contain all markers
 
-for (region in c("pooled","na","la","sa")) {
+#for (region in c("pooled","na","la","sa")) {
+for (region in c("pooled")) {
         
-for (ind in 1:ifelse(region=="pooled",2,1)) {
-# 1 include ADCP and 2 does not
-    
     if(verbose) myprint(region)
     
-    trials=c("janssen_"%.%region%.%"_realbAb", "janssen_"%.%region%.%"_realPsV", if(ind==1) "janssen_"%.%region%.%"_realADCP") 
+    trials=c("janssen_"%.%region%.%"_real", "janssen_"%.%region%.%"_realADCP") 
         
     for (COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")) {
         if(verbose) myprint(COR)
@@ -92,7 +92,7 @@ for (ind in 1:ifelse(region=="pooled",2,1)) {
         tab.cat[,"overall.p.1"]=c(rbind(overall.p.1, NA,NA))
         tab.cat[,"overall.p.2"]=c(rbind(overall.p.2, NA,NA))
                 
-        mytex(tab.cont, file.name="CoR_univariable"%.%ifelse(ind==2,"NoADCP","")%.%"_svycoxph_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
+        mytex(tab.cont, file.name="CoR_univariable_svycoxph_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
             col.headers=paste0("\\hline\n 
                  \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
                  \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
@@ -100,7 +100,7 @@ for (ind in 1:ifelse(region=="pooled",2,1)) {
             ")
         )    
         
-        mytex(tab.cont.scaled, file.name="CoR_univariable"%.%ifelse(ind==2,"NoADCP","")%.%"_svycoxph_pretty_scaled_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
+        mytex(tab.cont.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
             col.headers=paste0("\\hline\n 
                  \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
                  \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
@@ -108,7 +108,7 @@ for (ind in 1:ifelse(region=="pooled",2,1)) {
             ")
         )    
         
-        mytex(tab.cat, file.name="CoR_univariable"%.%ifelse(ind==2,"NoADCP","")%.%"_svycoxph_cat_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
+        mytex(tab.cat, file.name="CoR_univariable_svycoxph_cat_pretty_ENSEMBLE_"%.%region%.%"_"%.%COR, align="c", include.colnames = F, save2input.only=T, input.foldername=here::here("output/meta"),
             col.headers=paste0("\\hline\n 
                  \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
                  \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***} & \\multicolumn{1}{c}{value $\\dagger$} & \\multicolumn{1}{c}{FWER} \\\\ 
@@ -128,7 +128,6 @@ for (ind in 1:ifelse(region=="pooled",2,1)) {
     
 }
     
-}
 
 
 
@@ -168,8 +167,6 @@ with(subset(dat.ense.1, ph2.D29start1==1), WeightedAUC(WeightedROC(-Day29bindSpi
 #0.55435
 with(subset(dat.ense.1, ph2.D29start1==1), WeightedAUC(WeightedROC(-Day29bindRBD, EventIndPrimary, weight = wt.D29start1)))
 #0.560554
-with(subset(dat.ense.1, ph2.D29start1id50==1), WeightedAUC(WeightedROC(-Day29pseudoneutid50, EventIndPrimary, weight = wt.D29start1id50)))
-#0.594511
 with(subset(dat.ense.1, ph2.D29start1ADCP==1), WeightedAUC(WeightedROC(-Day29ADCP, EventIndPrimary, weight = wt.D29start1ADCP)))
 #0.590071
 
@@ -242,7 +239,7 @@ tab.1=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + MinorityInd 
    
 
 # ENSEMBLE, pooled
-tab.2=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.vac.seroneg.id50, dat.ense.0, "Day29pseudoneutid50", t=66); tab.2
+tab.2=get.ve(Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region), dat.vac.seroneg.bAbID50, dat.ense.0, "Day29pseudoneutid50", t=66); tab.2
 #                0   1
 #  (-Inf,1.51] 601  76
 #  (1.51,2.01] 120   9
