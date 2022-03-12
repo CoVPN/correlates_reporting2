@@ -49,17 +49,18 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705" | study_name=="PREVENT19")  {
   
   #intcur2 <- paste0("Day 15-", 28+tpeaklag, " Cases")
-  
-  dat <- dat %>%
+dat = dat %>%
     mutate(cohort_event = factor(
       #ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= 13, "Day 2-14 Cases",
       #       ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) > 13 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= tpeaklag-1 + NumberdaysD1toD29, intcur2,
-                    ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D", tpeak)))==1 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D", tpeak))) >= tpeaklag, "Post-Peak Cases",
-                           ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & (!!as.name(paste0("EarlyendpointD", tpeak, ifelse(grepl("start1", COR), "start1",""))))==0, "Non-Cases", NA)),
+      ifelse(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1",""))) & Bserostatus==0 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D", tpeak)))==1 , "Post-Peak Cases",
+             ifelse(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1",""))) & Bserostatus==0 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & (!!as.name("AnyinfectionD1"))==0, "Non-Cases", NA)),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
     )
 } else {
+  # for COVE, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29, may replace it with AnyinfectionD1 later
+  
   dat <- dat %>%
     mutate(cohort_event = factor(
       ifelse(ph2.intercurrent.cases==1 & Bserostatus==0, "Intercurrent Cases",
@@ -269,9 +270,9 @@ dat.long$minority_label <-
 # Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
 # since it should only happen for D57-related figures.
 if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705" | study_name=="PREVENT19"){ # one timepoint study: ph2.tpeak
-  dat.long.cor.subset <- dat.long %>%
-    dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
-} else { # two timepoints study: ph2.tinterm
+  dat.long.cor.subset <- dat.long #%>%
+    #dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
+} else {# two timepoints study: ph2.tinterm
   dat.long.cor.subset <- dat.long %>%
     dplyr::filter(!!as.name(paste0("ph2.D", tinterm, ifelse(grepl("start1", COR), "start1","")))==1)
 }
