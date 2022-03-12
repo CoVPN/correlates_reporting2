@@ -401,7 +401,8 @@ ds <- ds %>%
                             !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
                             !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
                           Perprotocol==1 & 
-                            !!as.name(ifelse(length(timepoints)>1, paste0("EarlyendpointD",timepoints[length(timepoints)]), config.cor$Earlyendpoint))==0 & 
+                            # !!as.name(ifelse(length(timepoints)>1, paste0("EarlyendpointD",timepoints[length(timepoints)]), config.cor$Earlyendpoint))==0 & 
+                            AnyinfectionD1==0 & 
                             !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
                             EventIndPrimaryD1==0 ~ "Non-Cases"))
 
@@ -422,6 +423,7 @@ if (study_name %in% c("COVE", "MockCOVE")){
 strtm_cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE"), length(demo.stratum.ordered)/2, length(demo.stratum.ordered))
 
 tab_strtm <- ds %>% 
+  filter(!!as.name(config.cor$ph2)) %>% 
   group_by(demo.stratum.ordered, Arm, `Baseline SARS-CoV-2`) %>%
   summarise("Day {tpeak} Cases":=sum(Case=="Cases", na.rm=T), 
             `Non-Cases`=sum(Case=="Non-Cases", na.rm=T)) %>% 
