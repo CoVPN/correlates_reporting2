@@ -401,7 +401,8 @@ ds <- ds %>%
                             !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
                             !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
                           Perprotocol==1 & 
-                            !!as.name(ifelse(length(timepoints)>1, paste0("EarlyendpointD",timepoints[length(timepoints)]), config.cor$Earlyendpoint))==0 & 
+                            # !!as.name(ifelse(length(timepoints)>1, paste0("EarlyendpointD",timepoints[length(timepoints)]), config.cor$Earlyendpoint))==0 & 
+                            AnyinfectionD1==0 & 
                             !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
                             EventIndPrimaryD1==0 ~ "Non-Cases"))
 
