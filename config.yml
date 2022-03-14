@@ -96,9 +96,9 @@ prevent19: &prevent19
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
   data_raw_dir: novavax
   data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_with_riskscore.csv
-  assays: [bindSpike]
-  assay_labels: [Binding Antibody to Spike]
-  assay_labels_short: [Anti Spike IgG (BAU/ml)]
+  assays: [bindSpike, pseudoneutid50]
+  assay_labels: [Binding Antibody to Spike, PsV Neutralization 50% Titer]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   study_name: PREVENT19
   covariates_riskscore: ~.+ risk_score
   ve_ylim: [0,1]

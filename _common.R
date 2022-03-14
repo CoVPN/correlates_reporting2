@@ -292,9 +292,15 @@ if (config$is_ows_trial) {
         # data less than lloq is set to lloq/2 in the raw data
         llods["bindSpike"]=NA 
         lloqs["bindSpike"]=150.4*0.0090
-        pos.cutoffs["bindSpike"]=10.8424
+        pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
         uloqs["bindSpike"]=770464.6*0.0090
     
+        # data less than lod is set to lod/2
+        llods["pseudoneutid50"]=2.612  
+        lloqs["pseudoneutid50"]=2.7426  
+        pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
+        uloqs["pseudoneutid50"]=619.3052 
+        
     }
     
     # llox is for plotting and can be either llod or lloq depending on trials
@@ -586,14 +592,19 @@ ggsave_custom <- function(filename = default_name(plot),
 ############## Utility func
 
 get.range.cor=function(dat, assay, time) {
-    if(assay %in% c("bindSpike", "bindRBD")) {
-        ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(lloxs[c("bindSpike","bindRBD")]/2), na.rm=T)
-        ret[2]=(ret[2]) # round up
-    } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
-        ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
-        ret[2]=(ret[2]) # round up
+    if(assay %in% c("bindSpike", "bindRBD") & all(c("pseudoneutid50", "pseudoneutid80") %in% assays)) {
+        ret=range(dat[["Day"%.%time%.%"bindSpike"]], 
+                  dat[["Day"%.%time%.%"bindRBD"]], 
+                  log10(lloxs[c("bindSpike","bindRBD")]/2), na.rm=T)
+        
+    } else if(assay %in% c("pseudoneutid50", "pseudoneutid80") & all(c("pseudoneutid50", "pseudoneutid80") %in% assays)) {
+        ret=range(dat[["Day"%.%time%.%"pseudoneutid50"]], 
+                  dat[["Day"%.%time%.%"pseudoneutid80"]], 
+                  #log10(uloqs[c("pseudoneutid50","pseudoneutid80")]),
+                  log10(lloxs[c("pseudoneutid50","pseudoneutid80")]/2), na.rm=T) 
     } else {
-        ret=range(dat[["Day"%.%time%.%assay]], log10(lloxs[assay]/2), na.rm=T)        
+        ret=range(dat[["Day"%.%time%.%assay]], 
+        log10(lloxs[assay]/2), na.rm=T)        
     }
     delta=(ret[2]-ret[1])/20     
     c(ret[1]-delta, ret[2]+delta)
