@@ -112,7 +112,6 @@ prevent19: &prevent19
   
 janssen_trial: &janssen_trial
   <<: *ows_trial
-  llox_label: LLOQ 
   two_marker_timepoints: no
   timepoints: [29]
   times: [B, Day29, Delta29overB]
@@ -129,6 +128,7 @@ janssen_trial_real: &janssen_trial_real # binding Ab and ID50
   assays: [bindSpike, bindRBD, pseudoneutid50]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
+  llox_label: [LOD, LOD, LLOQ]
   primary_assays: [bindSpike, bindRBD, pseudoneutid50]
   study_name: ENSEMBLE
   num_boot_replicates: 1000
@@ -139,6 +139,7 @@ janssen_trial_realADCP: &janssen_trial_realADCP
   assays: [ADCP]
   assay_labels: [Phagocytic Score]
   assay_labels_short: [Phagocytic Score]
+  llox_label: LLOQ 
   primary_assays: [] # have it be empty if no multitesting adjustment should be done
   study_name: ENSEMBLE
   num_boot_replicates: 1000
@@ -216,6 +217,7 @@ janssen_trial_mock: &janssen_trial_mock
   <<: *janssen_trial
   data_cleaned: NA
   assays: [bindSpike, bindRBD]
+  llox_label: LOD 
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml)]
   study_name: MockENSEMBLE

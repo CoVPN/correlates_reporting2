@@ -38,7 +38,15 @@ for(opt in names(config)){
   eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
 }
 
-# correlates analyses-related config
+if(length(config$llox_label)==1) {
+    config$llox_label=rep(config$llox_label, length(config$assays))
+} else {
+    stopifnot(length(config$assays)==length(config$llox_label))
+}
+names(config$llox_label)=config$assays
+
+
+# COR-related config
 if (exists("COR")) {
     myprint(COR)
     # making sure we are inadvertently using the wrong COR
@@ -617,7 +625,7 @@ get.range.cor=function(dat, assay, time) {
     c(ret[1]-delta, ret[2]+delta)
 }
 
-draw.x.axis.cor=function(xlim, llox){
+draw.x.axis.cor=function(xlim, llox, llox.label){
         
     xx=seq(ceiling(xlim[1]), floor(xlim[2]))        
     if (is.na(llox)) {
@@ -627,7 +635,7 @@ draw.x.axis.cor=function(xlim, llox){
         }
     } else {
         # if llox is not NA
-        axis(1, at=log10(llox), labels=config$llox_label)
+        axis(1, at=log10(llox), labels=llox.label)
         for (x in xx[xx>log10(llox*1.8)]) {
             axis(1, at=x, labels= if(x>=3) bquote(10^.(x)) else 10^x)
         }
