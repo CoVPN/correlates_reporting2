@@ -21,11 +21,11 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
             # Lars quantiles so that to be consistent with his analyses 
             # every 5% to include s1 and s2 for sensitivity analyses
             report.assay.values(data[[marker.name]][data$EventIndPrimary==1], marker.name.to.assay(marker.name)), 
+            # 2.5% and 97.5% as the leftmost and rightmost points 
+            wtd.quantile(data[[marker.name]], data$wt, c(0.025,0.975)),
             # equally spaced values so that the curves look good  
             seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)]
         ))
-        # add 2.5% and 97.5% at the end
-        ss=c(ss, wtd.quantile(data[[marker.name]], data$wt, c(0.025,0.975)))
         f1=update(formula, as.formula(paste0("~.+",marker.name)))        
         tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
         fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
