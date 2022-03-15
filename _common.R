@@ -629,7 +629,7 @@ draw.x.axis.cor=function(xlim, llox){
         # if llox is not NA
         axis(1, at=log10(llox), labels=config$llox_label)
         for (x in xx[xx>log10(llox*1.8)]) {
-            axis(1, at=x, labels= ifelse (x>=3, bquote(10^.(x)), 10^x ))
+            axis(1, at=x, labels= if(x>=3) bquote(10^.(x)) else 10^x)
         }
     }
     
