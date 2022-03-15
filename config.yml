@@ -112,7 +112,7 @@ prevent19: &prevent19
   
 janssen_trial: &janssen_trial
   <<: *ows_trial
-  llox_label: loq
+  llox_label: LLOQ 
   two_marker_timepoints: no
   timepoints: [29]
   times: [B, Day29, Delta29overB]
