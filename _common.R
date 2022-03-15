@@ -269,16 +269,20 @@ if (config$is_ows_trial) {
     pos.cutoffs=sapply(tmp, function(x) unname(x["pos.cutoff"]))
     llods=sapply(tmp, function(x) unname(x["LLOD"]))
     lloqs=sapply(tmp, function(x) unname(x["LLOQ"]))
-    uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))    
-    
+    uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))        
+    # llox is for plotting and can be either llod or lloq depending on trials
+    lloxs=llods 
+
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         
         # data less than pos cutoff is set to pos.cutoff/2
         llods["bindSpike"]=NA 
+        lloqs["bindSpike"]=NA 
         uloqs["bindSpike"]=238.1165 
     
         # data less than pos cutoff is set to pos.cutoff/2
         llods["bindRBD"]=NA                 
+        lloqs["bindRBD"]=NA                 
         uloqs["bindRBD"]=172.5755    
                 
         # data less than lloq is set to lloq/2
@@ -286,6 +290,9 @@ if (config$is_ows_trial) {
         lloqs["pseudoneutid50"]=2.7426  
         pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         uloqs["pseudoneutid50"]=619.3052 
+        
+        lloxs=llods 
+        lloxs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         
     } else if(study_name=="PREVENT19") {
         
@@ -301,10 +308,10 @@ if (config$is_ows_trial) {
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
         uloqs["pseudoneutid50"]=619.3052 
         
+        lloxs=llods 
+        
     }
     
-    # llox is for plotting and can be either llod or lloq depending on trials
-    lloxs=llods 
     
 } else {
     # get uloqs and lloqs from config

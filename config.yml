@@ -50,10 +50,10 @@ ows_trial: &ows_trial
   forestplot_script: cor_coxph_forestplots_ows.R
   is_ows_trial: yes
   case_cohort: yes
-  llox_label: lod
 
 moderna_trial: &moderna_trial
   <<: *ows_trial
+  llox_label: lod
   two_marker_timepoints: yes
   timepoints: [29, 57]
   subset_variable: None
@@ -90,6 +90,7 @@ moderna_mock: &moderna_mock
 
 prevent19: &prevent19
   <<: *ows_trial
+  llox_label: lod
   two_marker_timepoints: no
   timepoints: [35]
   times: [B, Day35, Delta35overB]
@@ -111,6 +112,7 @@ prevent19: &prevent19
   
 janssen_trial: &janssen_trial
   <<: *ows_trial
+  llox_label: loq
   two_marker_timepoints: no
   timepoints: [29]
   times: [B, Day29, Delta29overB]
