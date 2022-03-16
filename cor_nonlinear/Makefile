@@ -16,7 +16,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janss
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_real janssen_pooled_realADCP janssen_na_real janssen_na_realADCP janssen_la_real janssen_la_realADCP janssen_sa_real janssen_sa_realADCP))
 	Rscript code/cor_nonlinear.R D29IncludeNotMolecConfirmed
 	Rscript code/cor_nonlinear.R D29IncludeNotMolecConfirmedstart1
-else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
+else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705, hvtn705V1V2))
 	Rscript code/cor_nonlinear.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/cor_nonlinear.R D35
