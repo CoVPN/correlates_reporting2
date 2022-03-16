@@ -34,16 +34,15 @@ if(!exists("COR")) {
 
 # TRIAL-related config
 config <- config::get(config = Sys.getenv("TRIAL"))
-for(opt in names(config)){
-  eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
-}
-
 if(length(config$llox_label)==1) {
     config$llox_label=rep(config$llox_label, length(config$assays))
 } else {
     stopifnot(length(config$assays)==length(config$llox_label))
 }
 names(config$llox_label)=config$assays
+for(opt in names(config)){
+  eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
+}
 
 
 # COR-related config
@@ -693,13 +692,13 @@ bootstrap.case.control.samples=function(dat.ph1, seed, delta.name="EventIndPrima
     
     # 1. resample dat.ph1 to get dat.b, but only take the cases 
     dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),]
-
+    
     # re-do resampling if the bootstrap dataset has too few samples in a cell in nn.ctrl.b
     while(TRUE) {   
         nn.ctrl.b=with(subset(dat.b, !delta), table(strata, ph2))
         if (min(nn.ctrl.b)<min.cell.size | ncol(nn.ctrl.b)<2) dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),] else break
     }
-
+    
     # take the case ptids
     case.ptids.b = dat.b$ptid[dat.b$delta==1]
     

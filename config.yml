@@ -13,7 +13,7 @@ hvtn705base: &hvtn705base
   timepoints: [210]
   subset_variable: None
   subset_value: All
-  llox_label: loq
+  llox_label: LLOQ
   times: [B, Day210]
   time_labels: [Day 1, Day 210]
   study_name: HVTN705
@@ -53,7 +53,7 @@ ows_trial: &ows_trial
 
 moderna_trial: &moderna_trial
   <<: *ows_trial
-  llox_label: lod
+  llox_label: LOD
   two_marker_timepoints: yes
   timepoints: [29, 57]
   subset_variable: None
@@ -90,7 +90,7 @@ moderna_mock: &moderna_mock
 
 prevent19: &prevent19
   <<: *ows_trial
-  llox_label: lod
+  llox_label: LOD
   two_marker_timepoints: no
   timepoints: [35]
   times: [B, Day35, Delta35overB]
