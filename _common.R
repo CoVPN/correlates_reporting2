@@ -34,11 +34,18 @@ if(!exists("COR")) {
 
 # TRIAL-related config
 config <- config::get(config = Sys.getenv("TRIAL"))
+if(length(config$llox_label)==1) {
+    config$llox_label=rep(config$llox_label, length(config$assays))
+} else {
+    stopifnot(length(config$assays)==length(config$llox_label))
+}
+names(config$llox_label)=config$assays
 for(opt in names(config)){
   eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
 }
 
-# correlates analyses-related config
+
+# COR-related config
 if (exists("COR")) {
     myprint(COR)
     # making sure we are inadvertently using the wrong COR
@@ -269,16 +276,20 @@ if (config$is_ows_trial) {
     pos.cutoffs=sapply(tmp, function(x) unname(x["pos.cutoff"]))
     llods=sapply(tmp, function(x) unname(x["LLOD"]))
     lloqs=sapply(tmp, function(x) unname(x["LLOQ"]))
-    uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))    
-    
+    uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))        
+    # llox is for plotting and can be either llod or lloq depending on trials
+    lloxs=llods 
+
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         
         # data less than pos cutoff is set to pos.cutoff/2
         llods["bindSpike"]=NA 
+        lloqs["bindSpike"]=NA 
         uloqs["bindSpike"]=238.1165 
     
         # data less than pos cutoff is set to pos.cutoff/2
         llods["bindRBD"]=NA                 
+        lloqs["bindRBD"]=NA                 
         uloqs["bindRBD"]=172.5755    
                 
         # data less than lloq is set to lloq/2
@@ -287,18 +298,27 @@ if (config$is_ows_trial) {
         pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         uloqs["pseudoneutid50"]=619.3052 
         
+        lloxs=llods 
+        lloxs["pseudoneutid50"]=lloqs["pseudoneutid50"]
+        
     } else if(study_name=="PREVENT19") {
         
         # data less than lloq is set to lloq/2 in the raw data
         llods["bindSpike"]=NA 
         lloqs["bindSpike"]=150.4*0.0090
-        pos.cutoffs["bindSpike"]=10.8424
+        pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
         uloqs["bindSpike"]=770464.6*0.0090
     
+        # data less than lod is set to lod/2
+        llods["pseudoneutid50"]=2.612  
+        lloqs["pseudoneutid50"]=2.7426  
+        pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
+        uloqs["pseudoneutid50"]=619.3052 
+        
+        lloxs=llods 
+        
     }
     
-    # llox is for plotting and can be either llod or lloq depending on trials
-    lloxs=llods 
     
 } else {
     # get uloqs and lloqs from config
@@ -586,33 +606,48 @@ ggsave_custom <- function(filename = default_name(plot),
 ############## Utility func
 
 get.range.cor=function(dat, assay, time) {
-    if(assay %in% c("bindSpike", "bindRBD")) {
-        ret=range(dat[["Day"%.%time%.%"bindSpike"]], dat[["Day"%.%time%.%"bindRBD"]], log10(lloxs[c("bindSpike","bindRBD")]/2), na.rm=T)
-        ret[2]=(ret[2]) # round up
-    } else if(assay %in% c("pseudoneutid50", "pseudoneutid80")) {
-        ret=range(dat[["Day"%.%time%.%assay]], log10(llods[c("pseudoneutid50","pseudoneutid80")]/2), log10(uloqs[c("pseudoneutid50","pseudoneutid80")]), na.rm=T)
-        ret[2]=(ret[2]) # round up
+    if(assay %in% c("bindSpike", "bindRBD") & all(c("pseudoneutid50", "pseudoneutid80") %in% assays)) {
+        ret=range(dat[["Day"%.%time%.%"bindSpike"]], 
+                  dat[["Day"%.%time%.%"bindRBD"]], 
+                  log10(lloxs[c("bindSpike","bindRBD")]/2), na.rm=T)
+        
+    } else if(assay %in% c("pseudoneutid50", "pseudoneutid80") & all(c("pseudoneutid50", "pseudoneutid80") %in% assays)) {
+        ret=range(dat[["Day"%.%time%.%"pseudoneutid50"]], 
+                  dat[["Day"%.%time%.%"pseudoneutid80"]], 
+                  #log10(uloqs[c("pseudoneutid50","pseudoneutid80")]),
+                  log10(lloxs[c("pseudoneutid50","pseudoneutid80")]/2), na.rm=T) 
     } else {
-        ret=range(dat[["Day"%.%time%.%assay]], log10(lloxs[assay]/2), na.rm=T)        
+        ret=range(dat[["Day"%.%time%.%assay]], 
+        log10(lloxs[assay]/2), na.rm=T)        
     }
     delta=(ret[2]-ret[1])/20     
     c(ret[1]-delta, ret[2]+delta)
 }
 
-draw.x.axis.cor=function(xlim, llox){
-    xx=seq(ceiling(xlim[1]), floor(xlim[2]))
+draw.x.axis.cor=function(xlim, llox, llox.label){
+        
+    xx=seq(ceiling(xlim[1]), floor(xlim[2]))        
     if (is.na(llox)) {
-        for (x in xx) axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )    
+        # if llox is NA
+        for (x in xx) {
+            axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )    
+        }
     } else {
-        for (x in xx) if (x>log10(llox*1.8)) axis(1, at=x, labels=if (log10(llox)==x) "lod" else if (x>=3) bquote(10^.(x)) else 10^x )    
-        axis(1, at=log10(llox), labels=config$llox_label)
+        # if llox is not NA
+        axis(1, at=log10(llox), labels=llox.label)
+        for (x in xx[xx>log10(llox*1.8)]) {
+            axis(1, at=x, labels= if(x>=3) bquote(10^.(x)) else 10^x)
+        }
     }
+    
+    # add e.g. 30 between 10 and 100
     if (length(xx)<=3) {
         for (i in 2:length(xx)) {
             x=xx[i-1]
             axis(1, at=x+log10(3), labels=if (x>=3) bquote(3%*%10^.(x)) else 3*10^x )
         }
     }
+    
 }
 
 ##### Copy of draw.x.axis.cor but returns the x-axis ticks and labels
@@ -657,13 +692,13 @@ bootstrap.case.control.samples=function(dat.ph1, seed, delta.name="EventIndPrima
     
     # 1. resample dat.ph1 to get dat.b, but only take the cases 
     dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),]
-
+    
     # re-do resampling if the bootstrap dataset has too few samples in a cell in nn.ctrl.b
     while(TRUE) {   
         nn.ctrl.b=with(subset(dat.b, !delta), table(strata, ph2))
         if (min(nn.ctrl.b)<min.cell.size | ncol(nn.ctrl.b)<2) dat.b=dat.tmp[sample.int(nrow(dat.tmp), r=TRUE),] else break
     }
-
+    
     # take the case ptids
     case.ptids.b = dat.b$ptid[dat.b$delta==1]
     

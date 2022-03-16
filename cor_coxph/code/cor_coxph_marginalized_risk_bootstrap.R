@@ -7,7 +7,7 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-# type=1; formula=form.0; marker.name="Day"%.%tpeak%.%a; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
+# type=1; formula=form.0; a=assays[1]; marker.name="Day"%.%tpeak%.%a; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
     
     # store the current rng state 
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -17,11 +17,15 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
     
     if (type==1) {
     # conditional on S=s (quantitative)
-        #ss contains 
-        ## lars quantiles so that to be consistent with his analyses + every 5% to include s1 and s2 for sensitivity analyses
-        ## equally spaced values so that the curves look good  
-        ss=sort(c(report.assay.values(data[[marker.name]][data$EventIndPrimary==1], marker.name.to.assay(marker.name)), 
-                  seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)]))
+        ss=sort(c(
+            # Lars quantiles so that to be consistent with his analyses 
+            # every 5% to include s1 and s2 for sensitivity analyses
+            report.assay.values(data[[marker.name]][data$EventIndPrimary==1], marker.name.to.assay(marker.name)), 
+            # 2.5% and 97.5% as the leftmost and rightmost points 
+            wtd.quantile(data[[marker.name]], data$wt, c(0.025,0.975)),
+            # equally spaced values so that the curves look good  
+            seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)]
+        ))
         f1=update(formula, as.formula(paste0("~.+",marker.name)))        
         tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
         fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
