@@ -71,6 +71,13 @@ rv=list()
 rv$marker.cutpoints=marker.cutpoints
 
 
+###################################################################################################
+# estimate overall VE in the placebo and vaccine arms
+###################################################################################################
+
+source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
+
+if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 
 ###################################################################################################
 # run PH models
@@ -115,15 +122,13 @@ if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
 
 
 ###################################################################################################
-# draw marginalized risk curves
+# marginalized risk and controlled VE
 ###################################################################################################
     
 # load ylims.cor[[1]] from D29 analyses, which is a list of two: 1 with placebo lines, 2 without placebo lines.
 tmp=paste0(here::here(), paste0("/output/", attr(config,"config"), "/", COR, "/ylims.cor.", study_name, ".Rdata"))
-if (file.exists(tmp)) load(tmp)
-# if this does not exist, the code will find alternative ylim
+if (file.exists(tmp)) load(tmp) # if it does not exist, the code will find alternative ylim
 
-source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
 source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
 source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
 if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_real")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
