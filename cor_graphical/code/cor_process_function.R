@@ -48,7 +48,7 @@ getResponder <- function(data,
         data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
       }
       
-      if (!is.na(pos.cutoffs[j])) {
+      if (!is.na(pos.cutoffs[j]) & grepl("bind", j)) {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
         data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
       } else {
