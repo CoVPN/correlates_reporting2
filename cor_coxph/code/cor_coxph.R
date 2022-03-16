@@ -81,8 +81,18 @@ design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subse
 
 source(here::here("code", "cor_coxph_ph.R"))
 
+# unit testing of coxph results
+if (Sys.getenv("TRIAL") == "janssen_pooled_real" & COR=="D29IncludeNotMolecConfirmedstart1") {
+    tmp.1=c(rv$tab.1[,4], rv$tab.2[,"overall.p.0"])
+    tmp.2=c("0.162","0.079","0.006",      "0.498","   ","   ","0.162","   ","   ","0.003","   ","   ")
+    assertthat::assert_that(
+        all(tmp.1==tmp.2),
+        msg = "failed janssen_pooled_real unit testing")    
+    print("Passed janssen_pooled_real unit testing")    
+}
 
-# optional forest plots
+
+# forest plots
 if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
@@ -97,8 +107,8 @@ if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
         }
         assertthat::assert_that(
             max(abs(tmp.1-tmp.2)/abs(tmp.2))<1e-5,
-            msg = "failed sanity check")    
-        print("Passed sanity check")    
+            msg = "failed MockCOVE unit testing")    
+        print("Passed MockCOVE unit testing")    
     }
 }
 
