@@ -120,7 +120,7 @@ tlf <-
                         "Baseline SARS-CoV-2 Negative Placebo Recipients" = 8),
       col1="1cm"))
     
-cutoff.name <- config$llox_label
+# cutoff.name <- config$llox_label
 
 timepoints <- config$timepoints
 
@@ -258,7 +258,7 @@ if(study_name %in% c("ENSEMBLE", "MockENSEMBLE")){
 
 # Step2: Responders
 # Post baseline visits
-ds <- getResponder(ds_s, cutoff.name=cutoff.name, times=grep("Day", times, value=T), 
+ds <- getResponder(ds_s, times=grep("Day", times, value=T), 
                    assays=assays, pos.cutoffs = pos.cutoffs)
 
 subgrp <- c(
