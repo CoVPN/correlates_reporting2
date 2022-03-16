@@ -56,7 +56,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
               risks$marker<=wtd.quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], dat.vac.seroneg$wt, 1-2.5/100)
         plot(risks$marker[shown], risks$prob[shown], xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, 
             type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")    
-        draw.x.axis.cor(xlim, lloxs[a])
+        draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
             
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)
@@ -199,7 +199,7 @@ for (eq.geq in 1:4) {
                 axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
             }
             # x axis
-            draw.x.axis.cor(xlim, lloxs[a])
+            draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
             
         
             # overall CVE
