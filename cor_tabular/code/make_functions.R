@@ -15,7 +15,7 @@
 #' @return Response calls and fold-rise indicator for \code{bl}: \emph{bl}Resp,
 #'  \emph{bl}FR\emph{folds}
 getResponder <- function(data,
-                         cutoff.name, 
+                         # cutoff.name,
                          times=times, 
                          assays=assays, 
                          folds=c(2, 4),
@@ -23,31 +23,33 @@ getResponder <- function(data,
                          responderFR = 4,
                          pos.cutoffs = pos.cutoffs) {
   
-  cutoff <- get(paste0("l", cutoff.name, "s"))
+  # cutoff <- get(paste0("l", cutoff.name, "s"))
   for (i in times){
     for (j in assays){
       post <- paste0(i, j)
       bl <- paste0("B", j)
       delta <- paste0("Delta", gsub("Day", "", i), "overB", j)
+      cutoff <- pos.cutoffs[j]
       
       data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
       data[, post] <- pmin(data[, post], log10(uloqs[j]))
-      data[, delta] <- ifelse(10^data[, post] < cutoff[j], log10(cutoff[j]/2), data[, post])-ifelse(10^data[, bl] < cutoff[j], log10(cutoff[j]/2), data[, bl])
+      data[, delta] <- ifelse(10^data[, post] < cutoff, log10(cutoff/2), data[, post])-ifelse(10^data[, bl] < cutoff, log10(cutoff/2), data[, bl])
       
-      for (k in folds){
-        data[, paste0(post, k, "l", cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
-      }
+      # for (k in folds){
+        # data[, paste0(post, k, "l", cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff)
+      # }
       
       for (k in grtns){
         data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
       }
       
-      if (!is.na(pos.cutoffs[j])) {
-        data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
+      # if (!is.na(pos.cutoffs[j])) {
+      if(grepl("bind", j)){
+        data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(cutoff))
       } else {
       data[, paste0(post, "Resp")] <- as.numeric(
-        (data[, bl] < log10(cutoff[j]) & data[, post] > log10(cutoff[j])) |
-          (data[, bl] >= log10(cutoff[j]) & data[, paste0(post, "FR", responderFR)] == 1))
+        (data[, bl] < log10(cutoff) & data[, post] > log10(cutoff)) |
+          (data[, bl] >= log10(cutoff) & data[, paste0(post, "FR", responderFR)] == 1))
       }
     }
   }
