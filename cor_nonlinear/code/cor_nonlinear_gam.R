@@ -40,7 +40,7 @@ marginalized.risk.gam.boot=function(formula, marker.name, type=1, data, B, ci.ty
         } else {
             dat.b = bootstrap.case.control.samples(data, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2") 
         }        
-
+    
         dat.b.ph2=subset(dat.b, ph2==1)
                 
         if(type==1) {
@@ -131,7 +131,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         plot(prob~marker, risks, xlab=labels.assays.short[a]%.%ifelse(ii==1," (=s)"," (>=s)"), xlim=xlim, 
             ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")
     
-        draw.x.axis.cor(xlim, lloxs[a])
+        draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
     
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)
