@@ -152,8 +152,8 @@ for (t in unique(gsub("Day", "", times[!grepl("Delta|B", times)]))) {
 }
 
 # age threshold
-if (study_name=="COVE" | study_name=="MockCOVE") {age_thres=65; younger_age="Age < 65"; older_age="Age >= 65"
-} else {age_thres=60; younger_age="Age 18 - 59"; older_age="Age >= 60"}
+if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {age_thres=60; younger_age="Age 18 - 59"; older_age="Age >= 60"
+} else {age_thres=65; younger_age="Age < 65"; older_age="Age >= 65"}
 dat.long$age.geq.65 = as.integer(dat.long$Age >= age_thres)
 
 # # matrix to decide the sampling strata
