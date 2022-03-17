@@ -48,7 +48,7 @@ getResponder <- function(data,
         data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
       }
       
-      if (!is.na(pos.cutoffs[j])) {
+      if (!is.na(pos.cutoffs[j]) & grepl("bind", j)) {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
         data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
       } else {
@@ -76,10 +76,10 @@ get_resp_by_group <- function(dat=dat, group=group){
     group_by_at(group) %>%
     mutate(counts = n(),
            counts_severe = sum(severe, na.rm=T),
-           num = round(sum(response * ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)), na.rm=T), 1), # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
-           num_severe = round(sum(response * ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)) & severe==1, na.rm=T), 1),
-           denom = round(sum(ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)), na.rm=T), 1),
-           denom_severe = round(sum(ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)) & severe==1, na.rm=T), 1),
+           num = sum(response * ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)), na.rm=T), # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
+           num_severe = sum(response * ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)) & severe==1, na.rm=T),
+           denom = sum(ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)), na.rm=T),
+           denom_severe = sum(ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)) & severe==1, na.rm=T),
            N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
            N_RespRate_severe = paste0(counts_severe, "\n",round(num_severe/denom_severe*100, 1),"%"),
            min = min(value),
