@@ -342,7 +342,7 @@ for (a in assays) {
 #    f2=update(form.0, as.formula(paste0(marker.name,"~.")))
 #    fit.s=nnet::multinom(f2, dat.vac.seroneg, weights=dat.vac.seroneg$wt) 
         
-    risks.all.ter[[a]]=if(length(fit.risk)==1) NA else marginalized.risk(fit.risk, marker.name, subset(dat.vac.seroneg,ph2==1), categorical.s=T)
+    risks.all.ter[[a]]=if(length(fit.risk)==1) NA else marginalized.risk(fit.risk, marker.name, subset(dat.vac.seroneg,ph2==1), weights=subset(dat.vac.seroneg,ph2==1,wt,drop=T), categorical.s=T)
 }
 #rv$marginalized.risk.over.time=list()
 #for (a in assays) rv$marginalized.risk.over.time[[a]] = risks.all.ter[[a]]

@@ -71,6 +71,7 @@ rv=list()
 rv$marker.cutpoints=marker.cutpoints
 
 
+
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
 ###################################################################################################
@@ -78,6 +79,10 @@ rv$marker.cutpoints=marker.cutpoints
 source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
 
 if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
+
+
+
+
 
 ###################################################################################################
 # run PH models
