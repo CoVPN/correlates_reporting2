@@ -2,7 +2,9 @@
   \center
   \includegraphics[width=4.5in]{output/meta/meta_controlled_ve_curveslog_3_`r a`.pdf}
   \includegraphics[width=4.5in]{output/meta/meta_controlled_ve_curves_3_`r a`.pdf}
-  \caption{Controlled VE curves. ENSEMBLE: starting 1 days post Day 29; pooled: ending 54 days; US: ending 53 days; LA: ending 48 days; SA: ending 40 days.}
+  \caption{Controlled VE curves. 
+  ENSEMBLE: starting 1 days post Day 29; pooled: ending 54 days; US: ending 53 days; LA: ending 48 days; SA: ending 40 days. 
+  }
 \end{figure}
 \clearpage
 

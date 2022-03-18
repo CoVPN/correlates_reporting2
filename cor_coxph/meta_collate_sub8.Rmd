@@ -2,6 +2,8 @@
   \center
   \includegraphics[width=4.5in]{output/meta/meta_controlled_ve_curveslog_8_`r a`.pdf}
   \includegraphics[width=4.5in]{output/meta/meta_controlled_ve_curves_8_`r a`.pdf}
-  \caption{Controlled VE curves. COVE: starting 7 days and ending 100 days post Day 57. ENSEMBLE: starting 1 days post Day 29; pooled: US: ending 54 days; ending 53 days; LA: ending 48 days; SA: ending 40 days. PREVENT-19: starting 7 days post Day 35.}
+  \caption{Controlled VE curves. COVE: starting 7 days and ending 100 days post Day 57. 
+  ENSEMBLE: starting 1 days post Day 29; pooled: ending 54 days; US: ending 53 days; LA: ending 48 days; SA: ending 40 days. 
+  PREVENT-19: starting 7 days post Day 35.}
 \end{figure}
 \clearpage
