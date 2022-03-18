@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_sa_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
