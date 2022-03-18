@@ -140,7 +140,13 @@ if (exists("COR")) {
         
         # followup time for the last case in ph2 in vaccine arm
         if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        if (startsWith(attr(config, "config"), "janssen_la_real")) tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027
+        if (startsWith(attr(config, "config"), "janssen_na_real")) {
+            tfinal.tpeak=53
+        } else if (startsWith(attr(config, "config"), "janssen_la_real")) {
+            tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027
+        } else if (startsWith(attr(config, "config"), "janssen_sa_real")) {
+            tfinal.tpeak=40
+        }
         
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
         prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
