@@ -25,16 +25,16 @@ This section contains results from the `r info`.
 ```{r, results = "asis"}
 here::i_am("cop_mediation/report_sub.Rmd")
 if(config$study_name_code == "ENSEMBLE"){
-  bind_result <- readRDS(here::here("cop_mediation", "output",
+  full_result <- readRDS(here::here("cop_mediation", "output",
     paste0("full_result_janssen_pooled_real_", COR, ".rds")
   ))
   # adcp_result <- readRDS(here::here("cop_mediation", "output",
   #   paste0("full_result_janssen_pooled_realADCP_", COR, ".rds")
   # ))
-  psv_result <- readRDS(here::here("cop_mediation", "output",
-    paste0("full_result_janssen_pooled_realPsV_", COR, ".rds")
-  ))
-  full_result <- rbind(bind_result, psv_result) #, adcp_result)
+  # psv_result <- readRDS(here::here("cop_mediation", "output",
+  #   paste0("full_result_janssen_pooled_realPsV_", COR, ".rds")
+  # ))
+  # full_result <- rbind(bind_result, psv_result) #, adcp_result)
 }else if(config$study_name_code == "COVE"){
   full_result <- readRDS(here::here("cop_mediation", "output",
     paste0("full_result_moderna_real_", COR, ".rds")
