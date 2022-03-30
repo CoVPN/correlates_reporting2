@@ -651,3 +651,4 @@ cor_coxph/output/janssen_pooled_realADCP/D29IncludeNotMolecConfirmedstart1/ylims
 cor_coxph/output/janssen_pooled_realPsV/D29IncludeNotMolecConfirmed/coxph_slopes.Rdata
 cor_coxph/output/janssen_pooled_realPsV/D29IncludeNotMolecConfirmedstart1/coxph_slopes.Rdata
 cor_surrogates/output/*.csv
+cor_surrogates/code/test/*

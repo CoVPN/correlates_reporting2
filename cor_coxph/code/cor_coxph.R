@@ -1,5 +1,6 @@
-#Sys.setenv(TRIAL = "janssen_pooled_realPsV"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_sa_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
+#Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -72,6 +73,18 @@ rv$marker.cutpoints=marker.cutpoints
 
 
 ###################################################################################################
+# estimate overall VE in the placebo and vaccine arms
+###################################################################################################
+
+source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
+
+if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
+
+
+
+
+
+###################################################################################################
 # run PH models
 ###################################################################################################
 
@@ -80,7 +93,18 @@ design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subse
 
 source(here::here("code", "cor_coxph_ph.R"))
 
-# optional forest plots
+# unit testing of coxph results
+if (Sys.getenv("TRIAL") == "janssen_pooled_real" & COR=="D29IncludeNotMolecConfirmedstart1") {
+    tmp.1=c(rv$tab.1[,4], rv$tab.2[,"overall.p.0"])
+    tmp.2=c("0.162","0.079","0.006",      "0.498","   ","   ","0.162","   ","   ","0.003","   ","   ")
+    assertthat::assert_that(
+        all(tmp.1==tmp.2),
+        msg = "failed janssen_pooled_real unit testing")    
+    print("Passed janssen_pooled_real unit testing")    
+}
+
+
+# forest plots
 if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
@@ -89,31 +113,30 @@ if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
     if (study_name == "MockCOVE") {
         tmp.1=c(sapply(rv$fr.2[-1], function (x) x[c("HR","p.value"),1])) # concatList(tmp.1, ", ")
         if (tpeak=="29") {
-            tmp.2=c(2.19803e-01,3.42813e-06,4.00791e-01,1.55780e-03,2.64497e-01,2.90077e-04,2.52391e-01,3.38292e-04,3.68861e-01,6.24978e-03)
+            tmp.2=c(2.19803e-01,3.42813e-06,4.00791e-01,1.55780e-03,2.64497e-01,2.90077e-04,2.52391e-01,3.38292e-04,3.11841e-01,1.09284e-03)
         } else if (tpeak=="57") {
-            tmp.2=c(1.17284e-01,4.73761e-11,3.91017e-01,7.49144e-04,2.84943e-01,1.36601e-05,2.44480e-01,9.03454e-06,2.77729e-01,8.84152e-06)
+            tmp.2=c(1.17284e-01,4.73761e-11,3.91017e-01,7.49144e-04,2.84943e-01,1.36601e-05,2.44480e-01,9.03454e-06,2.70036e-01,9.12665e-06)
         }
         assertthat::assert_that(
             max(abs(tmp.1-tmp.2)/abs(tmp.2))<1e-5,
-            msg = "failed sanity check")    
-        print("Passed sanity check")    
+            msg = "failed MockCOVE unit testing")    
+        print("Passed MockCOVE unit testing")    
     }
 }
 
 
 
 ###################################################################################################
-# draw marginalized risk curves
+# marginalized risk and controlled VE
 ###################################################################################################
     
 # load ylims.cor[[1]] from D29 analyses, which is a list of two: 1 with placebo lines, 2 without placebo lines.
 tmp=paste0(here::here(), paste0("/output/", attr(config,"config"), "/", COR, "/ylims.cor.", study_name, ".Rdata"))
-if (file.exists(tmp)) load(tmp)
-# if this does not exist, the code will find alternative ylim
+if (file.exists(tmp)) load(tmp) # if it does not exist, the code will find alternative ylim
 
-source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
 source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
 source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
+if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_real")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
 
 
 

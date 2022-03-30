@@ -28,11 +28,13 @@ conflict_prefer("summarise", "dplyr")
 source(here("code", "utils.R"))
 method <- "method.CC_nloglik" # since SuperLearner relies on this to be in GlobalEnv
 ggplot2::theme_set(theme_cowplot())
+load(paste0("output/", "objects_for_running_SL.rda"))
 
 # read in the results; note that createRDAfiles_fromSLobjects has to be run prior to this
 if (study_name %in% c("COVE", "MockCOVE")) {
   cvaucs_vacc <- readRDS(file = here::here("output", "cvaucs_vacc_EventIndPrimaryD57.rds"))
-  vim_estimates <- readRDS(file = here::here("output", "vim_estimates.rds")) 
+  vim_estimates <- readRDS(file = here::here("output", "vim_estimates.rds"))  %>%
+    mutate(group = ifelse(variable_set %in% c("2_bAbSpike_D57", "3_bAbRBD_D57", "13_bAbSpike_D29"), TRUE, group))
 }
 if (study_name == "HVTN705") {
   cvaucs_vacc <- readRDS(file = here::here("output", "cvaucs_vacc_EventIndPrimaryD210.rds"))
@@ -172,7 +174,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 # All Superlearners
 learner.choice = "SL"
 png(file = here("figs", paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
-top_learner <- make_forest_plot_SL_allsets(cvaucs_vacc, learner.choice)
+top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc, learner.choice)
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
 
@@ -212,7 +214,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
     cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
   }
 
-  pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2)
+  pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2, markerDAT = NULL)
   # #Take average of predictions from the 10 random seeds
   # pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2) %>% rename(pred1 = pred) %>%
   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[2]], cvaucDAT = top2) %>% select(pred) %>% rename(pred2 = pred))  %>%
@@ -269,6 +271,56 @@ cvaucs_vacc %>% arrange(-AUC) %>%
   select(varset, AUCstr) %>%
   write.csv(here("output", "DiscreteSLperformance_allvarsets.csv"))
 
+# # Predicted probability of COVID-19 vs antibody marker (x-axis)
+# marker_cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
+#   filter(file %in% c(paste0("CVSLaucs_vacc_EventIndPrimaryD57_", varset_names, ".rds"))) %>%
+#   filter(!file %in% cvaucs_vacc$file)
+# 
+# for(i in 1:length(individualMarkers)) {
+#   varMarker = marker_cvaucs_vacc %>% filter(file == paste0("CVSLaucs_vacc_EventIndPrimaryD57_", individualMarkers[i], ".rds"))
+#   top2 <- bind_rows(
+#     varMarker %>%
+#       arrange(-AUC) %>%
+#       filter(!Learner %in% c("SL", "Discrete SL")) %>%
+#       dplyr::slice(1:2),
+#     varMarker %>%
+#       filter(Learner == "SL"),
+#     varMarker %>%
+#       filter(Learner == "Discrete SL")
+#   ) %>%
+#     mutate(LearnerScreen = ifelse(Learner == "SL", "Super Learner",
+#                                   ifelse(Learner == "Discrete SL", Learner,
+#                                          paste0(Learner, "_", Screen_fromRun))))
+#   
+#   # Get cvsl fit and extract cv predictions
+#   if(study_name %in% c("COVE", "MockCOVE")){
+#     cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_EventIndPrimaryD57_", individualMarkers[i], ".rds")))
+#   }
+#   
+#   pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2, markerDAT = dat.ph2 %>% select(individualMarkers[i]))
+#   # plot 
+#   options(bitmapType = "cairo")
+#   png(file = here("figs", paste0("marker_predProb_", individualMarkers[i], ".png")),
+#       width = 1000, height = 1000)
+#   xMarker = dat.ph2 %>% pull(individualMarkers[i])
+#   vecNum = match(str_split(individualMarkers[i], paste0(0:9, collapse = "|"))[[1]][3], assays)
+#   xlab = assay_labels_short[vecNum]
+#   titlelab = paste0(assay_labels[vecNum], "\n", "Day ", gsub("...([0-9]+).*$", "\\1", individualMarkers[i]))
+#   xdat = 
+#   print(pred %>% 
+#           ggplot(aes(x=dat.ph2 %>% select(individualMarkers[i]), y=pred)) +
+#           facet_wrap(~algo, ncol = 2, scales = "free") +
+#           geom_point(size=2, shape=23) +
+#           xlim(floor(min(dat.ph2 %>% pull(individualMarkers[i]))), ceiling(max(dat.ph2 %>% pull(individualMarkers[i])))) +
+#           labs(y = "Predicted probability of COVID-19 disease", 
+#                x = xlab,
+#                title = titlelab) +
+#           scale_x_log10(limits=c(10^0, 10^7), breaks=10^(0:7)))
+#   dev.off()
+# }
+# 
+
+
 
 # Variable importance forest plots ---------------------------------------------
 # save off all variable importance estimates as a table
@@ -280,7 +332,6 @@ vim_estimates %>%
   filter(quantity == "Predictiveness") %>%
   #select(-group) %>%
   write.csv(here("output", "vim_predictiveness_estimates.csv"))
-
 
 num_digits <- 3
 plot_vim_init <- vim_estimates %>%

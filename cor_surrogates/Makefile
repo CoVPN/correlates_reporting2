@@ -6,8 +6,8 @@ clean:
 	rm -f output/*
 	rm -f figs/*
 
-run_cvsl_varsets12:
-	Rscript code/run_cvsl_varsets.R D57 12
+run_cvsl_varsets:
+	nohup Rscript code/run_cvsl_varsets.R D57 1 &
 
 get_vimp:
 	Rscript code/get_vimp.R

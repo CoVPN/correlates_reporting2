@@ -18,7 +18,7 @@ digits.risk=4
 
 
 ###################################################################################################
-# marginalized risk curves for continuous markers
+# COR: marginalized risk curves for continuous markers
     
 for (eq.geq in 1:2) {  # 1 conditional on s,   2 is conditional on S>=s
 for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
@@ -51,9 +51,12 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         
         ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))
         
-        xlim=get.range.cor(dat.vac.seroneg, a, tpeak) #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95), na.rm=T) 
-        plot(prob~marker, risks, xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")    
-        draw.x.axis.cor(xlim, lloxs[a])
+        xlim=get.range.cor(dat.vac.seroneg, a, tpeak) 
+        shown=risks$marker>=ifelse(study_name=="COVE",log10(10),wtd.quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], dat.vac.seroneg$wt, 2.5/100)) & 
+              risks$marker<=wtd.quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], dat.vac.seroneg$wt, 1-2.5/100)
+        plot(risks$marker[shown], risks$prob[shown], xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, 
+            type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")    
+        draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
             
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)
@@ -61,9 +64,9 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         # risks
         if (eq.geq==1) {
             abline(h=prev.vacc, col="gray", lty=c(1,3,3), lwd=lwd)
-            lines(risks$marker, risks$prob, lwd=lwd)
-            lines(risks$marker, risks$lb,   lwd=lwd, lty=3)
-            lines(risks$marker, risks$ub,   lwd=lwd, lty=3)    
+            lines(risks$marker[shown], risks$prob[shown], lwd=lwd)
+            lines(risks$marker[shown], risks$lb[shown],   lwd=lwd, lty=3)
+            lines(risks$marker[shown], risks$ub[shown],   lwd=lwd, lty=3)    
         } else {
             abline(h=prev.vacc[1], col="gray", lty=c(1), lwd=lwd)
             lines(risks$marker[ncases>=5], risks$prob[ncases>=5], lwd=lwd)
@@ -103,10 +106,10 @@ save(ylims.cor, file=paste0(save.results.to, "ylims.cor."%.%study_name%.%".Rdata
 risks.all=get("risks.all.1")
 for (a in assays) {
     risks=risks.all[[a]]
-    #pick.out=names(risks$marker)!=""
-    pick.out=rep(T, length(risks$marker))
-    tmp=10**risks$marker[pick.out]; tmp=c(round(tmp[1],1), round(tmp[-1]))
-    out=with(risks, cbind("s"=tmp, "Estimate"=paste0(formatDouble(prob[pick.out],digits.risk), " (", formatDouble(lb[pick.out],digits.risk), ",", formatDouble(ub[pick.out],digits.risk), ")")))
+    table.order=which(names(risks$marker) %in% c(" 2.5%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
+    tmp=10**risks$marker[table.order]
+    tmp=ifelse(tmp<100, signif(tmp,3), round(tmp))
+    out=with(risks, cbind("s"=tmp, "Estimate"=paste0(formatDouble(prob[table.order],digits.risk), " (", formatDouble(lb[table.order],digits.risk), ",", formatDouble(ub[table.order],digits.risk), ")")))
     while (nrow(out)%%4!=0) out=rbind(out, c("s"="", "Estimate"=""))
     tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])
     mytex(tab, file.name=paste0(a, "_marginalized_risks_eq", "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
@@ -128,18 +131,20 @@ for (a in assays) {
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on -log(1-) scale
 for (eq.geq in 1:4) {  
-# eq.geq=3; a=assays[1]
+# eq.geq=1; a=assays[3]
 
     outs=lapply (assays, function(a) {        
+        
         tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp=4
+        
         mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp,"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
  
             lwd=2.5
             par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
             
-            risks=get("risks.all."%.%ifelse(eq.geq==2,2,1))[[a]]        
-            #pick.out=names(risks$marker)!=""
-            pick.out=rep(T, length(risks$marker))
+            # load risks
+            risks=get("risks.all."%.%ifelse(eq.geq==2,2,1))[[a]]   
+            table.order=which(names(risks$marker) %in% c(" 2.5%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
         
             #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95),na.rm=T)
             xlim=get.range.cor(dat.vac.seroneg, a, tpeak)
@@ -164,15 +169,19 @@ for (eq.geq in 1:4) {
             }
             
             ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))        
-            .subset=if(eq.geq!=2) rep(T, length(risks$marker)) else ncases>=5
+            .subset=if(eq.geq!=2) {
+                risks$marker>=ifelse(study_name=="COVE",log10(10),wtd.quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], dat.vac.seroneg$wt, 2.5/100)) & 
+                risks$marker<=wtd.quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], dat.vac.seroneg$wt, 1-2.5/100)
+            } else ncases>=5
+            
             
             # CVE with sensitivity analysis
             est = 1 - risks$prob*Bias/res.plac.cont["est"]
             boot = 1 - t( t(risks$boot*Bias)/res.plac.cont[2:(1+ncol(risks$boot))] ) # res.plac.cont may have more bootstrap replicates than risks$boot
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))
             # for table
-            tmp=10**risks$marker[pick.out]; tmp=c(round(tmp[1],1), round(tmp[-1]))
-            ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[pick.out],digits.risk), " (", formatDouble(ci.band[1,pick.out],digits.risk), ",", formatDouble(ci.band[2,pick.out],digits.risk), ")"))
+            tmp=10**risks$marker[table.order];     tmp=ifelse(tmp<100, signif(tmp,3), round(tmp))
+            ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[table.order],digits.risk), " (", formatDouble(ci.band[1,table.order],digits.risk), ",", formatDouble(ci.band[2,table.order],digits.risk), ")"))
     
             mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), 
                 col=ifelse(eq.geq==1,"red","white"), # white is no plot
@@ -189,29 +198,29 @@ for (eq.geq in 1:4) {
                 yat=c(seq(0,.90,by=.1),.95)
                 axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
             }
-
+            # x axis
+            draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
+            
         
-            # overall controlled VE
+            # overall CVE
             abline(h=if(eq.geq==4) -log(1-overall.ve) else overall.ve, col="gray", lwd=2, lty=c(1,3,3))
             #text(x=par("usr")[1], y=overall.ve[1]+(overall.ve[1]-overall.ve[2])/2,     "overall VE "%.%round(overall.ve[1]*100)%.%"%", adj=0)
         
-            # x axis
-            draw.x.axis.cor(xlim, lloxs[a])
                 
             # CVE
-            est = 1 - risks$prob/res.plac.cont["est"]
-            boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
+            est = 1 - risks$prob/res.plac.cont["est"]; boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )
+            #est = 1 - (risks$prob+0.00227)/res.plac.cont["est"]; boot = 1 - t( t(risks$boot+0.00227)/res.plac.cont[2:(1+ncol(risks$boot))] )
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))  
             y= t(rbind(est, ci.band))[.subset,]
             if(eq.geq==4) y=-log(1-y)
             mymatplot(risks$marker[.subset], y, type="l", lty=c(1,2,2), col=if(eq.geq!=1) "black" else "pink", lwd=lwd, make.legend=F, add=T)
-            if (config$is_ows_trial) {
-                # find marker values under specific VE
-                # if all report.ve.levels are out of range, tmp will be as long as the rows in ret
-                tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
-                tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
-                ret=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))            
-            }
+#            if (config$is_ows_trial) {
+#                # find marker values under specific VE
+#                tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
+#                tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
+#                ret=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))            
+#            }
+            
             
             # legend
             tmp=formatDouble(overall.ve*100,1)%.%"%"        
@@ -220,7 +229,7 @@ for (eq.geq in 1:4) {
                     paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), 
                     "Controlled VE",
                     if(eq.geq==1) "Controlled VE Sens. Analysis"), 
-                col=c("gray", if(eq.geq==3 | eq.geq==2) "black" else "pink", if(eq.geq==1) "red"), 
+                col=c("gray", if(eq.geq==1) "pink" else "black", if(eq.geq==1) "red"), 
                 lty=1, lwd=2, cex=.8)
         
             # add histogram
@@ -234,6 +243,8 @@ for (eq.geq in 1:4) {
             plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25))) 
             
         dev.off()    
+        
+        
             
         ret        
     })
@@ -261,25 +272,24 @@ digits.risk=4
 risks.all=get("risks.all.1")
 for(a in assays) {        
     risks=risks.all[[a]]
-    #pick.out=names(risks$marker)!=""
-    pick.out=rep(T, length(risks$marker))
+    table.order=which(names(risks$marker) %in% c(" 2.5%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
     
     est = 1 - risks$prob/res.plac.cont["est"]
     boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
     ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))        
     
-    tmp=10**risks$marker[pick.out]; tmp=c(round(tmp[1],1), round(tmp[-1]))
-    ret = cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[pick.out],digits.risk), " (", formatDouble(ci.band[1,pick.out],digits.risk), ",", formatDouble(ci.band[2,pick.out],digits.risk), ")"))
+    tmp=10**risks$marker[table.order];     tmp=ifelse(tmp<100, signif(tmp,3), round(tmp))
+    ret = cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[table.order],digits.risk), " (", formatDouble(ci.band[1,table.order],digits.risk), ",", formatDouble(ci.band[2,table.order],digits.risk), ")"))
     
-    if (config$is_ows_trial) {
-        # find marker values under specific VE
-        tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
-        tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
-        out=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))
-    } else out=ret
+#    if (config$is_ows_trial) {
+#        # find marker values under specific VE
+#        tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
+#        tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
+#        out=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))
+#    } 
         
-    while (nrow(out)%%4!=0) out=rbind(out, c("s"="", "Estimate"=""))
-    tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])
+    while (nrow(ret)%%4!=0) ret=rbind(ret, c("s"="", "Estimate"=""))
+    tab=cbind(ret[1:(nrow(ret)/4), ], ret[1:(nrow(ret)/4)+(nrow(ret)/4), ], ret[1:(nrow(ret)/4)+(nrow(ret)/4*2), ], ret[1:(nrow(ret)/4)+(nrow(ret)/4*3), ])
     
     mytex(tab, file.name=paste0(a, "_controlled_ve_eq", "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
         longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", COR), caption=paste0("Controlled VE as functions of Day ",
@@ -323,6 +333,76 @@ write(concatList(tab, "\\\\"), file=paste0(save.results.to, "marginalized_risks_
 # trichotomized markers, marginalized risk curves over time
 # no bootstrap
  
+
+# categorical markers
+marginalized.risk.cat=function(fit.risk, marker.name, data, weights=rep(1, nrow(data)), t=NULL, verbose=FALSE, t.end=NULL) {  
+    
+    if("coxph" %in% class(fit.risk)) {
+        time.var=as.character(fit.risk$terms[[2]][[2]])
+        y.var=as.character(fit.risk$terms[[2]][[3]])
+    }
+    
+    # ss gives the levels that S takes
+    ss=unique(data[[marker.name]]); ss=sort(ss[!is.na(ss)])
+    
+    if (!"coxph" %in% class(fit.risk)) {
+        # logistic regression
+        dat.tmp.mrc=data
+        risks=sapply(ss, function(s) {
+            dat.tmp.mrc[[marker.name]]=s    
+            risks = predict(fit.risk, newdata=dat.tmp.mrc, type="response") # glm
+            sum(weights * risks) / sum(weights)    
+        })
+        names(risks)=levels(ss)
+        risks        
+            
+    } else {
+        # coxph or svycoxph
+        if (is.null(t)) {
+            # return risk versus time
+            tt=sort(unique(data[[time.var]][data[[y.var]]==1]))        
+            if (!is.null(t.end)) tt=c(tt, t.end)
+            risks=sapply(tt, function (t) {
+                dat.tmp.mrc=data
+                dat.tmp.mrc[[time.var]]=t
+                risks=sapply(ss, function(s) {        
+                    dat.tmp.mrc[[marker.name]]=s    
+                    risks = 1 - exp(-predict(fit.risk, newdata=dat.tmp.mrc, type="expected"))# coxph survival prob
+                    sum(weights * risks) / sum(weights)
+                })
+            })
+            risks=t(risks)
+            colnames(risks)=as.character(ss)        
+            list(time=tt, risk=risks)
+            
+        } else {
+            if (verbose) print("return risk at time t")
+            dat.tmp.mrc=data
+            time.var=fit.risk$terms[[2]][[2]]
+            dat.tmp.mrc[[time.var]]=t        
+            risks=sapply(ss, function(s) {
+                dat.tmp.mrc[[marker.name]]=s    
+                risks = 1 - exp(-predict(fit.risk, newdata=dat.tmp.mrc, type="expected")) # coxph survival prob
+                sum(weights * risks) / sum(weights)    
+            })
+            names(risks)=levels(ss)
+            risks        
+        }
+    }
+}
+
+
+# only pass ph2 data to these functions
+marginalized.risk=function(fit.risk, marker.name, data, categorical.s, weights=rep(1, nrow(data)), t=NULL, ss=NULL, verbose=FALSE, t.end=NULL) {
+    if(categorical.s) {
+        marginalized.risk.cat  (fit.risk, marker.name, data, weights=weights, t=t, verbose=verbose, t.end=t.end) 
+    } else {
+        marginalized.risk.cont (fit.risk, marker.name, data, weights=weights, t=t, ss=ss, verbose=verbose) 
+    }
+}
+
+
+
 risks.all.ter=list()
 for (a in assays) {        
     marker.name="Day"%.%tpeak%.%a%.%"cat"    
@@ -332,7 +412,7 @@ for (a in assays) {
 #    f2=update(form.0, as.formula(paste0(marker.name,"~.")))
 #    fit.s=nnet::multinom(f2, dat.vac.seroneg, weights=dat.vac.seroneg$wt) 
         
-    risks.all.ter[[a]]=if(length(fit.risk)==1) NA else marginalized.risk(fit.risk, marker.name, subset(dat.vac.seroneg,ph2==1), categorical.s=T)
+    risks.all.ter[[a]]=if(length(fit.risk)==1) NA else marginalized.risk(fit.risk, marker.name, subset(dat.vac.seroneg,ph2==1), weights=subset(dat.vac.seroneg,ph2==1,wt,drop=T), categorical.s=T, t.end=tfinal.tpeak)
 }
 #rv$marginalized.risk.over.time=list()
 #for (a in assays) rv$marginalized.risk.over.time[[a]] = risks.all.ter[[a]]

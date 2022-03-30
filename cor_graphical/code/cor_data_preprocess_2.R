@@ -29,14 +29,16 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")  {
+if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")  {
   
-  dat <- dat %>%
+  dat = dat %>%
     mutate(cohort_event = factor(
-      ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D29")))==1 & eval(as.name(paste0("EventTimePrimary", incNotMol, "D29"))) >= tpeaklag, "Post-Peak Cases",
-             ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & EarlyendpointD29==0, "Non-Cases", NA)),
-      levels = c("Post-Peak Cases", "Non-Cases"))
+       ifelse(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1",""))) & Bserostatus==0 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D", tpeak)))==1 , "Post-Peak Cases",
+             ifelse(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1",""))) & Bserostatus==0 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & (!!as.name("AnyinfectionD1"))==0, "Non-Cases", NA)),
+      levels = c(#"Day 2-14 Cases", intcur2, 
+        "Post-Peak Cases", "Non-Cases"))
     )
+  
 } else {
   
   second_tp <- max(as.integer(gsub("Day", "", times[grepl("Day", times)])))
@@ -116,8 +118,8 @@ for (t in unique(gsub("Day", "", times[!grepl("Delta|B", times)]))) {
 }
 
 # age threshold
-if (study_name=="COVE" | study_name=="MockCOVE") {age_thres=65; younger_age="Age < 65"; older_age="Age >= 65"
-} else {age_thres=60; younger_age="Age 18 - 59"; older_age="Age >= 60"}
+if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {age_thres=60; younger_age="Age 18 - 59"; older_age="Age >= 60"
+} else {age_thres=65; younger_age="Age < 65"; older_age="Age >= 65"}
 dat.long$age.geq.65 = as.integer(dat.long$Age >= age_thres)
 
 # # matrix to decide the sampling strata
@@ -152,13 +154,10 @@ dat.long$trt_bstatus_label <-
 # subcohort, which is a stratified sample of enrolled participants. So,
 # immunogenicity analysis is always done in ppts that meet all of the criteria.
 
-# Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
-# since it should only happen for D57-related figures.
 dat.cor.subset <- dat %>%
-  dplyr::filter(!!as.name(paste0("ph2.D29", ifelse(grepl("start1", COR), "start1","")))==1)
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 dat.long.cor.subset <- dat.long %>%
-  dplyr::filter(!!as.name(paste0("ph2.D29", ifelse(grepl("start1", COR), "start1","")))==1)
-
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 
 
 saveRDS(as.data.frame(dat.long.cor.subset),
@@ -167,3 +166,4 @@ saveRDS(as.data.frame(dat.long.cor.subset),
 saveRDS(as.data.frame(dat.cor.subset),
         file = here("data_clean", "cor_data.rds")
 )
+

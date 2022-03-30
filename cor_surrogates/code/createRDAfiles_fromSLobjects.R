@@ -149,26 +149,6 @@ readin_SLobjects_fromFolder <- function(data_path, file_pattern, endpoint, trt){
 # For vaccine, yd57 endpoint
 data_folder <- here("output")
 if(study_name %in% c("COVE", "MockCOVE")){
-  varset_names = c("1_baselineRiskFactors", "2_bAbSpike_D57", "3_bAbRBD_D57", "4_pnabID50_D57",
-                   "5_pnabID80_D57", "6_lnabMN50_D57", "7_bAb_pnabID50_D57", "8_bAb_pnabID80_D57",
-                   "9_bAb_lnabMN50_D57", "10_bAb_combScores_D57", "11_allMarkers_D57", "12_allMarkers_combScores_D57",
-                   "13_bAbSpike_D29", "14_bAbRBD_D29", "15_pnabID50_D29", "16_pnabID80_D29",
-                   "17_lnabMN50_D29", "18_bAb_pnabID50_D29", "19_bAb_pnabID80_D29", "20_bAb_lnabMN50_D29",
-                   "21_bAb_combScores_D29", "22_allMarkers_D29", "23_allMarkers_combScores_D29", "24_bAbSpike_D29_D57",
-                   "25_bAbRBD_D29_D57", "26_pnabID50_D29_D57", "27_pnabID80_D29_D57", "28_lnabMN50_D29_D57",
-                   "29_bAb_pnabID50_D29_D57", "30_bAb_pnabID80_D29_D57", "31_bAb_lnabMN50_D29_D57", "32_bAb_combScores_D29_D57",
-                   "33_allMarkers_D29_D57", "34_allMarkers_combScores_D29_D57",
-                   "Day57bindSpike", "Day57bindRBD", "Day57pseudoneutid50", "Delta57overBpseudoneutid50_2fold", "Delta57overBpseudoneutid50_4fold",
-                   "Day57pseudoneutid80", "Delta57overBpseudoneutid80_4fold", "Day57liveneutmn50", "Delta57overBliveneutmn50_4fold",
-                   "Day29bindSpike", "Day29bindRBD", "Delta29overBbindRBD_2fold", "Delta29overBbindRBD_4fold",
-                   "Day29pseudoneutid50", "Delta29overBpseudoneutid50_2fold", "Delta29overBpseudoneutid50_4fold",
-                   "Day29pseudoneutid80", "Delta29overBpseudoneutid80_2fold", "Delta29overBpseudoneutid80_4fold",
-                   "Day29liveneutmn50", "Delta29overBliveneutmn50_2fold", "Delta29overBliveneutmn50_4fold", 
-                   "comb_PC1_d57", "comb_PC2_d57", "comb_maxsig.div.score_d57", "comb_PC1_d29", "comb_PC2_d29",
-                   "comb_maxsig.div.score_d29", "comb_PC1_d57_d29", "comb_PC2_d57_d29", "comb_maxsig.div.score_d57_d29",
-                   "comb_nlPCA1_d57", "comb_nlPCA2_d57", "comb_nlPCA1_d29", "comb_nlPCA2_d29", "comb_nlPCA1_d57_d29",
-                   "comb_nlPCA2_d57_d29")
-  
   cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
     filter(file %in% c(paste0("CVSLaucs_vacc_EventIndPrimaryD57_", varset_names[1:34], ".rds"))) %>%
     mutate(varset = str_replace(file, "CVSLaucs_vacc_EventIndPrimaryD57_", ""),

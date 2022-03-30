@@ -19,6 +19,7 @@ bibliography: ref.bib
 renv::activate(project = here::here(".."))    
 ```
 
+\pagenumbering{gobble}
 
 \counterwithin{table}{section}
 \counterwithin{figure}{section}
@@ -76,6 +77,25 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub6.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+
+# COVE + ENSEMBLE US + AZ + PREVENT19
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub7.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# COVE + ENSEMBLE US + PREVENT19
+
+```{r, echo=FALSE, results='asis'}
+for (a in c("bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub8.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```

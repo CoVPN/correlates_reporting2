@@ -1,7 +1,7 @@
 numCores <- unname(ifelse(Sys.info()["sysname"] == "Windows",
                           1, future::availableCores()))
 
-
+ 
 load.data=function(TRIAL, COR, trt=1) {
     Sys.setenv("TRIAL"=TRIAL)
     source(here::here("..", "_common.R"), local=T)
@@ -22,8 +22,8 @@ load.data=function(TRIAL, COR, trt=1) {
 
 get.trial=function(x, assay) {
     if (startsWith(x,"janssen")) {
-        if(startsWith(assay,"bind")) x=paste0(x, "bAb")
-        if(startsWith(assay,"pseudo")) x=paste0(x, "PsV")
+        if(startsWith(assay,"bind")) x=paste0(x, "")
+        if(startsWith(assay,"pseudo")) x=paste0(x, "")
         if(startsWith(assay,"ADCP")) x=paste0(x, "ADCP")
     }
     x
