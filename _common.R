@@ -88,6 +88,7 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 
 dat.mock <- read.csv(path_to_data)
+if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
 
 
 ###################################################################################################
@@ -104,7 +105,6 @@ get.marginalized.risk.no.marker=function(formula, dat, day){
 
 if (exists("COR")) {   
     
-    if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
 
     # formulae
     form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
