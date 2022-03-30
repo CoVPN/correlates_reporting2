@@ -9,7 +9,7 @@ format_ci <- function(x, digits = 3, ve = TRUE){
 #' Format rows for a table as est (95% CI)
 #' @param fit a natmed2 fit
 format_row <- function(fit, digits = 3){
-  if("natmed2" %in% class(fit)){
+  if("list" %in% class(fit)){
   	# extract risk and effect estimates
     risk_est <- fit$risk[,1]
     total_eff <- fit$eff["Total", "one_step_est"]
