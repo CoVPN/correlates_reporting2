@@ -70,7 +70,7 @@ if(config$study_name_code == "ENSEMBLE"){
   #   )
   # )
   summary_stats_PsV <- readRDS(
-    here::here("output", 
+    here::here("cop_mediation", "output", 
     paste0("summary_stats_janssen_pooled_real_", 
            COR, ".rds"))
   )
