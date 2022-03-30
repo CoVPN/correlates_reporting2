@@ -18,9 +18,11 @@ if(config$study_name_code == "ENSEMBLE"){
   covariates <- c("risk_score", "Region1", "Region2")
   data$Region1 <- as.numeric(data$Region == 1)
   data$Region2 <- as.numeric(data$Region == 2)
+  run_survtmle <- TRUE
 }else if(config$study_name_code == "COVE"){
   times <- c("Day29") # Day57 all have positivity issues
   covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
+  run_survtmle <- FALSE
 }
 
 include_assays <- NULL
@@ -38,18 +40,24 @@ for(a in assays){
 	}
 }
 
-data$outcome <- as.numeric(
-  data$EventIndPrimary == 1 & data$EventTimePrimary <= tf_Day                      
-)
-
 variables_to_keep <- c(
   covariates,
   include_assays,
   config.cor$ph2,
   config.cor$wt,
-  "Trt",
-  "outcome"
+  "Trt"
 )
+
+data$outcome <- as.numeric(
+  data$EventIndPrimary == 1 & data$EventTimePrimary <= tf_Day                      
+)
+variables_to_keep <- c(variables_to_keep, "outcome")
+
+if(run_survtmle){
+  variables_to_keep <- c(variables_to_keep, 
+                         "EventIndPrimary",
+                         "EventTime")
+}
 
 data_keep <- data[!is.na(data[[config.cor$wt]]), variables_to_keep]
 W <- data_keep[, covariates, drop = FALSE]
@@ -99,28 +107,58 @@ quant_result <- day_col <- assay_col <- NULL
 for (marker in include_assays) {
   print(marker)
 
-  fit <- natmed2::natmed2(
-    W = W,
-    A = A,
-    R = R,
-    S = data_keep[, marker, drop = TRUE],
-    C = rep(1, nrow(data_keep)),
-    Y = Y,
-    gRn = 1 / data_keep$wt,
-    glm_gA = ".",
-    glm_gAS = NULL,
-    SL_gAS = sl_library,
-    glm_QY_WAS = NULL,
-    SL_QY_WAS = sl_library,
-    glm_QY_WACY = NULL,
-    SL_QY_WACY = sl_library,
-    glm_QD_WACY = NULL,
-    SL_QD_WACY = sl_library,
-    glm_QY_W = NULL,
-    SL_QY_W = sl_library,
-    glm_QY_WA = NULL,
-    SL_QY_WA = sl_library
-	)
+  if(!run_survtmle){
+    fit <- natmed2::natmed2(
+      W = W,
+      A = A,
+      R = R,
+      S = data_keep[, marker, drop = TRUE],
+      C = rep(1, nrow(data_keep)),
+      Y = Y,
+      gRn = 1 / data_keep$wt,
+      glm_gA = ".",
+      glm_gAS = NULL,
+      SL_gAS = sl_library,
+      glm_QY_WAS = NULL,
+      SL_QY_WAS = sl_library,
+      glm_QY_WACY = NULL,
+      SL_QY_WACY = sl_library,
+      glm_QD_WACY = NULL,
+      SL_QD_WACY = sl_library,
+      glm_QY_W = NULL,
+      SL_QY_W = sl_library,
+      glm_QY_WA = NULL,
+      SL_QY_WA = sl_library
+  	)
+  }else{
+    fit1 <- survtmle::hazard_tmle(
+      ftime = keep_data$EventTimePrimary,
+      ftype = keep_data$EventIndPrimary,
+      trt = data$Trt,
+      adjustVars = keep_data[ , covariates],
+      t0 = tf_Day,
+      SL.ctime = sl_library,
+      SL.ftime = sl_library
+    )
+
+    fit2 <- survtmle(
+      ftime = keep_data$EventTimePrimary,
+      ftype = keep_data$EventIndPrimary,
+      trt = data$Trt,
+      adjustVars = keep_data[ , covariates],
+      mediator = keep_data[ , marker, drop = FALSE],
+      mediatorTrtVal = 0,
+      trtOfInterest = 1,
+      mediatorSampProb = 1 / data_keep$wt,
+      mediatorInCensMod = FALSE,
+      t0 = tf_Day,
+      SL.ctime = sl_library,
+      SL.ftime = sl_library,
+      SL.mediator = sl_library,
+      SL.trtMediator = sl_library,
+      SL.eif = sl_library
+    )
+  }
 	this_row <- format_row(fit)
 	quant_result <- rbind(quant_result, this_row)
   which_assay <- substr(marker, 6, nchar(marker)) ## this could be written better
