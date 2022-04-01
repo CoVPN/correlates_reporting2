@@ -88,7 +88,6 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 
 dat.mock <- read.csv(path_to_data)
-if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
 
 
 ###################################################################################################
@@ -103,17 +102,24 @@ get.marginalized.risk.no.marker=function(formula, dat, day){
 }
 
 
-if (exists("COR")) {   
-    
+# specific to the correlates modules
+if (exists("COR")) {       
 
+    # subset to baseline seronegative for the correlates modules
+    if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
+    
+    # for Novavax trial, subset to US for the correlates modules
+    if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
+    
     # formulae
     form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
     form.0 = update (form.s, as.formula(config$covariates_riskscore))
     print(form.0)
     
     ###########################################################
-    # single time point config such as D29
+    # single time point COR config such as D29
     if (is.null(config.cor$tinterm)) {
+    
     
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
         dat.mock$ph2=dat.mock[[config.cor$ph2]]
