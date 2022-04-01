@@ -109,6 +109,7 @@ if (exists("COR")) {
     if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
     
     # for Novavax trial, subset to US for the correlates modules
+    # this is redundant in a way because only US participants have non-NA risk scores, but good to add
     if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
     
     # formulae
