@@ -107,7 +107,7 @@ if (Sys.getenv("TRIAL") == "janssen_pooled_real" & COR=="D29IncludeNotMolecConfi
 
 
 # forest plots
-if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
+if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","COV002")) {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
     
