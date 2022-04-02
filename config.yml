@@ -63,7 +63,6 @@ moderna_trial: &moderna_trial
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID80 (IU80/ml), Live Virus-MN50 (IU50/ml)]
   times: [B, Day29, Day57, Delta29overB, Delta57overB, Delta57over29]
   time_labels: [Day 1, Day 29, Day 57, D29 fold-rise over D1, D57 fold-rise over D1, D57 fold-rise over D29]
-  data_raw_dir: moderna
   study_name_code: COVE
   covariates_riskscore: ~.+ MinorityInd + HighRiskInd + risk_score
   covariates_norisksco: ~.+ MinorityInd + HighRiskInd + Age
@@ -95,12 +94,31 @@ prevent19: &prevent19
   timepoints: [35]
   times: [B, Day35, Delta35overB]
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
-  data_raw_dir: novavax
   data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_with_riskscore.csv
   assays: [bindSpike, pseudoneutid50]
   assay_labels: [Binding Antibody to Spike, PsV Neutralization 50% Titer]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   study_name: PREVENT19
+  covariates_riskscore: ~.+ risk_score
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
+  low_efficacy: no
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  
+
+cov002: &cov002
+  <<: *ows_trial
+  llox_label: LOD
+  two_marker_timepoints: yes
+  timepoints: [29,57]
+  times: [B, Day29, Day57, Delta29overB, Delta57overB, Delta57over29]
+  time_labels: [Day 1, Day 29, Day 57, D29 fold-rise over D1, D57 fold-rise over D1, D57 fold-rise over D29]
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/cov002_data_processed_with_riskscore.csv
+  assays: [pseudoneutid50]
+  assay_labels: [PsV Neutralization 50% Titer]
+  assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
+  study_name: COV002
   covariates_riskscore: ~.+ risk_score
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]
@@ -116,7 +134,6 @@ janssen_trial: &janssen_trial
   timepoints: [29]
   times: [B, Day29, Delta29overB]
   time_labels: [Day 1, Day 29, D29 fold-rise over D1]
-  data_raw_dir: janssen
   study_name_code: ENSEMBLE
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]

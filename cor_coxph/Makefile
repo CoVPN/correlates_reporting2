@@ -21,6 +21,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2))
 	Rscript code/cor_coxph.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/cor_coxph.R D35
+else ifeq ($(TRIAL),$(filter $(TRIAL), cov002))
+	Rscript code/cor_coxph.R D29
+	Rscript code/cor_coxph.R D57
 endif
 
 collate:

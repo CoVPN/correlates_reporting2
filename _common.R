@@ -232,6 +232,7 @@ if(config$is_ows_trial) {
 names(assays)=assays # add names so that lapply results will have names
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
+
 # For bAb, IU and BAU are the same thing
 # all values on BAU or IU
 if (config$is_ows_trial) {
@@ -292,8 +293,12 @@ if (config$is_ows_trial) {
     uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))        
     # llox is for plotting and can be either llod or lloq depending on trials
     lloxs=llods 
-
-    if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
+    
+    if(study_name=="COVE" | study_name=="MockCOVE") {
+        
+        # nothing to do
+        
+    } else if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         
         # data less than pos cutoff is set to pos.cutoff/2
         llods["bindSpike"]=NA 
@@ -330,7 +335,17 @@ if (config$is_ows_trial) {
         
         lloxs=llods 
         
-    }
+    } else if(study_name=="COV002") {
+           
+        # data less than lod is set to lod/2
+        llods["pseudoneutid50"]=2.612  
+        lloqs["pseudoneutid50"]=3.657  
+        pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
+        uloqs["pseudoneutid50"]=307.432 
+        
+        lloxs=llods 
+        
+    } else stop("unknown study_name")
     
     
 } else {
@@ -448,14 +463,14 @@ labels.assays.long <- labels.title
 
 
 # baseline stratum labeling
-if ((study_name=="COVE" | study_name=="MockCOVE")) {
+if (study_name=="COVE" | study_name=="MockCOVE") {
     Bstratum.labels <- c(
       "Age >= 65",
       "Age < 65, At risk",
       "Age < 65, Not at risk"
     )
     
-} else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
+} else if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
     Bstratum.labels <- c(
       "Age < 60, Not at risk",
       "Age < 60, At risk",
@@ -463,13 +478,13 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Age >= 60, At risk"
     )
     
-} else if ((study_name=="PREVENT19")) {
+} else if (study_name %in% c("PREVENT19","COV002")) {
     Bstratum.labels <- c(
       "Age >= 65",
       "Age < 65"
     )
 
-} else if ((study_name=="HVTN705")) {
+} else if (study_name=="HVTN705") {
     # do nothing
 
 } else stop("unknown study_name")
@@ -477,7 +492,7 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
 
 
 # baseline stratum labeling
-if ((study_name=="COVE" | study_name=="MockCOVE")) {
+if (study_name=="COVE" | study_name=="MockCOVE") {
     demo.stratum.labels <- c(
       "Age >= 65, URM",
       "Age < 65, At risk, URM",
@@ -487,7 +502,7 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Age < 65, Not at risk, White non-Hisp"
     )
     
-} else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
+} else if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
     demo.stratum.labels <- c(
       "US URM, Age 18-59, Not at risk",
       "US URM, Age 18-59, At risk",
@@ -507,7 +522,7 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "South Africa, Age >= 60, At risk"
     )
     
-} else if ((study_name=="PREVENT19")) {
+} else if (study_name=="PREVENT19") {
     demo.stratum.labels <- c(
       "US White non-Hisp, Age 18-64, Not at risk",
       "US White non-Hisp, Age 18-64, At risk",
@@ -521,7 +536,17 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Mexico, Age >= 65"
     )
 
-} else if ((study_name=="HVTN705")) {
+} else if (study_name=="COV002") {
+    demo.stratum.labels <- c(
+      "US White non-Hisp, Age 18-64",
+      "US White non-Hisp, Age >= 65",
+      "US URM, Age 18-64",
+      "US URM, Age >= 65",
+      "Non-US, Age 18-64",
+      "Non-US, Age >= 65"
+    )
+
+} else if (study_name=="HVTN705") {
     # do nothing
 
 } else stop("unknown study_name")
