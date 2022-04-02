@@ -463,7 +463,7 @@ for (i in 1:2){
   names(tab_strtm_header2) <- sprintf("%s\nSample Sizes (N=%s Participants) (%s Trial)", 
                                       tlf[[paste0("tab_strtm", i)]]$table_header,
                                       sum(ds[ds$demo.stratum.ordered%in%1:strtm_cutoff, ]$ph2.immuno), 
-                                      stringr::str_to_title(data_raw_dir))
+                                      stringr::str_to_title(study_name))
   tlf[[paste0("tab_strtm", i)]]$header_above2 <- tab_strtm_header2
   tlf[[paste0("tab_strtm", i)]]$table_footer <- c("Demographic covariate strata:",
                                    paste(sort(unique(ds.i$demo.stratum.ordered)), 
@@ -603,4 +603,3 @@ print(paste0("save.results.to equals ", save.results.to))
 
 save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, tab_days, case_vacc_neg, case_plcb_neg,
      file = file.path(save.results.to, sprintf("Tables%s.Rdata", ifelse(exists("COR"), COR, ""))))
-

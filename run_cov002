@@ -1,0 +1,9 @@
+#!/bin/bash
+
+for T in cov002
+do
+    export TRIAL=$T 
+    echo $TRIAL
+    make -k -C $1 all
+    bash ./_build_chapter.sh $1
+done
