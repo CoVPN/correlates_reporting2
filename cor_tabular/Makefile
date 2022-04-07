@@ -16,6 +16,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2))
 	Rscript code/make_table_all.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/make_table_all.R D35
+else ifeq ($(TRIAL),$(filter $(TRIAL), cov002))
+	Rscript code/make_table_all.R D29
+	Rscript code/make_table_all.R D57
 endif
 
 ## clean            : delete contents of data_clean/ and output/ directories

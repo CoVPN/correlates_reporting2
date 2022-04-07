@@ -294,11 +294,11 @@ if (config$is_ows_trial) {
     # llox is for plotting and can be either llod or lloq depending on trials
     lloxs=llods 
     
-    if(study_name=="COVE" | study_name=="MockCOVE") {
+    if(study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
         
         # nothing to do
         
-    } else if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
+    } else if(study_name=="ENSEMBLE") {
         
         # data less than pos cutoff is set to pos.cutoff/2
         llods["bindSpike"]=NA 
