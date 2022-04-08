@@ -89,13 +89,13 @@ moderna_mock: &moderna_mock
 
 prevent19: &prevent19
   <<: *ows_trial
-  llox_label: LOD
   two_marker_timepoints: no
   timepoints: [35]
   times: [B, Day35, Delta35overB]
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
   data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_with_riskscore.csv
   assays: [bindSpike, pseudoneutid50]
+  llox_label: [LLOQ, LOD]
   assay_labels: [Binding Antibody to Spike, PsV Neutralization 50% Titer]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   study_name: PREVENT19
