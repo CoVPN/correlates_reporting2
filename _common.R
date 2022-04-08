@@ -323,17 +323,18 @@ if (config$is_ows_trial) {
         
         # data less than lloq is set to lloq/2 in the raw data
         llods["bindSpike"]=NA 
-        lloqs["bindSpike"]=150.4*0.0090
+        lloqs["bindSpike"]=150.4*0.0090 # 1.3536
+        uloqs["bindSpike"]=770464.6*0.0090 # 6934.181
         pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
-        uloqs["bindSpike"]=770464.6*0.0090
     
-        # data less than lod is set to lod/2
-        llods["pseudoneutid50"]=2.612  
-        lloqs["pseudoneutid50"]=2.7426  
+        # data less than lod is set to lod/2 in the raw data
+        llods["pseudoneutid50"]=2.612 # 40 * 0.0653
+        lloqs["pseudoneutid50"]=51*0.0653 # 3.3303
+        uloqs["pseudoneutid50"]=127411*0.0653 # 8319.938
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
-        uloqs["pseudoneutid50"]=619.3052 
         
         lloxs=llods 
+        lloxs["bindSpike"]=lloqs["bindSpike"]
         
     } else if(study_name=="COV002") {
            
