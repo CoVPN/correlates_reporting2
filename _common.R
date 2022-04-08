@@ -691,7 +691,10 @@ draw.x.axis.cor=function(xlim, llox, llox.label){
     
     # add e.g. 30 between 10 and 100
     if (length(xx)<=3) {
-        for (i in 2:length(xx)) {
+        # a hack for prevent19 ID50 to not draw 3 b/c it is too close to LOD
+        tmp=2:length(xx)
+        if (study_name=="PREVENT19") tmp=3:length(xx)
+        for (i in tmp) {
             x=xx[i-1]
             axis(1, at=x+log10(3), labels=if (x>=3) bquote(3%*%10^.(x)) else 3*10^x )
         }
