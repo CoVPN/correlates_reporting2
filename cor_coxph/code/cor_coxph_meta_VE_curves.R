@@ -79,19 +79,21 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
             COR = switch(x, moderna_real="D57", prevent19="D35", "D29IncludeNotMolecConfirmedstart1")
             load(here::here("output", TRIAL, COR, "marginalized.risk.no.marker.Rdata"))
             load(here::here("output", TRIAL, COR, "marginalized.risk.Rdata"))
-            risks=get(ifelse(x=="prevent19","risks.all.3","risks.all.1"))[[a]]        
+            risks=get("risks.all.1")[[a]] 
+            #risks=get(ifelse(x=="prevent19","risks.all.3","risks.all.1"))[[a]] # .3 is trichotomized
             
             est = 1 - risks$prob/res.plac.cont["est"]
             boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))    
             
-            if(x=="prevent19") {
-                # to make it plottable by mymatplot
-                cutpoints=as.numeric(strsplit(risks$marker[2],"\\(|\\,|\\]")[[1]][-1])
-                risks$marker=c(quantile(markers.x[[x]], 2.5/100, na.rm=T), cutpoints[1], cutpoints[1], cutpoints[2], cutpoints[2], quantile(markers.x[[x]], 1-2.5/100, na.rm=T))
-                est=rep(est, each=2)
-                ci.band=rep.matrix(ci.band, each=2, by.row=F)
-            }            
+#            # if use .3 earlier
+#            if(x=="prevent19") {
+#                # to make it plottable by mymatplot
+#                cutpoints=as.numeric(strsplit(risks$marker[2],"\\(|\\,|\\]")[[1]][-1])
+#                risks$marker=c(quantile(markers.x[[x]], 2.5/100, na.rm=T), cutpoints[1], cutpoints[1], cutpoints[2], cutpoints[2], quantile(markers.x[[x]], 1-2.5/100, na.rm=T))
+#                est=rep(est, each=2)
+#                ci.band=rep.matrix(ci.band, each=2, by.row=F)
+#            }            
         
             shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
             mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE against COVID-19"), xlab=labels.assays.short[a]%.%" (=s)", 
@@ -173,13 +175,13 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 }
 
 # COVE + ENSEMBLE/US + AZ + PREVENT19
-for (a in c("bindSpike")) {
+for (a in c("bindSpike", "pseudoneutid50")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="7", include.az=T)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="7", include.az=T, log="y")
 }
 
 # COVE + ENSEMBLE/US + PREVENT19
-for (a in c("bindSpike")) {
+for (a in c("bindSpike", "pseudoneutid50")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="8", include.az=F)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="8", include.az=F, log="y")
 }

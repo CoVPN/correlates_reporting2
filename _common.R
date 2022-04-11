@@ -340,9 +340,9 @@ if (config$is_ows_trial) {
            
         # data less than lod is set to lod/2
         llods["pseudoneutid50"]=2.612  
-        lloqs["pseudoneutid50"]=3.657  
+        lloqs["pseudoneutid50"]=56*0.0653 # 3.6568
+        uloqs["pseudoneutid50"]=47806*0.0653 # 3121.732
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
-        uloqs["pseudoneutid50"]=307.432 
         
         lloxs=llods 
         

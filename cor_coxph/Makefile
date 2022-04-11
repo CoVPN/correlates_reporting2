@@ -24,6 +24,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 else ifeq ($(TRIAL),$(filter $(TRIAL), cov002))
 	Rscript code/cor_coxph.R D29
 	Rscript code/cor_coxph.R D57
+	Rscript code/cor_graphical_time_to_event.R D29D57
 endif
 
 collate:
