@@ -138,8 +138,8 @@ dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
 dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
 dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
 dat.long$ULoQ = with(dat.long, log10(uloqs[as.character(assay)]))
-dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay), "ULoQ", "")) 
-dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay), ULoQ, -99))
+dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), "ULoQ", ""))
+dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), ULoQ, -99))
 
 # assign values above the uloq to the uloq
 for (t in times[!grepl("Delta", times)]) {
