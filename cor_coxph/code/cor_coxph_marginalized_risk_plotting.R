@@ -158,13 +158,17 @@ for (eq.geq in 1:4) {
             Bias=controlled.risk.bias.factor(ss=risks$marker, s.cent=s.ref, s1=risks$marker[s1], s2=risks$marker[s2], RRud) 
             if (is.nan(Bias[1])) Bias=rep(1,length(Bias))
         
-#            if (eq.geq==2) {
-#                if (study_name %in% c("COVE", "MockCOVE")) {
-#                    ylim=c(0.8,1)
-#                } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
-#                    ylim=c(0.5,1)
-#                }
-            if (eq.geq==4) {
+            if (eq.geq==2) {
+                if (study_name %in% c("COVE", "MockCOVE")) {
+                    ylim=c(0.8,1)
+                } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
+                    ylim=c(0.5,1)
+                } else if (study_name %in% c("HVTN705")) {
+                    ylim=c(-1,1)
+                } else {
+                    ylim=c(0,1)
+                }
+            } else if (eq.geq==4) {
                 ylim=-log(1-ve_ylim_log)
             } else {
                 ylim=ve_ylim
@@ -184,11 +188,8 @@ for (eq.geq in 1:4) {
             # for table
             tmp=10**risks$marker[table.order];     tmp=ifelse(tmp<100, signif(tmp,3), round(tmp))
             ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[table.order],digits.risk), " (", formatDouble(ci.band[1,table.order],digits.risk), ",", formatDouble(ci.band[2,table.order],digits.risk), ")"))
-            
-            # redefine ylim
-            if(eq.geq==2) ylim=range(t(rbind(est, ci.band))[.subset,])
-            
-            # draw CVE curve
+                        
+            # draw CVE curve with sensitivity analysis
             mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), 
                 col=ifelse(eq.geq==1,"red","white"), # white is no plot
                 lwd=lwd, make.legend=F, 
