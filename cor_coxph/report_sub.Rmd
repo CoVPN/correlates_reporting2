@@ -7,7 +7,8 @@ The main regression model is the Cox proportional hazards model. All plots are m
 \begin{table}[H]
 \caption{Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
 \begin{center}
-    \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r study_name`}\\
+\setlength{\tabcolsep}{.5ex}
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r study_name`}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`.\\
 **`r txt.coxph.note2`\\
@@ -17,14 +18,10 @@ The main regression model is the Cox proportional hazards model. All plots are m
 \end{table}
 
 
-\begin{table}[H]
-\caption{Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*}
-\begin{center}
-\setlength{\tabcolsep}{.5ex}
-{\small
-\input{`r pathCoRoutput`/CoR_univariable_svycoxph_cat_pretty_`r study_name`}}\\
-\end{center}
-*Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints: 
+\scriptsize
+\input{`r paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", study_name)`}
+
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints: 
 ```{r, echo=FALSE, results='asis'}
   for (a in assays) {
     res = knitr::knit_child(c(here::here('cor_coxph', 'cutpoints.Rmd')), quiet = TRUE)
@@ -32,14 +29,17 @@ The main regression model is the Cox proportional hazards model. All plots are m
   }
 ```
 all on the log10 scale.
-\\
-**`r txt.coxph.note2`\\
-***Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.\\
-$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). \\
+
+$\ast\ast$`r txt.coxph.note2`
+
+$\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
+
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
+
 `r special.note`
 
-    %\label{tab:CoR_univariable_svycoxph_cat_pretty_`r study_name`}
-\end{table}
+
+
 
 \clearpage
 
@@ -47,7 +47,8 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \begin{table}[H]
 \caption{Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per SD increment in the marker*}
 \begin{center}
-    \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r study_name`}\\
+\setlength{\tabcolsep}{.5ex}
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r study_name`}\\
 \end{center}
 *Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
 **`r txt.coxph.note2`\\
@@ -93,6 +94,7 @@ if(file.exists(here::here('cor_coxph', paste0('forestplots_', tolower(study_name
 \begin{table}[H] 
 \caption{Analysis of Day `r tpeak` markers (upper vs. lower tertile) as a CoR and a controlled risk CoP.}
 \begin{center}
+\setlength{\tabcolsep}{.5ex}
 \begin{tabular}{lcccccc} \hline 
  & \multicolumn{2}{c}{marginalized risk} & \multicolumn{2}{c}{controlled risk} & & \\ 
  & \multicolumn{2}{c}{ratio $RR_M(0,1)$} & \multicolumn{2}{c}{ratio $RR_C(0,1)^1$} & \multicolumn{2}{c}{e(0,1)$^2$} \\ 
@@ -126,6 +128,3 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
     }
   }
 ```
-
-
-

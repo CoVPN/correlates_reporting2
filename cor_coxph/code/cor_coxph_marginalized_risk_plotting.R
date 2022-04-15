@@ -90,6 +90,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
         tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
         tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
+        if (is.nan(tmp$density)) tmp=hist(tmp.x, plot=F)
         # plot
         plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F, xlim=xlim, ylim=c(0,max(tmp$density*1.25)))
         #axis(side=4, at=axTicks(side=4)[1:5])
@@ -98,6 +99,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
     #mtext(toTitleCase(study_name), side = 1, line = 0, outer = T, at = NA, adj = NA, padj = NA, cex = NA, col = NA, font = NA)
     dev.off()    
     } # end assays
+    
 }
 }
 save(ylims.cor, file=paste0(save.results.to, "ylims.cor."%.%study_name%.%".Rdata"))
@@ -131,7 +133,7 @@ for (a in assays) {
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on -log(1-) scale
 for (eq.geq in 1:4) {  
-# eq.geq=1; a=assays[3]
+# eq.geq=2; a=assays[1]
 
     outs=lapply (assays, function(a) {        
         
@@ -156,13 +158,13 @@ for (eq.geq in 1:4) {
             Bias=controlled.risk.bias.factor(ss=risks$marker, s.cent=s.ref, s1=risks$marker[s1], s2=risks$marker[s2], RRud) 
             if (is.nan(Bias[1])) Bias=rep(1,length(Bias))
         
-            if (eq.geq==2) {
-                if (study_name %in% c("COVE", "MockCOVE")) {
-                    ylim=c(0.8,1)
-                } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
-                    ylim=c(0.5,1)
-                } 
-            } else if (eq.geq==4) {
+#            if (eq.geq==2) {
+#                if (study_name %in% c("COVE", "MockCOVE")) {
+#                    ylim=c(0.8,1)
+#                } else if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
+#                    ylim=c(0.5,1)
+#                }
+            if (eq.geq==4) {
                 ylim=-log(1-ve_ylim_log)
             } else {
                 ylim=ve_ylim
@@ -182,7 +184,11 @@ for (eq.geq in 1:4) {
             # for table
             tmp=10**risks$marker[table.order];     tmp=ifelse(tmp<100, signif(tmp,3), round(tmp))
             ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[table.order],digits.risk), " (", formatDouble(ci.band[1,table.order],digits.risk), ",", formatDouble(ci.band[2,table.order],digits.risk), ")"))
-    
+            
+            # redefine ylim
+            if(eq.geq==2) ylim=range(t(rbind(est, ci.band))[.subset,])
+            
+            # draw CVE curve
             mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), 
                 col=ifelse(eq.geq==1,"red","white"), # white is no plot
                 lwd=lwd, make.legend=F, 
@@ -202,12 +208,12 @@ for (eq.geq in 1:4) {
             draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
             
         
-            # overall CVE
+            # add overall CVE horizontal line
             abline(h=if(eq.geq==4) -log(1-overall.ve) else overall.ve, col="gray", lwd=2, lty=c(1,3,3))
             #text(x=par("usr")[1], y=overall.ve[1]+(overall.ve[1]-overall.ve[2])/2,     "overall VE "%.%round(overall.ve[1]*100)%.%"%", adj=0)
         
                 
-            # CVE
+            # add CVE curve
             est = 1 - risks$prob/res.plac.cont["est"]; boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )
             #est = 1 - (risks$prob+0.00227)/res.plac.cont["est"]; boot = 1 - t( t(risks$boot+0.00227)/res.plac.cont[2:(1+ncol(risks$boot))] )
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))  
@@ -232,6 +238,7 @@ for (eq.geq in 1:4) {
                 col=c("gray", if(eq.geq==1) "pink" else "black", if(eq.geq==1) "red"), 
                 lty=1, lwd=2, cex=.8)
         
+        
             # add histogram
             par(new=TRUE) 
             col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
@@ -239,12 +246,11 @@ for (eq.geq in 1:4) {
             tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
             tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
             tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
+            if (is.nan(tmp$density)) tmp=hist(tmp.x, plot=F)
             if(eq.geq==4) tmp$density=tmp$density*3
             plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25))) 
             
         dev.off()    
-        
-        
             
         ret        
     })
@@ -316,10 +322,10 @@ tab=sapply (assays, function(a) {
     paste0(
         labels.axis[1, a], "&",
         # marginal RR and ci
-        formatDouble(res[1,a],2,remove.leading0=F), "&", formatDouble(res[2,a],2,remove.leading0=F), "--", formatDouble(res[3,a],2,remove.leading0=F)
+        formatDouble(res[1,a],2,remove.leading0=F), "&", formatDouble(res[2,a],2,remove.leading0=F), "--", ifelse(res[3,a]>1000,"Inf",formatDouble(res[3,a],2,remove.leading0=F))
         , "&" ,
         # causal RR and ci
-        formatDouble(res[1,a]*bias.factor,2,remove.leading0=F), "&", formatDouble(res[2,a]*bias.factor,2,remove.leading0=F), "--", formatDouble(res[3,a]*bias.factor,2,remove.leading0=F)
+        formatDouble(res[1,a]*bias.factor,2,remove.leading0=F), "&", formatDouble(res[2,a]*bias.factor,2,remove.leading0=F), "--", ifelse(res[3,a]*bias.factor>1000,"Inf",formatDouble(res[3,a]*bias.factor,2,remove.leading0=F))
         , "&" ,
         # E-value and ub
         formatDouble(E.value(res[1,a]),1), "&", formatDouble(E.value(res[3,a]),1)
