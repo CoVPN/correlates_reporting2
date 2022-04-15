@@ -186,8 +186,9 @@ for (eq.geq in 1:4) {
             ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[table.order],digits.risk), " (", formatDouble(ci.band[1,table.order],digits.risk), ",", formatDouble(ci.band[2,table.order],digits.risk), ")"))
             
             # redefine ylim
-            if(eq.geq==2) ylim=c(0,max(t(rbind(est, ci.band))[.subset,]))
+            if(eq.geq==2) ylim=range(t(rbind(est, ci.band))[.subset,])
             
+            # draw CVE curve
             mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), 
                 col=ifelse(eq.geq==1,"red","white"), # white is no plot
                 lwd=lwd, make.legend=F, 
@@ -207,12 +208,12 @@ for (eq.geq in 1:4) {
             draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
             
         
-            # overall CVE
+            # add overall CVE horizontal line
             abline(h=if(eq.geq==4) -log(1-overall.ve) else overall.ve, col="gray", lwd=2, lty=c(1,3,3))
             #text(x=par("usr")[1], y=overall.ve[1]+(overall.ve[1]-overall.ve[2])/2,     "overall VE "%.%round(overall.ve[1]*100)%.%"%", adj=0)
         
                 
-            # CVE
+            # add CVE curve
             est = 1 - risks$prob/res.plac.cont["est"]; boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )
             #est = 1 - (risks$prob+0.00227)/res.plac.cont["est"]; boot = 1 - t( t(risks$boot+0.00227)/res.plac.cont[2:(1+ncol(risks$boot))] )
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))  
@@ -236,6 +237,7 @@ for (eq.geq in 1:4) {
                     if(eq.geq==1) "Controlled VE Sens. Analysis"), 
                 col=c("gray", if(eq.geq==1) "pink" else "black", if(eq.geq==1) "red"), 
                 lty=1, lwd=2, cex=.8)
+        
         
             # add histogram
             par(new=TRUE) 
