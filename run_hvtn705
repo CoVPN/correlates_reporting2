@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for T in hvtn705 hvtn705V1V2
+for T in hvtn705second
 do
     export TRIAL=$T 
     echo $TRIAL
