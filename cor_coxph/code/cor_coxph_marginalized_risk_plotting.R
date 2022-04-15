@@ -22,7 +22,7 @@ digits.risk=4
     
 for (eq.geq in 1:2) {  # 1 conditional on s,   2 is conditional on S>=s
 for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
-#eq.geq=1; w.wo.plac=1; a=assays[1]
+#eq.geq=1; w.wo.plac=1; a=assays[5]
     
     risks.all=get("risks.all."%.%eq.geq)
     
@@ -90,6 +90,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
         tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
         tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
+        if (is.nan(tmp$density)) tmp=hist(tmp.x, plot=F)
         # plot
         plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F, xlim=xlim, ylim=c(0,max(tmp$density*1.25)))
         #axis(side=4, at=axTicks(side=4)[1:5])
@@ -98,6 +99,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
     #mtext(toTitleCase(study_name), side = 1, line = 0, outer = T, at = NA, adj = NA, padj = NA, cex = NA, col = NA, font = NA)
     dev.off()    
     } # end assays
+    
 }
 }
 save(ylims.cor, file=paste0(save.results.to, "ylims.cor."%.%study_name%.%".Rdata"))
@@ -239,12 +241,11 @@ for (eq.geq in 1:4) {
             tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
             tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
             tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
+            if (is.nan(tmp$density)) tmp=hist(tmp.x, plot=F)
             if(eq.geq==4) tmp$density=tmp$density*3
             plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25))) 
             
         dev.off()    
-        
-        
             
         ret        
     })
@@ -316,10 +317,10 @@ tab=sapply (assays, function(a) {
     paste0(
         labels.axis[1, a], "&",
         # marginal RR and ci
-        formatDouble(res[1,a],2,remove.leading0=F), "&", formatDouble(res[2,a],2,remove.leading0=F), "--", formatDouble(res[3,a],2,remove.leading0=F)
+        formatDouble(res[1,a],2,remove.leading0=F), "&", formatDouble(res[2,a],2,remove.leading0=F), "--", ifelse(res[3,a]>1000,"Inf",formatDouble(res[3,a],2,remove.leading0=F))
         , "&" ,
         # causal RR and ci
-        formatDouble(res[1,a]*bias.factor,2,remove.leading0=F), "&", formatDouble(res[2,a]*bias.factor,2,remove.leading0=F), "--", formatDouble(res[3,a]*bias.factor,2,remove.leading0=F)
+        formatDouble(res[1,a]*bias.factor,2,remove.leading0=F), "&", formatDouble(res[2,a]*bias.factor,2,remove.leading0=F), "--", ifelse(res[3,a]*bias.factor>1000,"Inf",formatDouble(res[3,a]*bias.factor,2,remove.leading0=F))
         , "&" ,
         # E-value and ub
         formatDouble(E.value(res[1,a]),1), "&", formatDouble(E.value(res[3,a]),1)

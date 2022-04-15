@@ -691,7 +691,7 @@ draw.x.axis.cor=function(xlim, llox, llox.label){
     }
     
     # add e.g. 30 between 10 and 100
-    if (length(xx)<=3) {
+    if (length(xx)<=3 & length(xx)>1) { 
         # a hack for prevent19 ID50 to not draw 3 b/c it is too close to LOD
         tmp=2:length(xx)
         if (study_name=="PREVENT19") tmp=3:length(xx)
