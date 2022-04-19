@@ -58,7 +58,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
         tmp="Day"%.%config.cor$tpeak %.% a
         dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
         
-        dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
+        dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1) # should not need  & Bserostatus==0
         xlim=range(dat.vac.seroneg[[tmp]], log10(lloxs[a]/2), na.rm=T)
         delta=(xlim[2]-xlim[1])/20     
         xlim.ls[[x]]=c(xlim[1]-delta, xlim[2]+delta)
@@ -95,7 +95,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
 #                ci.band=rep.matrix(ci.band, each=2, by.row=F)
 #            }            
         
-            shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
+            shown=risks$marker>=wtd.quantile(markers.x[[x]], weight[[x]], 2.5/100) & risks$marker<=wtd.quantile(markers.x[[x]], weight[[x]], 1-2.5/100)
+            #shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
             mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE against COVID-19"), xlab=labels.assays.short[a]%.%" (=s)", 
                 #main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, add=x!=TRIALS[1])
