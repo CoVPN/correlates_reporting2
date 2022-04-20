@@ -102,18 +102,25 @@ get.marginalized.risk.no.marker=function(formula, dat, day){
 }
 
 
-if (exists("COR")) {   
-    
-    if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
+# specific to the correlates modules
+if (exists("COR")) {       
 
+    # subset to baseline seronegative for the correlates modules
+    if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
+    
+    # for Novavax trial, subset to US for the correlates modules
+    # this is redundant in a way because only US participants have non-NA risk scores, but good to add
+    if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
+    
     # formulae
     form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
     form.0 = update (form.s, as.formula(config$covariates_riskscore))
     print(form.0)
     
     ###########################################################
-    # single time point config such as D29
+    # single time point COR config such as D29
     if (is.null(config.cor$tinterm)) {
+    
     
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
         dat.mock$ph2=dat.mock[[config.cor$ph2]]
@@ -225,6 +232,7 @@ if(config$is_ows_trial) {
 names(assays)=assays # add names so that lapply results will have names
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
+
 # For bAb, IU and BAU are the same thing
 # all values on BAU or IU
 if (config$is_ows_trial) {
@@ -285,8 +293,12 @@ if (config$is_ows_trial) {
     uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))        
     # llox is for plotting and can be either llod or lloq depending on trials
     lloxs=llods 
-
-    if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
+    
+    if(study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
+        
+        # nothing to do
+        
+    } else if(study_name=="ENSEMBLE") {
         
         # data less than pos cutoff is set to pos.cutoff/2
         llods["bindSpike"]=NA 
@@ -311,19 +323,30 @@ if (config$is_ows_trial) {
         
         # data less than lloq is set to lloq/2 in the raw data
         llods["bindSpike"]=NA 
-        lloqs["bindSpike"]=150.4*0.0090
+        lloqs["bindSpike"]=150.4*0.0090 # 1.3536
+        uloqs["bindSpike"]=770464.6*0.0090 # 6934.181
         pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
-        uloqs["bindSpike"]=770464.6*0.0090
     
+        # data less than lod is set to lod/2 in the raw data
+        llods["pseudoneutid50"]=2.612 # 40 * 0.0653
+        lloqs["pseudoneutid50"]=51*0.0653 # 3.3303
+        uloqs["pseudoneutid50"]=127411*0.0653 # 8319.938
+        pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
+        
+        lloxs=llods 
+        lloxs["bindSpike"]=lloqs["bindSpike"]
+        
+    } else if(study_name=="COV002") {
+           
         # data less than lod is set to lod/2
         llods["pseudoneutid50"]=2.612  
-        lloqs["pseudoneutid50"]=2.7426  
+        lloqs["pseudoneutid50"]=56*0.0653 # 3.6568
+        uloqs["pseudoneutid50"]=47806*0.0653 # 3121.732
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
-        uloqs["pseudoneutid50"]=619.3052 
         
         lloxs=llods 
         
-    }
+    } else stop("unknown study_name")
     
     
 } else {
@@ -441,14 +464,14 @@ labels.assays.long <- labels.title
 
 
 # baseline stratum labeling
-if ((study_name=="COVE" | study_name=="MockCOVE")) {
+if (study_name=="COVE" | study_name=="MockCOVE") {
     Bstratum.labels <- c(
       "Age >= 65",
       "Age < 65, At risk",
       "Age < 65, Not at risk"
     )
     
-} else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
+} else if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
     Bstratum.labels <- c(
       "Age < 60, Not at risk",
       "Age < 60, At risk",
@@ -456,13 +479,13 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Age >= 60, At risk"
     )
     
-} else if ((study_name=="PREVENT19")) {
+} else if (study_name %in% c("PREVENT19","COV002")) {
     Bstratum.labels <- c(
       "Age >= 65",
       "Age < 65"
     )
 
-} else if ((study_name=="HVTN705")) {
+} else if (study_name=="HVTN705") {
     # do nothing
 
 } else stop("unknown study_name")
@@ -470,7 +493,7 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
 
 
 # baseline stratum labeling
-if ((study_name=="COVE" | study_name=="MockCOVE")) {
+if (study_name=="COVE" | study_name=="MockCOVE") {
     demo.stratum.labels <- c(
       "Age >= 65, URM",
       "Age < 65, At risk, URM",
@@ -479,7 +502,8 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Age < 65, At risk, White non-Hisp",
       "Age < 65, Not at risk, White non-Hisp"
     )
-} else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE")) {
+    
+} else if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
     demo.stratum.labels <- c(
       "US URM, Age 18-59, Not at risk",
       "US URM, Age 18-59, At risk",
@@ -498,7 +522,8 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "South Africa, Age >= 60, Not at risk",
       "South Africa, Age >= 60, At risk"
     )
-} else if ((study_name=="PREVENT19")) {
+    
+} else if (study_name=="PREVENT19") {
     demo.stratum.labels <- c(
       "US White non-Hisp, Age 18-64, Not at risk",
       "US White non-Hisp, Age 18-64, At risk",
@@ -512,7 +537,17 @@ if ((study_name=="COVE" | study_name=="MockCOVE")) {
       "Mexico, Age >= 65"
     )
 
-} else if ((study_name=="HVTN705")) {
+} else if (study_name=="COV002") {
+    demo.stratum.labels <- c(
+      "US White non-Hisp, Age 18-64",
+      "US White non-Hisp, Age >= 65",
+      "US URM, Age 18-64",
+      "US URM, Age >= 65",
+      "Non-US, Age 18-64",
+      "Non-US, Age >= 65"
+    )
+
+} else if (study_name=="HVTN705") {
     # do nothing
 
 } else stop("unknown study_name")
@@ -656,8 +691,11 @@ draw.x.axis.cor=function(xlim, llox, llox.label){
     }
     
     # add e.g. 30 between 10 and 100
-    if (length(xx)<=3) {
-        for (i in 2:length(xx)) {
+    if (length(xx)<=3 & length(xx)>1) { 
+        # a hack for prevent19 ID50 to not draw 3 b/c it is too close to LOD
+        tmp=2:length(xx)
+        if (study_name=="PREVENT19") tmp=3:length(xx)
+        for (i in tmp) {
             x=xx[i-1]
             axis(1, at=x+log10(3), labels=if (x>=3) bquote(3%*%10^.(x)) else 3*10^x )
         }

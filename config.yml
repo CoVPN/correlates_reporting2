@@ -13,7 +13,6 @@ hvtn705base: &hvtn705base
   timepoints: [210]
   subset_variable: None
   subset_value: All
-  llox_label: LLOQ
   times: [B, Day210]
   time_labels: [Day 1, Day 210]
   study_name: HVTN705
@@ -21,7 +20,7 @@ hvtn705base: &hvtn705base
   num_boot_replicates: 1000
   num_perm_replicates: 10000
   ve_ylim: [-1,1]
-  ve_ylim_log: [0.1,1]
+  ve_ylim_log: [0.0,0.98]
   low_efficacy: yes # used to drive some plotting configurations
 
 
@@ -30,6 +29,7 @@ hvtn705: &hvtn705
   assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay,ELMo,IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG3gp4140delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_multi]
   assay_labels: [IgG Vx-VT-C,ADCP Vx-C97ZA,IgG3 V1V2 breadth,IgG3 Env breadth,Multi-epitope functions,IgG Vx-VT-M,IgG3 gp140 Vx-C97ZA,IgG3 gp140 Vx-Mosaic,IgG3 gp41,IgG3 gp120 breadth,IgG3 gp140 breadth,IgG3 Multi-epitope]
   lloxs: [40,NA,NA,NA,NA,50,NA,NA,NA,NA,NA,NA]
+  llox_label: LLOQ
   uloqs: [1884160,NA,NA,NA,NA,1869824,22000,22000,22000,NA,NA,NA]
   primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay]
   multivariate_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm]
@@ -40,10 +40,140 @@ hvtn705V1V2: &hvtn705V1V2
   assays: [IgG3AE.A244.V1V2.Tags.293F40delta,IgG3C.1086C.V1.V2.Tags40delta,IgG3gp70.001428.2.42.V1V240delta,IgG3gp70.1012.11.TC21.3257.V1V240delta,IgG3gp70.1394C9G1.V1V240delta,IgG3gp70.BF1266.431a.V1V240delta,IgG3gp70.Ce1086.B2.V1V240delta,IgG3gp70.B.CaseA.V1.V240delta]
   assay_labels: [IgG3 V1V2 AE.A244.Tags,IgG3 V1V2 C.1086.Tags,IgG3 gp70 V1V2.001428.2.42,IgG3 gp70 V1V2.1012.11.TC21.3257,IgG3 gp70 V1V2.1394C9G1,IgG3 gp70 V1V2.BF1266.431a,IgG3 gp70 V1V2.Ce1086,IgG3 gp70 V1V2.B.CaseA]
   lloxs: [1,1,1,1,1,1,1,1]
+  llox_label: LLOQ
   uloqs: [22000,22000,22000,22000,22000,22000,22000,22000]
   primary_assays: [IgG3AE.A244.V1V2.Tags.293F40delta,IgG3C.1086C.V1.V2.Tags40delta,IgG3gp70.001428.2.42.V1V240delta,IgG3gp70.1012.11.TC21.3257.V1V240delta,IgG3gp70.1394C9G1.V1V240delta,IgG3gp70.BF1266.431a.V1V240delta,IgG3gp70.Ce1086.B2.V1V240delta,IgG3gp70.B.CaseA.V1.V240delta]
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_firstcasecontrolprocesseddata_withindividualV1V2markers.csv
 
+hvtn705second: &hvtn705second
+  <<: *hvtn705base
+  assays: [ELCZ,ELMo,ELISpotPTEEnv,ADCPgp140C97ZAfib,ADCPgp140Mos1fib,IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_V1V2,IgG3gp4140delta,IgG340mdw_multi,IgG340mdw_gp120_gp140_vm,IgG50mdw_V1V2,mdw_xassay,ADCCCAP8_pk,ADCCCH58_pk,ADCCWITO_pk,ADCCCAP8_pAUC,ADCCCH58_pAUC,ADCCWITO_pAUC,ICS4AnyEnvIFNg_OR_IL2,ICS8AnyEnvIFNg_OR_IL2,mdw_xassay_overall,IgG3AE.A244.V1V2.Tags_293F40delta,IgG3C.1086C.V1.V2.Tags40delta,IgG3gp70.001428.2.42.V1V240delta,IgG3gp70.1012.11.TC21.3257.V1V240delta,IgG3gp70.1394C9G1.V1V240delta,IgG3gp70.BF1266.431a.V1V240delta,IgG3gp70.Ce1086.B2.V1V240delta,IgG3gp70.B.CaseA.V1.V240delta,IgGAE.A244.V1V2.Tags_293F50delta,IgGC.1086C.V1.V2.Tags50delta,IgGgp70_001428.2.42.V1V250delta,IgGgp70_1012.11.TC21.3257.V1V250delta,IgGgp70_1394C9G1.V1V250delta,IgGgp70_9004SS.A3.4.V1V250delta,IgGgp70_BF1266.431a.V1V250delta,IgGgp70_Ce1086.B2.V1V250delta,IgGgp70.B.CaseA.V1.V250delta]
+  assay_labels: [
+        IgG to VT-C (EU/ml),
+        IgG to VT-M (EU/ml),
+        ELISpot PTE Env (SFC/million PBMC),
+        Average phagocytosis score to gp140 C97ZA,
+        Average phagocytosis score to gp140 Mos1,
+        IgG3 Net MFI to gp140 C97ZA,
+        IgG3 Net MFI to gp140 Mosaic,
+        IgG3 gp120 breadth (Weighted avg log10 Net MFI),
+        IgG3 gp140 breadth (Weighted avg log10 Net MFI),
+        IgG3 V1V2 breadth (Weighted avg log10 Net MFI),
+        IgG3 Net MFI to gp41,
+        IgG3 multi-epitope breadth (Wt avg log10 Net MFI),
+        IgG3 gp120 + gp140 breadth (Wt avg log10 Net MFI),
+        IgG V1V2 breadth (Wt avg log10 Net MFI),
+        Overall maximal diversity score,
+        Peak baseline-subtracted pct loss luc activity to CAP8,
+        Peak baseline-subtracted pct loss luc activity to CH58,
+        Peak baseline-subtracted pct loss luc activity to WITO,
+        AUC baseline-subtracted pct loss luc activity to CAP8,
+        AUC baseline-subtracted pct loss luc activity to CH58,
+        AUC baseline-subtracted pct loss luc activity to WITO,
+        Pct CD4+ T-cells expressing IFN-g/IL-2,
+        Pct CD8+ T-cells expressing IFN-g/IL-2,
+        Expanded Multi-epitope functions,
+        IgG3 Net MFI to AE.A244 V1V2 Tags 293F,
+        IgG3 Net MFI to C.1086C V1V2 Tags,
+        IgG3 Net MFI to gp70-001428.2.42 V1V2,
+        IgG3 Net MFI to gp70-1012.11.TC21.3257 V1V2,
+        IgG3 Net MFI to gp70-1394C9G1 V1V2,
+        IgG3 Net MFI to gp70-BF1266 431a V1V2,
+        IgG3 Net MFI to gp70-Ce1086 B2 V1V2,
+        IgG3 Net MFI to gp70-B.CaseAV1V2,
+        IgG Net MFI to AE.A244 V1V2 Tags 293F,
+        IgG Net MFI to C.1086C V1V2 Tags,
+        IgG Net MFI to gp70-001428.2.42 V1V2,
+        IgG Net MFI to gp70-1012.11.TC21.3257 V1V2,
+        IgG Net MFI to gp70-1394C9G1 V1V2,
+        IgG Net MFI to gp70-9004SS.A3.4 V1V2,
+        IgG Net MFI to gp70-BF1266.431a V1V2,
+        IgG Net MFI to gp70-Ce1086.B2 V1V2,
+        IgG Net MFI to gp70.B.CaseA V1V2
+  ]
+  assay_labels_short: [
+        IgG to VT-C,
+        IgG to VT-M,
+        ELISpot PTE Env,
+        ADCP gp140 C97ZA,
+        ADCP gp140 Mos1,
+        IgG3 gp140 C97ZA,
+        IgG3 gp140 Mosaic,
+        IgG3 gp120 breadth,
+        IgG3 gp140 breadth,
+        IgG3 V1V2 breadth,
+        IgG3 gp41,
+        IgG3 multi-epitope breadth,
+        IgG3 gp120+gp140 breadth,
+        IgG V1V2 breadth,
+        Overall max diversity score,
+        ADCC Peak CAP8,
+        ADCC Peak CH58,
+        ADCC Peak WITO,
+        ADCC  AUC CAP8,
+        ADCC AUC CH58,
+        ADCC AUC WITO,
+        CD4+ T-cells IFN-g/IL-2,
+        CD8+ T-cells IFN-g/IL-2,
+        Expanded multi-epitope functions,
+        IgG3 AE.A244 V1V2 Tags 293F,
+        IgG3 C.1086C V1V2 Tags,
+        IgG3 gp70-001428.2.42 V1V2,
+        IgG3 gp70-1012.11.TC21.3257 V1V2,
+        IgG3 gp70-1394C9G1 V1V2,
+        IgG3 gp70-BF1266 431a V1V2,
+        IgG3 gp70-Ce1086 B2 V1V2,
+        IgG3 gp70-B.CaseAV1V2,
+        IgG AE.A244 V1V2 Tags 293F,
+        IgG C.1086C V1V2 Tags,
+        IgG gp70-001428.2.42 V1V2,
+        IgG gp70-1012.11.TC21.3257 V1V2,
+        IgG gp70-1394C9G1 V1V2,
+        IgG gp70-9004SS.A3.4 V1V2,
+        IgG gp70-BF1266.431a V1V2,
+        IgG gp70-Ce1086.B2 V1V2,
+        IgG gp70.B.CaseA V1V2        
+  ]
+  llox_label: [LLOQ,LLOQ,LOD,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ]
+  lloxs:      [80,  100, 60, 2.87,2.87,1,   1,   NA,  NA,  NA,  1   ,NA,  NA,  NA,  NA,  0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,NA  ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ]
+  uloqs: [1884160,1869824,NA,16.11,16.11,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000]
+  primary_assays: [ELCZ,ELISpotPTEEnv,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay_overall]
+  multivariate_assays: [ELCZ+ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall]
+  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata.csv
+
+
+hvtn705secondprimary: &hvtn705secondprimary
+  <<: *hvtn705base
+  assays: [
+        ELCZ,
+        ELISpotPTEEnv,
+        ADCPgp140C97ZAfib, 
+        IgG340mdw_V1V2,
+        IgG340mdw_gp120_gp140_vm,
+        mdw_xassay_overall
+  ]
+  assay_labels: [
+        IgG to VT-C (EU/ml),
+        ELISpot PTE Env (SFC/million PBMC),
+        Average phagocytosis score to gp140 C97ZA,
+        IgG3 V1V2 breadth (Weighted avg log10 Net MFI),
+        IgG3 gp120 + gp140 breadth (Wt avg log10 Net MFI),
+        Expanded Multi-epitope functions
+  ]
+  assay_labels_short: [
+        IgG to VT-C,
+        ELISpot PTE Env,
+        ADCP gp140 C97ZA,
+        IgG3 V1V2 breadth,
+        IgG3 gp120+gp140 breadth,
+        Expanded multi-epitope functions
+  ]
+  llox_label: [LLOQ,LOD,LLOQ,LLOQ,LLOQ,LLOQ]
+  lloxs:      [80,   60,2.87,NA,NA,NA]
+  uloqs: [1884160,  NA,16.11,NA,NA,NA]
+  primary_assays: [ELCZ,ELISpotPTEEnv,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay_overall]
+  multivariate_assays: [ELCZ+ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall,ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall]
+  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata.csv
 
 
 ows_trial: &ows_trial
@@ -63,7 +193,6 @@ moderna_trial: &moderna_trial
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID80 (IU80/ml), Live Virus-MN50 (IU50/ml)]
   times: [B, Day29, Day57, Delta29overB, Delta57overB, Delta57over29]
   time_labels: [Day 1, Day 29, Day 57, D29 fold-rise over D1, D57 fold-rise over D1, D57 fold-rise over D29]
-  data_raw_dir: moderna
   study_name_code: COVE
   covariates_riskscore: ~.+ MinorityInd + HighRiskInd + risk_score
   covariates_norisksco: ~.+ MinorityInd + HighRiskInd + Age
@@ -90,17 +219,36 @@ moderna_mock: &moderna_mock
 
 prevent19: &prevent19
   <<: *ows_trial
-  llox_label: LOD
   two_marker_timepoints: no
   timepoints: [35]
   times: [B, Day35, Delta35overB]
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
-  data_raw_dir: novavax
   data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_with_riskscore.csv
   assays: [bindSpike, pseudoneutid50]
+  llox_label: [LLOQ, LOD]
   assay_labels: [Binding Antibody to Spike, PsV Neutralization 50% Titer]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   study_name: PREVENT19
+  covariates_riskscore: ~.+ risk_score
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
+  low_efficacy: no
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  
+
+cov002: &cov002
+  <<: *ows_trial
+  llox_label: LOD
+  two_marker_timepoints: yes
+  timepoints: [29,57]
+  times: [B, Day29, Day57, Delta29overB, Delta57overB, Delta57over29]
+  time_labels: [Day 1, Day 29, Day 57, D29 fold-rise over D1, D57 fold-rise over D1, D57 fold-rise over D29]
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/cov002_data_processed_with_riskscore.csv
+  assays: [pseudoneutid50]
+  assay_labels: [PsV Neutralization 50% Titer]
+  assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
+  study_name: COV002
   covariates_riskscore: ~.+ risk_score
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]
@@ -116,7 +264,6 @@ janssen_trial: &janssen_trial
   timepoints: [29]
   times: [B, Day29, Delta29overB]
   time_labels: [Day 1, Day 29, D29 fold-rise over D1]
-  data_raw_dir: janssen
   study_name_code: ENSEMBLE
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]

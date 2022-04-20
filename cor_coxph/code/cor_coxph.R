@@ -1,10 +1,13 @@
 #Sys.setenv(TRIAL = "janssen_sa_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "cov002"); COR="D29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "hvtn705secondprimary"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
 source(here::here("..", "_common.R"))
+
 
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
@@ -105,7 +108,7 @@ if (Sys.getenv("TRIAL") == "janssen_pooled_real" & COR=="D29IncludeNotMolecConfi
 
 
 # forest plots
-if(length(config$forestplot_script)==1 & study_name!="PREVENT19") {
+if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","COV002")) {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
     

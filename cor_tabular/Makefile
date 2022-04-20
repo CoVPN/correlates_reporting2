@@ -12,10 +12,13 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janss
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_real janssen_pooled_realADCP janssen_na_real janssen_na_realADCP janssen_la_real janssen_la_realADCP janssen_sa_real janssen_sa_realADCP))
 	Rscript code/make_table_all.R D29IncludeNotMolecConfirmed
 	Rscript code/make_table_all.R D29IncludeNotMolecConfirmedstart1
-else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2))
+else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2 hvtn705second hvtn705secondprimary ))
 	Rscript code/make_table_all.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/make_table_all.R D35
+else ifeq ($(TRIAL),$(filter $(TRIAL), cov002))
+	Rscript code/make_table_all.R D29
+	Rscript code/make_table_all.R D57
 endif
 
 ## clean            : delete contents of data_clean/ and output/ directories

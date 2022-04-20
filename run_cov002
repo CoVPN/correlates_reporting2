@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for T in hvtn705secondprimary
+for T in cov002
 do
     export TRIAL=$T 
     echo $TRIAL
