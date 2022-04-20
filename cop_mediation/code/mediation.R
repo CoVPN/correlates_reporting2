@@ -9,7 +9,9 @@ source(here::here("code", "sl_screen_fn.R"))
 source(here::here("code", "format_utils.R"))
 data <- dat.mock
 
-tf_Day <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2, "EventTimePrimary" ])
+# tf_Day <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2, "EventTimePrimary" ])
+tf_Day <- config$tfinal.tpeak
+
 print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)
 )
@@ -23,6 +25,10 @@ if(config$study_name_code == "ENSEMBLE"){
 }else if(config$study_name_code == "COVE"){
   times <- c("Day29") # Day57 all have positivity issues
   covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
+  run_survtmle <- FALSE
+}else if(config$study_name == "HVTN705"){
+  times <- "Day210"
+  covariates <- c("RSA", "Age", "BMI", "Riskscore")
   run_survtmle <- FALSE
 }
 
