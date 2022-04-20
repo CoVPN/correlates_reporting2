@@ -172,7 +172,7 @@ hvtn705secondprimary: &hvtn705secondprimary
   lloxs:      [80,   60,2.87,NA,NA,NA]
   uloqs: [1884160,  NA,16.11,NA,NA,NA]
   primary_assays: [ELCZ,ELISpotPTEEnv,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay_overall]
-  multivariate_assays: [ELCZ+ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall]
+  multivariate_assays: [ELCZ+ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall,ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall]
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata.csv
 
 
