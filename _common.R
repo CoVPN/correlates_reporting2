@@ -340,9 +340,9 @@ if (config$is_ows_trial) {
            
         # data less than lod is set to lod/2
         llods["pseudoneutid50"]=2.612  
-        lloqs["pseudoneutid50"]=3.657  
+        lloqs["pseudoneutid50"]=56*0.0653 # 3.6568
+        uloqs["pseudoneutid50"]=47806*0.0653 # 3121.732
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
-        uloqs["pseudoneutid50"]=307.432 
         
         lloxs=llods 
         
@@ -691,7 +691,7 @@ draw.x.axis.cor=function(xlim, llox, llox.label){
     }
     
     # add e.g. 30 between 10 and 100
-    if (length(xx)<=3) {
+    if (length(xx)<=3 & length(xx)>1) { 
         # a hack for prevent19 ID50 to not draw 3 b/c it is too close to LOD
         tmp=2:length(xx)
         if (study_name=="PREVENT19") tmp=3:length(xx)

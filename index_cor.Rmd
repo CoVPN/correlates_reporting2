@@ -19,6 +19,7 @@ header-includes:
    - \usepackage[margin=1in]{geometry}
    - \usepackage{float}
    - \usepackage{subfig}
+   - \usepackage{chngpage}
 ---
 
 
