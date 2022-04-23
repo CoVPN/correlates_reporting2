@@ -58,7 +58,7 @@ dat = dat %>%
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
     )
-} else {
+} else if (study_name=="COVE" | study_name=="MockCOVE") {
   # for COVE, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29, may replace it with AnyinfectionD1 later
   
   dat <- dat %>%
@@ -70,6 +70,18 @@ dat = dat %>%
                     ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0, "Non-Cases", NA))),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
       )
+} else {
+  # for COVE, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29, may replace it with AnyinfectionD1 later
+  
+  dat <- dat %>%
+    mutate(cohort_event = factor(
+      ifelse(ph2.intercurrent.cases==1 & Bserostatus==0, "Intercurrent Cases",
+             ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1, "Post-Peak Cases", 
+                    # definition for post-peak cases include people with and without D57 marker data for downstream plotting
+                    # will filter out those without D57 marker data in the D57 panels
+                    ifelse(Perprotocol==1 & Bserostatus==0 & AnyinfectionD1==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0, "Non-Cases", NA))),
+      levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
+    )
 }
 
 dat <- dat[!is.na(dat$cohort_event),]
