@@ -53,8 +53,8 @@ dat = dat %>%
     mutate(cohort_event = factor(
       #ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= 13, "Day 2-14 Cases",
       #       ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) > 13 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= tpeaklag-1 + NumberdaysD1toD29, intcur2,
-      ifelse(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1",""))) & Bserostatus==0 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D", tpeak)))==1 , "Post-Peak Cases",
-             ifelse(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1",""))) & Bserostatus==0 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & (!!as.name("AnyinfectionD1"))==0, "Non-Cases", NA)),
+      ifelse(!!as.name(config.cor$ph2)==1 & Bserostatus==0 & !!as.name(config.cor$EventIndPrimary)==1 , "Post-Peak Cases",
+             ifelse(!!as.name(config.cor$ph2)==1 & Bserostatus==0 & !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0  & AnyinfectionD1==0, "Non-Cases", NA)),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
     )
@@ -71,7 +71,7 @@ dat = dat %>%
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
       )
 } else {
-  # for COVE, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29, may replace it with AnyinfectionD1 later
+  # for AZ, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29, may replace it with AnyinfectionD1 later
   
   dat <- dat %>%
     mutate(cohort_event = factor(
