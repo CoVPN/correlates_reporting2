@@ -211,3 +211,8 @@ if (attr(config,"config")=="janssen_pooled_realbAb") {
     plot(km, ylim=c(0.6,1), col=1:3, main="ph2", xlim=c(0,100))
     
 }
+
+
+a="Day210IgG340mdw_V1V2"
+dat=subset(dat.vac.seroneg, ph2==1)
+10**wtd.quantile(dat[[a]], dat$wt, c(0.95,.975))
