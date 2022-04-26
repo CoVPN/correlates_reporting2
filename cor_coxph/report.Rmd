@@ -55,7 +55,7 @@ if(file.exists(here::here('cor_coxph', paste0('report_', tolower(study_name), '.
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
     special.note = ""
     pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_sub.Rmd')), quiet = TRUE)
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
 
