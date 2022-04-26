@@ -1,6 +1,3 @@
-
-<!-- D29start28 is COV002 specific -->
-
 ```{r, echo=FALSE, results='asis'}
 
 tpeak <- 29
