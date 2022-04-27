@@ -417,20 +417,26 @@ get.maxSignalDivScore <- function(dat, day){
   # compute pairwise correlations between all marker vars
   marker.wts <- cor(dat, method = "spearman") %>%
     mdw::tree.weight(plot=FALSE)
-
+  
   ## multiply marker values with weights
   for (a in colnames(dat)) {
     dat[[a]] <- dat[[a]] * marker.wts[a]
   }
-
+  
   if(day %in% c("Day29", "Day57")){
     dat <- dat %>%
-      mutate(max.signal.div.score = rowSums(.[1:4])) #rowSums(.[1:5]))
+      mutate(max.signal.div.score = rowSums(.[1:4])) 
   }else if(day == "Day57_29"){
     dat <- dat %>%
-      mutate(max.signal.div.score = rowSums(.[1:8])) #rowSums(.[1:10]))
+      mutate(max.signal.div.score = rowSums(.[1:8])) 
+  }else if(day == "705-Day210-primaryMarkers"){
+    dat <- dat %>%
+      mutate(max.signal.div.score = rowSums(.[1:6])) 
+  }else if(day == "705-Day210-allMarkers"){
+    dat <- dat %>%
+      mutate(max.signal.div.score = rowSums(.[1:41])) 
   }
-
+  
   return(dat$max.signal.div.score)
 }
 

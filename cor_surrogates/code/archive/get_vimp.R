@@ -1,4 +1,3 @@
-# Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 #-----------------------------------------------
 # obligatory to append to the top of each script
@@ -79,28 +78,22 @@ naive_fits <- lapply(list_of_indices, function(l) {
 })
 
 # get VIMs etc.
-# obtain the job id
-job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-
-# grab the current variable set based on the job id
-this_var_set <- varset_matrix[job_id, ]
-cat("\n Running", varset_names[job_id], "variable set \n")
-
-# the column indices of interest
-  if (job_id == 1) {
+for (i in seq_len(nrow(varset_matrix))) {
+  # the column indices of interest
+  if (i == 1) {
     this_s <- which(briskfactors %in% names(X))
   } else {
-    this_s <- which(varset_matrix[job_id, ]) + length(briskfactors)
+    this_s <- which(varset_matrix[i, ]) + length(briskfactors)
   }
   # get the correct CV.SL lists
-  full_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
-  full_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+  full_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[i], ".rds")))
+  full_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[i], ".rds")))
   if (!use_ensemble_sl) {
     full_fits <- lapply(as.list(1:length(baseline_fits)), function(i) {
       make_discrete_sl_auc(cvsl_fit = full_fits[[i]], all_aucs = full_aucs[[i]])
     })
   }
-  if (job_id == 1) {
+  if (i == 1) {
     vim_lst <- lapply(list_of_indices, function(l) {
       get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = naive_fits[[l]],
                  index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
@@ -121,6 +114,11 @@ cat("\n Running", varset_names[job_id], "variable set \n")
   }
   # pool variable importance and predictiveness over the list
   pooled_ests <- pool_cv_vim(vim_lst = vim_lst, scale = "identity")
-  
-  # save off the output
-  saveRDS(pooled_ests, file = here("output", paste0("pooled_ests_", endpoint, "_", varset_names[job_id], ".rds")))
+  all_estimates <- bind_rows(all_estimates, pooled_ests)
+}
+# add on the variable set name
+final_estimates <- all_estimates %>%
+  mutate(variable_set = rep(varset_names, each = 2), .before = "s")
+
+# save the output
+saveRDS(final_estimates, file = here::here("output", "vim_estimates.rds"))

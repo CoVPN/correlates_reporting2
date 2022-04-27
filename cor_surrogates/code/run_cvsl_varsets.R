@@ -1,4 +1,4 @@
-# Sys.setenv(TRIAL = "hvtn705")
+# Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 #-----------------------------------------------
 # obligatory to append to the top of each script
@@ -46,8 +46,9 @@ seeds <- round(runif(10, 1000, 10000)) # average over 10 random starts
 library(RhpcBLASctl)
 blas_get_num_procs()
 blas_set_num_threads(1L)
-stopifnot(blas_get_num_procs() == 1L)
+#stopifnot(blas_get_num_procs() == 1L) # Commented this out as it does not work as expected any more!
 omp_set_num_threads(1L)
+stopifnot(omp_get_max_threads() == 1L)
 
 # run the Super Learners
 fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
@@ -87,3 +88,4 @@ if (job_id == 1) {
   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
        V_outer, varset_names, individualMarkers, file = here("output", "objects_for_running_SL.rda"))
 }
+cat("\n Finished ", varset_names[job_id], "variable set \n") 

@@ -1,3 +1,4 @@
+# Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 #-----------------------------------------------
 # obligatory to append to the top of each script
@@ -151,78 +152,25 @@ if (study_name %in% c("COVE", "MockCOVE")) {
 if (study_name == "HVTN705") {
   # Add BAMA antigen data to the original dataset
   dat.mock <- dat.mock %>%
-    left_join(read.csv("../../data/hvtn705_lum_pdata_assay_agnostic.csv") %>%
-                filter(aval_cd == "delta") %>%
-                select(ptid, avisit, paramcd, parcat1, parcat2, analyte_pan, aval, crit1fl) %>%
-                mutate(#aval = ifelse(crit1fl == 0 & aval > 100, 100, aval),
-                       aval = log10(aval),
-                       avisit = ifelse(avisit == "Month 0", "Day1", "Day210"),
-                       parcat2 = paste0(avisit, "_", parcat2)) %>%
-                select(-c(avisit, paramcd, parcat1, analyte_pan, crit1fl)) %>%
-                pivot_wider(names_from = "parcat2", values_from = "aval") %>%
-                select(ptid, "Day210_Con 6 gp120/B", "Day210_1394C9_G1.D11gp120.avi",
-                       "Day210_1428_D11gp120.avi/293F", "Day210_1012_11.TC21D11gp120.avi",
-                       "Day210_1086C_D7gp120.avi/293F", "Day210_gp140 Mos1 fibritin",
-                       "Day210_gp140 C97ZA fibritin", "Day210_Con S gp140 CFI",
-                       "Day210_1012_gp140C.avi/293F", "Day210_1394C9_gp140C.avi/293F",
-                       "Day210_1086C gp140C_avi", "Day210_BF1266_gp140C.avi/293F",
-                       "Day210_9004S.gp140C.avi", "Day210_AE.A244 V1V2 Tags/293F",
-                       "Day210_C.1086C_V1_V2 Tags", "Day210_gp70_B.CaseA_V1_V2",
-                       "Day210_gp70-1012.11.TC21.3257 V1V2", "Day210_gp70-1394C9G1 V1V2",
-                       "Day210_gp70-BF1266_431a_V1V2", "Day210_gp70-001428.2.42 V1V2",
-                       "Day210_gp70-Ce1086_B2 V1V2", "Day210_gp41"),
-              by = c("Subjectid" = "ptid")) %>%
-    rename(`Day210IgG3Con6gp120B40delta` = `Day210_Con 6 gp120/B`,
-           `Day210IgG31394C9G1.D11gp120.avi40delta` = `Day210_1394C9_G1.D11gp120.avi`,
-           `Day210IgG31428D11gp120.avi293F40delta` = `Day210_1428_D11gp120.avi/293F`,
-           `Day210IgG31012.11.TC21D11gp120.avi40delta` = `Day210_1012_11.TC21D11gp120.avi`,
-           `Day210IgG31086C.D7gp120.avi293F40delta` = `Day210_1086C_D7gp120.avi/293F`,
-           #`Day210IgG3gp140Mos1fibritin40deltaNEW` = `Day210_gp140 Mos1 fibritin`,
-           #`Day210IgG3gp140C97ZAfibritin40deltaNEW` = `Day210_gp140 C97ZA fibritin`,
-           `Day210IgG3ConSgp140CFI40delta` = `Day210_Con S gp140 CFI`,
-           `Day210IgG31012gp140C.avi293F40delta` = `Day210_1012_gp140C.avi/293F`,
-           `Day210IgG31394C9gp140C.avi293F40delta` = `Day210_1394C9_gp140C.avi/293F`,
-           `Day210IgG31086Cgp140C.avi40delta` = `Day210_1086C gp140C_avi`,
-           `Day210IgG3BF1266gp140C.avi293F40delta` = `Day210_BF1266_gp140C.avi/293F`,
-           `Day210IgG39004Sgp140C.avi40delta` = `Day210_9004S.gp140C.avi`,
-           `Day210IgG3AEA244V1V2Tags.293F40delta` = `Day210_AE.A244 V1V2 Tags/293F`,
-           `Day210IgG3C1086CV1V2Tags40delta` = `Day210_C.1086C_V1_V2 Tags`,
-           `Day210IgG3gp70BCaseA.V1V240delta` = `Day210_gp70_B.CaseA_V1_V2`,
-           `Day210IgG3gp70.1012.11.TC21.3257.V1V240delta` = `Day210_gp70-1012.11.TC21.3257 V1V2`,
-           `Day210IgG3gp70.1394C9G1.V1V240delta` = `Day210_gp70-1394C9G1 V1V2`,
-           `Day210IgG3gp70.BF1266.431a.V1V240delta` = `Day210_gp70-BF1266_431a_V1V2`,
-           `Day210IgG3gp70.001428.2.42V1V240delta` = `Day210_gp70-001428.2.42 V1V2`,
-           `Day210IgG3gp70.Ce1086.B2.V1V240delta` = `Day210_gp70-Ce1086_B2 V1V2`
-           #Day210IgG3gp4140deltaNEW = Day210_gp41
-           )
+    select(-matches("Day1")) 
   # baseline risk factors
   briskfactors <- c("RSA", "Age", "BMI", "Riskscore")
   briskfactors_correction <- "Y ~ x + X$Riskscore + X$Age + X$BMI + X$RSA"
   # markers of interest
-  markerVars <- c("Day210ELCZ", "Day210ELMo",
-                  "Day210ADCPgp140C97ZAfib",
-                  # All BAMA IgG3 markers
-                  "Day210IgG3Con6gp120B40delta", "Day210IgG31394C9G1.D11gp120.avi40delta",
-                  "Day210IgG31428D11gp120.avi293F40delta", "Day210IgG31012.11.TC21D11gp120.avi40delta",
-                  "Day210IgG31086C.D7gp120.avi293F40delta",
-                  #"Day210IgG3gp140Mos1fibritin40deltaNEW", #"Day210IgG3gp140C97ZAfibritin40deltaNEW",
-                  "Day210IgG3gp140Mos1fibritin40delta", "Day210IgG3gp140C97ZAfibritin40delta",
-                  "Day210IgG3ConSgp140CFI40delta", "Day210IgG31012gp140C.avi293F40delta",
-                  "Day210IgG31394C9gp140C.avi293F40delta", "Day210IgG31086Cgp140C.avi40delta",
-                  "Day210IgG3BF1266gp140C.avi293F40delta", "Day210IgG39004Sgp140C.avi40delta",
-                  "Day210IgG3AEA244V1V2Tags.293F40delta", "Day210IgG3C1086CV1V2Tags40delta",
-                  "Day210IgG3gp70BCaseA.V1V240delta", "Day210IgG3gp70.1012.11.TC21.3257.V1V240delta",
-                  "Day210IgG3gp70.1394C9G1.V1V240delta", "Day210IgG3gp70.BF1266.431a.V1V240delta",
-                  "Day210IgG3gp70.001428.2.42V1V240delta", "Day210IgG3gp70.Ce1086.B2.V1V240delta",
-                  "Day1IgG3gp4140delta",
-                  #Day210IgG3gp4140deltaNEW,
-                  "Day210IgG3gp4140delta",
-                  #######
-                  "Day210IgG340mdw_gp120", "Day210IgG340mdw_gp140", "Day210IgG340mdw_V1V2",
-                  "Day210IgG340mdw_multi",
-                  "Day210IgG340mdw_gp120_gp140_vm",
-                  "Day210mdw_xassay")
-
+  markerVars <- c("Day210ELCZ", "Day210ELMo", "Day210ELISpotPTEEnv",                         
+                  "Day210ADCPgp140C97ZAfib","Day210ADCPgp140Mos1fib","Day210IgG3gp140C97ZAfibritin40delta","Day210IgG3gp140Mos1fibritin40delta",          
+                  "Day210IgG340mdw_gp120","Day210IgG340mdw_gp140","Day210IgG340mdw_V1V2","Day210IgG3gp4140delta",                       
+                  "Day210IgG340mdw_multi","Day210IgG340mdw_gp120_gp140_vm","Day210IgG50mdw_V1V2","Day210mdw_xassay",                            
+                  "Day210ADCCCAP8_pk","Day210ADCCCH58_pk","Day210ADCCWITO_pk","Day210ADCCCAP8_pAUC",                         
+                  "Day210ADCCCH58_pAUC","Day210ADCCWITO_pAUC","Day210ICS4AnyEnvIFNg_OR_IL2","Day210ICS8AnyEnvIFNg_OR_IL2",                 
+                  "Day210mdw_xassay_overall","Day210IgG3AE.A244.V1V2.Tags_293F40delta","Day210IgG3C.1086C.V1.V2.Tags40delta","Day210IgG3gp70.001428.2.42.V1V240delta",      
+                  "Day210IgG3gp70.1012.11.TC21.3257.V1V240delta", "Day210IgG3gp70.1394C9G1.V1V240delta","Day210IgG3gp70.BF1266.431a.V1V240delta","Day210IgG3gp70.Ce1086.B2.V1V240delta",        
+                  "Day210IgG3gp70.B.CaseA.V1.V240delta","Day210IgGAE.A244.V1V2.Tags_293F50delta","Day210IgGC.1086C.V1.V2.Tags50delta","Day210IgGgp70_001428.2.42.V1V250delta",       
+                  "Day210IgGgp70_1012.11.TC21.3257.V1V250delta","Day210IgGgp70_1394C9G1.V1V250delta","Day210IgGgp70_9004SS.A3.4.V1V250delta","Day210IgGgp70_BF1266.431a.V1V250delta",       
+                  "Day210IgGgp70_Ce1086.B2.V1V250delta","Day210IgGgp70.B.CaseA.V1.V250delta" 
+  )
+  
+  individualMarkers <- markerVars
   # Identify the endpoint variable
   endpoint <- "Delta.D210"
   wt <- "wt.D210"
@@ -358,15 +306,70 @@ if (study_name %in% c("COVE", "MockCOVE")) {
   markers <- dat.ph2 %>%
     select(-all_of(ptidvar), -Trt, -risk_score, -HighRiskInd, -MinorityInd, -EventIndPrimaryD57, -wt.D57) %>%
     colnames()
-
 }
 
 # For HVTN705
 if (study_name == "HVTN705") {
-  # There are no combination scores in HVTN705
-  markers <- dat.ph2 %>%
-    select(-all_of(ptidvar), -Trt, -Riskscore, -Age, -BMI, -RSA, -all_of(endpoint), -all_of(wt)) %>%
-    colnames()
+  # Create combination scores 
+  dat.ph2 <- dat.ph2 %>%
+    # generate combination scores for 6 primary markers
+    left_join(get.pca.scores(dat.ph2 %>%
+                               select(all_of(ptidvar), Day210ELCZ, Day210ELISpotPTEEnv, 
+                                      Day210ADCPgp140C97ZAfib, Day210IgG340mdw_V1V2, 
+                                      Day210IgG340mdw_gp120_gp140_vm, Day210mdw_xassay_overall)) %>%
+                rename(comb_PC1_prim = PC1,
+                       comb_PC2_prim = PC2),
+              by = ptidvar) %>%
+    mutate(
+      comb_maxsig.div.score_prim = get.maxSignalDivScore(
+        dat.ph2 %>% select(Day210ELCZ, Day210ELISpotPTEEnv, 
+                           Day210ADCPgp140C97ZAfib, Day210IgG340mdw_V1V2, 
+                           Day210IgG340mdw_gp120_gp140_vm, Day210mdw_xassay_overall),
+        "705-Day210-primaryMarkers"
+      )
+    ) %>%
+    # generate combination scores for all markers
+    left_join(get.pca.scores(dat.ph2 %>%
+                               select(all_of(ptidvar), all_of(markerVars))) %>%
+                rename(comb_PC1_all = PC1,
+                       comb_PC2_all = PC2),
+              by = ptidvar) %>%
+    mutate(
+      comb_maxsig.div.score_all = get.maxSignalDivScore(
+        dat.ph2 %>% select(all_of(markerVars)),
+        "705-Day210-allMarkers"
+      )
+    ) 
+  
+  
+  #if (run_prod) {
+  dat.ph2 <- dat.ph2 %>%
+    mutate(
+      comb_nlPCA1_prim = comb_PC1_prim,
+      comb_nlPCA2_prim = comb_PC2_prim,
+      comb_nlPCA1_all = comb_PC1_all,
+      comb_nlPCA2_all = comb_PC2_all
+    )
+  # # generate non-linear combination scores for 6 primary markers
+  # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
+  #                                     select(all_of(ptidvar), Day210ELCZ, Day210ELISpotPTEEnv,
+  #                                            Day210ADCPgp140C97ZAfib, Day210IgG340mdw_V1V2,
+  #                                            Day210IgG340mdw_gp120_gp140_vm, Day210mdw_xassay_overall)) %>%
+  #             rename(comb_nlPCA1_prim = nlPCA1,
+  #                    comb_nlPCA2_prim = nlPCA2),
+  #           by = ptidvar) %>%
+  # # generate non-linear combination scores for all 41 markers
+  # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
+  #                                     select(all_of(ptidvar), all_of(markerVars))) %>%
+  #             rename(comb_nlPCA1_all = nlPCA1,
+  #                    comb_nlPCA2_all = nlPCA2),
+  #           by = ptidvar)
+  #}
+  
+  # finalize marker data
+  markers <- c(markerVars, "comb_PC1_prim", "comb_PC2_prim", "comb_maxsig.div.score_prim",
+               "comb_PC1_all", "comb_PC2_all", "comb_maxsig.div.score_all", "comb_nlPCA1_prim",
+               "comb_nlPCA2_prim", "comb_nlPCA1_all", "comb_nlPCA2_all")
 }
 
 # Define study-specific variable sets of interest ------------------------------
@@ -462,64 +465,111 @@ if (study_name %in% c("COVE", "MockCOVE")) {
 # set up HVTN705-specific variable sets
 if (study_name == "HVTN705") {
   # 1. None (No markers; only baseline risk variables), phase 2 data
-  varset_baselineRiskFactors <- rep(FALSE, length(markers))
-
-  # 2-12 (Day57)
+  varset_baselineFactors <- rep(FALSE, length(markers))  # markers[c(varset_baselineFactors)]
+  
+  # 2-16
   varset_M7ELISA <- create_varsets(markers, grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE))
-  #varset_M7ELISpot <- create_varsets(markers, grep("ELspotCZ|ELspotMo", markers, value=TRUE, perl=TRUE))
+  varset_M7Tcells <- create_varsets(markers, grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE))
   varset_M7ADCP <- create_varsets(markers, grep("ADCP", markers, value=TRUE, perl=TRUE))
   varset_M7IgG3 <- create_varsets(markers, grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE))
   varset_M7IgG3_gp140 <- create_varsets(markers, grep("(?=.*IgG3)(?=.*gp140)", markers, value=TRUE, perl=TRUE))
   varset_M7IgG3_gp120 <- create_varsets(markers, grep("(?=.*IgG3)(?=.*gp120)", markers, value=TRUE, perl=TRUE))
-  varset_M7IgG3_V1V2 <- create_varsets(markers, grep("(?=.*IgG3)(?=.*V1V2)", markers, value=TRUE, perl=TRUE))
+  varset_M7IgG3_V1V2 <- create_varsets(markers, grep("(?=.*IgG3)(?=.*V1)(?=.*V2)", markers, value=TRUE, perl=TRUE))
   varset_M7IgG3_gp41 <- create_varsets(markers, grep("(?=.*IgG3)(?=.*gp41)", markers, value=TRUE, perl=TRUE))
-  varset_M7IgG3_breadthScores <- create_varsets(markers, grep("(?=.*IgG3)(?=.*mdw)(^((?!multi).)*$)", markers, value=TRUE, perl=TRUE))
+  varset_M7IgG3_breadthScore <- create_varsets(markers, grep("(?=.*IgG3)(?=.*mdw)(^((?!multi).)*$)", markers, value=TRUE, perl=TRUE))
   varset_M7IgG3_multi <- create_varsets(markers, grep("(?=.*IgG3)(?=.*mdw)(?=.*multi)", markers, value=TRUE, perl=TRUE))
-  varset_M7IgG3_overallScore <- create_varsets(markers, grep("(?=.*mdw)(?=.*xassay)", markers, value=TRUE, perl=TRUE))
-  # varset_M7_2_3 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
-  #                                            grep("ELspotCZ|ELspotMo", markers, value=TRUE, perl=TRUE)))
+  varset_M7IgGt_V1V2 <- create_varsets(markers, grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE))
+  varset_M7ADCC <- create_varsets(markers, grep("ADCC", markers, value=TRUE, perl=TRUE))
+  varset_M7_combPrimaryMarkers <- create_varsets(markers, grep("(?=.*prim)(?=.*comb)", markers, value=TRUE, perl=TRUE))
+  varset_M7_combAllMarkers <- create_varsets(markers, grep("(?=.*all)(?=.*comb)", markers, value=TRUE, perl=TRUE))
+  varset_M7_overallScore <- create_varsets(markers, grep("(?=.*mdw)(?=.*xassay)", markers, value=TRUE, perl=TRUE))
+  
+  varset_M7_2_3 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
+                                             grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE)))
   varset_M7_2_4 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
                                              grep("ADCP", markers, value=TRUE, perl=TRUE)))
-  varset_M7_2_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
-                                             grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
-  # varset_M7_3_4 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
-  #                                            grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
-  # varset_M7_3_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
-  #                                            grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
-  varset_M7_4_5 <- create_varsets(markers, c(grep("ADCP", markers, value=TRUE, perl=TRUE),
-                                             grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
-  # varset_M7_2_3_4 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
-  #                                            grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
-  # varset_M7_2_3_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
-  #                                            grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
-  # varset_M7_3_4_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
-  #                                              grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
-  # varset_M7_2_3_4_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
-  #                                              grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
-  varset_M7_2_4_5 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
-                                               grep("ADCP", markers, value=TRUE, perl=TRUE),
-                                               grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE)))
-
-  varset_names <- c("1_baselineFactors", "2_M7_ELISA", #"3_M7_ELISpot",
-                    "4_M7_ADCP", "5_M7_IgG3",
-                    "6_M7_IgG3gp140", "7_M7_IgG3gp120", "8_M7_IgG3V1V2", "9_M7_IgG3gp41", "10_M7_IgG3bScores",
-                    "11_M7_IgG3multi", "12_M7_IgG3overall",
-                    #"13_2+3",
-                    "14_2+4",
-                    "15_2+5",
-                    #"16_3+4", "17_3+5",
-                    "18_4+5",
-                    #"19_2+3+4", "20_2+3+5", "21_3+4+5", "22_2+3+4+5",
-                    "22_2+4+5")
-
+  varset_M7_2_5_12 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
+                                                grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE)))
+  varset_M7_2_13 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
+                                              grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  varset_M7_3_4 <- create_varsets(markers, c(grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                             grep("ADCP", markers, value=TRUE, perl=TRUE)))
+  varset_M7_3_5_12 <- create_varsets(markers, c(grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                                grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE)))
+  varset_M7_3_13 <- create_varsets(markers, c(grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                              grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  varset_M7_4_5_12 <- create_varsets(markers, c(grep("ADCP", markers, value=TRUE, perl=TRUE),
+                                                grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE)))
+  varset_M7_4_13 <- create_varsets(markers, c(grep("ADCP", markers, value=TRUE, perl=TRUE),
+                                              grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  varset_M7_5_12_13 <- create_varsets(markers, c(grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                 grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE),
+                                                 grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  varset_M7_2_3_4 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
+                                               grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                               grep("ADCP", markers, value=TRUE, perl=TRUE)))
+  varset_M7_2_3_5_12 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
+                                                  grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                                  grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                  grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE)))
+  varset_M7_2_3_13 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
+                                                grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                                grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  varset_M7_3_4_5_12 <- create_varsets(markers, c(grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                                  grep("ADCP", markers, value=TRUE, perl=TRUE),
+                                                  grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                  grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE)))
+  varset_M7_3_4_13 <- create_varsets(markers, c(grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                                grep("ADCP", markers, value=TRUE, perl=TRUE),
+                                                grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  varset_M7_4_5_12_13 <- create_varsets(markers, c(grep("ADCP", markers, value=TRUE, perl=TRUE),
+                                                   grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                   grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE),
+                                                   grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  varset_M7_2_3_4_5_12 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
+                                                    grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                                    grep("ADCP", markers, value=TRUE, perl=TRUE),
+                                                    grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                    grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE)))
+  varset_M7_2_3_4_13 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
+                                                  grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                                  grep("ADCP", markers, value=TRUE, perl=TRUE),
+                                                  grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  varset_M7_3_4_5_12_13 <- create_varsets(markers, c(grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                                     grep("ADCP", markers, value=TRUE, perl=TRUE),
+                                                     grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                     grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE),
+                                                     grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  varset_M7_2_3_4_5_12_13 <- create_varsets(markers, c(grep("ELCZ|ELMo", markers, value=TRUE, perl=TRUE),
+                                                       grep("ELISpot|ICS", markers, value=TRUE, perl=TRUE),
+                                                       grep("ADCP", markers, value=TRUE, perl=TRUE),
+                                                       grep("(?=.*IgG3)", markers, value=TRUE, perl=TRUE),
+                                                       grep("(?=.*IgG)(?=.*V1)(^((?!IgG3).)*$)", markers, value=TRUE, perl=TRUE),
+                                                       grep("ADCC", markers, value=TRUE, perl=TRUE)))
+  
+  varset_names <- c("1_baselineFactors", "2_M7ELISA", "3_M7Tcells","4_M7ADCP","5_M7IgG3",
+                    "6_M7IgG3_gp140","7_M7IgG3_gp120","8_M7IgG3_V1V2","9_M7IgG3_gp41",
+                    "10_M7IgG3_breadthScore","11_M7IgG3_multi","12_M7IgGt_V1V2","13_M7ADCC",
+                    "14_M7_combPrimaryMarkers", "15_M7_combAllMarkers","16_M7_overallScore", 
+                    "17_M7_2_3", "18_M7_2_4", "19_M7_2_5_12", "20_M7_2_13", "21_M7_3_4", 
+                    "22_M7_3_5_12", "23_M7_3_13", "24_M7_4_5_12", "25_M7_4_13", 
+                    "26_M7_5_12_13","27_M7_2_3_4", "28_M7_2_3_5_12","29_M7_2_3_13","30_M7_3_4_5_12",
+                    "31_M7_3_4_13","32_M7_4_5_12_13","33_M7_2_3_4_5_12","34_M7_2_3_4_13",
+                    "35_M7_3_4_5_12_13","36_M7_2_3_4_5_12_13")
+  
   # set up a matrix of all
-  varset_matrix <- rbind(varset_baselineRiskFactors, varset_M7ELISA, #varset_M7ELISpot,
-                         varset_M7ADCP, varset_M7IgG3, varset_M7IgG3_gp140, varset_M7IgG3_gp120,
-                         varset_M7IgG3_V1V2, varset_M7IgG3_gp41, varset_M7IgG3_breadthScores,
-                         varset_M7IgG3_multi, varset_M7IgG3_overallScore, #varset_M7_2_3,
-                         varset_M7_2_4, varset_M7_2_5, # varset_M7_3_4, # varset_M7_3_5,
-                         varset_M7_4_5, # varset_M7_2_3_4, varset_M7_2_3_5, varset_M7_3_4_5, varset_M7_2_3_4_5,
-                         varset_M7_2_4_5)
+  varset_matrix <- rbind(varset_baselineFactors, varset_M7ELISA, varset_M7Tcells,varset_M7ADCP,varset_M7IgG3,
+                         varset_M7IgG3_gp140,varset_M7IgG3_gp120,varset_M7IgG3_V1V2,varset_M7IgG3_gp41,
+                         varset_M7IgG3_breadthScore,varset_M7IgG3_multi,varset_M7IgGt_V1V2,varset_M7ADCC,
+                         varset_M7_combPrimaryMarkers, varset_M7_combAllMarkers,varset_M7_overallScore, 
+                         varset_M7_2_3, varset_M7_2_4, varset_M7_2_5_12, varset_M7_2_13, varset_M7_3_4, 
+                         varset_M7_3_5_12, varset_M7_3_13, varset_M7_4_5_12, varset_M7_4_13, 
+                         varset_M7_5_12_13, varset_M7_2_3_4, varset_M7_2_3_5_12,varset_M7_2_3_13,varset_M7_3_4_5_12,
+                         varset_M7_3_4_13,varset_M7_4_5_12_13,varset_M7_2_3_4_5_12,varset_M7_2_3_4_13,
+                         varset_M7_3_4_5_12_13,varset_M7_2_3_4_5_12_13)
 }
 
 # add on all of the individual marker variables
@@ -528,6 +578,12 @@ for (i in seq_len(length(markers))) {
   varset_matrix <- rbind(varset_matrix, this_varset)
   varset_names <- c(varset_names, markers[i])
 }
+
+# # Save varset_names for running batch job on cluster!
+# varset_names %>% as.data.frame() %>% rename(varset_names = ".") %>%
+#   mutate(varset_no = seq.int(nrow(.))) %>%
+#   select(varset_no, varset_names) %>%
+#   write.csv("output/varset_names.csv")
 
 # Study-agnostic set up of final data to pass to Super Learner -----------------
 

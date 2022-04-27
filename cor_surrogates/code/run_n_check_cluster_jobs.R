@@ -1,3 +1,4 @@
+# Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 #-----------------------------------------------
 # obligatory to append to the top of each script
@@ -19,6 +20,11 @@ varsets <- read.csv("output/varset_names.csv", stringsAsFactors = FALSE)
 system(paste0("export TRIAL=", Sys.getenv("TRIAL")))
 for(varset_number in 1:nrow(varsets)){
   system(paste("sbatch code/submit_cluster_job.sh", varset_number))
+}
+
+# Run all sbatch jobs through R!
+for(varset_number in 1:nrow(varsets)){
+  system(paste("sbatch code/submit_VIMPcluster_job.sh", varset_number))
 }
 
 ################################################################################
