@@ -931,12 +931,12 @@
       "Version": "0.1.5",
       "Source": "GitHub",
       "RemoteType": "github",
+      "Remotes": "github::tlverse/hal9001@devel",
       "RemoteHost": "api.github.com",
-      "RemoteUsername": "nhejazi",
       "RemoteRepo": "haldensify",
+      "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "16350cc39b68e61566f03a11f633e08073405355",
-      "Remotes": "github::tlverse/hal9001@devel",
       "Hash": "47c34f41535fb9c16bd44e760d61cb67"
     },
     "haven": {
@@ -2150,15 +2150,15 @@
     },
     "vimp": {
       "Package": "vimp",
-      "Version": "2.2.7",
+      "Version": "2.2.10",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "vimp",
       "RemoteUsername": "bdwilliamson",
       "RemoteRef": "HEAD",
-      "RemoteSha": "b4c9f37f3fd12ff4d46d9f2beca58ced6bb5ba48",
-      "Hash": "bf9162e71eb7cdf608e303f4ad2fdbc1"
+      "RemoteSha": "a36c80060b79f090cbf9c4149054e2dd20bb4221",
+      "Hash": "41db5910a2ebb9c34a7ff643b5d4bcdc"
     },
     "viridis": {
       "Package": "viridis",

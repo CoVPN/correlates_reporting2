@@ -9,8 +9,9 @@ library(survival)
 library(RhpcBLASctl)
 blas_get_num_procs()
 blas_set_num_threads(1L)
-stopifnot(blas_get_num_procs() == 1L)
+#stopifnot(blas_get_num_procs() == 1L) # Commented this out as it does not work as expected any more!
 omp_set_num_threads(1L)
+stopifnot(omp_get_max_threads() == 1L)
     
 set.seed(98109)
     
