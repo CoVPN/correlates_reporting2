@@ -821,11 +821,11 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
           axis.text.x = element_text(size = 2, color = "white"),
           axis.ticks = element_blank(),
           axis.title = element_blank()) +
-    annotate("text", x = 1.5, y = 35.2, size = 5,
+    annotate("text", x = 1.5, y = 37.2, size = 5,
              label = "Variable Set",
              fontface = "bold",
              hjust = 1) +
-    annotate("text", x = 2, y = 35.2, size = 5,
+    annotate("text", x = 2, y = 37.2, size = 5,
              label = "CV-AUC [95% CI]",
              fontface = "bold",
              hjust = 1)
@@ -905,7 +905,7 @@ make_forest_plot <- function(avgs){
           axis.text.x = element_text(size=16),
           axis.title.x = element_text(size=16),
           axis.text.y = element_blank(),
-          plot.margin=unit(c(1.8,-0.15,1,-0.15),"cm"),
+          plot.margin=unit(c(3.4,-0.15,1,-0.15),"cm"),
           panel.border = element_blank(),
           axis.line = element_line(colour = "black"))
 
@@ -927,21 +927,21 @@ make_forest_plot <- function(avgs){
   top_learner_nms_plot <- ggplot(avgs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
     xlim(0.7,2) +
-    theme(plot.margin=unit(c(0,-0.15,1.7,-0.15),"cm"),
+    theme(plot.margin=unit(c(1.6,-0.15,1.5,-0.15),"cm"),
           axis.line=element_blank(),
           axis.text.y = element_blank(),
           axis.text.x = element_text(size = 2, color = "white"),
           axis.ticks = element_blank(),
           axis.title = element_blank()) +
-    annotate("text", x = 1, y = 15.75, size = 5,
+    annotate("text", x = 1, y = 18.75, size = 5,
              label = "Learner",
              fontface = "bold",
              hjust = 1)  +
-    annotate("text", x = 1.5, y = 15.75, size = 5,
+    annotate("text", x = 1.5, y = 18.75, size = 5,
              label = "Screen",
              fontface = "bold",
              hjust = 1) +
-    annotate("text", x = 2, y = 15.75, size = 5,
+    annotate("text", x = 2, y = 18.75, size = 5,
              label = "CV-AUC [95% CI]",
              fontface = "bold",
              hjust = 1)

@@ -78,7 +78,7 @@ if (!grepl("Mock", study_name) & study_name == "COVE") {
     arrange(Learner, `Screen*`)
 } else if (!grepl("Mock", study_name) & study_name == "HVTN705") {
   tab <- tab %>%
-    mutate(Learner = fct_relevel(Learner, c("SL.mean", #"SL.gam", #"SL.bayesglm", 
+    mutate(Learner = fct_relevel(Learner, c("SL.mean", "SL.gam", #"SL.bayesglm", 
 					    "SL.glm", #"SL.glm.interaction",
 					    "SL.glmnet.0",
 					    "SL.glmnet.1",
