@@ -2,7 +2,7 @@
 header-includes:
    - \usepackage{float}
    
-title: "Moderna Optimal Surrogate Analysis Report"
+title: "HVTN-705 Optimal Surrogate Analysis Report"
 subtitle: "`r Sys.Date()`"
 
 output:
@@ -21,7 +21,5 @@ here::i_am("cor_surrogates/report.Rmd")
 
 \tableofcontents
 
-
-```{r, child=here("cor_surrogates", 'report_sub_Moderna.Rmd')}
+```{r, child=here("cor_surrogates", 'report_sub_HVTN705.Rmd')}
 ```
-
