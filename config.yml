@@ -47,7 +47,16 @@ hvtn705V1V2: &hvtn705V1V2
 
 hvtn705second: &hvtn705second
   <<: *hvtn705base
-  assays: [ELCZ,ELMo,ELISpotPTEEnv,ADCPgp140C97ZAfib,ADCPgp140Mos1fib,IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_V1V2,IgG3gp4140delta,IgG340mdw_multi,IgG340mdw_gp120_gp140_vm,IgG50mdw_V1V2,mdw_xassay,ADCCCAP8_pk,ADCCCH58_pk,ADCCWITO_pk,ADCCCAP8_pAUC,ADCCCH58_pAUC,ADCCWITO_pAUC,ICS4AnyEnvIFNg_OR_IL2,ICS8AnyEnvIFNg_OR_IL2,mdw_xassay_overall,IgG3AE.A244.V1V2.Tags_293F40delta,IgG3C.1086C.V1.V2.Tags40delta,IgG3gp70.001428.2.42.V1V240delta,IgG3gp70.1012.11.TC21.3257.V1V240delta,IgG3gp70.1394C9G1.V1V240delta,IgG3gp70.BF1266.431a.V1V240delta,IgG3gp70.Ce1086.B2.V1V240delta,IgG3gp70.B.CaseA.V1.V240delta,IgGAE.A244.V1V2.Tags_293F50delta,IgGC.1086C.V1.V2.Tags50delta,IgGgp70_001428.2.42.V1V250delta,IgGgp70_1012.11.TC21.3257.V1V250delta,IgGgp70_1394C9G1.V1V250delta,IgGgp70_9004SS.A3.4.V1V250delta,IgGgp70_BF1266.431a.V1V250delta,IgGgp70_Ce1086.B2.V1V250delta,IgGgp70.B.CaseA.V1.V250delta]
+  assays: [
+         ELCZ,ELMo,ELISpotPTEEnv,ADCPgp140C97ZAfib,ADCPgp140Mos1fib,
+         IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_V1V2,IgG3gp4140delta,IgG340mdw_multi,IgG340mdw_gp120_gp140_vm,
+         IgG50mdw_V1V2,mdw_xassay,
+         ADCCCAP8_pk,ADCCCH58_pk,ADCCWITO_pk,ADCCCAP8_pAUC,ADCCCH58_pAUC,ADCCWITO_pAUC,
+         ICS4AnyEnvIFNg_OR_IL2,ICS8AnyEnvIFNg_OR_IL2,
+         mdw_xassay_overall,
+         IgG3AE.A244.V1V2.Tags_293F40delta,IgG3C.1086C.V1.V2.Tags40delta,IgG3gp70.001428.2.42.V1V240delta,IgG3gp70.1012.11.TC21.3257.V1V240delta,IgG3gp70.1394C9G1.V1V240delta,IgG3gp70.BF1266.431a.V1V240delta,IgG3gp70.Ce1086.B2.V1V240delta,IgG3gp70.B.CaseA.V1.V240delta,
+         IgGAE.A244.V1V2.Tags_293F50delta,IgGC.1086C.V1.V2.Tags50delta,IgGgp70_001428.2.42.V1V250delta,IgGgp70_1012.11.TC21.3257.V1V250delta,IgGgp70_1394C9G1.V1V250delta,IgGgp70_9004SS.A3.4.V1V250delta,IgGgp70_BF1266.431a.V1V250delta,IgGgp70_Ce1086.B2.V1V250delta,IgGgp70.B.CaseA.V1.V250delta
+  ]
   assay_labels: [
         IgG to VT-C (EU/ml),
         IgG to VT-M (EU/ml),
@@ -138,7 +147,15 @@ hvtn705second: &hvtn705second
   lloxs:      [80,  100,  60,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA   ]
   uloqs: [1884160,1869824,NA,NA,NA,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000]
   primary_assays: [ELCZ,ELISpotPTEEnv,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay_overall]
-  multivariate_assays: [ELCZ+ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall]
+  multivariate_assays: [
+            ELCZ+ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall,
+            ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall,
+            IgG340mdw_V1V2+ICS4AnyEnvIFNg_OR_IL2+IgG340mdw_V1V2*ICS4AnyEnvIFNg_OR_IL2,
+            IgG3gp70.001428.2.42.V1V240delta+ICS4AnyEnvIFNg_OR_IL2+IgG3gp70.001428.2.42.V1V240delta*ICS4AnyEnvIFNg_OR_IL2,
+            IgG340mdw_V1V2+ADCPgp140C97ZAfib+IgG340mdw_V1V2*ADCPgp140C97ZAfib,
+            ELCZ+ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG50mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall,
+            IgG340mdw_V1V2+IgG50mdw_V1V2
+  ]
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata.csv
 
 
