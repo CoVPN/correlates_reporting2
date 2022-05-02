@@ -339,76 +339,6 @@ write(concatList(tab, "\\\\"), file=paste0(save.results.to, "marginalized_risks_
 ###################################################################################################
 # trichotomized markers, marginalized risk curves over time
 # no bootstrap
- 
-
-# categorical markers
-marginalized.risk.cat=function(fit.risk, marker.name, data, weights=rep(1, nrow(data)), t=NULL, verbose=FALSE, t.end=NULL) {  
-    
-    if("coxph" %in% class(fit.risk)) {
-        time.var=as.character(fit.risk$terms[[2]][[2]])
-        y.var=as.character(fit.risk$terms[[2]][[3]])
-    }
-    
-    # ss gives the levels that S takes
-    ss=unique(data[[marker.name]]); ss=sort(ss[!is.na(ss)])
-    
-    if (!"coxph" %in% class(fit.risk)) {
-        # logistic regression
-        dat.tmp.mrc=data
-        risks=sapply(ss, function(s) {
-            dat.tmp.mrc[[marker.name]]=s    
-            risks = predict(fit.risk, newdata=dat.tmp.mrc, type="response") # glm
-            sum(weights * risks) / sum(weights)    
-        })
-        names(risks)=levels(ss)
-        risks        
-            
-    } else {
-        # coxph or svycoxph
-        if (is.null(t)) {
-            # return risk versus time
-            tt=sort(unique(data[[time.var]][data[[y.var]]==1]))        
-            if (!is.null(t.end)) tt=c(tt, t.end)
-            risks=sapply(tt, function (t) {
-                dat.tmp.mrc=data
-                dat.tmp.mrc[[time.var]]=t
-                risks=sapply(ss, function(s) {        
-                    dat.tmp.mrc[[marker.name]]=s    
-                    risks = 1 - exp(-predict(fit.risk, newdata=dat.tmp.mrc, type="expected"))# coxph survival prob
-                    sum(weights * risks) / sum(weights)
-                })
-            })
-            risks=t(risks)
-            colnames(risks)=as.character(ss)        
-            list(time=tt, risk=risks)
-            
-        } else {
-            if (verbose) print("return risk at time t")
-            dat.tmp.mrc=data
-            time.var=fit.risk$terms[[2]][[2]]
-            dat.tmp.mrc[[time.var]]=t        
-            risks=sapply(ss, function(s) {
-                dat.tmp.mrc[[marker.name]]=s    
-                risks = 1 - exp(-predict(fit.risk, newdata=dat.tmp.mrc, type="expected")) # coxph survival prob
-                sum(weights * risks) / sum(weights)    
-            })
-            names(risks)=levels(ss)
-            risks        
-        }
-    }
-}
-
-
-# only pass ph2 data to these functions
-marginalized.risk=function(fit.risk, marker.name, data, categorical.s, weights=rep(1, nrow(data)), t=NULL, ss=NULL, verbose=FALSE, t.end=NULL) {
-    if(categorical.s) {
-        marginalized.risk.cat  (fit.risk, marker.name, data, weights=weights, t=t, verbose=verbose, t.end=t.end) 
-    } else {
-        marginalized.risk.cont (fit.risk, marker.name, data, weights=weights, t=t, ss=ss, verbose=verbose) 
-    }
-}
-
-
 
 risks.all.ter=list()
 for (a in assays) {        
@@ -419,12 +349,17 @@ for (a in assays) {
 #    f2=update(form.0, as.formula(paste0(marker.name,"~.")))
 #    fit.s=nnet::multinom(f2, dat.vac.seroneg, weights=dat.vac.seroneg$wt) 
         
-    risks.all.ter[[a]]=if(length(fit.risk)==1) NA else marginalized.risk(fit.risk, marker.name, subset(dat.vac.seroneg,ph2==1), weights=subset(dat.vac.seroneg,ph2==1,wt,drop=T), categorical.s=T, t.end=tfinal.tpeak)
+    if(length(fit.risk)==1) {
+        risks.all.ter[[a]]=NA
+    } else {
+        risks.all.ter[[a]]=marginalized.risk(fit.risk, marker.name, subset(dat.vac.seroneg,ph2==1), weights=subset(dat.vac.seroneg,ph2==1,wt,drop=T), categorical.s=T, t.end=tfinal.tpeak)
+    }
 }
 #rv$marginalized.risk.over.time=list()
 #for (a in assays) rv$marginalized.risk.over.time[[a]] = risks.all.ter[[a]]
-    
-    
+
+
+# get cumulative risk from placebo
 fit.0=coxph(form.s, dat.pla.seroneg) 
 risk.0= 1 - exp(-predict(fit.0, type="expected"))
 time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
@@ -453,6 +388,8 @@ if (config$is_ows_trial) {
 }
 #
 if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
+
+
 for (a in assays) {        
     mypdf(oma=c(1,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_", study_name), mfrow=.mfrow, mar=c(12,4,5,2))
     par(las=1, cex.axis=0.9, cex.lab=1)# axis label 
@@ -511,3 +448,28 @@ dev.off()
 #
 cumsum(summary(survfit(form.s, subset(dat.vac.seroneg, ph2==1)), times=x.time)$n.event)
 table(subset(dat.vac.seroneg, yy==1)[["Day"%.%tpeak%.%"pseudoneutid80cat"]])
+
+
+# for goodness of fit check on PH assumptions, plot log(-log) marginalized survival curves for the low medium and high tertile subgroups
+for (a in assays) {        
+    mypdf(onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_logclog"), mfrow=.mfrow)
+    marker.name="Day"%.%tpeak%.%a%.%"cat"    
+    
+    out=risks.all.ter[[a]]
+    # cutpoints
+    q.a=marker.cutpoints[[a]][["Day"%.%tpeak]]
+    
+    if(length(out)==1) empty.plot() else {
+        mymatplot(out$time[out$time<=tfinal.tpeak], log(-log(out$risk[out$time<=tfinal.tpeak,])), 
+            lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, 
+            ylab=paste0("log(-log(Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak, "))"), xlab="", 
+            las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
+        title(xlab="Days Since Day "%.%tpeak%.%" Visit", line=2)
+        title(main=labels.title["Day"%.%tpeak,a], cex.main=.9, line=2)
+        mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
+        legend=c("Vaccine low","Vaccine medium","Vaccine high")
+        mylegend(x=3, legend=legend, lty=c(1:3), col=c("green3","green","darkgreen"), lwd=2)
+    }
+    
+dev.off()    
+}

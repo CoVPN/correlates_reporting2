@@ -28,10 +28,15 @@
 \newif\ifshowsen
 \showsen`r ifelse(study_name=="HVTN705" & a!="IgG340mdw_V1V2", 'false', 'true')`
 \ifshowsen
+
 \begin{figure}
 \center
-  \includegraphics[height=3.5in,width=3.5in]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_eq_`r study_name`}
-  \caption{Controlled VE curves (=s) with sensitivity analysis as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates_`r study_name`} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r llox_label[a]` =`r lloxs[a]`. `r special.note`}
+  \subfloat[][Controlled VE curves (=s) with sensitivity analysis as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates_`r study_name`} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r llox_label[a]` =`r lloxs[a]`. ]{\includegraphics
+  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_eq_`r study_name`}}
+  \hspace{10pt}
+  \subfloat[][log(-log) of marginalized cumulative incidence rate curves for trichotomized Day `r tpeak` markers among vaccine recipients. ]{\includegraphics
+  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_cat_logclog}}
+\caption{More plots. `r special.note`}
 \end{figure}
 \clearpage
 \fi
@@ -46,6 +51,9 @@
   [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_geq_`r study_name`.pdf}}
 \caption{Marginalized cumulative risk curves and controlled VE curves (>=s). `r special.note`}
 \end{figure}
+
+
+
 
 
 

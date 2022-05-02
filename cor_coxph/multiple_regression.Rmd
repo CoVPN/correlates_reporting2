@@ -20,3 +20,4 @@
     %\label{tab:CoR_multivariable_svycoxph_pretty_`r study_name`}
 \end{table}
 
+\clearpage
