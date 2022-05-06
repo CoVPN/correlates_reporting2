@@ -49,7 +49,8 @@ hvtn705second: &hvtn705second
   <<: *hvtn705base
   assays: [
          ELCZ,ELMo,ELISpotPTEEnv,ADCPgp140C97ZAfib,ADCPgp140Mos1fib,
-         IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_V1V2,IgG3gp4140delta,IgG340mdw_multi,IgG340mdw_gp120_gp140_vm,
+         IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_V1V2,
+         IgG3gp4140delta,IgG340mdw_multi,IgG340mdw_gp120_gp140_vm,
          IgG50mdw_V1V2,mdw_xassay,
          ADCCCAP8_pk,ADCCCH58_pk,ADCCWITO_pk,ADCCCAP8_pAUC,ADCCCH58_pAUC,ADCCWITO_pAUC,
          ICS4AnyEnvIFNg_OR_IL2,ICS8AnyEnvIFNg_OR_IL2,
@@ -254,17 +255,12 @@ prevent19: &prevent19
   num_perm_replicates: 10000
   
 
-azd1222: &azd1222
+azd1222_base: &azd1222_base
   <<: *ows_trial
-  llox_label: LOD
   two_marker_timepoints: yes
   timepoints: [29,57]
   times: [B, Day29, Day57, Delta29overB, Delta57overB, Delta57over29]
   time_labels: [Day 1, Day 29, Day 57, D29 fold-rise over D1, D57 fold-rise over D1, D57 fold-rise over D29]
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv
-  assays: [pseudoneutid50]
-  assay_labels: [PsV Neutralization 50% Titer]
-  assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
   study_name: AZD1222
   covariates_riskscore: ~.+ risk_score
   ve_ylim: [0,1]
@@ -273,8 +269,23 @@ azd1222: &azd1222
   num_boot_replicates: 1000
   num_perm_replicates: 10000
   
+azd1222: &azd1222
+  <<: *azd1222_base
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv
+  assays: [pseudoneutid50]
+  llox_label: [LOD]
+  assay_labels: [PsV Neutralization 50% Titer]
+  assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
 
-  
+azd1222_bAb: &azd1222_bAb
+  <<: *azd1222_base
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_bAb_data_processed_with_riskscore.csv
+  assays: [bindSpike]
+  llox_label: [LLOQ]
+  assay_labels: [Binding Antibody to Spike]
+  assay_labels_short: [Anti Spike IgG (BAU/ml)]
+
+
 janssen_trial: &janssen_trial
   <<: *ows_trial
   two_marker_timepoints: no
