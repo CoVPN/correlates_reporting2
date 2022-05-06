@@ -338,6 +338,12 @@ if (config$is_ows_trial) {
         
     } else if(study_name=="AZD1222") {
            
+        # data less than lloq is set to lloq/2 in the raw data, Nexelis
+        llods["bindSpike"]=NA 
+        lloqs["bindSpike"]=62.8*0.0090 # 0.5652
+        uloqs["bindSpike"]=770464.6*0.0090 # 6934.181
+        pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
+    
         # data less than lod is set to lod/2
         llods["pseudoneutid50"]=2.612  
         lloqs["pseudoneutid50"]=56*0.0653 # 3.6568
