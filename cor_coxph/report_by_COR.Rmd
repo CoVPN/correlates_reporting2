@@ -17,32 +17,7 @@ The main regression model is the Cox proportional hazards model. All plots are m
     %\label{tab:CoR_univariable_svycoxph_pretty_`r study_name`}
 \end{table}
 
-
-\scriptsize
-\input{`r paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", study_name)`}
-
-$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints: 
-```{r, echo=FALSE, results='asis'}
-  for (a in assays) {
-    res = knitr::knit_child(c(here::here('cor_coxph', 'cutpoints.Rmd')), quiet = TRUE)
-    cat(res, sep = '')
-  }
-```
-all on the log10 scale.
-
-$\ast\ast$`r txt.coxph.note2`
-
-$\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
-
-$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
-
-`r special.note`
-
-
-
-
-\clearpage
-
+\vspace{10pt}
 
 \begin{table}[H]
 \caption{Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per SD increment in the marker*}
@@ -58,6 +33,20 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \end{table}
 
 
+\clearpage
+\scriptsize
+\input{`r paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", study_name)`}
+\normalsize
+\vspace{-15pt}
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_Day", tpeak, assays, "_", study_name, "}"), sep=",")`
+$\ast\ast$`r txt.coxph.note2`
+$\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
+`r special.note`
+
+\vspace{30pt}
+
+
 `r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_real")) '<!--'`
 \begin{table}[H]
 \caption{The ratio of sample sizes required to power a future trial for the column marker compared to the row marker (Follmann 2018). Confidence intervals are based on $10^3$ bootstrap replicates. }
@@ -69,11 +58,21 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 `r special.note`
     %\label{tab:follmann2018_samplesizeratio}
 \end{table}
+\vspace{10pt}
 `r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_real"))'-->'`
 
 
+\begin{table}[H]
+\caption{Number of cases and non-cases in ph2 or not}
+\begin{center}
+  \input{`r pathCoRoutput`/tab1}\\
+\end{center}
+\end{table}
+
 
 \clearpage
+
+
 
 <!-- Forest plots -->
 

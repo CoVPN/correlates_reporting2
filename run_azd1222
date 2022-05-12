@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for T in cov002
+for T in azd1222
 do
     export TRIAL=$T 
     echo $TRIAL

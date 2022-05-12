@@ -33,10 +33,10 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     ylim=if(log=="y") transf(c(0,.98)) else c(0, 1) 
     hist.shrink=1/c(ADCP=2,pseudoneutid50=1.2,bindSpike=1.3,bindRBD=1.3)
     
-    all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real", "AZ-COV002", "prevent19")
-    studies=c("COVE","ENSEMBLE","ENSEMBLE US","ENSEMBLE LA","ENSEMBLE SA","AZ-COV002", "PREVENT19"); names(studies)=all.trials
-    cols=  c("blue","green","green","olivedrab3","darkseagreen4","orange","cyan"); names(cols)=all.trials
-    hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.3, maxColorValue=255)})
+    all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real", "AZ-COV002", "prevent19", "azd1222")
+    studies=c("Moderna COVE","Janssen ENSEMBLE","Janssen ENSEMBLE US","Janssen ENSEMBLE LA","Janssen ENSEMBLE SA","AZCOV002", "NVX PREVENT-19", "AZD1222"); names(studies)=all.trials
+    cols=  c("purple","green","green","olivedrab3","darkseagreen4","orange","cyan","tan"); names(cols)=all.trials
+    hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.5, maxColorValue=255)})
     
     .subset=match(TRIALS, all.trials)
     
@@ -50,7 +50,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     for (x in TRIALS) {    
         TRIAL=get.trial(x, a)
         Sys.setenv("TRIAL"=TRIAL)
-        COR = switch(x, moderna_real="D57", prevent19="D35", "D29IncludeNotMolecConfirmedstart1")
+        COR = switch(x, moderna_real="D57", azd1222="D57", prevent19="D35", "D29IncludeNotMolecConfirmedstart1")
         # key to have local = T
         source(here::here("..", "_common.R"), local=T)
         
@@ -76,7 +76,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
         overall.ve.ls=list()
         for (x in TRIALS) {    
             TRIAL=get.trial(x, a)
-            COR = switch(x, moderna_real="D57", prevent19="D35", "D29IncludeNotMolecConfirmedstart1")
+            COR = switch(x, moderna_real="D57", azd1222="D57", prevent19="D35", "D29IncludeNotMolecConfirmedstart1")
             load(here::here("output", TRIAL, COR, "marginalized.risk.no.marker.Rdata"))
             load(here::here("output", TRIAL, COR, "marginalized.risk.Rdata"))
             risks=get("risks.all.1")[[a]] 
@@ -131,13 +131,19 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     
         # legend
         legend=paste0(studies[TRIALS], ", ",sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%")[1,])
-        if (include.az) legend=c(legend, "AZ-COV002, 66.7%")
+        if (include.az) legend=c(legend, "AZCOV002, 66.7%")
         mylegend(x=ifelse(log=="",6,1), col=cols[c(TRIALS, if(include.az) "AZ-COV002")], legend=legend, lty=1, lwd=2, cex=.7)
     
     dev.off()    
     
 }
 
+
+# COVE + ENSEMBLE/US + AZ + PREVENT19 + COV002
+for (a in c("pseudoneutid50")) {
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T, log="y")
+}
 
 # COVE + ENSEMBLE + AZ
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {

@@ -309,7 +309,8 @@ if (!is.null(config$multivariate_assays)) {
       for (i in 1:2) {
       # 1: per SD; 2: per 10-fold
         aa=trim(strsplit(a, "\\+")[[1]])
-        tmp=concatList(paste0(ifelse(i==1, "scale", ""), "(Day",tpeak, aa),")+") %.% ")"
+        tmp=a
+        for (x in aa[!contain(aa, "\\*")]) tmp=gsub(x, paste0(if(i==1) "scale","(Day",tpeak,x,")"), tmp) # replace every variable with Day210x, with or without scale
         f= update(form.0, as.formula(paste0("~.+", tmp)))
         fit=svycoxph(f, design=design.vacc.seroneg) 
         var.ind=length(coef(fit)) - length(aa):1 + 1
@@ -325,13 +326,15 @@ if (!is.null(config$multivariate_assays)) {
         p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
         
         tab=cbind(est, p)
-        rownames(tab)=c(labels.axis["Day"%.%tpeak, aa])
+        tmp=match(aa, colnames(labels.axis))
+        tmp[is.na(tmp)]=1 # otherwise, labels.axis["Day"%.%tpeak, tmp] would throw an error when tmp is NA
+        rownames(tab)=ifelse(aa %in% colnames(labels.axis), labels.axis["Day"%.%tpeak, tmp], aa)
         colnames(tab)=c(paste0("HR per ",ifelse(i==1,"sd","10 fold")," incr."), "P value")
         tab
         tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
         
         mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold"), align="c", include.colnames = T, save2input.only=T, 
-            input.foldername=save.results.to, sanitize.text.function=identity)
+            input.foldername=save.results.to)
       }
     }
     

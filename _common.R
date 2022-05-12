@@ -281,7 +281,7 @@ if (config$is_ows_trial) {
         ,
         ADCP=c( 
             pos.cutoff=11.57,# as same lod
-            LLOD = 11.57,
+            LLOD = 11.57,    # data less than lod is set to LLOD/2
             ULOD = NA,
             LLOQ = 8.87,
             ULOQ = 211.56)
@@ -336,8 +336,14 @@ if (config$is_ows_trial) {
         lloxs=llods 
         lloxs["bindSpike"]=lloqs["bindSpike"]
         
-    } else if(study_name=="COV002") {
+    } else if(study_name=="AZD1222") {
            
+        # data less than lloq is set to lloq/2 in the raw data, Nexelis
+        llods["bindSpike"]=NA 
+        lloqs["bindSpike"]=62.8*0.0090 # 0.5652
+        uloqs["bindSpike"]=238528.4*0.0090 # 2146.756
+        pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
+    
         # data less than lod is set to lod/2
         llods["pseudoneutid50"]=2.612  
         lloqs["pseudoneutid50"]=56*0.0653 # 3.6568
@@ -345,6 +351,7 @@ if (config$is_ows_trial) {
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
         
         lloxs=llods 
+        lloxs["bindSpike"]=lloqs["bindSpike"]
         
     } else stop("unknown study_name")
     
@@ -479,7 +486,7 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
       "Age >= 60, At risk"
     )
     
-} else if (study_name %in% c("PREVENT19","COV002")) {
+} else if (study_name %in% c("PREVENT19","AZD1222")) {
     Bstratum.labels <- c(
       "Age >= 65",
       "Age < 65"
@@ -537,7 +544,7 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
       "Mexico, Age >= 65"
     )
 
-} else if (study_name=="COV002") {
+} else if (study_name=="AZD1222") {
     demo.stratum.labels <- c(
       "US White non-Hisp, Age 18-64",
       "US White non-Hisp, Age >= 65",

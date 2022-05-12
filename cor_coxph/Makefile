@@ -21,9 +21,10 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2 hvtn705second hvtn705
 	Rscript code/cor_coxph.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/cor_coxph.R D35
-else ifeq ($(TRIAL),$(filter $(TRIAL), cov002))
+else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222, azd1222_bAb))
 	Rscript code/cor_coxph.R D29
 	Rscript code/cor_coxph.R D57
+	Rscript code/cor_coxph.R D29start28
 	Rscript code/cor_graphical_time_to_event.R D29D57
 endif
 
