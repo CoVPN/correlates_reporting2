@@ -9,7 +9,7 @@ library(xtable) # this is a dependency of kyotil
 library(survey)
 library(Hmisc)
 library(plotrix) # wtd.hist
-source(here::here("code", "params.R"))
+source(here::here("code", "params.R")) # get.trial
 Sys.setenv(VERBOSE=1)
 print("meta ...")
 ve.az=read.csv("../data_clean/AZChAd26UKphase3FengetalCorrelates.csv")
@@ -140,7 +140,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
 
 
 # COVE + ENSEMBLE/US + AZ + PREVENT19 + COV002
-for (a in c("pseudoneutid50")) {
+for (a in c("pseudoneutid50","bindSpike")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T, log="y")
 }
