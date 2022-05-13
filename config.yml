@@ -262,7 +262,7 @@ azd1222_base: &azd1222_base
   times: [B, Day29, Day57, Delta29overB, Delta57overB, Delta57over29]
   time_labels: [Day 1, Day 29, Day 57, D29 fold-rise over D1, D57 fold-rise over D1, D57 fold-rise over D29]
   study_name: AZD1222
-  covariates_riskscore: ~.+ risk_score
+  covariates_riskscore: ~.+ Age + risk_score
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]
   low_efficacy: no
