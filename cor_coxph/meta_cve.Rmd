@@ -99,6 +99,22 @@ for (a in c("pseudoneutid50","bindSpike")) {
 }
 ```
 
+# COVE + ENSEMBLE US + AZD1222 + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub10.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# AZD1222 + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub11.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
 
 
 # Controlled VE based on Cox Models with Discretized Markers

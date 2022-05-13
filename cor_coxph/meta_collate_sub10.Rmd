@@ -1,0 +1,12 @@
+\begin{figure}
+  \center
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curveslog_10_`r a`.pdf}
+  \hspace{10pt}
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curves_10_`r a`.pdf}
+  \caption{Controlled VE curves. COVE: starting 7 days and ending 100 days post Day 57. 
+  ENSEMBLE: starting 1 days post Day 29; pooled: ending 54 days; US: ending 53 days; LA: ending 48 days; SA: ending 40 days. 
+  PREVENT-19: starting 7 days post Day 35.
+  AZD1222: starting 7 days post Day 57.
+  }
+\end{figure}
+\clearpage

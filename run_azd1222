@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for T in azd1222
+for T in azd1222 azd1222_bAb
 do
     export TRIAL=$T 
     echo $TRIAL
