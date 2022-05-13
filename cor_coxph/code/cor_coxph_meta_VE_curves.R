@@ -139,7 +139,19 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
 }
 
 
-# COVE + ENSEMBLE/US + AZ + PREVENT19 + COV002
+# COVE + ENSEMBLE/US + AZ + AZD1222
+for (a in c("pseudoneutid50","bindSpike")) {
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "azd1222"), file.name="10", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "azd1222"), file.name="10", include.az=T, log="y")
+}
+
+# AZ + AZD1222
+for (a in c("pseudoneutid50","bindSpike")) {
+    draw.ve.curves(a, TRIALS=c("azd1222"), file.name="11", include.az=T)
+    draw.ve.curves(a, TRIALS=c("azd1222"), file.name="11", include.az=T, log="y")
+}
+
+# COVE + ENSEMBLE/US + AZ + PREVENT19 + AZD1222
 for (a in c("pseudoneutid50","bindSpike")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T, log="y")
