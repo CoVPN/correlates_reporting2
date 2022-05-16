@@ -3,10 +3,16 @@
 ```{r cop-mediator-setup, echo = FALSE, message = FALSE, warning = FALSE, results="asis"}
 library(here)
 config <- config::get(config = Sys.getenv("TRIAL"))
-if(config$study_name_code == "ENSEMBLE"){
-	all_COR <- c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
-}else if(config$study_name_code == "COVE"){
-	all_COR <- c("D29")
+if(!inherits(config$study_name_code, NULL)){
+	if(config$study_name_code == "ENSEMBLE"){
+		all_COR <- c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
+	}else if(config$study_name_code == "COVE"){
+		all_COR <- c("D29")
+	}
+}else{
+	if(config$study_name == "HVTN705"){
+		all_COR <- c("D210")
+	}
 }
 
 for(COR in all_COR){

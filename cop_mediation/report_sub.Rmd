@@ -14,6 +14,10 @@ if(COR == "D29IncludeNotMolecConfirmed"){
 }else if(COR == "D29"){
   info <- "Day 29 analysis"
   title <- "Day 29"
+}else if(COR == "D210"){
+  info <- "Day 210 analysis"
+  title <- "Day 210"
+  config$study_name_code <- "HVTN705"
 }
 
 ```
@@ -40,11 +44,20 @@ if(config$study_name_code == "ENSEMBLE"){
     paste0("full_result_moderna_real_", COR, ".rds")
   ))
 }
+  if(config$study_name == "HVTN705"){
+    full_result_primary <- readRDS(here::here("cop_mediation", "output",
+      paste0("full_result_hvtn705secondprimary_", COR, ".rds")
+    ))
+    full_result <- readRDS(here::here("cop_mediation", "output",
+      paste0("full_result_hvtn705second_", COR, ".rds")
+    ))
+    # full_result <- rbind(full_result_primary, full_result_secondary)
+  }
 
 init_kable <- knitr::kable(full_result, 
             format = "latex", row.names = FALSE, booktabs = TRUE, escape = FALSE,
             caption = paste0("Table of mediation effect estimates for quantitative markers with 95\\% confidence intervals. \\newline{} Direct VE = VE comparing vaccine vs. placebo with marker set to distribution in placebo. \\newline{} Indirect VE = VE in vaccinated comparing observed marker vs. hypothetical marker under placebo. \\newline{} Prop. mediated = fraction of total risk reduction from vaccine attributed to antibody response."),
-            linesep = c(rep("", length(assays)-1), "\\hline"))
+            linesep = '')
 if(any(is.na(full_result))){
 	init_kable <- kableExtra::add_footnote(init_kable, "NA denotes insufficient overlap in antibody response between vaccinated and control participants.")
 }
@@ -76,7 +89,7 @@ if(config$study_name_code == "ENSEMBLE"){
   )
   base_caption <- "Endpoints included in phase 2 by study arm, binding analysis "
   base_caption2 <- "Total endpoints by study arm in binding data set "
-}else if(config$study_name_code == "COVE"){
+}else{
   base_caption <- "Endpoints included in phase 2 by study arm"
   base_caption2 <- "Total endpoints by study arm"
 }
@@ -111,7 +124,7 @@ kableExtra::kable_styling(
   latex_options = "HOLD_position"
 )
 
-if(study_name_code == "ENSEMBLE"){
+if(config$study_name_code == "ENSEMBLE"){
   # kableExtra::kable_styling(
   #   knitr::kable(summary_stats_ADCP$tab2, caption = paste0("Total endpoints by study arm in ADCP data set ", ifelse(is_start1, "starting 1 day after Day 29", ""))),
   #   latex_options = "HOLD_position"
@@ -135,7 +148,7 @@ if(config$study_name_code == "ENSEMBLE"){
   day <- c(summary_stats$day_of_analysis,
            # summary_stats_ADCP$day_of_analysis,
            summary_stats_PsV$day_of_analysis)  
-}else if(config$study_name_code == "COVE"){
+}else{
   assay <- "All assays"
   day <- summary_stats$day_of_analysis
 }

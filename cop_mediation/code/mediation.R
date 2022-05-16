@@ -10,26 +10,31 @@ source(here::here("code", "format_utils.R"))
 data <- dat.mock
 
 # tf_Day <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2, "EventTimePrimary" ])
-tf_Day <- config$tfinal.tpeak
+tf_Day <- config.cor$tfinal.tpeak
 
 print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)
 )
-if(config$study_name_code == "ENSEMBLE"){
-  times <- "Day29"
-  covariates <- c("risk_score", "Region1", "Region2")
-  data$Region1 <- as.numeric(data$Region == 1)
-  data$Region2 <- as.numeric(data$Region == 2)
-  run_survtmle <- FALSE
-  tf_Day <- 54
-}else if(config$study_name_code == "COVE"){
-  times <- c("Day29") # Day57 all have positivity issues
-  covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
-  run_survtmle <- FALSE
+if(!is.null(config$study_name_code)){
+  if(config$study_name_code == "ENSEMBLE"){
+    times <- "Day29"
+    covariates <- c("risk_score", "Region1", "Region2")
+    data$Region1 <- as.numeric(data$Region == 1)
+    data$Region2 <- as.numeric(data$Region == 2)
+    run_survtmle <- FALSE
+    tf_Day <- 54
+    cut_size <- 6 
+  }else if(config$study_name_code == "COVE"){
+    times <- c("Day29") # Day57 all have positivity issues
+    covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
+    run_survtmle <- FALSE
+    cut_size <- 6
+  }
 }else if(config$study_name == "HVTN705"){
   times <- "Day210"
   covariates <- c("RSA", "Age", "BMI", "Riskscore")
   run_survtmle <- FALSE
+  cut_size <- 7
 }
 
 include_assays <- NULL
@@ -168,7 +173,7 @@ for (marker in include_assays) {
   }
 	this_row <- format_row(fit)
 	quant_result <- rbind(quant_result, this_row)
-  which_assay <- substr(marker, 6, nchar(marker)) ## this could be written better
+  which_assay <- substr(marker, cut_size, nchar(marker)) ## this could be written better
 	assay_col <- c(assay_col, gsub("\\%", "\\\\\\%", labels.assays[which_assay]))
 }
 
