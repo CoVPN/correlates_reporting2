@@ -1,8 +1,8 @@
 #Sys.setenv(TRIAL = "janssen_sa_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "cov002"); COR="D29"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "hvtn705secondprimary"); COR="D210"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "azd1222"); COR="D29start28"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -73,6 +73,10 @@ for (a in assays) {
 rv=list() 
 rv$marker.cutpoints=marker.cutpoints
 
+tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
+print(tab)
+mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
+
 
 
 ###################################################################################################
@@ -108,7 +112,7 @@ if (Sys.getenv("TRIAL") == "janssen_pooled_real" & COR=="D29IncludeNotMolecConfi
 
 
 # forest plots
-if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","COV002")) {
+if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","AZD1222")) {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
     

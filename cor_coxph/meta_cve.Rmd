@@ -27,8 +27,7 @@ renv::activate(project = here::here(".."))
 \clearpage
 
 
-# COVE + ENSEMBLE + AZ
-
+# COVE + ENSEMBLE + AZCOV002
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub1.Rmd')), quiet = TRUE)
@@ -36,8 +35,15 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 }
 ```
 
-# COVE + ENSEMBLE regions
+# COVE + ENSEMBLE regions + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub6.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
 
+# COVE + ENSEMBLE regions
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub2.Rmd')), quiet = TRUE)
@@ -46,7 +52,6 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 ```
 
 # ENSEMBLE regions
-
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub3.Rmd')), quiet = TRUE)
@@ -54,8 +59,7 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
 }
 ```
 
-# COVE + ENSEMBLE/US + AZ
-
+# COVE + ENSEMBLE/US + AZCOV002
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub4.Rmd')), quiet = TRUE)
@@ -64,7 +68,6 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 ```
 
 # COVE + ENSEMBLE/US
-
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub5.Rmd')), quiet = TRUE)
@@ -72,18 +75,7 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 }
 ```
 
-# COVE + ENSEMBLE regions + AZ
-
-```{r, echo=FALSE, results='asis'}
-for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
-  res = knitr::knit_child(c(here::here('meta_collate_sub6.Rmd')), quiet = TRUE)
-  cat(res, sep = '\n')
-}
-```
-
-
-# COVE + ENSEMBLE US + AZ + PREVENT19
-
+# COVE + ENSEMBLE US + PREVENT19 + AZCOV002
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub7.Rmd')), quiet = TRUE)
@@ -92,10 +84,33 @@ for (a in c("pseudoneutid50","bindSpike")) {
 ```
 
 # COVE + ENSEMBLE US + PREVENT19
-
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub8.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# COVE + ENSEMBLE US + PREVENT19 + AZD1222 + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub9.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# COVE + ENSEMBLE US + AZD1222 + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub10.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# AZD1222 + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub11.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```
