@@ -300,21 +300,44 @@ if (config$is_ows_trial) {
         
     } else if(study_name=="ENSEMBLE") {
         
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindSpike"]=NA 
-        lloqs["bindSpike"]=NA 
-        uloqs["bindSpike"]=238.1165 
-    
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindRBD"]=NA                 
-        lloqs["bindRBD"]=NA                 
-        uloqs["bindRBD"]=172.5755    
-                
-        # data less than lloq is set to lloq/2
-        llods["pseudoneutid50"]=NA  
-        lloqs["pseudoneutid50"]=2.7426  
-        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
-        uloqs["pseudoneutid50"]=619.3052 
+        if (contain(attr(config, "config"), "real")) {
+            # preliminary part A data
+            
+            # data less than pos cutoff is set to pos.cutoff/2
+            llods["bindSpike"]=NA 
+            lloqs["bindSpike"]=NA 
+            uloqs["bindSpike"]=238.1165 
+        
+            # data less than pos cutoff is set to pos.cutoff/2
+            llods["bindRBD"]=NA                 
+            lloqs["bindRBD"]=NA                 
+            uloqs["bindRBD"]=172.5755    
+                    
+            # data less than lloq is set to lloq/2
+            llods["pseudoneutid50"]=NA  
+            lloqs["pseudoneutid50"]=42*0.0653  #2.7426
+            pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
+            uloqs["pseudoneutid50"]=9484*0.0653 # 619.3052
+            
+        } else if (contain(attr(config, "config"), "partA")) {
+            # complete part A data
+            
+            # data less than pos cutoff is set to pos.cutoff/2
+            llods["bindSpike"]=NA 
+            lloqs["bindSpike"]=NA 
+            uloqs["bindSpike"]=238.1165 
+        
+            # data less than pos cutoff is set to pos.cutoff/2
+            llods["bindRBD"]=NA                 
+            lloqs["bindRBD"]=NA                 
+            uloqs["bindRBD"]=172.5755    
+                    
+            # data less than lloq is set to lloq/2
+            llods["pseudoneutid50"]=NA  
+            lloqs["pseudoneutid50"]=75*0.0653  #4.8975
+            pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
+            uloqs["pseudoneutid50"]=12936*0.0653 # 844.7208
+        }
         
         lloxs=llods 
         lloxs["pseudoneutid50"]=lloqs["pseudoneutid50"]

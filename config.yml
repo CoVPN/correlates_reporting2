@@ -320,6 +320,14 @@ janssen_trial_realADCP: &janssen_trial_realADCP
   num_boot_replicates: 1000
   num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
 
+janssen_pooled_partA:
+  <<: *janssen_trial_real
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
+  subset_variable: None
+  subset_value: All
+  covariates_riskscore: ~.+ risk_score + as.factor(Region)
+  covariates_norisksco: ~.+ Age        + as.factor(Region)
+
 janssen_pooled_real:
   <<: *janssen_trial_real
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_real_data_processed_with_riskscore.csv
