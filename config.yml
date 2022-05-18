@@ -320,8 +320,21 @@ janssen_trial_realADCP: &janssen_trial_realADCP
   num_boot_replicates: 1000
   num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
 
+janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
+  <<: *janssen_trial
+  assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, Phagocytic Score]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Phagocytic Score]
+  llox_label: [LOD, LOD, LLOQ, LLOQ]
+  primary_assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
+  study_name: ENSEMBLE
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+
+
+
 janssen_pooled_partA:
-  <<: *janssen_trial_real
+  <<: *janssen_trial_partA
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
   subset_variable: None
   subset_value: All
