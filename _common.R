@@ -49,7 +49,11 @@ for(opt in names(config)){
 if (exists("COR")) {
     myprint(COR)
     # making sure we are inadvertently using the wrong COR
-    if(study_name=="ENSEMBLE" & COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
+    if(study_name=="ENSEMBLE") {
+        if (contain(attr(config, "config"), "real")) {
+            if (COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
+        } else stop("todo")
+    } 
 
     config.cor <- config::get(config = COR)
     tpeak=as.integer(paste0(config.cor$tpeak))
@@ -278,13 +282,6 @@ if (config$is_ows_trial) {
             ULOD = NA,
             LLOQ =  159.79*0.276,
             ULOQ = 11173.21*0.276)
-        ,
-        ADCP=c( 
-            pos.cutoff=11.57,# as same lod
-            LLOD = 11.57,    # data less than lod is set to LLOD/2
-            ULOD = NA,
-            LLOQ = 8.87,
-            ULOQ = 211.56)
     )
     
     pos.cutoffs=sapply(tmp, function(x) unname(x["pos.cutoff"]))
@@ -301,7 +298,7 @@ if (config$is_ows_trial) {
     } else if(study_name=="ENSEMBLE") {
         
         if (contain(attr(config, "config"), "real")) {
-            # preliminary part A data
+            # data before EUA
             
             # data less than pos cutoff is set to pos.cutoff/2
             llods["bindSpike"]=NA 
@@ -318,6 +315,12 @@ if (config$is_ows_trial) {
             lloqs["pseudoneutid50"]=42*0.0653  #2.7426
             pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
             uloqs["pseudoneutid50"]=9484*0.0653 # 619.3052
+    
+            # data less than lod is set to lod/2
+            llods["ADCP"]=11.57
+            lloqs["ADCP"]=8.87
+            pos.cutoffs["ADCP"]=11.57,# as same lod
+            uloqs["ADCP"]=211.56
             
         } else if (contain(attr(config, "config"), "partA")) {
             # complete part A data
@@ -337,6 +340,12 @@ if (config$is_ows_trial) {
             lloqs["pseudoneutid50"]=75*0.0653  #4.8975
             pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
             uloqs["pseudoneutid50"]=12936*0.0653 # 844.7208
+    
+            # data less than lod is set to lod/2
+            llods["ADCP"]=11.57
+            lloqs["ADCP"]=8.87
+            pos.cutoffs["ADCP"]=11.57,# as same lod
+            uloqs["ADCP"]=211.56
         }
         
         lloxs=llods 
@@ -375,6 +384,16 @@ if (config$is_ows_trial) {
         
         lloxs=llods 
         lloxs["bindSpike"]=lloqs["bindSpike"]
+        
+    } else if(study_name=="VAT08M") {
+           
+        # data less than lod is set to lod/2
+        llods["pseudoneutid50"]=2.612  
+        lloqs["pseudoneutid50"]=95*0.0653 # 3.6568
+        uloqs["pseudoneutid50"]=191429*0.0653 # 3121.732
+        pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
+        
+        lloxs=llods 
         
     } else stop("unknown study_name")
     
