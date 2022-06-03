@@ -341,4 +341,34 @@ if (!is.null(config$multivariate_assays)) {
 }
 
 
+
+###################################################################################################
+#  
+
+if (attr(config,"config")=="janssen_pooled_real") {
+    f=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) * Day29pseudoneutid50    
+    fit=svycoxph(f, design=design.vacc.seroneg) 
+    var.ind=5:6
+    
+    fits=list(fit)
+    est=getFormattedSummary(fits, exp=T, robust=T, rows=1:6, type=1)
+    ci= getFormattedSummary(fits, exp=T, robust=T, rows=1:6, type=13)
+    est = paste0(est, " ", ci)
+    p=  getFormattedSummary(fits, exp=T, robust=T, rows=1:6, type=10)
+    
+    #generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
+    stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
+    p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
+    
+    tab=cbind(est, p)
+    tmp=match(aa, colnames(labels.axis))
+    tmp[is.na(tmp)]=1 # otherwise, labels.axis["Day"%.%tpeak, tmp] would throw an error when tmp is NA
+    colnames(tab)=c("HR", "P value")
+    tab=rbind(tab, "Generalized Wald Test for Itxn"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
+    tab
+    
+    mytex(tab, file.name="CoR_region_itxn", align="c", include.colnames = T, save2input.only=T, 
+        input.foldername=save.results.to)
+}
+
 save (tab.cont, tab.cat, tab.cont.scaled, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))

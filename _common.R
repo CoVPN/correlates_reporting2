@@ -108,7 +108,9 @@ get.marginalized.risk.no.marker=function(formula, dat, day){
 
 # specific to the correlates modules
 if (exists("COR")) {       
-
+    # subset to require risk_score
+    dat.mock=subset(dat.mock, Bserostatus==0 & !is.na(risk_score))
+    
     # subset to baseline seronegative for the correlates modules
     if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
     
@@ -315,11 +317,22 @@ if (config$is_ows_trial) {
             lloqs["pseudoneutid50"]=42*0.0653  #2.7426
             pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
             uloqs["pseudoneutid50"]=9484*0.0653 # 619.3052
+            
+                # repeat for two synthetic markers that are adapted to SA and LA
+                llods["pseudoneutid50sa"]=NA  
+                lloqs["pseudoneutid50sa"]=42*0.0653  #2.7426
+                pos.cutoffs["pseudoneutid50sa"]=lloqs["pseudoneutid50sa"]
+                uloqs["pseudoneutid50sa"]=9484*0.0653 # 619.3052
+        
+                llods["pseudoneutid50la"]=NA  
+                lloqs["pseudoneutid50la"]=42*0.0653  #2.7426
+                pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
+                uloqs["pseudoneutid50la"]=9484*0.0653 # 619.3052
     
             # data less than lod is set to lod/2
             llods["ADCP"]=11.57
             lloqs["ADCP"]=8.87
-            pos.cutoffs["ADCP"]=11.57,# as same lod
+            pos.cutoffs["ADCP"]=11.57# as same lod
             uloqs["ADCP"]=211.56
             
         } else if (contain(attr(config, "config"), "partA")) {
@@ -344,7 +357,7 @@ if (config$is_ows_trial) {
             # data less than lod is set to lod/2
             llods["ADCP"]=11.57
             lloqs["ADCP"]=8.87
-            pos.cutoffs["ADCP"]=11.57,# as same lod
+            pos.cutoffs["ADCP"]=11.57# as same lod
             uloqs["ADCP"]=211.56
         }
         
@@ -352,6 +365,7 @@ if (config$is_ows_trial) {
         lloxs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         
     } else if(study_name=="PREVENT19") {
+        # Novavax
         
         # data less than lloq is set to lloq/2 in the raw data
         llods["bindSpike"]=NA 
@@ -386,6 +400,7 @@ if (config$is_ows_trial) {
         lloxs["bindSpike"]=lloqs["bindSpike"]
         
     } else if(study_name=="VAT08M") {
+        # Sanofi
            
         # data less than lod is set to lod/2
         llods["pseudoneutid50"]=2.612  
