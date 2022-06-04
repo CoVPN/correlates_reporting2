@@ -54,7 +54,7 @@ if (exists("COR")) {
             if (COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
         } else stop("todo")
     } 
-
+    
     config.cor <- config::get(config = COR)
     tpeak=as.integer(paste0(config.cor$tpeak))
     tpeaklag=as.integer(paste0(config.cor$tpeaklag))
@@ -241,6 +241,7 @@ names(assays)=assays # add names so that lapply results will have names
 
 # For bAb, IU and BAU are the same thing
 # all values on BAU or IU
+# LOQ can not be NA, it is needed for computing delta
 if (config$is_ows_trial) {
     tmp=list(
         bindSpike=c(
@@ -290,8 +291,6 @@ if (config$is_ows_trial) {
     llods=sapply(tmp, function(x) unname(x["LLOD"]))
     lloqs=sapply(tmp, function(x) unname(x["LLOQ"]))
     uloqs=sapply(tmp, function(x) unname(x["ULOQ"]))        
-    # llox is for plotting and can be either llod or lloq depending on trials
-    lloxs=llods 
     
     if(study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
         
@@ -300,16 +299,16 @@ if (config$is_ows_trial) {
     } else if(study_name=="ENSEMBLE") {
         
         if (contain(attr(config, "config"), "real")) {
-            # data before EUA
+        # EUA data
             
             # data less than pos cutoff is set to pos.cutoff/2
             llods["bindSpike"]=NA 
-            lloqs["bindSpike"]=NA 
+            lloqs["bindSpike"]=1.7968 
             uloqs["bindSpike"]=238.1165 
         
             # data less than pos cutoff is set to pos.cutoff/2
             llods["bindRBD"]=NA                 
-            lloqs["bindRBD"]=NA                 
+            lloqs["bindRBD"]=3.4263                 
             uloqs["bindRBD"]=172.5755    
                     
             # data less than lloq is set to lloq/2
@@ -336,16 +335,16 @@ if (config$is_ows_trial) {
             uloqs["ADCP"]=211.56
             
         } else if (contain(attr(config, "config"), "partA")) {
-            # complete part A data
+        # complete part A data
             
             # data less than pos cutoff is set to pos.cutoff/2
             llods["bindSpike"]=NA 
-            lloqs["bindSpike"]=NA 
+            lloqs["bindSpike"]=1.7968 
             uloqs["bindSpike"]=238.1165 
         
             # data less than pos cutoff is set to pos.cutoff/2
             llods["bindRBD"]=NA                 
-            lloqs["bindRBD"]=NA                 
+            lloqs["bindRBD"]=3.4263                 
             uloqs["bindRBD"]=172.5755    
                     
             # data less than lloq is set to lloq/2
@@ -360,9 +359,6 @@ if (config$is_ows_trial) {
             pos.cutoffs["ADCP"]=11.57# as same lod
             uloqs["ADCP"]=211.56
         }
-        
-        lloxs=llods 
-        lloxs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         
     } else if(study_name=="PREVENT19") {
         # Novavax
@@ -379,9 +375,6 @@ if (config$is_ows_trial) {
         uloqs["pseudoneutid50"]=127411*0.0653 # 8319.938
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
         
-        lloxs=llods 
-        lloxs["bindSpike"]=lloqs["bindSpike"]
-        
     } else if(study_name=="AZD1222") {
            
         # data less than lloq is set to lloq/2 in the raw data, Nexelis
@@ -396,9 +389,6 @@ if (config$is_ows_trial) {
         uloqs["pseudoneutid50"]=47806*0.0653 # 3121.732
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
         
-        lloxs=llods 
-        lloxs["bindSpike"]=lloqs["bindSpike"]
-        
     } else if(study_name=="VAT08M") {
         # Sanofi
            
@@ -408,10 +398,10 @@ if (config$is_ows_trial) {
         uloqs["pseudoneutid50"]=191429*0.0653 # 3121.732
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
         
-        lloxs=llods 
-        
     } else stop("unknown study_name")
     
+    # llox is for plotting and can be either llod or lloq depending on trials
+    lloxs=ifelse(config$llox_label=="LOD", llods[names(config$llox_label)], lloqs[names(config$llox_label)])
     
 } else {
     # get uloqs and lloqs from config
