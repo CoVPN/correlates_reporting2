@@ -389,7 +389,7 @@ if (config$is_ows_trial) {
         uloqs["pseudoneutid50"]=47806*0.0653 # 3121.732
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
         
-    } else if(study_name=="VAT08M") {
+    } else if(study_name=="VAT08m") {
         # Sanofi
            
         # data less than lod is set to lod/2
@@ -1028,9 +1028,9 @@ make.case.count.marker.availability.table=function(dat) {
 
 
 # get histogram object to add to VE plots etc
-get.marker.histogram=function(marker, wt, trial) {
+get.marker.histogram=function(marker, wt, trial, marker.break=marker) {
     # first call hist to get breaks, then call weighted.hist
-    tmp.1=hist(marker,breaks=ifelse(trial=="moderna_real",25,15),plot=F)  # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
+    tmp.1=hist(marker.break,breaks=ifelse(trial=="moderna_real",25,15),plot=F)  # 15 is treated as a suggestion and the actual number of breaks is determined by pretty()
     tmp=weighted.hist(marker,wt, breaks=tmp.1$breaks, plot=F)
     attr(tmp,"class")="histogram" 
     tmp
