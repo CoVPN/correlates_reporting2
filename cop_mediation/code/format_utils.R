@@ -30,7 +30,67 @@ format_row <- function(fit, digits = 3){
       format_ci(c(prop_med, cil, ciu), digits = digits)
     )
   }else{
-    
+    this_row <- c(
+      format_ci(1 - fit$eff["Direct", 1:3], digits = digits),
+      format_ci(1 - fit$eff["Indirect", 1:3], digits = digits),
+      format_ci(fit$eff["Prop_med", 1:3], digits = digits)
+    )
   }
   return(this_row)
+}
+
+
+#' Output total, in/direct effects, CI's based on fitted results
+#' @normal_survtmle_fit fitted object for estimating the total effect
+#' @mediation_survtmle_fit fitted object for estimating mediation parameters
+compute_mediation_params <- function(
+  normal_survtmle_fit,
+  mediation_survtmle_fit,
+  ...
+){
+  # combine influence functions (ey00, ey11, ey10)
+  all_ic <- cbind(normal_survtmle_fit$ic, mediation_survtmle_fit$ic)
+  # estimates
+  est <- c(normal_survtmle_fit$est[,1], mediation_survtmle_fit$est[,1])
+  # covariance matrix
+  cov_mat <- cov(all_ic) / dim(all_ic)[1]
+  
+  # confidence intervals of estimators
+  est_cils <- est - 1.96*sqrt(diag(cov_mat))
+  est_cius <- est + 1.96*sqrt(diag(cov_mat))
+  out_est <- data.frame(est = est, cil = est_cils, ciu = est_cius)
+  row.names(out_est) <- c("ey00", "ey11", "ey10")
+  
+  # delta method
+  A <- matrix(c(
+    -1 / est[1], 1 / est[2],     0      , 
+    0       , 1 / est[2], -1 / est[3],
+    -1 / est[1],      0    ,  1 / est[3]
+  ), nrow = 3, ncol = 3, byrow = TRUE)
+  
+  log_total_eff <- log(est[2] / est[1])
+  log_indirect_eff <- log(est[2] / est[3])
+  log_direct_eff <- log(est[3] / est[1])
+  log_effs <- c(log_total_eff, log_indirect_eff, log_direct_eff)
+  ses_log_eff <- sqrt(diag(A %*% cov_mat %*% t(A)))
+  
+  cils <- exp(log_effs - 1.96 * ses_log_eff)
+  cius <- exp(log_effs + 1.96 * ses_log_eff)
+  out_eff <- data.frame(est = exp(log_effs), cil = cils, ciu = cius)
+  
+  # estimation of proportional mediated
+  prop_med <- 1 - log_direct_eff/log_total_eff
+  g <- matrix(c(log_indirect_eff/log_total_eff^2*1/est[1],
+                log_direct_eff/log_total_eff^2*1/est[2],
+               -1/(est[3]*log_total_eff)), ncol = 3, byrow = T)
+  ses_prop_med <- sqrt(g %*% cov_mat %*% t(g))
+  cil_prop <- prop_med - 1.96*ses_prop_med
+  ciu_prop <- prop_med + 1.96*ses_prop_med
+  
+  out_eff <- rbind(out_eff, c(prop_med, cil_prop, ciu_prop))
+  row.names(out_eff) <- c("Total", "Indirect", "Direct", "Prop_med")
+  out <- list(risk = out_est,
+              eff = out_eff)
+  class(out) <- "survtmle_natmed"
+  return(out)
 }

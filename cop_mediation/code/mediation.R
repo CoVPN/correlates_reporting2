@@ -9,69 +9,77 @@ source(here::here("code", "sl_screen_fn.R"))
 source(here::here("code", "format_utils.R"))
 data <- dat.mock
 
-# tf_Day <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2, "EventTimePrimary" ])
-tf_Day <- config.cor$tfinal.tpeak
+tf_Day <- tfinal.tpeak
 
 print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)
 )
-if(!is.null(config$study_name_code)){
-  if(config$study_name_code == "ENSEMBLE"){
-    times <- "Day29"
+
+if(!is.null(study_name)){
+  if(study_name == "ENSEMBLE"){
     covariates <- c("risk_score", "Region1", "Region2")
     data$Region1 <- as.numeric(data$Region == 1)
     data$Region2 <- as.numeric(data$Region == 2)
-    run_survtmle <- FALSE
-    tf_Day <- 54
-    cut_size <- 6 
-  }else if(config$study_name_code == "COVE"){
-    times <- c("Day29") # Day57 all have positivity issues
+    run_survtmle <- TRUE
+    cut_size <- 6
+  }else if(study_name == "COVE"){
     covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
     run_survtmle <- FALSE
     cut_size <- 6
+  }else if(study_name == "AZD1222"){
+    covariates <- c("Age", "risk_score")
+    run_survtmle <- TRUE
+    cut_size <- 6
   }
 }else if(config$study_name == "HVTN705"){
-  times <- "Day210"
   covariates <- c("RSA", "Age", "BMI", "Riskscore")
   run_survtmle <- FALSE
   cut_size <- 7
 }
 
+
+time_long <- paste0("Day", config.cor$tpeak)
+time_short <- paste0("D", config.cor$tpeak)
+
 include_assays <- NULL
-for(a in assays){
-	assay_name <- paste0(times, a)
-	placebo_assay_values <- data[[assay_name]][data$Trt == 0]
-	vaccine_assay_values <- data[[assay_name]][data$Trt == 1]
+threshold <- 0.05 # must have this % vax with no response
+
+assay_names <- paste0(time_long, assays)
+for(a in assay_names){
+	placebo_assay_values <- data[[a]][data$Trt == 0]
+	vaccine_assay_values <- data[[a]][data$Trt == 1]
 	#max_placebo_assay_value <- max(placebo_assay_values, na.rm = TRUE)
   # prop_vaccine_less_than_max_placebo <- mean(vaccine_assay_values <= max_placebo_assay_value, na.rm = TRUE)
   placebo_pct90_value <- quantile(placebo_assay_values, p = 0.9, na.rm = TRUE)
   prop_vaccine_less_than_max_placebo <- mean(vaccine_assay_values <= placebo_pct90_value, na.rm = TRUE)
-	print(paste0(assay_name, " = ", round(prop_vaccine_less_than_max_placebo, 3)))
-	if(prop_vaccine_less_than_max_placebo > 0.05){
-	  include_assays <- c(include_assays, assay_name)
+	print(paste0(a, " = ", round(prop_vaccine_less_than_max_placebo, 3)))
+	if(prop_vaccine_less_than_max_placebo > threshold){
+	  include_assays <- c(include_assays, a)
 	}
 }
+
+# for binary endpoints
+data$outcome <- as.numeric(
+  data$EventIndPrimary == 1 & data$EventTimePrimary <= tf_Day                      
+)
 
 variables_to_keep <- c(
   covariates,
   include_assays,
   config.cor$ph2,
   config.cor$wt,
-  "Trt"
+  "Trt",
+  paste0("EventTimePrimary"),
+  paste0("EventIndPrimary"),
+  "outcome"
 )
-
-data$outcome <- as.numeric(
-  data$EventIndPrimary == 1 & data$EventTimePrimary <= tf_Day                      
-)
-variables_to_keep <- c(variables_to_keep, "outcome")
-
-if(run_survtmle){
-  variables_to_keep <- c(variables_to_keep, 
-                         "EventIndPrimary",
-                         "EventTime")
-}
 
 data_keep <- data[!is.na(data[[config.cor$wt]]), variables_to_keep]
+
+# remove events after tf_Day from estimation
+data_keep$EventTimePrimary[data_keep$EventTimePrimary >= tf_Day] <- tf_Day
+data_keep$EventIndPrimary[data_keep$EventTimePrimary >= tf_Day] <- 0
+
 W <- data_keep[, covariates, drop = FALSE]
 A <- data_keep$Trt
 R <- as.numeric(data_keep[[config.cor$ph2]])
@@ -104,15 +112,8 @@ sl_library <- list(
   c("SL.glmnet", "screen_all"), # no need for screens
   c("SL.xgboost", "screen_all"), # no need for screens
   c("SL.ranger", "screen_all"),   # faster than cforest?
-  c("SL.glm", "screen_glmnet"),
-  c("SL.glm", "screen_univariate_logistic_pval"),
-  c("SL.glm", "screen_highcor_random"),
-  c("SL.glm.interaction", "screen_glmnet"),
-  c("SL.glm.interaction", "screen_univariate_logistic_pval"),
-  c("SL.glm.interaction", "screen_highcor_random"),
-  c("SL.gam", "screen_glmnet"),
-  c("SL.gam", "screen_univariate_logistic_pval"),
-  c("SL.gam", "screen_highcor_random")
+  c("SL.gam", "screen_all"),
+  c("SL.earth", "screen_all")
 )
 
 quant_result <- day_col <- assay_col <- NULL
@@ -144,21 +145,21 @@ for (marker in include_assays) {
   	)
   }else{
     fit1 <- survtmle::hazard_tmle(
-      ftime = keep_data$EventTimePrimary,
-      ftype = keep_data$EventIndPrimary,
-      trt = data$Trt,
-      adjustVars = keep_data[ , covariates],
+      ftime = data_keep$EventTimePrimary,
+      ftype = data_keep$EventIndPrimary,
+      trt = data_keep$Trt,
+      adjustVars = data_keep[ , covariates],
       t0 = tf_Day,
       SL.ctime = sl_library,
       SL.ftime = sl_library
     )
 
-    fit2 <- survtmle(
-      ftime = keep_data$EventTimePrimary,
-      ftype = keep_data$EventIndPrimary,
-      trt = data$Trt,
-      adjustVars = keep_data[ , covariates],
-      mediator = keep_data[ , marker, drop = FALSE],
+    fit2 <- survtmle::hazard_tmle(
+      ftime = data_keep$EventTimePrimary,
+      ftype = data_keep$EventIndPrimary,
+      trt = data_keep$Trt,
+      adjustVars = data_keep[ , covariates],
+      mediator = data_keep[ , marker, drop = FALSE],
       mediatorTrtVal = 0,
       trtOfInterest = 1,
       mediatorSampProb = 1 / data_keep$wt,
@@ -170,6 +171,7 @@ for (marker in include_assays) {
       SL.trtMediator = sl_library,
       SL.eif = sl_library
     )
+    fit <- compute_mediation_params(fit1, fit2)
   }
 	this_row <- format_row(fit)
 	quant_result <- rbind(quant_result, this_row)
