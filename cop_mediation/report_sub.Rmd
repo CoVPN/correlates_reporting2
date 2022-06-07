@@ -41,7 +41,7 @@ if(config$study_name == "ENSEMBLE"){
   ))
 }else if(config$study_name == "AZD1222"){
   full_result <- readRDS(here::here("cop_mediation", "output",
-    paste0("full_result_moderna_real_", COR, ".rds")
+    paste0("full_result_azd1222_real_", COR, ".rds")
   ))
 }
   if(config$study_name == "HVTN705"){
