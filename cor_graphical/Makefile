@@ -3,7 +3,7 @@ all: clean figs
 
 ## figs           : clean data and make figures
 figs: 
-ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
+ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real azd1222 azd1222_bAb))
 	Rscript code/cor_data_preprocess.R D29D57 # Yiwen's
 	Rscript code/cor_graphics_violin_scatter.R D29D57
 	
