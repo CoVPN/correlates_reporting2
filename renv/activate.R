@@ -6,42 +6,6 @@ local({
 
   # the project directory
   project <- getwd()
-
-<<<<<<< HEAD
-  # figure out whether the autoloader is enabled
-  enabled <- local({
-
-    # first, check config option
-    override <- getOption("renv.config.autoloader.enabled")
-    if (!is.null(override))
-      return(override)
-
-    # next, check environment variables
-    # TODO: prefer using the configuration one in the future
-    envvars <- c(
-      "RENV_CONFIG_AUTOLOADER_ENABLED",
-      "RENV_AUTOLOADER_ENABLED",
-      "RENV_ACTIVATE_PROJECT"
-    )
-
-    for (envvar in envvars) {
-      envval <- Sys.getenv(envvar, unset = NA)
-      if (!is.na(envval))
-        return(tolower(envval) %in% c("true", "t", "1"))
-    }
-
-    # enable by default
-    TRUE
-
-  })
-
-  if (!enabled)
-    return(FALSE)
-
-  # avoid recursion
-  if (identical(getOption("renv.autoloader.running"), TRUE)) {
-    warning("ignoring recursive attempt to run renv autoloader")
-=======
   # allow environment variable to control activation
   activate <- Sys.getenv("RENV_ACTIVATE_PROJECT")
   if (!nzchar(activate)) {
@@ -58,9 +22,7 @@ local({
 
   # avoid recursion
   if (nzchar(Sys.getenv("RENV_R_INITIALIZING")))
->>>>>>> de016b7a8bd48bb7bc89e28d8ba7a350d8797450
     return(invisible(TRUE))
-  }
 
   # signal that we're loading renv during R startup
   options(renv.autoloader.running = TRUE)
