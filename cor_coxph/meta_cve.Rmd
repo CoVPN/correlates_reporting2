@@ -116,6 +116,31 @@ for (a in c("pseudoneutid50","bindSpike")) {
 ```
 
 
+# ID50, ID50 (LA), and ID50 (SA)
+
+\begin{figure}
+  \center
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curveslog_janssen_la_real.pdf}
+  \hspace{10pt}
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curves_janssen_la_real.pdf}
+  \caption{Controlled VE curves. 
+  ENSEMBLE: starting 1 days post Day 29; LA: ending 48 days. 
+  }
+\end{figure}
+\clearpage
+
+\begin{figure}
+  \center
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curveslog_janssen_sa_real.pdf}
+  \hspace{10pt}
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curves_janssen_sa_real.pdf}
+  \caption{Controlled VE curves. 
+  ENSEMBLE: starting 1 days post Day 29; SA: ending 40 days. 
+  }
+\end{figure}
+\clearpage
+
+
 
 # Controlled VE based on Cox Models with Discretized Markers
 

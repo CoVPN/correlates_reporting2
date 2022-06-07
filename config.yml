@@ -235,6 +235,28 @@ moderna_mock: &moderna_mock
   num_perm_replicates: 10
 
 
+vat08m: &vat08m
+  <<: *ows_trial
+  two_marker_timepoints: yes
+  timepoints: [22, 43]
+  subset_variable: None
+  subset_value: All
+  times: [B, Day22, Day43, Delta22overB, Delta43overB, Delta43over22]
+  time_labels: [Day 1, Day 22, Day 43, D22 fold-rise over D1, D43 fold-rise over D1, D43 fold-rise over D22]
+  assays: [pseudoneutid50]
+  llox_label: [LOD]
+  assay_labels: [PsV Neutralization 50% Titer]
+  assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
+  study_name: VAT08m
+  covariates_riskscore: ~.+ risk_score
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
+  low_efficacy: no
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08m_data_processed_with_riskscore.csv
+  
+
 prevent19: &prevent19
   <<: *ows_trial
   two_marker_timepoints: no
@@ -300,10 +322,6 @@ janssen_trial: &janssen_trial
 
 janssen_trial_real: &janssen_trial_real # binding Ab and ID50
   <<: *janssen_trial
-  assays: [bindSpike, bindRBD, pseudoneutid50]
-  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
-  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
-  llox_label: [LOD, LOD, LLOQ]
   primary_assays: [bindSpike, bindRBD, pseudoneutid50]
   study_name: ENSEMBLE
   num_boot_replicates: 1000
@@ -320,6 +338,27 @@ janssen_trial_realADCP: &janssen_trial_realADCP
   num_boot_replicates: 1000
   num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
 
+janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
+  <<: *janssen_trial
+  assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, Phagocytic Score]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Phagocytic Score]
+  llox_label: [LOD, LOD, LLOQ, LLOQ]
+  primary_assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
+  study_name: ENSEMBLE
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+
+
+
+janssen_pooled_partA:
+  <<: *janssen_trial_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
+  subset_variable: None
+  subset_value: All
+  covariates_riskscore: ~.+ risk_score + as.factor(Region)
+  covariates_norisksco: ~.+ Age        + as.factor(Region)
+
 janssen_pooled_real:
   <<: *janssen_trial_real
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_real_data_processed_with_riskscore.csv
@@ -327,6 +366,10 @@ janssen_pooled_real:
   subset_value: All
   covariates_riskscore: ~.+ risk_score + as.factor(Region)
   covariates_norisksco: ~.+ Age        + as.factor(Region)
+  assays: [bindSpike, bindRBD, pseudoneutid50]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
+  llox_label: [LOD, LOD, LLOQ]
 
 janssen_pooled_realADCP:
   <<: *janssen_trial_realADCP
@@ -343,6 +386,10 @@ janssen_na_real:
   subset_value: 0
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
+  assays: [bindSpike, bindRBD, pseudoneutid50]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
+  llox_label: [LOD, LOD, LLOQ]
 
 janssen_na_realADCP:
   <<: *janssen_trial_realADCP
@@ -360,6 +407,10 @@ janssen_la_real:
   subset_value: 1
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
+  assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid50la]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer (LA)]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (LA) (IU50/ml)]
+  llox_label: [LOD, LOD, LLOQ, LLOQ]
 
 janssen_la_realADCP:
   <<: *janssen_trial_realADCP
@@ -377,6 +428,10 @@ janssen_sa_real:
   subset_value: 2
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
+  assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid50sa]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer (SA)]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (SA) (IU50/ml)]
+  llox_label: [LOD, LOD, LLOQ, LLOQ]
 
 janssen_sa_realADCP:
   <<: *janssen_trial_realADCP

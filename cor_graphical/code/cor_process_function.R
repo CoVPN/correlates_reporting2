@@ -65,9 +65,14 @@ getResponder <- function(data,
 # a function to define response rate by group
 get_resp_by_group <- function(dat=dat, group=group){
   
-  if( (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & !grepl("start1", COR)) {wt="wt.D29"
-  } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & grepl("start1", COR)) {wt="wt.D29start1"
-    } else {wt=paste0("wt.D", tpeak)}
+  if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19") {
+    dat[which(dat$time=="Day 1"), "wt"]=1
+    dat[which(dat$time!="Day 1"), "wt"]=dat[which(dat$time!="Day 1"), config.cor$wt] # wt.D29 or wt.D29start1
+  } else {
+    dat[which(dat$time=="Day 1" | !dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), "wt"]=1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
+    dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[1])]
+    dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[length(timepoints)])]
+    }
   
   complete <- complete.cases(dat[, group])
   
@@ -76,10 +81,10 @@ get_resp_by_group <- function(dat=dat, group=group){
     group_by_at(group) %>%
     mutate(counts = n(),
            counts_severe = sum(severe, na.rm=T),
-           num = sum(response * ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)), na.rm=T), # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
-           num_severe = sum(response * ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)) & severe==1, na.rm=T),
-           denom = sum(ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)), na.rm=T),
-           denom_severe = sum(ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)) & severe==1, na.rm=T),
+           num = sum(response * wt, na.rm=T), 
+           num_severe = sum(response * wt & severe==1, na.rm=T),
+           denom = sum(wt, na.rm=T),
+           denom_severe = sum(wt & severe==1, na.rm=T),
            N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
            N_RespRate_severe = paste0(counts_severe, "\n",round(num_severe/denom_severe*100, 1),"%"),
            min = min(value),

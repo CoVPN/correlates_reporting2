@@ -29,26 +29,41 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")  {
+if(study_name=="COVE" | study_name=="MockCOVE")  {
   
   dat = dat %>%
-    mutate(cohort_event = factor(
-       ifelse(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1",""))) & Bserostatus==0 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D", tpeak)))==1 , "Post-Peak Cases",
-             ifelse(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1",""))) & Bserostatus==0 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0  & (!!as.name("AnyinfectionD1"))==0, "Non-Cases", NA)),
+    mutate(cohort_event = factor(case_when(
+      Perprotocol==1 &
+        Bserostatus==0 & 
+        !!as.name(config.cor$Earlyendpoint)==0 & 
+        !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
+        !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
+      Perprotocol==1 &
+        Bserostatus==0 &
+        !!as.name(paste0("EarlyendpointD", timepoints[length(timepoints)]))==0 &
+        !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
+        EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
-        "Post-Peak Cases", "Non-Cases"))
-    )
+        "Post-Peak Cases", "Non-Cases")
+    ))
   
 } else {
   
-  second_tp <- max(as.integer(gsub("Day", "", times[grepl("Day", times)])))
-  
-  dat <- dat %>%
-    mutate(cohort_event = factor(
-      ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1, "Post-Peak Cases", 
-             ifelse(Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", second_tp)))==0 & (!!as.name(paste0("TwophasesampIndD", second_tp)))==1 & eval(as.name(paste0("EventIndPrimary", incNotMol, "D1")))==0, "Non-Cases", NA)),
-      levels = c("Post-Peak Cases", "Non-Cases"))
-      )
+  dat = dat %>%
+    mutate(cohort_event = factor(case_when(
+      Perprotocol==1 &
+        Bserostatus==0 & 
+        !!as.name(config.cor$Earlyendpoint)==0 & 
+        !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
+        !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
+      Perprotocol==1 &
+        Bserostatus==0 &
+        AnyinfectionD1==0 &
+        !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
+        !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 ~ "Non-Cases"),
+      levels = c(#"Day 2-14 Cases", intcur2, 
+        "Post-Peak Cases", "Non-Cases")
+    ))
 }
 
 dat <- dat[!is.na(dat$cohort_event),]
