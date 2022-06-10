@@ -398,7 +398,7 @@ if (config$is_ows_trial) {
         uloqs["pseudoneutid50"]=191429*0.0653 # 3121.732
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
         
-    } else stop("unknown study_name")
+    } else stop("unknown study_name 1")
     
     # llox is for plotting and can be either llod or lloq depending on trials
     lloxs=ifelse(config$llox_label=="LOD", llods[names(config$llox_label)], lloqs[names(config$llox_label)])
@@ -539,10 +539,16 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
       "Age < 65"
     )
 
+} else if (study_name %in% c("VAT08m")) {
+    Bstratum.labels <- c(
+      "Age >= 60",
+      "Age < 60"
+    )
+
 } else if (study_name=="HVTN705") {
     # do nothing
 
-} else stop("unknown study_name")
+} else stop("unknown study_name 2")
 
 
 
@@ -601,10 +607,18 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
       "Non-US, Age >= 65"
     )
 
+} else if (study_name=="VAT08m") {
+    demo.stratum.labels <- c(
+      "Not HND, Age 18-59",
+      "Not HND, Age >= 60",
+      "HND, Age 18-59",
+      "HND, Age >= 60"
+    )
+
 } else if (study_name=="HVTN705") {
     # do nothing
 
-} else stop("unknown study_name")
+} else stop("unknown study_name 3")
 
 labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
 regions.ENSEMBLE=0:2

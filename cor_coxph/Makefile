@@ -31,6 +31,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_bAb)) ## for some reason if this 
 	Rscript code/cor_coxph.R D57
 	Rscript code/cor_coxph.R D29start28
 	Rscript code/cor_graphical_time_to_event.R D29D57
+else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m))
+	Rscript code/cor_coxph.R D22
+	Rscript code/cor_coxph.R D43
 endif
 
 collate:
