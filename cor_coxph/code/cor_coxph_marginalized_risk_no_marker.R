@@ -22,7 +22,7 @@
 #prevs
 
 if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))) {    
-    if (verbose) print("create marginalized.risk.no.marker Rdata")
+    if (verbose) print("bootstrap marginalized.risk.no.marker Rdata")
 
     for (.trt in 0:1) {
         dat.tmp=if(.trt==1) dat.vac.seroneg else dat.pla.seroneg
