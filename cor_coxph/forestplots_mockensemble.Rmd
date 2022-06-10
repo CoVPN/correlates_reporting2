@@ -16,7 +16,7 @@
 
 
 \newif\ifShowCountry
-`r if (config$subset_variable=="None" | config$subset_value==1) "\\ShowCountrytrue"` 
+`r if (startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_la")) "\\ShowCountrytrue"` 
 
 \ifShowCountry
 

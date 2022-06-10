@@ -90,14 +90,12 @@ cat("Analysis-ready data: ", path_to_data, "\n")
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
 if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not available ===========================================")
 
-
 dat.mock <- read.csv(path_to_data)
 
 
 ###################################################################################################
-#
+# get marginalized risk without marker
 
-# marginalized risk without marker
 get.marginalized.risk.no.marker=function(formula, dat, day){
     fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
     dat$EventTimePrimary=day
@@ -106,15 +104,19 @@ get.marginalized.risk.no.marker=function(formula, dat, day){
 }
 
 
-# specific to the correlates modules
+###################################################################################################
+# For correlates reports
+
 if (exists("COR")) {       
-    # subset to require risk_score
-    dat.mock=subset(dat.mock, Bserostatus==0 & !is.na(risk_score))
     
     # subset to baseline seronegative for the correlates modules
     if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
     
-    # for Novavax trial, subset to US for the correlates modules
+    # subset to require risk_score
+    # note that it is assumed there no risk_score is missing for anyone in the analysis population
+    dat.mock=subset(dat.mock, !is.na(risk_score))
+    
+    # for Novavax trial only, subset to US for the correlates modules
     # this is redundant in a way because only US participants have non-NA risk scores, but good to add
     if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
     

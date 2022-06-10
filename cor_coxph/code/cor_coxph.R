@@ -74,9 +74,13 @@ for (a in assays) {
 rv=list() 
 rv$marker.cutpoints=marker.cutpoints
 
+# table of ph1 and ph2 cases
 tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
 print(tab)
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
+
+## list cases not in ph2
+#subset(dat.vac.seroneg, !ph2 & EventIndPrimary, c(Ptid, Bpseudoneutid50, Day22pseudoneutid50, Day43pseudoneutid50))
 
 
 
@@ -87,8 +91,6 @@ mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to
 source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
 
 if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
-
-
 
 
 
