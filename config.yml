@@ -650,3 +650,9 @@ D29D57:
   tpeak: 57
   tpeaklag: 7
   txt.endpoint: COVID
+
+D22D43:
+  tinterm: 22
+  tpeak: 43
+  tpeaklag: 7
+  txt.endpoint: COVID  

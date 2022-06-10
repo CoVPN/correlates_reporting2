@@ -972,7 +972,7 @@ add.trichotomized.markers=function(dat, tpeak, wt.col.name) {
                 dat[[ind.t %.% a %.% "cat"]] <- tmp
                 marker.cutpoints[[a]][[ind.t]] <- q.a
             } else {
-                myprint("\nfirst cut fails, call cut again with breaks=3 \n")
+                cat("\nfirst cut fails, call cut again with breaks=3 \n")
                 # cut is more robust but it does not incorporate weights
                 tmp=cut(tmp.a, breaks=3)
                 stopifnot(length(table(tmp))==3)
