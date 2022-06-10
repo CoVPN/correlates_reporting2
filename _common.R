@@ -110,7 +110,13 @@ get.marginalized.risk.no.marker=function(formula, dat, day){
 if (exists("COR")) {       
     
     # subset to baseline seronegative for the correlates modules
-    if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
+    if (config$is_ows_trial) {
+        if (is.null(config$Bserostatus)) {
+            dat.mock=subset(dat.mock, Bserostatus==0)
+        } else {
+            dat.mock=subset(dat.mock, Bserostatus==config$Bserostatus)
+        }
+    }
     
     # subset to require risk_score
     # note that it is assumed there no risk_score is missing for anyone in the analysis population
