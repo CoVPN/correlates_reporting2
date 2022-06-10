@@ -361,8 +361,6 @@ if (attr(config,"config")=="janssen_pooled_real") {
     p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
     
     tab=cbind(est, p)
-    tmp=match(aa, colnames(labels.axis))
-    tmp[is.na(tmp)]=1 # otherwise, labels.axis["Day"%.%tpeak, tmp] would throw an error when tmp is NA
     colnames(tab)=c("HR", "P value")
     tab=rbind(tab, "Generalized Wald Test for Itxn"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
     tab
