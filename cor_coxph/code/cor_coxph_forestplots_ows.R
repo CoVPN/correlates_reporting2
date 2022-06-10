@@ -136,7 +136,7 @@ for (a in assays) {
                              "Age >= "%.%age.threshold, "Age < "%.%age.threshold, 
                              "At risk", "Not at risk", 
                              if (study_name_code!="ENSEMBLE") c("Comm. of color", "White Non-Hispanic"),
-                             if (startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na") c("Comm. of color (US)", "White Non-Hispanic (US)"),
+                             if (startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na")) c("Comm. of color (US)", "White Non-Hispanic (US)"),
                              "Men", "Women",
                              if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) c("HIV infection Yes", "HIV infection No")
     )
@@ -153,8 +153,8 @@ for (a in assays) {
               # MinorityInd also makes sense for US in ensemble
               if(study_name_code!="ENSEMBLE") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1)), 
               if(study_name_code!="ENSEMBLE") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0)), 
-              if(startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1 & Region==0)), 
-              if(startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0 & Region==0)), 
+              if(startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na")) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1 & Region==0)), 
+              if(startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na")) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0 & Region==0)), 
               nrow(subset(dat.vac.seroneg, yy==1 & Sex==1)), 
               nrow(subset(dat.vac.seroneg, yy==1 & Sex==0)),
               if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) { c(
