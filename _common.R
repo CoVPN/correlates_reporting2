@@ -92,6 +92,12 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
+#with(subset(dat.mock, Country==0 & SubcohortInd), table(Bserostatus, Trt))
+#with(subset(dat.mock, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1), table(!is.na(BbindSpike), !is.na(Day35bindSpike)))
+#with(subset(dat.mock, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1), table(!is.na(Bpseudoneutid50), !is.na(Day35pseudoneutid50)))
+#with(subset(dat.mock, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1 & ph1.D35 & !is.na(BbindSpike) & !is.na(Day35bindSpike)), table(is.na(Day35pseudoneutid50), EventIndPrimaryD35))
+
+
 
 ###################################################################################################
 # get marginalized risk without marker
@@ -948,54 +954,56 @@ report.assay.values=function(x, assay){
 
 
 
-add.trichotomized.markers=function(dat, tpeak, wt.col.name) {
+add.trichotomized.markers=function(dat, markers, wt.col.name) {
     if(verbose) print("add.trichotomized.markers ...")
     
     marker.cutpoints <- list()    
-    for (a in assays) {
-        marker.cutpoints[[a]] <- list()    
-        #for (ind.t in times[-1]) {
-        for (ind.t in "Day"%.%tpeak) {        
-            if (verbose) myprint(a, ind.t, newline=F)
-            tmp.a=dat[[ind.t %.% a]]
-            
-            uppercut=log10(uloqs[a])*.9999
-            if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(ind.t, "Day")) {
+    for (a in markers) {
+        if (verbose) myprint(a, newline=F)
+        tmp.a=dat[[a]]
+        
+        if(startsWith(a, "Day")) {
+            # not fold change
+            assay= strsplit(a, "Day[0123456789]+")[[1]][2] # extract marker name, e.g. Day22pseudoneutid50 => pseudoneutid50
+            uppercut=log10(uloqs[assay])*.9999
+            if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(a, "Day")) {
                 # if more than 1/3 of vaccine recipients have value > ULOQ
                 # let q.a be median among those < ULOQ and ULOQ
                 if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")
-                q.a=c(  wtd.quantile(tmp.a[dat[[ind.t %.% a]]<=uppercut], 
-                           weights = dat[[wt.col.name]][tmp.a<=uppercut], probs = c(1/2)), 
-                        uppercut)
+                q.a=c(wtd.quantile(tmp.a[dat[[a]]<=uppercut], 
+                      weights = dat[[wt.col.name]][tmp.a<=uppercut], probs = c(1/2)), 
+                      uppercut)
             } else {
+                # fold change
                 q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
             }
-            tmp=try(factor(cut(tmp.a, breaks = c(-Inf, q.a, Inf))), silent=T)
-     
-            do.cut=FALSE # if TRUE, use cut function which does not use weights
-            # if there is a huge point mass, an error would occur, or it may not break into 3 groups
-            if (inherits(tmp, "try-error")) do.cut=TRUE else if(length(table(tmp)) != 3) do.cut=TRUE
-            
-            if(!do.cut) {
-                dat[[ind.t %.% a %.% "cat"]] <- tmp
-                marker.cutpoints[[a]][[ind.t]] <- q.a
-            } else {
-                cat("\nfirst cut fails, call cut again with breaks=3 \n")
-                # cut is more robust but it does not incorporate weights
-                tmp=cut(tmp.a, breaks=3)
-                stopifnot(length(table(tmp))==3)
-                dat[[ind.t %.% a %.% "cat"]] = tmp
-                # extract cut points from factor level labels
-                tmpname = names(table(tmp))[2]
-                tmpname = substr(tmpname, 2, nchar(tmpname)-1)
-                marker.cutpoints[[a]][[ind.t]] <- as.numeric(strsplit(tmpname, ",")[[1]])
-            }
-            stopifnot(length(table(dat[[ind.t %.% a %.% "cat"]])) == 3)
-            if(verbose) {
-                print(table(dat[[ind.t %.% a %.% "cat"]]))
-                cat("\n")
-            }
-            
+        } else {
+            q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
+        }
+        tmp=try(factor(cut(tmp.a, breaks = c(-Inf, q.a, Inf))), silent=T)
+ 
+        do.cut=FALSE # if TRUE, use cut function which does not use weights
+        # if there is a huge point mass, an error would occur, or it may not break into 3 groups
+        if (inherits(tmp, "try-error")) do.cut=TRUE else if(length(table(tmp)) != 3) do.cut=TRUE
+        
+        if(!do.cut) {
+            dat[[a]] <- tmp
+            marker.cutpoints[[a]] <- q.a
+        } else {
+            cat("\nfirst cut fails, call cut again with breaks=3 \n")
+            # cut is more robust but it does not incorporate weights
+            tmp=cut(tmp.a, breaks=3)
+            stopifnot(length(table(tmp))==3)
+            dat[[a %.% "cat"]] = tmp
+            # extract cut points from factor level labels
+            tmpname = names(table(tmp))[2]
+            tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+            marker.cutpoints[[a]] <- as.numeric(strsplit(tmpname, ",")[[1]])
+        }
+        stopifnot(length(table(dat[[a %.% "cat"]])) == 3)
+        if(verbose) {
+            print(table(dat[[a %.% "cat"]]))
+            cat("\n")
         }
     }
     

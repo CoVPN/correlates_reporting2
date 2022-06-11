@@ -22,7 +22,6 @@ print(paste0("save.results.to equals ", save.results.to))
 
 mypdf (mfrow=c(1,3), file=paste0(save.results.to, "barplot_mixed"))     
     tmp.1=table(subset(dat.mock, ph1.intercurrent.cases       & Trt==1, "EventTimePrimaryD"%.%tinterm, drop=T))
-    tmp.1=table(subset(dat.mock, ph1.intercurrent.cases       & Trt==1, "EventTimePrimaryD"%.%tinterm, drop=T))
     tmp.2=table(subset(dat.mock, dat.mock[["ph1.D"%.%tpeak]] & dat.mock[["EventIndPrimaryD"%.%tpeak]] & Trt==1, "EventTimePrimaryD"%.%tinterm, drop=T))
     tmp.3=table(subset(dat.mock, dat.mock[["ph1.D"%.%tpeak]] & dat.mock[["EventIndPrimaryD"%.%tpeak]] & Trt==1, "EventTimePrimaryD"%.%tpeak  , drop=T))
     
@@ -32,7 +31,11 @@ mypdf (mfrow=c(1,3), file=paste0(save.results.to, "barplot_mixed"))
     tmp.2=tmp[,2]; names(tmp.2)=rownames(tmp)
     tmp.3=tmp[,3]; names(tmp.3)=rownames(tmp)
     
-    barplot(tmp.1, main="D29 to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Intercurrent Cases"); axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
+    if(all(is.na(tmp.1))) {
+        empty.plot()
+    } else {
+        barplot(tmp.1, main="D29 to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Intercurrent Cases"); axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
+    }
     barplot(tmp.2, main="D29 to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day 57 Cases");  axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
     barplot(tmp.3, main="D57 to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day 57 Cases");  axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
 dev.off()  
