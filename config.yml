@@ -237,10 +237,10 @@ vat08m_base: &vat08m_base
   timepoints: [22, 43]
   times: [B, Day22, Day43, Delta22overB, Delta43overB, Delta43over22]
   time_labels: [Day 1, Day 22, Day 43, D22 fold-rise over D1, D43 fold-rise over D1, D43 fold-rise over D22]
-  assays: [pseudoneutid50]
+  assays: [pseudoneutid50] # pseudoneutid50deltaB
   llox_label: [LOD]
-  assay_labels: [PsV Neutralization 50% Titer]
-  assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
+  assay_labels: [PsV Neutralization 50% Titer, PsV Neutralization 50% Titer Fold Change from Baseline]
+  assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (IU50/ml) Delta]
   study_name: VAT08m
   covariates_riskscore: ~.+ risk_score
   ve_ylim: [0,1]

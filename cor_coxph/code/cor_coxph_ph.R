@@ -10,14 +10,12 @@ for (a in all.markers) {
     f= update(form.0, as.formula(paste0("~.+", a)))
     fits[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
-fits=fits[1:length(assays)] # for now, we don't need the delta (multitesting adjustment results are affected)
 # scaled marker
 fits.scaled=list()
 for (a in all.markers) {
     f= update(form.0, as.formula(paste0("~.+scale(", a, ")")))
     fits.scaled[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
-fits.scaled=fits.scaled[1:length(assays)] # for now, we don't need the delta (multitesting adjustment results are affected)
 
 natrisk=nrow(dat.vac.seroneg)
 nevents=sum(dat.vac.seroneg$yy==1)
