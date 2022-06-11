@@ -452,7 +452,7 @@ for (i in 1:2){
   
   tlf[[paste0("tab_strtm", i)]]$table_header <- 
     sprintf("Sample Sizes of Random Subcohort Strata (with antibody markers data at D%s) Plus All Other Cases Outside the Random Subcohort %s",
-            config.cor$tpeak, ifelse(is.null(ds.i$Region), "", paste("in", paste(sort(unique(ds.i$RegionC))))))
+            config.cor$tpeak, ifelse(is.null(ds.i$RegionC), "", paste("in", paste(sort(unique(ds.i$RegionC))))))
   
   tlf[[paste0("tab_strtm", i)]]$header_above1 <- c(" "=1, "Baseline SARS-CoV-2 Negative" = sum(grepl("Negative", colnames(ls_strtm[[i]]))), 
                                     "Baseline SARS-CoV-2 Positive" = sum(grepl("Positive", colnames(ls_strtm[[i]]))))
@@ -592,6 +592,15 @@ case_plcb_neg <- tab_case %>%
   select(-c(Arm, `Baseline SARS-CoV-2`))
 
 print("Done with all tables") 
+
+if(study_name %in% c("PREVENT19") & all(ds$Country==0)){
+  for (i in 1:length(tlf)){
+    if(!is.null(tlf[[i]]$table_header)){
+      tlf[[i]]$table_header <- paste0(tlf[[i]]$table_header, " in U.S. only")
+    }
+  }
+}
+
 
 # path for tables
 save.results.to <- here::here("output")
