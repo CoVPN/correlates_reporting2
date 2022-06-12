@@ -47,12 +47,12 @@ pvals.cont = sapply(fits, function(x) {
 if(verbose) print("regression for trichotomized markers")
 
 fits.tri=list()
-for (a in c("Day"%.%tpeak%.%assays, "Delta"%.%tpeak%.%"overB"%.%assays)) {
+for (a in all.markers) {
     if(verbose) myprint(a)
     f= update(form.0, as.formula(paste0("~.+", a, "cat")))
     fits.tri[[a]]=run.svycoxph(f, design=design.vacc.seroneg) 
 }
-fits.tri=fits.tri[1:length(assays)]
+fits.tri=fits.tri
 
 rows=length(coef(fits.tri[[1]]))-1:0
 # get generalized Wald p values
@@ -112,20 +112,22 @@ if (length(p.unadj)>1) {
             # permute markers in design.vacc.seroneg.perm
             new.idx=sample(1:nrow(dat.ph2))
             tmp=dat.ph2
-            for (a in "Day"%.%tpeak%.%assays) {
+            for (a in all.markers) {
                 tmp[[a]]=tmp[[a]][new.idx]
                 tmp[[a%.%"cat"]]=tmp[[a%.%"cat"]][new.idx]
             }
             design.vacc.seroneg.perm$phase1$sample$variables = tmp
             
+            # rename all.markers so that out has the proper names. this is only effective within in permutation
+            names(all.markers)=all.markers
             out=c(
-                cont=sapply ("Day"%.%tpeak%.%assays, function(a) {
+                cont=sapply (all.markers, function(a) {
                     f= update(form.0, as.formula(paste0("~.+", a)))
                     fit=run.svycoxph(f, design=design.vacc.seroneg.perm) 
                     if (length(fit)==1) NA else last(c(getFixedEf(fit)))
                 })        
                 ,    
-                tri=sapply ("Day"%.%tpeak%.%assays, function(a) {
+                tri=sapply (all.markers, function(a) {
                     f= update(form.0, as.formula(paste0("~.+", a, "cat")))
                     fit=run.svycoxph(f, design=design.vacc.seroneg.perm) 
                     if (length(fit)==1) NA else last(c(getFixedEf(fit)))
@@ -189,7 +191,7 @@ p.2=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FDR" ], 3, remove.lead
 
 
 tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p), p.2, p.1)
-rownames(tab.1)=c(labels.axis["Day"%.%tpeak, assays])
+rownames(tab.1)=all.markers.names.short
 tab.1
 mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
     col.headers=paste0("\\hline\n 
@@ -201,12 +203,12 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c
 tab.cont=tab.1
 
 tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p))
-rownames(tab.1.nop12)=c(labels.axis["Day"%.%tpeak, assays])
+rownames(tab.1.nop12)=all.markers.names.short
 rv$tab.1=tab.1.nop12
 
 # scaled markers
 tab.1.scaled=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est.scaled), t(ci.scaled), t(p), p.2, p.1)
-rownames(tab.1.scaled)=c(labels.axis["Day"%.%tpeak, assays])
+rownames(tab.1.scaled)=all.markers.names.short
 tab.1.scaled
 mytex(tab.1.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
     col.headers=paste0("\\hline\n 
@@ -233,8 +235,8 @@ overall.p.2=c(rbind(overall.p.2, NA,NA))
 # if "Delta"%.%tpeak%.%"overB" is included, nevents have a problem because some markers may have only two category in the cases
 
 # n cases and n at risk
-natrisk = round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,ph2==1)        [["wt"]], subset(dat.vac.seroneg,ph2==1        )[a], sum, na.rm=T, drop=F)[,2] )))
-nevents = round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,yy==1 & ph2==1)[["wt"]], subset(dat.vac.seroneg,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] )))
+natrisk = round(c(sapply (all.markers%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,ph2==1)        [["wt"]], subset(dat.vac.seroneg,ph2==1        )[a], sum, na.rm=T, drop=F)[,2] )))
+nevents = round(c(sapply (all.markers%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,yy==1 & ph2==1)[["wt"]], subset(dat.vac.seroneg,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] )))
 natrisk[is.na(natrisk)]=0
 nevents[is.na(nevents)]=0
 colSums(matrix(natrisk, nrow=3))
@@ -249,7 +251,7 @@ tab=cbind(
     formatDouble(nevents/natrisk, digit=4, remove.leading0=F),
     est, ci, p, overall.p.0, overall.p.2, overall.p.1
 )
-tmp=rbind(c(labels.axis["Day"%.%tpeak, assays]), "", "")
+tmp=rbind(all.markers.names.short, "", "")
 rownames(tab)=c(tmp)
 tab
 tab.cat=tab[1:(nrow(tab)),]
@@ -291,7 +293,7 @@ tab.nop12=cbind(
     formatDouble(nevents/natrisk, digit=4, remove.leading0=F),
     est, ci, p, overall.p.0
 )
-rownames(tab.nop12)=c(rbind(c(labels.axis["Day"%.%tpeak, assays]), "", ""))
+rownames(tab.nop12)=c(rbind(all.markers.names.short, "", ""))
 rv$tab.2=tab.nop12
 
 

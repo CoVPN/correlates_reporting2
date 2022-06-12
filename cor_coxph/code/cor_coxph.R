@@ -3,7 +3,7 @@
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "vat08m_naive"); COR="D22"; Sys.setenv(VERBOSE = 1)
+#Sys.setenv(TRIAL = "vat08m_nonnaive"); COR="D22"; Sys.setenv(VERBOSE = 1)
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -23,9 +23,6 @@ source(here::here("code", "params.R"))
 time.start=Sys.time()
 myprint(study_name)
 myprint(verbose)
-
-all.markers=paste0("Day", tpeak, assays)
-all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
 
 
 # path for figures and tables etc
@@ -64,10 +61,14 @@ write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_
 # define trichotomized markers
 dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
 marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
-for (a in assays) {        
-    for (t in "Day"%.%tpeak) {
-        q.a=marker.cutpoints[[a]][[t]]
-        write(paste0(labels.axis[1,a], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", t, a, "_"%.%study_name))
+for (a in all.markers) {        
+    q.a=marker.cutpoints[[a]]
+    if (startsWith(a, "Day")) {
+        # not fold change
+        write(paste0(labels.axis[1,get.assay.from.name(a)], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
+    } else {
+        # fold change
+        write(paste0(a, " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
     }
 }
     

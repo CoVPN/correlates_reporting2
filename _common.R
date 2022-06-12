@@ -44,6 +44,7 @@ for(opt in names(config)){
   eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
 }
 
+do.fold.change=attr(config, "config") %in% c("vat08m_nonnaive")
 
 # COR-related config
 if (exists("COR")) {
@@ -63,11 +64,24 @@ if (exists("COR")) {
     myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
     # some config may not have all fields
     if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
+
+    all.markers=paste0("Day", tpeak, assays)
+    if (do.fold.change) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+    all.markers.names.short=c(
+        labels.assays.short,
+        if (do.fold.change) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
+    ); names(all.markers.names.short)=all.markers
+    all.markers.names.long=c(
+        labels.assays.long["Day"%.%tpeak,assays],
+        if (do.fold.change) labels.assays.long["Delta"%.%tpeak%.%"overB",assays]
+    ); names(all.markers.names.long)=all.markers
 }
     
 # to be deprecated
 has57 = study_name %in% c("COVE","MockCOVE")
 has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
+
 
 
 ###################################################################################################
@@ -737,6 +751,16 @@ ggsave_custom <- function(filename = default_name(plot),
 
 ############## Utility func
 
+# e.g. Day22pseudoneutid50 => pseudoneutid50, Delta22overBpseudoneutid50 => pseudoneutid50
+get.assay.from.name=function(a) {
+    if (startsWith(a,"Day")) {
+        sub("Day[[0123456789]+", "", a)
+    } else if (contain(a,"overB")) {
+        sub("Delta[[0123456789]+overB", "", a)
+    } else stop("get.assay.from.name: not sure what to do")
+}
+
+
 get.range.cor=function(dat, assay, time) {
     if(assay %in% c("bindSpike", "bindRBD") & all(c("pseudoneutid50", "pseudoneutid80") %in% assays)) {
         ret=range(dat[["Day"%.%time%.%"bindSpike"]], 
@@ -953,8 +977,8 @@ report.assay.values=function(x, assay){
 #report.assay.values (dat.vac.seroneg[["Day57pseudoneutid80"]], "pseudoneutid80")
 
 
-
 add.trichotomized.markers=function(dat, markers, wt.col.name) {
+    
     if(verbose) print("add.trichotomized.markers ...")
     
     marker.cutpoints <- list()    
@@ -964,8 +988,7 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         
         if(startsWith(a, "Day")) {
             # not fold change
-            assay= strsplit(a, "Day[0123456789]+")[[1]][2] # extract marker name, e.g. Day22pseudoneutid50 => pseudoneutid50
-            uppercut=log10(uloqs[assay])*.9999
+            uppercut=log10(uloqs[get.assay.from.name(a)])*.9999
             if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(a, "Day")) {
                 # if more than 1/3 of vaccine recipients have value > ULOQ
                 # let q.a be median among those < ULOQ and ULOQ
@@ -974,10 +997,10 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
                       weights = dat[[wt.col.name]][tmp.a<=uppercut], probs = c(1/2)), 
                       uppercut)
             } else {
-                # fold change
                 q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
             }
         } else {
+            # fold change
             q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
         }
         tmp=try(factor(cut(tmp.a, breaks = c(-Inf, q.a, Inf))), silent=T)
@@ -987,7 +1010,7 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         if (inherits(tmp, "try-error")) do.cut=TRUE else if(length(table(tmp)) != 3) do.cut=TRUE
         
         if(!do.cut) {
-            dat[[a]] <- tmp
+            dat[[a %.% "cat"]] <- tmp
             marker.cutpoints[[a]] <- q.a
         } else {
             cat("\nfirst cut fails, call cut again with breaks=3 \n")
