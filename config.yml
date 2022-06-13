@@ -231,13 +231,13 @@ moderna_mock: &moderna_mock
   num_perm_replicates: 10
 
 
-vat08m: &vat08m
+vat08m_base: &vat08m_base
   <<: *ows_trial
   two_marker_timepoints: yes
   timepoints: [22, 43]
   times: [B, Day22, Day43, Delta22overB, Delta43overB, Delta43over22]
   time_labels: [Day 1, Day 22, Day 43, D22 fold-rise over D1, D43 fold-rise over D1, D43 fold-rise over D22]
-  assays: [pseudoneutid50]
+  assays: [pseudoneutid50] # pseudoneutid50deltaB
   llox_label: [LOD]
   assay_labels: [PsV Neutralization 50% Titer]
   assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
@@ -249,6 +249,13 @@ vat08m: &vat08m
   num_boot_replicates: 1000
   num_perm_replicates: 10000
   data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08m_data_processed_with_riskscore.csv
+  
+vat08m_nonnaive: &vat08m_nonnaive
+  <<: *vat08m_base
+  Bserostatus: 1
+  
+vat08m_naive: &vat08m_naive
+  <<: *vat08m_base
   
 
 prevent19: &prevent19

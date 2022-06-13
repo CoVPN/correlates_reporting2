@@ -7,7 +7,7 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-# formula=form.0; marker.name="Day"%.%tpeak%.%a; type=1; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1; a=assays[1]
+# formula=form.0; marker.name=a; type=1; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
     
     # store the current rng state 
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -150,23 +150,23 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.Rdata"))) {
     
     # vaccine arm, conditional on continuous S=s
     if (verbose) print("create risks.all.1")
-    risks.all.1=lapply(assays, function (a) {
+    risks.all.1=lapply(all.markers, function (a) {
         if(verbose) myprint(a)
-        marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a, type=1, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
+        marginalized.risk.svycoxph.boot(formula=form.0, marker.name=a, type=1, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
     })
     
     # vaccine arm, conditional on S>=s
     if (verbose) print("create risks.all.2")
-    risks.all.2=lapply(assays, function (a) {
+    risks.all.2=lapply(all.markers, function (a) {
         if(verbose) myprint(a)
-        marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a, type=2, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)        
+        marginalized.risk.svycoxph.boot(formula=form.0, marker.name=a, type=2, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)        
     }) 
     
     # vaccine arm, conditional on categorical S
     if (verbose) print("create risks.all.3")
-    risks.all.3=lapply(assays, function (a) {
+    risks.all.3=lapply(all.markers, function (a) {
         if(verbose) myprint(a)
-        marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a%.%"cat", type=3, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
+        marginalized.risk.svycoxph.boot(formula=form.0, marker.name=a%.%"cat", type=3, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
     })    
     
     save(risks.all.1, risks.all.2, risks.all.3, file=paste0(save.results.to, "marginalized.risk.Rdata"))

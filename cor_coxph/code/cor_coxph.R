@@ -1,9 +1,9 @@
-#Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D29start28"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "vat08m"); COR="D22"; Sys.setenv(VERBOSE = 1)
+#Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
+#Sys.setenv(TRIAL = "vat08m_naive"); COR="D22"; Sys.setenv(VERBOSE = 1)
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -24,7 +24,6 @@ time.start=Sys.time()
 myprint(study_name)
 myprint(verbose)
 
-all.markers=paste0("Day", tpeak, assays)
 
 # path for figures and tables etc
 save.results.to = here::here("output");                                if (!dir.exists(save.results.to))  dir.create(save.results.to)
@@ -34,7 +33,6 @@ print(paste0("save.results.to equals ", save.results.to))
 
 # some exploratory code
 if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
-
 
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
 B <-       config$num_boot_replicates 
@@ -61,12 +59,16 @@ myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
     
 # define trichotomized markers
-dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, tpeak, wt.col.name="wt")
+dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
 marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
-for (a in assays) {        
-    for (t in "Day"%.%tpeak) {
-        q.a=marker.cutpoints[[a]][[t]]
-        write(paste0(labels.axis[1,a], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", t, a, "_"%.%study_name))
+for (a in all.markers) {        
+    q.a=marker.cutpoints[[a]]
+    if (startsWith(a, "Day")) {
+        # not fold change
+        write(paste0(labels.axis[1,get.assay.from.name(a)], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
+    } else {
+        # fold change
+        write(paste0(a, " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
     }
 }
     
@@ -81,6 +83,7 @@ mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to
 
 ## list cases not in ph2
 #subset(dat.vac.seroneg, !ph2 & EventIndPrimary, c(Ptid, Bpseudoneutid50, Day22pseudoneutid50, Day43pseudoneutid50))
+
 
 
 
