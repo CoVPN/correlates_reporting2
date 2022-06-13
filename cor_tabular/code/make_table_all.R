@@ -53,6 +53,15 @@ tlf <-
       col1="7cm"
     ),
     
+    tab_dm_pos = list(
+      table_header = "Demographic and Clinical Characteristics at Baseline in 
+      the Baseline SARS-CoV-2 Positive Per-Protocol Cohort",
+      table_footer = randomsubcohort,
+      deselect = "subgroup",
+      pack_row = "subgroup",
+      col1="7cm"
+    ),
+    
     tab_strtm1 = list(
       deselect = "Arm",
       pack_row = "Arm"
@@ -287,7 +296,7 @@ subgrp <- c(
 ###################################################
 
 # Setup empty tables 
-tab_dm_neg <- tab_strtm1 <- tab_strtm2 <- tab_strtm2_1 <- tab_strtm2_2 <- tab_case_cnt <- NULL
+tab_dm_neg <- tab_dm_pos <- tab_strtm1 <- tab_strtm2 <- tab_strtm2_1 <- tab_strtm2_2 <- tab_case_cnt <- NULL
 rpcnt_case <- rgm_case <- rgmt_case <- NULL
 case_vacc_neg <- NULL
 
@@ -382,15 +391,25 @@ tab_dm <- bind_rows(dm_cat, dm_num) %>%
          subgroup=factor(subgroup, levels=subgrp)) %>%
   arrange(`Baseline SARS-CoV-2`, subgroup, Characteristics)
 
+if ("Negative" %in% tab_dm$`Baseline SARS-CoV-2`){
+  tab_dm_neg <- tab_dm %>% 
+    dplyr::filter(`Baseline SARS-CoV-2` == "Negative") %>% 
+    select_if(~ !all(is.na(.))) %>% 
+    select_at(c("subgroup", "Characteristics", 
+                grep("Vaccine" ,names(.), value = T),
+                grep("Placebo" ,names(.), value = T),
+                grep("Total" ,names(.), value = T)))
+}
 
-tab_dm_neg <- tab_dm %>% 
-  dplyr::filter(`Baseline SARS-CoV-2` == "Negative") %>% 
-  select_if(~ !all(is.na(.))) %>% 
-  select_at(c("subgroup", "Characteristics", 
-              grep("Vaccine" ,names(.), value = T),
-              grep("Placebo" ,names(.), value = T),
-              grep("Total" ,names(.), value = T)))
-
+if ("Positive" %in% tab_dm$`Baseline SARS-CoV-2`){
+  tab_dm_pos <- tab_dm %>% 
+    dplyr::filter(`Baseline SARS-CoV-2` == "Positive") %>% 
+    select_if(~ !all(is.na(.))) %>% 
+    select_at(c("subgroup", "Characteristics", 
+                grep("Vaccine" ,names(.), value = T),
+                grep("Placebo" ,names(.), value = T),
+                grep("Total" ,names(.), value = T)))
+}
 print("Done with table 1") 
 
 
@@ -610,5 +629,5 @@ save.results.to <- paste0(here::here("output"), "/", attr(config,"config"))
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
-save(tlf, tab_dm_neg, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, tab_days, case_vacc_neg, case_plcb_neg,
+save(tlf, tab_dm_neg, tab_dm_pos, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, tab_days, case_vacc_neg, case_plcb_neg,
      file = file.path(save.results.to, sprintf("Tables%s.Rdata", ifelse(exists("COR"), COR, ""))))
