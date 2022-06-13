@@ -44,6 +44,45 @@ for(opt in names(config)){
   eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
 }
 
+
+
+# assays labels. This needs to come before all.markers
+labels.assays = config$assay_labels
+names(labels.assays) = config$assays
+
+if (is.null(config$assay_labels_short)) {
+    labels.assays.short=labels.assays
+} else {
+    labels.assays.short = config$assay_labels_short
+    names(labels.assays.short) = config$assays
+}
+
+# hacky fix for tabular, since unclear who else is using
+# the truncated labels.assays.short later
+labels.assays.short.tabular <- labels.assays.short
+
+labels.time = config$time_labels
+names(labels.time) = config$times
+
+# axis labeling
+labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
+labels.axis <- as.data.frame(labels.axis)
+rownames(labels.axis) <- times
+
+# title labeling
+labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
+labels.title <- as.data.frame(labels.title)
+colnames(labels.title) <- times
+# NOTE: hacky solution to deal with changes in the number of markers
+rownames(labels.title)[seq_along(assays)] <- assays
+labels.title <- as.data.frame(t(labels.title))
+
+# creating short and long labels
+#labels.assays.short <- labels.axis[1, ] # should not create this again
+labels.assays.long <- labels.title
+
+
+
 do.fold.change=attr(config, "config") %in% c("vat08m_nonnaive")
 
 # COR-related config
@@ -509,40 +548,6 @@ labels.ethnicity <- c(
 #}
 
 
-labels.assays = config$assay_labels
-names(labels.assays) = config$assays
-
-if (is.null(config$assay_labels_short)) {
-    labels.assays.short=labels.assays
-} else {
-    labels.assays.short = config$assay_labels_short
-    names(labels.assays.short) = config$assays
-}
-
-# hacky fix for tabular, since unclear who else is using
-# the truncated labels.assays.short later
-labels.assays.short.tabular <- labels.assays.short
-
-labels.time = config$time_labels
-names(labels.time) = config$times
-
-
-# axis labeling
-labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
-labels.axis <- as.data.frame(labels.axis)
-rownames(labels.axis) <- times
-
-# title labeling
-labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
-labels.title <- as.data.frame(labels.title)
-colnames(labels.title) <- times
-# NOTE: hacky solution to deal with changes in the number of markers
-rownames(labels.title)[seq_along(assays)] <- assays
-labels.title <- as.data.frame(t(labels.title))
-
-# creating short and long labels
-#labels.assays.short <- labels.axis[1, ] # should not create this again
-labels.assays.long <- labels.title
 
 
 # baseline stratum labeling
