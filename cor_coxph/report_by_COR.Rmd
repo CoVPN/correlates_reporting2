@@ -111,6 +111,7 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
 
 ```{r, echo=FALSE, results='asis'}
   for (a in all.markers) {
+    assay=get.assay.from.name(a)
     res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }

@@ -34,8 +34,8 @@ mypdf (mfrow=c(1,3), file=paste0(save.results.to, "barplot_mixed"))
     if(all(is.na(tmp.1))) {
         empty.plot()
     } else {
-        barplot(tmp.1, main="D29 to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Intercurrent Cases"); axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
+        barplot(tmp.1, main="D"%.%tinterm%.%" to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Intercurrent Cases"); axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
     }
-    barplot(tmp.2, main="D29 to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day 57 Cases");  axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
-    barplot(tmp.3, main="D57 to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day 57 Cases");  axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
+    barplot(tmp.2, main="D"%.%tinterm%.%" to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day "%.%tpeak%.%" Cases");  axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
+    barplot(tmp.3, main="D"%.%tpeak%.%"   to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day "%.%tpeak%.%" Cases");  axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
 dev.off()  
