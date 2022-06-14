@@ -145,10 +145,6 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-#with(subset(dat.mock, Country==0 & SubcohortInd), table(Bserostatus, Trt))
-#with(subset(dat.mock, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1), table(!is.na(BbindSpike), !is.na(Day35bindSpike)))
-#with(subset(dat.mock, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1), table(!is.na(Bpseudoneutid50), !is.na(Day35pseudoneutid50)))
-#with(subset(dat.mock, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1 & ph1.D35 & !is.na(BbindSpike) & !is.na(Day35bindSpike)), table(is.na(Day35pseudoneutid50), EventIndPrimaryD35))
 
 
 
@@ -991,22 +987,33 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         if (verbose) myprint(a, newline=F)
         tmp.a=dat[[a]]
         
+        # if we estimate cutpoints using all non-NA markers, it may have an issue when a lot of subjects outside ph2 have non-NA markers
+        # since that leads to uneven distribution of markers between low/med/high among ph2
+        # this issue did not affect earlier trials much, but it is a problem with vat08m. We are changing the code for trials after vat08m
+        if (attr(config, "config") %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondprimary","moderna_real","moderna_mock","prevent19",
+                "janssen_pooled_real","janssen_na_real","janssen_la_real","janssen_sa_real")) {
+            flag=rep(TRUE, length(tmp.a))
+        } else {
+            flag=dat$ph2
+        }
+
         if(startsWith(a, "Day")) {
             # not fold change
             uppercut=log10(uloqs[get.assay.from.name(a)])*.9999
             if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(a, "Day")) {
-                # if more than 1/3 of vaccine recipients have value > ULOQ
-                # let q.a be median among those < ULOQ and ULOQ
+                # if more than 1/3 of vaccine recipients have value > ULOQ, let q.a be median among those < ULOQ and ULOQ
                 if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")
-                q.a=c(wtd.quantile(tmp.a[dat[[a]]<=uppercut], 
-                      weights = dat[[wt.col.name]][tmp.a<=uppercut], probs = c(1/2)), 
+                q.a=c(wtd.quantile(tmp.a[dat[[a]]<=uppercut & flag], 
+                      weights = dat[[wt.col.name]][tmp.a<=uppercut & flag], probs = c(1/2)), 
                       uppercut)
             } else {
-                q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
+                # this implementation uses all non-NA markers, which include a lot of subjects outside ph2, and that leads to uneven distribution of markers between low/med/high among ph2
+                #q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
+                q.a <- wtd.quantile(tmp.a[flag], weights = dat[[wt.col.name]][flag], probs = c(1/3, 2/3))
             }
         } else {
             # fold change
-            q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
+            q.a <- wtd.quantile(tmp.a[flag], weights = dat[[wt.col.name]][flag], probs = c(1/3, 2/3))
         }
         tmp=try(factor(cut(tmp.a, breaks = c(-Inf, q.a, Inf))), silent=T)
  
