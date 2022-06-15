@@ -30,8 +30,6 @@ config.cor <- config::get(config = COR)
 wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
 for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
 
-
-
 # load parameters
 source(here("code", "params.R"))
 
@@ -87,20 +85,12 @@ dat = dat %>%
 dat <- dat[!is.na(dat$cohort_event),]
 
 
-
-
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;
 ## dat.long.assay_value is the long-form time variables that differ by the assay type
 dat.long.subject_level <- dat %>%
   replicate(length(assays),., simplify = FALSE) %>%
   bind_rows()
-
-name_grid <- expand.grid(
-  aa = times,
-  cc = c("", "CPV", paste(".imp", 1:10, sep = ""))
-)
-
 
 dat.long.assay_value.names <- times
 dat.long.assay_value <- as.data.frame(matrix(
@@ -169,33 +159,31 @@ if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {age_thres=60; younger_
 dat.long$age.geq.65 = as.integer(dat.long$Age >= age_thres)
 
 # # matrix to decide the sampling strata
-dat.long$demo_lab <-
-  with(dat.long, factor(paste0(age.geq.65, HighRiskInd),
-    levels = c("00", "01", "10", "11"),
-    labels = c(
-      paste(younger_age, "not at risk"),
-      paste(younger_age, "at risk"),
-      paste(older_age, "not at risk"),
-      paste(older_age, "at risk")
-    )
-  ))
+# dat.long$demo_lab <-
+#  with(dat.long, factor(paste0(age.geq.65, HighRiskInd),
+#    levels = c("00", "01", "10", "11"),
+#    labels = c(
+#      paste(younger_age, "not at risk"),
+#      paste(younger_age, "at risk"),
+#      paste(older_age, "not at risk"),
+#      paste(older_age, "at risk")
+#    )
+#  ))
 
 # labels of the demographic strata for the subgroup plotting
-dat.long$trt_bstatus_label <-
-  with(
-    dat.long,
-    factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
-      levels = c("11", "12", "21", "22"),
-      labels = c(
-        "Placebo, Baseline Neg",
-        "Placebo, Baseline Pos",
-        "Vaccine, Baseline Neg",
-        "Vaccine, Baseline Pos"
-      )
-    )
-  )
-
-
+#dat.long$trt_bstatus_label <-
+#  with(
+#    dat.long,
+#    factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
+#      levels = c("11", "12", "21", "22"),
+#      labels = c(
+#        "Placebo, Baseline Neg",
+#        "Placebo, Baseline Pos",
+#        "Vaccine, Baseline Neg",
+#        "Vaccine, Baseline Pos"
+#      )
+#    )
+#  )
 
 # labels of the demographic strata for the subgroup plotting
 dat.long$age_geq_65_label <-
@@ -239,19 +227,19 @@ dat.long$sex_label <-
     )
   )
 
-dat.long$age_sex_label <-
-  with(
-    dat.long,
-    factor(paste0(age.geq.65, Sex),
-           levels = c("00", "01", "10", "11"),
-           labels = c(
-             paste(younger_age, "male"),
-             paste(younger_age, "female"),
-             paste(older_age, "male"),
-             paste(younger_age, "female")
-           )
-    )
-  )
+#dat.long$age_sex_label <-
+#  with(
+#    dat.long,
+#    factor(paste0(age.geq.65, Sex),
+#           levels = c("00", "01", "10", "11"),
+#           labels = c(
+#             paste(younger_age, "male"),
+#             paste(younger_age, "female"),
+#             paste(older_age, "male"),
+#             paste(younger_age, "female")
+#           )
+#    )
+#  )
 
 dat.long$ethnicity_label <-
   with(
@@ -307,18 +295,17 @@ if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT1
 # define response rates
 resp <- getResponder(dat.mock, cutoff.name="llox", times=grep("Day", times, value=T), 
                assays=assays, pos.cutoffs = pos.cutoffs)
-resp2 <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
+resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
   pivot_longer(!Ptid, names_to = "category", values_to = "response")
   
 dat.longer.cor.subset <- dat.longer.cor.subset %>%
-  filter(!grepl("Delta", time)) %>%
   mutate(category=paste0(time, assay, "Resp")) %>%
-  left_join(resp2, by=c("Ptid", "category")) %>%
+  left_join(resp_by_time_assay, by=c("Ptid", "category")) %>%
   mutate(
     time = ifelse(time=="B", "Day 1", ifelse(grepl("Day", time), paste(substr(time, 1, 3), substr(time, 4, 5)), NA)))
 
 # define severe: severe case or non-case
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
+if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
   dat.longer.cor.subset <- dat.longer.cor.subset %>%
     mutate(severe = case_when((time=="Day 1" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D1")))==1) ~ 1,
                               (time=="Day 29" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D29")))==1) ~ 1,
@@ -359,4 +346,3 @@ saveRDS(plot.25sample3, file = here("data_clean", "plot.25sample3.rds"))
 
 saveRDS(as.data.frame(dat.longer.cor.subset),
         file = here("data_clean", "longer_cor_data.rds"))
-
