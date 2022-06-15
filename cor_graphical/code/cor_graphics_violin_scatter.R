@@ -20,21 +20,21 @@ library(cowplot)
 library(gridExtra)
 library(grid)
 
-### variables for looping
-plots <- assays
-bstatus <- c("Baseline Neg")
-trt <- c("Placebo","Vaccine")
-plots_ytitles <- labels.assays.short
-plots_titles <- labels.assays[names(labels.assays) %in% names(labels.assays.short)]
-timesls <- list(labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1], 
-                labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)])
-
 ## load data 
 longer_cor_data <- readRDS(here("data_clean", "longer_cor_data.rds"))
 longer_cor_data_plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds"))
 plot.25sample1 <- readRDS(here("data_clean", "plot.25sample1.rds"))
 longer_cor_data_plot3 <- readRDS(here("data_clean", "longer_cor_data_plot3.rds"))
 plot.25sample3 <- readRDS(here("data_clean", "plot.25sample3.rds"))
+
+### variables for looping
+plots <- assays
+bstatus <- as.character(unique(longer_cor_data$Bserostatus))
+trt <- c("Placebo","Vaccine")
+plots_ytitles <- labels.assays.short
+plots_titles <- labels.assays[names(labels.assays) %in% names(labels.assays.short)]
+timesls <- list(labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1], 
+                labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)])
 
 ## common variables with in loop
 min_max_plot <- longer_cor_data %>% group_by(assay) %>% summarise(min=min(value, na.rm=T), max=max(value, na.rm=T))
@@ -367,7 +367,7 @@ for (i in 1:length(plots)) {
 #### Figure 4. Scatter plot, assay vs. age in years, case vs non-case, (Day 1), Day 29, and Day 57 if exists
 for (i in 1:length(plots)) {
   for (d in 1:length(timesls[[2]])) {
-    for (c in c("Vaccine_BaselineNeg","all")) {
+    for (c in c("Vaccine","all")) {
       
       ds.tmp <- subset(longer_cor_data, assay==plots[i] & time==timesls[[2]][d])
       ds.tmp$size <- with(ds.tmp, ifelse(cohort_event == "Non-Cases", 2.5, 4))
@@ -381,8 +381,8 @@ for (i in 1:length(plots)) {
       y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
       y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
       
-      # subset for vaccine baseline neg arm
-      if (c=="Vaccine_BaselineNeg"){ds.tmp <- subset(ds.tmp, Bserostatus=="Baseline Neg" & Trt=="Vaccine")}
+      # subset for vaccine arm
+      if (c=="Vaccine"){ds.tmp <- subset(ds.tmp, Trt=="Vaccine")}
 
       p <- ggplot(ds.tmp, aes(x = Age, y = value)) + 
         facet_wrap(~Bserostatus+Trt, nrow = 1) + 
@@ -399,7 +399,7 @@ for (i in 1:length(plots)) {
               panel.grid = element_blank(),
               legend.title = element_text(size=22),
               plot.title = element_text(hjust = 0.5),
-              axis.text.x = element_text(size=ifelse(c=="Vaccine_BaselineNeg", 27, 19)))
+              axis.text.x = element_text(size=ifelse(c=="Vaccine", 27, 19)))
       
       file_name <- paste0("scatter_",gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])),"_",c,"_",gsub(" ","",timesls[[2]][d]),"_", study_name, ".pdf")
       suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))
@@ -410,7 +410,7 @@ for (i in 1:length(plots)) {
 
 #### Figure 5. Scatter plot, assay vs. days since Day 29/Day 1, cases only, 1 panel per assay
 for (i in 1:length(plots)) {
-  for (c in c("Vaccine_BaselineNeg","all")) {
+  for (c in c("Vaccine","all")) {
     
     if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19") {
       timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)] 
@@ -434,7 +434,7 @@ for (i in 1:length(plots)) {
     x.lim <- c(min(ds.tmp[, xvar], na.rm=T), max(ds.tmp[, xvar], na.rm=T))
     
     # subset for vaccine baseline neg arm
-    if (c=="Vaccine_BaselineNeg"){ds.tmp <- subset(ds.tmp, Bserostatus=="Baseline Neg" & Trt=="Vaccine")}
+    if (c=="Vaccine"){ds.tmp <- subset(ds.tmp, Trt=="Vaccine")}
   
     p <- ggplot(ds.tmp, aes(x = !!as.name(xvar), y = value, group = time)) + 
       facet_wrap(~Bserostatus+Trt, nrow = 1) + 
@@ -451,7 +451,7 @@ for (i in 1:length(plots)) {
             panel.grid = element_blank(),
             legend.title = element_text(size=22),
             plot.title = element_text(hjust = 0.5),
-            axis.text.x = element_text(size=ifelse(c=="Vaccine_BaselineNeg", 27, 19)))
+            axis.text.x = element_text(size=ifelse(c=="Vaccine", 27, 19)))
     
     file_name <- paste0("scatter_daysince_",gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])),"_",c,"_",study_name, ".pdf")
     suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))

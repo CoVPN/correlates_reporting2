@@ -16,6 +16,8 @@ library(knitr)
 library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
 plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
+bsero <- ifelse(attr(config,"config")=="vat08m_nonnaive", "BaselinePos", "BaselineNeg")
+bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negative")
 
 if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name), '.Rmd')))) {
   
@@ -128,7 +130,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
   
   labels.time.no.fold <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)]
   
-  for (cohort in c("Vaccine_BaselineNeg", "all")) {
+  for (cohort in c("Vaccine", "all")) {
   	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))) {
       for (day in gsub(" ","", labels.time.no.fold)) {
         if (length(timepoints)==1){COR=paste0("D",timepoints)} else {COR=paste0("D",paste(timepoints, collapse="D"))}
@@ -139,7 +141,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
   	}
   }
   
-  for (cohort in c("Vaccine_BaselineNeg", "all")){
+  for (cohort in c("Vaccine", "all")){
   	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))){
       if (length(timepoints)==1){COR=paste0("D",timepoints)} else {COR=paste0("D",paste(timepoints, collapse="D"))}
   	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)

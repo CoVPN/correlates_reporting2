@@ -53,8 +53,8 @@ dat = dat %>%
     mutate(cohort_event = factor(
       #ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= 13, "Day 2-14 Cases",
       #       ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) > 13 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= tpeaklag-1 + NumberdaysD1toD29, intcur2,
-      case_when(!!as.name(config.cor$ph2)==1 & Bserostatus==0 & !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
-                !!as.name(config.cor$ph2)==1 & Bserostatus==0 & !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0  & AnyinfectionD1==0 ~ "Non-Cases"),
+      case_when(!!as.name(config.cor$ph2)==1 & !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
+                !!as.name(config.cor$ph2)==1 & !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0  & AnyinfectionD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
     )
@@ -63,11 +63,11 @@ dat = dat %>%
   
   dat <- dat %>%
     mutate(cohort_event = factor(
-      case_when(ph2.intercurrent.cases==1 & Bserostatus==0 ~ "Intercurrent Cases",
-                Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
+      case_when(ph2.intercurrent.cases==1 ~ "Intercurrent Cases",
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
                     # definition for post-peak cases include people with and without D57 marker data for downstream plotting
                     # will filter out those without D57 marker data in the D57 panels
-                Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
       )
 } else {
@@ -75,11 +75,11 @@ dat = dat %>%
   
   dat <- dat %>%
     mutate(cohort_event = factor(
-      case_when(ph2.intercurrent.cases==1 & Bserostatus==0 ~ "Intercurrent Cases",
-                Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
+      case_when(ph2.intercurrent.cases==1 ~ "Intercurrent Cases",
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
                     # definition for post-peak cases include people with and without D57 marker data for downstream plotting
                     # will filter out those without D57 marker data in the D57 panels
-                Perprotocol==1 & Bserostatus==0 & AnyinfectionD1==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
+                Perprotocol==1 & AnyinfectionD1==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
     )
 }

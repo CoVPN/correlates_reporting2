@@ -34,12 +34,10 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
       Perprotocol==1 &
-        Bserostatus==0 & 
         !!as.name(config.cor$Earlyendpoint)==0 & 
         !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
         !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
       Perprotocol==1 &
-        Bserostatus==0 &
         !!as.name(paste0("EarlyendpointD", timepoints[length(timepoints)]))==0 &
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
         EventIndPrimaryD1==0 ~ "Non-Cases"),
@@ -52,12 +50,10 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
       Perprotocol==1 &
-        Bserostatus==0 & 
         !!as.name(config.cor$Earlyendpoint)==0 & 
         !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
         !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
       Perprotocol==1 &
-        Bserostatus==0 &
         AnyinfectionD1==0 &
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
         !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 ~ "Non-Cases"),
