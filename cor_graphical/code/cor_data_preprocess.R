@@ -332,7 +332,12 @@ groupby_vars1=c("Trt", "Bserostatus", "cohort_event", "time", "assay")
 
 # define response rate
 dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars1)
-dat.longer.cor.subset.plot1$N_RespRate <- with(dat.longer.cor.subset.plot1, ifelse(grepl("Day", time), N_RespRate, "")) # set fold-rise resp to ""
+dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>%
+  mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+         lb = ifelse(grepl("Day", time), lb, ""),
+         lbval = ifelse(grepl("Day", time), lbval, NA),
+         lb2 = ifelse(grepl("Day", time), lb2, ""),
+         lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
 write.csv(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.csv"), row.names=F)
 saveRDS(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.rds"))
 
@@ -346,7 +351,12 @@ groupby_vars3 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", "age_g
 
 # define response rate
 dat.longer.cor.subset.plot3 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars3)
-dat.longer.cor.subset.plot3$N_RespRate <- with(dat.longer.cor.subset.plot3, ifelse(grepl("Day", time), N_RespRate, "")) # set fold-rise resp to ""
+dat.longer.cor.subset.plot3 <- dat.longer.cor.subset.plot3 %>%
+  mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+         lb = ifelse(grepl("Day", time), lb, ""),
+         lbval = ifelse(grepl("Day", time), lbval, NA),
+         lb2 = ifelse(grepl("Day", time), lb2, ""),
+         lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
 saveRDS(dat.longer.cor.subset.plot3, file = here("data_clean", "longer_cor_data_plot3.rds"))
 
 # make subsample

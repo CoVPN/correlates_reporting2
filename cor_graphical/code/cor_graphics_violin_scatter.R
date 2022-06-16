@@ -253,8 +253,12 @@ for (i in 1:length(plots)) {
               longer_cor_data_plot2 <- subset(longer_cor_data_plot2, Dich_RaceEthnic %in% c("Hispanic or Latino","Not Hispanic or Latino"))
             }
             
-            longer_cor_data_plot2$N_RespRate <- with(longer_cor_data_plot2, ifelse(grepl("Day", time), N_RespRate, "")) # set fold-rise resp to ""
-            
+            longer_cor_data_plot2 <- longer_cor_data_plot2 %>%
+              mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+                     lb = ifelse(grepl("Day", time), lb, ""),
+                     lbval = ifelse(grepl("Day", time), lbval, NA),
+                     lb2 = ifelse(grepl("Day", time), lb2, ""),
+                     lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
   
             # make subsample
             plot.25sample2 <- get_sample_by_group(longer_cor_data_plot2, groupby_vars2)
