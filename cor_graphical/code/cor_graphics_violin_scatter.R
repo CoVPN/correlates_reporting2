@@ -34,7 +34,8 @@ trt <- c("Placebo","Vaccine")
 plots_ytitles <- labels.assays.short
 plots_titles <- labels.assays[names(labels.assays) %in% names(labels.assays.short)]
 timesls <- list(labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1], 
-                labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)])
+                labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)],
+                labels.time[(names(labels.time) %in% times) & grepl("fold-rise over D1", labels.time)])
 
 ## common variables with in loop
 min_max_plot <- longer_cor_data %>% group_by(assay) %>% summarise(min=min(value, na.rm=T), max=max(value, na.rm=T))
@@ -61,8 +62,13 @@ if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19
   names(shp_lb) <- c(#"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
     "Post-Peak Cases", "Non-Cases")
 } else {
-  x_lb <- c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), "Intercurrent\nCases", "Post-Peak\nCases", "Non-Cases")
-  names(x_lb) <- c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), "Intercurrent Cases", "Post-Peak Cases", "Non-Cases")
+  x_lb <- c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), 
+            paste0("D",tinterm, "\nfold-rise\nover D1"), paste0("D",tpeak, "\nfold-rise\nover D1"), 
+            "Intercurrent\nCases", "Post-Peak\nCases", "Non-Cases")
+  
+  names(x_lb) <- c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), 
+                   paste0("D",tinterm, " fold-rise over D1"), paste0("D",tpeak, " fold-rise over D1"), 
+                   "Intercurrent Cases", "Post-Peak Cases", "Non-Cases")
   
   col_lb <- c("#0AB7C9","#FF6F1B","#810094")
   names(col_lb) <- c("Intercurrent Cases","Post-Peak Cases","Non-Cases")
@@ -177,7 +183,7 @@ violin_box_plot <-
 for (i in 1:length(plots)) {
   for (j in 1:length(bstatus)) {
     for (k in 1:length(trt)) {
-      for (t in 1:length(timesls)) {
+      for (t in 1:length(timesls)) { # v1 and v2
         for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
         
           y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
@@ -246,6 +252,9 @@ for (i in 1:length(plots)) {
             if(s=="Dich_RaceEthnic"){
               longer_cor_data_plot2 <- subset(longer_cor_data_plot2, Dich_RaceEthnic %in% c("Hispanic or Latino","Not Hispanic or Latino"))
             }
+            
+            longer_cor_data_plot2$N_RespRate <- with(longer_cor_data_plot2, ifelse(grepl("Day", time), N_RespRate, "")) # set fold-rise resp to ""
+            
   
             # make subsample
             plot.25sample2 <- get_sample_by_group(longer_cor_data_plot2, groupby_vars2)

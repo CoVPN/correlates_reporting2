@@ -302,7 +302,7 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
   mutate(category=paste0(time, assay, "Resp")) %>%
   left_join(resp_by_time_assay, by=c("Ptid", "category")) %>%
   mutate(
-    time = ifelse(time=="B", "Day 1", ifelse(grepl("Day", time), paste(substr(time, 1, 3), substr(time, 4, 5)), NA)))
+    time = labels.time[time])
 
 # define severe: severe case or non-case
 if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
@@ -314,6 +314,14 @@ if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
            )
 } else {dat.longer.cor.subset$severe = NA}
 
+# only keep fold change for do.fold.change=1: e.g. vat08m_nonnaive
+if (do.fold.change==1){
+  dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
+} else (
+  dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl("Day", time))
+)
+
+
 # subsets for violin/line plots
 #### figure specific data prep
 # 1. define response rate:
@@ -324,6 +332,7 @@ groupby_vars1=c("Trt", "Bserostatus", "cohort_event", "time", "assay")
 
 # define response rate
 dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars1)
+dat.longer.cor.subset.plot1$N_RespRate <- with(dat.longer.cor.subset.plot1, ifelse(grepl("Day", time), N_RespRate, "")) # set fold-rise resp to ""
 write.csv(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.csv"), row.names=F)
 saveRDS(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.rds"))
 
@@ -337,6 +346,7 @@ groupby_vars3 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", "age_g
 
 # define response rate
 dat.longer.cor.subset.plot3 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars3)
+dat.longer.cor.subset.plot3$N_RespRate <- with(dat.longer.cor.subset.plot3, ifelse(grepl("Day", time), N_RespRate, "")) # set fold-rise resp to ""
 saveRDS(dat.longer.cor.subset.plot3, file = here("data_clean", "longer_cor_data_plot3.rds"))
 
 # make subsample
