@@ -111,7 +111,7 @@ if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name)
   
   for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
     for (facet in facets) {
-    	for (ver in c("v1", "v2", "v3")) {
+    	for (ver in c("v1", "v2", if(do.fold.change==1)"v3")) {
     		for (type in c("linebox", "violinbox")) {
     		  for (assay in gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays))))) {
     		    for (trt in c("Placebo", "Vaccine")) {

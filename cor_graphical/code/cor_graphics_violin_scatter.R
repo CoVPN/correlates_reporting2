@@ -36,6 +36,7 @@ plots_titles <- labels.assays[names(labels.assays) %in% names(labels.assays.shor
 timesls <- list(labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1], 
                 labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)],
                 labels.time[(names(labels.time) %in% times) & grepl("fold-rise over D1", labels.time)])
+if (do.fold.change==0) {timesls[[3]]<-NULL}
 
 ## common variables with in loop
 min_max_plot <- longer_cor_data %>% group_by(assay) %>% summarise(min=min(value, na.rm=T), max=max(value, na.rm=T))
