@@ -188,8 +188,7 @@ if (exists("COR")) {
     
     ###########################################################
     # single time point COR config such as D29
-    if (is.null(config.cor$tinterm)) {
-    
+    if (is.null(config.cor$tinterm)) {    
     
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
         dat.mock$ph2=dat.mock[[config.cor$ph2]]
@@ -637,11 +636,26 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
     )
 
 } else if (study_name=="VAT08m") {
+#    demo.stratum.labels <- c(
+#      "Not HND, Age 18-59",
+#      "Not HND, Age >= 60",
+#      "HND, Age 18-59",
+#      "HND, Age >= 60",
+#      "USA, Age 18-59",
+#      "USA, Age >= 60",
+#      "JPN, Age 18-59",
+#      "JPN, Age >= 60"
+#    )
+
+    # in this partial dataset, we need to collapse "Not HND, US or JPN, senior" and "HND, senior" due to sparsity
     demo.stratum.labels <- c(
       "Not HND, Age 18-59",
-      "Not HND, Age >= 60",
+      "Not USA or JPN, Age >= 60",
       "HND, Age 18-59",
-      "HND, Age >= 60"
+      "USA, Age 18-59",
+      "USA, Age >= 60",
+      "JPN, Age 18-59",
+      "JPN, Age >= 60"
     )
 
 } else if (study_name=="HVTN705") {
@@ -1000,12 +1014,15 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         if(startsWith(a, "Day")) {
             # not fold change
             uppercut=log10(uloqs[get.assay.from.name(a)])*.9999
-            if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(a, "Day")) {
-                # if more than 1/3 of vaccine recipients have value > ULOQ, let q.a be median among those < ULOQ and ULOQ
+            lowercut=min(tmp.a, na.rm=T)*1.0001
+            if (mean(tmp.a>uppercut, na.rm=T)>1/3) {
+                # if more than 1/3 of vaccine recipients have value > ULOQ, let q.a be (median among those < ULOQ, ULOQ)
                 if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")
-                q.a=c(wtd.quantile(tmp.a[dat[[a]]<=uppercut & flag], 
-                      weights = dat[[wt.col.name]][tmp.a<=uppercut & flag], probs = c(1/2)), 
-                      uppercut)
+                q.a=c(wtd.quantile(tmp.a[dat[[a]]<=uppercut & flag], weights = dat[[wt.col.name]][tmp.a<=uppercut & flag], probs = c(1/2)),  uppercut)
+            } else if (mean(tmp.a<lowercut, na.rm=T)>1/3) {
+                # if more than 1/3 of vaccine recipients have value at min, let q.a be (min, median among those > LLOQ)
+                if (verbose) cat("more than 1/3 of vaccine recipients have at min\n")
+                q.a=c(lowercut, wtd.quantile(tmp.a[dat[[a]]>=lowercut & flag], weights = dat[[wt.col.name]][tmp.a>=lowercut & flag], probs = c(1/2))  )
             } else {
                 # this implementation uses all non-NA markers, which include a lot of subjects outside ph2, and that leads to uneven distribution of markers between low/med/high among ph2
                 #q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
