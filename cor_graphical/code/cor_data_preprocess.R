@@ -30,8 +30,6 @@ config.cor <- config::get(config = COR)
 wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
 for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
 
-
-
 # load parameters
 source(here("code", "params.R"))
 
@@ -53,8 +51,8 @@ dat = dat %>%
     mutate(cohort_event = factor(
       #ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= 13, "Day 2-14 Cases",
       #       ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) > 13 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= tpeaklag-1 + NumberdaysD1toD29, intcur2,
-      case_when(!!as.name(config.cor$ph2)==1 & Bserostatus==0 & !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
-                !!as.name(config.cor$ph2)==1 & Bserostatus==0 & !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0  & AnyinfectionD1==0 ~ "Non-Cases"),
+      case_when(!!as.name(config.cor$ph2)==1 & !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
+                !!as.name(config.cor$ph2)==1 & !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0  & AnyinfectionD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
     )
@@ -63,11 +61,11 @@ dat = dat %>%
   
   dat <- dat %>%
     mutate(cohort_event = factor(
-      case_when(ph2.intercurrent.cases==1 & Bserostatus==0 ~ "Intercurrent Cases",
-                Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
+      case_when(ph2.intercurrent.cases==1 ~ "Intercurrent Cases",
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
                     # definition for post-peak cases include people with and without D57 marker data for downstream plotting
                     # will filter out those without D57 marker data in the D57 panels
-                Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
       )
 } else {
@@ -75,18 +73,16 @@ dat = dat %>%
   
   dat <- dat %>%
     mutate(cohort_event = factor(
-      case_when(ph2.intercurrent.cases==1 & Bserostatus==0 ~ "Intercurrent Cases",
-                Perprotocol==1 & Bserostatus==0 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
+      case_when(ph2.intercurrent.cases==1 ~ "Intercurrent Cases",
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
                     # definition for post-peak cases include people with and without D57 marker data for downstream plotting
                     # will filter out those without D57 marker data in the D57 panels
-                Perprotocol==1 & Bserostatus==0 & AnyinfectionD1==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
+                Perprotocol==1 & AnyinfectionD1==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
     )
 }
 
 dat <- dat[!is.na(dat$cohort_event),]
-
-
 
 
 ## arrange the dataset in the long form, expand by assay types
@@ -95,12 +91,6 @@ dat <- dat[!is.na(dat$cohort_event),]
 dat.long.subject_level <- dat %>%
   replicate(length(assays),., simplify = FALSE) %>%
   bind_rows()
-
-name_grid <- expand.grid(
-  aa = times,
-  cc = c("", "CPV", paste(".imp", 1:10, sep = ""))
-)
-
 
 dat.long.assay_value.names <- times
 dat.long.assay_value <- as.data.frame(matrix(
@@ -169,33 +159,31 @@ if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {age_thres=60; younger_
 dat.long$age.geq.65 = as.integer(dat.long$Age >= age_thres)
 
 # # matrix to decide the sampling strata
-dat.long$demo_lab <-
-  with(dat.long, factor(paste0(age.geq.65, HighRiskInd),
-    levels = c("00", "01", "10", "11"),
-    labels = c(
-      paste(younger_age, "not at risk"),
-      paste(younger_age, "at risk"),
-      paste(older_age, "not at risk"),
-      paste(older_age, "at risk")
-    )
-  ))
+# dat.long$demo_lab <-
+#  with(dat.long, factor(paste0(age.geq.65, HighRiskInd),
+#    levels = c("00", "01", "10", "11"),
+#    labels = c(
+#      paste(younger_age, "not at risk"),
+#      paste(younger_age, "at risk"),
+#      paste(older_age, "not at risk"),
+#      paste(older_age, "at risk")
+#    )
+#  ))
 
 # labels of the demographic strata for the subgroup plotting
-dat.long$trt_bstatus_label <-
-  with(
-    dat.long,
-    factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
-      levels = c("11", "12", "21", "22"),
-      labels = c(
-        "Placebo, Baseline Neg",
-        "Placebo, Baseline Pos",
-        "Vaccine, Baseline Neg",
-        "Vaccine, Baseline Pos"
-      )
-    )
-  )
-
-
+#dat.long$trt_bstatus_label <-
+#  with(
+#    dat.long,
+#    factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
+#      levels = c("11", "12", "21", "22"),
+#      labels = c(
+#        "Placebo, Baseline Neg",
+#        "Placebo, Baseline Pos",
+#        "Vaccine, Baseline Neg",
+#        "Vaccine, Baseline Pos"
+#      )
+#    )
+#  )
 
 # labels of the demographic strata for the subgroup plotting
 dat.long$age_geq_65_label <-
@@ -239,19 +227,19 @@ dat.long$sex_label <-
     )
   )
 
-dat.long$age_sex_label <-
-  with(
-    dat.long,
-    factor(paste0(age.geq.65, Sex),
-           levels = c("00", "01", "10", "11"),
-           labels = c(
-             paste(younger_age, "male"),
-             paste(younger_age, "female"),
-             paste(older_age, "male"),
-             paste(younger_age, "female")
-           )
-    )
-  )
+#dat.long$age_sex_label <-
+#  with(
+#    dat.long,
+#    factor(paste0(age.geq.65, Sex),
+#           levels = c("00", "01", "10", "11"),
+#           labels = c(
+#             paste(younger_age, "male"),
+#             paste(younger_age, "female"),
+#             paste(older_age, "male"),
+#             paste(younger_age, "female")
+#           )
+#    )
+#  )
 
 dat.long$ethnicity_label <-
   with(
@@ -307,18 +295,17 @@ if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT1
 # define response rates
 resp <- getResponder(dat.mock, cutoff.name="llox", times=grep("Day", times, value=T), 
                assays=assays, pos.cutoffs = pos.cutoffs)
-resp2 <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
+resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
   pivot_longer(!Ptid, names_to = "category", values_to = "response")
   
 dat.longer.cor.subset <- dat.longer.cor.subset %>%
-  filter(!grepl("Delta", time)) %>%
   mutate(category=paste0(time, assay, "Resp")) %>%
-  left_join(resp2, by=c("Ptid", "category")) %>%
+  left_join(resp_by_time_assay, by=c("Ptid", "category")) %>%
   mutate(
-    time = ifelse(time=="B", "Day 1", ifelse(grepl("Day", time), paste(substr(time, 1, 3), substr(time, 4, 5)), NA)))
+    time = labels.time[time])
 
 # define severe: severe case or non-case
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
+if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
   dat.longer.cor.subset <- dat.longer.cor.subset %>%
     mutate(severe = case_when((time=="Day 1" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D1")))==1) ~ 1,
                               (time=="Day 29" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D29")))==1) ~ 1,
@@ -326,6 +313,14 @@ if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
                               TRUE ~ 0)
            )
 } else {dat.longer.cor.subset$severe = NA}
+
+# only keep fold change for do.fold.change=1: e.g. vat08m_nonnaive
+if (do.fold.change==1){
+  dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
+} else (
+  dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl("Day", time))
+)
+
 
 # subsets for violin/line plots
 #### figure specific data prep
@@ -337,6 +332,12 @@ groupby_vars1=c("Trt", "Bserostatus", "cohort_event", "time", "assay")
 
 # define response rate
 dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars1)
+dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>%
+  mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+         lb = ifelse(grepl("Day", time), lb, ""),
+         lbval = ifelse(grepl("Day", time), lbval, NA),
+         lb2 = ifelse(grepl("Day", time), lb2, ""),
+         lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
 write.csv(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.csv"), row.names=F)
 saveRDS(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.rds"))
 
@@ -350,6 +351,12 @@ groupby_vars3 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", "age_g
 
 # define response rate
 dat.longer.cor.subset.plot3 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars3)
+dat.longer.cor.subset.plot3 <- dat.longer.cor.subset.plot3 %>%
+  mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+         lb = ifelse(grepl("Day", time), lb, ""),
+         lbval = ifelse(grepl("Day", time), lbval, NA),
+         lb2 = ifelse(grepl("Day", time), lb2, ""),
+         lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
 saveRDS(dat.longer.cor.subset.plot3, file = here("data_clean", "longer_cor_data_plot3.rds"))
 
 # make subsample
@@ -359,4 +366,3 @@ saveRDS(plot.25sample3, file = here("data_clean", "plot.25sample3.rds"))
 
 saveRDS(as.data.frame(dat.longer.cor.subset),
         file = here("data_clean", "longer_cor_data.rds"))
-

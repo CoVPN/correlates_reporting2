@@ -1,9 +1,9 @@
 \begin{figure}
 \center
     
-\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, gsub("[_]+", "_", paste0(type, "_", assay, "_", trt, "_", "BaselineNeg_", facet, "_", sev, "_", ver, "_", study_name)))`}
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, gsub("[_]+", "_", paste0(type, "_", assay, "_", trt, "_", bsero, "_", facet, "_", sev, "_", ver, "_", study_name)))`}
 
-\caption{`r paste0(gsub("box", "", type), "plots of ", gsub("%", "\\\\%", labels.assays[grepl(substr(assay, nchar(assay)-4+1, nchar(assay)), names(labels.assays))]), ": baseline negative ", tolower(trt), " arm", ifelse(facet!="", paste0(" by ", names(facets)[facets==facet]), ""), ifelse(sev!="", " severe only", ""), " (version ", gsub("v", "", ver), ")", ifelse(grepl("start1", COR), " (start1)", ""))`}
+\caption{`r paste0(gsub("box", "", type), "plots of ", gsub("%", "\\\\%", labels.assays[grepl(substr(assay, nchar(assay)-4+1, nchar(assay)), names(labels.assays))]), ": ", bseroLabel, " ", tolower(trt), " arm", ifelse(facet!="", paste0(" by ", names(facets)[facets==facet]), ""), ifelse(sev!="", " severe only", ""), " (version ", gsub("v", "", ver), ")", ifelse(grepl("start1", COR), " (start1)", ""))`}
 \end{figure}
 
 \hphantom{Random text to appease the latex god}
