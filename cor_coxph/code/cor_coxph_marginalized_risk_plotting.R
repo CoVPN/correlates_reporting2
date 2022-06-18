@@ -208,7 +208,7 @@ for (eq.geq in 1:4) {
                 yat=seq(-1,1,by=.1)
                 axis(side=2,at=yat,labels=(yat*100)%.%"%")            
             } else {
-                yat=c(seq(0,.90,by=.1),.95)
+                yat=c(seq(-2,0,by=.5),seq(0,.90,by=.1),.95)
                 axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
             }
             # x axis
