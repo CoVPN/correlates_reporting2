@@ -243,8 +243,6 @@ vat08m_base: &vat08m_base
   assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
   study_name: VAT08m
   covariates_riskscore: ~.+ risk_score
-  ve_ylim: [0,1]
-  ve_ylim_log: [0.0,0.98]
   low_efficacy: no
   num_boot_replicates: 1000
   num_perm_replicates: 10000
@@ -253,9 +251,13 @@ vat08m_base: &vat08m_base
 vat08m_nonnaive: &vat08m_nonnaive
   <<: *vat08m_base
   Bserostatus: 1
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
   
 vat08m_naive: &vat08m_naive
   <<: *vat08m_base
+  ve_ylim: [-1,1]
+  ve_ylim_log: [-2.0,0.98]
   
 
 prevent19: &prevent19

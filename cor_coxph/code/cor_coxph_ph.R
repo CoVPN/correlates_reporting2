@@ -343,7 +343,7 @@ if (!is.null(config$multivariate_assays)) {
 
 
 ###################################################################################################
-#  
+# some ad hoc models
 
 if (attr(config,"config")=="janssen_pooled_real") {
     f=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) * Day29pseudoneutid50    
@@ -366,6 +366,29 @@ if (attr(config,"config")=="janssen_pooled_real") {
     tab
     
     mytex(tab, file.name="CoR_region_itxn", align="c", include.colnames = T, save2input.only=T, 
+        input.foldername=save.results.to)
+        
+} else if (attr(config,"config")=="vat08m_nonnaive") {
+    f=as.formula(paste0("Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + Bpseudoneutid50 + Delta", tpeak, "overBpseudoneutid50"))
+    fit=svycoxph(f, design=design.vacc.seroneg) 
+    var.ind=2:3
+    
+    fits=list(fit)
+    est=getFormattedSummary(fits, exp=T, robust=T, rows=1:3, type=1)
+    ci= getFormattedSummary(fits, exp=T, robust=T, rows=1:3, type=13)
+    est = paste0(est, " ", ci)
+    p=  getFormattedSummary(fits, exp=T, robust=T, rows=1:3, type=10)
+    
+    #generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
+    stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
+    p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
+    
+    tab=cbind(est, p)
+    colnames(tab)=c("HR", "P value")
+    tab=rbind(tab, "Generalized Wald Test for last two"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
+    tab
+    
+    mytex(tab, file.name="CoR_B_fold_change", align="c", include.colnames = T, save2input.only=T, 
         input.foldername=save.results.to)
 }
 

@@ -128,3 +128,17 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
     }
   }
 ```
+
+
+`r if (!attr(config,"config") %in% c("vat08m_nonnaive")) '<!--'`
+\begin{table}[H]
+\caption{Inference for baseline and fold change antibody marker correlates of risk of `r txt.endpoint` in the vaccine group: Hazard ratios per 10-fold increment in the marker*}
+\begin{center}
+    \input{`r pathCoRoutput`/CoR_B_fold_change}\\
+\end{center}
+* Maximum failure event time \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+`r special.note`
+    %\label{tab:CoR_B_fold_change}
+\end{table}
+\vspace{10pt}
+`r if (!attr(config,"config") %in% c("vat08m_nonnaive"))'-->'`

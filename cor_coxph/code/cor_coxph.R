@@ -3,7 +3,7 @@
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "vat08m_naive"); COR="D22"; Sys.setenv(VERBOSE = 1)
+#Sys.setenv(TRIAL = "vat08m_nonnaive"); COR="D22"; Sys.setenv(VERBOSE = 1)
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
