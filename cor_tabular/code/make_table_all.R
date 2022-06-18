@@ -127,6 +127,48 @@ tlf <-
                         "Comparison" = 2),
       header_above2 = c(" "=2,
                         "Baseline SARS-CoV-2 Negative Placebo Recipients" = 8),
+      col1="1cm"),
+    
+    case_vacc_pos = list(
+      table_header = "Antibody levels in the baseline SARS-CoV-2 positive
+      per-protocol cohort (vaccine recipients)",
+      table_footer =c(
+        paste(paste(sprintf("Cases for Day %s markers are baseline positive per-protocol vaccine recipients 
+      with the symptomatic infection COVID-19 primary endpoint diagnosed starting %s day(s) 
+      after the Day %s study visit.", config.cor$tpeak, config.cor$tpeaklag, config.cor$tpeak), collapse=" "),
+              "Non-cases/Controls are baseline positive per-protocol vaccine recipients sampled into the random subcohort 
+      with no COVID-19 endpoint diagnosis by the time of data-cut."),
+        "N is the number of cases sampled into the subcohort within baseline covariate strata.",
+        "The denominator in Resp Rate is the number of participants in the whole per-protocol cohort within baseline 
+      covariate strata, calculated using inverse probability weighting."),
+      
+      col_name = c("Visit", "Marker", "N", "Resp rate", "GMT/GMC", "N",
+                   "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/GMCR"),
+      header_above1 = c(" "=2, "Cases*" = 3, "Non-Cases/Control" = 3,
+                        "Comparison" = 2),
+      header_above2 = c(" "=2,
+                        "Baseline SARS-CoV-2 Positive Vaccine Recipients" = 8),
+      col1="1cm"),
+    
+    case_plcb_pos = list(
+      table_header = "Antibody levels in the baseline SARS-CoV-2 positive
+      per-protocol cohort (placebo recipients)",
+      table_footer =c(
+        paste(paste(sprintf("Cases for Day %s markers are baseline positive per-protocol placebo recipients 
+      with the symptomatic infection COVID-19 primary endpoint diagnosed starting %s day(s) 
+      after the Day %s study visit.", config.cor$tpeak, config.cor$tpeaklag, config.cor$tpeak), collapse=" "),
+              "Non-cases/Controls are baseline positive per-protocol placebo recipients sampled into the random subcohort 
+      with no COVID-19 endpoint diagnosis by the time of data-cut."),
+        "N is the number of cases sampled into the subcohort within baseline covariate strata.",
+        "The denominator in Resp Rate is the number of participants in the whole per-protocol cohort within baseline 
+      covariate strata, calculated using inverse probability weighting."),
+      
+      col_name = c("Visit", "Marker", "N", "Resp rate", "GMT/GMC", "N",
+                   "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/GMCR"),
+      header_above1 = c(" "=2, "Cases*" = 3, "Non-Cases/Control" = 3,
+                        "Comparison" = 2),
+      header_above2 = c(" "=2,
+                        "Baseline SARS-CoV-2 Positive Placebo Recipients" = 8),
       col1="1cm"))
     
 # cutoff.name <- config$llox_label
@@ -298,7 +340,7 @@ subgrp <- c(
 # Setup empty tables 
 tab_dm_neg <- tab_dm_pos <- tab_strtm1 <- tab_strtm2 <- tab_strtm2_1 <- tab_strtm2_2 <- tab_case_cnt <- NULL
 rpcnt_case <- rgm_case <- rgmt_case <- NULL
-case_vacc_neg <- NULL
+case_vacc_neg <-case_plcb_neg <-case_vacc_pos <-case_plcb_pos <- NULL
 
 if (study_name %in% c("COVE", "MockCOVE")) {
   num_v1 <- c("Age") # Summaries - Mean & Range
@@ -610,6 +652,14 @@ case_plcb_neg <- tab_case %>%
   dplyr::filter(Arm == "Placebo" & `Baseline SARS-CoV-2` == "Negative") %>% 
   select(-c(Arm, `Baseline SARS-CoV-2`))
 
+case_vacc_pos <- tab_case %>% 
+  dplyr::filter(Arm == "Vaccine" & `Baseline SARS-CoV-2` == "Positive") %>% 
+  select(-c(Arm, `Baseline SARS-CoV-2`))
+
+case_plcb_pos <- tab_case %>% 
+  dplyr::filter(Arm == "Placebo" & `Baseline SARS-CoV-2` == "Positive") %>% 
+  select(-c(Arm, `Baseline SARS-CoV-2`))
+
 print("Done with all tables") 
 
 if(study_name %in% c("PREVENT19") & all(ds$Country==0)){
@@ -629,5 +679,9 @@ save.results.to <- paste0(here::here("output"), "/", attr(config,"config"))
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
-save(tlf, tab_dm_neg, tab_dm_pos, tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, tab_case_cnt, tab_days, case_vacc_neg, case_plcb_neg,
+save(tlf, tab_dm_neg, tab_dm_pos, 
+     tab_strtm1, tab_strtm2, tab_strtm2_1, tab_strtm2_2, 
+     tab_case_cnt, tab_days, 
+     case_vacc_neg, case_plcb_neg,
+     case_vacc_pos, case_plcb_pos,
      file = file.path(save.results.to, sprintf("Tables%s.Rdata", ifelse(exists("COR"), COR, ""))))
