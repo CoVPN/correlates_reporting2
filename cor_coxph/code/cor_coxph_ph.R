@@ -368,28 +368,31 @@ if (attr(config,"config")=="janssen_pooled_real") {
     mytex(tab, file.name="CoR_region_itxn", align="c", include.colnames = T, save2input.only=T, 
         input.foldername=save.results.to)
         
-} else if (attr(config,"config")=="vat08m_nonnaive") {
-    f=as.formula(paste0("Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + Bpseudoneutid50 + Delta", tpeak, "overBpseudoneutid50"))
-    fit=svycoxph(f, design=design.vacc.seroneg) 
-    var.ind=2:3
-    
-    fits=list(fit)
-    est=getFormattedSummary(fits, exp=T, robust=T, rows=1:3, type=1)
-    ci= getFormattedSummary(fits, exp=T, robust=T, rows=1:3, type=13)
-    est = paste0(est, " ", ci)
-    p=  getFormattedSummary(fits, exp=T, robust=T, rows=1:3, type=10)
-    
-    #generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
-    stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
-    p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
-    
-    tab=cbind(est, p)
-    colnames(tab)=c("HR", "P value")
-    tab=rbind(tab, "Generalized Wald Test for last two"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
-    tab
-    
-    mytex(tab, file.name="CoR_B_fold_change", align="c", include.colnames = T, save2input.only=T, 
-        input.foldername=save.results.to)
 }
+
+if (!is.null(config$additional_models)) {
+    if(verbose) print("Additional models")
+    
+    for (a in config$additional_models) {
+        tmp=gsub("tpeak",tpeak,a)
+        f= update(Surv(EventTimePrimary, EventIndPrimary) ~1, as.formula(paste0("~.+", tmp)))
+        fit=svycoxph(f, design=design.vacc.seroneg) 
+        
+        fits=list(fit)
+        est=getFormattedSummary(fits, exp=T, robust=T, type=1)
+        ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
+        est = paste0(est, " ", ci)
+        p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
+        
+        tab=cbind(est, p)
+        colnames(tab)=c("HR", "P value")
+        tab
+    
+        mytex(tab, file.name=paste0("CoR_add_models", match(a, config$additional_models)), align="c", include.colnames = T, save2input.only=T, 
+            input.foldername=save.results.to)
+    }
+    
+}
+
 
 save (tab.cont, tab.cat, tab.cont.scaled, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))
