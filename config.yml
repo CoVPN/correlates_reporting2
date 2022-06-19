@@ -253,6 +253,10 @@ vat08m_nonnaive: &vat08m_nonnaive
   Bserostatus: 1
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]
+  additional_models: [
+    risk_score + Bpseudoneutid50 + DeltatpeakoverBpseudoneutid50,
+    Age + I(Country==3)+ Daytpeakpseudoneutid50cat
+  ]
   
 vat08m_naive: &vat08m_naive
   <<: *vat08m_base
