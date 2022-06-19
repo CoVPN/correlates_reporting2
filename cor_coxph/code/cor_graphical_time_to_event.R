@@ -25,7 +25,12 @@ mypdf (mfrow=c(1,3), file=paste0(save.results.to, "barplot_mixed"))
     tmp.2=table(subset(dat.mock, dat.mock[["ph1.D"%.%tpeak]] & dat.mock[["EventIndPrimaryD"%.%tpeak]] & Trt==1, "EventTimePrimaryD"%.%tinterm, drop=T))
     tmp.3=table(subset(dat.mock, dat.mock[["ph1.D"%.%tpeak]] & dat.mock[["EventIndPrimaryD"%.%tpeak]] & Trt==1, "EventTimePrimaryD"%.%tpeak  , drop=T))
     
-    tmp=cbinduneven(list(tmp.1, tmp.2, tmp.3))
+    minmax=range(as.numeric(names(tmp.1)), as.numeric(names(tmp.2)), as.numeric(names(tmp.3)))
+    tmp.4=rep(0, minmax[2]-minmax[1]+1)    
+    names(tmp.4)=minmax[1]:minmax[2]
+    tmp.5=as.table(tmp.4)
+        
+    tmp=cbinduneven(list(tmp.1, tmp.2, tmp.3, tmp.5))
     tmp=tmp[order(as.numeric(rownames(tmp))),]
     tmp.1=tmp[,1]; names(tmp.1)=rownames(tmp)
     tmp.2=tmp[,2]; names(tmp.2)=rownames(tmp)
@@ -34,8 +39,8 @@ mypdf (mfrow=c(1,3), file=paste0(save.results.to, "barplot_mixed"))
     if(all(is.na(tmp.1))) {
         empty.plot()
     } else {
-        barplot(tmp.1, main="D"%.%tinterm%.%" to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Intercurrent Cases"); axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
+        barplot(tmp.1, main="D"%.%tinterm%.%" to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Intercurrent Cases"); axis(2, at=0:10); axis(1, at=seq(0,minmax[2],by=10)); 
     }
-    barplot(tmp.2, main="D"%.%tinterm%.%" to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day "%.%tpeak%.%" Cases");  axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
-    barplot(tmp.3, main="D"%.%tpeak%.%"   to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day "%.%tpeak%.%" Cases");  axis(2, at=0:10); axis(1, at=seq(0,200,by=10)); 
+    barplot(tmp.2, main="D"%.%tinterm%.%" to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day "%.%tpeak%.%" Cases");  axis(2, at=0:10); axis(1, at=seq(0,minmax[2],by=10)); 
+    barplot(tmp.3, main="D"%.%tpeak%.%"   to COVID", xlab="Days", yaxt="n", xaxt="n"); title(line=3, main="Post Day "%.%tpeak%.%" Cases");  axis(2, at=0:10); axis(1, at=seq(0,minmax[2],by=10)); 
 dev.off()  
