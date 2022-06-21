@@ -112,8 +112,8 @@ if (exists("COR")) {
         if (do.fold.change) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
     ); names(all.markers.names.short)=all.markers
     all.markers.names.long=c(
-        labels.assays.long["Day"%.%tpeak,assays],
-        if (do.fold.change) labels.assays.long["Delta"%.%tpeak%.%"overB",assays]
+        as.matrix(labels.assays.long)["Day"%.%tpeak, assays],
+        if (do.fold.change) as.matrix(labels.assays.long)["Delta"%.%tpeak%.%"overB", assays]
     ); names(all.markers.names.long)=all.markers
 }
     

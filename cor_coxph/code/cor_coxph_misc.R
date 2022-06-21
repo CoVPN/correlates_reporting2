@@ -163,6 +163,42 @@ if ((study_name=="COVE" | study_name=="MockCOVE") & tpeak=="57") {
 } 
 
 
+if (attr(config, "config")=="janssen_pooled_real" & COR=="D29IncludeNotMolecConfirmedstart1") {
+    # the distribution of the number of days from D29 until COVID-19 endpoint occurrence or until right-censoring
+    # stratified by COVID-19 endpoint or right-censoring and by geographic region.  Based on this figure,        
+
+    tmp.1=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==1 & Region==0, EventTimePrimaryD29, drop=T))
+    tmp.2=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==1 & Region==1, EventTimePrimaryD29, drop=T))
+    tmp.3=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==1 & Region==2, EventTimePrimaryD29, drop=T))
+    tmp.4=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==0 & Region==0, EventTimePrimaryD29, drop=T))
+    tmp.5=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==0 & Region==1, EventTimePrimaryD29, drop=T))
+    tmp.6=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==0 & Region==2, EventTimePrimaryD29, drop=T))
+    
+    minmax=range(c(as.numeric(names(tmp.1)),as.numeric(names(tmp.2)),as.numeric(names(tmp.3)),as.numeric(names(tmp.4)),as.numeric(names(tmp.5)),as.numeric(names(tmp.6))))
+    tmp.7=rep(0, minmax[2]-minmax[1]+1)    
+    names(tmp.7)=minmax[1]:minmax[2]
+    tmp.7=as.table(tmp.7)
+        
+    tmp=cbinduneven(list(tmp.1, tmp.2, tmp.3, tmp.4, tmp.5, tmp.6, tmp.7))
+    tmp=tmp[order(as.numeric(rownames(tmp))),]
+    tmp.1=tmp[,1]; names(tmp.1)=rownames(tmp)
+    tmp.2=tmp[,2]; names(tmp.2)=rownames(tmp)
+    tmp.3=tmp[,3]; names(tmp.3)=rownames(tmp)
+    tmp.4=tmp[,4]; names(tmp.4)=rownames(tmp)
+    tmp.5=tmp[,5]; names(tmp.5)=rownames(tmp)
+    tmp.6=tmp[,6]; names(tmp.6)=rownames(tmp)
+    
+    mypdf (mfrow=c(2,3), file=paste0(save.results.to, "revision_fig_1"))     
+        barplot(tmp.1, xlab="Days", main="Cases, United States")
+        barplot(tmp.2, xlab="Days", main="Cases, Latin America")
+        barplot(tmp.3, xlab="Days", main="Cases, South Africa") 
+        barplot(tmp.4, xlab="Days", main="Non-cases, United States")
+        barplot(tmp.5, xlab="Days", main="Non-cases, Latin America")
+        barplot(tmp.6, xlab="Days", main="Non-cases, South Africa") 
+    dev.off()  
+
+}
+
 if (tpeak=="57") {
         
     # barplots for number of days from Day 1 to Day 29, and number of days from Day 29 to Day 57 in the immunogenicity subcohort
@@ -211,5 +247,3 @@ if (attr(config,"config")=="janssen_pooled_realbAb") {
     plot(km, ylim=c(0.6,1), col=1:3, main="ph2", xlim=c(0,100))
     
 }
-
-
