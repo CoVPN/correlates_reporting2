@@ -157,6 +157,12 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
 draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
 #aa=c("pseudoneutid50","pseudoneutid50la"); TRIALS=c("janssen_la_real"); file.name=tmp; log=""
     
+    if (length(TRIALS)==1) {
+        TRIALS=rep(TRIALS, length(aa))
+    } else if(length(TRIALS)==length(aa)) {
+        # this is fine
+    } else stop("TRIALS has to be either of length 1 or same length as aa")
+    
     x=TRIALS
     
     transf=if(log=="y") function(y) -log(1-y) else identity 
@@ -181,12 +187,13 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     xlim.ls=list()
     markers.x=list()
     weight=list()
-    for (a in aa) {    
-        TRIAL=get.trial(x, a)
+    for (i in 1:length(aa)) {  
+        a=aa[i]  
+        TRIAL=get.trial(x[i], a)
         Sys.setenv("TRIAL"=TRIAL)
-        COR = switch(x, moderna_real="D57",
-            janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", 
-            janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
+        COR = switch(x[i], 
+            moderna_real="D57",
+            janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
             prevent19="D35", 
             azd1222="D57",
             stop("wrong trial label for COR")
@@ -209,14 +216,15 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     xlim=c(min(sapply(xlim.ls, function(x) x[1])), max(sapply(xlim.ls, function(x) x[2])))
     myprint(xlim)
     
-    mypdf(file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",TRIALS), width=5.2, height=5.2)
+    mypdf(file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name), width=5.2, height=5.2)
         par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         
         # need several variables from sourcing _common.R: lloxs, labels.assays, draw.x.axis.cor
         overall.ve.ls=list()
-        for (a in aa) {    
-            TRIAL=get.trial(x, a)
-            COR = switch(x, moderna_real="D57",
+        for (i in 1:length(aa)) {  
+            a=aa[i]  
+            TRIAL=get.trial(x[i], a)
+            COR = switch(x[i], moderna_real="D57",
                 janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", 
                 janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
                 prevent19="D35", 
@@ -259,7 +267,7 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
         
             # add histogram
             #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
-            tmp=get.marker.histogram(markers.x[[a]], weight[[a]], x, markers.x[[aa[1]]])
+            tmp=get.marker.histogram(markers.x[[a]], weight[[a]], x[i], markers.x[[aa[1]]])
             if (log=="") {
                 tmp$density=tmp$density/hist.shrink[aa[1]] # so that it will fit vertically
             } else{
@@ -278,11 +286,15 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     
 }
 
+
+# for ENSEMBLE manuscript 1 
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="1")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="1", log="y")
 # 
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", log="y")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real", log="y")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", file.name="janssen_la_real")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real", file.name="janssen_sa_real")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", file.name="janssen_la_real", log="y")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real", file.name="janssen_sa_real", log="y")
 
 
 
