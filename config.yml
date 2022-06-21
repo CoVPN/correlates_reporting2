@@ -373,6 +373,11 @@ janssen_pooled_real:
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   llox_label: [LOD, LOD, LLOQ]
+  additional_models: [
+    as.factor(Region) + MinorityInd + Sex + Senior + HighRiskInd + DaytpeakbindSpike,
+    as.factor(Region) + MinorityInd + Sex + Senior + HighRiskInd + DaytpeakbindRBD,
+    as.factor(Region) + MinorityInd + Sex + Senior + HighRiskInd + Daytpeakpseudoneutid50
+  ]
 
 janssen_pooled_realADCP:
   <<: *janssen_trial_realADCP
