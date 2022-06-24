@@ -343,7 +343,7 @@ if (!is.null(config$multivariate_assays)) {
 
 
 ###################################################################################################
-#  
+# some ad hoc models
 
 if (attr(config,"config")=="janssen_pooled_real") {
     f=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) * Day29pseudoneutid50    
@@ -367,6 +367,32 @@ if (attr(config,"config")=="janssen_pooled_real") {
     
     mytex(tab, file.name="CoR_region_itxn", align="c", include.colnames = T, save2input.only=T, 
         input.foldername=save.results.to)
+        
 }
+
+if (!is.null(config$additional_models)) {
+    if(verbose) print("Additional models")
+    
+    for (a in config$additional_models) {
+        tmp=gsub("tpeak",tpeak,a)
+        f= update(Surv(EventTimePrimary, EventIndPrimary) ~1, as.formula(paste0("~.+", tmp)))
+        fit=svycoxph(f, design=design.vacc.seroneg) 
+        
+        fits=list(fit)
+        est=getFormattedSummary(fits, exp=T, robust=T, type=1)
+        ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
+        est = paste0(est, " ", ci)
+        p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
+        
+        tab=cbind(est, p)
+        colnames(tab)=c("HR", "P value")
+        tab
+    
+        mytex(tab, file.name=paste0("CoR_add_models", match(a, config$additional_models)), align="c", include.colnames = T, save2input.only=T, 
+            input.foldername=save.results.to)
+    }
+    
+}
+
 
 save (tab.cont, tab.cat, tab.cont.scaled, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))

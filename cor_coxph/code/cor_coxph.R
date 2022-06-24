@@ -1,9 +1,9 @@
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D29start28"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "janssen_la_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "vat08m_naive"); COR="D43"; Sys.setenv(VERBOSE = 1)
+#Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "vat08m_naive"); COR="D22"; Sys.setenv(VERBOSE = 1)
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -81,9 +81,6 @@ tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
 print(tab)
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
 
-## list cases not in ph2
-#subset(dat.vac.seroneg, !ph2 & EventIndPrimary, c(Ptid, Bpseudoneutid50, Day22pseudoneutid50, Day43pseudoneutid50))
-
 
 
 
@@ -100,9 +97,11 @@ if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 ###################################################################################################
 # run PH models
 ###################################################################################################
-
+    
 #create twophase design object
 design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
+
+
 
 source(here::here("code", "cor_coxph_ph.R"))
 

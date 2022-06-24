@@ -34,12 +34,10 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
       Perprotocol==1 &
-        Bserostatus==0 & 
         !!as.name(config.cor$Earlyendpoint)==0 & 
         !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
         !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
       Perprotocol==1 &
-        Bserostatus==0 &
         !!as.name(paste0("EarlyendpointD", timepoints[length(timepoints)]))==0 &
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
         EventIndPrimaryD1==0 ~ "Non-Cases"),
@@ -52,12 +50,10 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
       Perprotocol==1 &
-        Bserostatus==0 & 
         !!as.name(config.cor$Earlyendpoint)==0 & 
         !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
         !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
       Perprotocol==1 &
-        Bserostatus==0 &
         AnyinfectionD1==0 &
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
         !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 ~ "Non-Cases"),
@@ -111,16 +107,16 @@ dat.long$Bserostatus <- factor(dat.long$Bserostatus,
 dat.long$assay <- factor(dat.long$assay, levels = assays, labels = assays)
 
 # add LLoQ pos.cutoffs, and ULoQ value for response call and censoring - log10 scales
-dat.long$LLoQ = with(dat.long, log10(lloqs[as.character(assay)]))
-dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
+#dat.long$LLoQ = with(dat.long, log10(lloqs[as.character(assay)]))
+#dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
 dat.long$ULoQ = with(dat.long, log10(uloqs[as.character(assay)]))
 
 # add label = LLoD / poscutoff, uloq values to show in the plot
-dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
-dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
-dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
-dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay), "ULoQ", "")) 
-dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay), ULoQ, -99))
+#dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
+#dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
+#dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
+#dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay), "ULoQ", "")) 
+#dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay), ULoQ, -99))
 
 # assign values above the uloq to the uloq
 for (t in times[!grepl("Delta", times)]) {
@@ -150,19 +146,19 @@ dat.long$demo_lab <-
   ))
 
 # labels of the demographic strata for the subgroup plotting
-dat.long$trt_bstatus_label <-
-  with(
-    dat.long,
-    factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
-      levels = c("11", "12", "21", "22"),
-      labels = c(
-        "Placebo, Baseline Neg",
-        "Placebo, Baseline Pos",
-        "Vaccine, Baseline Neg",
-        "Vaccine, Baseline Pos"
-      )
-    )
-  )
+#dat.long$trt_bstatus_label <-
+#  with(
+#    dat.long,
+#    factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
+#      levels = c("11", "12", "21", "22"),
+#      labels = c(
+#        "Placebo, Baseline Neg",
+#        "Placebo, Baseline Pos",
+#        "Vaccine, Baseline Neg",
+#        "Vaccine, Baseline Pos"
+#      )
+#    )
+#  )
 
 # For immunogenicity characterization, complete ignore any information on cases
 # vs. non-cases.  The goal is to characterize immunogenicity in the random

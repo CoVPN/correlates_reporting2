@@ -243,8 +243,6 @@ vat08m_base: &vat08m_base
   assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
   study_name: VAT08m
   covariates_riskscore: ~.+ risk_score
-  ve_ylim: [0,1]
-  ve_ylim_log: [0.0,0.98]
   low_efficacy: no
   num_boot_replicates: 1000
   num_perm_replicates: 10000
@@ -253,9 +251,17 @@ vat08m_base: &vat08m_base
 vat08m_nonnaive: &vat08m_nonnaive
   <<: *vat08m_base
   Bserostatus: 1
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
+  additional_models: [
+    risk_score + Bpseudoneutid50 + DeltatpeakoverBpseudoneutid50,
+    Age + I(Country==3)+ Daytpeakpseudoneutid50cat
+  ]
   
 vat08m_naive: &vat08m_naive
   <<: *vat08m_base
+  ve_ylim: [-1,1]
+  ve_ylim_log: [-2.0,0.98]
   
 
 prevent19: &prevent19
@@ -367,6 +373,11 @@ janssen_pooled_real:
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   llox_label: [LOD, LOD, LLOQ]
+  additional_models: [
+    as.factor(Region) + MinorityInd + Sex + Senior + HighRiskInd + DaytpeakbindSpike,
+    as.factor(Region) + MinorityInd + Sex + Senior + HighRiskInd + DaytpeakbindRBD,
+    as.factor(Region) + MinorityInd + Sex + Senior + HighRiskInd + Daytpeakpseudoneutid50
+  ]
 
 janssen_pooled_realADCP:
   <<: *janssen_trial_realADCP

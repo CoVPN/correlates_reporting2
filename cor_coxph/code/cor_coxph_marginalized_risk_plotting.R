@@ -22,7 +22,7 @@ digits.risk=4
     
 for (eq.geq in 1:2) {  # 1 conditional on s,   2 is conditional on S>=s
 for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
-#eq.geq=1; w.wo.plac=1; a=assays[1]
+#eq.geq=1; w.wo.plac=1; a=all.markers[1]
     
     risks.all=get("risks.all."%.%eq.geq)
     
@@ -46,7 +46,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
      
     for (a in all.markers) {        
     mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks", ifelse(eq.geq==1,"_eq","_geq"), ifelse(w.wo.plac==1,"","_woplacebo"), "_"%.%study_name), mfrow=.mfrow)
-    par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
+        par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         risks=risks.all[[a]]
         assay=get.assay.from.name(a)
         is.delta=startsWith(a,"Delta")
@@ -208,7 +208,7 @@ for (eq.geq in 1:4) {
                 yat=seq(-1,1,by=.1)
                 axis(side=2,at=yat,labels=(yat*100)%.%"%")            
             } else {
-                yat=c(seq(0,.90,by=.1),.95)
+                yat=c(seq(-2,0,by=.5),seq(0,.90,by=.1),.95)
                 axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
             }
             # x axis
