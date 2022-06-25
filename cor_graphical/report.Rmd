@@ -100,7 +100,7 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
       tpLabel <- tpsLabels[!grepl("Delta", tps)]
       COR = currCOR <- paste0("D",time, COR_postfix)
       
-      if(plot_ve_curves[1]){
+      if(sum(plot_ve_curves)>0){ # plot_ve_curves = c(1, 1) for base neg and base pos, if one doesn't exist, set to 0, eg: c(0, 1)
         for (assayNum in seq(assays)) {
           
           assay <- assays[assayNum]
