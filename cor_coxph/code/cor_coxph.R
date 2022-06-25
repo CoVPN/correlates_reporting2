@@ -79,6 +79,7 @@ rv$marker.cutpoints=marker.cutpoints
 # table of ph1 and ph2 cases
 tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
 print(tab)
+names(dimnames(tab))[2]="Event Indicator"
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
 
 
