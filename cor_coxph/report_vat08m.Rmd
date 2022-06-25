@@ -1,0 +1,22 @@
+
+<!-- D29start1 is ENSEMBLE specific -->
+
+```{r, echo=FALSE, results='asis'}
+for (tpeak in tt) {
+  COR <- paste0("D", tpeak)
+  for (i in 1:2) {
+    COR <- paste0(COR, ifelse(i==1, "", "omi"))
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count ", ifelse(i==1,"all variants","Omicron"), " cases starting 7 days post Day ", tpeak, ".")
+    pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
+
+    all.markers=paste0("Day", tpeak, assays)
+    if (do.fold.change) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+}
+```

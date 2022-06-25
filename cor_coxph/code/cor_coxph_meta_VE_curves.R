@@ -174,8 +174,8 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     studies   =c("Moderna COVE", "Janssen ENSEMBLE",    "Janssen ENSEMBLE US","Janssen ENSEMBLE LA","Janssen ENSEMBLE SA","AZCOV002",  "NVX PREVENT-19", "AZD1222")
     names(studies)=all.trials
     
-    cols      =c("purple",       "green",       "orange",    "cyan",           "tan")
-    names(cols)=aa
+    cols      =c("purple",       "green",               "green",              "olivedrab3",         "darkseagreen4",      "orange",    "cyan",           "tan")
+    names(cols)=all.trials
     hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.5, maxColorValue=255)})
     
     .subset=match(TRIALS, all.trials)
@@ -251,7 +251,7 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
         
             shown=risks$marker>=wtd.quantile(markers.x[[a]], weight[[a]], 2.5/100) & risks$marker<=wtd.quantile(markers.x[[a]], weight[[a]], 1-2.5/100)
             #shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[a]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[a]], 1-2.5/100, na.rm=T)
-            mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[match(a, aa)], ylab=paste0("Controlled VE against COVID-19"), 
+            mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[TRIAL], ylab=paste0("Controlled VE against COVID-19"), 
                 xlab=labels.assays.short[a]%.%" (=s)", 
                 #main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, 
@@ -273,14 +273,14 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
             } else{
                 tmp$density=tmp$density/hist.shrink[aa[1]]*3 # so that it will fit vertically
             }            
-            plot(tmp,col=hist.col.ls[[a]],axes=F,labels=F,border=0,freq=F,add=T) 
+            plot(tmp,col=hist.col.ls[[TRIAL]],axes=F,labels=F,border=0,freq=F,add=T) 
             
             overall.ve.ls[[a]]=overall.ve
         }        
     
         # legend
         legend=aa
-        mylegend(x=ifelse(log=="",6,1), col=cols[1:length(aa)], legend=legend, lty=1, lwd=2, cex=.7)
+        mylegend(x=ifelse(log=="",6,1), col=cols[TRIALS], legend=legend, lty=1, lwd=2, cex=.7)
     
     dev.off()    
     
@@ -290,6 +290,7 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
 # for ENSEMBLE manuscript 1 
 draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="1")
 draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="1", log="y")
+
 # 
 draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", file.name="janssen_la_real")
 draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real", file.name="janssen_sa_real")
