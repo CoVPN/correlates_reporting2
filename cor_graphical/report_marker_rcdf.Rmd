@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), currCOR, paste0("Marker_RCDF_", tp, "_trt_by_event_status_bstatus_", study_name, ".png"))`}
 
-\caption{`r paste0("RCDF plots for ",  tpLabel, " Ab markers by treatment arm.", ifelse(grepl("start1", COR), " (start1)", ""))`}
+\caption{`r paste0("RCDF plots for ",  tpLabel, " Ab markers by treatment arm.", COR_postfix_label)`}
 \end{figure}
 
 \hphantom{Random text to appease the latex god}
