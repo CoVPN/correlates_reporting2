@@ -22,6 +22,8 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222 azd1222_bAb))
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
 	Rscript code/make_table_all.R D22
 	Rscript code/make_table_all.R D43
+	Rscript code/make_table_all.R D22omi
+	Rscript code/make_table_all.R D43omi
 endif
 
 ## clean            : delete contents of data_clean/ and output/ directories
