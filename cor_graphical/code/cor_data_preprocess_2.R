@@ -26,8 +26,8 @@ COR=Args[1]
 if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"
 } else {incNotMol <- ""}
 
-# set EventIndTimePrimary to EventIndTimeOmicron if study_name=="VAT08m" & COR=="D22D43omi"
-if (study_name=="VAT08m" & COR=="D22D43omi"){
+# set EventIndTimePrimary to EventIndTimeOmicron if study_name=="VAT08m" & COR %in% c("D22omi","D43omi")
+if (study_name=="VAT08m" & grepl("omi", COR)){
   dat$EventIndPrimaryD1 = dat$EventIndOmicronD1 # used by cohort_event def
   dat$EventIndPrimaryD22 = dat$EventIndOmicronD22
   dat$EventIndPrimaryD43 = dat$EventIndOmicronD43
