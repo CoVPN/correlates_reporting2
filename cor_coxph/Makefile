@@ -34,6 +34,8 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_bAb)) ## for some reason if this 
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
 	Rscript code/cor_coxph.R D22
 	Rscript code/cor_coxph.R D43
+	Rscript code/cor_coxph.R D22omi
+	Rscript code/cor_coxph.R D43omi
 	Rscript code/cor_graphical_time_to_event.R D22D43
 endif
 
