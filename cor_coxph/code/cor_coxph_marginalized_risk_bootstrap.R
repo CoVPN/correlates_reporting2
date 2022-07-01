@@ -22,7 +22,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
             # every 5% to include s1 and s2 for sensitivity analyses
             report.assay.values(data[[marker.name]][data$EventIndPrimary==1], marker.name.to.assay(marker.name)), 
             # 2.5% and 97.5% as the leftmost and rightmost points 
-            wtd.quantile(data[[marker.name]], data$wt, c(0.025,0.975)),
+            wtd.quantile(data[[marker.name]], data$wt, c(0.025,0.05,0.95,0.975)),
             # equally spaced values so that the curves look good  
             seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)]
         ))

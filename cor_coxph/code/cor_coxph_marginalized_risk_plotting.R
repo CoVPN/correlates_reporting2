@@ -109,10 +109,10 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
 save(ylims.cor, file=paste0(save.results.to, "ylims.cor."%.%study_name%.%".Rdata"))
 
 # show the results at select assay values
-risks.all=get("risks.all.1")
+risks.all=get("risks.all.1") 
 for (a in all.markers) {
     risks=risks.all[[a]]
-    table.order=which(names(risks$marker) %in% c(" 2.5%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
+    table.order=which(names(risks$marker) %in% c(" 2.5%", " 5.0%", "95.0%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
     tmp=10**risks$marker[table.order]
     tmp=ifelse(tmp<100, signif(tmp,3), round(tmp))
     out=with(risks, cbind("s"=tmp, "Estimate"=paste0(formatDouble(prob[table.order],digits.risk), " (", formatDouble(lb[table.order],digits.risk), ",", formatDouble(ub[table.order],digits.risk), ")")))
@@ -152,7 +152,7 @@ for (eq.geq in 1:4) {
             
             # load risks
             risks=get("risks.all."%.%ifelse(eq.geq==2,2,1))[[a]]   
-            table.order=which(names(risks$marker) %in% c(" 2.5%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
+            table.order=which(names(risks$marker) %in% c(" 2.5%", " 5.0%", "95.0%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
         
             #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95),na.rm=T)
             if (!is.delta) xlim=get.range.cor(dat.vac.seroneg, assay, tpeak) else xlim=range(dat.vac.seroneg[[a]], na.rm=T)            
@@ -285,7 +285,7 @@ digits.risk=4
 risks.all=get("risks.all.1")
 for(a in all.markers) {        
     risks=risks.all[[a]]
-    table.order=which(names(risks$marker) %in% c(" 2.5%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
+    table.order=which(names(risks$marker) %in% c(" 2.5%", " 5.0%", "95.0%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
     
     est = 1 - risks$prob/res.plac.cont["est"]
     boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
