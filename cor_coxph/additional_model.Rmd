@@ -1,0 +1,10 @@
+\begin{table}[H]
+\caption{Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk of `r txt.endpoint` in the vaccine group*}
+\begin{center}
+    \input{`r pathCoRoutput`/CoR_add_models`r i`}\\
+\end{center}
+*Maximum failure event time \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+`r special.note`
+\end{table}
+
+\clearpage

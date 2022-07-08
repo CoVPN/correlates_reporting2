@@ -10,14 +10,12 @@ for (a in all.markers) {
     f= update(form.0, as.formula(paste0("~.+", a)))
     fits[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
-fits=fits[1:length(assays)] # for now, we don't need the delta (multitesting adjustment results are affected)
 # scaled marker
 fits.scaled=list()
 for (a in all.markers) {
     f= update(form.0, as.formula(paste0("~.+scale(", a, ")")))
     fits.scaled[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
-fits.scaled=fits.scaled[1:length(assays)] # for now, we don't need the delta (multitesting adjustment results are affected)
 
 natrisk=nrow(dat.vac.seroneg)
 nevents=sum(dat.vac.seroneg$yy==1)
@@ -49,12 +47,12 @@ pvals.cont = sapply(fits, function(x) {
 if(verbose) print("regression for trichotomized markers")
 
 fits.tri=list()
-for (a in c("Day"%.%tpeak%.%assays, "Delta"%.%tpeak%.%"overB"%.%assays)) {
+for (a in all.markers) {
     if(verbose) myprint(a)
     f= update(form.0, as.formula(paste0("~.+", a, "cat")))
     fits.tri[[a]]=run.svycoxph(f, design=design.vacc.seroneg) 
 }
-fits.tri=fits.tri[1:length(assays)]
+fits.tri=fits.tri
 
 rows=length(coef(fits.tri[[1]]))-1:0
 # get generalized Wald p values
@@ -114,20 +112,22 @@ if (length(p.unadj)>1) {
             # permute markers in design.vacc.seroneg.perm
             new.idx=sample(1:nrow(dat.ph2))
             tmp=dat.ph2
-            for (a in "Day"%.%tpeak%.%assays) {
+            for (a in all.markers) {
                 tmp[[a]]=tmp[[a]][new.idx]
                 tmp[[a%.%"cat"]]=tmp[[a%.%"cat"]][new.idx]
             }
             design.vacc.seroneg.perm$phase1$sample$variables = tmp
             
+            # rename all.markers so that out has the proper names. this is only effective within in permutation
+            names(all.markers)=all.markers
             out=c(
-                cont=sapply ("Day"%.%tpeak%.%assays, function(a) {
+                cont=sapply (all.markers, function(a) {
                     f= update(form.0, as.formula(paste0("~.+", a)))
                     fit=run.svycoxph(f, design=design.vacc.seroneg.perm) 
                     if (length(fit)==1) NA else last(c(getFixedEf(fit)))
                 })        
                 ,    
-                tri=sapply ("Day"%.%tpeak%.%assays, function(a) {
+                tri=sapply (all.markers, function(a) {
                     f= update(form.0, as.formula(paste0("~.+", a, "cat")))
                     fit=run.svycoxph(f, design=design.vacc.seroneg.perm) 
                     if (length(fit)==1) NA else last(c(getFixedEf(fit)))
@@ -191,7 +191,7 @@ p.2=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FDR" ], 3, remove.lead
 
 
 tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p), p.2, p.1)
-rownames(tab.1)=c(labels.axis["Day"%.%tpeak, assays])
+rownames(tab.1)=all.markers.names.short
 tab.1
 mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
     col.headers=paste0("\\hline\n 
@@ -203,12 +203,12 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c
 tab.cont=tab.1
 
 tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p))
-rownames(tab.1.nop12)=c(labels.axis["Day"%.%tpeak, assays])
+rownames(tab.1.nop12)=all.markers.names.short
 rv$tab.1=tab.1.nop12
 
 # scaled markers
 tab.1.scaled=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est.scaled), t(ci.scaled), t(p), p.2, p.1)
-rownames(tab.1.scaled)=c(labels.axis["Day"%.%tpeak, assays])
+rownames(tab.1.scaled)=all.markers.names.short
 tab.1.scaled
 mytex(tab.1.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
     col.headers=paste0("\\hline\n 
@@ -235,8 +235,8 @@ overall.p.2=c(rbind(overall.p.2, NA,NA))
 # if "Delta"%.%tpeak%.%"overB" is included, nevents have a problem because some markers may have only two category in the cases
 
 # n cases and n at risk
-natrisk = round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,ph2==1)        [["wt"]], subset(dat.vac.seroneg,ph2==1        )[a], sum, na.rm=T, drop=F)[,2] )))
-nevents = round(c(sapply (c("Day"%.%tpeak%.%assays)%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,yy==1 & ph2==1)[["wt"]], subset(dat.vac.seroneg,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] )))
+natrisk = round(c(sapply (all.markers%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,ph2==1)        [["wt"]], subset(dat.vac.seroneg,ph2==1        )[a], sum, na.rm=T, drop=F)[,2] )))
+nevents = round(c(sapply (all.markers%.%"cat", function(a) aggregate(subset(dat.vac.seroneg,yy==1 & ph2==1)[["wt"]], subset(dat.vac.seroneg,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] )))
 natrisk[is.na(natrisk)]=0
 nevents[is.na(nevents)]=0
 colSums(matrix(natrisk, nrow=3))
@@ -251,7 +251,7 @@ tab=cbind(
     formatDouble(nevents/natrisk, digit=4, remove.leading0=F),
     est, ci, p, overall.p.0, overall.p.2, overall.p.1
 )
-tmp=rbind(c(labels.axis["Day"%.%tpeak, assays]), "", "")
+tmp=rbind(all.markers.names.short, "", "")
 rownames(tab)=c(tmp)
 tab
 tab.cat=tab[1:(nrow(tab)),]
@@ -293,7 +293,7 @@ tab.nop12=cbind(
     formatDouble(nevents/natrisk, digit=4, remove.leading0=F),
     est, ci, p, overall.p.0
 )
-rownames(tab.nop12)=c(rbind(c(labels.axis["Day"%.%tpeak, assays]), "", ""))
+rownames(tab.nop12)=c(rbind(all.markers.names.short, "", ""))
 rv$tab.2=tab.nop12
 
 
@@ -309,7 +309,8 @@ if (!is.null(config$multivariate_assays)) {
       for (i in 1:2) {
       # 1: per SD; 2: per 10-fold
         aa=trim(strsplit(a, "\\+")[[1]])
-        tmp=concatList(paste0(ifelse(i==1, "scale", ""), "(Day",tpeak, aa),")+") %.% ")"
+        tmp=a
+        for (x in aa[!contain(aa, "\\*")]) tmp=gsub(x, paste0(if(i==1) "scale","(Day",tpeak,x,")"), tmp) # replace every variable with Day210x, with or without scale
         f= update(form.0, as.formula(paste0("~.+", tmp)))
         fit=svycoxph(f, design=design.vacc.seroneg) 
         var.ind=length(coef(fit)) - length(aa):1 + 1
@@ -325,14 +326,70 @@ if (!is.null(config$multivariate_assays)) {
         p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
         
         tab=cbind(est, p)
-        rownames(tab)=c(labels.axis["Day"%.%tpeak, aa])
+        tmp=match(aa, colnames(labels.axis))
+        tmp[is.na(tmp)]=1 # otherwise, labels.axis["Day"%.%tpeak, tmp] would throw an error when tmp is NA
+        rownames(tab)=ifelse(aa %in% colnames(labels.axis), labels.axis["Day"%.%tpeak, tmp], aa)
         colnames(tab)=c(paste0("HR per ",ifelse(i==1,"sd","10 fold")," incr."), "P value")
         tab
         tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
         
         mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold"), align="c", include.colnames = T, save2input.only=T, 
-            input.foldername=save.results.to, sanitize.text.function=identity)
+            input.foldername=save.results.to)
       }
+    }
+    
+}
+
+
+
+###################################################################################################
+# some ad hoc models
+
+if (attr(config,"config")=="janssen_pooled_real") {
+    f=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) * Day29pseudoneutid50    
+    fit=svycoxph(f, design=design.vacc.seroneg) 
+    var.ind=5:6
+    
+    fits=list(fit)
+    est=getFormattedSummary(fits, exp=T, robust=T, rows=1:6, type=1)
+    ci= getFormattedSummary(fits, exp=T, robust=T, rows=1:6, type=13)
+    est = paste0(est, " ", ci)
+    p=  getFormattedSummary(fits, exp=T, robust=T, rows=1:6, type=10)
+    
+    #generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
+    stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
+    p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
+    
+    tab=cbind(est, p)
+    colnames(tab)=c("HR", "P value")
+    tab=rbind(tab, "Generalized Wald Test for Itxn"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
+    tab
+    
+    mytex(tab, file.name="CoR_region_itxn", align="c", include.colnames = T, save2input.only=T, 
+        input.foldername=save.results.to)
+        
+}
+
+if (!is.null(config$additional_models)) {
+    if(verbose) print("Additional models")
+    
+    for (a in config$additional_models) {
+        tmp=gsub("tpeak",tpeak,a)
+        f= update(Surv(EventTimePrimary, EventIndPrimary) ~1, as.formula(paste0("~.+", tmp)))
+        fit=svycoxph(f, design=design.vacc.seroneg) 
+        
+        fits=list(fit)
+        est=getFormattedSummary(fits, exp=T, robust=T, type=1)
+        ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
+        est = paste0(est, " ", ci)
+        p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
+        
+        tab=cbind(est, p)
+        colnames(tab)=c("HR", "P value")
+        tab
+    
+        mytex(tab, file.name=paste0("CoR_add_models", match(a, config$additional_models)), align="c", include.colnames = T, save2input.only=T, 
+            input.foldername=save.results.to)
     }
     
 }

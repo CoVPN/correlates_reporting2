@@ -25,7 +25,10 @@ get.trial=function(x, assay) {
         if(startsWith(assay,"bind")) x=paste0(x, "")
         if(startsWith(assay,"pseudo")) x=paste0(x, "")
         if(startsWith(assay,"ADCP")) x=paste0(x, "ADCP")
-    }
+    } else if (startsWith(x,"azd1222")) {
+        if(startsWith(assay,"bind")) x=paste0(x, "_bAb")
+        if(startsWith(assay,"pseudo")) x=paste0(x, "")
+    } 
     x
 }
 

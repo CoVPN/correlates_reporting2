@@ -3,7 +3,7 @@ all: clean figs
 
 ## figs           : clean data and make figures
 figs: 
-ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
+ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real azd1222 azd1222_bAb))
 	Rscript code/cor_data_preprocess.R D29D57 # Yiwen's
 	Rscript code/cor_graphics_violin_scatter.R D29D57
 	
@@ -14,6 +14,26 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 	Rscript code/cor_data_preprocess_2.R D57 # Brian's
 	Rscript code/CoR_assay_graphics.R D57
 	Rscript code/CoR_wrcdf_with_VE_lines.R D57
+	
+else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
+	Rscript code/cor_data_preprocess.R D22D43 # Yiwen's
+	Rscript code/cor_graphics_violin_scatter.R D22D43
+	Rscript code/cor_data_preprocess.R D22D43omi # Yiwen's
+	Rscript code/cor_graphics_violin_scatter.R D22D43omi
+	
+	Rscript code/cor_data_preprocess_2.R D22 # Brian's
+	Rscript code/CoR_assay_graphics.R D22
+	Rscript code/CoR_wrcdf_with_VE_lines.R D22
+	Rscript code/cor_data_preprocess_2.R D43 # Brian's
+	Rscript code/CoR_assay_graphics.R D43
+	Rscript code/CoR_wrcdf_with_VE_lines.R D43
+	
+	Rscript code/cor_data_preprocess_2.R D22omi # Brian's
+	Rscript code/CoR_assay_graphics.R D22omi
+	Rscript code/CoR_wrcdf_with_VE_lines.R D22omi
+	Rscript code/cor_data_preprocess_2.R D43omi # Brian's
+	Rscript code/CoR_assay_graphics.R D43omi
+	Rscript code/CoR_wrcdf_with_VE_lines.R D43omi
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janssen_la_mock janssen_sa_mock))
 	Rscript code/cor_data_preprocess.R D29 # Yiwen's

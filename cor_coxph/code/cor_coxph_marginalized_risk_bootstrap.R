@@ -7,7 +7,7 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-# a=assays[3]; marker.name="Day"%.%tpeak%.%a; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1; type=1; formula=form.0; 
+# formula=form.0; marker.name=a; type=1; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
     
     # store the current rng state 
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -22,7 +22,7 @@ marginalized.risk.svycoxph.boot=function(formula, marker.name, type, data, t, B,
             # every 5% to include s1 and s2 for sensitivity analyses
             report.assay.values(data[[marker.name]][data$EventIndPrimary==1], marker.name.to.assay(marker.name)), 
             # 2.5% and 97.5% as the leftmost and rightmost points 
-            wtd.quantile(data[[marker.name]], data$wt, c(0.025,0.975)),
+            wtd.quantile(data[[marker.name]], data$wt, c(0.025,0.05,0.95,0.975)),
             # equally spaced values so that the curves look good  
             seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)]
         ))
@@ -150,23 +150,23 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.Rdata"))) {
     
     # vaccine arm, conditional on continuous S=s
     if (verbose) print("create risks.all.1")
-    risks.all.1=lapply(assays, function (a) {
+    risks.all.1=lapply(all.markers, function (a) {
         if(verbose) myprint(a)
-        marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a, type=1, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
+        marginalized.risk.svycoxph.boot(formula=form.0, marker.name=a, type=1, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
     })
     
     # vaccine arm, conditional on S>=s
     if (verbose) print("create risks.all.2")
-    risks.all.2=lapply(assays, function (a) {
+    risks.all.2=lapply(all.markers, function (a) {
         if(verbose) myprint(a)
-        marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a, type=2, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)        
+        marginalized.risk.svycoxph.boot(formula=form.0, marker.name=a, type=2, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)        
     }) 
     
     # vaccine arm, conditional on categorical S
     if (verbose) print("create risks.all.3")
-    risks.all.3=lapply(assays, function (a) {
+    risks.all.3=lapply(all.markers, function (a) {
         if(verbose) myprint(a)
-        marginalized.risk.svycoxph.boot(formula=form.0, marker.name="Day"%.%tpeak%.%a%.%"cat", type=3, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
+        marginalized.risk.svycoxph.boot(formula=form.0, marker.name=a%.%"cat", type=3, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
     })    
     
     save(risks.all.1, risks.all.2, risks.all.3, file=paste0(save.results.to, "marginalized.risk.Rdata"))
