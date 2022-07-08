@@ -301,7 +301,7 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     
         # legend
         legend=aa
-        mylegend(x=ifelse(log=="",6,1), col=if(same.trial) cols[a] else cols[TRIAL], legend=legend, lty=1, lwd=2, cex=.7)
+        mylegend(x=ifelse(log=="",6,1), col=if(same.trial) cols[aa] else cols[TRIALS], legend=legend, lty=1, lwd=2, cex=.7)
     
     dev.off()    
     
