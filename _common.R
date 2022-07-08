@@ -81,9 +81,8 @@ labels.title <- as.data.frame(t(labels.title))
 #labels.assays.short <- labels.axis[1, ] # should not create this again
 labels.assays.long <- labels.title
 
-
-
 do.fold.change=attr(config, "config") %in% c("vat08m_nonnaive")
+
 
 # COR-related config
 if (exists("COR")) {
