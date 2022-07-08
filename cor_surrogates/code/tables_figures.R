@@ -28,34 +28,35 @@ conflict_prefer("summarise", "dplyr")
 source(here("code", "utils.R"))
 method <- "method.CC_nloglik" # since SuperLearner relies on this to be in GlobalEnv
 ggplot2::theme_set(theme_cowplot())
-load(paste0("output/", "objects_for_running_SL.rda"))
+load(paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 
 # Get vimps in one dataframe: ----------------------------------------------------------
-pooled_ests_lst <- list.files(here("output"), pattern = "pooled_ests_*") %>%
+pooled_ests_lst <- list.files(here(paste0("output/", Sys.getenv("TRIAL"))), pattern = "pooled_ests_*") %>%
     tibble(file = .) %>%
-    mutate(listdat = lapply(paste0("output/", file), readRDS))
+    mutate(listdat = lapply(paste0("output/", Sys.getenv("TRIAL"), "/", file), readRDS))
 
 all_estimates = as.data.frame(do.call("rbind", pooled_ests_lst$listdat))
 
 # add on the variable set name
 final_estimates <- all_estimates %>%
-    mutate(variable_set = rep(varset_names, each = 2), .before = "s")
+    mutate(variable_set = rep(varset_names[-1], each = 2), .before = "s")
 
 # save the output
-saveRDS(final_estimates, file = here::here("output", "vim_estimates.rds"))
+saveRDS(final_estimates, file = paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.rds"))
 ----------------------------------------------------------------------------------------
 # read in the results; note that createRDAfiles_fromSLobjects has to be run prior to this
+
 if (study_name %in% c("COVE", "MockCOVE")) {
-  cvaucs_vacc <- readRDS(file = here::here("output", "cvaucs_vacc_EventIndPrimaryD57.rds"))
-  vim_estimates <- readRDS(file = here::here("output", "vim_estimates.rds"))  %>%
+  cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_EventIndPrimaryD57.rds"))
+  vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds"))  %>%
     mutate(group = ifelse(variable_set %in% c("2_bAbSpike_D57", "3_bAbRBD_D57", "13_bAbSpike_D29"), TRUE, group))
 }
 if (study_name == "HVTN705") {
-  cvaucs_vacc <- readRDS(file = here::here("output", "cvaucs_vacc_EventIndPrimaryD210.rds"))
-  vim_estimates <- readRDS(file = here::here("output", "vim_estimates.rds")) %>%
-    mutate(group = ifelse(variable_set %in% c("2_M7ELISA", "36_M7_2_3_4_5_12_13"), TRUE, group))
+  cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_EventIndPrimaryD210.rds"))
+  vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) %>%
+    mutate(group = ifelse(variable_set %in% c("3_M7Tcells", "36_M7_2_3_4_5_12_13"), TRUE, group))
 }
-ph2_vacc_ptids <- readRDS(file = here::here("output", "ph2_vacc_ptids.rds"))
+ph2_vacc_ptids <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "ph2_vacc_ptids.rds"))
 
 # Create tables ------------------------------------------------------------------------
 # Table of learner/screen combinations
@@ -97,7 +98,7 @@ if (!grepl("Mock", study_name) & study_name == "COVE") {
     arrange(Learner, `Screen*`)
 }
 
-tab %>% write.csv(here("output", "learner-screens.csv"))
+tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "learner-screens.csv"))
 
 # Table of variable set definitions
 if (study_name %in% c("COVE", "MockCOVE")) {
@@ -199,7 +200,7 @@ if (study_name == "HVTN705") {
 
 }
 
-tab %>% write.csv(here("output", "varsets.csv"))
+tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "varsets.csv"))
 
 # Create figures ---------------------------------------------------------------
 # Forest plots for vaccine model
@@ -207,7 +208,7 @@ tab %>% write.csv(here("output", "varsets.csv"))
 options(bitmapType = "cairo")
 for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
   variableSet = unique(cvaucs_vacc$varset)[i]
-  png(file = here("figs", paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
+  png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
   top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet))
   grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
   dev.off()
@@ -215,14 +216,14 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
 
 # All Superlearners
 learner.choice = "SL"
-png(file = here("figs", paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
+png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
 top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), learner.choice)
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
 
 # All discrete.SLs
 learner.choice = "Discrete SL"
-png(file = here("figs", paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
+png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
 top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), learner.choice)
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
@@ -250,10 +251,10 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
 
   # Get cvsl fit and extract cv predictions
   if(study_name %in% c("COVE", "MockCOVE")){
-    cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
+    cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
   }
   if(study_name == "HVTN705"){
-    cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
+    cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
   }
 
   pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2, markerDAT = NULL)
@@ -281,7 +282,7 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
 
   # plot ROC curve
   options(bitmapType = "cairo")
-  png(file = here("figs", paste0("ROCcurve_", variableSet, ".png")),
+  png(file = here("figs", paste0(Sys.getenv("TRIAL"), "/ROCcurve_", variableSet, ".png")),
       width = 1000, height = 1000)
   if(study_name %in% c("COVE", "MockCOVE")){
     p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D57))
@@ -294,7 +295,7 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
 
   # plot pred prob plot
   options(bitmapType = "cairo")
-  png(file = here("figs", paste0("predProb_", variableSet, ".png")),
+  png(file = here("figs", paste0(Sys.getenv("TRIAL"), "/predProb_", variableSet, ".png")),
       width = 1000, height = 1000)
   p2 <- plot_predicted_probabilities(pred)
   print(p2)
@@ -302,16 +303,17 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
 }
 
 
+
 # Get SL & Discrete SL performance for all variable sets
 cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
   arrange(-AUC) %>% filter(Learner == "SL") %>%
   select(varset, AUCstr) %>%
-  write.csv(here("output", "SLperformance_allvarsets.csv"))
+  write.csv(here("output", Sys.getenv("TRIAL"), "SLperformance_allvarsets.csv"))
 
 cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
   arrange(-AUC) %>% filter(Learner == "Discrete SL") %>%
   select(varset, AUCstr) %>%
-  write.csv(here("output", "DiscreteSLperformance_allvarsets.csv"))
+  write.csv(here("output", Sys.getenv("TRIAL"), "DiscreteSLperformance_allvarsets.csv"))
 
 # # Predicted probability of COVID-19 vs antibody marker (x-axis)
 # marker_cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
@@ -368,11 +370,11 @@ cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
 vim_estimates %>%
   filter(quantity == "VIM") %>%
   #select(-group) %>%
-  write.csv(here("output", "vim_estimates.csv"))
+  write.csv(here("output", Sys.getenv("TRIAL"), "vim_estimates.csv"))
 vim_estimates %>%
   filter(quantity == "Predictiveness") %>%
   #select(-group) %>%
-  write.csv(here("output", "vim_predictiveness_estimates.csv"))
+  write.csv(here("output", Sys.getenv("TRIAL"), "vim_predictiveness_estimates.csv"))
 
 num_digits <- 3
 plot_vim_init <- vim_estimates %>%
@@ -399,7 +401,7 @@ group_vim_forest_plot <- est_group_vims %>%
   ggplot(aes(x = est, y = plot_name)) +
   geom_point(color = "blue") +
   geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
-  geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims) - 1), label = text_ci), hjust = "left") +
+  geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims)), label = text_ci), hjust = "left") +
   ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
   xlab("Estimated Difference in CV-AUC [95% CI]") +
   ylab("Variable Set Name") +
@@ -408,7 +410,7 @@ group_vim_forest_plot <- est_group_vims %>%
   theme_bw()
 
 ggsave(
-  group_vim_forest_plot, file = here::here("figs", "group_vim_forest_plot.png"),
+  group_vim_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "group_vim_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
 
@@ -427,7 +429,7 @@ group_pred_forest_plot <- est_group_predictiveness %>%
   theme_bw()
 
 ggsave(
-  group_pred_forest_plot, file = here::here("figs", "group_pred_forest_plot.png"),
+  group_pred_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "group_pred_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
 
@@ -451,7 +453,7 @@ individual_vim_forest_plot <- est_individual_vims %>%
   theme_bw()
 
 ggsave(
-  individual_vim_forest_plot, file = here::here("figs", "individual_vim_forest_plot.png"),
+  individual_vim_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "individual_vim_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
 
@@ -470,7 +472,7 @@ individual_pred_forest_plot <- est_individual_predictiveness %>%
   theme_bw()
 
 ggsave(
-  individual_pred_forest_plot, file = here::here("figs", "individual_pred_forest_plot.png"),
+  individual_pred_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "individual_pred_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
 

@@ -42,8 +42,8 @@ X <- phase_1_data_treatmentDAT %>%
   select(-!!ptidvar)
 
 # read in the fits for the baseline risk factors
-baseline_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[1], ".rds")))
-baseline_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[1], ".rds")))
+baseline_fits <- readRDS(here("output", paste0(Sys.getenv("TRIAL"), "/CVSLfits_vacc_", endpoint, "_", varset_names[1], ".rds")))
+baseline_aucs <- readRDS(here("output", paste0(Sys.getenv("TRIAL"), "/CVSLaucs_vacc_", endpoint, "_", varset_names[1], ".rds")))
 if (!use_ensemble_sl) {
   baseline_fits <- lapply(as.list(1:length(baseline_fits)), function(i) {
     make_discrete_sl_auc(cvsl_fit = baseline_fits[[i]], all_aucs = baseline_aucs[[i]])
@@ -93,8 +93,8 @@ cat("\n Running", varset_names[job_id], "variable set \n")
     this_s <- which(varset_matrix[job_id, ]) + length(briskfactors)
   }
   # get the correct CV.SL lists
-  full_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
-  full_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+  full_fits <- readRDS(here("output", paste0(Sys.getenv("TRIAL"), "/CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+  full_aucs <- readRDS(here("output", paste0(Sys.getenv("TRIAL"), "/CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
   if (!use_ensemble_sl) {
     full_fits <- lapply(as.list(1:length(baseline_fits)), function(i) {
       make_discrete_sl_auc(cvsl_fit = full_fits[[i]], all_aucs = full_aucs[[i]])
@@ -123,4 +123,4 @@ cat("\n Running", varset_names[job_id], "variable set \n")
   pooled_ests <- pool_cv_vim(vim_lst = vim_lst, scale = "identity")
   
   # save off the output
-  saveRDS(pooled_ests, file = here("output", paste0("pooled_ests_", endpoint, "_", varset_names[job_id], ".rds")))
+  saveRDS(pooled_ests, file = here("output", paste0(Sys.getenv("TRIAL"), "/pooled_ests_", endpoint, "_", varset_names[job_id], ".rds")))

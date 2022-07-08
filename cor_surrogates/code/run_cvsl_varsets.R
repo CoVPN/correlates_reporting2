@@ -33,6 +33,36 @@ if (job_id == 1){
     select_if(function(x) any(!is.na(x))) # Drop column if it has 0 variance, and returned all NAN's from scale function.
 }
 
+
+cvControlVar = list(V = V_outer, stratifyCV = TRUE)
+cvControl_quote = quote(list(V = V_outer, stratifyCV = TRUE))
+
+if(V_inner == length(Y) - 1){
+  V_inner_quote <- paste0("length(Y) - 1 = ", length(Y) - 1)
+}
+innerCvControlVar = list(list(V = V_inner))
+innerCvControl_quote = quote(list(list(V = V_inner)))
+
+# CV.SL inputs
+familyVar = "binomial"
+methodVar = "method.CC_nloglik"
+scaleVar = "identity"
+ipc_est_typeVar = "ipw"
+cvsl_args <- data.frame(matrix(ncol = 2, nrow = 9)) %>%
+  rename(Argument = X1,
+         Value = X2) %>%
+  mutate(Argument = as.character(c("Cases/Total Subjects in vaccine group (%)", "family",
+                                   "method", "scale", "V_outer", "cvControl (outer CV control)",
+                                   "V_inner", "innerCvControl", "Weighting")),
+         Value = as.character(c(paste0(nv, "/", length(Y), " (", round(nv*100/length(Y), 2), "%)"), familyVar,
+                                methodVar, scaleVar, V_outer, cvControl_quote,
+                                V_inner, innerCvControl_quote, ipc_est_typeVar)))
+
+if(V_inner == length(Y) - 1){
+  cvsl_args = cvsl_args %>% mutate(Value = ifelse(Argument == "V_inner", V_inner_quote, Value))
+}
+
+cvsl_args %>% write.csv(paste0("output/", "cvsl_args.csv"))
 # ---------------------------------------------------------------------------------
 # run super learner, with leave-one-out cross-validation and all screens
 # do 10 random starts, average over these
@@ -54,18 +84,18 @@ stopifnot(omp_get_max_threads() == 1L)
 fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
                            Y = Y,
                            X_mat = X_markers_varset,
-                           family = "binomial",
+                           family = familyVar,
                            obsWeights = weights,
                            all_weights = all_ipw_weights_treatment,
-                           ipc_est_type = "ipw",
+                           ipc_est_type = ipc_est_typeVar,
                            sl_lib = sl_lib,
-                           method = "method.CC_nloglik",
+                           method = methodVar,
                            cvControl = list(V = V_outer, stratifyCV = TRUE),
                            innerCvControl = list(list(V = V_inner)),
                            Z = Z_treatmentDAT,
                            C = C,
                            z_lib = "SL.glm",
-                           scale = "identity", # new argument
+                           scale = scaleVar, # new argument
                            vimp = FALSE,
                            mc.cores = num_cores
 )

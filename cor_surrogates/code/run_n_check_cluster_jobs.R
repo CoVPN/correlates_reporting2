@@ -14,7 +14,7 @@ conflicted::conflict_prefer("filter", "dplyr")
 conflicted::conflict_prefer("summarise", "dplyr")
 
 # Get varset_names.csv 
-varsets <- read.csv("output/varset_names.csv", stringsAsFactors = FALSE) 
+varsets <- read.csv(paste0("output/", Sys.getenv("TRIAL"), "/varset_names.csv"), stringsAsFactors = FALSE) 
 
 # Run all sbatch jobs through R!
 system(paste0("export TRIAL=", Sys.getenv("TRIAL")))

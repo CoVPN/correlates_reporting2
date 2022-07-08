@@ -342,29 +342,29 @@ if (study_name == "HVTN705") {
     ) 
   
   
-  #if (run_prod) {
-  dat.ph2 <- dat.ph2 %>%
-    mutate(
-      comb_nlPCA1_prim = comb_PC1_prim,
-      comb_nlPCA2_prim = comb_PC2_prim,
-      comb_nlPCA1_all = comb_PC1_all,
-      comb_nlPCA2_all = comb_PC2_all
-    )
-  # # generate non-linear combination scores for 6 primary markers
-  # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
-  #                                     select(all_of(ptidvar), Day210ELCZ, Day210ELISpotPTEEnv,
-  #                                            Day210ADCPgp140C97ZAfib, Day210IgG340mdw_V1V2,
-  #                                            Day210IgG340mdw_gp120_gp140_vm, Day210mdw_xassay_overall)) %>%
-  #             rename(comb_nlPCA1_prim = nlPCA1,
-  #                    comb_nlPCA2_prim = nlPCA2),
-  #           by = ptidvar) %>%
-  # # generate non-linear combination scores for all 41 markers
-  # left_join(get.nonlinearPCA.scores(dat.ph2 %>%
-  #                                     select(all_of(ptidvar), all_of(markerVars))) %>%
-  #             rename(comb_nlPCA1_all = nlPCA1,
-  #                    comb_nlPCA2_all = nlPCA2),
-  #           by = ptidvar)
-  #}
+  if (run_prod) {
+    dat.ph2 <- dat.ph2 %>%
+      # mutate(
+      #   comb_nlPCA1_prim = comb_PC1_prim,
+      #   comb_nlPCA2_prim = comb_PC2_prim,
+      #   comb_nlPCA1_all = comb_PC1_all,
+      #   comb_nlPCA2_all = comb_PC2_all
+      # )
+    # generate non-linear combination scores for 6 primary markers
+    left_join(get.nonlinearPCA.scores(dat.ph2 %>%
+                                        select(all_of(ptidvar), Day210ELCZ, Day210ELISpotPTEEnv,
+                                               Day210ADCPgp140C97ZAfib, Day210IgG340mdw_V1V2,
+                                               Day210IgG340mdw_gp120_gp140_vm, Day210mdw_xassay_overall)) %>%
+                rename(comb_nlPCA1_prim = nlPCA1,
+                       comb_nlPCA2_prim = nlPCA2),
+              by = ptidvar) %>%
+    # generate non-linear combination scores for all 41 markers
+    left_join(get.nonlinearPCA.scores(dat.ph2 %>%
+                                        select(all_of(ptidvar), all_of(markerVars))) %>%
+                rename(comb_nlPCA1_all = nlPCA1,
+                       comb_nlPCA2_all = nlPCA2),
+              by = ptidvar)
+  }
   
   # finalize marker data
   markers <- c(markerVars, "comb_PC1_prim", "comb_PC2_prim", "comb_maxsig.div.score_prim",
@@ -579,11 +579,13 @@ for (i in seq_len(length(markers))) {
   varset_names <- c(varset_names, markers[i])
 }
 
-# # Save varset_names for running batch job on cluster!
-# varset_names %>% as.data.frame() %>% rename(varset_names = ".") %>%
-#   mutate(varset_no = seq.int(nrow(.))) %>%
-#   select(varset_no, varset_names) %>%
-#   write.csv("output/varset_names.csv")
+# Save varset_names for running batch job on cluster!
+if(job_id == 1){
+  varset_names %>% as.data.frame() %>% rename(varset_names = ".") %>%
+    mutate(varset_no = seq.int(nrow(.))) %>%
+    select(varset_no, varset_names) %>%
+    write.csv(paste0("output/", Sys.getenv("TRIAL"), "/varset_names.csv"))
+}
 
 # Study-agnostic set up of final data to pass to Super Learner -----------------
 
