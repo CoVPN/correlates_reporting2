@@ -10,13 +10,13 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
-# common setup for CV super learners and variable importance
-source(here::here("code", "cor_surrogates_setup.R"))
-
 # obtain the job id
 #args <- commandArgs(trailingOnly = TRUE)
 #job_id <- as.numeric(args[2])
 job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+
+# common setup for CV super learners and variable importance
+source(here::here("code", "cor_surrogates_setup.R"))
 
 # grab the current variable set based on the job id
 this_var_set <- varset_matrix[job_id, ]
@@ -62,7 +62,7 @@ if(V_inner == length(Y) - 1){
   cvsl_args = cvsl_args %>% mutate(Value = ifelse(Argument == "V_inner", V_inner_quote, Value))
 }
 
-cvsl_args %>% write.csv(paste0("output/", "cvsl_args.csv"))
+cvsl_args %>% write.csv(paste0("output/", Sys.getenv("TRIAL"), "/cvsl_args.csv"))
 # ---------------------------------------------------------------------------------
 # run super learner, with leave-one-out cross-validation and all screens
 # do 10 random starts, average over these
@@ -110,12 +110,12 @@ for (i in 1:length(seeds)) {
 }
 
 # save off the output
-saveRDS(cvaucs, file = here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
-saveRDS(cvfits, file = here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+saveRDS(cvaucs, file = paste0("output/", Sys.getenv("TRIAL"), paste0("/CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+saveRDS(cvfits, file = here("output/", Sys.getenv("TRIAL"), paste0("/CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
 # only save these objects once
 if (job_id == 1) {
-  saveRDS(ph2_vacc_ptids, file = here("output", "ph2_vacc_ptids.rds"))
+  saveRDS(ph2_vacc_ptids, file = paste0("output/", Sys.getenv("TRIAL"), "/ph2_vacc_ptids.rds"))
   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
-       V_outer, varset_names, individualMarkers, file = here("output", "objects_for_running_SL.rda"))
+       V_outer, varset_names, individualMarkers, file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 }
 cat("\n Finished ", varset_names[job_id], "variable set \n") 

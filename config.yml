@@ -146,11 +146,6 @@ hvtn705second: &hvtn705second
   lloxs:      [80,  100,  60,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA   ]
   uloqs: [1884160,1869824,NA,NA,NA,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000]
   primary_assays: [ELCZ,ELISpotPTEEnv,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay_overall]
-<<<<<<< HEAD
-  multivariate_assays: [ELCZ+ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall]
-  # data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata.csv
-  data_cleaned: ../../data/HVTN705_secondcasecontrolprocesseddata.csv
-=======
   multivariate_assays: [
             ELCZ+ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall,
             ELISpotPTEEnv+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall,
@@ -161,7 +156,6 @@ hvtn705second: &hvtn705second
             IgG340mdw_V1V2+IgG50mdw_V1V2
   ]
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata.csv
->>>>>>> 0882444612af1cfb790e59a24afd3c4052ab6567
 
 
 hvtn705secondprimary: &hvtn705secondprimary
