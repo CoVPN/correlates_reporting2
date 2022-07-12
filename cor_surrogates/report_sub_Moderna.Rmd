@@ -128,165 +128,165 @@ knitr::include_graphics(paste0("figs/", Sys.getenv("TRIAL"), "/forest_vacc_cvauc
 ```
 
 
-\clearpage
-\section{Variable set importance}
+<!-- \clearpage -->
+<!-- \section{Variable set importance} -->
 
-```{r vim-estimates-grp, warning=FALSE, echo=FALSE, message=FALSE}
-caption <- "Estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each variable set relative to baseline risk factors."
+<!-- ```{r vim-estimates-grp, warning=FALSE, echo=FALSE, message=FALSE} -->
+<!-- caption <- "Estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each variable set relative to baseline risk factors." -->
 
-read.csv(paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.csv"),
-         row.names = 1,
-         header = TRUE) %>%
-  filter(group) %>%
-  filter(!grepl("base", variable_set)) %>%
-  arrange(-as.numeric(est)) %>%
-  mutate(est = format(round(est, 3), nsmall = 3),
-         ci_ll = format(round(ci_ll, 3), nsmall = 3),
-         ci_ul = format(round(ci_ul, 3), nsmall = 3),
-         se = format(round(se, 3), nsmall = 3),
-         pval = format(round(pval, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
-  select(variable_set, estCI, se, pval) %>%
-  rename(`Variable set` = variable_set,
-         `VIM estimate [95% CI]` = estCI,
-         `std.error` = se,
-         `p-value` = pval) %>%
-  kable(
-    booktabs = TRUE,
-    linesep = "",
-    caption = caption
-  ) %>%
-  kable_styling(latex_options = c("hold_position"),
-                font_size = 9)
+<!-- read.csv(paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.csv"), -->
+<!--          row.names = 1, -->
+<!--          header = TRUE) %>% -->
+<!--   filter(group) %>% -->
+<!--   filter(!grepl("base", variable_set)) %>% -->
+<!--   arrange(-as.numeric(est)) %>% -->
+<!--   mutate(est = format(round(est, 3), nsmall = 3), -->
+<!--          ci_ll = format(round(ci_ll, 3), nsmall = 3), -->
+<!--          ci_ul = format(round(ci_ul, 3), nsmall = 3), -->
+<!--          se = format(round(se, 3), nsmall = 3), -->
+<!--          pval = format(round(pval, 3), nsmall = 3), -->
+<!--          estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% -->
+<!--   select(variable_set, estCI, se, pval) %>% -->
+<!--   rename(`Variable set` = variable_set, -->
+<!--          `VIM estimate [95% CI]` = estCI, -->
+<!--          `std.error` = se, -->
+<!--          `p-value` = pval) %>% -->
+<!--   kable( -->
+<!--     booktabs = TRUE, -->
+<!--     linesep = "", -->
+<!--     caption = caption -->
+<!--   ) %>% -->
+<!--   kable_styling(latex_options = c("hold_position"), -->
+<!--                 font_size = 9) -->
 
-```
+<!-- ``` -->
 
-\clearpage
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each variable set relative to baseline risk factors."}
+<!-- \clearpage -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each variable set relative to baseline risk factors."} -->
 
-knitr::include_graphics(paste0("figs/", Sys.getenv("TRIAL"), "/group_vim_forest_plot.png"))
+<!-- knitr::include_graphics(paste0("figs/", Sys.getenv("TRIAL"), "/group_vim_forest_plot.png")) -->
 
-```
-
-
-
-\clearpage
-
-```{r vim-predictiveness-grp, warning=FALSE, echo=FALSE, message=FALSE}
-caption <- "Estimated predictiveness (CV-AUC with 95\\% CI) for all 34 variable sets derived upon sample splitting. Discrepancies between these CV-AUC estimates and the estimates provided in Table 3 and Figure 1 are expected to diminish with increase in sample size."
-
-read.csv(paste0("output/", Sys.getenv("TRIAL"), "/vim_predictiveness_estimates.csv"),
-         row.names = 1,
-         header = TRUE) %>%
-  filter(group) %>%
-  arrange(-as.numeric(est)) %>%
-  mutate(est = format(round(est, 3), nsmall = 3),
-         ci_ll = format(round(ci_ll, 3), nsmall = 3),
-         ci_ul = format(round(ci_ul, 3), nsmall = 3),
-         se = format(round(se, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
-  select(variable_set, estCI, se) %>%
-  rename(`Variable set` = variable_set,
-         `Predictiveness estimate [95% CI]` = estCI,
-         `std.error` = se) %>%
-  kable(
-    booktabs = TRUE,
-    linesep = "",
-    caption = caption
-  ) %>%
-  kable_styling(latex_options = c("hold_position"),
-                font_size = 9)
-
-```
+<!-- ``` -->
 
 
 
-\clearpage
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated predictiveness (CV-AUC with 95\\% CI) across all 34 variable sets derived upon sample splitting. Discrepancies between these CV-AUC estimates and the estimates provided in Table 3 and Figure 1 are expected to diminish with increase in sample size. Dashed vertical line drawn at CV-AUC = 0.5 represents predictiveness similar to random chance."}
+<!-- \clearpage -->
 
-knitr::include_graphics(paste0("figs/", Sys.getenv("TRIAL"), "/group_pred_forest_plot.png"))
+<!-- ```{r vim-predictiveness-grp, warning=FALSE, echo=FALSE, message=FALSE} -->
+<!-- caption <- "Estimated predictiveness (CV-AUC with 95\\% CI) for all 34 variable sets derived upon sample splitting. Discrepancies between these CV-AUC estimates and the estimates provided in Table 3 and Figure 1 are expected to diminish with increase in sample size." -->
 
-```
+<!-- read.csv(paste0("output/", Sys.getenv("TRIAL"), "/vim_predictiveness_estimates.csv"), -->
+<!--          row.names = 1, -->
+<!--          header = TRUE) %>% -->
+<!--   filter(group) %>% -->
+<!--   arrange(-as.numeric(est)) %>% -->
+<!--   mutate(est = format(round(est, 3), nsmall = 3), -->
+<!--          ci_ll = format(round(ci_ll, 3), nsmall = 3), -->
+<!--          ci_ul = format(round(ci_ul, 3), nsmall = 3), -->
+<!--          se = format(round(se, 3), nsmall = 3), -->
+<!--          estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% -->
+<!--   select(variable_set, estCI, se) %>% -->
+<!--   rename(`Variable set` = variable_set, -->
+<!--          `Predictiveness estimate [95% CI]` = estCI, -->
+<!--          `std.error` = se) %>% -->
+<!--   kable( -->
+<!--     booktabs = TRUE, -->
+<!--     linesep = "", -->
+<!--     caption = caption -->
+<!--   ) %>% -->
+<!--   kable_styling(latex_options = c("hold_position"), -->
+<!--                 font_size = 9) -->
 
-\clearpage
-\section{Individual variable importance}
-
-```{r vim-estimates-vars, warning=FALSE, echo=FALSE, message=FALSE}
-caption <- "Estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each individual variable relative to baseline risk factors."
-
-read.csv(paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.csv"),
-         row.names = 1,
-         header = TRUE) %>%
-  filter(!group) %>%
-  filter(!grepl("base", variable_set)) %>%
-  arrange(-as.numeric(est)) %>%
-  mutate(est = format(round(est, 3), nsmall = 3),
-         ci_ll = format(round(ci_ll, 3), nsmall = 3),
-         ci_ul = format(round(ci_ul, 3), nsmall = 3),
-         se = format(round(se, 3), nsmall = 3),
-         pval = format(round(pval, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
-  select(variable_set, estCI, se, pval) %>%
-  rename(`Variable name` = variable_set,
-         `VIM estimate [95% CI]` = estCI,
-         `std.error` = se,
-         `p-value` = pval) %>%
-  kable(
-    booktabs = TRUE,
-    linesep = "",
-    caption = caption
-  ) %>%
-  kable_styling(latex_options = c("hold_position"),
-                font_size = 9)
-
-```
-
-\clearpage
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each individual variable relative to baseline risk factors."}
-
-knitr::include_graphics(paste0("figs/", Sys.getenv("TRIAL"), "/individual_vim_forest_plot.png"))
-
-```
+<!-- ``` -->
 
 
 
-\clearpage
+<!-- \clearpage -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated predictiveness (CV-AUC with 95\\% CI) across all 34 variable sets derived upon sample splitting. Discrepancies between these CV-AUC estimates and the estimates provided in Table 3 and Figure 1 are expected to diminish with increase in sample size. Dashed vertical line drawn at CV-AUC = 0.5 represents predictiveness similar to random chance."} -->
 
-```{r vim-predictiveness-vars, warning=FALSE, echo=FALSE, message=FALSE}
-caption <- "Estimated predictiveness (CV-AUC with 95\\% CI) of each individual variable derived upon sample splitting."
+<!-- knitr::include_graphics(paste0("figs/", Sys.getenv("TRIAL"), "/group_pred_forest_plot.png")) -->
 
-read.csv(paste0("output/", Sys.getenv("TRIAL"), "/vim_predictiveness_estimates.csv"),
-         row.names = 1,
-         header = TRUE) %>%
-  filter(!group) %>%
-  arrange(-as.numeric(est)) %>%
-  mutate(est = format(round(est, 3), nsmall = 3),
-         ci_ll = format(round(ci_ll, 3), nsmall = 3),
-         ci_ul = format(round(ci_ul, 3), nsmall = 3),
-         se = format(round(se, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
-  select(variable_set, estCI, se) %>%
-  rename(`Variable name` = variable_set,
-         `Predictiveness estimate [95% CI]` = estCI,
-         `std.error` = se) %>%
-  kable(
-    booktabs = TRUE,
-    linesep = "",
-    caption = caption
-  ) %>%
-  kable_styling(latex_options = c("hold_position"),
-                font_size = 9)
+<!-- ``` -->
 
-```
+<!-- \clearpage -->
+<!-- \section{Individual variable importance} -->
+
+<!-- ```{r vim-estimates-vars, warning=FALSE, echo=FALSE, message=FALSE} -->
+<!-- caption <- "Estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each individual variable relative to baseline risk factors." -->
+
+<!-- read.csv(paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.csv"), -->
+<!--          row.names = 1, -->
+<!--          header = TRUE) %>% -->
+<!--   filter(!group) %>% -->
+<!--   filter(!grepl("base", variable_set)) %>% -->
+<!--   arrange(-as.numeric(est)) %>% -->
+<!--   mutate(est = format(round(est, 3), nsmall = 3), -->
+<!--          ci_ll = format(round(ci_ll, 3), nsmall = 3), -->
+<!--          ci_ul = format(round(ci_ul, 3), nsmall = 3), -->
+<!--          se = format(round(se, 3), nsmall = 3), -->
+<!--          pval = format(round(pval, 3), nsmall = 3), -->
+<!--          estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% -->
+<!--   select(variable_set, estCI, se, pval) %>% -->
+<!--   rename(`Variable name` = variable_set, -->
+<!--          `VIM estimate [95% CI]` = estCI, -->
+<!--          `std.error` = se, -->
+<!--          `p-value` = pval) %>% -->
+<!--   kable( -->
+<!--     booktabs = TRUE, -->
+<!--     linesep = "", -->
+<!--     caption = caption -->
+<!--   ) %>% -->
+<!--   kable_styling(latex_options = c("hold_position"), -->
+<!--                 font_size = 9) -->
+
+<!-- ``` -->
+
+<!-- \clearpage -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each individual variable relative to baseline risk factors."} -->
+
+<!-- knitr::include_graphics(paste0("figs/", Sys.getenv("TRIAL"), "/individual_vim_forest_plot.png")) -->
+
+<!-- ``` -->
 
 
 
-\clearpage
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated predictiveness (CV-AUC with 95\\% CI) across all individual variables derived upon sample splitting. Dashed vertical line drawn at CV-AUC = 0.5 represents predictiveness similar to random chance."}
+<!-- \clearpage -->
 
-knitr::include_graphics(paste0("figs/", Sys.getenv("TRIAL"), "/individual_pred_forest_plot.png"))
+<!-- ```{r vim-predictiveness-vars, warning=FALSE, echo=FALSE, message=FALSE} -->
+<!-- caption <- "Estimated predictiveness (CV-AUC with 95\\% CI) of each individual variable derived upon sample splitting." -->
 
-```
+<!-- read.csv(paste0("output/", Sys.getenv("TRIAL"), "/vim_predictiveness_estimates.csv"), -->
+<!--          row.names = 1, -->
+<!--          header = TRUE) %>% -->
+<!--   filter(!group) %>% -->
+<!--   arrange(-as.numeric(est)) %>% -->
+<!--   mutate(est = format(round(est, 3), nsmall = 3), -->
+<!--          ci_ll = format(round(ci_ll, 3), nsmall = 3), -->
+<!--          ci_ul = format(round(ci_ul, 3), nsmall = 3), -->
+<!--          se = format(round(se, 3), nsmall = 3), -->
+<!--          estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% -->
+<!--   select(variable_set, estCI, se) %>% -->
+<!--   rename(`Variable name` = variable_set, -->
+<!--          `Predictiveness estimate [95% CI]` = estCI, -->
+<!--          `std.error` = se) %>% -->
+<!--   kable( -->
+<!--     booktabs = TRUE, -->
+<!--     linesep = "", -->
+<!--     caption = caption -->
+<!--   ) %>% -->
+<!--   kable_styling(latex_options = c("hold_position"), -->
+<!--                 font_size = 9) -->
+
+<!-- ``` -->
+
+
+
+<!-- \clearpage -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated predictiveness (CV-AUC with 95\\% CI) across all individual variables derived upon sample splitting. Dashed vertical line drawn at CV-AUC = 0.5 represents predictiveness similar to random chance."} -->
+
+<!-- knitr::include_graphics(paste0("figs/", Sys.getenv("TRIAL"), "/individual_pred_forest_plot.png")) -->
+
+<!-- ``` -->
 
 
 
