@@ -28,24 +28,39 @@ conflict_prefer("summarise", "dplyr")
 source(here("code", "utils.R"))
 method <- "method.CC_nloglik" # since SuperLearner relies on this to be in GlobalEnv
 ggplot2::theme_set(theme_cowplot())
-load(paste0("output/", "objects_for_running_SL.rda"))
+load(paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 
+# Get vimps in one dataframe: ----------------------------------------------------------
+pooled_ests_lst <- list.files(here(paste0("output/", Sys.getenv("TRIAL"))), pattern = "pooled_ests_*") %>%
+    tibble(file = .) %>%
+    mutate(listdat = lapply(paste0("output/", Sys.getenv("TRIAL"), "/", file), readRDS))
+
+all_estimates = as.data.frame(do.call("rbind", pooled_ests_lst$listdat))
+
+# add on the variable set name
+final_estimates <- all_estimates %>%
+    mutate(variable_set = rep(varset_names[-1], each = 2), .before = "s")
+
+# save the output
+saveRDS(final_estimates, file = paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.rds"))
+----------------------------------------------------------------------------------------
 # read in the results; note that createRDAfiles_fromSLobjects has to be run prior to this
+
 if (study_name %in% c("COVE", "MockCOVE")) {
-  cvaucs_vacc <- readRDS(file = here::here("output", "cvaucs_vacc_EventIndPrimaryD57.rds"))
-  vim_estimates <- readRDS(file = here::here("output", "vim_estimates.rds"))  %>%
+  cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_EventIndPrimaryD57.rds"))
+  vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds"))  %>%
     mutate(group = ifelse(variable_set %in% c("2_bAbSpike_D57", "3_bAbRBD_D57", "13_bAbSpike_D29"), TRUE, group))
 }
 if (study_name == "HVTN705") {
-  cvaucs_vacc <- readRDS(file = here::here("output", "cvaucs_vacc_EventIndPrimaryD210.rds"))
-  vim_estimates <- readRDS(file = here::here("output", "vim_estimates.rds")) %>%
-    mutate(group = ifelse(variable_set %in% c("4_M7_ADCP", "11_M7_IgG3multi", "12_M7_IgG3overall"), TRUE, group))
+  cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_EventIndPrimaryD210.rds"))
+  vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) %>%
+    mutate(group = ifelse(variable_set %in% c("3_M7Tcells", "36_M7_2_3_4_5_12_13"), TRUE, group))
 }
-ph2_vacc_ptids <- readRDS(file = here::here("output", "ph2_vacc_ptids.rds"))
+ph2_vacc_ptids <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "ph2_vacc_ptids.rds"))
 
-# Create tables ----------------------------------------------------------------
+# Create tables ------------------------------------------------------------------------
 # Table of learner/screen combinations
-caption <- "All learner-screen combinations (28 in total) used as input to the Superlearner."
+caption <- "All learner-screen combinations (16 in total) used as input to the Superlearner."
 
 tab <- cvaucs_vacc %>%
   filter(!Learner %in% c("SL", "Discrete SL")) %>%
@@ -64,7 +79,7 @@ if (!grepl("Mock", study_name) & study_name == "COVE") {
     arrange(Learner, `Screen*`)
 } else if (!grepl("Mock", study_name) & study_name == "HVTN705") {
   tab <- tab %>%
-    mutate(Learner = fct_relevel(Learner, c("SL.mean", #"SL.bayesglm", "SL.gam",
+    mutate(Learner = fct_relevel(Learner, c("SL.mean", "SL.gam", #"SL.bayesglm", 
 					    "SL.glm", #"SL.glm.interaction",
 					    "SL.glmnet.0",
 					    "SL.glmnet.1",
@@ -83,7 +98,7 @@ if (!grepl("Mock", study_name) & study_name == "COVE") {
     arrange(Learner, `Screen*`)
 }
 
-tab %>% write.csv(here("output", "learner-screens.csv"))
+tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "learner-screens.csv"))
 
 # Table of variable set definitions
 if (study_name %in% c("COVE", "MockCOVE")) {
@@ -131,41 +146,69 @@ components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + all individual Day 29 and Day 57 marker variables and their combination scores (Full model of Day 29 and Day 57 markers)"))
 }
 if (study_name == "HVTN705") {
-  caption <- "The 15 variable sets on which an estimated optimal surrogate was built."
+  total_varsets = 36
+  caption <- "The 36 variable sets on which an estimated optimal surrogate was built."
 
-  tab <- data.frame(`Variable Set Name` = c("1_baselineRiskFactors",
-                                            "2_M7_ELISA", #"3_bAbRBD_D57",
-                                            "4_M7_ADCP", "5_M7_IgG3", "6_M7_IgG3gp140", "7_M7_IgG3gp120", "8_M7_IgG3V1V2", "9_M7_IgG3gp41", "10_M7_IgG3bScores",
-                                            "11_M7_IgG3multi", "12_M7_IgG3overall", #"13_pnabID50_D29",
-                                            "14_2+4", "15_2+5", #"16_bAb_pnabID80_D29", "17_bAb_combScores_D29",
-                                            "18_4+5", "22_2+4+5"),
-                    `Variables included in the set` = c("Baseline risk factors only (Reference model)",
-                                                        "Baseline risk factors + M7 ELISA",
-                                                        "Baseline risk factors + M7 ADCP",
-                                                        "Baseline risk factors + M7 IgG3",
-                                                        "Baseline risk factors + M7 IgG3 gp140",
-                                                        "Baseline risk factors + M7 IgG3 gp120",
-                                                        "Baseline risk factors + M7 IgG3 V1V2",
-                                                        "Baseline risk factors + M7 IgG3 gp41",
-                                                        "Baseline risk factors + M7 IgG3 Breadth Scores",
-                                                        "Baseline risk factors + M7 IgG3 Multi-Epitope breadth",
-                                                        "Baseline risk factors + M7 Overall score across assays",
-                                                        "Baseline risk factors + M7 ELISA + M7 ADCP",
-                                                        "Baseline risk factors + M7 ELISA + M7 IgG3",
-                                                        "Baseline risk factors + M7 ADCP + M7 IgG3",
-                                                        "Baseline risk factors + M7 ELISA + M7 ADCP + M7 IgG3"))
+  tab <- data.frame(`Variable Set Name` = c("1_baselineFactors", "2_M7ELISA", "3_M7Tcells","4_M7ADCP","5_M7IgG3",
+                                            "6_M7IgG3_gp140","7_M7IgG3_gp120","8_M7IgG3_V1V2","9_M7IgG3_gp41",
+                                            "10_M7IgG3_breadthScore","11_M7IgG3_multi","12_M7IgGt_V1V2","13_M7ADCC",
+                                            "14_M7_combPrimaryMarkers", "15_M7_combAllMarkers","16_M7_overallScore", 
+                                            "17_M7_2_3", "18_M7_2_4", "19_M7_2_5_12", "20_M7_2_13", "21_M7_3_4", 
+                                            "22_M7_3_5_12", "23_M7_3_13", "24_M7_4_5_12", "25_M7_4_13", 
+                                            "26_M7_5_12_13","27_M7_2_3_4", "28_M7_2_3_5_12","29_M7_2_3_13","30_M7_3_4_5_12",
+                                            "31_M7_3_4_13","32_M7_4_5_12_13","33_M7_2_3_4_5_12","34_M7_2_3_4_13",
+                                            "35_M7_3_4_5_12_13","36_M7_2_3_4_5_12_13"),
+                    `Variables included in the set` = c(
+                      "Baseline Factors South Africa, Age, BMI, Behavioral risk score",
+                      "1.+M7 ELISA ELISA markers ELISA VT-C and ELISA VT-M controlling for baseline factors (Cont-base)",
+                      "1.+M7 T cells ELISpot PTE Env, CD4/CD8 T cells Cont-base",
+                      "1.+M7 ADCP ADCP markers ADCP C97ZA, ADCP Mosaic Cont-base",
+                      "1.+M7 IgG3 All BAMA IgG3 markers Cont-base",
+                      "1.+M7 IgG3 gp140 All BAMA IgG3 gp140 markers Cont-base",
+                      "1.+M7 IgG3 gp120 All BAMA IgG3 gp120 markers Cont-base",
+                      "1.+M7 IgG3 V1V2 All BAMA IgG3 V1V2 markers Cont-base",
+                      "1.+M7 IgG3 gp41 All BAMA IgG3 gp41 markers Cont-base",
+                      "1.+M7 IgG3 breadth scores All BAMA antigen-specific breadth scores Cont-base",
+                      "1.+M7 IgG3 Multi-epitope breadth BAMA IgG3 multi-epitope cross-reactivity score Cont-base",
+                      "1.+M7 IgGt V1V2 All BAMA IgG V1V2 markers Cont-base",
+                      "1.+M7 ADCC All ADCC markers Cont-base",
+                      "1.+M7 comb scores over primary markers All combination scores derived over the 6 primary markers [PCA1, PCA2, FSDAM1/FSDAM2 (the first two components of nonlinear PCA), and the maximum signal diversity
+                                                          score He and Fong (2019)]",
+                      "1.+M7 comb scores over all markers All combination scores derived over all markers [PCA1, PCA2, FSDAM1/FSDAM2, and max.sig.div.score].",
+                      "1.+M7 Overall scores across assays Two overall combined scores Cont-base",
+                      "1.+2.+3. Do ELISA + T cells together improve classification?",
+                      "1.+2.+4. Do ELISA + ADCP together improve classification?",
+                      "1.+2.+5.+12. Do ELISA + IgG3/IgGt together improve classification?",
+                      "1.+2.+13. Do ELISA + ADCC together improve classification?",
+                      "1.+3.+4. Do T cells + ADCP together improve classification?",
+                      "1.+3.+5.+12. Do T cells + IgG3/IgGt together improve classification?",
+                      "1.+3.+13. Do T cells + ADCC together improve classification?",
+                      "1.+4.+5.+12. Do ADCP + IgG3/IgGt together improve classification?",
+                      "1.+4.+13. Do ADCP + ADCC together improve classification?",
+                      "1.+5.+12.+13. Do IgG3/IgGt + ADCC together improve classification?",
+                      "1.+2.+3.+4. Do ELISA + T cells + ADCP together improve classification?",
+                      "1.+2+3.+5.+12. Do ELISA + T cells + IgG3/IgGt together improve classification?",
+                      "1.+2+3.+13. Do ELISA + T cells + ADCC together improve classification?",
+                      "1.+3.+4.+5.+12. Do T cells + ADCP + IgG3/IgGt together improve classification?",
+                      "1.+3.+4.+13. Do T cells + ADCP + ADCC together improve classification?",
+                      "1.+4.+5.+12.+13. Do ADCP + IgG3/IgGt + ADCC together improve classification?",
+                      "1.+2.+3.+4.+5.+12. Do ELISA + T cells + ADCP + IgG3/IgGt together improve classification?",
+                      "1.+2.+3.+4.+13. Do ELISA + T cells + ADCP + ADCC together improve classification?",
+                      "1.+3.+4.+5.+12.+13. Do T cells + ADCP + IgG3/IgGt + ADCC together improve classification?",
+                      "1.+2.+3.+4.+5.+12.+13. (All) Do all the immune marker sets together improve classification?"
+                    ))
 
 }
 
-tab %>% write.csv(here("output", "varsets.csv"))
+tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "varsets.csv"))
 
 # Create figures ---------------------------------------------------------------
 # Forest plots for vaccine model
 # vaccine group
 options(bitmapType = "cairo")
-for(i in 1:length(unique(cvaucs_vacc$varset))) {
+for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
   variableSet = unique(cvaucs_vacc$varset)[i]
-  png(file = here("figs", paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
+  png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
   top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet))
   grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
   dev.off()
@@ -173,22 +216,22 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 
 # All Superlearners
 learner.choice = "SL"
-png(file = here("figs", paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
-top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc, learner.choice)
+png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
+top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), learner.choice)
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
 
 # All discrete.SLs
 learner.choice = "Discrete SL"
-png(file = here("figs", paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
-top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc, learner.choice)
+png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
+top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), learner.choice)
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
 
 #################################################################################################################################
 #################################################################################################################################
 # plot ROC curve and pred.Prob with SL, Discrete SL and top 2 best-performing individual Learners for all 12 variable sets
-for(i in 1:length(unique(cvaucs_vacc$varset))) {
+for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
   variableSet = unique(cvaucs_vacc$varset)[i]
   dat <- cvaucs_vacc %>% filter(varset==variableSet)
 
@@ -208,10 +251,10 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 
   # Get cvsl fit and extract cv predictions
   if(study_name %in% c("COVE", "MockCOVE")){
-    cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
+    cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
   }
   if(study_name == "HVTN705"){
-    cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
+    cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
   }
 
   pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2, markerDAT = NULL)
@@ -239,7 +282,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 
   # plot ROC curve
   options(bitmapType = "cairo")
-  png(file = here("figs", paste0("ROCcurve_", variableSet, ".png")),
+  png(file = here("figs", paste0(Sys.getenv("TRIAL"), "/ROCcurve_", variableSet, ".png")),
       width = 1000, height = 1000)
   if(study_name %in% c("COVE", "MockCOVE")){
     p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D57))
@@ -252,7 +295,7 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 
   # plot pred prob plot
   options(bitmapType = "cairo")
-  png(file = here("figs", paste0("predProb_", variableSet, ".png")),
+  png(file = here("figs", paste0(Sys.getenv("TRIAL"), "/predProb_", variableSet, ".png")),
       width = 1000, height = 1000)
   p2 <- plot_predicted_probabilities(pred)
   print(p2)
@@ -260,16 +303,17 @@ for(i in 1:length(unique(cvaucs_vacc$varset))) {
 }
 
 
-# Get SL & Discrete SL performance for all variable sets
-cvaucs_vacc %>% arrange(-AUC) %>%
-  filter(Learner == "SL") %>%
-  select(varset, AUCstr) %>%
-  write.csv(here("output", "SLperformance_allvarsets.csv"))
 
-cvaucs_vacc %>% arrange(-AUC) %>%
-  filter(Learner == "Discrete SL") %>%
+# Get SL & Discrete SL performance for all variable sets
+cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
+  arrange(-AUC) %>% filter(Learner == "SL") %>%
   select(varset, AUCstr) %>%
-  write.csv(here("output", "DiscreteSLperformance_allvarsets.csv"))
+  write.csv(here("output", Sys.getenv("TRIAL"), "SLperformance_allvarsets.csv"))
+
+cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
+  arrange(-AUC) %>% filter(Learner == "Discrete SL") %>%
+  select(varset, AUCstr) %>%
+  write.csv(here("output", Sys.getenv("TRIAL"), "DiscreteSLperformance_allvarsets.csv"))
 
 # # Predicted probability of COVID-19 vs antibody marker (x-axis)
 # marker_cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
@@ -291,14 +335,14 @@ cvaucs_vacc %>% arrange(-AUC) %>%
 #     mutate(LearnerScreen = ifelse(Learner == "SL", "Super Learner",
 #                                   ifelse(Learner == "Discrete SL", Learner,
 #                                          paste0(Learner, "_", Screen_fromRun))))
-#   
+# 
 #   # Get cvsl fit and extract cv predictions
 #   if(study_name %in% c("COVE", "MockCOVE")){
 #     cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_EventIndPrimaryD57_", individualMarkers[i], ".rds")))
 #   }
-#   
+# 
 #   pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2, markerDAT = dat.ph2 %>% select(individualMarkers[i]))
-#   # plot 
+#   # plot
 #   options(bitmapType = "cairo")
 #   png(file = here("figs", paste0("marker_predProb_", individualMarkers[i], ".png")),
 #       width = 1000, height = 1000)
@@ -306,32 +350,31 @@ cvaucs_vacc %>% arrange(-AUC) %>%
 #   vecNum = match(str_split(individualMarkers[i], paste0(0:9, collapse = "|"))[[1]][3], assays)
 #   xlab = assay_labels_short[vecNum]
 #   titlelab = paste0(assay_labels[vecNum], "\n", "Day ", gsub("...([0-9]+).*$", "\\1", individualMarkers[i]))
-#   xdat = 
-#   print(pred %>% 
+#   xdat =
+#   print(pred %>%
 #           ggplot(aes(x=dat.ph2 %>% select(individualMarkers[i]), y=pred)) +
 #           facet_wrap(~algo, ncol = 2, scales = "free") +
 #           geom_point(size=2, shape=23) +
 #           xlim(floor(min(dat.ph2 %>% pull(individualMarkers[i]))), ceiling(max(dat.ph2 %>% pull(individualMarkers[i])))) +
-#           labs(y = "Predicted probability of COVID-19 disease", 
+#           labs(y = "Predicted probability of COVID-19 disease",
 #                x = xlab,
 #                title = titlelab) +
-#           scale_x_log10(limits=c(10^0, 10^7), breaks=10^(0:7)))
+#           scale_x_log10("x",
+#                         breaks = scales::trans_breaks("log10", function(y) 10^y),
+#                         labels = scales::trans_format("log10", math_format(10^.y))))
 #   dev.off()
 # }
-# 
-
-
 
 # Variable importance forest plots ---------------------------------------------
 # save off all variable importance estimates as a table
 vim_estimates %>%
   filter(quantity == "VIM") %>%
   #select(-group) %>%
-  write.csv(here("output", "vim_estimates.csv"))
+  write.csv(here("output", Sys.getenv("TRIAL"), "vim_estimates.csv"))
 vim_estimates %>%
   filter(quantity == "Predictiveness") %>%
   #select(-group) %>%
-  write.csv(here("output", "vim_predictiveness_estimates.csv"))
+  write.csv(here("output", Sys.getenv("TRIAL"), "vim_predictiveness_estimates.csv"))
 
 num_digits <- 3
 plot_vim_init <- vim_estimates %>%
@@ -358,7 +401,7 @@ group_vim_forest_plot <- est_group_vims %>%
   ggplot(aes(x = est, y = plot_name)) +
   geom_point(color = "blue") +
   geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
-  geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims) - 1), label = text_ci), hjust = "left") +
+  geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims)), label = text_ci), hjust = "left") +
   ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
   xlab("Estimated Difference in CV-AUC [95% CI]") +
   ylab("Variable Set Name") +
@@ -367,7 +410,7 @@ group_vim_forest_plot <- est_group_vims %>%
   theme_bw()
 
 ggsave(
-  group_vim_forest_plot, file = here::here("figs", "group_vim_forest_plot.png"),
+  group_vim_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "group_vim_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
 
@@ -386,7 +429,7 @@ group_pred_forest_plot <- est_group_predictiveness %>%
   theme_bw()
 
 ggsave(
-  group_pred_forest_plot, file = here::here("figs", "group_pred_forest_plot.png"),
+  group_pred_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "group_pred_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
 
@@ -410,7 +453,7 @@ individual_vim_forest_plot <- est_individual_vims %>%
   theme_bw()
 
 ggsave(
-  individual_vim_forest_plot, file = here::here("figs", "individual_vim_forest_plot.png"),
+  individual_vim_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "individual_vim_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
 
@@ -429,7 +472,7 @@ individual_pred_forest_plot <- est_individual_predictiveness %>%
   theme_bw()
 
 ggsave(
-  individual_pred_forest_plot, file = here::here("figs", "individual_pred_forest_plot.png"),
+  individual_pred_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "individual_pred_forest_plot.png"),
   width = 11.5, height = 10, units = "in", dpi = 300
 )
 

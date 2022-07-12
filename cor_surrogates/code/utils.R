@@ -417,20 +417,26 @@ get.maxSignalDivScore <- function(dat, day){
   # compute pairwise correlations between all marker vars
   marker.wts <- cor(dat, method = "spearman") %>%
     mdw::tree.weight(plot=FALSE)
-
+  
   ## multiply marker values with weights
   for (a in colnames(dat)) {
     dat[[a]] <- dat[[a]] * marker.wts[a]
   }
-
+  
   if(day %in% c("Day29", "Day57")){
     dat <- dat %>%
-      mutate(max.signal.div.score = rowSums(.[1:4])) #rowSums(.[1:5]))
+      mutate(max.signal.div.score = rowSums(.[1:4])) 
   }else if(day == "Day57_29"){
     dat <- dat %>%
-      mutate(max.signal.div.score = rowSums(.[1:8])) #rowSums(.[1:10]))
+      mutate(max.signal.div.score = rowSums(.[1:8])) 
+  }else if(day == "705-Day210-primaryMarkers"){
+    dat <- dat %>%
+      mutate(max.signal.div.score = rowSums(.[1:6])) 
+  }else if(day == "705-Day210-allMarkers"){
+    dat <- dat %>%
+      mutate(max.signal.div.score = rowSums(.[1:41])) 
   }
-
+  
   return(dat$max.signal.div.score)
 }
 
@@ -779,6 +785,10 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
 
   lowestXTick <- floor(min(allSLs$ci_ll)*10)/10
   highestXTick <- ceiling(max(allSLs$ci_ul)*10)/10
+  learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm")
+  if(Sys.getenv("TRIAL") == "moderna_real")
+    learner.plot.margin = unit(c(0.8,0.2,0.8,-0.15),"cm")
+  
   top_learner_plot <- ggplot() +
     geom_pointrange(allSLs %>% mutate(varset = fct_reorder(varset, AUC, .desc = F)), mapping=aes(x=varset, y=AUC, ymin=ci_ll, ymax=ci_ul), size = 1, color="blue", fill="blue", shape=20) +
     coord_flip() +
@@ -792,7 +802,7 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
           axis.text.x = element_text(size=16),
           axis.title.x = element_text(size=16),
           axis.text.y = element_blank(),
-          plot.margin=unit(c(2.25,0.2,0.8,-0.15),"cm"),
+          plot.margin=learner.plot.margin,
           panel.border = element_blank(),
           axis.line = element_line(colour = "black"))
 
@@ -805,11 +815,16 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
     mutate(xcoord = case_when(columnVal=="varset" ~ 1.5,
                               columnVal=="AUCstr" ~ 2),
            ycoord = rep(total_learnerScreen_combos:1, 2))
+  
+  names.plot.margin = unit(c(0.1,-0.15,0.65,-0.15),"cm")
+  
+  if(Sys.getenv("TRIAL") == "moderna_real")
+    names.plot.margin = unit(c(-1.5,-0.15,0.65,-0.15),"cm")
 
   top_learner_nms_plot <- ggplot(allSLs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
     xlim(0.7,2) +
-    theme(plot.margin=unit(c(0.1,-0.15,0.65,-0.15),"cm"),
+    theme(plot.margin=names.plot.margin,
           axis.line=element_blank(),
           axis.text.y = element_blank(),
           axis.text.x = element_text(size = 2, color = "white"),
@@ -886,6 +901,10 @@ make_forest_plot_prod <- function(avgs) {
 make_forest_plot <- function(avgs){
   lowestXTick <- floor(min(avgs$ci_ll)*10)/10
   highestXTick <- ceiling(max(avgs$ci_ul)*10)/10
+  learner.plot.margin = unit(c(3.4,-0.15,1,-0.15),"cm")
+  if(Sys.getenv("TRIAL") == "moderna_real")
+    learner.plot.margin = unit(c(2.8,-0.15,1,-0.15),"cm")
+    
   top_learner_plot <- ggplot() +
     geom_pointrange(avgs %>% mutate(LearnerScreen = fct_reorder(LearnerScreen, AUC, .desc = F)), mapping=aes(x=LearnerScreen, y=AUC, ymin=ci_ll, ymax=ci_ul), size = 1, color="blue", fill="blue", shape=20) +
     coord_flip() +
@@ -899,7 +918,7 @@ make_forest_plot <- function(avgs){
           axis.text.x = element_text(size=16),
           axis.title.x = element_text(size=16),
           axis.text.y = element_blank(),
-          plot.margin=unit(c(1.8,-0.15,1,-0.15),"cm"),
+          plot.margin=learner.plot.margin,
           panel.border = element_blank(),
           axis.line = element_line(colour = "black"))
 
@@ -912,30 +931,32 @@ make_forest_plot <- function(avgs){
                               columnVal=="Screen" ~ 1.5,
                               columnVal=="AUCstr" ~ 2),
            ycoord = rep(total_learnerScreen_combos:1, 3))
-  # %>%
-  #   bind_rows(data.frame(columnVal = c('Learner','Screen','AUCstr'),
-  #                        strDisplay = c('Learner','Screen','CV-AUC [95% CI]'),
-  #                        xcoord = c(1, 1.5, 2),
-  #                        ycoord = c(rep(16, 3))))
+
+  names.plot.margin = unit(c(1.6,-0.15,1.5,-0.15),"cm")
+  y_at = 18.75
+  if(Sys.getenv("TRIAL") == "moderna_real"){
+    names.plot.margin = unit(c(1.0,-0.15,1.7,-0.15),"cm")
+    y_at = 15.75
+  }
 
   top_learner_nms_plot <- ggplot(avgs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
     xlim(0.7,2) +
-    theme(plot.margin=unit(c(0,-0.15,1.7,-0.15),"cm"),
+    theme(plot.margin=names.plot.margin,
           axis.line=element_blank(),
           axis.text.y = element_blank(),
           axis.text.x = element_text(size = 2, color = "white"),
           axis.ticks = element_blank(),
           axis.title = element_blank()) +
-    annotate("text", x = 1, y = 15.75, size = 5,
+    annotate("text", x = 1, y = y_at, size = 5,
              label = "Learner",
              fontface = "bold",
              hjust = 1)  +
-    annotate("text", x = 1.5, y = 15.75, size = 5,
+    annotate("text", x = 1.5, y = y_at, size = 5,
              label = "Screen",
              fontface = "bold",
              hjust = 1) +
-    annotate("text", x = 2, y = 15.75, size = 5,
+    annotate("text", x = 2, y = y_at, size = 5,
              label = "CV-AUC [95% CI]",
              fontface = "bold",
              hjust = 1)
