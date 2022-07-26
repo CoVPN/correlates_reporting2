@@ -59,10 +59,12 @@ cvsl_args <- data.frame(matrix(ncol = 2, nrow = 9)) %>%
                                 V_inner, innerCvControl_quote, ipc_est_typeVar)))
 
 if(V_inner == length(Y) - 1){
-  cvsl_args = cvsl_args %>% mutate(Value = ifelse(Argument == "V_inner", V_inner_quote, Value))
+  cvsl_args <- cvsl_args %>% mutate(Value = ifelse(Argument == "V_inner", V_inner_quote, Value))
 }
 
-cvsl_args %>% write.csv(paste0("output/", Sys.getenv("TRIAL"), "/cvsl_args.csv"))
+cvsl_args %>% add_row(Argument = "vimp package version",
+                      Value = paste0(packageVersion("vimp"))) %>%    # Add vimp package version
+  write.csv(paste0("output/", Sys.getenv("TRIAL"), "/cvsl_args.csv"))
 # ---------------------------------------------------------------------------------
 # run super learner, with leave-one-out cross-validation and all screens
 # do 10 random starts, average over these
@@ -90,8 +92,8 @@ fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
                            ipc_est_type = ipc_est_typeVar,
                            sl_lib = sl_lib,
                            method = methodVar,
-                           cvControl = list(V = V_outer, stratifyCV = TRUE),
-                           innerCvControl = list(list(V = V_inner)),
+                           cvControl = cvControlVar,
+                           innerCvControl = innerCvControlVar,
                            Z = Z_treatmentDAT,
                            C = C,
                            z_lib = "SL.glm",

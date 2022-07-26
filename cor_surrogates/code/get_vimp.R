@@ -10,6 +10,11 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
+# obtain the job id
+#args <- commandArgs(trailingOnly = TRUE)
+#job_id <- as.numeric(args[2])
+job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+
 # common setup for CV super learners and variable importance
 source(here::here("code", "cor_surrogates_setup.R"))
 
@@ -124,3 +129,5 @@ cat("\n Running", varset_names[job_id], "variable set \n")
   
   # save off the output
   saveRDS(pooled_ests, file = here("output", paste0(Sys.getenv("TRIAL"), "/pooled_ests_", endpoint, "_", varset_names[job_id], ".rds")))
+
+  
