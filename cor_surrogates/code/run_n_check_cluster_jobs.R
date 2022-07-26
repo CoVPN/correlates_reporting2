@@ -23,6 +23,7 @@ for(varset_number in 1:nrow(varsets)){
 }
 
 # Run all sbatch jobs through R!
+system(paste0("export TRIAL=", Sys.getenv("TRIAL")))
 for(varset_number in 1:nrow(varsets)){
   system(paste("sbatch code/submit_VIMPcluster_job.sh", varset_number))
 }

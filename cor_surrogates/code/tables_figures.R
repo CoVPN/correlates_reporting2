@@ -1,3 +1,5 @@
+# Sys.setenv(TRIAL = "hvtn705second")
+# Sys.setenv(TRIAL = "moderna_real")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -43,7 +45,7 @@ final_estimates <- all_estimates %>%
 
 # save the output
 saveRDS(final_estimates, file = paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.rds"))
-----------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 # read in the results; note that createRDAfiles_fromSLobjects has to be run prior to this
 
 if (study_name %in% c("COVE", "MockCOVE")) {
@@ -103,6 +105,8 @@ tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "learner-screens.csv"))
 # Table of variable set definitions
 if (study_name %in% c("COVE", "MockCOVE")) {
   caption <- "The 34 variable sets on which an estimated optimal surrogate was built."
+  
+  only_varsets <- varset_names[1:34]
 
   tab <- data.frame(`Variable Set Name` = varset_names[1:34],
                     `Variables included in the set` = c("Baseline risk factors only (Reference model)",
@@ -364,6 +368,104 @@ cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
 #                         labels = scales::trans_format("log10", math_format(10^.y))))
 #   dev.off()
 # }
+
+
+# For all variable sets, get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds from the 1st random seed!
+if(!study_name %in% c("HVTN705")){
+  
+  for(i in 1:length(only_varsets)) {
+    print(i)
+    variableSet = only_varsets[i]
+
+    # Get cvsl fit and extract cv predictions
+    cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
+    
+    # For 1st random seed, get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds
+    for (j in seq_along(cvfits[[1]]$whichDiscreteSL)) {
+      #print(j)
+      if(cvfits[[1]]$whichDiscreteSL[[j]] %in% c("SL.glm_screen_univariate_logistic_pval", 
+                                                 "SL.glm.interaction_screen_highcor_random",
+                                                 "SL.glm_screen_all",
+                                                 "SL.glm_screen_glmnet",
+                                                 "SL.glm_screen_highcor_random",
+                                                 "SL.glm.interaction_screen_glmnet",
+                                                 "SL.glm.interaction_screen_univariate_logistic_pval",
+                                                 "SL.gam_screen_glmnet",
+                                                 "SL.gam_screen_univariate_logistic_pval",
+                                                 "SL.gam_screen_highcor_random")) {
+        
+        model <- cvfits[[1]]$AllSL[[j]][["fitLibrary"]][[cvfits[[1]]$whichDiscreteSL[[j]]]]$object$coefficients %>%
+          as.data.frame() %>%
+          tibble::rownames_to_column(var = "Predictors") %>%
+          rename(`Coefficient` = ".") %>%
+          mutate(
+            `Odds Ratio` = exp(`Coefficient`),
+            Learner = cvfits[[1]]$whichDiscreteSL[[j]],
+            fold = j)
+      }
+      
+      if (cvfits[[1]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_all", "SL.glmnet.1_screen_all")) {
+        
+        model <- coef(cvfits[[1]]$AllSL[[j]][["fitLibrary"]][[cvfits[[1]]$whichDiscreteSL[[j]]]]$object, s = "lambda.min") %>%
+          as.matrix() %>%
+          as.data.frame() %>%
+          tibble::rownames_to_column(var = "Predictors") %>%
+          rename(`Coefficient` = "s1") %>%
+          mutate(`Odds Ratio` = exp(`Coefficient`),
+                 Learner = cvfits[[1]]$whichDiscreteSL[[j]], 
+                 fold = j)
+      }
+      
+      if (cvfits[[1]]$whichDiscreteSL[[j]] %in% c("SL.xgboost.2.no_screen_all",
+                                                  "SL.xgboost.4.no_screen_all",
+                                                  "SL.xgboost.2.yes_screen_all",
+                                                  "SL.xgboost.4.yes_screen_all")) {
+        model <- xgboost::xgb.importance(model = cvfits[[1]]$AllSL[[j]][["fitLibrary"]][[cvfits[[1]]$whichDiscreteSL[[j]]]]$object) %>%
+          as.data.frame() %>%
+          mutate(Learner = cvfits[[1]]$whichDiscreteSL[[j]], 
+                 fold = j)
+      }
+      
+      if (cvfits[[1]]$whichDiscreteSL[[j]] %in% c("SL.ranger.yes_screen_all", "SL.ranger.no_screen_all")) {
+        model <- cvfits[[1]]$AllSL[[j]][["fitLibrary"]][[cvfits[[1]]$whichDiscreteSL[[j]]]]$object$variable.importance %>%
+          as.data.frame() %>%
+          rename(Importance = ".") %>%
+          tibble::rownames_to_column(var = "Predictors") %>%
+          mutate(Learner = cvfits[[1]]$whichDiscreteSL[[j]], 
+                 fold = j)
+      }
+      
+      if (cvfits[[1]]$whichDiscreteSL[[j]] == "SL.mean_screen_all"){
+        model <- data.frame(Learner="SL.mean_screen_all", 
+                            fold = j) 
+      }
+      
+      if (j == 1) {
+        all_models <- model
+      } else {
+        all_models <- bind_rows(all_models, model)
+      }
+    }
+    
+    if (i == 1) {
+      all_varsets_models <- all_models %>% mutate(varset = variableSet)
+    } else {
+      all_varsets_models <- bind_rows(all_varsets_models, 
+                                      all_models %>% mutate(varset = variableSet))  
+    }
+    
+    rm(variableSet, all_models, model)
+  }
+}
+
+
+all_varsets_models %>% 
+  mutate(`Predictors/Features` = ifelse(is.na(Predictors), Feature, Predictors)) %>%
+  select(-c(Predictors, Feature)) %>%
+  select(varset, fold, Learner, `Predictors/Features`, everything()) %>%
+  write.csv(here("output", Sys.getenv("TRIAL"), "all_varsets_all_folds_discreteSLmodels.csv"))
+
+
 
 # Variable importance forest plots ---------------------------------------------
 # save off all variable importance estimates as a table
