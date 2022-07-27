@@ -278,7 +278,8 @@ ds_s <- dat %>%
     Arm = factor(ifelse(Trt == 1, "Vaccine", "Placebo"), 
                  levels = c("Vaccine", "Placebo")),
     
-    demo.stratum.ordered=case_when(!is.na(demo.stratum) ~ as.numeric(demo.stratum), 
+    demo.stratum.ordered=case_when(study_name=="VAT08m" & (max(demo.stratum) > length(demo.stratum.labels)) ~ demo.stratum-as.numeric(demo.stratum>4),
+                                   !is.na(demo.stratum) ~ as.numeric(demo.stratum), 
                                    age.geq.65 == 1 ~ 7, 
                                    age.geq.65 == 0 & HighRiskInd==1 ~ 8,
                                    age.geq.65 == 0 & HighRiskInd==0 ~ 9), 
@@ -457,7 +458,10 @@ print("Done with table 1")
 
 # Cases & Non-cases
 ds <- ds %>% 
-  mutate(Case = case_when(Perprotocol==1 & 
+  mutate(
+    EventIndPrimaryD1 = case_when(study_name=="VAT08m" & grepl("omi", COR) ~ EventIndOmicronD1,
+                                  TRUE ~ EventIndPrimaryD1), 
+    Case = case_when(Perprotocol==1 & 
                             !!as.name(config.cor$Earlyendpoint)==0 & 
                             !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
                             !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
