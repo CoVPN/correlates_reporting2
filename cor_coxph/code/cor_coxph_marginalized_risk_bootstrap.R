@@ -182,9 +182,13 @@ write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_repli
 
 
 
+###################################################################################################
+# trial-specific ad hoc bootstrapping
+
 if (attr(config, "config") == "hvtn705second") {
     if(!file.exists(paste0(save.results.to, "itxn.marginalized.risk.Rdata"))) {    
         cat("make itxn.marginalized.risk\n")
+        
         a = "Day210IgG3gp70.001428.2.42.V1V240delta"
         b = "Day210ICS4AnyEnvIFNg_OR_IL2"
         #### marginalize interaction model
@@ -229,6 +233,23 @@ if (attr(config, "config") == "hvtn705second") {
         f=as.formula(paste("Surv(EventTimePrimary, EventIndPrimary) ~ RSA + Age + BMI + Riskscore + ",a," + ",b," + ",a,":",b))
             
         fit=svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.ph1)) 
+        
+        # save regression results to a table
+        fits=list(fit)
+        est=getFormattedSummary(fits, exp=T, robust=T, type=1)
+        ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
+        est = paste0(est, " ", ci)
+        p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
+        # generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
+        var.ind=5:7
+        stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
+        p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
+        # put together the table
+        tab=cbind(est, p)
+        colnames(tab)=c("HR", "P value")
+        tab=rbind(tab, "Generalized Wald Test for Itxn"=c("", formatDouble(p.gwald,3, remove.leading0 = F))); tab
+        mytex(tab, file.name="CoR_itxn_1", align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
+        
         
         # estimate marginalized risks, return a matrix
         prob.ls=sapply (ics.array, function(ics) {

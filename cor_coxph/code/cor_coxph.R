@@ -50,16 +50,16 @@ for (a in assays) {
   }
 }    
 
-dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
-dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
-
 # define an alias for EventIndPrimaryDxx
-dat.vac.seroneg$yy=dat.vac.seroneg[[config.cor$EventIndPrimary]]
-dat.pla.seroneg$yy=dat.pla.seroneg[[config.cor$EventIndPrimary]]
+dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
+dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
 
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
     
+dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
+dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
+
 # define trichotomized markers
 dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
 marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
