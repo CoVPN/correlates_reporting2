@@ -485,8 +485,8 @@ dev.off()
 
 if (attr(config, "config") == "hvtn705second") {
             
-    a= "Day210IgG3gp70.001428.2.42.V1V240delta"
-    b = "Day210ICS4AnyEnvIFNg_OR_IL2"
+    a="Day210IgG3gp70.001428.2.42.V1V240delta"
+    b="Day210ICS4AnyEnvIFNg_OR_IL2"
     risks=risks.itxn
     
     mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks"), mfrow=.mfrow)
@@ -497,14 +497,13 @@ if (attr(config, "config") == "hvtn705second") {
               risks$marker<=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 1-2.5/100)
         
         # hard code ylim to make the plot look better
-        ylim=c(0,0.12)
+        ylim=c(0,0.11)
         #ylim=range(risks$lb[shown,], risks$ub[shown,], 0) # [shown] so that there is not too much empty space
         xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(a), tpeak) 
         if(verbose) myprint(xlim, ylim)
-        
-    
+            
         # set up an empty plot
-        plot(risks$marker[shown], risks$prob[[1]][shown], 
+        plot(risks$marker[shown], risks$prob[shown,i], 
             xlab=paste0(labels.assays.short[get.assay.from.name(a)], " (=s)"), 
             ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), 
             lwd=lwd, xlim=xlim, ylim=ylim, type="n", main="", xaxt="n")    
@@ -518,11 +517,11 @@ if (attr(config, "config") == "hvtn705second") {
         }
         
         # legend for the three lines
-        mylegend(x=3, legend=names(risks$marker.2), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(b)])
+        mylegend(x=3, legend=paste(formatDouble(risks$marker.2,1,remove.leading0=F), c("(min)","(median)","(90th percentile)")), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(b)])
         
         # placebo prevelance lines
         abline(h=risks$prob[1,1], col="gray", lty=c(1), lwd=lwd)
-        text(x=par("usr")[2]-diff(par("usr")[1:2])/5, y=risks$prob[1,1]+diff(par("usr")[3:4])/20, "placebo overall "%.%formatDouble(prev.plac[1],3,remove.leading0=F))        
+        text(x=par("usr")[2]-diff(par("usr")[1:2])/5, y=risks$prob[1,1]+diff(par("usr")[3:4])/30, "placebo arm "%.%formatDouble(risks$prob[1,1],3,remove.leading0=F))        
         
         # add histogram
         par(new=TRUE) 
