@@ -12,17 +12,19 @@ toc: true
 
 \maxdeadcycles=200
 
-This report summarizes the results of the Month 7 multivariable marker Super Learner modeling and variable importance analysis of vaccine recipients for the HVTN-705 HIV vaccine efficacy trial. This report will be updated once the ELISpot Any Env and ADCP Mosaic markers are available.
+\hspace{80 mm}
 
-The analysis presented in this report was performed on data from all vaccine recipients included in the case-control cohort. 
+This report summarizes the results of the Month 7 multivariable marker Super Learner modeling and variable importance analysis of vaccine recipients for the HVTN-705 HIV vaccine efficacy trial. The analysis presented in this report was performed on data from all vaccine recipients included in the case-control cohort. 
 
-Table 1 shows the 13 learner-screen combinations fed into the Super Learner. The variable sets that were used as input feature sets in the Super Learner are shown in Table 2. The first variable set, baseline risk factors, is taken to be the same baseline factors adjusted for in the other correlates objectives of the SAP (RSA, Age, BMI and baseline risk score). For each set of Month 7 markers, both primary and exploratory markers are included. This is done given the objective of this machine learning analysis is to be maximally inclusive and unbiased, including all of the primary and exploratory Month 7 immune markers. In addition, all Month 7 individual markers that are constituents for defining one or more of the 12 markers are included; for  example the antigen-specific breadth score variables aggregate over readouts to a set of antigens. Therefore, for example, the variable set “6_M7_IgG3gp140” in Table 2 includes all individual antigen IgG3 gp140 markers as well as the IgG3 gp140 breadth score marker.
+Table 1 shows the 16 learner-screen combinations fed into the Super Learner. The variable sets that were used as input feature sets in the Super Learner are shown in Table 2. The first variable set, baseline risk factors, is taken to be the same baseline factors adjusted for in the other correlates objectives of the SAP (RSA, Age, BMI and baseline risk score). For each set of Month 7 markers, both primary and exploratory markers are included. This is done given the objective of this machine learning analysis is to be maximally inclusive and unbiased, including all of the primary and exploratory Month 7 immune markers. Table 3 displays the overall arguments provided to the CV.SuperLearner.
 
-For each variable set, a point and 95% confidence interval estimate of CV-AUC from the Super Learner model fit is used to summarize classification accuracy (Table 3 and Figure 1).    
+<!-- In addition, all Month 7 individual markers that are constituents for defining one or more of the 12 markers are included; for  example the antigen-specific breadth score variables aggregate over readouts to a set of antigens. Therefore, for example, the variable set “6_M7_IgG3gp140” in Table 2 includes all individual antigen IgG3 gp140 markers as well as the IgG3 gp140 breadth score marker. -->
 
-The Appendix section of the report shows the results (forest plots, ROC curves and predicted probability plots) for each of the 15 variable sets in order of their performance CV-AUC.   
+For each variable set, a point and 95% confidence interval estimate of CV-AUC from the Super Learner model fit is used to summarize classification accuracy (Table 4 and Figure 1). Similar results for the Discrete-SL are shown in Table 5 and Figure 2.    
 
-The importance of variable sets is summarized by the estimated gain in population prediction potential (also referred to as the intrinsic importance) when comparing each variable set plus baseline risk factors to baseline risk factors alone. We measure prediction potential using CV-AUC. Our approach to inference on the intrinsic importance requires sample splitting; thus, we report both the estimated variable importance (Table 4 and Figure 2) and the estimated CV-AUC of each variable set when evaluated on independent data (predictiveness) from the data used to evaluate the CV-AUC of the baseline risk factors (Table 5 and Figure 3). There may be some discrepancy between the latter estimates of CV-AUC and the estimates provided in Table 3 and Figure 1; these are explained by the sample splitting, and would be expected to diminish as the sample size grows. Note that the class-balancing learners, "SL.xgboost.2.yes" and "SL.xgboost.4.yes", were dropped from the Super Learner library in the variable importance computation as the regression carried out to account for the two-phase sampling is based on a continuous outcome (so there shouldn’t be any imbalance). 
+The Appendix section of the report shows the results (forest plots, ROC curves and predicted probability plots) for each of the 36 variable sets in order of their performance CV-AUC.   
+
+The importance of variable sets is summarized by the estimated gain in population prediction potential (also referred to as the intrinsic importance) when comparing each variable set plus baseline risk factors to baseline risk factors alone. We measure prediction potential using CV-AUC. Our approach to inference on the intrinsic importance requires sample splitting; thus, we report both the estimated variable importance (Table 6 and Figure 3) and the estimated CV-AUC of each variable set when evaluated on independent data (predictiveness) from the data used to evaluate the CV-AUC of the baseline risk factors (Table 7 and Figure 4). There may be some discrepancy between the latter estimates of CV-AUC and the estimates provided in Table 4 and Figure 1; these are explained by the sample splitting, and would be expected to diminish as the sample size grows. Note that the class-balancing learners, "SL.xgboost.2.yes" and "SL.xgboost.4.yes", were dropped from the Super Learner library in the variable importance computation as the regression carried out to account for the two-phase sampling is based on a continuous outcome (so there shouldn’t be any imbalance).
 
 
 \clearpage
@@ -43,7 +45,7 @@ if(endpoint=="EventIndPrimaryD29")
 if(endpoint=="Delta.D210")
   day = "Day 210"
 
-caption <- "All learner-screen combinations (13 in total) used as input to the Super Learner."
+caption <- "All learner-screen combinations (16 in total) used as input to the Super Learner."
 
 read.csv(here("cor_surrogates", "output", "learner-screens.csv"), row.names = 1,
          header = TRUE) %>%
@@ -66,7 +68,7 @@ read.csv(here("cor_surrogates", "output", "learner-screens.csv"), row.names = 1,
 
 \clearpage
 ```{r variable-sets, warning=FALSE, echo=FALSE}
-caption <- "All variable sets (15 in total) with immunological markers for which Super Learner was run."
+caption <- "All variable sets (36 in total) with immunological markers for which Super Learner was run."
 
 read.csv(here::here("cor_surrogates", "output", "varsets.csv"),
          row.names = 1, header = TRUE) %>%
@@ -76,24 +78,52 @@ read.csv(here::here("cor_surrogates", "output", "varsets.csv"),
     booktabs = TRUE,
     linesep = "",
     caption = caption
-  ) 
+  ) %>%
+  kable_styling(latex_options = c("hold_position"),
+                font_size = 9) %>%
+  column_spec(2, width = "13cm") %>%
+  row_spec(0,bold=TRUE) 
 # %>%
-#   kable_styling(latex_options = c("hold_position"),
-#                 font_size = 9) %>%
-#   column_spec(2, width = "10cm") %>%
-#   row_spec(0,bold=TRUE) %>%
 #     footnote(c("Baseline risk factors include RSA, Age, BMI, and Risk score variables."),
 #            threeparttable = TRUE)
-#   # footnote(c("Baseline risk factors include risk score, HighRiskInd and MinorityInd variables."),
-#   #          threeparttable = TRUE)
+  # footnote(c("Baseline risk factors include risk score, HighRiskInd and MinorityInd variables."),
+  #          threeparttable = TRUE)
 
 ```
 
- 
+
 \clearpage
+```{r cvsl-args, warning=FALSE, echo=FALSE}
+caption <- "Arguments supplied to CV.Superlearner."
+
+cvsl_args <- read.csv(here::here("cor_surrogates", "output", "cvsl_args.csv"),
+         row.names = 1, header = TRUE) 
+
+cases_vacc <- cvsl_args %>% filter(Argument == "Cases/Total Subjects in vaccine group (%)") 
+
+cvsl_args %>%
+  filter(Argument != "Cases/Total Subjects in vaccine group (%)") %>%
+  kable(
+    booktabs = TRUE,
+    linesep = "",
+    caption = caption
+  ) %>%
+  kable_styling(latex_options = c("hold_position"),
+                font_size = 9) %>%
+  row_spec(0,bold=TRUE) %>%
+  #column_spec(1:2, width = "5cm") %>%
+  # collapse_rows(columns = 1, valign = "top", latex_hline = "major") %>%
+  footnote(paste0(cases_vacc$Argument, " = ", cases_vacc$Value),
+           threeparttable = TRUE)
+
+```
+
+
+\clearpage
+\subsection{Super Learner performance across all 36 variables sets sorted by weighted CV-AUC performance}
 
 ```{r SLperformance-allvarsets, warning=FALSE, echo=FALSE, message=FALSE}
-caption <- "Super Learner performance across all 15 variable sets sorted by weighted CV-AUC performance."
+caption <- "Super Learner performance across all 36 variable sets sorted by weighted CV-AUC performance."
 
 SLperf_allvarsets <- read.csv(here("cor_surrogates", "output", "SLperformance_allvarsets.csv"), 
                               row.names = 1,
@@ -122,9 +152,48 @@ SLperf_allvarsets %>%
 
 
 \clearpage
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing Super Learner performance (weighted CV-AUC with 95\\% CI) across all 15 variable sets. Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance."}
+```{r, echo=FALSE, out.width="99%", out.height="220%", fig.cap="Forest plot showing Super Learner performance (weighted CV-AUC with 95\\% CI) across all 36 variable sets. Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance."}
 
 knitr::include_graphics(here::here("cor_surrogates", "figs", "forest_vacc_cvaucs_allSLs.png"))
+
+```
+
+
+\clearpage
+\subsection{Discrete-SL performance across all 36 variables sets sorted by weighted CV-AUC performance}
+```{r discreteSLperformance-allvarsets, warning=FALSE, echo=FALSE, message=FALSE}
+caption <- "Discrete-SL performance across all 36 variable sets sorted by weighted CV-AUC performance."
+
+disSLperf_allvarsets <- read.csv(here("cor_surrogates", "output", "DiscreteSLperformance_allvarsets.csv"), 
+                              row.names = 1,
+                              header = TRUE) %>%
+  mutate(varsetStr = str_replace_all(varset, "_", "\\\\_"),
+         varsetStr = fct_inorder(varsetStr),
+         varset = fct_inorder(varset))
+
+disSLperf_allvarsets %>%
+  rename(`Variable set` = varset,
+         `CV-AUC (95% CI)` = AUCstr) %>%
+  select(-varsetStr) %>%
+  kable(
+    #format = output_type,
+    booktabs = TRUE,
+    linesep = "",
+    caption = caption
+  ) %>%
+  # column_spec(2, width = "3cm") %>%
+  # column_spec(4, width = "3cm") %>%
+  kable_styling(latex_options = c("hold_position"),
+                font_size = 9)
+
+
+```
+
+
+\clearpage
+```{r, echo=FALSE, out.width="99%", out.height="220%", fig.cap="Forest plot showing Discrete-SL performance (weighted CV-AUC with 95\\% CI) across all 36 variable sets. Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance."}
+
+knitr::include_graphics(here::here("cor_surrogates", "figs", "forest_vacc_cvaucs_allDiscrete SLs.png"))
 
 ```
 
@@ -135,22 +204,22 @@ knitr::include_graphics(here::here("cor_surrogates", "figs", "forest_vacc_cvaucs
 ```{r vim-estimates-grp, warning=FALSE, echo=FALSE, message=FALSE}
 caption <- "Estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each variable set relative to baseline risk factors."
 
-read.csv(here::here("cor_surrogates", "output", "vim_estimates.csv"), 
+read.csv(here::here("cor_surrogates", "output", "vim_estimates.csv"),
          row.names = 1,
          header = TRUE) %>%
   filter(group) %>%
   filter(!grepl("base", variable_set)) %>%
-  arrange(-as.numeric(est)) %>% 
+  arrange(-as.numeric(est)) %>%
   mutate(est = format(round(est, 3), nsmall = 3),
          ci_ll = format(round(ci_ll, 3), nsmall = 3),
          ci_ul = format(round(ci_ul, 3), nsmall = 3),
          se = format(round(se, 3), nsmall = 3),
          pval = format(round(pval, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% 
+         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
   select(variable_set, estCI, se, pval) %>%
   rename(`Variable set` = variable_set,
          `VIM estimate [95% CI]` = estCI,
-         `std.error` = se, 
+         `std.error` = se,
          `p-value` = pval) %>%
   kable(
     booktabs = TRUE,
@@ -174,18 +243,18 @@ knitr::include_graphics(here::here("cor_surrogates", "figs", "group_vim_forest_p
 \clearpage
 
 ```{r vim-predictiveness-grp, warning=FALSE, echo=FALSE, message=FALSE}
-caption <- "Estimated predictiveness (CV-AUC with 95\\% CI) for all 15 variable sets derived upon sample splitting. Discrepancies between these CV-AUC estimates and the estimates provided in Table 3 and Figure 1 are expected to diminish with increase in sample size."
+caption <- "Estimated predictiveness (CV-AUC with 95\\% CI) for all 36 variable sets derived upon sample splitting. Discrepancies between these CV-AUC estimates and the estimates provided in Table 3 and Figure 1 are expected to diminish with increase in sample size."
 
-read.csv(here::here("cor_surrogates", "output", "vim_predictiveness_estimates.csv"), 
+read.csv(here::here("cor_surrogates", "output", "vim_predictiveness_estimates.csv"),
          row.names = 1,
          header = TRUE) %>%
   filter(group) %>%
-  arrange(-as.numeric(est)) %>% 
+  arrange(-as.numeric(est)) %>%
   mutate(est = format(round(est, 3), nsmall = 3),
          ci_ll = format(round(ci_ll, 3), nsmall = 3),
          ci_ul = format(round(ci_ul, 3), nsmall = 3),
          se = format(round(se, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% 
+         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
   select(variable_set, estCI, se) %>%
   rename(`Variable set` = variable_set,
          `Predictiveness estimate [95% CI]` = estCI,
@@ -203,7 +272,7 @@ read.csv(here::here("cor_surrogates", "output", "vim_predictiveness_estimates.cs
 
 
 \clearpage
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated predictiveness (CV-AUC with 95\\% CI) across all 15 variable sets derived upon sample splitting. Discrepancies between these CV-AUC estimates and the estimates provided in Table 3 and Figure 1 are expected to diminish with increase in sample size. Dashed vertical line drawn at CV-AUC = 0.5 represents predictiveness similar to random chance."}
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap="Forest plot showing estimated predictiveness (CV-AUC with 95\\% CI) across all 36 variable sets derived upon sample splitting. Discrepancies between these CV-AUC estimates and the estimates provided in Table 3 and Figure 1 are expected to diminish with increase in sample size. Dashed vertical line drawn at CV-AUC = 0.5 represents predictiveness similar to random chance."}
 
 knitr::include_graphics(here::here("cor_surrogates", "figs", "group_pred_forest_plot.png"))
 
@@ -215,22 +284,22 @@ knitr::include_graphics(here::here("cor_surrogates", "figs", "group_pred_forest_
 ```{r vim-estimates-vars, warning=FALSE, echo=FALSE, message=FALSE}
 caption <- "Estimated variable importance (estimated difference in CV-AUC with 95\\% CI) of each individual variable relative to baseline risk factors."
 
-read.csv(here::here("cor_surrogates", "output", "vim_estimates.csv"), 
+read.csv(here::here("cor_surrogates", "output", "vim_estimates.csv"),
          row.names = 1,
          header = TRUE) %>%
   filter(!group) %>%
   filter(!grepl("base", variable_set)) %>%
-  arrange(-as.numeric(est)) %>% 
+  arrange(-as.numeric(est)) %>%
   mutate(est = format(round(est, 3), nsmall = 3),
          ci_ll = format(round(ci_ll, 3), nsmall = 3),
          ci_ul = format(round(ci_ul, 3), nsmall = 3),
          se = format(round(se, 3), nsmall = 3),
          pval = format(round(pval, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% 
+         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
   select(variable_set, estCI, se, pval) %>%
   rename(`Variable name` = variable_set,
          `VIM estimate [95% CI]` = estCI,
-         `std.error` = se, 
+         `std.error` = se,
          `p-value` = pval) %>%
   kable(
     booktabs = TRUE,
@@ -238,7 +307,7 @@ read.csv(here::here("cor_surrogates", "output", "vim_estimates.csv"),
     caption = caption
   ) %>%
   kable_styling(latex_options = c("hold_position"),
-                font_size = 9)
+                font_size = 8)
 
 ```
 
@@ -256,16 +325,16 @@ knitr::include_graphics(here::here("cor_surrogates", "figs", "individual_vim_for
 ```{r vim-predictiveness-vars, warning=FALSE, echo=FALSE, message=FALSE}
 caption <- "Estimated predictiveness (CV-AUC with 95\\% CI) of each individual variable derived upon sample splitting."
 
-read.csv(here::here("cor_surrogates", "output", "vim_predictiveness_estimates.csv"), 
+read.csv(here::here("cor_surrogates", "output", "vim_predictiveness_estimates.csv"),
          row.names = 1,
          header = TRUE) %>%
   filter(!group) %>%
-  arrange(-as.numeric(est)) %>% 
+  arrange(-as.numeric(est)) %>%
   mutate(est = format(round(est, 3), nsmall = 3),
          ci_ll = format(round(ci_ll, 3), nsmall = 3),
          ci_ul = format(round(ci_ul, 3), nsmall = 3),
          se = format(round(se, 3), nsmall = 3),
-         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>% 
+         estCI = paste0(est, " [", ci_ll, ", ", ci_ul, "]")) %>%
   select(variable_set, estCI, se) %>%
   rename(`Variable name` = variable_set,
          `Predictiveness estimate [95% CI]` = estCI,
@@ -289,292 +358,440 @@ knitr::include_graphics(here::here("cor_surrogates", "figs", "individual_pred_fo
 
 ```
 
-
-
-
 \clearpage
 \section{Appendix}
-Forest plots, ROC curves and predicted probability plots are shown for each variable set.
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[1], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[1], ".png")))
+Forest plots, ROC curves and predicted probability plots are shown for each variable set ordered by CV-AUC performance of Discrete-SL.
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[1], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[1], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[1], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[1], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[1], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[1], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[1], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[1], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[1], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[1], ".png")))
 ```
 
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[2], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[2], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[2], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[2], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[2], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[2], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[2], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[2], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[2], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[2], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[2], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[2], ".png")))
 ```
 
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[3], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[3], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[3], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[3], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[3], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[3], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[3], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[3], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[3], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[3], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[3], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[3], ".png")))
 ```
 
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[4], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[4], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[4], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[4], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[4], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[4], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[4], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[4], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[4], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[4], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[4], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[4], ".png")))
 
 ```
 
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[5], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[5], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[5], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[5], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[5], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[5], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[5], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[5], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[5], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[5], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[5], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[5], ".png")))
 ```
 
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[6], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[6], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[6], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[6], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[6], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[6], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[6], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[6], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[6], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[6], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[6], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[6], ".png")))
 ```
 
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[7], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[7], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[7], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[7], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[7], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[7], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[7], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[7], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[7], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[7], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[7], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[7], ".png")))
 ```
 
-
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[8], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[8], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[8], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[8], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[8], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[8], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[8], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[8], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[8], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[8], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[8], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[8], ".png")))
 ```
 
-
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[9], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[9], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[9], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[9], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[9], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[9], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[9], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[9], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[9], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[9], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[9], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[9], ".png")))
 ```
 
-
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[10], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[10], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[10], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[10], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[10], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[10], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[10], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[10], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[10], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[10], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[10], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[10], ".png")))
 ```
 
-
-
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[11], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[11], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[11], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[11], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[11], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[11], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[11], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[11], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[11], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[11], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[11], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[11], ".png")))
 ```
 
-
-
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[12], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[12], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[12], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[12], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[12], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[12], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[12], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[12], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[12], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[12], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[12], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[12], ".png")))
 ```
 
-
-
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[13], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[13], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[13], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[13], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[13], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[13], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[13], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[13], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[13], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[13], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[13], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[13], ".png")))
 ```
 
-
-
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[14], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[14], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[14], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[14], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[14], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[14], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[14], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[14], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[14], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[14], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[14], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[14], ".png")))
 ```
 
-
-
-
-
-
-
-
-
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", SLperf_allvarsets$varsetStr[15], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
- knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", SLperf_allvarsets$varset[15], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[15], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[15], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[15], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(SLperf_allvarsets$varset)[15], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[15], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[15], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(SLperf_allvarsets$varsetStr)[15], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(SLperf_allvarsets$varset)[15], ".png")))
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[15], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[15], ".png")))
 ```
 
+\clearpage
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[16], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[16], ".png")))
+```
 
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[16], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[16], ".png")))
+```
 
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[16], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[16], ".png")))
+```
 
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[17], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[17], ".png")))
+```
 
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[17], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[17], ".png")))
+```
 
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[17], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[17], ".png")))
+```
 
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[18], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[18], ".png")))
+```
 
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[18], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[18], ".png")))
+```
 
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[18], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[18], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[19], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[19], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[19], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[19], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[19], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[19], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[20], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[20], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[20], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[20], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[20], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[20], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[21], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[21], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[21], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[21], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[21], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[21], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[22], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[22], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[22], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[22], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[22], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[22], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[23], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[23], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[23], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[23], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[23], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[23], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[24], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[24], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[24], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[24], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[24], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[24], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[25], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[25], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[25], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[25], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[25], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[25], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[26], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[26], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[26], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[26], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[26], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[26], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[27], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[27], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[27], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[27], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[27], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[27], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[28], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[28], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[28], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[28], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[28], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[28], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[29], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[29], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[29], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[29], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[29], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[29], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[30], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[30], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[30], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[30], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[30], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[30], ".png")))
+```
+
+\clearpage
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[31], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[31], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[31], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[31], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[31], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[31], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[32], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[32], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[32], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[32], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[32], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[32], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[33], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[33], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[33], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[33], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[33], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[33], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[34], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[34], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[34], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[34], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[34], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[34], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[35], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[35], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[35], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[35], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[35], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[35], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", disSLperf_allvarsets$varsetStr[36], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting HIV disease status after ", day, ". Dashed vertical line drawn at CV-AUC = 0.5 represents performance similar to random chance.")}
+ knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("forest_vacc_cvaucs_", disSLperf_allvarsets$varset[36], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[36], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("ROCcurve_", levels(disSLperf_allvarsets$varset)[36], ".png")))
+```
+
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(disSLperf_allvarsets$varsetStr)[36], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+           knitr::include_graphics(here::here("cor_surrogates", "figs", paste0("predProb_", levels(disSLperf_allvarsets$varset)[36], ".png")))
+```

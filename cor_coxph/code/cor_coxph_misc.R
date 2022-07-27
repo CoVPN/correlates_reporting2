@@ -163,16 +163,16 @@ if ((study_name=="COVE" | study_name=="MockCOVE") & tpeak=="57") {
 } 
 
 
-if (attr(config, "config")=="janssen_pooled_real" & COR=="D29IncludeNotMolecConfirmedstart1") {
+if (startsWith(attr(config, "config"), "janssen_pooled_")) {
     # the distribution of the number of days from D29 until COVID-19 endpoint occurrence or until right-censoring
     # stratified by COVID-19 endpoint or right-censoring and by geographic region.  Based on this figure,        
 
-    tmp.1=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==1 & Region==0, EventTimePrimaryD29, drop=T))
-    tmp.2=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==1 & Region==1, EventTimePrimaryD29, drop=T))
-    tmp.3=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==1 & Region==2, EventTimePrimaryD29, drop=T))
-    tmp.4=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==0 & Region==0, EventTimePrimaryD29, drop=T))
-    tmp.5=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==0 & Region==1, EventTimePrimaryD29, drop=T))
-    tmp.6=table(subset(dat.mock, ph1.D29start1 & EventIndPrimaryD29==0 & Region==2, EventTimePrimaryD29, drop=T))
+    tmp.1=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==1 & Region==0, EventTimePrimary, drop=T))
+    tmp.2=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==1 & Region==1, EventTimePrimary, drop=T))
+    tmp.3=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==1 & Region==2, EventTimePrimary, drop=T))
+    tmp.4=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==0 & Region==0, EventTimePrimary, drop=T))
+    tmp.5=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==0 & Region==1, EventTimePrimary, drop=T))
+    tmp.6=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==0 & Region==2, EventTimePrimary, drop=T))
     
     minmax=range(c(as.numeric(names(tmp.1)),as.numeric(names(tmp.2)),as.numeric(names(tmp.3)),as.numeric(names(tmp.4)),as.numeric(names(tmp.5)),as.numeric(names(tmp.6))))
     tmp.7=rep(0, minmax[2]-minmax[1]+1)    
@@ -197,6 +197,60 @@ if (attr(config, "config")=="janssen_pooled_real" & COR=="D29IncludeNotMolecConf
         barplot(tmp.6, xlab="Days", main="Non-cases, South Africa") 
     dev.off()  
 
+
+    # last case in vaccine arm
+    tmp=subset(dat.vac.seroneg, ph2==1 & EventIndPrimary==1, select=c(EventIndPrimary, EventTimePrimary))
+    tmp[order(tmp[,2]),] # last 144
+    
+    tmp=subset(dat.vac.seroneg, ph1==1 & EventIndPrimary==1 & Region==0, select=c(EventIndPrimary, EventTimePrimary))
+    tmp[order(tmp[,2]),] # last 47
+    
+    tmp=subset(dat.vac.seroneg, ph2==1 & EventIndPrimary==1 & Region==1, select=c(EventIndPrimary, EventTimePrimary))
+    tmp[order(tmp[,2]),] # last 101
+    
+    tmp=subset(dat.vac.seroneg, ph2==1 & EventIndPrimary==1 & Region==2, select=c(EventIndPrimary, EventTimePrimary))
+    tmp[order(tmp[,2]),] # last 144
+    
+    
+    # last case in vaccine arm
+    tmp=subset(dat.vac.seroneg, EventIndPrimary==1, select=c(EventIndPrimary, EventTimePrimary))
+    tmp[order(tmp[,2]),] # last 195
+    
+    tmp=subset(dat.vac.seroneg, EventIndPrimary==1 & Region==0, select=c(EventIndPrimary, EventTimePrimary))
+    tmp[order(tmp[,2]),] # last 111
+    
+    tmp=subset(dat.vac.seroneg, EventIndPrimary==1 & Region==1, select=c(EventIndPrimary, EventTimePrimary))
+    tmp[order(tmp[,2]),] # last 191
+    
+    tmp=subset(dat.vac.seroneg, EventIndPrimary==1 & Region==2, select=c(EventIndPrimary, EventTimePrimary))
+    tmp[order(tmp[,2]),] # last 195
+    
+    # with 15 subjects at risk
+    tmp=subset(dat.vac.seroneg, ph2==1 & SubcohortInd==1, select=c(EventIndPrimary, EventTimePrimary))
+    tail(tmp[order(tmp[,2]),], 15) # last 220, first 190
+    
+    tmp=subset(dat.vac.seroneg, ph2==1 & SubcohortInd==1 & Region==0, select=c(EventIndPrimary, EventTimePrimary))
+    tail(tmp[order(tmp[,2]),], 15) # last 220, first 158
+    
+    tmp=subset(dat.vac.seroneg, ph2==1 & SubcohortInd==1 & Region==1, select=c(EventIndPrimary, EventTimePrimary))
+    tail(tmp[order(tmp[,2]),], 15) # last 211, first 182
+    
+    tmp=subset(dat.vac.seroneg, ph2==1 & SubcohortInd==1 & Region==2, select=c(EventIndPrimary, EventTimePrimary))
+    tail(tmp[order(tmp[,2]),], 15) # last 207, first 183
+    
+    
+    # placebo, note that the following days are all shorter than vaccine arm
+    tmp=subset(dat.pla.seroneg,          SubcohortInd==1,             select=c(EventIndPrimary, EventTimePrimary))
+    tail(tmp[order(tmp[,2]),], 15) # last 198, first 157
+    
+    tmp=subset(dat.pla.seroneg,          SubcohortInd==1 & Region==0, select=c(EventIndPrimary, EventTimePrimary))
+    tail(tmp[order(tmp[,2]),], 15) # last 155, first 90
+    
+    tmp=subset(dat.pla.seroneg,          SubcohortInd==1 & Region==1, select=c(EventIndPrimary, EventTimePrimary))
+    tail(tmp[order(tmp[,2]),], 15) # last 198, first 84
+    
+    tmp=subset(dat.pla.seroneg,          SubcohortInd==1 & Region==2, select=c(EventIndPrimary, EventTimePrimary))
+    tail(tmp[order(tmp[,2]),], 15) # last 182, first 99
 }
 
 if (tpeak=="57") {

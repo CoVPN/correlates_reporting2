@@ -42,6 +42,16 @@ COR=Args[1]
 if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"
 } else {incNotMol <- ""}
 
+# set EventIndTimePrimary to EventIndTimeOmicron if study_name=="VAT08m" & COR=="D22D43omi"
+if (study_name=="VAT08m" & grepl("omi", COR)){
+  dat$EventIndPrimaryD1 = dat$EventIndOmicronD1 # used by cohort_event def
+  dat$EventIndPrimaryD22 = dat$EventIndOmicronD22
+  dat$EventIndPrimaryD43 = dat$EventIndOmicronD43 # used by cohort_event def
+  dat$EventTimePrimaryD1 = dat$EventTimeOmicronD1
+  dat$EventTimePrimaryD22 = dat$EventTimeOmicronD22 # used by scatter plot
+  dat$EventTimePrimaryD43 = dat$EventTimeOmicronD43
+}
+
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
 if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705" | study_name=="PREVENT19")  {
@@ -158,33 +168,6 @@ if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {age_thres=60; younger_
 } else {age_thres=65; younger_age="Age < 65"; older_age="Age >= 65"}
 dat.long$age.geq.65 = as.integer(dat.long$Age >= age_thres)
 
-# # matrix to decide the sampling strata
-# dat.long$demo_lab <-
-#  with(dat.long, factor(paste0(age.geq.65, HighRiskInd),
-#    levels = c("00", "01", "10", "11"),
-#    labels = c(
-#      paste(younger_age, "not at risk"),
-#      paste(younger_age, "at risk"),
-#      paste(older_age, "not at risk"),
-#      paste(older_age, "at risk")
-#    )
-#  ))
-
-# labels of the demographic strata for the subgroup plotting
-#dat.long$trt_bstatus_label <-
-#  with(
-#    dat.long,
-#    factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
-#      levels = c("11", "12", "21", "22"),
-#      labels = c(
-#        "Placebo, Baseline Neg",
-#        "Placebo, Baseline Pos",
-#        "Vaccine, Baseline Neg",
-#        "Vaccine, Baseline Pos"
-#      )
-#    )
-#  )
-
 # labels of the demographic strata for the subgroup plotting
 dat.long$age_geq_65_label <-
   with(
@@ -226,20 +209,6 @@ dat.long$sex_label <-
            labels = c("Female", "Male")
     )
   )
-
-#dat.long$age_sex_label <-
-#  with(
-#    dat.long,
-#    factor(paste0(age.geq.65, Sex),
-#           levels = c("00", "01", "10", "11"),
-#           labels = c(
-#             paste(younger_age, "male"),
-#             paste(younger_age, "female"),
-#             paste(older_age, "male"),
-#             paste(younger_age, "female")
-#           )
-#    )
-#  )
 
 dat.long$ethnicity_label <-
   with(

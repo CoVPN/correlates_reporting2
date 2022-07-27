@@ -453,7 +453,10 @@ if (run_prod) {
                 )  
 
   # learners in the method2 are learners that can have screens
-  methods2 <- c("SL.glm") #, "SL.bayesglm", "SL.glm.interaction", "SL.gam", "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars"
+  if(Sys.getenv("TRIAL") == "moderna_real")
+    methods2 <- c("SL.glm")
+  else
+    methods2 <- c("SL.glm", "SL.gam") #, "SL.bayesglm", "SL.glm.interaction", "SL.gam", "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars"
                 
 } else {
   # NOTE: smaller library for ~faster~ demo run
