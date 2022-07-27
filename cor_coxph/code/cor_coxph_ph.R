@@ -300,7 +300,7 @@ rv$tab.2=tab.nop12
 
 
 ###################################################################################################
-# regression for multiple markers in one model
+# multivariate_assays models
 
 if (!is.null(config$multivariate_assays)) {
     if(verbose) print("Multiple regression")
@@ -343,7 +343,7 @@ if (!is.null(config$multivariate_assays)) {
 
 
 ###################################################################################################
-# some ad hoc models
+# additional_models
 
 if (attr(config,"config")=="janssen_pooled_real") {
     f=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) * Day29pseudoneutid50    
