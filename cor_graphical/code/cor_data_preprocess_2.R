@@ -40,14 +40,17 @@ if (study_name=="VAT08m" & grepl("omi", COR)){
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
 if(study_name=="COVE" | study_name=="MockCOVE")  {
+  # only Moderna uses TwophasesampIndD57==1 for non-cases at both D29 and D57
   
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
-      Perprotocol==1 &
-        !!as.name(config.cor$Earlyendpoint)==0 & 
-        !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
-        !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
-      Perprotocol==1 &
+      #Perprotocol==1 &
+        #!!as.name(config.cor$Earlyendpoint)==0 & 
+        #!!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 &
+        #ph2.Dxx = EarlyendpointDxx==0 & Perprotocol==1 & EventTimePrimaryDxx>=7 & TwophasesampIndDxx
+      !!as.name(config.cor$ph2)==1 &
+        !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+      Perprotocol==1 & # do not use config.cor$ph2 here for now to avoid confusion (config is D29 but need D57 args for non-cases)
         !!as.name(paste0("EarlyendpointD", timepoints[length(timepoints)]))==0 &
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
         EventIndPrimaryD1==0 ~ "Non-Cases"),
@@ -56,16 +59,20 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
     ))
   
 } else {
+  # for whatever reason very different sets of ptids had D29 or D57 measured for AZ, so for D29, include a ptid if have D29 data ignoring D57 availability; for D57, include a ptid if have D57 data ignoing D29 availability
+  # keep Sanofi here as well
   
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
-      Perprotocol==1 &
-        !!as.name(config.cor$Earlyendpoint)==0 & 
-        !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
-        !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
-      Perprotocol==1 &
+      #Perprotocol==1 &
+        #!!as.name(config.cor$Earlyendpoint)==0 & 
+        #!!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
+        #ph2.Dxx = EarlyendpointDxx==0 & Perprotocol==1 & EventTimePrimaryDxx>=7 & TwophasesampIndDxx
+      !!as.name(config.cor$ph2)==1 &
+        !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+      Perprotocol==1 & # do not use config.cor$ph2 here for now because it doesn't include AnyinfectionD1
         AnyinfectionD1==0 &
-        !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
+        !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
         !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases")

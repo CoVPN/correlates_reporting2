@@ -61,8 +61,11 @@ dat = dat %>%
     mutate(cohort_event = factor(
       #ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= 13, "Day 2-14 Cases",
       #       ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) > 13 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= tpeaklag-1 + NumberdaysD1toD29, intcur2,
-      case_when(!!as.name(config.cor$ph2)==1 & !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
-                !!as.name(config.cor$ph2)==1 & !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0  & AnyinfectionD1==0 ~ "Non-Cases"),
+      case_when(!!as.name(config.cor$ph2)==1 &
+                  !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
+                !!as.name(config.cor$ph2)==1 & 
+                  !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 & 
+                  AnyinfectionD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
     )
@@ -72,22 +75,35 @@ dat = dat %>%
   dat <- dat %>%
     mutate(cohort_event = factor(
       case_when(ph2.intercurrent.cases==1 ~ "Intercurrent Cases",
-                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
+                  (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
+                  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
                     # definition for post-peak cases include people with and without D57 marker data for downstream plotting
                     # will filter out those without D57 marker data in the D57 panels
-                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
+                Perprotocol==1 & 
+                  (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
+                  (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & 
+                  EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
       )
-} else {
+} else { # for two timepoints studies requiring D29 marker for D29 set, and D57 for D57 set, such as AZ
+  # keep Sanofi here as well
   # for AZ, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29
   
   dat <- dat %>%
     mutate(cohort_event = factor(
       case_when(ph2.intercurrent.cases==1 ~ "Intercurrent Cases",
-                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
-                    # definition for post-peak cases include people with and without D57 marker data for downstream plotting
-                    # will filter out those without D57 marker data in the D57 panels
-                Perprotocol==1 & AnyinfectionD1==0 & (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & EventIndPrimaryD1==0 ~ "Non-Cases"),
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
+                  (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
+                  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
+                # definition for post-peak cases include people with and without D57 marker data for downstream plotting
+                # will filter out those without D57 marker data in the D57 panels
+                Perprotocol==1 & 
+                  AnyinfectionD1==0 & 
+                  (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
+                  # definition for non-cases include people with and without D57 marker data for downstream plotting
+                  # will filter out those without D57 marker data in the D57 panels
+                  EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
     )
 }
@@ -253,13 +269,13 @@ dat.longer.cor.subset <- dat.long.cor.subset %>%
 
 # phase 2 filters: 
 #    include both +++ and ++- at D29 for intercurrent cases and Post-Peak Cases
-#    include only +++ at D57 for intercurrent cases and Post-Peak Cases
-#    non-cases is defined as +++
+#    include only +++ at D57 for Post-Peak Cases
+#    non-cases is defined as +++ only for Moderna, but ++-/+++ at D29/57 for AZ and Sanofi
 #    for intercurrent cases at D57, Day 2-14 Cases & Day 15-35 Cases at D29, can't use ph2.D57/ph2.D29 because they are before D57/D29
-if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")) {
-  dat.longer.cor.subset <- dat.longer.cor.subset %>% 
-    filter(!(time == paste0("Day", tpeak) & (!!as.name(paste0("ph2.D", tpeak)))==0))  # set "Day 57" in the ph2.D57 cohort  
-}
+#if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")) {
+dat.longer.cor.subset <- dat.longer.cor.subset %>% 
+  filter(!(time == paste0("Day", tpeak) & (!!as.name(paste0("ph2.D", tpeak)))==0))  # set "Day 57" in the ph2.D57 cohort  
+#}
 
 # define response rates
 resp <- getResponder(dat.mock, cutoff.name="llox", times=grep("Day", times, value=T), 
