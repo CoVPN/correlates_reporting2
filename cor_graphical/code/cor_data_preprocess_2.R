@@ -55,7 +55,7 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
         EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
-        "Post-Peak Cases", "Non-Cases")
+        "Cases", "Non-Cases")
     ))
   
 } else {
@@ -75,7 +75,7 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
         !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
         !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
-        "Post-Peak Cases", "Non-Cases")
+        "Cases", "Non-Cases")
     ))
 }
 
