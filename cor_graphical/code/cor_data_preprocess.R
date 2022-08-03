@@ -43,7 +43,9 @@ if(F){# for simulated figure Peter requested on 8/2/2022, hardly lower the reado
                                                  ifelse(ph2.D57==1 & AnyinfectionD1==0 & EventIndPrimaryD1==0 & Day57pseudoneutid50<1.8,
                                                         Day57pseudoneutid50+randnum/2,
                                                         Day57pseudoneutid50)))),
-           Day57pseudoneutid50 = ifelse(Day57pseudoneutid50<log10(2.612/2), log10(2.612/2), Day57pseudoneutid50)
+           Day57pseudoneutid50 = ifelse(Day57pseudoneutid50<log10(2.612/2), log10(2.612/2), Day57pseudoneutid50),
+           # hard code here to remove one data point
+           Day57pseudoneutid50 = ifelse(ph2.D57==1 & EventIndPrimaryD57==1 & Day57pseudoneutid50>1.2, 1.03, Day57pseudoneutid50)
     )
 }
 
