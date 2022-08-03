@@ -30,6 +30,25 @@ config.cor <- config::get(config = COR)
 wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
 for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
 
+if(F){# for simulated figure Peter requested on 8/2/2022, hardly lower the readouts for AZ PsV in dat.mock
+  set.seed(12345)
+  dat.mock <- dat.mock %>%
+    mutate(randnum=runif(min=1, max=2, n()),
+           Day57pseudoneutid50 = ifelse(ph2.D57==1 & EventIndPrimaryD57==1 & Day57pseudoneutid50>2,  # cases
+                                        Day57pseudoneutid50-randnum, 
+                                        ifelse(ph2.D57==1 & EventIndPrimaryD57==1 & Day57pseudoneutid50>0.8,  # cases
+                                               Day57pseudoneutid50-randnum/2,
+                                          ifelse(ph2.D57==1 & AnyinfectionD1==0 & EventIndPrimaryD1==0 & Day57pseudoneutid50<1.2, # non-cases
+                                                 Day57pseudoneutid50+randnum, 
+                                                 ifelse(ph2.D57==1 & AnyinfectionD1==0 & EventIndPrimaryD1==0 & Day57pseudoneutid50<1.8,
+                                                        Day57pseudoneutid50+randnum/2,
+                                                        Day57pseudoneutid50)))),
+           Day57pseudoneutid50 = ifelse(Day57pseudoneutid50<log10(2.612/2), log10(2.612/2), Day57pseudoneutid50),
+           # hard code here to remove one data point
+           Day57pseudoneutid50 = ifelse(ph2.D57==1 & EventIndPrimaryD57==1 & Day57pseudoneutid50>1.2, 1.03, Day57pseudoneutid50)
+    )
+}
+
 # load parameters
 source(here("code", "params.R"))
 
@@ -86,8 +105,7 @@ dat = dat %>%
                   EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
       )
-} else { # for two timepoints studies requiring D29 marker for D29 set, and D57 for D57 set, such as AZ
-  # keep Sanofi here as well
+} else if (study_name=="AZD1222"){ # for two timepoints studies requiring D29 marker for D29 set, and D57 for D57 set, such as AZ
   # for AZ, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29
   
   dat <- dat %>%
@@ -106,6 +124,23 @@ dat = dat %>%
                   EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
     )
+} else {# keep Sanofi and other two timepoint studies except for AZ and Moderna here
+  
+  dat <- dat %>%
+    mutate(cohort_event = factor(
+      case_when(ph2.intercurrent.cases==1 ~ "Intercurrent Cases",
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
+                  (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
+                  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "Post-Peak Cases", 
+                # definition for post-peak cases include people with and without D57 marker data for downstream plotting
+                # will filter out those without D57 marker data in the D57 panels
+                Perprotocol==1 & 
+                  AnyinfectionD1==0 & 
+                  (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & 
+                  EventIndPrimaryD1==0 ~ "Non-Cases"),
+      levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
+    )
+  
 }
 
 dat <- dat[!is.na(dat$cohort_event),]
