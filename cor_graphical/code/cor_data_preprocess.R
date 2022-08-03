@@ -30,13 +30,20 @@ config.cor <- config::get(config = COR)
 wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
 for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
 
-if(F){# for simulated figure Peter requested on 8/2/2022, hardly lower the readouts for AZ PsV in dat.mock
+if(T){# for simulated figure Peter requested on 8/2/2022, hardly lower the readouts for AZ PsV in dat.mock
   set.seed(12345)
   dat.mock <- dat.mock %>%
-    mutate(Day57pseudoneutid50 = ifelse(ph2.D57==1 & EventIndPrimaryD57==1,  # cases
-                                        runif(min=0.115943, max=1.2, n()), 
-                                        ifelse(ph2.D57==1 & AnyinfectionD1==0 & EventIndPrimaryD1==0, # non-cases
-                                               runif(min=1.8, max=3.5, n()), Day57pseudoneutid50))
+    mutate(randnum=runif(min=1, max=2, n()),
+           Day57pseudoneutid50 = ifelse(ph2.D57==1 & EventIndPrimaryD57==1 & Day57pseudoneutid50>2,  # cases
+                                        Day57pseudoneutid50-randnum, 
+                                        ifelse(ph2.D57==1 & EventIndPrimaryD57==1 & Day57pseudoneutid50>0.8,  # cases
+                                               Day57pseudoneutid50-randnum/2,
+                                          ifelse(ph2.D57==1 & AnyinfectionD1==0 & EventIndPrimaryD1==0 & Day57pseudoneutid50<1.2, # non-cases
+                                                 Day57pseudoneutid50+randnum, 
+                                                 ifelse(ph2.D57==1 & AnyinfectionD1==0 & EventIndPrimaryD1==0 & Day57pseudoneutid50<1.8,
+                                                        Day57pseudoneutid50+randnum/2,
+                                                        Day57pseudoneutid50)))),
+           Day57pseudoneutid50 = ifelse(Day57pseudoneutid50<log10(2.612/2), log10(2.612/2), Day57pseudoneutid50)
     )
 }
 
