@@ -30,7 +30,7 @@ config.cor <- config::get(config = COR)
 wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
 for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
 
-if(T){# for simulated figure Peter requested on 8/2/2022, hardly lower the readouts for AZ PsV in dat.mock
+if(F){# for simulated figure Peter requested on 8/2/2022, hardly lower the readouts for AZ PsV in dat.mock
   set.seed(12345)
   dat.mock <- dat.mock %>%
     mutate(randnum=runif(min=1, max=2, n()),
