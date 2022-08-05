@@ -117,7 +117,9 @@ dat = dat %>%
                 # definition for post-peak cases include people with and without D57 marker data for downstream plotting
                 # will filter out those without D57 marker data in the D57 panels
                 Perprotocol==1 & 
-                  AnyinfectionD1==0 & 
+                  #AnyinfectionD1==0 & # use EarlyendpointD29/57==0 per discussion on 8/5/2022
+                  (!!as.name(paste0("EarlyendpointD", tinterm)))==0 &
+                  # will filter out those with EarlyendpointD57==1 in the D57 panels
                   (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
                   # definition for non-cases include people with and without D57 marker data for downstream plotting
                   # will filter out those without D57 marker data in the D57 panels
@@ -311,6 +313,14 @@ dat.longer.cor.subset <- dat.long.cor.subset %>%
 dat.longer.cor.subset <- dat.longer.cor.subset %>% 
   filter(!(time == paste0("Day", tpeak) & (!!as.name(paste0("ph2.D", tpeak)))==0))  # set "Day 57" in the ph2.D57 cohort  
 #}
+
+if (study_name=="AZD1222") {
+  # for studies like AZ, exclude non-cases with EarlyendpointD57==1 for Day 57 panel
+  # non_cases_d57 <- subset(dat.longer.cor.subset, cohort_event=="Non-Cases" & time %in% c("Day57","Delta57over29","Delta57overB"))
+  # table(non_cases_d57$time, non_cases_d57$EarlyendpointD57)
+  dat.longer.cor.subset <-  dat.longer.cor.subset %>%
+    filter(! (cohort_event=="Non-Cases" & EarlyendpointD57==1 & time=="Day57"))
+}
 
 # define response rates
 resp <- getResponder(dat.mock, cutoff.name="llox", times=grep("Day", times, value=T), 
