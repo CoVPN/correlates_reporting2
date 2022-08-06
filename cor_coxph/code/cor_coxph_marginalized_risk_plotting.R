@@ -491,57 +491,64 @@ dev.off()
 
 if (attr(config, "config") == "hvtn705second") {
             
-    a="Day210IgG3gp70.001428.2.42.V1V240delta"
-    b="Day210ICS4AnyEnvIFNg_OR_IL2"
-    
-    for (idx in 1:2) {
-        risks=get("risks.itxn."%.%idx)
+    aa=assays[contain(assays,"V2")][-(1:2)]  
+    for (a in aa) {
+        #a="Day210IgG3gp70.001428.2.42.V1V240delta"
+        a=paste0("Day210",a)
+        b="Day210ICS4AnyEnvIFNg_OR_IL2"
         
-        mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx), mfrow=.mfrow)
-            par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
-            lwd=2
+        for (idx in 1:2) {
+            if(idx==1) risks=risks.itxn.1[[a]]
+            if(idx==2) risks=risks.itxn.2[[a]]
             
-            shown=risks$marker>=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 2.5/100) & 
-                  risks$marker<=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 1-2.5/100)
-            
-            # hard code ylim to make the plot look better
-            ylim=c(0,0.11)
-            #ylim=range(risks$lb[shown,], risks$ub[shown,], 0) # [shown] so that there is not too much empty space
-            xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(a), tpeak) 
-            if(verbose) myprint(xlim, ylim)
+            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",a), mfrow=.mfrow)
+                par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
+                lwd=2
                 
-            # set up an empty plot
-            plot(risks$marker[shown], risks$prob[shown,i], 
-                xlab=paste0(labels.assays.short[get.assay.from.name(a)], " (=s)"), 
-                ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), 
-                lwd=lwd, xlim=xlim, ylim=ylim, type="n", main="", xaxt="n")    
-            draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
+                shown=risks$marker>=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 2.5/100) & 
+                      risks$marker<=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 1-2.5/100)
                 
-            # draw risk lines and confidence bands
-            for (i in 1:length(risks$marker.2)) {
-                lines(risks$marker[shown], risks$prob[shown,i], lwd=lwd, col=i)
-                lines(risks$marker[shown], risks$lb[shown,i],   lwd=lwd, col=i, lty=3)
-                lines(risks$marker[shown], risks$ub[shown,i],   lwd=lwd, col=i, lty=3)    
-            }
-            
-            # legend for the three lines
-            mylegend(x=3, legend=paste(formatDouble(10**risks$marker.2,3,remove.leading0=F), c("(min)","(median)","(90th percentile)")), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(b)], lwd=lwd)
-            
-            # placebo prevelance lines
-            abline(h=risks.itxn.1$prob[1,1], col="gray", lty=c(1), lwd=lwd)
-            text(x=par("usr")[2]-diff(par("usr")[1:2])/5, y=risks.itxn.1$prob[1,1]+diff(par("usr")[3:4])/30, "placebo arm "%.%formatDouble(risks.itxn.1$prob[1,1],3,remove.leading0=F))        
-            
-            # add histogram
-            par(new=TRUE) 
-            col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
-            col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
-            tmp.x=dat.vac.seroneg[[a]][dat.vac.seroneg$ph2]
-            tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
-            tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
-            if (is.nan(tmp$density)[1]) tmp=hist(tmp.x, plot=F)
-            plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F, xlim=xlim, ylim=c(0,max(tmp$density*1.25)))
-            
-        dev.off()
-    }    
-    
+                # hard code ylim to make the plot look better
+                ylim=c(0,0.11)
+                #ylim=range(risks$lb[shown,], risks$ub[shown,], 0) # [shown] so that there is not too much empty space
+                xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(a), tpeak) 
+                if(verbose) myprint(xlim, ylim)
+                    
+                # set up an empty plot
+                plot(risks$marker[shown], risks$prob[shown,i], 
+                    xlab=paste0(labels.assays.short[get.assay.from.name(a)], " (=s)"), 
+                    ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), 
+                    lwd=lwd, xlim=xlim, ylim=ylim, type="n", main="", xaxt="n")    
+                draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
+                    
+                # draw risk lines and confidence bands
+                for (i in 1:length(risks$marker.2)) {
+                    lines(risks$marker[shown], risks$prob[shown,i], lwd=lwd, col=i)
+                    lines(risks$marker[shown], risks$lb[shown,i],   lwd=lwd, col=i, lty=3)
+                    lines(risks$marker[shown], risks$ub[shown,i],   lwd=lwd, col=i, lty=3)    
+                }
+                
+                # legend for the three lines
+                mylegend(x=3, legend=paste(formatDouble(10**risks$marker.2,3,remove.leading0=F), c("(min)","(median)","(90th percentile)")), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(b)], lwd=lwd)
+                
+                # placebo prevelance lines
+                abline(h=prev.plac[1], col="gray", lty=c(1,3,3), lwd=lwd)
+                text(x=par("usr")[2]-diff(par("usr")[1:2])/5, y=prev.plac[1]+diff(par("usr")[3:4])/30, "placebo arm "%.%formatDouble(prev.plac[1],3,remove.leading0=F))        
+                #abline(h=risks.itxn.1$prob[1,1], col="gray", lty=c(1), lwd=lwd)
+                #text(x=par("usr")[2]-diff(par("usr")[1:2])/5, y=risks.itxn.1$prob[1,1]+diff(par("usr")[3:4])/30, "placebo arm "%.%formatDouble(risks.itxn.1$prob[1,1],3,remove.leading0=F))        
+                
+                # add histogram
+                par(new=TRUE) 
+                col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
+                col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
+                tmp.x=dat.vac.seroneg[[a]][dat.vac.seroneg$ph2]
+                tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
+                tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
+                if (is.nan(tmp$density)[1]) tmp=hist(tmp.x, plot=F)
+                plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F, xlim=xlim, ylim=c(0,max(tmp$density*1.25)))
+                
+            dev.off()
+        }
+    }
+        
 }

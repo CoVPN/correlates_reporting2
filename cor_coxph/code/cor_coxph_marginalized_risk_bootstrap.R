@@ -191,129 +191,137 @@ if (attr(config, "config") == "hvtn705second") {
     if(!file.exists(paste0(save.results.to, "itxn.marginalized.risk.Rdata"))) {    
         cat("make itxn.marginalized.risk\n")
         
-        a = "Day210IgG3gp70.001428.2.42.V1V240delta"
-        b = "Day210ICS4AnyEnvIFNg_OR_IL2"        
-        min.ls=c(0, -2); names(min.ls)=c(a,b)
-        
-        # compute risks at three values of ics
-        ics.array=c(min=-2, wtd.quantile(dat.vac.seroneg[[b]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.5, .9)))
-        # compute risks at a sequence of cd4 values for each of the three ics values
-        ss=sort(c(
-            wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, c(0.025,0.05,0.95,0.975)), # will be included in the table
-            seq(min.ls[a], max(dat.vac.seroneg[[a]], na.rm=TRUE), length=100) # equally spaced between min and max so that the curves look good
-        ))    
-        
-        for (idx in 1:2) {
-            if (idx==1) {
-                # treat placebo as having known marker values (undetectable)
-                
-                # okay to start with dat.mock here b/c no need for trichotomized markers
-                dat.ph1=subset(dat.mock, ph1)
-                
-#                par(mfrow=c(1,2))
-#                    myboxplot(Day210IgG3gp70.001428.2.42.V1V240delta ~ Trt, dat.ph1, main="IgG3 V1V2")
-#                    myboxplot(Day210ICS4AnyEnvIFNg_OR_IL2 ~ Trt, dat.ph1, main="CD4")
-#                
-#                # there are two non-Zero'0
-#                head(sort(dat.ph1$Day210IgG3gp70.001428.2.42.V1V240delta[dat.ph1$Trt==0], T))
-#                head(sort(dat.ph1$Day210ICS4AnyEnvIFNg_OR_IL2[dat.ph1$Trt==0], T))
-#                subset(dat.ph1, Trt==0 & Day210IgG3gp70.001428.2.42.V1V240delta>0, c(Day210IgG3gp70.001428.2.42.V1V240delta, Day210ICS4AnyEnvIFNg_OR_IL2))
-#                #     Day210IgG3gp70.001428.2.42.V1V240delta Day210ICS4AnyEnvIFNg_OR_IL2
-#                #905                                0.875061                   -1.707427
-#                #1654                               0.977724                   -0.939479
-                        
-                # set the marker value in the placebo arm to the values representing undetectable
-                dat.ph1[[a]][dat.ph1$Trt==0] = min.ls[a]
-                dat.ph1[[b]][dat.ph1$Trt==0] = min.ls[b]
-                # set all placebo to a single stratum
-                dat.ph1$Wstratum[dat.ph1$Trt==0] = min(dat.ph1$Wstratum[dat.ph1$Trt==0])  
-                # set ph2 and wt to 1 for all placebo
-                dat.ph1$ph2[dat.ph1$Trt==0] = 1
-                dat.ph1$wt[dat.ph1$Trt==0] = 1
-                
-            } else {
-                # only use vaccine arm
-                dat.ph1=dat.vac.seroneg
-            }
+        aa=assays[contain(assays,"V2")][-(1:2)]  
+        risks.itxn.1=list()      
+        risks.itxn.2=list()      
+        for(a in aa) {
+            #a = "Day210IgG3gp70.001428.2.42.V1V240delta" # the original marker of interest in the interaction model
+            a=paste0("Day210",a)
+            b = "Day210ICS4AnyEnvIFNg_OR_IL2"        
+            min.ls=c(0, -2); names(min.ls)=c(a,b) # it is verified that 0 is the minimum value for all V1V2 bAb markers
             
-            data.ph2=subset(dat.ph1, ph2==1)     
+            # compute risks at three values of ics
+            ics.array=c(min=-2, wtd.quantile(dat.vac.seroneg[[b]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.5, .9)))
+            # compute risks at a sequence of cd4 values for each of the three ics values
+            ss=sort(c(
+                wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, c(0.025,0.05,0.95,0.975)), # will be included in the table
+                seq(min.ls[a], max(dat.vac.seroneg[[a]], na.rm=TRUE), length=100) # equally spaced between min and max so that the curves look good
+            ))    
             
-            # fit the interaction model
-            f=as.formula(paste("Surv(EventTimePrimary, EventIndPrimary) ~ RSA + Age + BMI + Riskscore + ",a," + ",b," + ",a,":",b))            
-            fit=svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.ph1)) 
-            
-            # save regression results to a table
-            fits=list(fit)
-            est=getFormattedSummary(fits, exp=T, robust=T, type=1)
-            ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
-            est = paste0(est, " ", ci)
-            p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
-            # generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
-            var.ind=5:7
-            stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
-            p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
-            # put together the table
-            tab=cbind(est, p)
-            colnames(tab)=c("HR", "P value")
-            tab=rbind(tab, "Generalized Wald Test for Itxn"=c("", formatDouble(p.gwald,3, remove.leading0 = F))); tab
-            mytex(tab, file.name="CoR_itxn_"%.%idx, align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
-            
-            
-            # estimate marginalized risks, return a matrix
-            prob.ls=sapply (ics.array, function(ics) {
-                marginalized.risk.cont.2(fit, marker.name=a, data=data.ph2, weights=data.ph2$wt, t=tfinal.tpeak, ss=ss, marker.name.2=b, s.2=ics)
-            })
-            
-            
-            #### bootstrap
-            
-            # store the current rng state
-            save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
-            if (class(save.seed)=="try-error") {set.seed(1); save.seed <- get(".Random.seed", .GlobalEnv) }         
-            
-            seeds=1:B; names(seeds)=seeds
-            out=mclapply(seeds, mc.cores = numCores, FUN=function(seed) {   
-                seed=seed+560
-                if (verbose>=2) myprint(seed)
-                
+            for (idx in 1:2) {
                 if (idx==1) {
-                    # bootstrap vaccine and placebo arm separately
-                    dat.b = rbind(bootstrap.case.control.samples(subset(dat.ph1, Trt==1), seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2"),
-                                  subset(dat.ph1, Trt==0)[sample.int(nrow(subset(dat.ph1, Trt==0)), r=TRUE),])         
+                    # treat placebo as having known marker values (undetectable)
+                    
+                    # okay to start with dat.mock here b/c no need for trichotomized markers
+                    dat.ph1=subset(dat.mock, ph1)
+                    
+    #                par(mfrow=c(1,2))
+    #                    myboxplot(Day210IgG3gp70.001428.2.42.V1V240delta ~ Trt, dat.ph1, main="IgG3 V1V2")
+    #                    myboxplot(Day210ICS4AnyEnvIFNg_OR_IL2 ~ Trt, dat.ph1, main="CD4")
+    #                
+    #                # there are two non-Zero'0
+    #                head(sort(dat.ph1$Day210IgG3gp70.001428.2.42.V1V240delta[dat.ph1$Trt==0], T))
+    #                head(sort(dat.ph1$Day210ICS4AnyEnvIFNg_OR_IL2[dat.ph1$Trt==0], T))
+    #                subset(dat.ph1, Trt==0 & Day210IgG3gp70.001428.2.42.V1V240delta>0, c(Day210IgG3gp70.001428.2.42.V1V240delta, Day210ICS4AnyEnvIFNg_OR_IL2))
+    #                #     Day210IgG3gp70.001428.2.42.V1V240delta Day210ICS4AnyEnvIFNg_OR_IL2
+    #                #905                                0.875061                   -1.707427
+    #                #1654                               0.977724                   -0.939479
+                            
+                    # set the marker value in the placebo arm to the values representing undetectable
+                    dat.ph1[[a]][dat.ph1$Trt==0] = min.ls[a]
+                    dat.ph1[[b]][dat.ph1$Trt==0] = min.ls[b]
+                    # set all placebo to a single stratum
+                    dat.ph1$Wstratum[dat.ph1$Trt==0] = min(dat.ph1$Wstratum[dat.ph1$Trt==0])  
+                    # set ph2 and wt to 1 for all placebo
+                    dat.ph1$ph2[dat.ph1$Trt==0] = 1
+                    dat.ph1$wt[dat.ph1$Trt==0] = 1
+                    
                 } else {
-                    dat.b = bootstrap.case.control.samples(dat.ph1, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2")
-                }
-                dat.b.ph2=subset(dat.b, ph2==1)
-                with(dat.b, table(Wstratum, ph2))     
-                   
-                # inline design object b/c it may also throw an error
-                fit.b=try(svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)))
-        
-                if ( class (fit.b)[1] != "try-error" ) {
-                    probs=sapply (ics.array, function(ics) {
-                        marginalized.risk.cont.2(fit.b, marker.name=a, data=dat.b.ph2, weights=dat.b.ph2$wt, t=tfinal.tpeak, ss=ss, marker.name.2=b, s.2=ics)
-                    })
-                } else {
-                    matrix(NA, length(ss), length(ics.array))
+                    # only use vaccine arm
+                    dat.ph1=dat.vac.seroneg
                 }
                 
-            })
+                data.ph2=subset(dat.ph1, ph2==1)     
+                
+                # fit the interaction model
+                f=as.formula(paste("Surv(EventTimePrimary, EventIndPrimary) ~ RSA + Age + BMI + Riskscore + ",a," + ",b," + ",a,":",b))            
+                fit=svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.ph1)) 
+                
+                # save regression results to a table
+                fits=list(fit)
+                est=getFormattedSummary(fits, exp=T, robust=T, type=1)
+                ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
+                est = paste0(est, " ", ci)
+                p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
+                # generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
+                var.ind=5:7
+                stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
+                p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
+                # put together the table
+                tab=cbind(est, p)
+                colnames(tab)=c("HR", "P value")
+                tab=rbind(tab, "Generalized Wald Test for Itxn"=c("", formatDouble(p.gwald,3, remove.leading0 = F))); tab
+                mytex(tab, file.name=paste0("CoR_itxn_",idx,"_",a), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
+                
+                
+                # estimate marginalized risks, return a matrix
+                prob.ls=sapply (ics.array, function(ics) {
+                    marginalized.risk.cont.2(fit, marker.name=a, data=data.ph2, weights=data.ph2$wt, t=tfinal.tpeak, ss=ss, marker.name.2=b, s.2=ics)
+                })
+                
+                
+                #### bootstrap
+                
+                # store the current rng state
+                save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
+                if (class(save.seed)=="try-error") {set.seed(1); save.seed <- get(".Random.seed", .GlobalEnv) }         
+                
+                seeds=1:B; names(seeds)=seeds
+                out=mclapply(seeds, mc.cores = numCores, FUN=function(seed) {   
+                    seed=seed+560
+                    if (verbose>=2) myprint(seed)
+                    
+                    if (idx==1) {
+                        # bootstrap vaccine and placebo arm separately
+                        dat.b = rbind(bootstrap.case.control.samples(subset(dat.ph1, Trt==1), seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2"),
+                                      subset(dat.ph1, Trt==0)[sample.int(nrow(subset(dat.ph1, Trt==0)), r=TRUE),])         
+                    } else {
+                        dat.b = bootstrap.case.control.samples(dat.ph1, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2")
+                    }
+                    dat.b.ph2=subset(dat.b, ph2==1)
+                    with(dat.b, table(Wstratum, ph2))     
+                       
+                    # inline design object b/c it may also throw an error
+                    fit.b=try(svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)))
             
-            # restore rng state 
-            assign(".Random.seed", save.seed, .GlobalEnv)    
-            
-            # organize bootstrap results into a list of n.ics, each element of which is a matrix of n.s by n.seeds
-            res.ls=lapply (1:length(ics.array), function(i) {
-                res=sapply(out, function (x) x[,i])
-                res[,!is.na(res[1,])] # remove NA's
-            })
-            if (verbose) str(res.ls)
-            # put lb and ub into matrices
-            lb.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.025)))) )
-            ub.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.975)))) )
-            
-            assign("risks.itxn."%.%idx, list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=ics.array))       
+                    if ( class (fit.b)[1] != "try-error" ) {
+                        probs=sapply (ics.array, function(ics) {
+                            marginalized.risk.cont.2(fit.b, marker.name=a, data=dat.b.ph2, weights=dat.b.ph2$wt, t=tfinal.tpeak, ss=ss, marker.name.2=b, s.2=ics)
+                        })
+                    } else {
+                        matrix(NA, length(ss), length(ics.array))
+                    }
+                    
+                })
+                
+                # restore rng state 
+                assign(".Random.seed", save.seed, .GlobalEnv)    
+                
+                # organize bootstrap results into a list of n.ics, each element of which is a matrix of n.s by n.seeds
+                res.ls=lapply (1:length(ics.array), function(i) {
+                    res=sapply(out, function (x) x[,i])
+                    res[,!is.na(res[1,])] # remove NA's
+                })
+                if (verbose) str(res.ls)
+                # put lb and ub into matrices
+                lb.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.025)))) )
+                ub.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.975)))) )
+                
+                if(idx==1) risks.itxn.1[[a]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=ics.array)
+                if(idx==2) risks.itxn.2[[a]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=ics.array)
+            }
         }
+        
         save(risks.itxn.1, risks.itxn.2, file=paste0(save.results.to, "itxn.marginalized.risk.Rdata"))
         
     } else {
