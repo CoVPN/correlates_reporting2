@@ -53,7 +53,7 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 
 # ENSEMBLE regions
 ```{r, echo=FALSE, results='asis'}
-for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub3.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
@@ -140,6 +140,17 @@ for (a in c("pseudoneutid50","bindSpike")) {
 \end{figure}
 \clearpage
 
+\begin{figure}
+  \center
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curveslog_1.pdf}
+  \hspace{10pt}
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curves_1.pdf}
+  \caption{Controlled VE curves. 
+  ENSEMBLE: starting 1 days post Day 29; US: ending 53 days; LA: ending 48 days; SA: ending 40 days. 
+  }
+\end{figure}
+\clearpage
+
 
 
 # Controlled VE based on Cox Models with Discretized Markers
@@ -152,5 +163,3 @@ for (a in c("pseudoneutid50","bindSpike")) {
     \input{output/meta/id50_ve.tex}\\
 \end{center}
 \end{table}
-
-

@@ -51,7 +51,6 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     weight=list()
     for (x in TRIALS) {    
         TRIAL=get.trial(x, a)
-        Sys.setenv("TRIAL"=TRIAL)
         COR = switch(x, moderna_real="D57",
             janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", 
             janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
@@ -60,6 +59,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
             stop("wrong trial label for COR")
         )
         # key to have local = T
+        Sys.setenv("TRIAL"=TRIAL)
         source(here::here("..", "_common.R"), local=T)
         
         # uloq censoring    
@@ -77,12 +77,14 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     xlim=c(min(sapply(xlim.ls, function(x) x[1])), max(sapply(xlim.ls, function(x) x[2])))
     myprint(xlim)
     
+    
     mypdf(file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name,"_",a), width=5.2, height=5.2)
         par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         
         # need several variables from sourcing _common.R: lloxs, labels.assays, draw.x.axis.cor
         overall.ve.ls=list()
         for (x in TRIALS) {    
+            myprint(x, a)
             TRIAL=get.trial(x, a)
             COR = switch(x, moderna_real="D57",
                 janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", 
@@ -93,7 +95,15 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
             )
             load(here::here("output", TRIAL, COR, "marginalized.risk.no.marker.Rdata"))
             load(here::here("output", TRIAL, COR, "marginalized.risk.Rdata"))
-            risks=get("risks.all.1")[[a]] 
+            # key to have local = T
+            Sys.setenv("TRIAL"=TRIAL)
+            source(here::here("..", "_common.R"), local=T)
+            tmp="Day"%.%config.cor$tpeak %.% a            
+            risks=get("risks.all.1")[[tmp]] 
+            if (is.null(risks)) {
+                myprint(x, a)
+                stop("risks is NULL")
+            }
             #risks=get(ifelse(x=="prevent19","risks.all.3","risks.all.1"))[[a]] # .3 is trichotomized
             
             est = 1 - risks$prob/res.plac.cont["est"]
@@ -144,7 +154,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
         }
     
         # legend
-        legend=paste0(studies[TRIALS], ", ",sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%")[1,])
+        legend=paste0(studies[TRIALS], ", ", sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%"))
         if (include.az) legend=c(legend, "AZCOV002, 66.7%")
         mylegend(x=ifelse(log=="",6,1), col=cols[c(TRIALS, if(include.az) "AZ-COV002")], legend=legend, lty=1, lwd=2, cex=.7)
     
@@ -157,6 +167,27 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
 draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
 #aa=c("pseudoneutid50","pseudoneutid50la"); TRIALS=c("janssen_la_real"); file.name=tmp; log=""
     
+    all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real",    "janssen_la_real",    "janssen_sa_real",    "AZ-COV002", "prevent19",      "azd1222")
+    studies   =c("Moderna COVE", "Janssen ENSEMBLE",    "Janssen ENSEMBLE US","Janssen ENSEMBLE LA","Janssen ENSEMBLE SA","AZCOV002",  "NVX PREVENT-19", "AZD1222")
+    names(studies)=all.trials
+    
+    if (length(TRIALS)==1) {
+        same.trial=T
+        # use assay to index colors
+        cols      =c("purple",       "green",               "green",              "olivedrab3",         "darkseagreen4",      "orange",    "cyan",           "tan")
+        cols = cols[1:length(aa)]
+        names(cols)=aa
+        hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.5, maxColorValue=255)})
+        # make TRIALS the same length as aa
+        TRIALS=rep(TRIALS, length(aa))
+    } else if(length(TRIALS)==length(aa)) {
+        same.trial=F
+        # use trials to index colors
+        cols      =c("purple",       "green",               "green",              "olivedrab3",         "darkseagreen4",      "orange",    "cyan",           "tan")
+        names(cols)=all.trials
+        hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.5, maxColorValue=255)})
+    } else stop("TRIALS has to be either of length 1 or same length as aa")
+    
     x=TRIALS
     
     transf=if(log=="y") function(y) -log(1-y) else identity 
@@ -164,16 +195,7 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     ylim=if(log=="y") transf(c(0,.98)) else c(0, 1) 
     hist.shrink=1/c(ADCP=2,pseudoneutid50=1.2,bindSpike=1.3,bindRBD=1.3)
     
-    all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real",    "janssen_la_real",    "janssen_sa_real",    "AZ-COV002", "prevent19",      "azd1222")
-    studies   =c("Moderna COVE", "Janssen ENSEMBLE",    "Janssen ENSEMBLE US","Janssen ENSEMBLE LA","Janssen ENSEMBLE SA","AZCOV002",  "NVX PREVENT-19", "AZD1222")
-    names(studies)=all.trials
-    
-    cols      =c("purple",       "green",       "orange",    "cyan",           "tan")
-    names(cols)=aa
-    hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.5, maxColorValue=255)})
-    
-    .subset=match(TRIALS, all.trials)
-    
+    .subset=match(TRIALS, all.trials)    
     
     ## get markers data
     ## get xlim by combining trials. Do ENSEMBLE first because we want to source _common.R for moderna last so that we get the proper lloxs
@@ -181,17 +203,18 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     xlim.ls=list()
     markers.x=list()
     weight=list()
-    for (a in aa) {    
-        TRIAL=get.trial(x, a)
-        Sys.setenv("TRIAL"=TRIAL)
-        COR = switch(x, moderna_real="D57",
-            janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", 
-            janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
+    for (i in 1:length(aa)) {  
+        a=aa[i]  
+        TRIAL=get.trial(x[i], a)
+        COR = switch(x[i], 
+            moderna_real="D57",
+            janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
             prevent19="D35", 
             azd1222="D57",
             stop("wrong trial label for COR")
         )
         # key to have local = T
+        Sys.setenv("TRIAL"=TRIAL)
         source(here::here("..", "_common.R"), local=T)
         
         # uloq censoring    
@@ -209,14 +232,15 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     xlim=c(min(sapply(xlim.ls, function(x) x[1])), max(sapply(xlim.ls, function(x) x[2])))
     myprint(xlim)
     
-    mypdf(file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",TRIALS), width=5.2, height=5.2)
+    mypdf(file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name), width=5.2, height=5.2)
         par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         
         # need several variables from sourcing _common.R: lloxs, labels.assays, draw.x.axis.cor
         overall.ve.ls=list()
-        for (a in aa) {    
-            TRIAL=get.trial(x, a)
-            COR = switch(x, moderna_real="D57",
+        for (i in 1:length(aa)) {  
+            a=aa[i]  
+            TRIAL=get.trial(x[i], a)
+            COR = switch(x[i], moderna_real="D57",
                 janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", 
                 janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
                 prevent19="D35", 
@@ -225,7 +249,12 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
             )
             load(here::here("output", TRIAL, COR, "marginalized.risk.no.marker.Rdata"))
             load(here::here("output", TRIAL, COR, "marginalized.risk.Rdata"))
-            risks=get("risks.all.1")[[a]] 
+    
+            # key to have local = T
+            Sys.setenv("TRIAL"=TRIAL)
+            source(here::here("..", "_common.R"), local=T)
+            tmp="Day"%.%config.cor$tpeak %.% a            
+            risks=get("risks.all.1")[[tmp]] 
             #risks=get(ifelse(x=="prevent19","risks.all.3","risks.all.1"))[[a]] # .3 is trichotomized
             
             est = 1 - risks$prob/res.plac.cont["est"]
@@ -243,7 +272,7 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
         
             shown=risks$marker>=wtd.quantile(markers.x[[a]], weight[[a]], 2.5/100) & risks$marker<=wtd.quantile(markers.x[[a]], weight[[a]], 1-2.5/100)
             #shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[a]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[a]], 1-2.5/100, na.rm=T)
-            mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[match(a, aa)], ylab=paste0("Controlled VE against COVID-19"), 
+            mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=if(same.trial) cols[a] else cols[TRIAL], ylab=paste0("Controlled VE against COVID-19"), 
                 xlab=labels.assays.short[a]%.%" (=s)", 
                 #main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, 
@@ -259,30 +288,35 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
         
             # add histogram
             #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
-            tmp=get.marker.histogram(markers.x[[a]], weight[[a]], x, markers.x[[aa[1]]])
+            tmp=get.marker.histogram(markers.x[[a]], weight[[a]], x[i], markers.x[[aa[1]]])
             if (log=="") {
                 tmp$density=tmp$density/hist.shrink[aa[1]] # so that it will fit vertically
             } else{
                 tmp$density=tmp$density/hist.shrink[aa[1]]*3 # so that it will fit vertically
             }            
-            plot(tmp,col=hist.col.ls[[a]],axes=F,labels=F,border=0,freq=F,add=T) 
+            plot(tmp,col=if(same.trial) hist.col.ls[[a]] else hist.col.ls[[TRIAL]],axes=F,labels=F,border=0,freq=F,add=T) 
             
             overall.ve.ls[[a]]=overall.ve
         }        
     
         # legend
         legend=aa
-        mylegend(x=ifelse(log=="",6,1), col=cols[1:length(aa)], legend=legend, lty=1, lwd=2, cex=.7)
+        mylegend(x=ifelse(log=="",6,1), col=if(same.trial) cols[aa] else cols[TRIALS], legend=legend, lty=1, lwd=2, cex=.7)
     
     dev.off()    
     
 }
 
+
+# for ENSEMBLE manuscript 1 
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="1")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="1", log="y")
+
 # 
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", log="y")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real", log="y")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", file.name="janssen_la_real")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real", file.name="janssen_sa_real")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", file.name="janssen_la_real", log="y")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real", file.name="janssen_sa_real", log="y")
 
 
 
@@ -318,7 +352,7 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 }
 
 # ENSEMBLE regions
-for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
     draw.ve.curves(a, TRIALS=c("janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="3", include.az=F)
     draw.ve.curves(a, TRIALS=c("janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="3", include.az=F, log="y")
 }

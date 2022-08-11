@@ -22,7 +22,7 @@ digits.risk=4
     
 for (eq.geq in 1:2) {  # 1 conditional on s,   2 is conditional on S>=s
 for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
-#eq.geq=1; w.wo.plac=1; a=assays[1]
+#eq.geq=1; w.wo.plac=1; a=all.markers[1]
     
     risks.all=get("risks.all."%.%eq.geq)
     
@@ -44,19 +44,23 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
     if(verbose) myprint(ylim)
     lwd=2
      
-    for (a in assays) {        
+    for (a in all.markers) {        
     mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks", ifelse(eq.geq==1,"_eq","_geq"), ifelse(w.wo.plac==1,"","_woplacebo"), "_"%.%study_name), mfrow=.mfrow)
-    par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
+        par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         risks=risks.all[[a]]
+        assay=get.assay.from.name(a)
+        is.delta=startsWith(a,"Delta")
         
-        ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))
+        ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[[a]]>=s], na.rm=T))
         
-        xlim=get.range.cor(dat.vac.seroneg, a, tpeak) 
-        shown=risks$marker>=ifelse(study_name=="COVE",log10(10),wtd.quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], dat.vac.seroneg$wt, 2.5/100)) & 
-              risks$marker<=wtd.quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], dat.vac.seroneg$wt, 1-2.5/100)
-        plot(risks$marker[shown], risks$prob[shown], xlab=labels.assays.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, 
-            type="n", main=paste0(labels.assays.long["Day"%.%tpeak,a]), xaxt="n")    
-        draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
+        if (!is.delta) xlim=get.range.cor(dat.vac.seroneg, assay, tpeak) else xlim=range(dat.vac.seroneg[[a]], na.rm=T)
+        shown=risks$marker>=ifelse(study_name=="COVE",log10(10),wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 2.5/100)) & 
+              risks$marker<=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 1-2.5/100)
+        plot(risks$marker[shown], risks$prob[shown], 
+            xlab=all.markers.names.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), 
+            xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, 
+            type="n", main=paste0(all.markers.names.long[a]), xaxt=ifelse(is.delta,"s","n"))    
+        if(!is.delta) draw.x.axis.cor(xlim, lloxs[assay], config$llox_label[assay])
             
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)
@@ -87,7 +91,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         par(new=TRUE) 
         col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
         col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
-        tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
+        tmp.x=dat.vac.seroneg[[a]][dat.vac.seroneg$ph2]
         tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
         tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
         if (is.nan(tmp$density)) tmp=hist(tmp.x, plot=F)
@@ -105,10 +109,10 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
 save(ylims.cor, file=paste0(save.results.to, "ylims.cor."%.%study_name%.%".Rdata"))
 
 # show the results at select assay values
-risks.all=get("risks.all.1")
-for (a in assays) {
+risks.all=get("risks.all.1") 
+for (a in all.markers) {
     risks=risks.all[[a]]
-    table.order=which(names(risks$marker) %in% c(" 2.5%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
+    table.order=which(names(risks$marker) %in% c(" 2.5%", " 5.0%", "95.0%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
     tmp=10**risks$marker[table.order]
     tmp=ifelse(tmp<100, signif(tmp,3), round(tmp))
     out=with(risks, cbind("s"=tmp, "Estimate"=paste0(formatDouble(prob[table.order],digits.risk), " (", formatDouble(lb[table.order],digits.risk), ",", formatDouble(ub[table.order],digits.risk), ")")))
@@ -116,7 +120,7 @@ for (a in assays) {
     tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])
     mytex(tab, file.name=paste0(a, "_marginalized_risks_eq", "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
         longtable=T, caption.placement = "top", label=paste0("tab marginalized_risks_eq ", COR), caption=paste0("Marginalized cumulative risk by Day ",tfinal.tpeak," as functions of Day ",
-            tpeak, " ", labels.axis[1,a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
+            tpeak, " ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
             ncol(risks.all[[1]]$boot)," replicates).")
         #, col.headers=paste0("\\hline\n", concatList(paste0("\\multicolumn{2}{c}{", labels.axis[1,], "}"), "&"), "\\\\\n")
         )
@@ -134,8 +138,10 @@ for (a in assays) {
 # 4 same as 3 except that y axis on -log(1-) scale
 for (eq.geq in 1:4) {  
 # eq.geq=2; a=assays[1]
-
-    outs=lapply (assays, function(a) {        
+    
+    outs=lapply (all.markers, function(a) {        
+        is.delta=startsWith(a,"Delta")
+        assay=get.assay.from.name(a)
         
         tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp=4
         
@@ -146,10 +152,10 @@ for (eq.geq in 1:4) {
             
             # load risks
             risks=get("risks.all."%.%ifelse(eq.geq==2,2,1))[[a]]   
-            table.order=which(names(risks$marker) %in% c(" 2.5%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
+            table.order=which(names(risks$marker) %in% c(" 2.5%", " 5.0%", "95.0%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
         
             #xlim=quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]],if(eq.geq==1) c(.025,.975) else c(0,.95),na.rm=T)
-            xlim=get.range.cor(dat.vac.seroneg, a, tpeak)
+            if (!is.delta) xlim=get.range.cor(dat.vac.seroneg, assay, tpeak) else xlim=range(dat.vac.seroneg[[a]], na.rm=T)            
             
             # compute Bias as a vector, which is a function of s
             # choose a reference marker value based on matching the overall risk
@@ -174,10 +180,10 @@ for (eq.geq in 1:4) {
                 ylim=ve_ylim
             }
             
-            ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[["Day"%.%tpeak%.%a]]>=s], na.rm=T))        
+            ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[[a]]>=s], na.rm=T))        
             .subset=if(eq.geq!=2) {
-                risks$marker>=ifelse(study_name=="COVE",log10(10),wtd.quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], dat.vac.seroneg$wt, 2.5/100)) & 
-                risks$marker<=wtd.quantile(dat.vac.seroneg[["Day"%.%tpeak%.%a]], dat.vac.seroneg$wt, 1-2.5/100)
+                risks$marker>=ifelse(study_name=="COVE",log10(10),wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 2.5/100)) & 
+                risks$marker<=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 1-2.5/100)
             } else ncases>=5
             
             
@@ -194,19 +200,19 @@ for (eq.geq in 1:4) {
                 col=ifelse(eq.geq==1,"red","white"), # white is no plot
                 lwd=lwd, make.legend=F, 
                 ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by Day ",tfinal.tpeak), 
-                main=paste0(labels.assays.long["Day"%.%tpeak,a]),
-                xlab=labels.assays.short[a]%.%ifelse(eq.geq!=2," (=s)"," (>=s)"), 
-                ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
+                main=paste0(all.markers.names.long[a]),
+                xlab=all.markers.names.short[a]%.%ifelse(eq.geq!=2," (=s)"," (>=s)"), 
+                ylim=ylim, xlim=xlim, yaxt="n", xaxt=ifelse(is.delta,"s","n"), draw.x.axis=is.delta)
             # y axis labels
             if (eq.geq!=4) {
                 yat=seq(-1,1,by=.1)
                 axis(side=2,at=yat,labels=(yat*100)%.%"%")            
             } else {
-                yat=c(seq(0,.90,by=.1),.95)
+                yat=c(seq(-2,0,by=.5),seq(0,.90,by=.1),.95)
                 axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
             }
             # x axis
-            draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
+            if(!is.delta) draw.x.axis.cor(xlim, lloxs[assay], config$llox_label[assay])
             
         
             # add overall CVE horizontal line
@@ -244,10 +250,10 @@ for (eq.geq in 1:4) {
             par(new=TRUE) 
             col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
             col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)            
-            tmp.x=dat.vac.seroneg[["Day"%.%tpeak%.%a]][dat.vac.seroneg$ph2]
+            tmp.x=dat.vac.seroneg[[a]][dat.vac.seroneg$ph2]
             tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
             tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
-            if (is.nan(tmp$density)) tmp=hist(tmp.x, plot=F)
+            if (is.nan(tmp$density[1])) tmp=hist(tmp.x, plot=F)
             if(eq.geq==4) tmp$density=tmp$density*3
             plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25))) 
             
@@ -259,13 +265,13 @@ for (eq.geq in 1:4) {
     
     if(eq.geq==1) {
         # show the results at select assay values
-        for (a in assays) { 
+        for (a in all.markers) { 
             out=outs[[a]]
             while (nrow(out)%%4!=0) out=rbind(out, c("s"="", "Estimate"=""))
             tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])        
             mytex(tab, file.name=paste0(a, "_controlled_ve_sens_eq", "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
                 longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_sens_eq ", COR), caption=paste0("Controlled VE with sensitivity analysis as functions of Day ",
-                    tpeak," ", labels.axis[1,a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
+                    tpeak," ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
                     ncol(risks.all[[1]]$boot)," replicates)."
                     )
                 #, col.headers=paste0("\\hline\n", concatList(paste0("\\multicolumn{2}{c}{", labels.axis[1,], "}"), "&"), "\\\\\n")
@@ -277,9 +283,9 @@ for (eq.geq in 1:4) {
 # show tables of controlled ve without sensitivity at select assay values
 digits.risk=4
 risks.all=get("risks.all.1")
-for(a in assays) {        
+for(a in all.markers) {        
     risks=risks.all[[a]]
-    table.order=which(names(risks$marker) %in% c(" 2.5%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
+    table.order=which(names(risks$marker) %in% c(" 2.5%", " 5.0%", "95.0%", "97.5%")); table.order=c(setdiff(1:length(risks$marker), table.order), table.order)
     
     est = 1 - risks$prob/res.plac.cont["est"]
     boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
@@ -300,7 +306,7 @@ for(a in assays) {
     
     mytex(tab, file.name=paste0(a, "_controlled_ve_eq", "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
         longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", COR), caption=paste0("Controlled VE as functions of Day ",
-            tpeak," ", labels.axis[1,a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
+            tpeak," ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
             ncol(risks.all[[1]]$boot)," replicates). ", "Overall cumulative incidence from ", tpeaklag, " to ",tfinal.tpeak," days post Day ",tpeak," was ",
             formatDouble(prev.vacc[1], 3, remove.leading0=F)," in vaccine recipients compared to ",
             formatDouble(prev.plac[1], 3, remove.leading0=F)," in placebo recipients, with cumulative vaccine efficacy ",
@@ -314,14 +320,14 @@ for(a in assays) {
 ###################################################################################################
 # trichotomized markers, marginalized risk and controlled risk table
     
-res=sapply (assays, function(a) {        
+res=sapply (all.markers, function(a) {        
     risks=risks.all.3[[a]]
     with(risks, c(prob[3]/prob[1], quantile(boot[3,]/boot[1,], c(.025,.975))))
 })
 #    
-tab=sapply (assays, function(a) {
+tab=sapply (all.markers, function(a) {
     paste0(
-        labels.axis[1, a], "&",
+        all.markers.names.short[a], "&",
         # marginal RR and ci
         formatDouble(res[1,a],2,remove.leading0=F), "&", formatDouble(res[2,a],2,remove.leading0=F), "--", ifelse(res[3,a]>1000,"Inf",formatDouble(res[3,a],2,remove.leading0=F))
         , "&" ,
@@ -341,8 +347,8 @@ write(concatList(tab, "\\\\"), file=paste0(save.results.to, "marginalized_risks_
 # no bootstrap
 
 risks.all.ter=list()
-for (a in assays) {        
-    marker.name="Day"%.%tpeak%.%a%.%"cat"    
+for (a in all.markers) {        
+    marker.name=a%.%"cat"    
     f1=update(form.0, as.formula(paste0("~.+",marker.name)))        
     fit.risk=run.svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg))
     
@@ -378,7 +384,7 @@ time.0 = time.0[keep]
 #dev.off()
 
 lwd=2
-ylim=c(0,max(risk.0, max(sapply(assays, function(a) max(risks.all.ter[[a]]$risk[risks.all.ter[[a]]$time<=tfinal.tpeak,])))))
+ylim=c(0,max(risk.0, max(sapply(all.markers, function(a) max(risks.all.ter[[a]]$risk[risks.all.ter[[a]]$time<=tfinal.tpeak,])))))
 
 if (config$is_ows_trial) {
     x.time<-seq(0,tfinal.tpeak,by=30)
@@ -390,19 +396,20 @@ if (config$is_ows_trial) {
 if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
 
 
-for (a in assays) {        
+for (a in all.markers) {        
     mypdf(oma=c(1,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_", study_name), mfrow=.mfrow, mar=c(12,4,5,2))
     par(las=1, cex.axis=0.9, cex.lab=1)# axis label 
-    marker.name="Day"%.%tpeak%.%a%.%"cat"    
+    marker.name=a%.%"cat"    
     
     out=risks.all.ter[[a]]
     # cutpoints
-    q.a=marker.cutpoints[[a]][["Day"%.%tpeak]]
+    q.a=marker.cutpoints[[a]]
     
     if(length(out)==1) empty.plot() else {
-        mymatplot(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,], lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak), ylim=ylim, xlab="", las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
+        mymatplot(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,], lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak), ylim=ylim, xlab="", las=1, 
+            xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
         title(xlab="Days Since Day "%.%tpeak%.%" Visit", line=2)
-        title(main=labels.title["Day"%.%tpeak,a], cex.main=.9, line=2)
+        title(main=all.markers.names.long[a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
         legend=c("Vaccine low","Vaccine medium","Vaccine high","Placebo")
         mylegend(x=1, legend=legend, lty=c(1:3,1), col=c("green3","green","darkgreen","gray"), lwd=2)
@@ -446,18 +453,21 @@ dev.off()
 }
 #mtext(toTitleCase(study_name), side = 1, line = 2, outer = T, at = NA, adj = NA, padj = NA, cex = .8, col = NA, font = NA)
 #
-cumsum(summary(survfit(form.s, subset(dat.vac.seroneg, ph2==1)), times=x.time)$n.event)
-table(subset(dat.vac.seroneg, yy==1)[["Day"%.%tpeak%.%"pseudoneutid80cat"]])
+#cumsum(summary(survfit(form.s, subset(dat.vac.seroneg, ph2==1)), times=x.time)$n.event)
+#table(subset(dat.vac.seroneg, yy==1)[["Day"%.%tpeak%.%"pseudoneutid80cat"]])
 
 
+
+###################################################################################################
 # for goodness of fit check on PH assumptions, plot log(-log) marginalized survival curves for the low medium and high tertile subgroups
-for (a in assays) {        
+
+for (a in all.markers) {        
     mypdf(onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_logclog"), mfrow=.mfrow)
-    marker.name="Day"%.%tpeak%.%a%.%"cat"    
+    marker.name=a%.%"cat"    
     
     out=risks.all.ter[[a]]
     # cutpoints
-    q.a=marker.cutpoints[[a]][["Day"%.%tpeak]]
+    q.a=marker.cutpoints[[a]]
     
     if(length(out)==1) empty.plot() else {
         mymatplot(out$time[out$time<=tfinal.tpeak], log(-log(out$risk[out$time<=tfinal.tpeak,])), 
@@ -465,11 +475,80 @@ for (a in assays) {
             ylab=paste0("log(-log(Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak, "))"), xlab="", 
             las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
         title(xlab="Days Since Day "%.%tpeak%.%" Visit", line=2)
-        title(main=labels.title["Day"%.%tpeak,a], cex.main=.9, line=2)
+        title(main=all.markers.names.long[a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
         legend=c("Vaccine low","Vaccine medium","Vaccine high")
         mylegend(x=3, legend=legend, lty=c(1:3), col=c("green3","green","darkgreen"), lwd=2)
     }
     
 dev.off()    
+}
+
+
+
+###################################################################################################
+# trial-specific ad hoc plots
+
+if (attr(config, "config") == "hvtn705second") {
+            
+    aa=assays[contain(assays,"V2")][-(1:2)]  
+    for (a in aa) {
+        #a="Day210IgG3gp70.001428.2.42.V1V240delta"
+        a=paste0("Day210",a)
+        b="Day210ICS4AnyEnvIFNg_OR_IL2"
+        
+        for (idx in 1:2) {
+            if(idx==1) risks=risks.itxn.1[[a]]
+            if(idx==2) risks=risks.itxn.2[[a]]
+            
+            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",a), mfrow=.mfrow)
+                par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
+                lwd=2
+                
+                shown=risks$marker>=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 2.5/100) & 
+                      risks$marker<=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 1-2.5/100)
+                
+                # hard code ylim to make the plot look better
+                ylim=c(0,0.11)
+                #ylim=range(risks$lb[shown,], risks$ub[shown,], 0) # [shown] so that there is not too much empty space
+                xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(a), tpeak) 
+                if(verbose) myprint(xlim, ylim)
+                    
+                # set up an empty plot
+                plot(risks$marker[shown], risks$prob[shown,i], 
+                    xlab=paste0(labels.assays.short[get.assay.from.name(a)], " (=s)"), 
+                    ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), 
+                    lwd=lwd, xlim=xlim, ylim=ylim, type="n", main="", xaxt="n")    
+                draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
+                    
+                # draw risk lines and confidence bands
+                for (i in 1:length(risks$marker.2)) {
+                    lines(risks$marker[shown], risks$prob[shown,i], lwd=lwd, col=i)
+                    lines(risks$marker[shown], risks$lb[shown,i],   lwd=lwd, col=i, lty=3)
+                    lines(risks$marker[shown], risks$ub[shown,i],   lwd=lwd, col=i, lty=3)    
+                }
+                
+                # legend for the three lines
+                mylegend(x=3, legend=paste(formatDouble(10**risks$marker.2,3,remove.leading0=F), c("(min)","(median)","(90th percentile)")), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(b)], lwd=lwd)
+                
+                # placebo prevelance lines
+                abline(h=prev.plac[1], col="gray", lty=c(1,3,3), lwd=lwd)
+                text(x=par("usr")[2]-diff(par("usr")[1:2])/5, y=prev.plac[1]+diff(par("usr")[3:4])/30, "placebo arm "%.%formatDouble(prev.plac[1],3,remove.leading0=F))        
+                #abline(h=risks.itxn.1$prob[1,1], col="gray", lty=c(1), lwd=lwd)
+                #text(x=par("usr")[2]-diff(par("usr")[1:2])/5, y=risks.itxn.1$prob[1,1]+diff(par("usr")[3:4])/30, "placebo arm "%.%formatDouble(risks.itxn.1$prob[1,1],3,remove.leading0=F))        
+                
+                # add histogram
+                par(new=TRUE) 
+                col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
+                col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
+                tmp.x=dat.vac.seroneg[[a]][dat.vac.seroneg$ph2]
+                tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
+                tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
+                if (is.nan(tmp$density)[1]) tmp=hist(tmp.x, plot=F)
+                plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F, xlim=xlim, ylim=c(0,max(tmp$density*1.25)))
+                
+            dev.off()
+        }
+    }
+        
 }

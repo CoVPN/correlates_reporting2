@@ -1,4 +1,4 @@
-# Day `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
+# `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
 
 The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise.
 
@@ -110,7 +110,8 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
 
 
 ```{r, echo=FALSE, results='asis'}
-  for (a in assays) {
+  for (a in all.markers) {
+    assay=get.assay.from.name(a)
     res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
@@ -127,3 +128,30 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
     }
   }
 ```
+
+
+
+```{r, echo=FALSE, results='asis'}
+  if (!is.null(config$additional_models)) {
+    for (i in 1:length(config$additional_models)) {
+      res = knitr::knit_child(c(here::here('cor_coxph', 'additional_model.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+  }
+```
+
+
+`r if (!attr(config,"config") %in% c("hvtn705second")) '<!--'`
+
+```{r, echo=FALSE, results='asis'}
+  #aa=assays[contain(assays,"V2")][-(1:2)]  
+  #aa=c("IgG3gp70.001428.2.42.V1V240delta") # IgG340mdw_V1V2
+  aa=c()
+  for (a in aa) {
+    res = knitr::knit_child(c(here::here('cor_coxph', 'itxn_by_assays.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+```
+
+
+`r if (!attr(config,"config") %in% c("hvtn705second"))'-->'`

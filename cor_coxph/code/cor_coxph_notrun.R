@@ -153,36 +153,6 @@ tmp=subset(dat.vac.seroneg.id50, ph2==1, select=c(EventIndPrimary, EventTimePrim
 tail(tmp[order(tmp[,2]),], 50)
 
 
-tmp=subset(dat.vac.seroneg, ph2==1 & EventIndPrimary==1, select=c(EventIndPrimary, EventTimePrimary))
-tmp[order(tmp[,2]),] # last 48
-
-tmp=subset(dat.vac.seroneg, ph2==1 & EventIndPrimary==1 & Region==0, select=c(EventIndPrimary, EventTimePrimary))
-tmp[order(tmp[,2]),] # last 47
-
-tmp=subset(dat.vac.seroneg, ph2==1 & EventIndPrimary==1 & Region==1, select=c(EventIndPrimary, EventTimePrimary))
-tmp[order(tmp[,2]),] # last 48
-
-tmp=subset(dat.vac.seroneg, ph2==1 & EventIndPrimary==1 & Region==2, select=c(EventIndPrimary, EventTimePrimary))
-tmp[order(tmp[,2]),] # last 26
-
-
-tmp=subset(dat.vac.seroneg, ph2==1 & SubcohortInd==1, select=c(EventIndPrimary, EventTimePrimary))
-tail(tmp[order(tmp[,2]),], 15) # last 54, first 54
-
-tmp=subset(dat.vac.seroneg, ph2==1 & SubcohortInd==1 & Region==0, select=c(EventIndPrimary, EventTimePrimary))
-tail(tmp[order(tmp[,2]),], 15) # last 54, first 53
-
-tmp=subset(dat.vac.seroneg, ph2==1 & SubcohortInd==1 & Region==1, select=c(EventIndPrimary, EventTimePrimary))
-tail(tmp[order(tmp[,2]),], 15) # last 54, first 48
-
-tmp=subset(dat.vac.seroneg, ph2==1 & SubcohortInd==1 & Region==2, select=c(EventIndPrimary, EventTimePrimary))
-tail(tmp[order(tmp[,2]),], 15) # last 48, first 40
-
-tmp=subset(dat.pla.seroneg, Region==2, select=c(EventIndPrimary, EventTimePrimary))
-tail(tmp[order(tmp[,2]),], 15) # last 50, first 54
-
-
-
 
 
 tmp=subset(dat.vac.seroneg.id50.na, ph2==1, select=c(EventIndPrimary, EventTimePrimary))

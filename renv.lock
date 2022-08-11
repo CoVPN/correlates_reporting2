@@ -1217,15 +1217,15 @@
     },
     "marginalizedRisk": {
       "Package": "marginalizedRisk",
-      "Version": "2022.3-18",
+      "Version": "2022.7-26",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "marginalizedRisk",
       "RemoteUsername": "youyifong",
       "RemoteRef": "HEAD",
-      "RemoteSha": "3a4f6fcdacf569b4c9ec1c47c13d071b476f0de0",
-      "Hash": "09ae5095905b2c300309335a157006a2"
+      "RemoteSha": "ef9625ed8cda59b1fc16bc991b781800c66edf02",
+      "Hash": "c4337823c55443a4b1fc0543763bc065"
     },
     "markdown": {
       "Package": "markdown",
@@ -2150,15 +2150,15 @@
     },
     "vimp": {
       "Package": "vimp",
-      "Version": "2.2.7",
+      "Version": "2.2.10",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "vimp",
       "RemoteUsername": "bdwilliamson",
       "RemoteRef": "HEAD",
-      "RemoteSha": "b4c9f37f3fd12ff4d46d9f2beca58ced6bb5ba48",
-      "Hash": "bf9162e71eb7cdf608e303f4ad2fdbc1"
+      "RemoteSha": "a36c80060b79f090cbf9c4149054e2dd20bb4221",
+      "Hash": "41db5910a2ebb9c34a7ff643b5d4bcdc"
     },
     "viridis": {
       "Package": "viridis",

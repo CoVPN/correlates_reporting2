@@ -9,8 +9,9 @@ library(survival)
 library(RhpcBLASctl)
 blas_get_num_procs()
 blas_set_num_threads(1L)
-stopifnot(blas_get_num_procs() == 1L)
+#stopifnot(blas_get_num_procs() == 1L) # Commented this out as it does not work as expected any more!
 omp_set_num_threads(1L)
+stopifnot(omp_get_max_threads() == 1L)
     
 set.seed(98109)
     
@@ -45,6 +46,45 @@ for(opt in names(config)){
 }
 
 
+
+# assays labels. This needs to come before all.markers
+labels.assays = config$assay_labels
+names(labels.assays) = config$assays
+
+if (is.null(config$assay_labels_short)) {
+    labels.assays.short=labels.assays
+} else {
+    labels.assays.short = config$assay_labels_short
+    names(labels.assays.short) = config$assays
+}
+
+# hacky fix for tabular, since unclear who else is using
+# the truncated labels.assays.short later
+labels.assays.short.tabular <- labels.assays.short
+
+labels.time = config$time_labels
+names(labels.time) = config$times
+
+# axis labeling
+labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
+labels.axis <- as.data.frame(labels.axis)
+rownames(labels.axis) <- times
+
+# title labeling
+labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
+labels.title <- as.data.frame(labels.title)
+colnames(labels.title) <- times
+# NOTE: hacky solution to deal with changes in the number of markers
+rownames(labels.title)[seq_along(assays)] <- assays
+labels.title <- as.data.frame(t(labels.title))
+
+# creating short and long labels
+#labels.assays.short <- labels.axis[1, ] # should not create this again
+labels.assays.long <- labels.title
+
+do.fold.change=attr(config, "config") %in% c("vat08m_nonnaive")
+
+
 # COR-related config
 if (exists("COR")) {
     myprint(COR)
@@ -63,11 +103,24 @@ if (exists("COR")) {
     myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
     # some config may not have all fields
     if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
+
+    all.markers=paste0("Day", tpeak, assays)
+    if (do.fold.change) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+    all.markers.names.short=c(
+        labels.assays.short,
+        if (do.fold.change) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
+    ); names(all.markers.names.short)=all.markers
+    all.markers.names.long=c(
+        as.matrix(labels.assays.long)["Day"%.%tpeak, assays],
+        if (do.fold.change) as.matrix(labels.assays.long)["Delta"%.%tpeak%.%"overB", assays]
+    ); names(all.markers.names.long)=all.markers
 }
     
 # to be deprecated
 has57 = study_name %in% c("COVE","MockCOVE")
 has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
+
 
 
 ###################################################################################################
@@ -90,14 +143,14 @@ cat("Analysis-ready data: ", path_to_data, "\n")
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
 if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not available ===========================================")
 
-
 dat.mock <- read.csv(path_to_data)
 
 
-###################################################################################################
-#
 
-# marginalized risk without marker
+
+###################################################################################################
+# get marginalized risk without marker
+
 get.marginalized.risk.no.marker=function(formula, dat, day){
     fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
     dat$EventTimePrimary=day
@@ -106,15 +159,25 @@ get.marginalized.risk.no.marker=function(formula, dat, day){
 }
 
 
-# specific to the correlates modules
+###################################################################################################
+# For correlates reports
+
 if (exists("COR")) {       
-    # subset to require risk_score
-    dat.mock=subset(dat.mock, Bserostatus==0 & !is.na(risk_score))
     
     # subset to baseline seronegative for the correlates modules
-    if (config$is_ows_trial) dat.mock=subset(dat.mock, Bserostatus==0)
+    if (config$is_ows_trial) {
+        if (is.null(config$Bserostatus)) {
+            dat.mock=subset(dat.mock, Bserostatus==0)
+        } else {
+            dat.mock=subset(dat.mock, Bserostatus==config$Bserostatus)
+        }
+    }
     
-    # for Novavax trial, subset to US for the correlates modules
+    # subset to require risk_score
+    # note that it is assumed there no risk_score is missing for anyone in the analysis population
+    if(!is.null(dat.mock$risk_score)) dat.mock=subset(dat.mock, !is.na(risk_score))
+    
+    # for Novavax trial only, subset to US for the correlates modules
     # this is redundant in a way because only US participants have non-NA risk scores, but good to add
     if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
     
@@ -125,8 +188,7 @@ if (exists("COR")) {
     
     ###########################################################
     # single time point COR config such as D29
-    if (is.null(config.cor$tinterm)) {
-    
+    if (is.null(config.cor$tinterm)) {    
     
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
         dat.mock$ph2=dat.mock[[config.cor$ph2]]
@@ -153,7 +215,8 @@ if (exists("COR")) {
         
         # followup time for the last case in ph2 in vaccine arm
         if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        if (startsWith(attr(config, "config"), "janssen_na_real")) {
+        
+		if (startsWith(attr(config, "config"), "janssen_na_real")) {
             tfinal.tpeak=53
         } else if (startsWith(attr(config, "config"), "janssen_la_real")) {
             tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027
@@ -398,7 +461,7 @@ if (config$is_ows_trial) {
         uloqs["pseudoneutid50"]=191429*0.0653 # 3121.732
         pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
         
-    } else stop("unknown study_name")
+    } else stop("unknown study_name 1")
     
     # llox is for plotting and can be either llod or lloq depending on trials
     lloxs=ifelse(config$llox_label=="LOD", llods[names(config$llox_label)], lloqs[names(config$llox_label)])
@@ -481,40 +544,6 @@ labels.ethnicity <- c(
 #}
 
 
-labels.assays = config$assay_labels
-names(labels.assays) = config$assays
-
-if (is.null(config$assay_labels_short)) {
-    labels.assays.short=labels.assays
-} else {
-    labels.assays.short = config$assay_labels_short
-    names(labels.assays.short) = config$assays
-}
-
-# hacky fix for tabular, since unclear who else is using
-# the truncated labels.assays.short later
-labels.assays.short.tabular <- labels.assays.short
-
-labels.time = config$time_labels
-names(labels.time) = config$times
-
-
-# axis labeling
-labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
-labels.axis <- as.data.frame(labels.axis)
-rownames(labels.axis) <- times
-
-# title labeling
-labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
-labels.title <- as.data.frame(labels.title)
-colnames(labels.title) <- times
-# NOTE: hacky solution to deal with changes in the number of markers
-rownames(labels.title)[seq_along(assays)] <- assays
-labels.title <- as.data.frame(t(labels.title))
-
-# creating short and long labels
-#labels.assays.short <- labels.axis[1, ] # should not create this again
-labels.assays.long <- labels.title
 
 
 # baseline stratum labeling
@@ -539,10 +568,16 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
       "Age < 65"
     )
 
+} else if (study_name %in% c("VAT08m")) {
+    Bstratum.labels <- c(
+      "Age >= 60",
+      "Age < 60"
+    )
+
 } else if (study_name=="HVTN705") {
     # do nothing
 
-} else stop("unknown study_name")
+} else stop("unknown study_name 2")
 
 
 
@@ -601,10 +636,33 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
       "Non-US, Age >= 65"
     )
 
+} else if (study_name=="VAT08m") {
+#    demo.stratum.labels <- c(
+#      "Not HND, Age 18-59",
+#      "Not HND, Age >= 60",
+#      "HND, Age 18-59",
+#      "HND, Age >= 60",
+#      "USA, Age 18-59",
+#      "USA, Age >= 60",
+#      "JPN, Age 18-59",
+#      "JPN, Age >= 60"
+#    )
+
+    # in this partial dataset, we need to collapse "Not HND, US or JPN, senior" and "HND, senior" due to sparsity
+    demo.stratum.labels <- c(
+      "Not HND, Age 18-59",
+      "Not USA or JPN, Age >= 60",
+      "HND, Age 18-59",
+      "USA, Age 18-59",
+      "USA, Age >= 60",
+      "JPN, Age 18-59",
+      "JPN, Age >= 60"
+    )
+
 } else if (study_name=="HVTN705") {
     # do nothing
 
-} else stop("unknown study_name")
+} else stop("unknown study_name 3")
 
 labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
 regions.ENSEMBLE=0:2
@@ -708,6 +766,16 @@ ggsave_custom <- function(filename = default_name(plot),
 
 
 ############## Utility func
+
+# e.g. Day22pseudoneutid50 => pseudoneutid50, Delta22overBpseudoneutid50 => pseudoneutid50
+get.assay.from.name=function(a) {
+    if (startsWith(a,"Day")) {
+        sub("Day[[0123456789]+", "", a)
+    } else if (contain(a,"overB")) {
+        sub("Delta[[0123456789]+overB", "", a)
+    } else stop("get.assay.from.name: not sure what to do")
+}
+
 
 get.range.cor=function(dat, assay, time) {
     if(assay %in% c("bindSpike", "bindRBD") & all(c("pseudoneutid50", "pseudoneutid80") %in% assays)) {
@@ -925,55 +993,70 @@ report.assay.values=function(x, assay){
 #report.assay.values (dat.vac.seroneg[["Day57pseudoneutid80"]], "pseudoneutid80")
 
 
-
-add.trichotomized.markers=function(dat, tpeak, wt.col.name) {
+add.trichotomized.markers=function(dat, markers, wt.col.name) {
+    
     if(verbose) print("add.trichotomized.markers ...")
     
     marker.cutpoints <- list()    
-    for (a in assays) {
-        marker.cutpoints[[a]] <- list()    
-        #for (ind.t in times[-1]) {
-        for (ind.t in "Day"%.%tpeak) {        
-            if (verbose) myprint(a, ind.t, newline=F)
-            tmp.a=dat[[ind.t %.% a]]
-            
-            uppercut=log10(uloqs[a])*.9999
-            if (mean(tmp.a>uppercut, na.rm=T)>1/3 & startsWith(ind.t, "Day")) {
-                # if more than 1/3 of vaccine recipients have value > ULOQ
-                # let q.a be median among those < ULOQ and ULOQ
+    for (a in markers) {
+        if (verbose) myprint(a, newline=F)
+        tmp.a=dat[[a]]
+        
+        # if we estimate cutpoints using all non-NA markers, it may have an issue when a lot of subjects outside ph2 have non-NA markers
+        # since that leads to uneven distribution of markers between low/med/high among ph2
+        # this issue did not affect earlier trials much, but it is a problem with vat08m. We are changing the code for trials after vat08m
+        if (attr(config, "config") %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondprimary","moderna_real","moderna_mock","prevent19",
+                "janssen_pooled_real","janssen_na_real","janssen_la_real","janssen_sa_real")) {
+            flag=rep(TRUE, length(tmp.a))
+        } else {
+            flag=dat$ph2
+        }
+
+        if(startsWith(a, "Day")) {
+            # not fold change
+            uppercut=log10(uloqs[get.assay.from.name(a)])*.9999
+            lowercut=min(tmp.a, na.rm=T)*1.0001
+            if (mean(tmp.a>uppercut, na.rm=T)>1/3) {
+                # if more than 1/3 of vaccine recipients have value > ULOQ, let q.a be (median among those < ULOQ, ULOQ)
                 if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")
-                q.a=c(  wtd.quantile(tmp.a[dat[[ind.t %.% a]]<=uppercut], 
-                           weights = dat[[wt.col.name]][tmp.a<=uppercut], probs = c(1/2)), 
-                        uppercut)
+                q.a=c(wtd.quantile(tmp.a[dat[[a]]<=uppercut & flag], weights = dat[[wt.col.name]][tmp.a<=uppercut & flag], probs = c(1/2)),  uppercut)
+            } else if (mean(tmp.a<lowercut, na.rm=T)>1/3) {
+                # if more than 1/3 of vaccine recipients have value at min, let q.a be (min, median among those > LLOQ)
+                if (verbose) cat("more than 1/3 of vaccine recipients have at min\n")
+                q.a=c(lowercut, wtd.quantile(tmp.a[dat[[a]]>=lowercut & flag], weights = dat[[wt.col.name]][tmp.a>=lowercut & flag], probs = c(1/2))  )
             } else {
-                q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
+                # this implementation uses all non-NA markers, which include a lot of subjects outside ph2, and that leads to uneven distribution of markers between low/med/high among ph2
+                #q.a <- wtd.quantile(tmp.a, weights = dat[[wt.col.name]], probs = c(1/3, 2/3))
+                q.a <- wtd.quantile(tmp.a[flag], weights = dat[[wt.col.name]][flag], probs = c(1/3, 2/3))
             }
-            tmp=try(factor(cut(tmp.a, breaks = c(-Inf, q.a, Inf))), silent=T)
-     
-            do.cut=FALSE # if TRUE, use cut function which does not use weights
-            # if there is a huge point mass, an error would occur, or it may not break into 3 groups
-            if (inherits(tmp, "try-error")) do.cut=TRUE else if(length(table(tmp)) != 3) do.cut=TRUE
-            
-            if(!do.cut) {
-                dat[[ind.t %.% a %.% "cat"]] <- tmp
-                marker.cutpoints[[a]][[ind.t]] <- q.a
-            } else {
-                myprint("\nfirst cut fails, call cut again with breaks=3 \n")
-                # cut is more robust but it does not incorporate weights
-                tmp=cut(tmp.a, breaks=3)
-                stopifnot(length(table(tmp))==3)
-                dat[[ind.t %.% a %.% "cat"]] = tmp
-                # extract cut points from factor level labels
-                tmpname = names(table(tmp))[2]
-                tmpname = substr(tmpname, 2, nchar(tmpname)-1)
-                marker.cutpoints[[a]][[ind.t]] <- as.numeric(strsplit(tmpname, ",")[[1]])
-            }
-            stopifnot(length(table(dat[[ind.t %.% a %.% "cat"]])) == 3)
-            if(verbose) {
-                print(table(dat[[ind.t %.% a %.% "cat"]]))
-                cat("\n")
-            }
-            
+        } else {
+            # fold change
+            q.a <- wtd.quantile(tmp.a[flag], weights = dat[[wt.col.name]][flag], probs = c(1/3, 2/3))
+        }
+        tmp=try(factor(cut(tmp.a, breaks = c(-Inf, q.a, Inf))), silent=T)
+ 
+        do.cut=FALSE # if TRUE, use cut function which does not use weights
+        # if there is a huge point mass, an error would occur, or it may not break into 3 groups
+        if (inherits(tmp, "try-error")) do.cut=TRUE else if(length(table(tmp)) != 3) do.cut=TRUE
+        
+        if(!do.cut) {
+            dat[[a %.% "cat"]] <- tmp
+            marker.cutpoints[[a]] <- q.a
+        } else {
+            cat("\nfirst cut fails, call cut again with breaks=3 \n")
+            # cut is more robust but it does not incorporate weights
+            tmp=cut(tmp.a, breaks=3)
+            stopifnot(length(table(tmp))==3)
+            dat[[a %.% "cat"]] = tmp
+            # extract cut points from factor level labels
+            tmpname = names(table(tmp))[2]
+            tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+            marker.cutpoints[[a]] <- as.numeric(strsplit(tmpname, ",")[[1]])
+        }
+        stopifnot(length(table(dat[[a %.% "cat"]])) == 3)
+        if(verbose) {
+            print(table(dat[[a %.% "cat"]]))
+            cat("\n")
         }
     }
     

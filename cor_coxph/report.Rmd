@@ -11,6 +11,7 @@ message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_coxph report ~~~~~~~~~~~~~~~
 
 `r 
 tt=timepoints
+do.fold.change= attr(config::get(config = Sys.getenv("TRIAL")), "config") %in% c("vat08m_nonnaive")
 `
 
 # Graphical Descriptions of Time to Event Data {#cor-graphical-time-to-event}
@@ -42,19 +43,26 @@ covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
 covariates_adjusted = sub("_","",covariates_adjusted)
 
 if(file.exists(here::here('cor_coxph', paste0('report_', tolower(study_name), '.Rmd')))) {
+  # trial-specific report, which also calls report_by_COR.Rmd
   
   message ("trial-specific report rmd found")
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('report_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
 
 } else {
-
+  # generic report
+  
   for (tpeak in tt) {
     COR <- paste0("D", tpeak)
     config.cor <- config::get(config = COR)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
     special.note = ""
     pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
+    
+    all.markers=paste0("Day", tpeak, assays)
+    if (do.fold.change) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }

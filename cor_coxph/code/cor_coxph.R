@@ -1,8 +1,12 @@
+#Sys.setenv(TRIAL = "vat08m_naive"); COR="D43"; Sys.setenv(VERBOSE = 1)
+#Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "azd1222"); COR="D29start28"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "moderna_real"); COR="D29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "janssen_la_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "azd1222_bAb"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -23,7 +27,6 @@ time.start=Sys.time()
 myprint(study_name)
 myprint(verbose)
 
-all.markers=paste0("Day", tpeak, assays)
 
 # path for figures and tables etc
 save.results.to = here::here("output");                                if (!dir.exists(save.results.to))  dir.create(save.results.to)
@@ -33,7 +36,6 @@ print(paste0("save.results.to equals ", save.results.to))
 
 # some exploratory code
 if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
-
 
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
 B <-       config$num_boot_replicates 
@@ -49,23 +51,27 @@ for (a in assays) {
   }
 }    
 
-dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
-dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
-
 # define an alias for EventIndPrimaryDxx
-dat.vac.seroneg$yy=dat.vac.seroneg[[config.cor$EventIndPrimary]]
-dat.pla.seroneg$yy=dat.pla.seroneg[[config.cor$EventIndPrimary]]
+dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
+dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
 
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
     
+dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
+dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
+
 # define trichotomized markers
-dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, tpeak, wt.col.name="wt")
+dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
 marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
-for (a in assays) {        
-    for (t in "Day"%.%tpeak) {
-        q.a=marker.cutpoints[[a]][[t]]
-        write(paste0(labels.axis[1,a], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", t, a, "_"%.%study_name))
+for (a in all.markers) {        
+    q.a=marker.cutpoints[[a]]
+    if (startsWith(a, "Day")) {
+        # not fold change
+        write(paste0(labels.axis[1,get.assay.from.name(a)], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
+    } else {
+        # fold change
+        write(paste0(a, " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
     }
 }
     
@@ -73,10 +79,14 @@ for (a in assays) {
 rv=list() 
 rv$marker.cutpoints=marker.cutpoints
 
+# table of ph1 and ph2 cases
 tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
 print(tab)
+names(dimnames(tab))[2]="Event Indicator"
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
 
+# getting some quantiles
+#10**wtd.quantile(dat.vac.seroneg$Day57pseudoneutid50, dat.vac.seroneg$wt, c(0.025, 0.05, seq(.2,.9,by=0.01),seq(.9,.99,by=0.005)))
 
 
 ###################################################################################################
@@ -89,14 +99,14 @@ if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 
 
 
-
-
 ###################################################################################################
 # run PH models
 ###################################################################################################
-
+    
 #create twophase design object
 design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
+
+
 
 source(here::here("code", "cor_coxph_ph.R"))
 
@@ -112,7 +122,7 @@ if (Sys.getenv("TRIAL") == "janssen_pooled_real" & COR=="D29IncludeNotMolecConfi
 
 
 # forest plots
-if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","AZD1222")) {
+if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","AZD1222","VAT08m")) {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
     

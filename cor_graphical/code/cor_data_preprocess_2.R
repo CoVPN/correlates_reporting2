@@ -26,43 +26,73 @@ COR=Args[1]
 if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"
 } else {incNotMol <- ""}
 
+# set EventIndTimePrimary to EventIndTimeOmicron if study_name=="VAT08m" & COR %in% c("D22omi","D43omi")
+if (study_name=="VAT08m" & grepl("omi", COR)){
+  dat$EventIndPrimaryD1 = dat$EventIndOmicronD1 # used by cohort_event def
+  dat$EventIndPrimaryD22 = dat$EventIndOmicronD22
+  dat$EventIndPrimaryD43 = dat$EventIndOmicronD43
+  dat$EventTimePrimaryD1 = dat$EventTimeOmicronD1
+  dat$EventTimePrimaryD22 = dat$EventTimeOmicronD22
+  dat$EventTimePrimaryD43 = dat$EventTimeOmicronD43
+}
+
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
 if(study_name=="COVE" | study_name=="MockCOVE")  {
+  # only Moderna uses TwophasesampIndD57==1 for non-cases at both D29 and D57
   
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
-      Perprotocol==1 &
-        Bserostatus==0 & 
-        !!as.name(config.cor$Earlyendpoint)==0 & 
-        !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
-        !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
-      Perprotocol==1 &
-        Bserostatus==0 &
+      #Perprotocol==1 &
+        #!!as.name(config.cor$Earlyendpoint)==0 & 
+        #!!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 &
+        #ph2.Dxx = EarlyendpointDxx==0 & Perprotocol==1 & EventTimePrimaryDxx>=7 & TwophasesampIndDxx
+      !!as.name(config.cor$ph2)==1 &
+        !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+      Perprotocol==1 & # do not use config.cor$ph2 here for now to avoid confusion (config is D29 but need D57 args for non-cases)
         !!as.name(paste0("EarlyendpointD", timepoints[length(timepoints)]))==0 &
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
         EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
-        "Post-Peak Cases", "Non-Cases")
+        "Cases", "Non-Cases")
     ))
   
-} else {
+} else if (study_name=="AZD1222") {
+  # for whatever reason very different sets of ptids had D29 or D57 measured for AZ, so for D29, include a ptid if have D29 data ignoring D57 availability; for D57, include a ptid if have D57 data ignoing D29 availability
+  # keep Sanofi here as well
   
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
-      Perprotocol==1 &
-        Bserostatus==0 & 
-        !!as.name(config.cor$Earlyendpoint)==0 & 
+      #Perprotocol==1 &
+        #!!as.name(config.cor$Earlyendpoint)==0 & 
+        #!!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
+        #ph2.Dxx = EarlyendpointDxx==0 & Perprotocol==1 & EventTimePrimaryDxx>=7 & TwophasesampIndDxx
+      !!as.name(config.cor$ph2)==1 &
+        !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+      Perprotocol==1 & # do not use config.cor$ph2 here for now because it doesn't include AnyinfectionD1
+        AnyinfectionD1==0 &
         !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
-        !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
-      Perprotocol==1 &
-        Bserostatus==0 &
+        !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 ~ "Non-Cases"),
+      levels = c(#"Day 2-14 Cases", intcur2, 
+        "Cases", "Non-Cases")
+    ))
+} else {# keep Sanofi and other two timepoint studies except for AZ and Moderna here
+  
+  dat = dat %>%
+    mutate(cohort_event = factor(case_when(
+      #Perprotocol==1 &
+      #!!as.name(config.cor$Earlyendpoint)==0 & 
+      #!!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
+      #ph2.Dxx = EarlyendpointDxx==0 & Perprotocol==1 & EventTimePrimaryDxx>=7 & TwophasesampIndDxx
+      !!as.name(config.cor$ph2)==1 &
+        !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+      Perprotocol==1 & # do not use config.cor$ph2 here for now because it doesn't include AnyinfectionD1
         AnyinfectionD1==0 &
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
         !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
-        "Post-Peak Cases", "Non-Cases")
+        "Cases", "Non-Cases")
     ))
 }
 
@@ -111,16 +141,16 @@ dat.long$Bserostatus <- factor(dat.long$Bserostatus,
 dat.long$assay <- factor(dat.long$assay, levels = assays, labels = assays)
 
 # add LLoQ pos.cutoffs, and ULoQ value for response call and censoring - log10 scales
-dat.long$LLoQ = with(dat.long, log10(lloqs[as.character(assay)]))
-dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
+#dat.long$LLoQ = with(dat.long, log10(lloqs[as.character(assay)]))
+#dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
 dat.long$ULoQ = with(dat.long, log10(uloqs[as.character(assay)]))
 
 # add label = LLoD / poscutoff, uloq values to show in the plot
-dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
-dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
-dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
-dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay), "ULoQ", "")) 
-dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay), ULoQ, -99))
+#dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
+#dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
+#dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
+#dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay), "ULoQ", "")) 
+#dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay), ULoQ, -99))
 
 # assign values above the uloq to the uloq
 for (t in times[!grepl("Delta", times)]) {
@@ -150,19 +180,19 @@ dat.long$demo_lab <-
   ))
 
 # labels of the demographic strata for the subgroup plotting
-dat.long$trt_bstatus_label <-
-  with(
-    dat.long,
-    factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
-      levels = c("11", "12", "21", "22"),
-      labels = c(
-        "Placebo, Baseline Neg",
-        "Placebo, Baseline Pos",
-        "Vaccine, Baseline Neg",
-        "Vaccine, Baseline Pos"
-      )
-    )
-  )
+#dat.long$trt_bstatus_label <-
+#  with(
+#    dat.long,
+#    factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
+#      levels = c("11", "12", "21", "22"),
+#      labels = c(
+#        "Placebo, Baseline Neg",
+#        "Placebo, Baseline Pos",
+#        "Vaccine, Baseline Neg",
+#        "Vaccine, Baseline Pos"
+#      )
+#    )
+#  )
 
 # For immunogenicity characterization, complete ignore any information on cases
 # vs. non-cases.  The goal is to characterize immunogenicity in the random
