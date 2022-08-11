@@ -45,13 +45,9 @@ if(config$study_name == "ENSEMBLE"){
   ))
 }
   if(config$study_name == "HVTN705"){
-    full_result_primary <- readRDS(here::here("cop_mediation", "output",
-      paste0("full_result_hvtn705secondprimary_", COR, ".rds")
-    ))
     full_result <- readRDS(here::here("cop_mediation", "output",
       paste0("full_result_hvtn705second_", COR, ".rds")
     ))
-    # full_result <- rbind(full_result_primary, full_result_secondary)
   }
 
 init_kable <- knitr::kable(full_result, 

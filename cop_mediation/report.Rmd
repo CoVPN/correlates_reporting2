@@ -10,9 +10,7 @@ if(!inherits(NULL, config$study_name)){
 		all_COR <- c("D29")
 	}else if(config$study_name == "AZD1222"){
 		all_COR <- c("D29", "D57")
-	}
-}else{
-	if(config$study_name == "HVTN705"){
+	}else if(config$study_name == "HVTN705"){
 		all_COR <- c("D210")
 	}
 }
