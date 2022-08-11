@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.1.2",
+    "Version": "4.0.4",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -232,6 +232,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "457a2a08a76cc33cb5510c94d2006e02"
+    },
+    "WeightedROC": {
+      "Package": "WeightedROC",
+      "Version": "2020.1.31",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9d18af3673c091772f7e097cdf8ccf59"
     },
     "abind": {
       "Package": "abind",
@@ -1355,8 +1362,8 @@
       "RemoteRepo": "natmed2",
       "RemoteUsername": "benkeser",
       "RemoteRef": "fx_dose",
-      "RemoteSha": "c59430b6de7d00384fda479803b7eb5fa10a26c1",
-      "Hash": "551b8f57ab60352f82c20de8a24cb8cd"
+      "RemoteSha": "606eefd584fc1f47153bb9873610bfa70e6d7dca",
+      "Hash": "ca3195f3129cce959b13f2bf38f98b22"
     },
     "nlme": {
       "Package": "nlme",
@@ -1701,10 +1708,10 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.14.0",
+      "Version": "0.13.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "30e5eba91b67f7f4d75d31de14bbfbdc"
+      "Hash": "079cb1f03ff972b30401ed05623cbe92"
     },
     "repr": {
       "Package": "repr",
@@ -2001,6 +2008,18 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "6b7453cd9bb32b12577c78d54eeea56a"
+    },
+    "survtmle": {
+      "Package": "survtmle",
+      "Version": "1.1.3.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "survtmle",
+      "RemoteUsername": "benkeser",
+      "RemoteRef": "mediation",
+      "RemoteSha": "adb452eaedb8113c3675bf0cf5bc0c34dffb07ad",
+      "Hash": "1d1b799277df0e134fae0bd28c709364"
     },
     "svglite": {
       "Package": "svglite",
