@@ -15,23 +15,21 @@ print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)
 )
 
-if(!is.null(study_name)){
-  if(study_name == "ENSEMBLE"){
-    covariates <- c("risk_score", "Region1", "Region2")
-    data$Region1 <- as.numeric(data$Region == 1)
-    data$Region2 <- as.numeric(data$Region == 2)
-    run_survtmle <- TRUE
-    cut_size <- 6
-  }else if(study_name == "COVE"){
-    covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
-    run_survtmle <- FALSE
-    cut_size <- 6
-  }else if(study_name == "AZD1222"){
-    covariates <- c("Age", "risk_score")
-    run_survtmle <- TRUE
-    cut_size <- 6
-  }
-}else if(config$study_name == "HVTN705"){
+if(study_name == "ENSEMBLE"){
+  covariates <- c("risk_score", "Region1", "Region2")
+  data$Region1 <- as.numeric(data$Region == 1)
+  data$Region2 <- as.numeric(data$Region == 2)
+  run_survtmle <- TRUE
+  cut_size <- 6
+}else if(study_name == "COVE"){
+  covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
+  run_survtmle <- FALSE
+  cut_size <- 6
+}else if(study_name == "AZD1222"){
+  covariates <- c("Age", "risk_score")
+  run_survtmle <- TRUE
+  cut_size <- 6
+}else if(study_name == "HVTN705"){
   covariates <- c("RSA", "Age", "BMI", "Riskscore")
   run_survtmle <- FALSE
   cut_size <- 7
