@@ -15,6 +15,7 @@ print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)
 )
 
+impute_placebo_to_lod_over_2 <- FALSE
 if(study_name == "ENSEMBLE"){
   covariates <- c("risk_score", "Region1", "Region2")
   data$Region1 <- as.numeric(data$Region == 1)
@@ -33,6 +34,7 @@ if(study_name == "ENSEMBLE"){
   covariates <- c("RSA", "Age", "BMI", "Riskscore")
   run_survtmle <- FALSE
   cut_size <- 7
+  impute_placebo_to_lod_over_2 <- TRUE
 }
 
 
@@ -82,6 +84,17 @@ W <- data_keep[, covariates, drop = FALSE]
 A <- data_keep$Trt
 R <- as.numeric(data_keep[[config.cor$ph2]])
 Y <- data_keep$outcome
+
+if(impute_placebo_to_lod_over_2){
+  R[A == 0] <- 1
+  for(a in include_assays){
+    impute_idx <- which(
+      is.na(data_keep[,a]) & (A == 0)
+    )
+    data_keep[impute_idx, a] <- min(data_keep[A == 0, a], na.rm = TRUE)
+  }
+  data_keep$wt[A == 0] <- 1
+}
 
 # summaries for report
 tab1 <- data.frame(table(Y[R == 1], A[R==1]))
