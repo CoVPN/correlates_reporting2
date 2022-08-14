@@ -16,7 +16,7 @@ library(dplyr, warn.conflicts = FALSE)
 options(dplyr.summarise.inform = FALSE)
 
 # Read in original data
-dat <- read.csv(here::here("..", "data_clean", data_name))
+dat <- read.csv(data_name)
 
 # The stratified random cohort for immunogenicity
 
