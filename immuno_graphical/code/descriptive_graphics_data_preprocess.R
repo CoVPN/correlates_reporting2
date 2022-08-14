@@ -7,7 +7,7 @@ source(here::here("..", "_common.R"))
 library(here)
 library(dplyr)
 library(stringr)
-dat.mock <- read.csv(here("..", "data_clean", data_name), header = TRUE)
+dat.mock <- read.csv(data_name, header = TRUE)
 
 # load parameters
 source(here("code", "params.R"))

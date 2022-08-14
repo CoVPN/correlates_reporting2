@@ -84,6 +84,11 @@ labels.assays.long <- labels.title
 
 do.fold.change=attr(config, "config") %in% c("vat08m_nonnaive")
 
+# if this flag is true, then the N IgG binding antibody is reported 
+# in the immuno report (but is not analyzed in the cor or cop reports).
+include_bindN <- !study_name %in% c("PREVENT19","AZD1222","VAT08m")
+
+
 
 # COR-related config
 if (exists("COR")) {
