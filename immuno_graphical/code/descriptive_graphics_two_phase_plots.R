@@ -18,7 +18,9 @@ library(ggpubr)
 library(GGally)
 library(spatstat.geom)
 library(scales)
-library(dummies)
+#library(dummies) # this package got archived on 2022-04-29
+require(devtools)
+install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
 library(gridExtra)
 library(PResiduals)
 
