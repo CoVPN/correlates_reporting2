@@ -140,3 +140,18 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
   }
 ```
 
+
+`r if (!attr(config,"config") %in% c("hvtn705second")) '<!--'`
+
+```{r, echo=FALSE, results='asis'}
+  #aa=assays[contain(assays,"V2")][-(1:2)]  
+  #aa=c("IgG3gp70.001428.2.42.V1V240delta") # IgG340mdw_V1V2
+  aa=c()
+  for (a in aa) {
+    res = knitr::knit_child(c(here::here('cor_coxph', 'itxn_by_assays.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+```
+
+
+`r if (!attr(config,"config") %in% c("hvtn705second"))'-->'`

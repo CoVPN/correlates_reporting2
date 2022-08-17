@@ -84,6 +84,11 @@ labels.assays.long <- labels.title
 
 do.fold.change=attr(config, "config") %in% c("vat08m_nonnaive")
 
+# if this flag is true, then the N IgG binding antibody is reported 
+# in the immuno report (but is not analyzed in the cor or cop reports).
+include_bindN <- !study_name %in% c("PREVENT19","AZD1222","VAT08m")
+
+
 
 # COR-related config
 if (exists("COR")) {
@@ -175,7 +180,7 @@ if (exists("COR")) {
     
     # subset to require risk_score
     # note that it is assumed there no risk_score is missing for anyone in the analysis population
-    dat.mock=subset(dat.mock, !is.na(risk_score))
+    if(!is.null(dat.mock$risk_score)) dat.mock=subset(dat.mock, !is.na(risk_score))
     
     # for Novavax trial only, subset to US for the correlates modules
     # this is redundant in a way because only US participants have non-NA risk scores, but good to add
@@ -215,7 +220,8 @@ if (exists("COR")) {
         
         # followup time for the last case in ph2 in vaccine arm
         if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        if (startsWith(attr(config, "config"), "janssen_na_real")) {
+        
+		if (startsWith(attr(config, "config"), "janssen_na_real")) {
             tfinal.tpeak=53
         } else if (startsWith(attr(config, "config"), "janssen_la_real")) {
             tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027

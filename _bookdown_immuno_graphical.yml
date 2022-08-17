@@ -1,0 +1,19 @@
+delete_merged_file: true
+before_chapter_script: 
+output_dir: "immuno_graphical"
+clean: packages.bib
+keep_tex: true
+language:
+  label:
+    fig: "FIGURE "
+    tab: "TABLE "
+  ui:
+    chapter_name: "Section "
+
+rmd_files: [
+  "index_immuno.Rmd",
+  #"immuno_tabular/Report.Rmd",
+   "immuno_graphical/report.Rmd",
+  "references.Rmd",
+  "appendix.Rmd"
+]

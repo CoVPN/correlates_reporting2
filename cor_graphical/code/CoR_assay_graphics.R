@@ -40,7 +40,12 @@ tps <- times[nums%in%tpeak]
 #=========================================================================================================================
 
 for (tp in tps){
-  dat.long.cor.subset$TrtEvent <- paste(as.character(dat.long.cor.subset$Trt), as.character(dat.long.cor.subset$cohort_event),sep = ", ")
+  dat.long.cor.subset$TrtEvent <- 
+    factor(
+      paste(as.character(dat.long.cor.subset$Trt), 
+            as.character(dat.long.cor.subset$cohort_event),sep = ", "),
+      levels = c("Placebo, Non-Cases", "Placebo, Cases",
+                 "Vaccine, Non-Cases", "Vaccine, Cases"))
   
   
   # if (tp %in% c("Day57", "Delta57overB")) {  ## day 57 analysis don't include intercurrent cases
@@ -61,7 +66,7 @@ for (tp in tps){
       theme_pubr(legend = "none") +
       ylab("Reverse ECDF") + xlab(labels.axis[tp, aa]) +
       scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
-      scale_color_manual(values = c("#1749FF", "#D92321", "#0AB7C9", "#FF6F1B", "#810094", "#378252", "#FF5EBF", "#3700A5", "#8F8F8F", "#787873")) +
+      scale_color_manual(values = c("#1749FF", "#D92321", "#0AB7C9", "#FF6F1B")) +
       guides(linetype = "none",
              color = guide_legend(nrow = 3, byrow = TRUE)) +
       ggtitle(labels.title2[tp, aa]) +
@@ -131,8 +136,7 @@ for (tp in tps){
       theme_pubr(legend = "none") + 
       guides(alpha = "none") +
       ylab(labels.axis[tp, aa]) + xlab("") + ggtitle(labels.title2[tp, aa]) +
-      scale_color_manual(values = c("#1749FF", "#D92321", "#0AB7C9", "#FF6F1B", "#810094", "#378252", 
-                                    "#FF5EBF", "#3700A5", "#8F8F8F", "#787873")) +
+      scale_color_manual(values = c("#1749FF", "#D92321")) +
       scale_y_continuous(limits = c(-2, 6), labels = label_math(10^.x), breaks = seq(-2, 6, 2)) +
       theme(plot.title = element_text(hjust = 0.5, size = 14),
             panel.border = element_rect(fill = NA),
@@ -215,8 +219,7 @@ for (tp in tps){
       guides(alpha = "none", color = guide_legend(nrow = 1, byrow = TRUE)) +
       facet_wrap(~ demo_lab) +
       ylab(labels.axis[tp, aa]) + xlab("") + ggtitle(labels.title2[tp, aa]) +
-      scale_color_manual(values = c("#1749FF", "#D92321", "#0AB7C9", "#FF6F1B", "#810094", "#378252", 
-                                    "#FF5EBF", "#3700A5", "#8F8F8F", "#787873")) +
+      scale_color_manual(values = c("#1749FF", "#D92321")) +
       scale_y_continuous(limits = c(-2, 6), labels = label_math(10^.x), breaks = seq(-2, 6, 2)) +
       theme(plot.title = element_text(hjust = 0.5, size = 14),
             panel.border = element_rect(fill = NA),
