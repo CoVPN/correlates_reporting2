@@ -154,8 +154,11 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
         }
     
         # legend
-        legend=paste0(studies[TRIALS], ", ", sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%"))
-        if (include.az) legend=c(legend, "AZCOV002, 66.7%")
+#        legend=paste0(studies[TRIALS], ", ", sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%"))
+#        if (include.az) legend=c(legend, "AZCOV002, 71.8%")
+        # remove VE from legend
+        legend=studies[TRIALS]
+        if (include.az) legend=c(legend, "AZCOV002")
         mylegend(x=ifelse(log=="",6,1), col=cols[c(TRIALS, if(include.az) "AZ-COV002")], legend=legend, lty=1, lwd=2, cex=.7)
     
     dev.off()    
@@ -321,6 +324,12 @@ draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_
 
 
 
+# COVE + ENSEMBLE/US + AZ + PREVENT19 + AZD1222
+for (a in c("pseudoneutid50","bindSpike")) {
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T, log="y")
+}
+
 # COVE + ENSEMBLE/US + AZ + AZD1222
 for (a in c("pseudoneutid50","bindSpike")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "azd1222"), file.name="10", include.az=T)
@@ -331,12 +340,6 @@ for (a in c("pseudoneutid50","bindSpike")) {
 for (a in c("pseudoneutid50","bindSpike")) {
     draw.ve.curves(a, TRIALS=c("azd1222"), file.name="11", include.az=T)
     draw.ve.curves(a, TRIALS=c("azd1222"), file.name="11", include.az=T, log="y")
-}
-
-# COVE + ENSEMBLE/US + AZ + PREVENT19 + AZD1222
-for (a in c("pseudoneutid50","bindSpike")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T, log="y")
 }
 
 # COVE + ENSEMBLE + AZ
