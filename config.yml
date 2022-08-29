@@ -181,7 +181,7 @@ moderna_real: &moderna_real
   #data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/P3001ModernaCOVEimmunemarkerdata_correlates_processed_v1.1_lvmn_added_Jan14_2022.csv # for the lvmn manuscript
   data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_A_Blinded_Phase_Data/adata/moderna_real_data_processed_with_riskscore.csv
   study_name: COVE
-  multivariate_assays: [bindRBD + pseudoneutid50 + liveneutmn50, pseudoneutid50 + liveneutmn50]
+  multivariate_assays: [bindRBD + pseudoneutid50 + liveneutmn50, pseudoneutid50 + liveneutmn50, bindRBD + pseudoneutid80 + liveneutmn50]
   num_boot_replicates: 1000
   num_perm_replicates: 10000
 
