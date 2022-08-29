@@ -1,3 +1,13 @@
+## immuno_analysis        : builds immunogenicity exploratory analyses
+immuno_analysis: 
+	$(MAKE) -k -C immuno_tabular all
+	$(MAKE) -k -C immuno_graphical all
+
+## immuno_report          : builds the CoVPN immunogenicity report
+immuno_report: immuno_analysis
+	bash ./_build.sh immuno
+	
+
 ## cor_analysis           : builds Correlates of Risk analyses
 cor_analysis: 
 	$(MAKE) -k -C cor_tabular all
@@ -51,4 +61,4 @@ style:
 help: Makefile
 	@sed -n 's/^##//p' $<
 
-.PHONY: style help cor_report cor_analysis
+.PHONY: style help cor_report cor_analysis immuno_analysis immuno_report
