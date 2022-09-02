@@ -191,24 +191,28 @@ if (attr(config, "config") == "hvtn705second") {
     if(!file.exists(paste0(save.results.to, "itxn.marginalized.risk.Rdata"))) {    
         cat("make itxn.marginalized.risk\n")
         
-        aa=assays[contain(assays,"V2")][-(1:2)]  
+        #aa=assays[contain(assays,"V2")][-(1:2)]  
+        aa=c("IgG340mdw_V1V2", "IgG3gp70.001428.2.42.V1V240delta")
+        bb=c("ICS4AnyEnvIFNg_OR_IL2", "ICS4JMos1gp120IFNg_OR_IL2", "ICS4JMos1gp41IFNg_OR_IL2", "ICS4JMos2GagIFNg_OR_IL2", "ICS4JMos2RNAseIntIFNg_OR_IL2", "ICS4JMos2Sgp120IFNg_OR_IL2", "ICS4JMos2Sgp41IFNg_OR_IL2")
         risks.itxn.1=list()      
         risks.itxn.2=list()      
+        for(b in bb) {
+            b=paste0("Day210",b)
         for(a in aa) {
             #a = "Day210IgG3gp70.001428.2.42.V1V240delta" # the original marker of interest in the interaction model
             a=paste0("Day210",a)
-            b = "Day210ICS4AnyEnvIFNg_OR_IL2"        
             min.ls=c(0, -2); names(min.ls)=c(a,b) # it is verified that 0 is the minimum value for all V1V2 bAb markers
             
             # compute risks at three values of ics
             ics.array=c(min=-2, wtd.quantile(dat.vac.seroneg[[b]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.5, .9)))
+            vv2.array=c(min=-2, wtd.quantile(dat.vac.seroneg[[a]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.5, .9)))
             # compute risks at a sequence of cd4 values for each of the three ics values
             ss=sort(c(
                 wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, c(0.025,0.05,0.95,0.975)), # will be included in the table
                 seq(min.ls[a], max(dat.vac.seroneg[[a]], na.rm=TRUE), length=100) # equally spaced between min and max so that the curves look good
             ))    
             
-            for (idx in 1:2) {
+            for (idx in 2:2) {
                 if (idx==1) {
                     # treat placebo as having known marker values (undetectable)
                     
@@ -317,11 +321,11 @@ if (attr(config, "config") == "hvtn705second") {
                 lb.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.025)))) )
                 ub.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.975)))) )
                 
-                if(idx==1) risks.itxn.1[[a]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=ics.array)
-                if(idx==2) risks.itxn.2[[a]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=ics.array)
+                if(idx==1) risks.itxn.1[[paste0(a,b)]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=ics.array)
+                if(idx==2) risks.itxn.2[[paste0(a,b)]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=ics.array)
             }
         }
-        
+        }
         save(risks.itxn.1, risks.itxn.2, file=paste0(save.results.to, "itxn.marginalized.risk.Rdata"))
         
     } else {
