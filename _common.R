@@ -221,7 +221,7 @@ if (exists("COR")) {
         # followup time for the last case in ph2 in vaccine arm
         if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
         
-		if (startsWith(attr(config, "config"), "janssen_na_real")) {
+        if (startsWith(attr(config, "config"), "janssen_na_real")) {
             tfinal.tpeak=53
         } else if (startsWith(attr(config, "config"), "janssen_la_real")) {
             tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027
@@ -582,6 +582,9 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
 } else if (study_name=="HVTN705") {
     # do nothing
 
+} else if (study_name %in% c("PROFISCOV")) {
+    Bstratum.labels <- c("All")
+
 } else stop("unknown study_name 2")
 
 
@@ -666,6 +669,9 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
 
 } else if (study_name=="HVTN705") {
     # do nothing
+
+} else if (study_name=="PROFISCOV") {
+    demo.stratum.labels <- c("All")
 
 } else stop("unknown study_name 3")
 
@@ -1016,7 +1022,7 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         } else {
             flag=dat$ph2
         }
-
+    
         if(startsWith(a, "Day")) {
             # not fold change
             uppercut=log10(uloqs[get.assay.from.name(a)])*.9999

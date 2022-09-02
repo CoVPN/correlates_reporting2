@@ -196,13 +196,14 @@ if (attr(config, "config") == "hvtn705second") {
         risks.itxn.2=list()      
         aa=c("IgG340mdw_V1V2", "IgG3gp70.001428.2.42.V1V240delta")
         bb=c("ICS4AnyEnvIFNg_OR_IL2", "ICS4JMos1gp120IFNg_OR_IL2", "ICS4JMos1gp41IFNg_OR_IL2", "ICS4JMos2GagIFNg_OR_IL2", "ICS4JMos2RNAseIntIFNg_OR_IL2", "ICS4JMos2Sgp120IFNg_OR_IL2", "ICS4JMos2Sgp41IFNg_OR_IL2")
-        for(b in bb) {
-        b=paste0("Day210",b)
-        for(a in aa) {
-        a=paste0("Day210",a)
-            
-            for (idx in 2:2) {
+        for(b in bb) { b=paste0("Day210",b)
+        for(a in aa) { a=paste0("Day210",a)
+                        
+            for (idx in 2:2) { # idx 1 uses placebo data. we are not using that anymore
                 if (idx==1) {
+                    # idx:1 code can only be run for Day210IgG3gp70.001428.2.42.V1V240delta and ICS4AnyEnvIFNg_OR_IL2
+                    # for other a and b, min.ls needs to be defined again
+                    
                     # treat placebo as having known marker values (undetectable)
                     
                     # okay to start with dat.mock here b/c no need for trichotomized markers
@@ -221,7 +222,8 @@ if (attr(config, "config") == "hvtn705second") {
     #                #1654                               0.977724                   -0.939479
                             
                     # set the marker value in the placebo arm to the values representing undetectable
-                    dat.ph1[[a]][dat.ph1$Trt==0] = min(dat.vac.seroneg)
+                    min.ls=c(0, -2); names(min.ls)=c("Day210IgG3gp70.001428.2.42.V1V240delta","ICS4AnyEnvIFNg_OR_IL2") # it is verified that 0 is the minimum value for all V1V2 bAb markers
+                    dat.ph1[[a]][dat.ph1$Trt==0] = min.ls[a]
                     dat.ph1[[b]][dat.ph1$Trt==0] = min.ls[b]
                     # set all placebo to a single stratum
                     dat.ph1$Wstratum[dat.ph1$Trt==0] = min(dat.ph1$Wstratum[dat.ph1$Trt==0])  
@@ -256,21 +258,30 @@ if (attr(config, "config") == "hvtn705second") {
                 tab=rbind(tab, "Generalized Wald Test for Itxn"=c("", formatDouble(p.gwald,3, remove.leading0 = F))); tab
                 mytex(tab, file.name=paste0("CoR_itxn_",idx,"_",a,"_",b), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
                 
+                # once for each marker on the x axis
                 for (inner.id in 1:2) {
-                    vv2.array=c(min=-2, wtd.quantile(dat.vac.seroneg[[a]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.165, .5, .825)))
-        
-        
-                    # compute risks at three values of ics
-                    ics.array=c(min=-2, wtd.quantile(dat.vac.seroneg[[b]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.5, .9)))
-                    # compute risks at a sequence of cd4 values for each of the three ics values
-                    ss=sort(c(
-                        wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, c(0.025,0.05,0.95,0.975)), # will be included in the table
-                        seq(min.ls[a], max(dat.vac.seroneg[[a]], na.rm=TRUE), length=100) # equally spaced between min and max so that the curves look good
-                    ))    
+                    if (inner.id == 1) {
+                        # compute risks at three values of ics
+                        three.val=c(min=-2, wtd.quantile(dat.vac.seroneg[[b]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.5, .9)))
+                        # compute risks at a sequence of cd4 values for each of the three ics values
+                        ss=sort(c(
+                            wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, c(0.025,0.05,0.95,0.975)), # will be included in the table
+                            seq(min(dat.vac.seroneg[[a]], na.rm=TRUE), max(dat.vac.seroneg[[a]], na.rm=TRUE), length=100) # equally spaced between min and max so that the curves look good
+                        ))    
+                    } else {
+                        # compute risks at three values of v1v2
+                        three.val=c(min=-2, wtd.quantile(dat.vac.seroneg[[a]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.165, .5, .825)))
+                        # compute risks at a sequence of ics cd4 values for each of the three v1v2 values
+                        ss=sort(c(
+                            wtd.quantile(dat.vac.seroneg[[b]], dat.vac.seroneg$wt, c(0.025,0.05,0.95,0.975)), # will be included in the table
+                            seq(min(dat.vac.seroneg[[b]], na.rm=TRUE), max(dat.vac.seroneg[[b]], na.rm=TRUE), length=100) # equally spaced between min and max so that the curves look good
+                        ))    
+                        
+                    }        
                     
                     # estimate marginalized risks, return a matrix
-                    prob.ls=sapply (ics.array, function(ics) {
-                        marginalized.risk.cont.2(fit, marker.name=a, data=data.ph2, weights=data.ph2$wt, t=tfinal.tpeak, ss=ss, marker.name.2=b, s.2=ics)
+                    prob.ls=sapply (three.val, function(ics) {
+                        marginalized.risk.cont.2(fit, marker.name=ifelse(inner.id==1,a,b), data=data.ph2, weights=data.ph2$wt, t=tfinal.tpeak, ss=ss, marker.name.2=b, s.2=ics)
                     })
                     
                     
@@ -299,11 +310,11 @@ if (attr(config, "config") == "hvtn705second") {
                         fit.b=try(svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)))
                 
                         if ( class (fit.b)[1] != "try-error" ) {
-                            probs=sapply (ics.array, function(ics) {
-                                marginalized.risk.cont.2(fit.b, marker.name=a, data=dat.b.ph2, weights=dat.b.ph2$wt, t=tfinal.tpeak, ss=ss, marker.name.2=b, s.2=ics)
+                            probs=sapply (three.val, function(ics) {
+                                marginalized.risk.cont.2(fit.b, marker.name=ifelse(inner.id==1,a,b), data=dat.b.ph2, weights=dat.b.ph2$wt, t=tfinal.tpeak, ss=ss, marker.name.2=ifelse(inner.id==1,b,a), s.2=ics)
                             })
                         } else {
-                            matrix(NA, length(ss), length(ics.array))
+                            matrix(NA, length(ss), length(three.val))
                         }
                         
                     })
@@ -312,7 +323,7 @@ if (attr(config, "config") == "hvtn705second") {
                     assign(".Random.seed", save.seed, .GlobalEnv)    
                     
                     # organize bootstrap results into a list of n.ics, each element of which is a matrix of n.s by n.seeds
-                    res.ls=lapply (1:length(ics.array), function(i) {
+                    res.ls=lapply (1:length(three.val), function(i) {
                         res=sapply(out, function (x) x[,i])
                         res[,!is.na(res[1,])] # remove NA's
                     })
@@ -321,9 +332,9 @@ if (attr(config, "config") == "hvtn705second") {
                     lb.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.025)))) )
                     ub.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.975)))) )
                     
-                    if(idx==1) risks.itxn.1[[paste0(a,b)]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=ics.array)
-                    if(idx==2) risks.itxn.2[[paste0(a,b)]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=ics.array)                    
-                }
+                    if(idx==1) risks.itxn.1[[ifelse(inner.id==1,paste0(a,b),paste0(b,a))]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=three.val)
+                    if(idx==2) risks.itxn.2[[ifelse(inner.id==1,paste0(a,b),paste0(b,a))]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=three.val)                    
+                } # end inner.id
 
             } # end idx
         }
