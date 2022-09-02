@@ -491,13 +491,17 @@ dev.off()
 
 if (attr(config, "config") == "hvtn705second") {
             
-    aa=assays[contain(assays,"V2")][-(1:2)]  
+    aa=c("IgG340mdw_V1V2", "IgG3gp70.001428.2.42.V1V240delta")
+    bb=c("ICS4AnyEnvIFNg_OR_IL2", "ICS4JMos1gp120IFNg_OR_IL2", "ICS4JMos1gp41IFNg_OR_IL2", "ICS4JMos2GagIFNg_OR_IL2", "ICS4JMos2RNAseIntIFNg_OR_IL2", "ICS4JMos2Sgp120IFNg_OR_IL2", "ICS4JMos2Sgp41IFNg_OR_IL2")
+    #aa=assays[contain(assays,"V2")][-(1:2)]  
     for (a in aa) {
+    a=paste0("Day210",a)
+    for (b in bb) {
+    b=paste0("Day210",b)
         #a="Day210IgG3gp70.001428.2.42.V1V240delta"
-        a=paste0("Day210",a)
-        b="Day210ICS4AnyEnvIFNg_OR_IL2"
+        #b="Day210ICS4AnyEnvIFNg_OR_IL2"
         
-        for (idx in 1:2) {
+        for (idx in 2:2) {
             if(idx==1) risks=risks.itxn.1[[a]]
             if(idx==2) risks=risks.itxn.2[[a]]
             
@@ -549,6 +553,7 @@ if (attr(config, "config") == "hvtn705second") {
                 
             dev.off()
         }
+    }
     }
         
 }
