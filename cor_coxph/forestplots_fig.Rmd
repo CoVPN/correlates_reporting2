@@ -6,7 +6,6 @@
 
 
 \ifShowCountry
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{`r pathCoRoutput`/hr_forest_countries_`r a`_`r study_name`}

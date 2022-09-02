@@ -505,7 +505,7 @@ if (attr(config, "config") == "hvtn705second") {
             if(idx==1) risks=risks.itxn.1[[a]]
             if(idx==2) risks=risks.itxn.2[[a]]
             
-            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",a), mfrow=.mfrow)
+            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",a,"_",b), mfrow=.mfrow)
                 par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
                 lwd=2
                 
