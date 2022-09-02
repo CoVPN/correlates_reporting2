@@ -91,14 +91,15 @@ for (a in assays) {
 i=i+2
 
 # MinorityInd makes sense for COVE and US in ensemble
-if(study_name_code=="COVE" | startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na")) {
-    if(study_name_code=="COVE") {
+if(study_name %in% c("COVE","MockCOVE") | startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na")) {
+    if(study_name %in% c("COVE","MockCOVE")) {
         design.1<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, MinorityInd==1)))
         design.2<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, MinorityInd==0)))
     } else {
         design.1<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, MinorityInd==1 & Region==0)))
         design.2<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, MinorityInd==0 & Region==0)))
     }
+    
     for (a in assays) {
         f= update(update(form.0, ~.-as.factor(Region)-MinorityInd), as.formula(paste0("~.+Day",tpeak, a)))
         fits.all.2[[a]][[i]]=run.svycoxph(f, design=design.1) 
@@ -118,7 +119,7 @@ for (a in assays) {
 i=i+2
 
 # HIV infection
-if (study_name_code=="ENSEMBLE") {
+if (study_name %in% c("ENSEMBLE", "MockENSEMBLE")) {
     design.1<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, HIVinfection==1)))
     design.2<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=get.dat.with.no.empty(subset(dat.vac.seroneg, HIVinfection==0)))        
     for (a in assays) {
@@ -130,15 +131,16 @@ if (study_name_code=="ENSEMBLE") {
 }
 
 
-age.threshold=switch(study_name_code,COVE=65,ENSEMBLE=60,stop("age threshold undefined"))
+age.threshold=switch(study_name,COVE=65,MockCOVE=65,AZD1222=65,ENSEMBLE=60,MockENSEMBLE=60,stop("age threshold undefined"))
+
 for (a in assays) {    
     names(fits.all.2[[a]])=c("All Vaccine", 
                              "Age >= "%.%age.threshold, "Age < "%.%age.threshold, 
                              "At risk", "Not at risk", 
-                             if (study_name_code!="ENSEMBLE") c("Comm. of color", "White Non-Hispanic"),
+                             if (study_name %in% c("COVE","MockCOVE") ) c("Comm. of color", "White Non-Hispanic"),
                              if (startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na")) c("Comm. of color (US)", "White Non-Hispanic (US)"),
                              "Men", "Women",
-                             if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) c("HIV infection Yes", "HIV infection No")
+                             if (study_name %in% c("ENSEMBLE","MockENSEMBLE") & !startsWith(a, "pseudoneut")) c("HIV infection Yes", "HIV infection No")
     )
 }    
 
@@ -151,13 +153,13 @@ for (a in assays) {
               nrow(subset(dat.vac.seroneg, yy==1 & HighRiskInd==1)), 
               nrow(subset(dat.vac.seroneg, yy==1 & HighRiskInd==0)), 
               # MinorityInd also makes sense for US in ensemble
-              if(study_name_code!="ENSEMBLE") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1)), 
-              if(study_name_code!="ENSEMBLE") nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0)), 
+              if(study_name %in% c("COVE","MockCOVE") ) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1)), 
+              if(study_name %in% c("COVE","MockCOVE") ) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0)), 
               if(startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na")) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==1 & Region==0)), 
               if(startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(config, "config"), "janssen_na")) nrow(subset(dat.vac.seroneg, yy==1 & MinorityInd==0 & Region==0)), 
               nrow(subset(dat.vac.seroneg, yy==1 & Sex==1)), 
               nrow(subset(dat.vac.seroneg, yy==1 & Sex==0)),
-              if (study_name_code=="ENSEMBLE" & !startsWith(a, "pseudoneut")) { c(
+              if (study_name %in% c("ENSEMBLE","MockENSEMBLE") & !startsWith(a, "pseudoneut")) { c(
                   nrow(subset(dat.vac.seroneg, yy==1 & HIVinfection==1)), 
                   nrow(subset(dat.vac.seroneg, yy==1 & HIVinfection==0)))
               }
@@ -191,10 +193,14 @@ if (startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(confi
     
     if(verbose) print("forest plots for different countries and regions")
     
-    regions=  get("regions."  %.%study_name_code)
-    countries=get("countries."%.%study_name_code)
-    labels.regions=  get("labels.regions."  %.%study_name_code)
-    labels.countries=get("labels.countries."%.%study_name_code)
+    regions=  get("regions.ENSEMBLE")
+    countries=get("countries.ENSEMBLE")
+    labels.regions=  get("labels.regions.ENSEMBLE")
+    labels.countries=get("labels.countries.ENSEMBLE")
+#    regions=  get("regions."  %.%study_name_code)
+#    countries=get("countries."%.%study_name_code)
+#    labels.regions=  get("labels.regions."  %.%study_name_code)
+#    labels.countries=get("labels.countries."%.%study_name_code)
     
     countries.1 = countries[countries %in% unique(dat.vac.seroneg$Country)]
     
