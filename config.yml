@@ -1,10 +1,18 @@
-# primary_assays: optional. If not defined, multitesting adjustment is over all assays. If defined, multitesting adjustment is only over this subset. If this set is empty, then no multitesting adjustment is done
-# multivariate_assays and additional_models are both optional. The difference between the two is that in multivariate_assays for each formula, both models are fit, once scaled and once non-scaled 
-#       and that in multivariate_assays, a generalized wald test p value is computed over all markers
-# interaction: optional. For each interaction model, a regression coefficient table and two marginalized risk curves plots are made, one with marker a on the x axis and evaluated at three levels of marker b,
-#       and the other with marker b on the x axis and evaluated at three levels of marker a
+# primary_assays: optional. 
+#       If not defined, multitesting adjustment is over all assays. If defined, multitesting adjustment is only over this subset. If this set is empty, then no multitesting adjustment is done
 
-# notes: use inherits to overwrite an attribute
+# multivariate_assays and additional_models are both optional. 
+#       The difference between the two is that in multivariate_assays for each formula, both models are fit, once scaled and once non-scaled 
+#           and that in multivariate_assays, a generalized wald test p value is computed over all markers
+
+# interaction: optional. 
+#       For each interaction model, a regression coefficient table and two marginalized risk curves plots with bootstrap are made, one with marker a on the x axis and evaluated at three levels of marker b,
+#           and the other with marker b on the x axis and evaluated at three levels of marker a
+#       The three levels of markers are 15, 50, 85 percentiles by default, but can be changed via special handling code in the R scripts
+
+# Notes: use inherits to overwrite an attribute
+
+
 
 ###################################################################################################
 # trials
