@@ -531,9 +531,12 @@ if (!is.null(config$interaction)) {
                 }
                 
                 # legend for the three lines
-                mylegend(x=3, legend=paste(signif(10**risks$marker.2, 3), c("(15th percentile)","(median)","(85th percentile)")
-                    #if (inner.id==1) c("(min)","(median)","(90th percentile)") else c("(16.5th percentile)","(median)","(82.5th percentile)")
-                ), col=1:3, lty=c(1,2,1), title=labels.assays.short[get.assay.from.name(vthree)], lwd=lwd)
+                legend.txt=c("(15th percentile)","(median)","(85th percentile)")
+#                # special handling code
+#                if (attr(config, "config")=="hvtn705second") {
+#                    if (inner.id==1) legend.txt=c("(min)","(median)","(90th percentile)")
+#                }
+                mylegend(x=3, legend=paste(signif(10**risks$marker.2, 3), legend.tx), col=1:3, lty=c(1,2,1), title=labels.assays.short[get.assay.from.name(vthree)], lwd=lwd)
                 
                 # placebo prevelance lines
                 abline(h=prev.plac[1], col="gray", lty=c(1,3,3), lwd=lwd)
