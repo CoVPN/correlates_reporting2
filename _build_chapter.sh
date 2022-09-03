@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ $# -eq 0 ]
+  then
+    echo "********* Please provide a module name, e.g. cor_coxph, as an argument."
+    exit
+fi
+
+
 echo $TRIAL
 #Rscript -e "bookdown::clean_book(TRUE)"
 if [ $1 = "immuno_graphical" ] || [ $1 = "immuno_tabular" ]; then

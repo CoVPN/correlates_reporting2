@@ -226,7 +226,6 @@ if (!is.null(config$interaction)) {
             for (inner.id in 1:2) {
                 if (inner.id == 1) {
                     vx=a; vthree=b
-#                    three.val=c(min=-2, wtd.quantile(dat.ph1[[vthree]][dat.ph1$Trt==1], dat.ph1$wt[dat.ph1$Trt==1], c(.5, .9)))
                 } else {
                     vx=b; vthree=a
                 }        
@@ -239,6 +238,14 @@ if (!is.null(config$interaction)) {
                     seq(min(dat.ph1[[vx]], na.rm=TRUE), max(dat.ph1[[vx]], na.rm=TRUE), length=100) # equally spaced between min and max so that the curves look good
                 ))    
                 
+#                # special handling code
+#                if (attr(config, "config")=="hvtn705second") {
+#                    if (inner.id == 1) {
+#                        three.val=c(min=-2, wtd.quantile(dat.ph1[[vthree]][dat.ph1$Trt==1], dat.ph1$wt[dat.ph1$Trt==1], c(.5, .9)))
+#                    }
+#                }
+
+
                 # estimate marginalized risks, return a matrix
                 prob.ls=sapply (three.val, function(val) {
                         marginalized.risk.cont.2(fit, marker.name  =vx, data=data.ph2, weights=data.ph2$wt, t=tfinal.tpeak, ss=ss, 
