@@ -536,7 +536,7 @@ if (!is.null(config$interaction)) {
 #                if (attr(config, "config")=="hvtn705second") {
 #                    if (inner.id==1) legend.txt=c("(min)","(median)","(90th percentile)")
 #                }
-                mylegend(x=3, legend=paste(signif(10**risks$marker.2, 3), legend.tx), col=1:3, lty=c(1,2,1), title=labels.assays.short[get.assay.from.name(vthree)], lwd=lwd)
+                mylegend(x=3, legend=paste(signif(10**risks$marker.2, 3), legend.txt), col=1:3, lty=c(1,2,1), title=labels.assays.short[get.assay.from.name(vthree)], lwd=lwd)
                 
                 # placebo prevelance lines
                 abline(h=prev.plac[1], col="gray", lty=c(1,3,3), lwd=lwd)
