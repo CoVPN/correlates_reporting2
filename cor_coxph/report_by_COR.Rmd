@@ -133,6 +133,7 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
 
 ```{r, echo=FALSE, results='asis'}
   if (!is.null(config$additional_models)) {
+  cat("## Additional posthoc Cox Models of Risk")
     for (i in 1:length(config$additional_models)) {
       res = knitr::knit_child(c(here::here('cor_coxph', 'additional_model.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
@@ -142,15 +143,16 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
 
 
 ```{r, echo=FALSE, results='asis'}
-if (attr(config,"config") %in% c("hvtn705second")) {
-  #aa=assays[contain(assays,"V2")][-(1:2)]  
-  aa=c("IgG340mdw_V1V2", "IgG3gp70.001428.2.42.V1V240delta") 
-  bb=c("ICS4AnyEnvIFNg_OR_IL2", "ICS4JMos1gp120IFNg_OR_IL2", "ICS4JMos1gp41IFNg_OR_IL2", "ICS4JMos2GagIFNg_OR_IL2", "ICS4JMos2RNAseIntIFNg_OR_IL2",        "ICS4JMos2Sgp120IFNg_OR_IL2", "ICS4JMos2Sgp41IFNg_OR_IL2")
-  for (a in aa) {
-  for (b in bb) {
-    res = knitr::knit_child(c(here::here('cor_coxph', 'itxn_by_assays.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
-  }}
+if (!is.null(config$interaction)) {
+  cat("## Interaction Cox Models of Risk")
+  for (ab in config$interaction) {
+      tmp=trim(strsplit(ab, " *\\* *")[[1]])
+      a=tmp[1]
+      b=tmp[2]            
+
+      res = knitr::knit_child(c(here::here('cor_coxph', 'itxn_by_assays.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+  }
 }
 ```
 

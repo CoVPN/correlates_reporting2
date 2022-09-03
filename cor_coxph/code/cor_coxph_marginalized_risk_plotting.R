@@ -487,43 +487,41 @@ dev.off()
 
 
 ###################################################################################################
-# trial-specific ad hoc plots
+# interaction models and risk curves
 
-if (attr(config, "config") == "hvtn705second") {
+if (!is.null(config$interaction)) {
+    for (ab in config$interaction) {
+        tmp=trim(strsplit(ab, " *\\* *")[[1]])
+        aold=tmp[1]
+        bold=tmp[2]            
+        a=paste0("Day",tpeak,aold)
+        b=paste0("Day",tpeak,bold)
             
-    aa=c("IgG340mdw_V1V2", "IgG3gp70.001428.2.42.V1V240delta")
-    bb=c("ICS4AnyEnvIFNg_OR_IL2", "ICS4JMos1gp120IFNg_OR_IL2", "ICS4JMos1gp41IFNg_OR_IL2", "ICS4JMos2GagIFNg_OR_IL2", "ICS4JMos2RNAseIntIFNg_OR_IL2", "ICS4JMos2Sgp120IFNg_OR_IL2", "ICS4JMos2Sgp41IFNg_OR_IL2")
-    #aa=assays[contain(assays,"V2")][-(1:2)]  
-    for (a in aa) {aold=a; a=paste0("Day210",a)
-    for (b in bb) {bold=b; b=paste0("Day210",b)
-        #a="Day210IgG3gp70.001428.2.42.V1V240delta"
-        #b="Day210ICS4AnyEnvIFNg_OR_IL2"
-        
         for (inner.id in 1:2) {
-        for (idx in 2:2) {
-        
-            if(idx==1) risks=risks.itxn.1[[ifelse(inner.id==1,paste0(a,b),paste0(b,a))]]
-            if(idx==2) risks=risks.itxn.2[[ifelse(inner.id==1,paste0(a,b),paste0(b,a))]]
+            vx=ifelse(inner.id==1,a,b)
+            vthree=ifelse(inner.id==1,b,a)
+            risks=risks.itxn[[paste0(vx,vthree)]]
             
-            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",ifelse(inner.id==1,aold,bold),"_",ifelse(inner.id==1,bold,aold)), mfrow=.mfrow)
+            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_",ifelse(inner.id==1,aold,bold),"_",ifelse(inner.id==1,bold,aold)), mfrow=.mfrow)
+            
                 par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
                 lwd=2
                 
-                shown=risks$marker>=wtd.quantile(dat.vac.seroneg[[ifelse(inner.id==1,a,b)]], dat.vac.seroneg$wt, 2.5/100) & 
-                      risks$marker<=wtd.quantile(dat.vac.seroneg[[ifelse(inner.id==1,a,b)]], dat.vac.seroneg$wt, 1-2.5/100)
+                shown=risks$marker>=wtd.quantile(dat.vac.seroneg[[vx]], dat.vac.seroneg$wt, 2.5/100) & 
+                      risks$marker<=wtd.quantile(dat.vac.seroneg[[vx]], dat.vac.seroneg$wt, 1-2.5/100)
                 
                 # hard code ylim to make the plot look better
                 ylim=c(0,0.11)
                 #ylim=range(risks$lb[shown,], risks$ub[shown,], 0) # [shown] so that there is not too much empty space
-                xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(ifelse(inner.id==1,a,b)), tpeak) 
+                xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(vx), tpeak) 
                 if(verbose) myprint(xlim, ylim)
                     
                 # set up an empty plot
                 plot(risks$marker[shown], risks$prob[shown,1], 
-                    xlab=paste0(labels.assays.short[get.assay.from.name(ifelse(inner.id==1,a,b))], " (=s)"), 
+                    xlab=paste0(labels.assays.short[get.assay.from.name(vx)], " (=s)"), 
                     ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), 
                     lwd=lwd, xlim=xlim, ylim=ylim, type="n", main="", xaxt="n")    
-                draw.x.axis.cor(xlim, lloxs[ifelse(inner.id==1,a,b)], config$llox_label[ifelse(inner.id==1,a,b)])
+                draw.x.axis.cor(xlim, lloxs[vx], config$llox_label[vx])
                     
                 # draw risk lines and confidence bands
                 for (i in 1:length(risks$marker.2)) {
@@ -533,9 +531,9 @@ if (attr(config, "config") == "hvtn705second") {
                 }
                 
                 # legend for the three lines
-                mylegend(x=3, legend=paste(formatDouble(10**risks$marker.2,if (inner.id==1) 3 else 0,remove.leading0=F), 
+                mylegend(x=3, legend=paste(signif(10**risks$marker.2, 3), 
                     if (inner.id==1) c("(min)","(median)","(90th percentile)") else c("(16.5th percentile)","(median)","(82.5th percentile)")
-                ), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(ifelse(inner.id==1,b,a))], lwd=lwd)
+                ), col=1:3, lty=c(1,2,1), title=labels.assays.short[get.assay.from.name(vthree)], lwd=lwd)
                 
                 # placebo prevelance lines
                 abline(h=prev.plac[1], col="gray", lty=c(1,3,3), lwd=lwd)
@@ -547,7 +545,7 @@ if (attr(config, "config") == "hvtn705second") {
                 par(new=TRUE) 
                 col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
                 col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
-                tmp.x=dat.vac.seroneg[[ifelse(inner.id==1,a,b)]][dat.vac.seroneg$ph2]
+                tmp.x=dat.vac.seroneg[[vx]][dat.vac.seroneg$ph2]
                 tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
                 tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
                 if (is.nan(tmp$density)[1]) tmp=hist(tmp.x, plot=F)
@@ -555,8 +553,5 @@ if (attr(config, "config") == "hvtn705second") {
                 
             dev.off()            
         }
-        }
-    }
-    }
-        
+    }        
 }
