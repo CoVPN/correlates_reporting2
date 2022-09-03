@@ -270,7 +270,7 @@ if (attr(config, "config") == "hvtn705second") {
                         ))    
                     } else {
                         # compute risks at three values of v1v2
-                        three.val=c(min=-2, wtd.quantile(dat.vac.seroneg[[a]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.165, .5, .825)))
+                        three.val=wtd.quantile(dat.vac.seroneg[[a]][dat.vac.seroneg$Trt==1], dat.vac.seroneg$wt[dat.vac.seroneg$Trt==1], c(.165, .5, .825))
                         # compute risks at a sequence of ics cd4 values for each of the three v1v2 values
                         ss=sort(c(
                             wtd.quantile(dat.vac.seroneg[[b]], dat.vac.seroneg$wt, c(0.025,0.05,0.95,0.975)), # will be included in the table

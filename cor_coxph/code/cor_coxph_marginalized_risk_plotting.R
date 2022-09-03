@@ -501,29 +501,30 @@ if (attr(config, "config") == "hvtn705second") {
         #a="Day210IgG3gp70.001428.2.42.V1V240delta"
         #b="Day210ICS4AnyEnvIFNg_OR_IL2"
         
+        for (inner.id in 1:2) {
         for (idx in 2:2) {
-            if(idx==1) risks=risks.itxn.1[[a]]
-            if(idx==2) risks=risks.itxn.2[[a]]
+            if(idx==1) risks=risks.itxn.1[[ifelse(inner.id==1,paste0(a,b),paste0(b,a))]]
+            if(idx==2) risks=risks.itxn.2[[ifelse(inner.id==1,paste0(a,b),paste0(b,a))]]
             
-            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",a,"_",b), mfrow=.mfrow)
+            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",ifelse(inner.id==1,a,b),"_",ifelse(inner.id==1,b,a)), mfrow=.mfrow)
                 par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
                 lwd=2
                 
-                shown=risks$marker>=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 2.5/100) & 
-                      risks$marker<=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 1-2.5/100)
+                shown=risks$marker>=wtd.quantile(dat.vac.seroneg[[ifelse(inner.id==1,a,b)]], dat.vac.seroneg$wt, 2.5/100) & 
+                      risks$marker<=wtd.quantile(dat.vac.seroneg[[ifelse(inner.id==1,a,b)]], dat.vac.seroneg$wt, 1-2.5/100)
                 
                 # hard code ylim to make the plot look better
                 ylim=c(0,0.11)
                 #ylim=range(risks$lb[shown,], risks$ub[shown,], 0) # [shown] so that there is not too much empty space
-                xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(a), tpeak) 
+                xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(ifelse(inner.id==1,a,b)), tpeak) 
                 if(verbose) myprint(xlim, ylim)
                     
                 # set up an empty plot
-                plot(risks$marker[shown], risks$prob[shown,i], 
-                    xlab=paste0(labels.assays.short[get.assay.from.name(a)], " (=s)"), 
+                plot(risks$marker[shown], risks$prob[shown,0], 
+                    xlab=paste0(labels.assays.short[get.assay.from.name(ifelse(inner.id==1,a,b))], " (=s)"), 
                     ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), 
                     lwd=lwd, xlim=xlim, ylim=ylim, type="n", main="", xaxt="n")    
-                draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
+                draw.x.axis.cor(xlim, lloxs[ifelse(inner.id==1,a,b)], config$llox_label[ifelse(inner.id==1,a,b)])
                     
                 # draw risk lines and confidence bands
                 for (i in 1:length(risks$marker.2)) {
@@ -533,7 +534,7 @@ if (attr(config, "config") == "hvtn705second") {
                 }
                 
                 # legend for the three lines
-                mylegend(x=3, legend=paste(formatDouble(10**risks$marker.2,3,remove.leading0=F), c("(min)","(median)","(90th percentile)")), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(b)], lwd=lwd)
+                mylegend(x=3, legend=paste(formatDouble(10**risks$marker.2,3,remove.leading0=F), c("(min)","(median)","(90th percentile)")), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(ifelse(inner.id==1,b,a))], lwd=lwd)
                 
                 # placebo prevelance lines
                 abline(h=prev.plac[1], col="gray", lty=c(1,3,3), lwd=lwd)
@@ -545,13 +546,14 @@ if (attr(config, "config") == "hvtn705second") {
                 par(new=TRUE) 
                 col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
                 col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
-                tmp.x=dat.vac.seroneg[[a]][dat.vac.seroneg$ph2]
+                tmp.x=dat.vac.seroneg[[ifelse(inner.id==1,a,b)]][dat.vac.seroneg$ph2]
                 tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
                 tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
                 if (is.nan(tmp$density)[1]) tmp=hist(tmp.x, plot=F)
                 plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F, xlim=xlim, ylim=c(0,max(tmp$density*1.25)))
                 
-            dev.off()
+            dev.off()            
+        }
         }
     }
     }

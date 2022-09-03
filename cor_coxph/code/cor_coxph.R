@@ -59,6 +59,9 @@ dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
 
+# a hack
+#dat.mock=subset(dat.mock, !is.na(BMI))
+
     
 dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
