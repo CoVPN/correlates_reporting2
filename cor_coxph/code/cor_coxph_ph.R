@@ -308,10 +308,13 @@ if (!is.null(config$multivariate_assays)) {
     for (a in config$multivariate_assays) {
       for (i in 1:2) {
       # 1: per SD; 2: per 10-fold
+        a.tmp=a
         aa=trim(strsplit(a, "\\+")[[1]])
-        tmp=a
-        for (x in aa[!contain(aa, "\\*")]) tmp=gsub(x, paste0(if(i==1) "scale","(Day",tpeak,x,")"), tmp) # replace every variable with Day210x, with or without scale
-        f= update(form.0, as.formula(paste0("~.+", tmp)))
+        for (x in aa[!contain(aa, "\\*")]) {
+            # replace every variable with Day210x, with or without scale
+            a.tmp=gsub(x, paste0(if(i==1) "scale","(Day",tpeak,x,")"), a.tmp) 
+        }
+        f= update(form.0, as.formula(paste0("~.+", a.tmp)))
         fit=svycoxph(f, design=design.vacc.seroneg) 
         var.ind=length(coef(fit)) - length(aa):1 + 1
         
@@ -345,6 +348,32 @@ if (!is.null(config$multivariate_assays)) {
 ###################################################################################################
 # additional_models
 
+if (!is.null(config$additional_models)) {
+    if(verbose) print("Additional models")
+    
+    for (a in config$additional_models) {
+        tmp=gsub("tpeak",tpeak,a)
+        f= update(Surv(EventTimePrimary, EventIndPrimary) ~1, as.formula(paste0("~.+", tmp)))
+        fit=svycoxph(f, design=design.vacc.seroneg) 
+        
+        fits=list(fit)
+        est=getFormattedSummary(fits, exp=T, robust=T, type=1)
+        ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
+        est = paste0(est, " ", ci)
+        p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
+        
+        tab=cbind(est, p)
+        colnames(tab)=c("HR", "P value")
+        tab
+    
+        mytex(tab, file.name=paste0("CoR_add_models", match(a, config$additional_models)), align="c", include.colnames = T, save2input.only=T, 
+            input.foldername=save.results.to)
+    }
+    
+}
+
+
+# a hack
 if (attr(config,"config")=="janssen_pooled_real") {
     f=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) * Day29pseudoneutid50    
     fit=svycoxph(f, design=design.vacc.seroneg) 
@@ -368,30 +397,6 @@ if (attr(config,"config")=="janssen_pooled_real") {
     mytex(tab, file.name="CoR_region_itxn", align="c", include.colnames = T, save2input.only=T, 
         input.foldername=save.results.to)
         
-}
-
-if (!is.null(config$additional_models)) {
-    if(verbose) print("Additional models")
-    
-    for (a in config$additional_models) {
-        tmp=gsub("tpeak",tpeak,a)
-        f= update(Surv(EventTimePrimary, EventIndPrimary) ~1, as.formula(paste0("~.+", tmp)))
-        fit=svycoxph(f, design=design.vacc.seroneg) 
-        
-        fits=list(fit)
-        est=getFormattedSummary(fits, exp=T, robust=T, type=1)
-        ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
-        est = paste0(est, " ", ci)
-        p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
-        
-        tab=cbind(est, p)
-        colnames(tab)=c("HR", "P value")
-        tab
-    
-        mytex(tab, file.name=paste0("CoR_add_models", match(a, config$additional_models)), align="c", include.colnames = T, save2input.only=T, 
-            input.foldername=save.results.to)
-    }
-    
 }
 
 

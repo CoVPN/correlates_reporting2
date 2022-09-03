@@ -33,6 +33,8 @@ if(!exists("COR")) {
 ###################################################################################################
 # read config
 
+if(Sys.getenv("TRIAL")=="") stop(" *************************************  environmental variable TRIAL not defined  *************************************")
+
 # TRIAL-related config
 config <- config::get(config = Sys.getenv("TRIAL"))
 if(length(config$llox_label)==1) {
