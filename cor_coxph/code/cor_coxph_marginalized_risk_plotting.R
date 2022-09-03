@@ -494,19 +494,18 @@ if (attr(config, "config") == "hvtn705second") {
     aa=c("IgG340mdw_V1V2", "IgG3gp70.001428.2.42.V1V240delta")
     bb=c("ICS4AnyEnvIFNg_OR_IL2", "ICS4JMos1gp120IFNg_OR_IL2", "ICS4JMos1gp41IFNg_OR_IL2", "ICS4JMos2GagIFNg_OR_IL2", "ICS4JMos2RNAseIntIFNg_OR_IL2", "ICS4JMos2Sgp120IFNg_OR_IL2", "ICS4JMos2Sgp41IFNg_OR_IL2")
     #aa=assays[contain(assays,"V2")][-(1:2)]  
-    for (a in aa) {
-    a=paste0("Day210",a)
-    for (b in bb) {
-    b=paste0("Day210",b)
+    for (a in aa) {aold=a; a=paste0("Day210",a)
+    for (b in bb) {bold=b; b=paste0("Day210",b)
         #a="Day210IgG3gp70.001428.2.42.V1V240delta"
         #b="Day210ICS4AnyEnvIFNg_OR_IL2"
         
         for (inner.id in 1:2) {
         for (idx in 2:2) {
+        
             if(idx==1) risks=risks.itxn.1[[ifelse(inner.id==1,paste0(a,b),paste0(b,a))]]
             if(idx==2) risks=risks.itxn.2[[ifelse(inner.id==1,paste0(a,b),paste0(b,a))]]
             
-            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",ifelse(inner.id==1,a,b),"_",ifelse(inner.id==1,b,a)), mfrow=.mfrow)
+            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",ifelse(inner.id==1,aold,bold),"_",ifelse(inner.id==1,bold,aold)), mfrow=.mfrow)
                 par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
                 lwd=2
                 
@@ -520,7 +519,7 @@ if (attr(config, "config") == "hvtn705second") {
                 if(verbose) myprint(xlim, ylim)
                     
                 # set up an empty plot
-                plot(risks$marker[shown], risks$prob[shown,0], 
+                plot(risks$marker[shown], risks$prob[shown,1], 
                     xlab=paste0(labels.assays.short[get.assay.from.name(ifelse(inner.id==1,a,b))], " (=s)"), 
                     ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), 
                     lwd=lwd, xlim=xlim, ylim=ylim, type="n", main="", xaxt="n")    
@@ -528,13 +527,15 @@ if (attr(config, "config") == "hvtn705second") {
                     
                 # draw risk lines and confidence bands
                 for (i in 1:length(risks$marker.2)) {
-                    lines(risks$marker[shown], risks$prob[shown,i], lwd=lwd, col=i)
+                    lines(risks$marker[shown], risks$prob[shown,i], lwd=lwd, col=i, lty=ifelse(i==2,2,1))# use dashed line for the middle so that overlaps can be seen
                     lines(risks$marker[shown], risks$lb[shown,i],   lwd=lwd, col=i, lty=3)
                     lines(risks$marker[shown], risks$ub[shown,i],   lwd=lwd, col=i, lty=3)    
                 }
                 
                 # legend for the three lines
-                mylegend(x=3, legend=paste(formatDouble(10**risks$marker.2,3,remove.leading0=F), c("(min)","(median)","(90th percentile)")), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(ifelse(inner.id==1,b,a))], lwd=lwd)
+                mylegend(x=3, legend=paste(formatDouble(10**risks$marker.2,if (inner.id==1) 3 else 0,remove.leading0=F), 
+                    if (inner.id==1) c("(min)","(median)","(90th percentile)") else c("(16.5th percentile)","(median)","(82.5th percentile)")
+                ), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(ifelse(inner.id==1,b,a))], lwd=lwd)
                 
                 # placebo prevelance lines
                 abline(h=prev.plac[1], col="gray", lty=c(1,3,3), lwd=lwd)
