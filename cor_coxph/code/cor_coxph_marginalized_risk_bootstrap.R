@@ -280,9 +280,11 @@ if (attr(config, "config") == "hvtn705second") {
                     }        
                     
                     # estimate marginalized risks, return a matrix
-                    prob.ls=sapply (three.val, function(ics) {
-                        marginalized.risk.cont.2(fit, marker.name=ifelse(inner.id==1,a,b), data=data.ph2, weights=data.ph2$wt, t=tfinal.tpeak, ss=ss, marker.name.2=b, s.2=ics)
+                    prob.ls=sapply (three.val, function(val) {
+                        marginalized.risk.cont.2(fit, marker.name  =ifelse(inner.id==1,a,b), data=data.ph2, weights=data.ph2$wt, 
+                               t=tfinal.tpeak, ss=ss, marker.name.2=ifelse(inner.id==1,b,a), s.2=val)
                     })
+                    print(head(prob.ls))
                     
                     
                     #### bootstrap
