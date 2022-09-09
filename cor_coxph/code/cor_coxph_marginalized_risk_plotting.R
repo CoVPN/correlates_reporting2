@@ -140,15 +140,15 @@ for (a in all.markers) {
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on -log(1-) scale
 for (eq.geq in 1:4) {  
-# eq.geq=2; a=assays[1]
+# eq.geq=1; a=all.markers[1]
     
     outs=lapply (all.markers, function(a) {        
         is.delta=startsWith(a,"Delta")
         assay=get.assay.from.name(a)
         
-        tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp=4
+        tmp.1=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp.1=4
         
-        mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp,"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
+        mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp.1,"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
  
             lwd=2.5
             par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
@@ -217,6 +217,7 @@ for (eq.geq in 1:4) {
             # x axis
             if(!is.delta) draw.x.axis.cor(xlim, lloxs[assay], config$llox_label[assay])
             
+            img.dat=cbind(risks$marker[.subset], t(rbind(est, ci.band))[.subset,])
         
             # add overall CVE horizontal line
             abline(h=if(eq.geq==4) -log(1-overall.ve) else overall.ve, col="gray", lwd=2, lty=c(1,3,3))
@@ -236,6 +237,9 @@ for (eq.geq in 1:4) {
 #                tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
 #                ret=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))            
 #            }
+    
+            img.dat=cbind(img.dat, y)
+            mywrite.csv(img.dat, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp.1,"_"%.%study_name))    
             
             
             # legend
@@ -281,8 +285,10 @@ for (eq.geq in 1:4) {
                 )
         }
     }
-}
     
+} # end for eq.geq
+
+
 # show tables of controlled ve without sensitivity at select assay values
 digits.risk=4
 risks.all=get("risks.all.1")
@@ -398,7 +404,6 @@ if (config$is_ows_trial) {
 #
 if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
 
-
 for (a in all.markers) {        
     mypdf(oma=c(1,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_", study_name), mfrow=.mfrow, mar=c(12,4,5,2))
     par(las=1, cex.axis=0.9, cex.lab=1)# axis label 
@@ -419,7 +424,21 @@ for (a in all.markers) {
         mylines(time.0, risk.0, col="gray", lwd=2, type="l")
     }
     
-    # add data ribbon    
+    # save source data for images per some journals' requirements
+    img.dat=cbind(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,])
+    rownames(img.dat)=img.dat[,1]
+    # add placebo risk
+    tmp=cbind(time.0, risk.0)
+    tmp=tmp[order (tmp[,1]),]
+    tmp=unique(tmp)    
+    rownames(tmp)=tmp[,1]
+    # combine and sort
+    img.dat=cbinduneven(list(img.dat, tmp))
+    img.dat=img.dat[order(img.dat[,5]),]
+    mywrite.csv(img.dat, paste0(save.results.to, a, "_marginalized_risks_cat_", study_name))
+    
+
+    # add data ribbon
     f1=update(form.s, as.formula(paste0("~.+",marker.name)))
     km <- survfit(f1, subset(dat.vac.seroneg, ph2==1), weights=wt)
     tmp=summary(km, times=x.time)            

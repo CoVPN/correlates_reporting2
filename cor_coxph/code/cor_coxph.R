@@ -1,5 +1,4 @@
 #Sys.setenv(TRIAL = "vat08m_naive"); COR="D43"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
@@ -8,6 +7,7 @@
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222_bAb"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "profiscov"); COR="D91"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -162,7 +162,9 @@ tmp=paste0(here::here(), paste0("/output/", attr(config,"config"), "/", COR, "/y
 if (file.exists(tmp)) load(tmp) # if it does not exist, the code will find alternative ylim
 
 source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
+
 source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
+
 if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_real")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
 
 
