@@ -22,7 +22,7 @@ digits.risk=4
     
 for (eq.geq in 1:2) {  # 1 conditional on s,   2 is conditional on S>=s
 for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
-#eq.geq=1; w.wo.plac=1; a=all.markers[1]
+# eq.geq=1; w.wo.plac=1; a=all.markers[1]
     
     risks.all=get("risks.all."%.%eq.geq)
     
@@ -41,6 +41,8 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         }
         ylims.cor[[eq.geq]][[w.wo.plac]]=ylim
     }
+    # the following is done so that the ylim looks comparable to ID50 in this trial
+    if (attr(config,"config")=="azd1222_bAb" & eq.geq==1 & w.wo.plac==1 & COR=="D57") ylim=c(0,0.05)    
     if(verbose) myprint(ylim)
     lwd=2
      
@@ -101,6 +103,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         #mtext("Density", side=4, las=0, line=2, cex=1, at=.3)  
         #mylegend(x=6, fill=col, border=col, legend="Vaccine Group", bty="n", cex=0.7)      
     #mtext(toTitleCase(study_name), side = 1, line = 0, outer = T, at = NA, adj = NA, padj = NA, cex = NA, col = NA, font = NA)
+    
     dev.off()    
     } # end assays
     
