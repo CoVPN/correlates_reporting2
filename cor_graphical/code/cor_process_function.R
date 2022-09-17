@@ -24,7 +24,7 @@ getResponder <- function(data,
                          cutoff.name, 
                          times=times, 
                          assays=assays, 
-                         folds=c(2, 4),
+                         #folds=c(2, 4),
                          grtns=c(2, 4),
                          responderFR = 4,
                          pos.cutoffs = pos.cutoffs) {
@@ -38,24 +38,25 @@ getResponder <- function(data,
       
       data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
       data[, post] <- pmin(data[, post], log10(uloqs[j]))
-      data[, delta] <- ifelse(10^data[, post] < cutoff[j], log10(cutoff[j]/2), data[, post])-ifelse(10^data[, bl] < cutoff[j], log10(cutoff[j]/2), data[, bl])
+      #data[, delta] <- ifelse(10^data[, post] < cutoff[j], log10(cutoff[j]/2), data[, post])-ifelse(10^data[, bl] < cutoff[j], log10(cutoff[j]/2), data[, bl])
       
-      for (k in folds){
-        data[, paste0(post, k, cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
-      }
+      #for (k in folds){
+      #  data[, paste0(post, k, cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
+      #}
       
       for (k in grtns){
         data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
       }
       
-      if (!is.na(pos.cutoffs[j]) & grepl("bind", j)) {
+      # if (!is.na(pos.cutoffs[j])
+      if (grepl("bind", j)) {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
         data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
       } else {
         data[, paste0(post, "Resp")] <- as.numeric(
-          (data[, bl] < log10(cutoff[j]) & data[, post] > log10(cutoff[j])) |
-            (data[, bl] >= log10(cutoff[j]) & data[, paste0(post, "FR", responderFR)] == 1))
-        data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(cutoff[j]))
+          (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > log10(pos.cutoffs[j])) |
+            (data[, bl] >= log10(pos.cutoffs[j]) & data[, paste0(post, "FR", responderFR)] == 1))
+        data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
       }
     }
   }
