@@ -543,7 +543,14 @@ hvtn705second: &hvtn705second
             IgG3gp70.001428.2.42.V1V240delta*ICS4JMos2Sgp120IFNg_OR_IL2,
             IgG3gp70.001428.2.42.V1V240delta*ICS4JMos2Sgp41IFNg_OR_IL2,    
             IgG3gp70.001428.2.42.V1V240delta*ICS4JMos2GagIFNg_OR_IL2,
-            IgG3gp70.001428.2.42.V1V240delta*ICS4JMos2RNAseIntIFNg_OR_IL2
+            IgG3gp70.001428.2.42.V1V240delta*ICS4JMos2RNAseIntIFNg_OR_IL2,
+            IgG3AE.A244.V1V2.Tags_293F40delta*ICS4AnyEnvIFNg_OR_IL2,    
+            IgG3AE.A244.V1V2.Tags_293F40delta*ICS4JMos1gp120IFNg_OR_IL2,
+            IgG3AE.A244.V1V2.Tags_293F40delta*ICS4JMos1gp41IFNg_OR_IL2,
+            IgG3AE.A244.V1V2.Tags_293F40delta*ICS4JMos2Sgp120IFNg_OR_IL2,
+            IgG3AE.A244.V1V2.Tags_293F40delta*ICS4JMos2Sgp41IFNg_OR_IL2,            
+            IgG3AE.A244.V1V2.Tags_293F40delta*ICS4JMos2GagIFNg_OR_IL2,
+            IgG3AE.A244.V1V2.Tags_293F40delta*ICS4JMos2RNAseIntIFNg_OR_IL2
   ]
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_excludeELISpotmarkersaddICSmarkers.csv
 
