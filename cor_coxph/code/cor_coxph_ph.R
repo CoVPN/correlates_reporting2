@@ -429,7 +429,8 @@ if (!is.null(config$interaction)) {
         colnames(tab)=c("HR", "P value")
         tab=rbind(tab, "Generalized Wald Test for Markers"=c("", formatDouble(p.gwald,3, remove.leading0 = F))); tab
         mytex(tab, file.name=paste0("CoR_itxn_",aold,"_",bold), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
-        itxn.pvals=c(itxn.pvals, p.gwald)
+                
+        itxn.pvals=c(itxn.pvals, last(getFixedEf(fit)[,"p.value"]))
     }    
     
     names(itxn.pvals)=config$interaction
