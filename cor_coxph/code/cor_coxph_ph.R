@@ -373,7 +373,6 @@ if (!is.null(config$additional_models)) {
 }
 
 
-# a hack
 if (attr(config,"config")=="janssen_pooled_real") {
     f=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) * Day29pseudoneutid50    
     fit=svycoxph(f, design=design.vacc.seroneg) 
@@ -398,6 +397,51 @@ if (attr(config,"config")=="janssen_pooled_real") {
         input.foldername=save.results.to)
         
 }
+
+
+###################################################################################################
+# interaction_models
+
+if (!is.null(config$interaction)) {
+    if(verbose) print("Interaction models Cox models")    
+    itxn.pvals=c()      
+    for (ab in config$interaction) {
+        tmp=trim(strsplit(ab, " *\\* *")[[1]])
+        aold=tmp[1]
+        bold=tmp[2]            
+        a=paste0("Day",tpeak,aold)
+        b=paste0("Day",tpeak,bold)
+                
+        # fit the interaction model and save regression results to a table
+        f=as.formula(paste("Surv(EventTimePrimary, EventIndPrimary) ~ RSA + Age + BMI + Riskscore + ",a," + ",b," + ",a,":",b))            
+        fit=svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)) 
+        fits=list(fit)
+        est=getFormattedSummary(fits, exp=T, robust=T, type=1)
+        ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
+        est = paste0(est, " ", ci)
+        p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
+        # generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
+        var.ind=5:7
+        stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
+        p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
+        # put together the table
+        tab=cbind(est, p)
+        colnames(tab)=c("HR", "P value")
+        tab=rbind(tab, "Generalized Wald Test for Markers"=c("", formatDouble(p.gwald,3, remove.leading0 = F))); tab
+        mytex(tab, file.name=paste0("CoR_itxn_",aold,"_",bold), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
+        itxn.pvals=c(itxn.pvals, p.gwald)
+    }    
+    
+    names(itxn.pvals)=config$interaction
+    itxn.pvals=itxn.pvals[!contain(config$interaction, "ICS4AnyEnv")] # remove the ones with ICS4AnyEnv
+    itx.pvals.adj.fdr=p.adjust(itxn.pvals, method="fdr")
+    itx.pvals.adj.hol=p.adjust(itxn.pvals, method="holm")
+    tab=cbind(itxn.pvals, itx.pvals.adj.hol, itx.pvals.adj.fdr)
+    colnames(tab)=c("interaction P value", "FWER", "FDR")
+    mytex(tab, file.name="CoR_itxn_multitesting", align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
+    
+}
+
 
 
 save (tab.cont, tab.cat, tab.cont.scaled, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))

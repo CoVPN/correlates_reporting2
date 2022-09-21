@@ -200,27 +200,12 @@ if (!is.null(config$interaction)) {
             b=paste0("Day",tpeak,bold)
                     
             # idx=2: only use vaccine arm. idx=1 uses placebo data and structural knowledge; it is commented out and moved to the end of the file
-            dat.ph1=dat.vac.seroneg
-            
+            dat.ph1=dat.vac.seroneg            
             data.ph2=subset(dat.ph1, ph2==1)     
             
             # fit the interaction model and save regression results to a table
             f=as.formula(paste("Surv(EventTimePrimary, EventIndPrimary) ~ RSA + Age + BMI + Riskscore + ",a," + ",b," + ",a,":",b))            
             fit=svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.ph1)) 
-            fits=list(fit)
-            est=getFormattedSummary(fits, exp=T, robust=T, type=1)
-            ci= getFormattedSummary(fits, exp=T, robust=T, type=13)
-            est = paste0(est, " ", ci)
-            p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
-            # generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
-            var.ind=5:7
-            stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
-            p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
-            # put together the table
-            tab=cbind(est, p)
-            colnames(tab)=c("HR", "P value")
-            tab=rbind(tab, "Generalized Wald Test for Itxn"=c("", formatDouble(p.gwald,3, remove.leading0 = F))); tab
-            mytex(tab, file.name=paste0("CoR_itxn_",aold,"_",bold), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
             
             # first treat a as the x axis variable, second treat b as the x axis variable
             for (inner.id in 1:2) {
@@ -244,8 +229,8 @@ if (!is.null(config$interaction)) {
 #                        three.val=c(min=-2, wtd.quantile(dat.ph1[[vthree]][dat.ph1$Trt==1], dat.ph1$wt[dat.ph1$Trt==1], c(.5, .9)))
 #                    }
 #                }
-
-
+    
+    
                 # estimate marginalized risks, return a matrix
                 prob.ls=sapply (three.val, function(val) {
                         marginalized.risk.cont.2(fit, marker.name  =vx, data=data.ph2, weights=data.ph2$wt, t=tfinal.tpeak, ss=ss, 
@@ -300,7 +285,7 @@ if (!is.null(config$interaction)) {
                 
                 risks.itxn[[paste0(vx,vthree)]]=list(marker=ss, prob=prob.ls, boot=res.ls, lb=lb.ls, ub=ub.ls, marker.2=three.val)
             } # end inner.id
-
+    
         }
         save(risks.itxn, file=paste0(save.results.to, "itxn.marginalized.risk.Rdata"))
         

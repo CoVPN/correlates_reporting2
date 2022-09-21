@@ -98,8 +98,9 @@ if (exists("COR")) {
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE") {
         if (contain(attr(config, "config"), "real")) {
+            # EUA datasets
             if (COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
-        } else stop("todo")
+        } 
     } 
     
     config.cor <- config::get(config = COR)
