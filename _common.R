@@ -228,18 +228,13 @@ if (exists("COR")) {
             tfinal.tpeak=40
             
         } else if (attr(config, "config")=="profiscov") {
-		if (COR=="D91") {
+			if (COR=="D91") {
+    	        tfinal.tpeak=66
+			} else if(COR=="D43") {
+        	    tfinal.tpeak= 91+66-43
+			}
+		}
 
-                tfinal.tpeak=66
-
-} else if(COR=="D43") {
-
-                tfinal.tpeak= 91+66-43
-
-}
-
-        }
-        
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
         prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
         overall.ve = c(1 - prev.vacc/prev.plac)    
