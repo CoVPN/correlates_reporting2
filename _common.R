@@ -222,10 +222,22 @@ if (exists("COR")) {
         
         if (startsWith(attr(config, "config"), "janssen_na_real")) {
             tfinal.tpeak=53
-        } else if (startsWith(attr(config, "config"), "janssen_la_real")) {
-            tfinal.tpeak=48 # from day 48 to 58, risk jumps from .008 to .027
+        } else if (startsWith(attr(config, "config"), "janssen_la_real")) { # from day 48 to 58, risk jumps from .008 to .027
+            tfinal.tpeak=48 
         } else if (startsWith(attr(config, "config"), "janssen_sa_real")) {
             tfinal.tpeak=40
+            
+        } else if (attr(config, "config")=="profiscov") {
+		if (COR=="D91") {
+
+                tfinal.tpeak=66
+
+} else if(COR=="D43") {
+
+                tfinal.tpeak= 91+66-43
+
+}
+
         }
         
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
