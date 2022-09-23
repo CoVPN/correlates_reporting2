@@ -407,6 +407,7 @@ if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
 for (a in all.markers) {        
     mypdf(oma=c(1,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_", study_name), mfrow=.mfrow, mar=c(12,4,5,2))
     par(las=1, cex.axis=0.9, cex.lab=1)# axis label 
+    
     marker.name=a%.%"cat"    
     
     out=risks.all.ter[[a]]
@@ -442,6 +443,10 @@ for (a in all.markers) {
     f1=update(form.s, as.formula(paste0("~.+",marker.name)))
     km <- survfit(f1, subset(dat.vac.seroneg, ph2==1), weights=wt)
     tmp=summary(km, times=x.time)            
+    
+    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
+    stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
+    stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
     
     n.risk.L <- round(tmp$n.risk[1:length(x.time)])
     n.risk.M <- round(tmp$n.risk[1:length(x.time)+length(x.time)])
