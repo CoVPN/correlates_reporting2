@@ -4,10 +4,11 @@
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "moderna_real"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222_bAb"); COR="D57"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "profiscov"); COR="D91"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "profiscov"); COR="D91"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -35,9 +36,6 @@ save.results.to = here::here("output");                                if (!dir.
 save.results.to = paste0(save.results.to, "/", attr(config,"config")); if (!dir.exists(save.results.to))  dir.create(save.results.to)
 save.results.to = paste0(save.results.to, "/", COR,"/");               if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
-
-# some exploratory code
-if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
 
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
 B <-       config$num_boot_replicates 
@@ -77,6 +75,13 @@ for (a in all.markers) {
         write(paste0(a, " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
     }
 }
+
+# some exploratory code
+if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
+
+#create twophase design object
+design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
+with(dat.vac.seroneg, table(Wstratum, ph2))
     
 # create verification object to be populated by the following scripts
 rv=list() 
@@ -84,13 +89,12 @@ rv$marker.cutpoints=marker.cutpoints
 
 # table of ph1 and ph2 cases
 tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
-print(tab)
 names(dimnames(tab))[2]="Event Indicator"
+print(tab)
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
 
 # getting some quantiles
 #10**wtd.quantile(dat.vac.seroneg$Day57pseudoneutid50, dat.vac.seroneg$wt, c(0.025, 0.05, seq(.2,.9,by=0.01),seq(.9,.99,by=0.005)))
-
 
 
 
@@ -108,11 +112,6 @@ if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 # run PH models
 ###################################################################################################
     
-#create twophase design object
-design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
-with(dat.vac.seroneg, table(Wstratum, ph2))
-
-##
 source(here::here("code", "cor_coxph_ph.R"))
 
 # unit testing of coxph results
