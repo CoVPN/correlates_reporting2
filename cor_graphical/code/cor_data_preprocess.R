@@ -199,9 +199,16 @@ dat.long$Dich_RaceEthnic = with(dat.long,
 
 # add label = LLoD / poscutoff, uloq values to show in the plot
 dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
+dat.long$LLoQ = with(dat.long, log10(lloqs[as.character(assay)]))
 dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
-dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
-dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
+
+if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE"){ # for ENSEMBLE, ID50 uses LLOQ, ADCP uses LLOD
+  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", ifelse(assay=="ADCP", "LoD", "LoQ"))) 
+  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, ifelse(assay=="ADCP", LLoD, LLoQ))) 
+} else {
+  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
+  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
+}
 dat.long$ULoQ = with(dat.long, log10(uloqs[as.character(assay)]))
 dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), "ULoQ", ""))
 dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), ULoQ, -99))
