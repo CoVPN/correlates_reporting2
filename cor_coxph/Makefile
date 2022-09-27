@@ -42,7 +42,6 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D91
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov_lvmn))
 	Rscript code/cor_coxph.R D43
-	Rscript code/cor_coxph.R D91
 endif
 
 collate:
