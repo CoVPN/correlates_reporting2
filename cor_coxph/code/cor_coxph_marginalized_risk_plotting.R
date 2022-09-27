@@ -22,7 +22,7 @@ digits.risk=4
     
 for (eq.geq in 1:2) {  # 1 conditional on s,   2 is conditional on S>=s
 for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
-#eq.geq=1; w.wo.plac=1; a=all.markers[1]
+# eq.geq=1; w.wo.plac=1; a=all.markers[1]
     
     risks.all=get("risks.all."%.%eq.geq)
     
@@ -41,6 +41,8 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         }
         ylims.cor[[eq.geq]][[w.wo.plac]]=ylim
     }
+    # the following is done so that the ylim looks comparable to ID50 in this trial
+    if (attr(config,"config")=="azd1222_bAb" & eq.geq==1 & w.wo.plac==1 & COR=="D57") ylim=c(0,0.05)    
     if(verbose) myprint(ylim)
     lwd=2
      
@@ -101,6 +103,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         #mtext("Density", side=4, las=0, line=2, cex=1, at=.3)  
         #mylegend(x=6, fill=col, border=col, legend="Vaccine Group", bty="n", cex=0.7)      
     #mtext(toTitleCase(study_name), side = 1, line = 0, outer = T, at = NA, adj = NA, padj = NA, cex = NA, col = NA, font = NA)
+    
     dev.off()    
     } # end assays
     
@@ -137,15 +140,15 @@ for (a in all.markers) {
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on -log(1-) scale
 for (eq.geq in 1:4) {  
-# eq.geq=2; a=assays[1]
+# eq.geq=1; a=all.markers[1]
     
     outs=lapply (all.markers, function(a) {        
         is.delta=startsWith(a,"Delta")
         assay=get.assay.from.name(a)
         
-        tmp=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp=4
+        tmp.1=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp.1=4
         
-        mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp,"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
+        mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp.1,"_"%.%study_name), mfrow=.mfrow, oma=c(0,0,0,0))
  
             lwd=2.5
             par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
@@ -214,6 +217,7 @@ for (eq.geq in 1:4) {
             # x axis
             if(!is.delta) draw.x.axis.cor(xlim, lloxs[assay], config$llox_label[assay])
             
+            img.dat=cbind(risks$marker[.subset], t(rbind(est, ci.band))[.subset,])
         
             # add overall CVE horizontal line
             abline(h=if(eq.geq==4) -log(1-overall.ve) else overall.ve, col="gray", lwd=2, lty=c(1,3,3))
@@ -233,6 +237,9 @@ for (eq.geq in 1:4) {
 #                tmp=10**risks$marker[tmpind]; tmp=c(round(tmp[1],1), round(tmp[-1]))
 #                ret=rbind(ret, cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[tmpind],digits.risk), " (", formatDouble(ci.band[1,tmpind],digits.risk), ",", formatDouble(ci.band[2,tmpind],digits.risk), ")")))            
 #            }
+    
+            img.dat=cbind(img.dat, y)
+            mywrite.csv(img.dat, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp.1,"_"%.%study_name))    
             
             
             # legend
@@ -278,8 +285,10 @@ for (eq.geq in 1:4) {
                 )
         }
     }
-}
     
+} # end for eq.geq
+
+
 # show tables of controlled ve without sensitivity at select assay values
 digits.risk=4
 risks.all=get("risks.all.1")
@@ -395,10 +404,10 @@ if (config$is_ows_trial) {
 #
 if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
 
-
 for (a in all.markers) {        
     mypdf(oma=c(1,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_", study_name), mfrow=.mfrow, mar=c(12,4,5,2))
     par(las=1, cex.axis=0.9, cex.lab=1)# axis label 
+    
     marker.name=a%.%"cat"    
     
     out=risks.all.ter[[a]]
@@ -416,10 +425,28 @@ for (a in all.markers) {
         mylines(time.0, risk.0, col="gray", lwd=2, type="l")
     }
     
-    # add data ribbon    
+    # save source data for images per some journals' requirements
+    img.dat=cbind(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,])
+    rownames(img.dat)=img.dat[,1]
+    # add placebo risk
+    tmp=cbind(time.0, risk.0)
+    tmp=tmp[order (tmp[,1]),]
+    tmp=unique(tmp)    
+    rownames(tmp)=tmp[,1]
+    # combine and sort
+    img.dat=cbinduneven(list(img.dat, tmp))
+    img.dat=img.dat[order(img.dat[,5]),]
+    mywrite.csv(img.dat, paste0(save.results.to, a, "_marginalized_risks_cat_", study_name))
+    
+
+    # add data ribbon
     f1=update(form.s, as.formula(paste0("~.+",marker.name)))
     km <- survfit(f1, subset(dat.vac.seroneg, ph2==1), weights=wt)
     tmp=summary(km, times=x.time)            
+    
+    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
+    stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
+    stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
     
     n.risk.L <- round(tmp$n.risk[1:length(x.time)])
     n.risk.M <- round(tmp$n.risk[1:length(x.time)+length(x.time)])
@@ -487,49 +514,56 @@ dev.off()
 
 
 ###################################################################################################
-# trial-specific ad hoc plots
+# interaction models and risk curves
 
-if (attr(config, "config") == "hvtn705second") {
+if (!is.null(config$interaction)) {
+    for (ab in config$interaction) {
+        tmp=trim(strsplit(ab, " *\\* *")[[1]])
+        aold=tmp[1]
+        bold=tmp[2]            
+        a=paste0("Day",tpeak,aold)
+        b=paste0("Day",tpeak,bold)
             
-    aa=assays[contain(assays,"V2")][-(1:2)]  
-    for (a in aa) {
-        #a="Day210IgG3gp70.001428.2.42.V1V240delta"
-        a=paste0("Day210",a)
-        b="Day210ICS4AnyEnvIFNg_OR_IL2"
-        
-        for (idx in 1:2) {
-            if(idx==1) risks=risks.itxn.1[[a]]
-            if(idx==2) risks=risks.itxn.2[[a]]
+        for (inner.id in 1:2) {
+            vx=ifelse(inner.id==1,a,b)
+            vthree=ifelse(inner.id==1,b,a)
+            risks=risks.itxn[[paste0(vx,vthree)]]
             
-            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_", idx, "_",a), mfrow=.mfrow)
+            mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, "itxn_marginalized_risks_",ifelse(inner.id==1,aold,bold),"_",ifelse(inner.id==1,bold,aold)), mfrow=.mfrow)
+            
                 par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
                 lwd=2
                 
-                shown=risks$marker>=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 2.5/100) & 
-                      risks$marker<=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 1-2.5/100)
+                shown=risks$marker>=wtd.quantile(dat.vac.seroneg[[vx]], dat.vac.seroneg$wt, 2.5/100) & 
+                      risks$marker<=wtd.quantile(dat.vac.seroneg[[vx]], dat.vac.seroneg$wt, 1-2.5/100)
                 
                 # hard code ylim to make the plot look better
                 ylim=c(0,0.11)
                 #ylim=range(risks$lb[shown,], risks$ub[shown,], 0) # [shown] so that there is not too much empty space
-                xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(a), tpeak) 
+                xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(vx), tpeak) 
                 if(verbose) myprint(xlim, ylim)
                     
                 # set up an empty plot
-                plot(risks$marker[shown], risks$prob[shown,i], 
-                    xlab=paste0(labels.assays.short[get.assay.from.name(a)], " (=s)"), 
+                plot(risks$marker[shown], risks$prob[shown,1], 
+                    xlab=paste0(labels.assays.short[get.assay.from.name(vx)], " (=s)"), 
                     ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), 
                     lwd=lwd, xlim=xlim, ylim=ylim, type="n", main="", xaxt="n")    
-                draw.x.axis.cor(xlim, lloxs[a], config$llox_label[a])
+                draw.x.axis.cor(xlim, lloxs[vx], config$llox_label[vx])
                     
                 # draw risk lines and confidence bands
                 for (i in 1:length(risks$marker.2)) {
-                    lines(risks$marker[shown], risks$prob[shown,i], lwd=lwd, col=i)
+                    lines(risks$marker[shown], risks$prob[shown,i], lwd=lwd, col=i, lty=ifelse(i==2,2,1))# use dashed line for the middle so that overlaps can be seen
                     lines(risks$marker[shown], risks$lb[shown,i],   lwd=lwd, col=i, lty=3)
                     lines(risks$marker[shown], risks$ub[shown,i],   lwd=lwd, col=i, lty=3)    
                 }
                 
                 # legend for the three lines
-                mylegend(x=3, legend=paste(formatDouble(10**risks$marker.2,3,remove.leading0=F), c("(min)","(median)","(90th percentile)")), col=1:3, lty=1, title=labels.assays.short[get.assay.from.name(b)], lwd=lwd)
+                legend.txt=c("(15th percentile)","(median)","(85th percentile)")
+#                # special handling code
+#                if (attr(config, "config")=="hvtn705second") {
+#                    if (inner.id==1) legend.txt=c("(min)","(median)","(90th percentile)")
+#                }
+                mylegend(x=3, legend=paste(signif(10**risks$marker.2, 3), legend.txt), col=1:3, lty=c(1,2,1), title=labels.assays.short[get.assay.from.name(vthree)], lwd=lwd)
                 
                 # placebo prevelance lines
                 abline(h=prev.plac[1], col="gray", lty=c(1,3,3), lwd=lwd)
@@ -541,14 +575,13 @@ if (attr(config, "config") == "hvtn705second") {
                 par(new=TRUE) 
                 col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
                 col <- rgb(col[1], col[2], col[3], alpha=255*0.4, maxColorValue=255)
-                tmp.x=dat.vac.seroneg[[a]][dat.vac.seroneg$ph2]
+                tmp.x=dat.vac.seroneg[[vx]][dat.vac.seroneg$ph2]
                 tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
                 tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
                 if (is.nan(tmp$density)[1]) tmp=hist(tmp.x, plot=F)
                 plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F, xlim=xlim, ylim=c(0,max(tmp$density*1.25)))
                 
-            dev.off()
+            dev.off()            
         }
-    }
-        
+    }        
 }

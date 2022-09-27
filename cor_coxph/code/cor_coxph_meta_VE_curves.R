@@ -133,6 +133,9 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
                 axis(side=2,at=transf(yat),labels=(yat*100)%.%"%")            
             }
         
+            img.dat=cbind(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]))
+            mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_",x))
+            
             # add histogram
             #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
             tmp=get.marker.histogram(markers.x[[x]], weight[[x]], x)
@@ -288,6 +291,9 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
                 yat=c(seq(0,.90,by=.1),.95)
                 axis(side=2,at=transf(yat),labels=(yat*100)%.%"%")            
             }
+            
+            img.dat=cbind(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]))
+            mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",i))
         
             # add histogram
             #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
@@ -312,8 +318,8 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
 
 
 # for ENSEMBLE manuscript 1 
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="1")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="1", log="y")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="circ")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="circ", log="y")
 
 # 
 draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", file.name="janssen_la_real")

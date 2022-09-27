@@ -133,6 +133,7 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
 
 ```{r, echo=FALSE, results='asis'}
   if (!is.null(config$additional_models)) {
+  cat("## Additional posthoc Cox Models of Risk")
     for (i in 1:length(config$additional_models)) {
       res = knitr::knit_child(c(here::here('cor_coxph', 'additional_model.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
@@ -141,17 +142,28 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
 ```
 
 
-`r if (!attr(config,"config") %in% c("hvtn705second")) '<!--'`
+`r if (is.null(config$interaction)) '<!--'`
+## Interaction Cox Models of Risk
 
+\begin{table}[H] 
+\centering
+\input{`r pathCoRoutput`/CoR_itxn_multitesting}  
+\caption{ Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} in the vaccine arm. Interaction P values. `r special.note`}
+\end{table}
+
+\clearpage
+
+`r if (is.null(config$interaction)) '  -->'`
 ```{r, echo=FALSE, results='asis'}
-  #aa=assays[contain(assays,"V2")][-(1:2)]  
-  #aa=c("IgG3gp70.001428.2.42.V1V240delta") # IgG340mdw_V1V2
-  aa=c()
-  for (a in aa) {
-    res = knitr::knit_child(c(here::here('cor_coxph', 'itxn_by_assays.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
+if (!is.null(config$interaction)) {
+  for (ab in config$interaction) {
+      tmp=trim(strsplit(ab, " *\\* *")[[1]])
+      a=tmp[1]
+      b=tmp[2]            
+      res = knitr::knit_child(c(here::here('cor_coxph', 'itxn_by_assays.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
   }
+}
 ```
 
 
-`r if (!attr(config,"config") %in% c("hvtn705second"))'-->'`

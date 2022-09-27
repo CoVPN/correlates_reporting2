@@ -1,12 +1,15 @@
 #Sys.setenv(TRIAL = "vat08m_naive"); COR="D43"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "moderna_real"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "moderna_real"); COR="D57"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "azd1222_bAb"); COR="D57"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "profiscov"); COR="D91"; Sys.setenv(VERBOSE = 1) 
+
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
     if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
@@ -34,9 +37,6 @@ save.results.to = paste0(save.results.to, "/", attr(config,"config")); if (!dir.
 save.results.to = paste0(save.results.to, "/", COR,"/");               if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
-# some exploratory code
-if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
-
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
 B <-       config$num_boot_replicates 
 numPerm <- config$num_perm_replicates # number permutation replicates 1e4
@@ -57,6 +57,7 @@ dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
 
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
+
     
 dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
@@ -74,6 +75,13 @@ for (a in all.markers) {
         write(paste0(a, " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
     }
 }
+
+# some exploratory code
+if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
+
+#create twophase design object
+design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
+with(dat.vac.seroneg, table(Wstratum, ph2))
     
 # create verification object to be populated by the following scripts
 rv=list() 
@@ -81,12 +89,13 @@ rv$marker.cutpoints=marker.cutpoints
 
 # table of ph1 and ph2 cases
 tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
-print(tab)
 names(dimnames(tab))[2]="Event Indicator"
+print(tab)
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
 
 # getting some quantiles
 #10**wtd.quantile(dat.vac.seroneg$Day57pseudoneutid50, dat.vac.seroneg$wt, c(0.025, 0.05, seq(.2,.9,by=0.01),seq(.9,.99,by=0.005)))
+
 
 
 ###################################################################################################
@@ -103,26 +112,26 @@ if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 # run PH models
 ###################################################################################################
     
-#create twophase design object
-design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
-
-
-
 source(here::here("code", "cor_coxph_ph.R"))
 
 # unit testing of coxph results
 if (Sys.getenv("TRIAL") == "janssen_pooled_real" & COR=="D29IncludeNotMolecConfirmedstart1") {
     tmp.1=c(rv$tab.1[,4], rv$tab.2[,"overall.p.0"])
     tmp.2=c("0.162","0.079","0.006",      "0.498","   ","   ","0.162","   ","   ","0.003","   ","   ")
-    assertthat::assert_that(
-        all(tmp.1==tmp.2),
-        msg = "failed janssen_pooled_real unit testing")    
-    print("Passed janssen_pooled_real unit testing")    
+    assertthat::assert_that(all(tmp.1==tmp.2), msg = "failed cor_coxph unit testing")    
+    
+} else if (attr(config, "config")=="moderna_real" & COR=="D57") {
+    assertthat::assert_that(all(abs(p.unadj-c(0.004803168, 0.002172787, 0.000129743, 0.000202068, 0.064569846, 0.005631520, 0.009016447, 0.051800145, 0.011506959, 0.579164657))<1e-6), msg = "failed cor_coxph unit testing")    
+    
+} else if (attr(config, "config")=="prevent19" & COR=="D35") {
+    assertthat::assert_that(all(abs(p.unadj-c(0.000453604, 0.013258206))<1e-6), msg = "failed cor_coxph unit testing")    
+    
 }
+print("Passed cor_coxph unit testing")    
 
 
 # forest plots
-if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","AZD1222","VAT08m")) {
+if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m")) {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
     
@@ -152,7 +161,9 @@ tmp=paste0(here::here(), paste0("/output/", attr(config,"config"), "/", COR, "/y
 if (file.exists(tmp)) load(tmp) # if it does not exist, the code will find alternative ylim
 
 source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
+
 source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
+
 if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_real")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
 
 

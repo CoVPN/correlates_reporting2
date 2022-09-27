@@ -3,14 +3,14 @@
 if [ $# -eq 0 ]
   then
     echo "********* Please provide a module name, e.g. cor_coxph, as an argument."
-    exit
+    exit 
 fi
 
 
-for T in moderna_real
+for T in profiscov profiscov_lvmn
 do
     export TRIAL=$T 
     echo $TRIAL
-    make -k -C $1 all
+    make -k -C $1 all 
     bash ./_build_chapter.sh $1
 done

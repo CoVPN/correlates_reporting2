@@ -35,14 +35,15 @@ branch](https://github.com/CoVPN/correlates_reporting2/tree/gh-pages).
 
 ## Collaboration Guide
 
+* Getting started: see our [contribution
+   guidelines](https://github.com/CoVPN/correlates_reporting2/blob/master/CONTRIBUTING.md).
 * [Code style guide](https://style.tidyverse.org/), with some modifications;
   this will largely be enforcd with [`styler`](https://styler.r-lib.org/).
 * Project organization: _mostly_ independent subdirectories, each incorporating
   [`here`](https://here.r-lib.org/) for path resolution.
 * Package version control and virtual environments using
   [`renv`](https://rstudio.github.io/renv/).
-* Code review procedure: see our [contribution
-   guidelines](https://github.com/CoVPN/correlates_reporting2/blob/master/CONTRIBUTING.md).
+
 
 ---
 

@@ -17,7 +17,7 @@ do.fold.change= attr(config::get(config = Sys.getenv("TRIAL")), "config") %in% c
 # Graphical Descriptions of Time to Event Data {#cor-graphical-time-to-event}
 
 `r 
-if (two_marker_timepoints) { 
+if (two_marker_timepoints & is_ows_trial ) { 
   paste0("
 \\begin{figure}[H]
     \\centering
