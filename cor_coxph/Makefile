@@ -40,6 +40,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D43
 	Rscript code/cor_coxph.R D91
+else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov_lvmn))
+	Rscript code/cor_coxph.R D43
+	Rscript code/cor_coxph.R D91
 endif
 
 collate:
