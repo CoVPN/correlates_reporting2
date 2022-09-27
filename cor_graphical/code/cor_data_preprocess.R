@@ -309,10 +309,10 @@ dat.longer.cor.subset <- dat.long.cor.subset %>%
 #    include only +++ at D57 for Post-Peak Cases
 #    non-cases is defined as +++ only for Moderna, but ++-/+++ at D29/57 for AZ and Sanofi
 #    for intercurrent cases at D57, Day 2-14 Cases & Day 15-35 Cases at D29, can't use ph2.D57/ph2.D29 because they are before D57/D29
-#if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")) {
+if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")) {
 dat.longer.cor.subset <- dat.longer.cor.subset %>% 
   filter(!(time == paste0("Day", tpeak) & (!!as.name(paste0("ph2.D", tpeak)))==0))  # set "Day 57" in the ph2.D57 cohort  
-#}
+}
 
 if (study_name=="AZD1222") {
   # for studies like AZ, exclude non-cases with EarlyendpointD57==1 for Day 57 panel
