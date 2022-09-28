@@ -227,7 +227,7 @@ if (exists("COR")) {
         } else if (startsWith(attr(config, "config"), "janssen_sa_real")) {
             tfinal.tpeak=40
             
-        } else if (attr(config, "config")=="profiscov") {
+        } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
 			if (COR=="D91") {
     	        tfinal.tpeak=66
 			} else if(COR=="D43") {
