@@ -25,7 +25,8 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 # TRIALS is a subset of all.trials
 # a is an assay
 draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2file=T, add.hist=T, show.cb=T) {
-#a="bindSpike"; TRIALS=c("moderna_real", "janssen_pooled_real", "prevent19"); file.name=1; include.az=T; log=""
+#a="pseudoneutid50"; TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"); file.name="nejm"; include.az=T; log="y"; save2file=T; add.hist=T; show.cb=F
+    
     myprint(a)
     
     transf=if(log=="y") function(y) -log(1-y) else identity 
@@ -38,7 +39,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2fil
     cols      =c("purple",       "green",               "green",              "olivedrab3",         "darkseagreen4",      "orange",    "cyan",           "tan")
     names(studies)=all.trials
     names(cols)=all.trials
-    hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.5, maxColorValue=255)})
+    hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.75, maxColorValue=255)})
     
     .subset=match(TRIALS, all.trials)
     
@@ -119,6 +120,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2fil
 #                ci.band=rep.matrix(ci.band, each=2, by.row=F)
 #            }            
         
+            
+            # make plot of VE curves
             shown=risks$marker>=wtd.quantile(markers.x[[x]], weight[[x]], 2.5/100) & risks$marker<=wtd.quantile(markers.x[[x]], weight[[x]], 1-2.5/100)
             #shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
             mymatplot(risks$marker[shown], transf(t(rbind(est, if(show.cb) ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE against COVID-19"), xlab=labels.assays.short[a]%.%" (=s)", 
@@ -132,12 +135,12 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2fil
                 yat=c(seq(0,.90,by=.1),.95)
                 axis(side=2,at=transf(yat),labels=(yat*100)%.%"%")            
             }
-        
+            # save image data per Nat Microbiology requirements
             img.dat=cbind(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]))
-            mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_",x))
+            #mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_",x))
             
             # add histogram
-            #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
+            # par(new=TRUE) #this changes ylim, so we cannot use it in this loop
             if(add.hist) {
                 tmp=get.marker.histogram(markers.x[[x]], weight[[x]], x)
                 if (log=="") {
@@ -168,9 +171,12 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2fil
     
     if(save2file) dev.off()    
     
-    return (list(markers.x, weight))
+    #return (list(markers.x, weight))
     
 }
+
+# for NEJM perspective
+draw.ve.curves(a="pseudoneutid50", TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="nejm", include.az=T, log="y", save2file=T, add.hist=T, show.cb=F)
 
 
 # draw VE curves for several markers
@@ -319,11 +325,6 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     dev.off()    
     
 }
-
-
-# for NEJM perspective
-a="pseudoneutid50"
-res=draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T, log="y", save2file=F, add.hist=F, show.cb=F)
 
 
 
