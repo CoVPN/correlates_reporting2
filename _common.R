@@ -228,12 +228,12 @@ if (exists("COR")) {
             tfinal.tpeak=40
             
         } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
-			if (COR=="D91") {
-    	        tfinal.tpeak=66
-			} else if(COR=="D43") {
-        	    tfinal.tpeak= 91+66-43
-			}
-		}
+            if (COR=="D91") {
+                tfinal.tpeak=66
+            } else if(COR=="D43") {
+                tfinal.tpeak= 91+66-43
+            }
+        }
 
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
         prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
@@ -372,66 +372,54 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
         
 } else if(study_name=="ENSEMBLE") {
     
+    # data less than pos cutoff is set to pos.cutoff/2
+    llods["bindSpike"]=NA 
+    lloqs["bindSpike"]=1.7968 
+    uloqs["bindSpike"]=238.1165 
+    pos.cutoffs["bindSpike"]=10.8424
+
+    # data less than pos cutoff is set to pos.cutoff/2
+    llods["bindRBD"]=NA                 
+    lloqs["bindRBD"]=3.4263                 
+    uloqs["bindRBD"]=172.5755    
+    pos.cutoffs["bindRBD"]=14.0858
+            
+    # data less than lod is set to lod/2
+    llods["ADCP"]=11.57
+    lloqs["ADCP"]=8.87
+    uloqs["ADCP"]=211.56
+    pos.cutoffs["ADCP"]=11.57# as same lod
+    
+    # the limits below are different for EUA and Part A datasets
     if (contain(attr(config, "config"), "real")) {
     # EUA data
         
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindSpike"]=NA 
-        lloqs["bindSpike"]=1.7968 
-        uloqs["bindSpike"]=238.1165 
-    
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindRBD"]=NA                 
-        lloqs["bindRBD"]=3.4263                 
-        uloqs["bindRBD"]=172.5755    
-                
         # data less than lloq is set to lloq/2
         llods["pseudoneutid50"]=NA  
         lloqs["pseudoneutid50"]=42*0.0653  #2.7426
-        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         uloqs["pseudoneutid50"]=9484*0.0653 # 619.3052
+        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         
-            # repeat for two synthetic markers that are adapted to SA and LA
-            llods["pseudoneutid50sa"]=NA  
-            lloqs["pseudoneutid50sa"]=42*0.0653  #2.7426
-            pos.cutoffs["pseudoneutid50sa"]=lloqs["pseudoneutid50sa"]
-            uloqs["pseudoneutid50sa"]=9484*0.0653 # 619.3052
+        # repeat for two synthetic markers that are adapted to SA and LA
+        llods["pseudoneutid50sa"]=NA  
+        lloqs["pseudoneutid50sa"]=42*0.0653  #2.7426
+        uloqs["pseudoneutid50sa"]=9484*0.0653 # 619.3052
+        pos.cutoffs["pseudoneutid50sa"]=lloqs["pseudoneutid50sa"]
+
+        llods["pseudoneutid50la"]=NA  
+        lloqs["pseudoneutid50la"]=42*0.0653  #2.7426
+        uloqs["pseudoneutid50la"]=9484*0.0653 # 619.3052
+        pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
     
-            llods["pseudoneutid50la"]=NA  
-            lloqs["pseudoneutid50la"]=42*0.0653  #2.7426
-            pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
-            uloqs["pseudoneutid50la"]=9484*0.0653 # 619.3052
-    
-        # data less than lod is set to lod/2
-        llods["ADCP"]=11.57
-        lloqs["ADCP"]=8.87
-        pos.cutoffs["ADCP"]=11.57# as same lod
-        uloqs["ADCP"]=211.56
         
     } else if (contain(attr(config, "config"), "partA")) {
     # complete part A data
         
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindSpike"]=NA 
-        lloqs["bindSpike"]=1.7968 
-        uloqs["bindSpike"]=238.1165 
-    
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindRBD"]=NA                 
-        lloqs["bindRBD"]=3.4263                 
-        uloqs["bindRBD"]=172.5755    
-                
         # data less than lloq is set to lloq/2
         llods["pseudoneutid50"]=NA  
         lloqs["pseudoneutid50"]=75*0.0653  #4.8975
-        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         uloqs["pseudoneutid50"]=12936*0.0653 # 844.7208
-    
-        # data less than lod is set to lod/2
-        llods["ADCP"]=11.57
-        lloqs["ADCP"]=8.87
-        pos.cutoffs["ADCP"]=11.57# as same lod
-        uloqs["ADCP"]=211.56
+        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
     }
     
 } else if(study_name=="PREVENT19") {

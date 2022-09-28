@@ -324,32 +324,7 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
 # for NEJM perspective
 a="pseudoneutid50"
 res=draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T, log="y", save2file=F, add.hist=F, show.cb=F)
-# violin+box plot
-for (i in 1:length(res[[1]]) {
-    y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-    y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 0.25 + ifelse(log10(uloqs[plots[i]])==maxs[plots[i]], 0.1, 0))
-    rate.y.pos <- max(y.lim)
-    
-    ll.cex <- 8.16
-    prop.cex <- 7
-    
-    p <- violin_box_plot(dat=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                        dat.sample=subset(plot.25sample1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                        ytitle=plots_ytitles[i],toptitle=plots_titles[i],
-                        facetby=vars(cohort_event),
-                        ylim=y.lim,
-                        ybreaks=y.breaks,
-                        prop.cex=prop.cex,
-                        ll.cex=ll.cex,
-                        group.num=length(levels(longer_cor_data_plot1$cohort_event)),
-                        rate.y.pos=rate.y.pos,
-                        n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                        xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
-                        )
-    g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
-    file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
-    suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
-}
+
 
 
 
