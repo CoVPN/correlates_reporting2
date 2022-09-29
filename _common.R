@@ -1078,8 +1078,8 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
     
         if(startsWith(a, "Day")) {
             # not fold change
-            uppercut=log10(uloqs[get.assay.from.name(a)])*.9999
-            lowercut=min(tmp.a, na.rm=T)*1.0001
+            uppercut=log10(uloqs[get.assay.from.name(a)]); uppercut=uppercut*ifelse(uppercut>0,.9999,1.0001)
+            lowercut=min(tmp.a, na.rm=T)*1.0001; lowercut=lowercut*ifelse(lowercut>0,1.0001,.9999)
             if (mean(tmp.a>uppercut, na.rm=T)>1/3) {
                 # if more than 1/3 of vaccine recipients have value > ULOQ, let q.a be (median among those < ULOQ, ULOQ)
                 if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")
