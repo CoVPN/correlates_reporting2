@@ -399,7 +399,7 @@ covid_corr_rcdf_facets <- function(plot_dat,
                                      "#FF5EBF", "#3700A5", "#8F8F8F",
                                      "#787873"
                                    ),
-                                   legend = levels(plot_dat[, color]),
+                                   legend = levels(plot_dat[, color])[levels(plot_dat[, color]) %in% plot_dat[, color]],
                                    legend_size = 10,
                                    legend_nrow = ceiling(length(legend) / 2),
                                    panel_titles,
@@ -810,7 +810,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
                                       errorbar_width = 0.45,
                                       jitter_width = 0.15,
                                       njitter = 100,
-                                      legend = levels(plot_dat[, x]),
+                                      legend = levels(plot_dat[, x])[levels(plot_dat[, x]) %in% plot_dat[, x]],
                                       legend_position = "bottom",
                                       legend_nrow = ceiling(
                                         nlevels(plot_dat[, x]) / 2
@@ -844,7 +844,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
     )
     xlabels <- LETTERS[1:nlevels(plot_dat[, x])]
   } else {
-    xlabels <- levels(plot_dat[, x])
+    xlabels <- levels(plot_dat[, x])[levels(plot_dat[, x]) %in% plot_dat[, x]]
   }
   boxplot_jitter_points <- plot_dat[, c(x, y, facet_by)] %>%
     dplyr::filter(., complete.cases(.)) %>%
@@ -1002,7 +1002,7 @@ covid_corr_spaghetti_facets <- function(plot_dat,
                                         point_size = 1.4,
                                         plot_title,
                                         plot_title_size = 12,
-                                        legend = levels(plot_dat[, color]),
+                                        legend = levels(plot_dat[, color])[levels(plot_dat[, color]) %in% plot_dat[, color]],
                                         legend_position = "bottom",
                                         legend_nrow = ceiling(
                                           nlevels(plot_dat[, color]) / 2
@@ -1017,7 +1017,7 @@ covid_corr_spaghetti_facets <- function(plot_dat,
                                         ),
                                         arrange_ncol = 2,
                                         panel_titles,
-                                        panel_title_size = 10,
+                                        panel_title_size = 9.5,
                                         height = 2.5 * arrange_nrow + 0.5,
                                         width = 2.5 * arrange_ncol,
                                         units = "in",
