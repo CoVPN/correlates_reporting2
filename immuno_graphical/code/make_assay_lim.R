@@ -27,7 +27,8 @@ Maxlive50Day57 <- ifelse(exists("Maxlive50Day57"), Maxlive50Day57, NA)
 
 
 MaxbAbB <- try(dat.long.twophase.sample %>%
-  filter(assay %in% c("bindSpike", "bindRBD", "bindN")) %>%
+  filter(assay %in% c("bindSpike", "bindRBD", "bindN",
+                      "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1")) %>%
   select(B) %>%
   max(na.rm = TRUE), silent = TRUE)
 

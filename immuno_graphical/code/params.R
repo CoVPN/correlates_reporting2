@@ -15,11 +15,10 @@ trt.labels <- c("Placebo", "Vaccine")
 bstatus.labels <- c("Baseline Neg", "Baseline Pos")
 bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
 
-all_assays <- c("bindSpike", "bindRBD", "bindN",
-                "pseudoneutid50", "pseudoneutid80", "liveneutmn50")
-bAb_assays <- c("bindSpike", "bindRBD", "bindN")
-nAb_assays <- c("pseudoneutid50", "pseudoneutid80")
-live_assays <- c("liveneutmn50")
+all_assays <- assays
+bAb_assays <- assays[grepl("bind", assays)]
+nAb_assays <- assays[grepl("pseudoneutid", assays)]
+live_assays <- assays[grepl("liveneutmn", assays)]
 times <- c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
 
 # Depends on the Incoming data
@@ -33,18 +32,9 @@ if(include_bindN){
 }
 
 
-labels.assays.short <- c("Anti Spike IgG (IU/ml)", 
-                         "Anti RBD IgG (IU/ml)", 
-                         "Anti N IgG (IU/ml)", 
-                         "Pseudovirus-nAb ID50", 
-                         "Pseudovirus-nAb ID80", 
-                         "Live virus-nAb MN50")
-names(labels.assays.short) <- c("bindSpike",
-                                "bindRBD",
-                                "bindN",
-                                "pseudoneutid50",
-                                "pseudoneutid80",
-                                "liveneutmn50")
+labels.assays.short <- assay_labels_short
+names(labels.assays.short) <- assays
+
 # axis labeling
 labels.axis <- outer(
   rep("", length(times)),

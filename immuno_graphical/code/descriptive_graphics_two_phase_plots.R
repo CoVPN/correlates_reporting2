@@ -187,9 +187,9 @@ print("RCDF 2:")
 for (bAb in c(0, 1)) {
   
   if (bAb == 1) {
-    rcdf_assays <- intersect(c("bindN", "bindSpike", "bindRBD"), assay_immuno) 
+    rcdf_assays <- assay_immuno[grepl("bind", assay_immuno)]
   } else {
-    rcdf_assays <- assay_immuno[!assay_immuno %in% c("bindN", "bindSpike", "bindRBD")]
+    rcdf_assays <- assay_immuno[!grepl("bind", assay_immuno)]
   }
   
   if (length(rcdf_assays) > 0) {
@@ -424,7 +424,7 @@ for (tp in tps_no_fold_change) {
           ) +
           theme_pubr() +
           theme(
-            plot.title = element_text(hjust = 0.5, size = 10),
+            plot.title = element_text(hjust = 0.5, size = ifelse(max(str_length(assays)) > 14, 9.5, 10)),
             panel.border = element_rect(fill = NA),
             panel.grid.minor.y = element_line(),
             panel.grid.major.y = element_line(),
