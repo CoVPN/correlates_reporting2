@@ -798,4 +798,10 @@ D22D43omi:
   tpeaklag: 7
   txt.endpoint: COVID  
   EventIndPrimary: EventIndOmicron
-  EventTimePrimary: EventTimeOmicron  
+  EventTimePrimary: EventTimeOmicron 
+  
+D43D91:
+  tinterm: 43
+  tpeak: 91
+  tpeaklag: 7
+  txt.endpoint: COVID

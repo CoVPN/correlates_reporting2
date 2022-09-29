@@ -73,6 +73,26 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/CoR_assay_graphics.R D35
 	Rscript code/CoR_wrcdf_with_VE_lines.R D35
 	
+else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
+	Rscript code/cor_data_preprocess.R D43D91 # Yiwen's
+	Rscript code/cor_graphics_violin_scatter.R D43D91
+	
+	Rscript code/cor_data_preprocess_2.R D43 # Brian's
+	Rscript code/CoR_assay_graphics.R D43
+	Rscript code/CoR_wrcdf_with_VE_lines.R D43
+	
+	Rscript code/cor_data_preprocess_2.R D91 # Brian's
+	Rscript code/CoR_assay_graphics.R D91
+	Rscript code/CoR_wrcdf_with_VE_lines.R D91
+	
+else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov_lvmn))
+	Rscript code/cor_data_preprocess.R D43 # Yiwen's
+	Rscript code/cor_graphics_violin_scatter.R D43
+	
+	Rscript code/cor_data_preprocess_2.R D43 # Brian's
+	Rscript code/CoR_assay_graphics.R D43
+	Rscript code/CoR_wrcdf_with_VE_lines.R D43
+	
 endif
 
 ## clean          : clean up data_clean and output folder
