@@ -7,9 +7,9 @@
 #Sys.setenv(TRIAL = "azd1222_bAb"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_real"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "profiscov"); COR="D91"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "profiscov_lvmn"); COR="D43start48"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
