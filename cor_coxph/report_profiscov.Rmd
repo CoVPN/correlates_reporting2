@@ -1,0 +1,48 @@
+```{r, echo=FALSE, results='asis'}
+
+tpeak <- 43
+COR <- "D43"
+config.cor <- config::get(config = COR)
+for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 43.")
+pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
+
+    all.markers=paste0("Day", tpeak, assays)
+    if (do.fold.change) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+
+res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+cat(res, sep = '\n')
+
+
+tpeak <- 43
+COR <- "D43start48"
+config.cor <- config::get(config = COR)
+for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 91.")
+pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
+
+    all.markers=paste0("Day", tpeak, assays)
+    if (do.fold.change) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+
+res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+cat(res, sep = '\n')
+
+
+tpeak <- 91
+COR <- "D91"
+config.cor <- config::get(config = COR)
+for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 91.")
+pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
+
+    all.markers=paste0("Day", tpeak, assays)
+    if (do.fold.change) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+
+res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+cat(res, sep = '\n')
+
+
+```

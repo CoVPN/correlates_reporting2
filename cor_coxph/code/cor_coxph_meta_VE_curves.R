@@ -24,8 +24,9 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 # draw VE curves for several trials, the same marker
 # TRIALS is a subset of all.trials
 # a is an assay
-draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2file=T, add.hist=T, show.cb=T) {
-#a="bindSpike"; TRIALS=c("moderna_real", "janssen_pooled_real", "prevent19"); file.name=1; include.az=T; log=""
+draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist=T, show.cb=T) {
+#a="pseudoneutid50"; TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"); file.name="nejm"; include.az=T; log="y"; add.hist=F; show.cb=F
+    
     myprint(a)
     
     transf=if(log=="y") function(y) -log(1-y) else identity 
@@ -38,7 +39,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2fil
     cols      =c("purple",       "green",               "green",              "olivedrab3",         "darkseagreen4",      "orange",    "cyan",           "tan")
     names(studies)=all.trials
     names(cols)=all.trials
-    hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.5, maxColorValue=255)})
+    hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*.5, maxColorValue=255)})
     
     .subset=match(TRIALS, all.trials)
     
@@ -78,12 +79,30 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2fil
     myprint(xlim)
     
     
-    if(save2file) mypdf(file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name,"_",a), width=5.2, height=5.2)
+    mypdf(file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name,"_",a), width=5.2, height=5.2)
         par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         
         # need several variables from sourcing _common.R: lloxs, labels.assays, draw.x.axis.cor
         overall.ve.ls=list()
+        hist.ls=list()
         for (x in TRIALS) {    
+            
+            if(x==TRIALS[3]) {
+                # show az curve on top of cove and janssen
+                if(include.az) {
+                    lines(log10(ve.az[[a]]),        transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5)
+                    if(show.cb) lines(log10(ve.az[[a%.%"LL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
+                    if(show.cb) lines(log10(ve.az[[a%.%"UL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
+                    
+                    # plot az uk trial density. the values are extracted from fig4c of Feng et al
+                    tmp.cpy=tmp
+                    tmp.cpy$density = c(0, 0, 55*12/17, 33, 77, 129, 163, 148, 115, 81, 48, 21, 9, 2)/(92.5*2)
+                    tmp.cpy$breaks=c(0.00000,0.20000,0.40000,0.60000,0.80000,1.00000,1.20000,1.40000,1.60000,1.80000,2.00000,2.20000,2.40000,2.60000,2.8)
+                    hist.ls[["AZ-COV002"]]=tmp.cpy
+                    if (add.hist) plot(tmp.cpy,col=hist.col.ls[["AZ-COV002"]],axes=F,labels=F,border=0,freq=F,add=T)             
+                }            
+            }
+        
             myprint(x, a)
             TRIAL=get.trial(x, a)
             COR = switch(x, moderna_real="D57",
@@ -119,6 +138,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2fil
 #                ci.band=rep.matrix(ci.band, each=2, by.row=F)
 #            }            
         
+            
+            # make plot of VE curves
             shown=risks$marker>=wtd.quantile(markers.x[[x]], weight[[x]], 2.5/100) & risks$marker<=wtd.quantile(markers.x[[x]], weight[[x]], 1-2.5/100)
             #shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
             mymatplot(risks$marker[shown], transf(t(rbind(est, if(show.cb) ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE against COVID-19"), xlab=labels.assays.short[a]%.%" (=s)", 
@@ -132,31 +153,25 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2fil
                 yat=c(seq(0,.90,by=.1),.95)
                 axis(side=2,at=transf(yat),labels=(yat*100)%.%"%")            
             }
-        
+            # save image data per Nat Microbiology requirements
             img.dat=cbind(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]))
-            mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_",x))
+            #mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_",x))
             
             # add histogram
-            #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
+            # par(new=TRUE) #this changes ylim, so we cannot use it in this loop
+            tmp=get.marker.histogram(markers.x[[x]], weight[[x]], x)
+            if (log=="") {
+                tmp$density=tmp$density/hist.shrink[a] # so that it will fit vertically
+            } else{
+                tmp$density=tmp$density/hist.shrink[a]*3 # so that it will fit vertically
+            }            
+            hist.ls[[x]]=tmp
             if(add.hist) {
-                tmp=get.marker.histogram(markers.x[[x]], weight[[x]], x)
-                if (log=="") {
-                    tmp$density=tmp$density/hist.shrink[a] # so that it will fit vertically
-                } else{
-                    tmp$density=tmp$density/hist.shrink[a]*3 # so that it will fit vertically
-                }            
                 plot(tmp,col=hist.col.ls[[x]],axes=F,labels=F,border=0,freq=F,add=T) 
             }
                         
             overall.ve.ls[[x]]=overall.ve
         }        
-    
-        # add az curve
-        if(include.az) {
-            lines(log10(ve.az[[a]]),        transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5)
-            if(show.cb) lines(log10(ve.az[[a%.%"LL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
-            if(show.cb) lines(log10(ve.az[[a%.%"UL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
-        }
     
         # legend
 #        legend=paste0(studies[TRIALS], ", ", sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%"))
@@ -166,11 +181,30 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", save2fil
         if (include.az) legend=c(legend, "AZCOV002")
         mylegend(x=ifelse(log=="",6,1), col=cols[c(TRIALS, if(include.az) "AZ-COV002")], legend=legend, lty=1, lwd=2, cex=.7)
     
-    if(save2file) dev.off()    
+    dev.off()    
     
-    return (list(markers.x, weight))
+    # if histogram is not add to the same panel, make a new figure with the histograms
+    if(!add.hist) {
+        # use non-opaque color
+        hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*1, maxColorValue=255)})
+        mypdf(file=paste0("output/meta/meta_hist_",file.name,"_",a), width=5, height=5, mfrow=c(5,1))
+            par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientatio        
+            par(mar=c(1,4,0,1), mfrow=c(5,1))
+            for (x in c(TRIALS,"AZ-COV002")) {    
+                plot(hist.ls[[x]],col=hist.col.ls[[x]],axes=T,labels=F,border=0,freq=F,add=F,xaxt="n",ylim=c(0,1.6),xlim=c(0,4),ylab="density",main="")
+                #title(xlab="IU50/ml", line=2.1)
+                #title(main=studies[[x]])
+                #draw.x.axis.cor(xlim, NA)
+                #axis(side=1,tick=T,line=0,labels=F)
+            }
+        dev.off()
+    }    
+    #return (list(markers.x, weight))
     
 }
+
+# for NEJM perspective
+draw.ve.curves(a="pseudoneutid50", TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="nejm", include.az=T, log="y", add.hist=T, show.cb=F)
 
 
 # draw VE curves for several markers
@@ -320,36 +354,6 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
     
 }
 
-
-# for NEJM perspective
-a="pseudoneutid50"
-res=draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T, log="y", save2file=F, add.hist=F, show.cb=F)
-# violin+box plot
-for (i in 1:length(res[[1]]) {
-    y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-    y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 0.25 + ifelse(log10(uloqs[plots[i]])==maxs[plots[i]], 0.1, 0))
-    rate.y.pos <- max(y.lim)
-    
-    ll.cex <- 8.16
-    prop.cex <- 7
-    
-    p <- violin_box_plot(dat=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                        dat.sample=subset(plot.25sample1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                        ytitle=plots_ytitles[i],toptitle=plots_titles[i],
-                        facetby=vars(cohort_event),
-                        ylim=y.lim,
-                        ybreaks=y.breaks,
-                        prop.cex=prop.cex,
-                        ll.cex=ll.cex,
-                        group.num=length(levels(longer_cor_data_plot1$cohort_event)),
-                        rate.y.pos=rate.y.pos,
-                        n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                        xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
-                        )
-    g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
-    file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
-    suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
-}
 
 
 
