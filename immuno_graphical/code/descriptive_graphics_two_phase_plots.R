@@ -89,6 +89,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(),
             height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
             width = max(1.3 * length(assay_immuno), 5.5),
+            column_label_size = ifelse(max(str_length(assay_labels_short)) > 28, 5.5, 6.5),
             filename = paste0(
               save.results.to, "/pairs_", tp,
               "_Markers_", bstatus.labels.2[bserostatus + 1],
@@ -134,7 +135,8 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           ),
           column_labels = paste(gsub("ay ","", labels.time[times_selected]),
                                 "\n", labels.axis[, aa][1]),
-          column_label_size = ifelse(study_name=="VAT08m", 4.5, 6.5),
+          column_label_size = ifelse(study_name=="VAT08m", 4.5, 
+                                     ifelse(max(str_length(assay_labels_short)) > 28, 5.5, 6.5)),
           axis_label_size = ifelse(study_name=="VAT08m", 7, 9),
           filename = paste0(
             save.results.to, "/pairs_", aa, "_by_times_",
