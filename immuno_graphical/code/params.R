@@ -6,7 +6,9 @@ source(here::here("..", "_common.R"))
 
 library(here)
 library(stringr)
-save.results.to <- here("figs")
+save.results.to = paste0(here::here("output"), "/", attr(config,"config"));
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
+if (!dir.exists(paste0(save.results.to, "/demographics")))  dir.create(paste0(save.results.to, "/demographics"))
 
 # Define age cutoff based on trial
 age.cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE"), 60, 65)
