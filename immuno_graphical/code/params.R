@@ -17,10 +17,17 @@ trt.labels <- c("Placebo", "Vaccine")
 bstatus.labels <- c("Baseline Neg", "Baseline Pos")
 bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
 
-all_assays <- assays
-bAb_assays <- assays[grepl("bind", assays)]
-nAb_assays <- assays[grepl("pseudoneutid", assays)]
-live_assays <- assays[grepl("liveneutmn", assays)]
+
+all_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
+                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
+                "bindN",
+                "pseudoneutid50", "pseudoneutid80", 
+                "liveneutmn50")
+bAb_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
+                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
+                "bindN")
+nAb_assays <- c("pseudoneutid50", "pseudoneutid80")
+live_assays <- c("liveneutmn50")
 times <- c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
 
 # Depends on the Incoming data
@@ -33,9 +40,26 @@ if(include_bindN){
   assay_immuno <- assays
 }
 
+labels.assays.short <- c("Anti Spike IgG (BAU/ml)", 
+                         "Anti Spike B.1.1.7 IgG (BAU/ml)", 
+                         "Anti Spike B.1.351 IgG (BAU/ml)", 
+                         "Anti Spike P.1 IgG (BAU/ml)", 
+                         "Anti RBD IgG (BAU/ml)", 
+                         "Anti RBD B.1.1.7 IgG (BAU/ml)", 
+                         "Anti RBD B.1.351 IgG (BAU/ml)", 
+                         "Anti RBD P.1 IgG (BAU/ml)", 
+                         "Anti N IgG (BAU/ml)",
+                         "Pseudovirus-nAb ID50 (IU50/ml)", 
+                         "Pseudovirus-nAb ID80 (IU50/ml)", 
+                         "Live Virus-mnAb ID50 (IU50/ml)")
+names(labels.assays.short) <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
+                                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
+                                "bindN",
+                                "pseudoneutid50", "pseudoneutid80", 
+                                "liveneutmn50")
 
-labels.assays.short <- assay_labels_short
-names(labels.assays.short) <- assays
+
+
 
 # axis labeling
 labels.axis <- outer(
