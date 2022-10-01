@@ -31,7 +31,7 @@ live_assays <- c("liveneutmn50")
 times <- c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
 
 # Depends on the Incoming data
-if(include_bindN){
+if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays)){
   assay_immuno <- all_assays[all_assays %in% c(assays, "bindN")]
   labels.assays.all <- c("Binding Antibody to N", labels.assays)
   names(labels.assays.all)[1] <- "bindN"

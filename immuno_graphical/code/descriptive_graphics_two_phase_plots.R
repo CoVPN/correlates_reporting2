@@ -89,12 +89,12 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(),
             height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
             width = max(1.3 * length(assay_immuno), 5.5),
-            column_label_size = ifelse(max(str_length(assay_labels_short)) > 28, 5.5, 6.5),
+            column_label_size = ifelse(max(str_length(assay_labels_short)) > 28, 5, 6.5),
             filename = paste0(
               save.results.to, "/pairs_", tp,
               "_Markers_", bstatus.labels.2[bserostatus + 1],
               c("_placebo_arm", "_vaccine_arm")[trt + 1], "_", ifelse(country=="Nvx_US", "US_only_",""),
-              study_name, ".png"
+              study_name, ".pdf"
             )
           )
         }
@@ -136,12 +136,12 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           column_labels = paste(gsub("ay ","", labels.time[times_selected]),
                                 "\n", labels.axis[, aa][1]),
           column_label_size = ifelse(study_name=="VAT08m", 4.5, 
-                                     ifelse(max(str_length(assay_labels_short)) > 28, 5.5, 6.5)),
+                                     ifelse(max(str_length(assay_labels_short)) > 28, 5, 6.5)),
           axis_label_size = ifelse(study_name=="VAT08m", 7, 9),
           filename = paste0(
             save.results.to, "/pairs_", aa, "_by_times_",
             bstatus.labels.2[bserostatus + 1], "_", c("placebo_", "vaccine_")[trt + 1], ifelse(country=="Nvx_US", "US_only_",""),
-            study_name, ".png"
+            study_name, ".pdf"
           )
         )
       }
@@ -169,7 +169,7 @@ for (tp in tps_no_B_and_delta_over_tinterm) { # "Day29", "Day57", "Day29overB", 
     axis_titles = labels.axis[tp, ] %>% unlist(),
     filename = paste0(
       save.results.to, "/Marker_Rcdf_", tp,
-      "_trt_both_bstatus_both_", study_name, ".png"
+      "_trt_both_bstatus_both_", study_name, ".pdf"
     )
   )
 }
@@ -213,7 +213,7 @@ for (bAb in c(0, 1)) {
         plot_title = paste0(labels.time[tp], " Ab Markers"),
         filename = paste0(
           save.results.to, "/Marker_Rcdf_", c("nAb", "bAb")[bAb + 1], "_", tp,
-          "_trt_vaccine_bstatus_both_", study_name, ".png"
+          "_trt_vaccine_bstatus_both_", study_name, ".pdf"
         )
       )
     }
@@ -246,7 +246,7 @@ for (bAb in c(0, 1)) {
           ),
           filename = paste0(
             save.results.to, "/Marker_Rcdf_", c("nAb", "bAb")[bAb + 1], "_", tp,
-            "_trt_vaccine_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, ".png"
+            "_trt_vaccine_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, ".pdf"
           )
         )
       }
@@ -289,7 +289,7 @@ for (bstatus in 1:2) {
       panel_titles = labels.title2[tp, ] %>% unlist(),
       filename = paste0(
         save.results.to, "/boxplots_", tp, "_x_trt_", bstatus.labels.2[bstatus],
-        "_", study_name, ".png"
+        "_", study_name, ".pdf"
       )
     )
   }
@@ -321,7 +321,7 @@ for (trt in 1:2) {
       filename = paste0(
         save.results.to, "/boxplots_", tp,
         "_x_bstatus_", c("placebo_arm_", "vaccine_arm_")[trt],
-        study_name, ".png"
+        study_name, ".pdf"
       )
     )
   }
@@ -387,7 +387,7 @@ for (bstatus in 1:2) {
                               filename = paste0(
                                 save.results.to, "/spaghetti_plot_",
                                 bstatus.labels.2[bstatus], "_",
-                                study_name, ".png"
+                                study_name, ".pdf"
                               ))
 }
 
@@ -445,7 +445,7 @@ for (tp in tps_no_fold_change) {
         filename = paste0(
           save.results.to, "/scatter_", tp, "_vs_age_",
           "trt_", trt.labels[trt], "_", bstatus.labels.2[bstatus],
-          "_", study_name, ".png"
+          "_", study_name, ".pdf"
         ), 
         plot = output_plot, 
         width = 9,

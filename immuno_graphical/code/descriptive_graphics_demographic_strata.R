@@ -82,7 +82,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           bstatus.labels.2[bstatus],
           "_trt_", trt.labels[trt],
           "_by_age_group_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
 
@@ -104,7 +104,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           c("placebo_", "vaccine_")[trt],
           bstatus.labels.2[bstatus],
           "_by_age_group_", study_name,
-          ".png"
+          ".pdf"
         )
       )
 
@@ -130,7 +130,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           bstatus.labels.2[bstatus],
           "_trt_", trt.labels[trt],
           "_by_risk_group_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
 
@@ -152,7 +152,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           c("placebo_", "vaccine_")[trt],
           bstatus.labels.2[bstatus],
           "_by_risk_group_", study_name,
-          ".png"
+          ".pdf"
         )
       )
 
@@ -178,7 +178,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           bstatus.labels.2[bstatus],
           "_trt_", trt.labels[trt],
           "_by_age_x_risk_group_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
 
@@ -200,7 +200,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           c("placebo_", "vaccine_")[trt],
           bstatus.labels.2[bstatus],
           "_by_age_risk_group_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
 
@@ -226,7 +226,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           bstatus.labels.2[bstatus],
           "_trt_", trt.labels[trt],
           "_by_sex_", study_name,
-          ".png"
+          ".pdf"
         )
       )
 
@@ -248,7 +248,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           c("placebo_", "vaccine_")[trt],
           bstatus.labels.2[bstatus],
           "_by_sex_group_", study_name,
-          ".png"
+          ".pdf"
         )
       )
 
@@ -274,7 +274,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           bstatus.labels.2[bstatus],
           "_trt_", trt.labels[trt],
           "_by_age_x_sex_group_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
 
@@ -296,7 +296,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           c("placebo_", "vaccine_")[trt],
           bstatus.labels.2[bstatus],
           "_by_age_sex_group_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
 
@@ -322,7 +322,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           bstatus.labels.2[bstatus],
           "_trt_", trt.labels[trt],
           "_by_ethnicity_", study_name,
-          ".png"
+          ".pdf"
         )
       )
 
@@ -344,7 +344,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           c("placebo_", "vaccine_")[trt],
           bstatus.labels.2[bstatus],
           "_by_ethnicity_", study_name,
-          ".png"
+          ".pdf"
         )
       )
 
@@ -372,7 +372,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           bstatus.labels.2[bstatus],
           "_trt_", trt.labels[trt],
           "_by_race_", study_name,
-          ".png"
+          ".pdf"
         )
       )
 
@@ -396,7 +396,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           c("placebo_", "vaccine_")[trt],
           bstatus.labels.2[bstatus],
           "_by_race_", study_name,
-          ".png"
+          ".pdf"
         )
       )
 
@@ -428,7 +428,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           bstatus.labels.2[bstatus],
           "_trt_", trt.labels[trt],
           "_by_minority_group_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
 
@@ -450,7 +450,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           c("placebo_", "vaccine_")[trt],
           bstatus.labels.2[bstatus],
           "_by_minority_group_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
 
@@ -476,7 +476,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           bstatus.labels.2[bstatus],
           "_trt_", trt.labels[trt],
           "_by_age_x_minority_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
 
@@ -498,7 +498,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
           c("placebo_", "vaccine_")[trt],
           bstatus.labels.2[bstatus],
           "_by_age_minority_group_",
-          study_name, ".png"
+          study_name, ".pdf"
         )
       )
       
@@ -526,7 +526,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
             bstatus.labels.2[bstatus],
             "_trt_", trt.labels[trt],
             "_by_country_",
-            study_name, ".png"
+            study_name, ".pdf"
           )
         )
         
@@ -548,7 +548,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
             c("placebo_", "vaccine_")[trt],
             bstatus.labels.2[bstatus],
             "_by_country_",
-            study_name, ".png"
+            study_name, ".pdf"
           )
         )
         
@@ -574,7 +574,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
             bstatus.labels.2[bstatus],
             "_trt_", trt.labels[trt],
             "_by_hiv_group_",
-            study_name, ".png"
+            study_name, ".pdf"
           )
         )
         
@@ -596,7 +596,7 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
             c("placebo_", "vaccine_")[trt],
             bstatus.labels.2[bstatus],
             "_by_hiv_group_",
-            study_name, ".png"
+            study_name, ".pdf"
           )
         )
       }
