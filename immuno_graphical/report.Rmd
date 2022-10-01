@@ -377,7 +377,7 @@ for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"ove
 ```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline negative vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times)}
 include_graphics(here(
   "immuno_graphical", "output", attr(config,"config"), 
-  paste0("spaghetti_plot_BaselineNeg_", study_name, ".png")
+  paste0("spaghetti_plot_BaselineNeg_", study_name, ".pdf")
 ))
 ```
 
@@ -387,7 +387,7 @@ include_graphics(here(
 ```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline positive vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & if.pos.exist==1)}
 include_graphics(here(
   "immuno_graphical", "output", attr(config,"config"),
-  paste0("spaghetti_plot_BaselinePos_", study_name, ".png")
+  paste0("spaghetti_plot_BaselinePos_", study_name, ".pdf")
 ))
 ```
 

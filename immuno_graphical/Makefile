@@ -26,8 +26,8 @@ make_assay_lim: params plot_data code/make_assay_lim.R
 ## clean            : delete contents of data_clean/ and figs/
 clean:
 	rm -f data_clean/*.rds
-	rm -f output/$(TRIAL)/*.png
-	rm -f output/$(TRIAL)/demographics/*.png
+	rm -f output/$(TRIAL)/*.pdf
+	rm -f output/$(TRIAL)/demographics/*.pdf
 	rm -f Rplots.pdf
 
 ## style            : enforce R code styling conventions automatically
