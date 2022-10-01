@@ -2,15 +2,35 @@
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R"))
+source(here::here("code", "params.R")) # load parameters
 #-----------------------------------------------
 
 library(here)
 library(dplyr)
 library(stringr)
-dat.mock <- read.csv(data_name, header = TRUE)
 
-# load parameters
-source(here("code", "params.R"))
+
+dat.mock <- read.csv(data_name, header = TRUE)
+# for unknown reason, the Senior variable has no value in the PROFISCOV dataset
+if (study_name=="PROFISCOV") {
+  dat.mock$Senior <- as.numeric(with(dat.mock, Age >= age.cutoff, 1, 0))
+  
+  dat.mock <- dat.mock %>%
+    mutate(
+      race = labels.race[1],
+      race = case_when(
+        Black == 1 ~ labels.race[2],
+        Asian == 1 ~ labels.race[3],
+        NatAmer == 1 ~ labels.race[4],
+        PacIsl == 1 ~ labels.race[5],
+        Multiracial == 1 ~ labels.race[6],
+        Notreported == 1 | Unknown == 1 ~ labels.race[7],
+        TRUE ~ labels.race[1]
+      ),
+      race = factor(race, levels = labels.race)
+    )
+}
+
 dat <- dat.mock
 
 print("Data preprocess")
@@ -26,7 +46,8 @@ twophase_sample_id <- dat.twophase.sample$Ptid
 important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex",
   "Bserostatus", "Senior", "Bstratum", "wt.subcohort", 
   "race","EthnicityHispanic","EthnicityNotreported", 
-  "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCove") c("Country", "HIVinfection"))
+  "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCove") "HIVinfection", 
+  if (study_name !="COVE" & study_name !="MockCove" & study_name !="PROFISCOV") "Country")
 
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;
