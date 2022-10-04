@@ -311,13 +311,13 @@ if(config$is_ows_trial) {
 
 names(assays)=assays # add names so that lapply results will have names
 
-pos.cutoffs<-llods<-lloqs<-uloqs<-c()
-lloxs=NULL
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
 # For bAb, IU and BAU are the same thing
 # all values on BAU or IU
 # LOQ can not be NA, it is needed for computing delta
+pos.cutoffs<-llods<-lloqs<-uloqs<-c()
+lloxs=NULL
 if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     tmp=list(
         bindSpike=c(
@@ -1087,7 +1087,7 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         # since that leads to uneven distribution of markers between low/med/high among ph2
         # this issue did not affect earlier trials much, but it is a problem with vat08m. We are changing the code for trials after vat08m
         if (attr(config, "config") %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondprimary","moderna_real","moderna_mock","prevent19",
-                "janssen_pooled_real","janssen_na_real","janssen_la_real","janssen_sa_real")) {
+                "janssen_pooled_EUA","janssen_na_EUA","janssen_la_EUA","janssen_sa_EUA")) {
             flag=rep(TRUE, length(tmp.a))
         } else {
             flag=dat$ph2

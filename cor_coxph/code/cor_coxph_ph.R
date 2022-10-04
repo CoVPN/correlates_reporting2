@@ -373,7 +373,7 @@ if (!is.null(config$additional_models)) {
 }
 
 
-if (attr(config,"config")=="janssen_pooled_real") {
+if (attr(config,"config")=="janssen_pooled_EUA") {
     f=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) * Day29pseudoneutid50    
     fit=svycoxph(f, design=design.vacc.seroneg) 
     var.ind=5:6
