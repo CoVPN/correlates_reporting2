@@ -309,7 +309,6 @@ ggally_cor_resample <- function(
         
         # write.csv(data.frame(x = x_resamp, y = y_resamp, strata = st_resamp), "input_columns_last_resamp.csv", row.names = FALSE)
 
-
         suppressWarnings(st_resamp_dummy <-
           dummies::dummy(st_resamp, sep = "_"))
 
@@ -326,12 +325,20 @@ ggally_cor_resample <- function(
             collapse = "+"
           )
         ))
-        corObj <- try(partial_Spearman(
-          formula = fml, data = resamp_data,
-          fit.x = "lm", fit.y = "lm"
-        )$TS$TB$ts,
-        silent = TRUE
-        )
+        
+        if (study_name=="PROFISCOV"){ 
+          # e.g. PROFISCOV's Bstratum variable only includes one value, so use simple spearman for this study, need to specify "exact = FALSE" because of ties
+          corObj <- try(cor.test(resamp_data$x, resamp_data$y, method = "spearman", exact = FALSE)$estimate,
+          silent = TRUE
+          )
+        } else {
+          corObj <- try(partial_Spearman(
+            formula = fml, data = resamp_data,
+            fit.x = "lm", fit.y = "lm"
+          )$TS$TB$ts,
+          silent = TRUE
+          )
+        }
 
         # make sure all values have X-many decimal places
         corvec[bb] <- ifelse(class(corObj) == "try-error",
