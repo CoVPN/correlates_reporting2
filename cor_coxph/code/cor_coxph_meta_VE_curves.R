@@ -187,7 +187,6 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
     if(!add.hist) {
         # use non-opaque color
         hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*1, maxColorValue=255)})
-
         mypdf(file=paste0("output/meta/meta_hist_",file.name,"_",a), width=5.2, height=5, mfrow=c(5,1))
             par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientatio        
             par(mar=c(0,4,0,1), mfrow=c(5,1), oma=c(3,0,1,0))
