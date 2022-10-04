@@ -12,7 +12,7 @@ library(tools) # toTitleCase
 library(survey)
 library(xtable) # this is a dependency of kyotil
 library(WeightedROC)
-Sys.setenv("TRIAL"="janssen_pooled_real") # value does not matter since we just need to load the common functions in _common.R
+Sys.setenv("TRIAL"="janssen_pooled_EUA") # value does not matter since we just need to load the common functions in _common.R
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
 Sys.setenv(VERBOSE=1)
@@ -26,28 +26,21 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 
 
 # reading in data for COVE and ENSEMBLE
-dat.vac.seroneg.bAbID50=load.data("janssen_pooled_real", "D29IncludeNotMolecConfirmedstart1")
-dat.vac.seroneg.adcp=load.data("janssen_pooled_realADCP", "D29IncludeNotMolecConfirmedstart1")
-stopifnot(all(dat.vac.seroneg.bAbID50$ptid==dat.vac.seroneg.adcp$ptid))
+dat.vac.seroneg.bAbID50=load.data("janssen_pooled_EUA", "D29IncludeNotMolecConfirmedstart1")
 # combine markers into one data frame
-dat.ense.1=cbind(dat.vac.seroneg.bAbID50, 
-    Day29ADCP=dat.vac.seroneg.adcp$Day29ADCP, 
-    Day29ADCPcat=dat.vac.seroneg.adcp$Day29ADCPcat,
-    ph2.D29start1ADCP=dat.vac.seroneg.adcp$ph2.D29start1,
-    wt.D29start1ADCP=dat.vac.seroneg.adcp$wt.D29start1
-    )
+dat.ense.1=dat.vac.seroneg.bAbID50
 
-dat.ense.0=load.data("janssen_pooled_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.ense.0=load.data("janssen_pooled_EUA", "D29IncludeNotMolecConfirmedstart1", trt=0)
     
 dat.cove.1=load.data("moderna_real", "D57")
 dat.cove.0=load.data("moderna_real", "D57", trt=0)
 
-dat.vac.seroneg.id50.na=load.data("janssen_na_real", "D29IncludeNotMolecConfirmedstart1")
-dat.pla.seroneg.id50.na=load.data("janssen_na_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
-dat.vac.seroneg.id50.la=load.data("janssen_la_real", "D29IncludeNotMolecConfirmedstart1")
-dat.pla.seroneg.id50.la=load.data("janssen_la_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
-dat.vac.seroneg.id50.sa=load.data("janssen_sa_real", "D29IncludeNotMolecConfirmedstart1")
-dat.pla.seroneg.id50.sa=load.data("janssen_sa_real", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.vac.seroneg.id50.na=load.data("janssen_na_EUA", "D29IncludeNotMolecConfirmedstart1")
+dat.pla.seroneg.id50.na=load.data("janssen_na_EUA", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.vac.seroneg.id50.la=load.data("janssen_la_EUA", "D29IncludeNotMolecConfirmedstart1")
+dat.pla.seroneg.id50.la=load.data("janssen_la_EUA", "D29IncludeNotMolecConfirmedstart1", trt=0)
+dat.vac.seroneg.id50.sa=load.data("janssen_sa_EUA", "D29IncludeNotMolecConfirmedstart1")
+dat.pla.seroneg.id50.sa=load.data("janssen_sa_EUA", "D29IncludeNotMolecConfirmedstart1", trt=0)
 
 
 
@@ -60,7 +53,7 @@ for (region in c("pooled")) {
         
     if(verbose) myprint(region)
     
-    trials=c("janssen_"%.%region%.%"_real", "janssen_"%.%region%.%"_realADCP") 
+    trials=c("janssen_"%.%region%.%"_EUA") 
         
     for (COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")) {
         if(verbose) myprint(COR)

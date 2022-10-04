@@ -289,7 +289,7 @@ if (tpeak=="57") {
 
 
 # understand different follow-up periods in different regions
-if (attr(config,"config")=="janssen_pooled_realbAb") {   
+if (attr(config,"config")=="janssen_pooled_EUA") {   
     form = Surv(EventTimePrimary, EventIndPrimary) ~ Region
     
     par(mfrow=c(1,2))
