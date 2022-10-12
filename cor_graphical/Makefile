@@ -50,7 +50,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janss
 	Rscript code/CoR_assay_graphics.R D29start1
 	Rscript code/CoR_wrcdf_with_VE_lines.R D29start1
 
-else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA janssen_na_partA janssen_la_partA janssen_sa_partA janssen_pooled_partA janssen_na_EUA janssen_la_EUA janssen_sa_EUA))
+else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_partA janssen_na_partA janssen_la_partA janssen_sa_partA janssen_pooled_EUA janssen_na_EUA janssen_la_EUA janssen_sa_EUA))
 	Rscript code/cor_data_preprocess.R D29IncludeNotMolecConfirmed # Yiwen's
 	Rscript code/cor_graphics_violin_scatter.R D29IncludeNotMolecConfirmed
 
