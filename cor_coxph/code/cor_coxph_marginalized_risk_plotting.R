@@ -438,23 +438,27 @@ for (a in all.markers) {
     img.dat=img.dat[order(img.dat[,5]),]
     mywrite.csv(img.dat, paste0(save.results.to, a, "_marginalized_risks_cat_", study_name))
     
-
+    
     # add data ribbon
     f1=update(form.s, as.formula(paste0("~.+",marker.name)))
     km <- survfit(f1, subset(dat.vac.seroneg, ph2==1), weights=wt)
     tmp=summary(km, times=x.time)            
     
-    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
-    stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
-    stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
+#    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
+#    stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
+#    stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
     
-    n.risk.L <- round(tmp$n.risk[1:length(x.time)])
-    n.risk.M <- round(tmp$n.risk[1:length(x.time)+length(x.time)])
-    n.risk.H <- round(tmp$n.risk[1:length(x.time)+length(x.time)*2])
+    L.idx=which(tmp$time==0)[1]:(which(tmp$time==0)[2]-1)
+    M.idx=which(tmp$time==0)[2]:(which(tmp$time==0)[3]-1)
+    H.idx=which(tmp$time==0)[3]:length(tmp$time==0)
     
-    cum.L <- round(cumsum(tmp$n.event[1:length(x.time)]))
-    cum.M <- round(cumsum(tmp$n.event[1:length(x.time)+length(x.time)]))
-    cum.H <- round(cumsum(tmp$n.event[1:length(x.time)+length(x.time)*2]))
+    n.risk.L <- round(tmp$n.risk[L.idx])
+    n.risk.M <- round(tmp$n.risk[M.idx])
+    n.risk.H <- round(tmp$n.risk[H.idx])
+    
+    cum.L <- round(cumsum(tmp$n.event[L.idx]))
+    cum.M <- round(cumsum(tmp$n.event[M.idx]))
+    cum.H <- round(cumsum(tmp$n.event[H.idx]))
     
     # add placebo
     tmp=summary(survfit(form.s, dat.pla.seroneg), times=x.time)            

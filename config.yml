@@ -96,20 +96,52 @@ janssen_pooled_partA:
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
 
+janssen_pooled_partAsenior:
+  <<: *janssen_pooled_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partAsenior_data_processed_with_riskscore.csv
+
+janssen_pooled_partAnonsenior:
+  <<: *janssen_pooled_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partAnonsenior_data_processed_with_riskscore.csv
+
 janssen_na_partA:
   <<: *janssen_trial_partA
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
+
+janssen_na_partAsenior:
+  <<: *janssen_na_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partAsenior_data_processed_with_riskscore.csv
+
+janssen_na_partAnonsenior:
+  <<: *janssen_na_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partAnonsenior_data_processed_with_riskscore.csv
 
 janssen_la_partA:
   <<: *janssen_trial_partA
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
 
+janssen_la_partAsenior:
+  <<: *janssen_ja_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partAsenior_data_processed_with_riskscore.csv
+
+janssen_la_partAnonsenior:
+  <<: *janssen_la_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partAnonsenior_data_processed_with_riskscore.csv
+
 janssen_sa_partA:
   <<: *janssen_trial_partA
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
+
+janssen_sa_partAsenior:
+  <<: *janssen_sa_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partAsenior_data_processed_with_riskscore.csv
+
+janssen_sa_partAnonsenior:
+  <<: *janssen_sa_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partAnonsenior_data_processed_with_riskscore.csv
 
 
 janssen_trial_EUA: &janssen_trial_EUA # binding Ab and ID50
@@ -551,7 +583,6 @@ D57:
   Earlyendpoint: EarlyendpointD57
   tpeak: 57
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -566,7 +597,6 @@ D29:
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -581,7 +611,6 @@ D22:
   Earlyendpoint: EarlyendpointD22
   tpeak: 22
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -596,7 +625,6 @@ D43:
   Earlyendpoint: EarlyendpointD43
   tpeak: 43
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -611,7 +639,6 @@ D91:
   Earlyendpoint: EarlyendpointD91
   tpeak: 91
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 91 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -626,7 +653,6 @@ D43start48:
   Earlyendpoint: EarlyendpointD91
   tpeak: 43
   tpeaklag: 55 # 7 + 48
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -642,7 +668,6 @@ D22omi:
   Earlyendpoint: EarlyendpointD22
   tpeak: 22
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -657,7 +682,6 @@ D43omi:
   Earlyendpoint: EarlyendpointD43
   tpeak: 43
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -673,7 +697,6 @@ D29start28:
   Earlyendpoint: EarlyendpointD57
   tpeak: 29
   tpeaklag: 35 # 7 + 28
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -687,7 +710,6 @@ D35:
   Earlyendpoint: EarlyendpointD35
   tpeak: 35
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -702,7 +724,6 @@ D29start1:
   Earlyendpoint: EarlyendpointD29start1
   tpeak: 29
   tpeaklag: 1
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -718,7 +739,6 @@ D29IncludeNotMolecConfirmed:
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7
-  tfinal.tpeak: 54
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -732,7 +752,6 @@ D29SevereIncludeNotMolecConfirmed:
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7
-  tfinal.tpeak: 54
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed severe COVID endpoint.
 
@@ -748,7 +767,6 @@ D29IncludeNotMolecConfirmedstart1:
   Earlyendpoint: EarlyendpointD29start1
   tpeak: 29
   tpeaklag: 1
-  tfinal.tpeak: 54
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -762,7 +780,6 @@ D210:
   EventTimePrimary: Ttilde.D210
   tpeak: 210
   tpeaklag: 1
-  tfinal.tpeak: 550
   txt.endpoint: HIV
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. per-protocol vaccine recipients not infected through 1 days post Month 7 visit; no. cases = number of this cohort with an observed endpoint.
 
