@@ -97,7 +97,7 @@ if (exists("COR")) {
     myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE") {
-        if (contain(attr(config, "config"), "real")) {
+        if (contain(attr(config, "config"), "EUA")) {
             # EUA datasets
             if (COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
         } 
@@ -106,9 +106,8 @@ if (exists("COR")) {
     config.cor <- config::get(config = COR)
     tpeak=as.integer(paste0(config.cor$tpeak))
     tpeaklag=as.integer(paste0(config.cor$tpeaklag))
-    tfinal.tpeak=as.integer(paste0(config.cor$tfinal.tpeak))
     tinterm=as.integer(paste0(config.cor$tinterm))
-    myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
+    myprint(tpeak, tpeaklag, tinterm)
     # some config may not have all fields
     if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
 
@@ -217,22 +216,29 @@ if (exists("COR")) {
             # may not be defined if COR is not provided in command line and used the default value
         }
         
-        # followup time for the last case in ph2 in vaccine arm
-        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        
-        if (startsWith(attr(config, "config"), "janssen_na_EUA")) {
+        # default rule for followup time is the last case in ph2 in vaccine arm
+        tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+        # exceptions
+        if (attr(config, "config") == "janssen_na_EUA") {
             tfinal.tpeak=53
-        } else if (startsWith(attr(config, "config"), "janssen_la_EUA")) { # from day 48 to 58, risk jumps from .008 to .027
+        } else if (attr(config, "config"), "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
             tfinal.tpeak=48 
-        } else if (startsWith(attr(config, "config"), "janssen_sa_EUA")) {
-            tfinal.tpeak=40
+        } else if (attr(config, "config"), "janssen_sa_EUA") {
+            tfinal.tpeak=40            
+        } else if (attr(config, "config"), "janssen_pooled_EUA") {
+            tfinal.tpeak=54
+            
+        # use startsWith because there are also senior and nonsenior
+        } else if (startsWith(attr(config, "config"), "janssen_pooled_partA") | startsWith(attr(config, "config"), "janssen_la_partA")) {
+            tfinal.tpeak=191
+        } else if (startsWith(attr(config, "config"), "janssen_na_partA") | startsWith(attr(config, "config"), "janssen_sa_partA")) {
+            tfinal.tpeak=111
             
         } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
-            if (COR=="D91") {
-                tfinal.tpeak=66
-            } else if(COR=="D43") {
-                tfinal.tpeak= 91+66-43
-            }
+            if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
+            
+        } else if (study_name=="HVTN705") {
+            tfinal.tpeak=550
         }
 
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
@@ -311,6 +317,7 @@ if(config$is_ows_trial) {
 
 names(assays)=assays # add names so that lapply results will have names
 
+# if the following part changes, make sure to copy to _common.R in the processing repo
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
 # For bAb, IU and BAU are the same thing
@@ -395,7 +402,7 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     pos.cutoffs["bindN"]=23.4711
     
     # the limits below are different for EUA and Part A datasets
-    if (contain(attr(config, "config"), "real")) {
+    if (contain(attr(config, "config"), "EUA")) {
     # EUA data
         
         # data less than lloq is set to lloq/2
