@@ -169,6 +169,7 @@ pvals.adj = cbind(p.unadj=p.unadj.1, pvals.adj[match(names(p.unadj.1), rownames(
 
 if (study_name=="PREVENT19") {
     # bindSpike tertiary has no cases in the upper tertile, cannot do P value
+    # this code somehow works even though there are also RBD and ID50
     pvals.adj=rbind(pvals.adj, tri.Day35bindSpike=c(NA,NA,NA))
 }
 

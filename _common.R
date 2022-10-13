@@ -435,6 +435,12 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     uloqs["bindSpike"]=770464.6*0.0090 # 6934.181
     pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
     
+    # data less than lloq is set to lloq/2
+    llods["bindRBD"]=NA  
+    lloqs["bindRBD"]=1126.7*0.0272  #30.6
+    uloqs["bindRBD"]=360348.7*0.0272 # 9801
+    pos.cutoffs["bindRBD"]=lloqs["bindRBD"]
+    
     # data less than lod is set to lod/2 in the raw data
     llods["pseudoneutid50"]=2.612 # 40 * 0.0653
     lloqs["pseudoneutid50"]=51*0.0653 # 3.3303
