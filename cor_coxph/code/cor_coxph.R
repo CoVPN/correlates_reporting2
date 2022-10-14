@@ -9,7 +9,7 @@
 #Sys.setenv(TRIAL = "profiscov_lvmn"); COR="D43start48"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "janssen_la_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_sa_partAnonsenior"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -133,7 +133,7 @@ print("Passed cor_coxph unit testing")
 
 
 # forest plots
-if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m")) {
+if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m") & !contain(attr(config,"config"),"senior")) {
     tmp=here::here("code", config$forestplot_script)
     if (file.exists(tmp)) source(tmp)
     
