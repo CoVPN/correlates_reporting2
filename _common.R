@@ -97,7 +97,7 @@ if (exists("COR")) {
     myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE") {
-        if (contain(attr(config, "config"), "real")) {
+        if (contain(attr(config, "config"), "EUA")) {
             # EUA datasets
             if (COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
         } 
@@ -106,9 +106,8 @@ if (exists("COR")) {
     config.cor <- config::get(config = COR)
     tpeak=as.integer(paste0(config.cor$tpeak))
     tpeaklag=as.integer(paste0(config.cor$tpeaklag))
-    tfinal.tpeak=as.integer(paste0(config.cor$tfinal.tpeak))
     tinterm=as.integer(paste0(config.cor$tinterm))
-    myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
+    myprint(tpeak, tpeaklag, tinterm)
     # some config may not have all fields
     if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
 
@@ -217,22 +216,29 @@ if (exists("COR")) {
             # may not be defined if COR is not provided in command line and used the default value
         }
         
-        # followup time for the last case in ph2 in vaccine arm
-        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        
-        if (startsWith(attr(config, "config"), "janssen_na_EUA")) {
+        # default rule for followup time is the last case in ph2 in vaccine arm
+        tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+        # exceptions
+        if (attr(config, "config") == "janssen_na_EUA") {
             tfinal.tpeak=53
-        } else if (startsWith(attr(config, "config"), "janssen_la_EUA")) { # from day 48 to 58, risk jumps from .008 to .027
+        } else if (attr(config, "config") == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
             tfinal.tpeak=48 
-        } else if (startsWith(attr(config, "config"), "janssen_sa_EUA")) {
-            tfinal.tpeak=40
+        } else if (attr(config, "config") == "janssen_sa_EUA") {
+            tfinal.tpeak=40            
+        } else if (attr(config, "config") == "janssen_pooled_EUA") {
+            tfinal.tpeak=54
+            
+        # use startsWith because there are also senior and nonsenior
+        } else if (startsWith(attr(config, "config"), "janssen_pooled_partA") | startsWith(attr(config, "config"), "janssen_la_partA")) {
+            tfinal.tpeak=191
+        } else if (startsWith(attr(config, "config"), "janssen_na_partA") | startsWith(attr(config, "config"), "janssen_sa_partA")) {
+            tfinal.tpeak=111
             
         } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
-            if (COR=="D91") {
-                tfinal.tpeak=66
-            } else if(COR=="D43") {
-                tfinal.tpeak= 91+66-43
-            }
+            if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
+            
+        } else if (study_name=="HVTN705") {
+            tfinal.tpeak=550
         }
 
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
@@ -311,6 +317,7 @@ if(config$is_ows_trial) {
 
 names(assays)=assays # add names so that lapply results will have names
 
+# if the following part changes, make sure to copy to _common.R in the processing repo
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
 # For bAb, IU and BAU are the same thing
@@ -395,7 +402,7 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     pos.cutoffs["bindN"]=23.4711
     
     # the limits below are different for EUA and Part A datasets
-    if (contain(attr(config, "config"), "real")) {
+    if (contain(attr(config, "config"), "EUA")) {
     # EUA data
         
         # data less than lloq is set to lloq/2
@@ -434,6 +441,12 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     lloqs["bindSpike"]=150.4*0.0090 # 1.3536
     uloqs["bindSpike"]=770464.6*0.0090 # 6934.181
     pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
+    
+    # data less than lloq is set to lloq/2
+    llods["bindRBD"]=NA  
+    lloqs["bindRBD"]=1126.7*0.0272  #30.6
+    uloqs["bindRBD"]=360348.7*0.0272 # 9801
+    pos.cutoffs["bindRBD"]=lloqs["bindRBD"]
     
     # data less than lod is set to lod/2 in the raw data
     llods["pseudoneutid50"]=2.612 # 40 * 0.0653
@@ -489,59 +502,59 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     # lod and lloq are the same
     # data less than lod is set to lloq/2
     
-    #SARS-CoV-2 Spike           49 70,000 1,668 49
-    #SARS-CoV-2 Spike (P.1)     32 36,000 806 32
-    #SARS-CoV-2 Spike (B.1.351) 72 21,000 467 72
-    #SARS-CoV-2 Spike (B.1.1.7) 70 47,000 1,323 70
+    #SARS-CoV-2 Spike           49 70,000 696 49
+    #SARS-CoV-2 Spike (P.1)     32 36,000 463 32
+    #SARS-CoV-2 Spike (B.1.351) 72 21,000 333 72
+    #SARS-CoV-2 Spike (B.1.1.7) 70 47,000 712 70
     
     lloqs["bindSpike"] <- llods["bindSpike"] <- 49*0.0090 # 0.441
     uloqs["bindSpike"]=70000*0.0090 # 630
-    pos.cutoffs["bindSpike"]=1668*0.0090 # 15.0
+    pos.cutoffs["bindSpike"]=696*0.0090 # 15.0
     
     lloqs["bindSpike_P.1"] <- llods["bindSpike_P.1"] <- 32*0.0090 
     uloqs["bindSpike_P.1"]=36000*0.0090 
-    pos.cutoffs["bindSpike_P.1"]=806*0.0090 
+    pos.cutoffs["bindSpike_P.1"]=463*0.0090 
     
     lloqs["bindSpike_B.1.351"] <- llods["bindSpike_B.1.351"] <- 72*0.0090 
     uloqs["bindSpike_B.1.351"]=21000*0.0090 
-    pos.cutoffs["bindSpike_B.1.351"]=467*0.0090 
+    pos.cutoffs["bindSpike_B.1.351"]=333*0.0090 
     
     lloqs["bindSpike_B.1.1.7"] <- llods["bindSpike_B.1.1.7"] <- 70*0.0090 
     uloqs["bindSpike_B.1.1.7"]=47000*0.0090 
-    pos.cutoffs["bindSpike_B.1.1.7"]=1323*0.0090 
+    pos.cutoffs["bindSpike_B.1.1.7"]=712*0.0090 
     
-    #SARS-CoV-2 S1 RBD           35  30,000 1,867 35
-    #SARS-CoV-2 S1 RBD (P.1)     91  10,000 929   91
-    #SARS-CoV-2 S1 RBD (B.1.351) 53  6,300  484   53
-    #SARS-CoV-2 S1 RBD (B.1.1.7) 224 20,000 1,575 224
+    #SARS-CoV-2 S1 RBD           35  30,000 1264 35
+    #SARS-CoV-2 S1 RBD (P.1)     91  10,000 572  91
+    #SARS-CoV-2 S1 RBD (B.1.351) 53  6,300  368  53
+    #SARS-CoV-2 S1 RBD (B.1.1.7) 224 20,000 1111 224
             
     lloqs["bindRBD"] <- llods["bindRBD"] <- 35*0.0272 
     uloqs["bindRBD"]=30000*0.0272 # 630
-    pos.cutoffs["bindRBD"]=1867*0.0272 # 15.0
+    pos.cutoffs["bindRBD"]=1264*0.0272 # 15.0
     
     lloqs["bindRBD_P.1"] <- llods["bindRBD_P.1"] <- 91*0.0272 
     uloqs["bindRBD_P.1"]=10000*0.0272 
-    pos.cutoffs["bindRBD_P.1"]=929*0.0272 
+    pos.cutoffs["bindRBD_P.1"]=572*0.0272 
     
     lloqs["bindRBD_B.1.351"] <- llods["bindRBD_B.1.351"] <- 53*0.0272 
     uloqs["bindRBD_B.1.351"]=6300*0.0272 
-    pos.cutoffs["bindRBD_B.1.351"]=484*0.0272 
+    pos.cutoffs["bindRBD_B.1.351"]=368*0.0272 
     
     lloqs["bindRBD_B.1.1.7"] <- llods["bindRBD_B.1.1.7"] <- 224*0.0272 
     uloqs["bindRBD_B.1.1.7"]=20000*0.0272 
-    pos.cutoffs["bindRBD_B.1.1.7"]=1575*0.0272 
+    pos.cutoffs["bindRBD_B.1.1.7"]=1111*0.0272 
   
-    #SARS-CoV-2 Nucleocapsid 46 80,000 59,115 46
+    #SARS-CoV-2 Nucleocapsid 46 80,000 7015 46
     
     lloqs["bindN"] <- llods["bindN"] <- 46*0.00236 
     uloqs["bindN"]=80000*0.00236 
-    pos.cutoffs["bindN"]=59115*0.00236 
+    pos.cutoffs["bindN"]=7015*0.00236 
     
     #LVMN
     llods["liveneutmn50"]=27.56 
     lloqs["liveneutmn50"]=27.84
     uloqs["liveneutmn50"]=20157.44 
-    pos.cutoffs["liveneutmn50"]=13.78 
+    pos.cutoffs["liveneutmn50"]=llods["liveneutmn50"] 
     
 } else stop("unknown study_name 1")
 

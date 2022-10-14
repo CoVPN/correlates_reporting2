@@ -438,43 +438,47 @@ for (a in all.markers) {
     img.dat=img.dat[order(img.dat[,5]),]
     mywrite.csv(img.dat, paste0(save.results.to, a, "_marginalized_risks_cat_", study_name))
     
-
+    
     # add data ribbon
     f1=update(form.s, as.formula(paste0("~.+",marker.name)))
     km <- survfit(f1, subset(dat.vac.seroneg, ph2==1), weights=wt)
     tmp=summary(km, times=x.time)            
     
-    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
-    stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
-    stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
+#    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
+#    stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
+#    stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
     
-    n.risk.L <- round(tmp$n.risk[1:length(x.time)])
-    n.risk.M <- round(tmp$n.risk[1:length(x.time)+length(x.time)])
-    n.risk.H <- round(tmp$n.risk[1:length(x.time)+length(x.time)*2])
+    L.idx=which(tmp$time==0)[1]:(which(tmp$time==0)[2]-1)
+    M.idx=which(tmp$time==0)[2]:(which(tmp$time==0)[3]-1)
+    H.idx=which(tmp$time==0)[3]:length(tmp$time==0)
     
-    cum.L <- round(cumsum(tmp$n.event[1:length(x.time)]))
-    cum.M <- round(cumsum(tmp$n.event[1:length(x.time)+length(x.time)]))
-    cum.H <- round(cumsum(tmp$n.event[1:length(x.time)+length(x.time)*2]))
+    n.risk.L <- round(tmp$n.risk[L.idx])
+    n.risk.M <- round(tmp$n.risk[M.idx])
+    n.risk.H <- round(tmp$n.risk[H.idx])
+    
+    cum.L <- round(cumsum(tmp$n.event[L.idx]))
+    cum.M <- round(cumsum(tmp$n.event[M.idx]))
+    cum.H <- round(cumsum(tmp$n.event[H.idx]))
     
     # add placebo
-    tmp=summary(survfit(form.s, dat.pla.seroneg), times=x.time)            
-    n.risk.P <- round(tmp$n.risk)
-    cum.P <- round(cumsum(tmp$n.event))    
+    tmp.P=summary(survfit(form.s, dat.pla.seroneg), times=x.time)            
+    n.risk.P <- round(tmp.P$n.risk)
+    cum.P <- round(cumsum(tmp.P$n.event))    
     
     cex.text <- 0.7
     at.label=-tfinal.tpeak/6
     
     mtext("No. at risk",side=1,outer=FALSE,line=2.5,at=-2,adj=0,cex=cex.text)
-    mtext(paste0("Low:"),side=1,outer=F,line=3.4,at=at.label,adj=0,cex=cex.text);  mtext(n.risk.L,side=1,outer=FALSE,line=3.4,at=x.time,cex=cex.text)
-    mtext(paste0("Med:"),side=1,outer=F,line=4.3,at=at.label,adj=0,cex=cex.text);  mtext(n.risk.M,side=1,outer=FALSE,line=4.3,at=x.time,cex=cex.text)
-    mtext(paste0("High:"),side=1,outer=F,line=5.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.H,side=1,outer=FALSE,line=5.2,at=x.time,cex=cex.text)
-    mtext(paste0("Plac:"),side=1,outer=F,line=6.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.P,side=1,outer=FALSE,line=6.2,at=x.time,cex=cex.text)
+    mtext(paste0("Low:"),side=1,outer=F,line=3.4,at=at.label,adj=0,cex=cex.text);  mtext(n.risk.L,side=1,outer=FALSE,line=3.4,at=tmp$time[L.idx],cex=cex.text)
+    mtext(paste0("Med:"),side=1,outer=F,line=4.3,at=at.label,adj=0,cex=cex.text);  mtext(n.risk.M,side=1,outer=FALSE,line=4.3,at=tmp$time[M.idx],cex=cex.text)
+    mtext(paste0("High:"),side=1,outer=F,line=5.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.H,side=1,outer=FALSE,line=5.2,at=tmp$time[H.idx],cex=cex.text)
+    mtext(paste0("Plac:"),side=1,outer=F,line=6.2,at=at.label,adj=0,cex=cex.text); mtext(n.risk.P,side=1,outer=FALSE,line=6.2,at=tmp.P$time,cex=cex.text)
     
     mtext(paste0("Cumulative No. of ",config.cor$txt.endpoint," Endpoints"),side=1,outer=FALSE,line=7.4,at=-2,adj=0,cex=cex.text)
-    mtext(paste0("Low:"),side=1,outer=FALSE,line=8.3,at=at.label,adj=0,cex=cex.text);  mtext(cum.L,side=1,outer=FALSE,line=8.3,at=x.time,cex=cex.text)
-    mtext(paste0("Med:"),side=1,outer=FALSE,line=9.2,at=at.label,adj=0,cex=cex.text);  mtext(cum.M,side=1,outer=FALSE,line=9.2,at=x.time,cex=cex.text)
-    mtext(paste0("High:"),side=1,outer=FALSE,line=10.1,at=at.label,adj=0,cex=cex.text);mtext(cum.H,side=1,outer=FALSE,line=10.1,at=x.time,cex=cex.text)
-    mtext(paste0("Plac:"),side=1,outer=FALSE,line=11.1,at=at.label,adj=0,cex=cex.text);mtext(cum.P,side=1,outer=FALSE,line=11.1,at=x.time,cex=cex.text)
+    mtext(paste0("Low:"),side=1,outer=FALSE,line=8.3,at=at.label,adj=0,cex=cex.text);  mtext(cum.L,side=1,outer=FALSE,line=8.3,at=tmp$time[L.idx],cex=cex.text)
+    mtext(paste0("Med:"),side=1,outer=FALSE,line=9.2,at=at.label,adj=0,cex=cex.text);  mtext(cum.M,side=1,outer=FALSE,line=9.2,at=tmp$time[M.idx],cex=cex.text)
+    mtext(paste0("High:"),side=1,outer=FALSE,line=10.1,at=at.label,adj=0,cex=cex.text);mtext(cum.H,side=1,outer=FALSE,line=10.1,at=tmp$time[H.idx],cex=cex.text)
+    mtext(paste0("Plac:"),side=1,outer=FALSE,line=11.1,at=at.label,adj=0,cex=cex.text);mtext(cum.P,side=1,outer=FALSE,line=11.1,at=tmp.P$time,cex=cex.text)
     
 dev.off()    
 }
