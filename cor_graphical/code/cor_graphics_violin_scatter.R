@@ -428,7 +428,7 @@ for (i in 1:length(plots)) {
     
     if(length(timepoints)==1) {
       timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)] 
-    } else {timesince <- labels.time[(fnames(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1]}
+    } else {timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1]}
     
     ds.tmp <- longer_cor_data %>%
       filter(assay==plots[i]) %>%
