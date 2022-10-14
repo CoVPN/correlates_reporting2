@@ -13,9 +13,13 @@ library(knitr)
 
 here::i_am("immuno_graphical/report.Rmd")
 
-all_assays <- c("bindSpike", "bindRBD", "bindN", "pseudoneutid50", "pseudoneutid80", "liveneutmn50")
+all_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
+                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
+                "bindN",
+                "pseudoneutid50", "pseudoneutid80", 
+                "liveneutmn50")
 
-if(include_bindN){
+if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays)){
   assay_immuno <- all_assays[all_assays %in% c(assays, "bindN")]
   labels.assays.all <- c("Binding Antibody to N", labels.assays)
   names(labels.assays.all)[1] <- "bindN"
@@ -40,7 +44,8 @@ minority.disclaimer <- switch(study_name,
                               "MockENSEMBLE"="These plots are restricted to only United States trial participants.",
                               "PREVENT19"="",
                               "AZD1222"="",
-                              "VAT08m"="")
+                              "VAT08m"="",
+                              "PROFISCOV"="")
 
 neut.marker.captions <- switch(study_name, 
                                "COVE"="The dashed lines in each figure are ULOQ, LLOQ, and positivity cutoffs for binding antibody assays, or ULOQ, LLOQ, and LLOD for neutralizing antibody assays, from top to bottom respectively.",
@@ -51,7 +56,10 @@ neut.marker.captions <- switch(study_name,
                                
                                "AZD1222"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
                                
-                               "VAT08m"="The dashed lines in each figure is LLOD for neutralizing antibody assays.")
+                               "VAT08m"="The dashed lines in each figure is LLOD for neutralizing antibody assays.",
+                               "PROFISCOV"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOD for binding antibody assays, or LLOD and positivity cut-off for neutralizing antibody assays, from top to bottom respectively."
+                               # PROFISCOV nAb has a ULOQ value out of figure limit
+                               )
 
 ```
 
@@ -368,8 +376,8 @@ for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"ove
 
 ```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline negative vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times)}
 include_graphics(here(
-  "immuno_graphical", "figs",
-  paste0("spaghetti_plot_BaselineNeg_", study_name, ".png")
+  "immuno_graphical", "output", attr(config,"config"), 
+  paste0("spaghetti_plot_BaselineNeg_", study_name, ".pdf")
 ))
 ```
 
@@ -378,8 +386,8 @@ include_graphics(here(
 
 ```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline positive vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & if.pos.exist==1)}
 include_graphics(here(
-  "immuno_graphical", "figs",
-  paste0("spaghetti_plot_BaselinePos_", study_name, ".png")
+  "immuno_graphical", "output", attr(config,"config"),
+  paste0("spaghetti_plot_BaselinePos_", study_name, ".pdf")
 ))
 ```
 

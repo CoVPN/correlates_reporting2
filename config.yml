@@ -80,24 +80,6 @@ janssen_trial: &janssen_trial
   low_efficacy: yes # used to drive some plotting configurations
 
 
-janssen_trial_real: &janssen_trial_real # binding Ab and ID50
-  <<: *janssen_trial
-  primary_assays: [bindSpike, bindRBD, pseudoneutid50]
-  study_name: ENSEMBLE
-  num_boot_replicates: 1000
-  num_perm_replicates: 10000
-
-janssen_trial_realADCP: &janssen_trial_realADCP
-  <<: *janssen_trial
-  assays: [ADCP]
-  assay_labels: [Phagocytic Score]
-  assay_labels_short: [Phagocytic Score]
-  llox_label: LLOQ 
-  primary_assays: [] # have it be empty if no multitesting adjustment should be done
-  study_name: ENSEMBLE
-  num_boot_replicates: 1000
-  num_perm_replicates: 10 # not doing westfall and young multitesting adjustment
-
 janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
   <<: *janssen_trial
   assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
@@ -109,17 +91,69 @@ janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
   num_boot_replicates: 1000
   num_perm_replicates: 10000
 
-
-
-janssen_pooled_partA:
+janssen_pooled_partA: &janssen_pooled_partA
   <<: *janssen_trial_partA
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
-  covariates_riskscore: ~.+ risk_score + as.factor(Region)
-  covariates_norisksco: ~.+ Age        + as.factor(Region)
+  covariates_riskscore: ~.+ risk_score
 
-janssen_pooled_real:
-  <<: *janssen_trial_real
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_real_data_processed_with_riskscore.csv
+janssen_pooled_partAsenior: &janssen_pooled_partAsenior
+  inherits: janssen_pooled_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partAsenior_data_processed_with_riskscore.csv
+
+janssen_pooled_partAnonsenior: &janssen_pooled_partAnonsenior
+  inherits: janssen_pooled_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partAnonsenior_data_processed_with_riskscore.csv
+
+janssen_na_partA: &janssen_na_partA
+  <<: *janssen_trial_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partA_data_processed_with_riskscore.csv
+  covariates_riskscore: ~.+ risk_score
+
+janssen_na_partAsenior: &janssen_na_partAsenior
+  inherits: janssen_na_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partAsenior_data_processed_with_riskscore.csv
+
+janssen_na_partAnonsenior: &janssen_na_partAnonsenior
+  inherits: janssen_na_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partAnonsenior_data_processed_with_riskscore.csv
+
+janssen_la_partA: &janssen_la_partA
+  <<: *janssen_trial_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partA_data_processed_with_riskscore.csv
+  covariates_riskscore: ~.+ risk_score
+
+janssen_la_partAsenior: &janssen_la_partAsenior
+  inherits: janssen_la_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partAsenior_data_processed_with_riskscore.csv
+
+janssen_la_partAnonsenior: &janssen_la_partAnonsenior
+  inherits: janssen_la_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partAnonsenior_data_processed_with_riskscore.csv
+
+janssen_sa_partA: &janssen_sa_partA
+  <<: *janssen_trial_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partA_data_processed_with_riskscore.csv
+  covariates_riskscore: ~.+ risk_score
+
+janssen_sa_partAsenior: &janssen_sa_partAsenior
+  inherits: janssen_sa_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partAsenior_data_processed_with_riskscore.csv
+
+janssen_sa_partAnonsenior: &janssen_sa_partAnonsenior
+  inherits: janssen_sa_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partAnonsenior_data_processed_with_riskscore.csv
+
+
+janssen_trial_EUA: &janssen_trial_EUA # binding Ab and ID50
+  <<: *janssen_trial
+  primary_assays: [bindSpike, bindRBD, pseudoneutid50]
+  study_name: ENSEMBLE
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+
+janssen_pooled_EUA:
+  <<: *janssen_trial_EUA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_EUA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score + as.factor(Region)
   covariates_norisksco: ~.+ Age        + as.factor(Region)
   assays: [bindSpike, bindRBD, pseudoneutid50]
@@ -132,16 +166,9 @@ janssen_pooled_real:
     as.factor(Region) + MinorityInd + Sex + Senior + HighRiskInd + Daytpeakpseudoneutid50
   ]
 
-janssen_pooled_realADCP:
-  <<: *janssen_trial_realADCP
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_realADCP_data_processed_with_riskscore.csv
-  covariates_riskscore: ~.+ risk_score + as.factor(Region)
-  covariates_norisksco: ~.+ Age        + as.factor(Region)
-
-
-janssen_na_real:
-  <<: *janssen_trial_real
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_real_data_processed_with_riskscore.csv
+janssen_na_EUA:
+  <<: *janssen_trial_EUA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_EUA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
   assays: [bindSpike, bindRBD, pseudoneutid50]
@@ -149,16 +176,9 @@ janssen_na_real:
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   llox_label: [LOD, LOD, LLOQ]
 
-janssen_na_realADCP:
-  <<: *janssen_trial_realADCP
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_realADCP_data_processed_with_riskscore.csv
-  covariates_riskscore: ~.+ risk_score
-  covariates_norisksco: ~.+ Age
-
-
-janssen_la_real:
-  <<: *janssen_trial_real
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_real_data_processed_with_riskscore.csv
+janssen_la_EUA:
+  <<: *janssen_trial_EUA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_EUA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
   assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid50la]
@@ -166,16 +186,9 @@ janssen_la_real:
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (LA) (IU50/ml)]
   llox_label: [LOD, LOD, LLOQ, LLOQ]
 
-janssen_la_realADCP:
-  <<: *janssen_trial_realADCP
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_realADCP_data_processed_with_riskscore.csv
-  covariates_riskscore: ~.+ risk_score
-  covariates_norisksco: ~.+ Age
-
-
-janssen_sa_real:
-  <<: *janssen_trial_real
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_real_data_processed_with_riskscore.csv
+janssen_sa_EUA:
+  <<: *janssen_trial_EUA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_EUA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
   assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid50sa]
@@ -183,11 +196,6 @@ janssen_sa_real:
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (SA) (IU50/ml)]
   llox_label: [LOD, LOD, LLOQ, LLOQ]
 
-janssen_sa_realADCP:
-  <<: *janssen_trial_realADCP
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_realADCP_data_processed_with_riskscore.csv
-  covariates_riskscore: ~.+ risk_score
-  covariates_norisksco: ~.+ Age
 
 
 janssen_trial_mock: &janssen_trial_mock
@@ -262,10 +270,10 @@ prevent19: &prevent19
   times: [B, Day35, Delta35overB]
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
   data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_with_riskscore.csv
-  assays: [bindSpike, pseudoneutid50]
-  llox_label: [LLOQ, LOD]
-  assay_labels: [Binding Antibody to Spike, PsV Neutralization 50% Titer]
-  assay_labels_short: [Anti Spike IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
+  assays: [bindSpike, bindRBD, pseudoneutid50]
+  llox_label: [LLOQ, LLOQ, LOD]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   study_name: PREVENT19
   covariates_riskscore: ~.+ risk_score
   ve_ylim: [0,1]
@@ -575,7 +583,6 @@ D57:
   Earlyendpoint: EarlyendpointD57
   tpeak: 57
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -590,7 +597,6 @@ D29:
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -605,7 +611,6 @@ D22:
   Earlyendpoint: EarlyendpointD22
   tpeak: 22
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -620,7 +625,6 @@ D43:
   Earlyendpoint: EarlyendpointD43
   tpeak: 43
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -635,7 +639,6 @@ D91:
   Earlyendpoint: EarlyendpointD91
   tpeak: 91
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 91 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -650,7 +653,6 @@ D43start48:
   Earlyendpoint: EarlyendpointD91
   tpeak: 43
   tpeaklag: 55 # 7 + 48
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -666,7 +668,6 @@ D22omi:
   Earlyendpoint: EarlyendpointD22
   tpeak: 22
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -681,7 +682,6 @@ D43omi:
   Earlyendpoint: EarlyendpointD43
   tpeak: 43
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -697,7 +697,6 @@ D29start28:
   Earlyendpoint: EarlyendpointD57
   tpeak: 29
   tpeaklag: 35 # 7 + 28
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -711,7 +710,6 @@ D35:
   Earlyendpoint: EarlyendpointD35
   tpeak: 35
   tpeaklag: 7
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -726,7 +724,6 @@ D29start1:
   Earlyendpoint: EarlyendpointD29start1
   tpeak: 29
   tpeaklag: 1
-  tfinal.tpeak: 0
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -742,9 +739,21 @@ D29IncludeNotMolecConfirmed:
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7
-  tfinal.tpeak: 54
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+D29SevereIncludeNotMolecConfirmed:
+  ph1: ph1.D29
+  ph2: ph2.D29
+  wt: wt.D29
+  WtStratum: Wstratum
+  EventIndPrimary: SevereEventIndPrimaryIncludeNotMolecConfirmedD29
+  EventTimePrimary: SevereEventTimePrimaryIncludeNotMolecConfirmedD29
+  Earlyendpoint: EarlyendpointD29
+  tpeak: 29
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed severe COVID endpoint.
 
 # sensitivity analyses for D29 markers, starting at 1, instead of 7, day after D29 visit
 # IncludeNotMolecConfirmed, for ensemble
@@ -758,7 +767,6 @@ D29IncludeNotMolecConfirmedstart1:
   Earlyendpoint: EarlyendpointD29start1
   tpeak: 29
   tpeaklag: 1
-  tfinal.tpeak: 54
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -772,7 +780,6 @@ D210:
   EventTimePrimary: Ttilde.D210
   tpeak: 210
   tpeaklag: 1
-  tfinal.tpeak: 550
   txt.endpoint: HIV
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. per-protocol vaccine recipients not infected through 1 days post Month 7 visit; no. cases = number of this cohort with an observed endpoint.
 

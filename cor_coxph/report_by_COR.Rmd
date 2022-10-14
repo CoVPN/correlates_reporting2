@@ -47,7 +47,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \vspace{30pt}
 
 
-`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_real")) '<!--'`
+`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA")) '<!--'`
 \begin{table}[H]
 \caption{The ratio of sample sizes required to power a future trial for the column marker compared to the row marker (Follmann 2018). Confidence intervals are based on $10^3$ bootstrap replicates. }
 \begin{center}
@@ -59,7 +59,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
     %\label{tab:follmann2018_samplesizeratio}
 \end{table}
 \vspace{10pt}
-`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_real"))'-->'`
+`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA"))'-->'`
 
 
 \begin{table}[H]
@@ -78,7 +78,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 
 ```{r, echo=FALSE, results='asis'}
 
-if(file.exists(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd')))) {
+if(!contain(attr(config,"config"),"senior") & file.exists(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd')))) {
   message ("forest plots")
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
@@ -165,5 +165,3 @@ if (!is.null(config$interaction)) {
   }
 }
 ```
-
-

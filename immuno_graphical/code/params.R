@@ -6,7 +6,9 @@ source(here::here("..", "_common.R"))
 
 library(here)
 library(stringr)
-save.results.to <- here("figs")
+save.results.to = paste0(here::here("output"), "/", attr(config,"config"));
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
+if (!dir.exists(paste0(save.results.to, "/demographics")))  dir.create(paste0(save.results.to, "/demographics"))
 
 # Define age cutoff based on trial
 age.cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE"), 60, 65)
@@ -15,15 +17,21 @@ trt.labels <- c("Placebo", "Vaccine")
 bstatus.labels <- c("Baseline Neg", "Baseline Pos")
 bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
 
-all_assays <- c("bindSpike", "bindRBD", "bindN",
-                "pseudoneutid50", "pseudoneutid80", "liveneutmn50")
-bAb_assays <- c("bindSpike", "bindRBD", "bindN")
+
+all_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
+                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
+                "bindN",
+                "pseudoneutid50", "pseudoneutid80", 
+                "liveneutmn50")
+bAb_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
+                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
+                "bindN")
 nAb_assays <- c("pseudoneutid50", "pseudoneutid80")
 live_assays <- c("liveneutmn50")
 times <- c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
 
 # Depends on the Incoming data
-if(include_bindN){
+if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays)){
   assay_immuno <- all_assays[all_assays %in% c(assays, "bindN")]
   labels.assays.all <- c("Binding Antibody to N", labels.assays)
   names(labels.assays.all)[1] <- "bindN"
@@ -32,19 +40,27 @@ if(include_bindN){
   assay_immuno <- assays
 }
 
-
-labels.assays.short <- c("Anti Spike IgG (IU/ml)", 
-                         "Anti RBD IgG (IU/ml)", 
-                         "Anti N IgG (IU/ml)", 
-                         "Pseudovirus-nAb ID50", 
-                         "Pseudovirus-nAb ID80", 
-                         "Live virus-nAb MN50")
-names(labels.assays.short) <- c("bindSpike",
-                                "bindRBD",
+labels.assays.short <- c("Anti Spike IgG (BAU/ml)", 
+                         "Anti Spike B.1.1.7 IgG (BAU/ml)", 
+                         "Anti Spike B.1.351 IgG (BAU/ml)", 
+                         "Anti Spike P.1 IgG (BAU/ml)", 
+                         "Anti RBD IgG (BAU/ml)", 
+                         "Anti RBD B.1.1.7 IgG (BAU/ml)", 
+                         "Anti RBD B.1.351 IgG (BAU/ml)", 
+                         "Anti RBD P.1 IgG (BAU/ml)", 
+                         "Anti N IgG (BAU/ml)",
+                         "Pseudovirus-nAb ID50 (IU50/ml)", 
+                         "Pseudovirus-nAb ID80 (IU50/ml)", 
+                         "Live Virus-mnAb ID50 (IU50/ml)")
+names(labels.assays.short) <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
+                                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
                                 "bindN",
-                                "pseudoneutid50",
-                                "pseudoneutid80",
+                                "pseudoneutid50", "pseudoneutid80", 
                                 "liveneutmn50")
+
+
+
+
 # axis labeling
 labels.axis <- outer(
   rep("", length(times)),
