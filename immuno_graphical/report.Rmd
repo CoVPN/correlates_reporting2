@@ -57,7 +57,7 @@ neut.marker.captions <- switch(study_name,
                                "AZD1222"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
                                
                                "VAT08m"="The dashed lines in each figure is LLOD for neutralizing antibody assays.",
-                               "PROFISCOV"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOD for binding antibody assays, or LLOD and positivity cut-off for neutralizing antibody assays, from top to bottom respectively."
+                               "PROFISCOV"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOD for binding antibody assays, or LLOD/positivity cut-off for neutralizing antibody assays, from top to bottom respectively."
                                # PROFISCOV nAb has a ULOQ value out of figure limit
                                )
 
