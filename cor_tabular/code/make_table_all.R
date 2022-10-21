@@ -567,9 +567,17 @@ print("Done with table 1")
 
 
 # Cases & Non-cases
+# 1. Moderna 
+# !!as.name(paste0("EarlyendpointD",nonCaseD))==0
+# nonCaseD always 57
+# 2. AZ
+# !!as.name(paste0("EarlyendpointD",nonCaseD))==0
+# nonCaseD depends on timepoint, 29 or 57 
+# 3. All other
+# AnyinfectionD1==0
 if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE", "PREVENT19", "VAT08m")){
   nonCaseD <- timepoints[length(timepoints)]
-} else {
+} else if (study_name=="AZD1222"){
   nonCaseD <- tpeak
 }
 
@@ -580,13 +588,21 @@ ds <- ds %>%
                             !!as.name(config.cor$Earlyendpoint)==0 & 
                             !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
                             !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
-                          Perprotocol==1 & 
-                            # !!as.name(ifelse(length(timepoints)>1, paste0("EarlyendpointD",timepoints[length(timepoints)]), config.cor$Earlyendpoint))==0 &
-                            # AnyinfectionD1==0 & 
-                            !!as.name(paste0("EarlyendpointD",nonCaseD))==0 &
+                    Perprotocol==1 & 
+                            AnyinfectionD1==0 &
                             !!as.name(paste0("TwophasesampIndD", nonCaseD))==1 & 
-                            EventIndPrimaryD1==0 ~ "Non-Cases"))
-
+                            EventIndPrimaryD1==0 ~ "Non-Cases"),
+    Case = case_when(study_name %in% c("AZD1222", "COVE", "MockCOVE") &
+                       Perprotocol==1 & 
+                       !!as.name(config.cor$Earlyendpoint)==0 & 
+                       !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
+                       !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+                     study_name %in% c("AZD1222", "COVE", "MockCOVE") &
+                       Perprotocol==1 & 
+                       !!as.name(paste0("EarlyendpointD",nonCaseD))==0 & 
+                       !!as.name(paste0("TwophasesampIndD", nonCaseD))==1 & 
+                       EventIndPrimaryD1==0 ~ "Non-Cases",
+                       TRUE ~ Case))
 
 # Added table: 
 demo.stratum.ordered <- gsub(">=", "$\\\\geq$", demo.stratum.labels, fixed=T)
