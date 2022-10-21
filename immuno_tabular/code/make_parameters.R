@@ -11,7 +11,7 @@ library(tidyverse)
 # To select which tables are included in the report.
 # Also to modify the headers, footers, etc. for each table
 
-randomsubcohort <- case_when(study_name_code=="COVE" ~ "This table summarizes the 
+randomsubcohort <- case_when(study_name=="COVE" ~ "This table summarizes the 
       random subcohort, which was randomly sampled from the per-protocol cohort. The 
       sampling was stratified by 24 strata defined by enrollment characteristics: Assigned 
       treatment arm $\\\\times$ Baseline SARS-CoV-2 naïve vs. non-naïve status 
@@ -20,7 +20,7 @@ randomsubcohort <- case_when(study_name_code=="COVE" ~ "This table summarizes th
       Communities of color (Yes/No) defined by White Non-Hispanic vs. all 
       others (following the primary COVE trial paper).",
                              
-      study_name_code=="ENSEMBLE" ~ "This table summarizes characteristics of 
+      study_name=="ENSEMBLE" ~ "This table summarizes characteristics of 
       per-protocol participants in the immunogenicity subcohort, which was randomly 
       sampled from the study cohort. The sampling was The sampling was stratified by 
       strata defined by enrollment characteristics: Assigned randomization arm $\\\\times$ 
@@ -28,7 +28,7 @@ randomsubcohort <- case_when(study_name_code=="COVE" ~ "This table summarizes th
       The U.S. subcohort includes 8 baseline demographic strata; the Latin America 
       and South Africa subcohorts each include 4 baseline demographic strata.",
       
-      study_name_code=="PREVENT19" ~ "This table summarizes characteristics of 
+      study_name=="PREVENT19" ~ "This table summarizes characteristics of 
       per-protocol participants in the immunogenicity subcohort, which was randomly 
       sampled from the study cohort. The sampling was The sampling was stratified by 
       strata defined by enrollment characteristics: Assigned randomization arm $\\\\times$ 

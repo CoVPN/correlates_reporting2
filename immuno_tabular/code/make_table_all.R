@@ -27,11 +27,11 @@ options(survey.lonely.psu="adjust")
 # num_v are columns from ds_long;
 # cat_v are rows of `subgroup`
 
-if (study_name_code=="COVE") {
+if (study_name=="COVE") {
   num_v1 <- c("Age") # Summaries - Mean & Range
   num_v2 <- c("BMI") # Summaries - Mean & St.d
   cat_v <- c("AgeC", "SexC", "raceC", "ethnicityC", "HighRiskC", "AgeRiskC", "MinorityC")
-} else if (study_name_code %in% c("ENSEMBLE", "PREVENT19")) {
+} else if (study_name %in% c("ENSEMBLE", "PREVENT19")) {
   num_v1 <- c("Age") # Summaries - Mean & Range
   num_v2 <- NULL # Summaries - Mean & St.d
   cat_v <- c("AgeC", "SexC", "raceC", "ethnicityC", 
@@ -183,8 +183,8 @@ for (i in 1:2){
     
     tab_strtm_header2 <- ncol(ls_strtm[[i]])-1
     names(tab_strtm_header2) <- sprintf("%sRandom Subcohort Sample Sizes (N=%s Participants) (%s Trial)",
-                                        case_when(study_name_code=="COVE" ~ "", 
-                                                  study_name_code=="ENSEMBLE" ~ 
+                                        case_when(study_name=="COVE" ~ "", 
+                                                  study_name=="ENSEMBLE" ~ 
                                                     paste0(paste(c("U.S.", "Latin America", "South Africa")[sort(unique(ds.i$Region))+1], collapse=" and "), " "),
                                                   TRUE ~ ""),
                                         sum(ds.i$ph2.immuno),  
@@ -197,10 +197,10 @@ for (i in 1:2){
                                            sep=". "),
                                      " ",
                                      "Minority includes Blacks or African Americans, Hispanics or Latinos, American Indians or
-                   Alaska Natives, Native Hawaiians, and other Pacific Islanders."[study_name_code=="COVE"],
+                   Alaska Natives, Native Hawaiians, and other Pacific Islanders."[study_name=="COVE"],
                                      "Non-Minority includes all other races with observed race (Asian, Multiracial, White, Other) and observed ethnicity Not Hispanic or Latino.
-                   Participants not classifiable as Minority or Non-Minority because of unknown, unreported or missing were not included."[study_name_code=="COVE"],
-                                     " "[study_name_code=="COVE"],
+                   Participants not classifiable as Minority or Non-Minority because of unknown, unreported or missing were not included."[study_name=="COVE"],
+                                     " "[study_name=="COVE"],
                                      "Observed = Numbers of participants sampled into the subcohort within baseline covariate strata.",
                                      "Estimated = Estimated numbers of participants in the whole per-protocol cohort within baseline 
   covariate strata, calculated using inverse probability weighting.")
@@ -228,10 +228,10 @@ sub.by <- c("Arm", "`Baseline SARS-CoV-2`")
 resp.v <- grep("Resp|2lloq|4lloq|FR2|FR4", names(ds), value = T) 
 resp.v <- resp.v[sapply(resp.v, function(x)!all(is.na(ds[, x])))]
 
-if (study_name_code=="COVE") {
+if (study_name=="COVE") {
   subs <- c("All", "AgeC", "HighRiskC", "AgeRiskC", "AgeRisk1", "AgeRisk2", "SexC",
             "AgeSexC", "ethnicityC", "RaceEthC", "MinorityC", "AgeMinorC")
-} else if (study_name_code %in% c("ENSEMBLE", "PREVENT19")) {
+} else if (study_name %in% c("ENSEMBLE", "PREVENT19")) {
   subs <- c("All", "AgeC", "HIVC", "CountryC", "HighRiskC", "AgeRiskC", "AgeRisk1", "AgeRisk2", "SexC",
             "AgeSexC", "ethnicityC", "RaceEthC", "URMC"[0 %in% ds$Region], "AgeURM"[0 %in% ds$Region])
 }
@@ -361,9 +361,9 @@ comp_lev <- c(labels.age[2:1],
               "Positive", "Negative")
 
 groups <- c("AgeC", "HighRiskC", "AgeRisk1", "AgeRisk2",
-            "SexC", "ethnicityC", case_when(study_name_code=="COVE"~"MinorityC",
-                                            study_name_code%in%c("ENSEMBLE", "PREVENT19")~"URMC"),
-            "HIVC"[study_name_code=="ENSEMBLE"])
+            "SexC", "ethnicityC", case_when(study_name=="COVE"~"MinorityC",
+                                            study_name%in%c("ENSEMBLE", "PREVENT19")~"URMC"),
+            "HIVC"[study_name=="ENSEMBLE"])
 
 
 mag_groups <- assays_col
