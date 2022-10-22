@@ -227,12 +227,13 @@ if (exists("COR")) {
             tfinal.tpeak=40            
         } else if (attr(config, "config") == "janssen_pooled_EUA") {
             tfinal.tpeak=54
-            
-        # use startsWith because there are also senior and nonsenior
-        } else if (startsWith(attr(config, "config"), "janssen_pooled_partA") | startsWith(attr(config, "config"), "janssen_la_partA")) {
-            tfinal.tpeak=191
-        } else if (startsWith(attr(config, "config"), "janssen_na_partA") | startsWith(attr(config, "config"), "janssen_sa_partA")) {
-            tfinal.tpeak=111
+        
+        # data is censored by 191/111, the last case in ph2 is before these days
+#        # use startsWith because there are also senior and nonsenior
+#        } else if (startsWith(attr(config, "config"), "janssen_pooled_partA") | startsWith(attr(config, "config"), "janssen_la_partA")) {
+#            tfinal.tpeak=191
+#        } else if (startsWith(attr(config, "config"), "janssen_na_partA") | startsWith(attr(config, "config"), "janssen_sa_partA")) {
+#            tfinal.tpeak=111
             
         } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
             if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
