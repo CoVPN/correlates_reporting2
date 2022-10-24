@@ -218,7 +218,7 @@ if (exists("COR")) {
         
         # default rule for followup time is the last case in ph2 in vaccine arm
         tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        # exceptions
+    
         if (attr(config, "config") == "janssen_na_EUA") {
             tfinal.tpeak=53
         } else if (attr(config, "config") == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
@@ -227,18 +227,26 @@ if (exists("COR")) {
             tfinal.tpeak=40            
         } else if (attr(config, "config") == "janssen_pooled_EUA") {
             tfinal.tpeak=54
-            
-        # use startsWith because there are also senior and nonsenior
-        } else if (startsWith(attr(config, "config"), "janssen_pooled_partA") | startsWith(attr(config, "config"), "janssen_la_partA")) {
-            tfinal.tpeak=191
-        } else if (startsWith(attr(config, "config"), "janssen_na_partA") | startsWith(attr(config, "config"), "janssen_sa_partA")) {
-            tfinal.tpeak=111
+        
+        # data is censored by 191/111, the last case in ph2 is before these days
+#        # use startsWith because there are also senior and nonsenior
+#        } else if (startsWith(attr(config, "config"), "janssen_pooled_partA") | startsWith(attr(config, "config"), "janssen_la_partA")) {
+#            tfinal.tpeak=191
+#        } else if (startsWith(attr(config, "config"), "janssen_na_partA") | startsWith(attr(config, "config"), "janssen_sa_partA")) {
+#            tfinal.tpeak=111
             
         } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
             if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
             
         } else if (study_name=="HVTN705") {
             tfinal.tpeak=550
+            
+        } else if (startsWith(attr(config, "config"), "janssen_") & contain(attr(config, "config"), "partA")) {
+            # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+            tfinal.tpeak=min(
+                with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
+                with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+            )
         }
 
         prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)

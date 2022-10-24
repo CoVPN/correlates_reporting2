@@ -7,7 +7,7 @@ if [ $# -eq 0 ]
 fi
 
 
-for T in profiscov_lvmn
+for T in janssen_la_partAsenior
 do
     export TRIAL=$T 
     echo $TRIAL

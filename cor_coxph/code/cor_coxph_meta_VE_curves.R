@@ -89,17 +89,19 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
             
             if(x==TRIALS[3]) {
                 # show az curve on top of cove and janssen
-                if(include.az) {
+                if(include.az ) {
                     lines(log10(ve.az[[a]]),        transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5)
                     if(show.cb) lines(log10(ve.az[[a%.%"LL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
                     if(show.cb) lines(log10(ve.az[[a%.%"UL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
                     
                     # plot az uk trial density. the values are extracted from fig4c of Feng et al
-                    tmp.cpy=tmp
-                    tmp.cpy$density = c(0, 0, 55*12/17, 33, 77, 129, 163, 148, 115, 81, 48, 21, 9, 2)/(92.5*2)
-                    tmp.cpy$breaks=c(0.00000,0.20000,0.40000,0.60000,0.80000,1.00000,1.20000,1.40000,1.60000,1.80000,2.00000,2.20000,2.40000,2.60000,2.8)
-                    hist.ls[["AZ-COV002"]]=tmp.cpy
-                    if (add.hist) plot(tmp.cpy,col=hist.col.ls[["AZ-COV002"]],axes=F,labels=F,border=0,freq=F,add=T)             
+                    if(a=="pseudoneutid50"){
+                        tmp.cpy=tmp
+                        tmp.cpy$density = c(0, 0, 55*12/17, 33, 77, 129, 163, 148, 115, 81, 48, 21, 9, 2)/(92.5*2)
+                        tmp.cpy$breaks=c(0.00000,0.20000,0.40000,0.60000,0.80000,1.00000,1.20000,1.40000,1.60000,1.80000,2.00000,2.20000,2.40000,2.60000,2.8)
+                        hist.ls[["AZ-COV002"]]=tmp.cpy
+                        if (add.hist) plot(tmp.cpy,col=hist.col.ls[["AZ-COV002"]],axes=F,labels=F,border=0,freq=F,add=T)             
+                    }
                 }            
             }
         
@@ -190,7 +192,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
         mypdf(file=paste0("output/meta/meta_hist_",file.name,"_",a), width=5.2, height=5, mfrow=c(5,1))
             par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientatio        
             par(mar=c(0,4,0,1), mfrow=c(5,1), oma=c(3,0,1,0))
-            for (x in c(TRIALS,"AZ-COV002")) {    
+            for (x in c(TRIALS, if(a=="pseudoneutid50") "AZ-COV002")) {    
                 plot(hist.ls[[x]],col=hist.col.ls[[x]],axes=T,labels=F,border=0,freq=F,add=F,xaxt="n",ylim=c(0,1.6),xlim=c(0,4),ylab="density",main="")
                 title(main=studies[[x]], cex=.5, line=-1)
                 if (x==TRIALS[1]) {
@@ -205,7 +207,7 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
             }
             mtext("Neutralizing Antibody Titer (IU50/ml)", side=1, line=2, outer=T, at=1/2, cex=.75)
         dev.off()
-
+    
     }    
     #return (list(markers.x, weight))
     
@@ -382,6 +384,11 @@ for (a in c("pseudoneutid50","bindSpike")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19", "azd1222"), file.name="9", include.az=T)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19", "azd1222"), file.name="9", include.az=T, log="y")
 }
+
+# 
+a="bindRBD"
+draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="9", include.az=T)
+draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="9", include.az=T, log="y")
 
 # COVE + ENSEMBLE/US + AZ + AZD1222
 for (a in c("pseudoneutid50","bindSpike")) {
