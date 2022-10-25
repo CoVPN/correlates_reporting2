@@ -446,4 +446,10 @@ if (!is.null(config$interaction)) {
 
 
 
+###################################################################################################
+# severe case - competing risk model
+
+
+
+
 save (tab.cont, tab.cat, tab.cont.scaled, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))
