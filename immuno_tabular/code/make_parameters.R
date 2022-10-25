@@ -236,7 +236,7 @@ tlf <-
   )
 
 # Depends on the Incoming data
-if(include_bindN){
+if(include_bindN & !"bindN" %in% assays){
   assays <- sort(c("bindN", assays))
 }
 

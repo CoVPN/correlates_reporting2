@@ -575,10 +575,12 @@ print("Done with table 1")
 # nonCaseD depends on timepoint, 29 or 57 
 # 3. All other
 # AnyinfectionD1==0
-if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE", "PREVENT19", "VAT08m")){
-  nonCaseD <- timepoints[length(timepoints)]
-} else if (study_name=="AZD1222"){
+# if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE", "ENSEMBLE", "PREVENT19", "VAT08m")){
+
+if (study_name=="AZD1222"){
   nonCaseD <- tpeak
+} else{ #study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE", "ENSEMBLE", "PREVENT19", "VAT08m")
+  nonCaseD <- timepoints[length(timepoints)]
 }
 
 ds <- ds %>% 
