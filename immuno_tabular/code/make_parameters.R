@@ -33,7 +33,11 @@ randomsubcohort <- case_when(study_name=="COVE" ~ "This table summarizes the
       sampled from the study cohort. The sampling was The sampling was stratified by 
       strata defined by enrollment characteristics: Assigned randomization arm $\\\\times$ 
       Baseline SARS-CoV-2 seronegative vs. seropositive $\\\\times$ Randomization strata. 
-      The U.S. subcohort includes 8 baseline demographic strata; the Mexico subcohort includes 2 baseline demographic strata."
+      The U.S. subcohort includes 8 baseline demographic strata; the Mexico subcohort includes 2 baseline demographic strata.",
+      
+      TRUE~ "This table summarizes characteristics of 
+      per-protocol participants in the immunogenicity subcohort, which was randomly 
+      sampled from the study cohort."
       )
 
 tlf <-
@@ -236,7 +240,7 @@ tlf <-
   )
 
 # Depends on the Incoming data
-if(include_bindN){
+if(include_bindN & !"bindN" %in% assays & study_name!="PROFISCOV"){
   assays <- sort(c("bindN", assays))
 }
 
