@@ -773,7 +773,7 @@ D29SevereIncludeNotMolecConfirmed:
   wt: wt.D29
   WtStratum: Wstratum
   EventIndPrimary: SevereEventIndPrimaryIncludeNotMolecConfirmedD29
-  EventTimePrimary: SevereEventTimePrimaryIncludeNotMolecConfirmedD29
+  EventTimePrimary: EventTimePrimaryIncludeNotMolecConfirmedD29
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7

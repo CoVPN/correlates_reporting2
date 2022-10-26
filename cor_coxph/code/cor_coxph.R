@@ -11,6 +11,7 @@
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_partAsenior"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -102,6 +103,7 @@ begin=Sys.time()
 print(date())
 
 
+
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
 ###################################################################################################
@@ -117,6 +119,7 @@ if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 ###################################################################################################
     
 source(here::here("code", "cor_coxph_ph.R"))
+
 
 # unit testing of coxph results
 if (Sys.getenv("TRIAL") == "janssen_pooled_EUA" & COR=="D29IncludeNotMolecConfirmedstart1") {
