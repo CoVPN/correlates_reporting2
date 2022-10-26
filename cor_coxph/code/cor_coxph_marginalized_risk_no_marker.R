@@ -26,8 +26,8 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))) {
 
     for (.trt in 0:1) {
         dat.tmp=if(.trt==1) dat.vac.seroneg else dat.pla.seroneg
-        
-        prob=get.marginalized.risk.no.marker(form.0, dat.tmp, tfinal.tpeak)
+                
+        prob=get.marginalized.risk.no.marker(if (COR=="D29SevereIncludeNotMolecConfirmed") form.0.list else form.0, dat.tmp, tfinal.tpeak)# competing risk estimation for severe cases            
         
         # bootstrapping
         # store the current rng state 
@@ -44,7 +44,7 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))) {
             } else {
                 dat.b = bootstrap.case.control.samples(dat.tmp, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=0) 
             }
-            get.marginalized.risk.no.marker(form.0, dat.b, tfinal.tpeak)    
+            get.marginalized.risk.no.marker(if (COR=="D29SevereIncludeNotMolecConfirmed") form.0.list else form.0, dat.b, tfinal.tpeak)# competing risk estimation for severe cases            
             
         })
         boot=do.call(cbind, out)

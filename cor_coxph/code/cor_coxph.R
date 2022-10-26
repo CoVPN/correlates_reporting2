@@ -99,6 +99,9 @@ names(dimnames(tab))[2]="Event Indicator"
 print(tab)
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
 
+# for use in competing risk estimation
+dat.vac.seroneg.ph2=subset(dat.vac.seroneg, ph2)
+
 begin=Sys.time()
 print(date())
 
