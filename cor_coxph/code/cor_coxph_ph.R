@@ -17,6 +17,25 @@ for (a in all.markers) {
     fits.scaled[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
 
+
+
+
+#
+####################################################################################################
+## severe case - competing risk model
+#
+#t0=1000
+#formula.list=list(
+#    Surv(time, status.1) ~ sex,
+#    Surv(time, status.2) ~ age
+#)
+#
+#cif.2=pcr2(formula.list, lung1, t0, weights=lung1$wt)
+#
+#
+#
+
+
 natrisk=nrow(dat.vac.seroneg)
 nevents=sum(dat.vac.seroneg$yy==1)
 
@@ -443,11 +462,6 @@ if (!is.null(config$interaction)) {
     mytex(tab, file.name="CoR_itxn_multitesting", align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
     
 }
-
-
-
-###################################################################################################
-# severe case - competing risk model
 
 
 

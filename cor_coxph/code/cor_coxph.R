@@ -103,6 +103,7 @@ begin=Sys.time()
 print(date())
 
 
+
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
 ###################################################################################################
@@ -118,6 +119,7 @@ if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 ###################################################################################################
     
 source(here::here("code", "cor_coxph_ph.R"))
+
 
 # unit testing of coxph results
 if (Sys.getenv("TRIAL") == "janssen_pooled_EUA" & COR=="D29IncludeNotMolecConfirmedstart1") {
