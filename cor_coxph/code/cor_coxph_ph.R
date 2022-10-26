@@ -19,23 +19,6 @@ for (a in all.markers) {
 
 
 
-
-#
-####################################################################################################
-## severe case - competing risk model
-#
-#t0=1000
-#formula.list=list(
-#    Surv(time, status.1) ~ sex,
-#    Surv(time, status.2) ~ age
-#)
-#
-#cif.2=pcr2(formula.list, lung1, t0, weights=lung1$wt)
-#
-#
-#
-
-
 natrisk=nrow(dat.vac.seroneg)
 nevents=sum(dat.vac.seroneg$yy==1)
 
