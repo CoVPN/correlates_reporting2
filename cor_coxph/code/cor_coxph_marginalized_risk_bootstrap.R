@@ -7,14 +7,14 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-# marker.name=a; type=3; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
+# marker.name=a; type=2; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
     
     # store the current rng state 
     save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
     if (class(save.seed)=="try-error") {set.seed(1); save.seed <- get(".Random.seed", .GlobalEnv) } 
     
     data.ph2=subset(data, ph2==1)     
-    
+        
     if (comp.risk) {
         f1=lapply(form.0.list, function(x) update(x, as.formula(paste0("~.+",marker.name))))
     } else {
@@ -22,19 +22,20 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
     }
     
     # used in both point est and bootstrap
-    fc.1=function(data.ph2, data.ph1, categorical.s, n.dean=FALSE){
+    # many variables are not passed but defined in the scope of marginalized.risk.svycoxph.boot
+    fc.1=function(data.ph2, data, categorical.s, n.dean=FALSE){
         if (comp.risk) {
             newdata=data.ph2
             sapply(ss, function(x) {
                 newdata[[marker.name]]=x
-                risks = mean(pcr2(f1, data.ph2, t, weights=data.ph2$wt, newdata=newdata))
-                sum(data.ph2$wt * risks) / sum(data.ph2$wt)
+                risks = try(pcr2(f1, data.ph2, t, weights=data.ph2$wt, newdata=newdata))
+                ifelse (inherits(risks, "try-error"), NA, weighted.mean(risks, data.ph2$wt))
             })
         
         } else {        
             # inline design object b/c it may also throw an error
-            fit.risk.1=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data.ph1)))        
-            if ( class (fit.risk.1)[1] != "try-error" ) {
+            fit.risk.1=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)))        
+            if ( !inherits(fit.risk.1, "try-error" )) {
                 out=marginalized.risk(fit.risk.1, marker.name, data.ph2, t=t, ss=ss, weights=data.ph2$wt, categorical.s=categorical.s)
                 if (n.dean) c(n.dean= last(coef(fit.risk.1)/sqrt(diag(fit.risk.1$var))) * sqrt(1/fit.risk.1$n + 1/fit.risk.1$nevent), out) else out
             } else {
@@ -45,18 +46,19 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
     
     fc.2=function(data.ph2){
         if (comp.risk) {
-            prob=sapply(ss, function(x) {
+            sapply(ss, function(x) {
                 newdata=data.ph2[data.ph2[[marker.name]]>=x, ]
-                weighted.mean(pcr2(f1, newdata, t, weights=newdata$wt), newdata$wt)
+                risks=try(pcr2(f1, newdata, t, weights=newdata$wt))
+                ifelse (inherits(risks, "try-error"), NA, weighted.mean(risks, newdata$wt))
             })
         } else {
-            prob=marginalized.risk.threshold (form.0, marker.name, data=data.ph2, weights=data.ph2$wt, t=t, ss=ss)
+            marginalized.risk.threshold (form.0, marker.name, data=data.ph2, weights=data.ph2$wt, t=t, ss=ss)
         }
     }    
     
-
+    
     if (type==1) {
-    # conditional on S=s (quantitative)
+        # conditional on S=s (quantitative)
         ss=sort(c(
             # Lars quantiles so that to be consistent with his analyses 
             # every 5% to include s1 and s2 for sensitivity analyses
@@ -73,28 +75,28 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
         } 
         
     } else if (type==2) {
-    # conditional on S>=s
-        ss=quantile(data[[marker.name]], seq(0,.9,by=0.05), na.rm=TRUE); 
-        if(verbose) myprint(ss)
+        # conditional on S>=s
+        ss=quantile(data[[marker.name]], seq(0,.9,by=0.05), na.rm=TRUE); if(verbose) myprint(ss)
         prob = fc.2(data.ph2)        
        
     } else if (type==3) {
-    # conditional on S=s (categorical)
-        ss=unique(data[[marker.name]]); ss=sort(ss[!is.na(ss)])
-        if(verbose) myprint(ss)
+        # conditional on S=s (categorical)
+        ss=unique(data[[marker.name]]); ss=sort(ss[!is.na(ss)]); if(verbose) myprint(ss)        
         prob = fc.1(data.ph2, data, n.dean=F, categorical.s=T)
         
     } else if (type==4) {
-    # conditional on S=s (quantitative)
-        tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
-        fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
+        # conditional on S=s (quantitative)
+        if (comp.risk) {
+            stop("need to implement this (like type 1 but coef only)") 
+        }else {
+            tmp.design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)
+            fit.risk=try(svycoxph(f1, design=tmp.design)) # since we don't need se, we could use coxph, but the weights computed by svycoxph are a little different from the coxph due to fpc
+        }
     
     } else stop("wrong type")
     
-    # for use in bootstrap
-    if(config$case_cohort) ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (data)     
-    
     # bootstrap
+    if(config$case_cohort) ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (data)     
     seeds=1:B; names(seeds)=seeds
     out=mclapply(seeds, mc.cores = numCores, FUN=function(seed) {   
         seed=seed+560
@@ -106,33 +108,21 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
             dat.b = bootstrap.case.control.samples(data, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2") 
         }        
         dat.b.ph2=subset(dat.b, ph2==1)     
-        #hist(dat.b$EventTimePrimaryD14)
-        #hist(dat.b$EventTimePrimaryD14[dat.b$EventIndPrimaryD14==1])
-        #hist(dat.vac.seroneg$EventTimePrimaryD14)
-        #hist(dat.vac.seroneg$EventTimePrimaryD14[dat.vac.seroneg$EventIndPrimaryD14==1])
-        #get.marginalized.risk.no.marker(dat.b)
-        #get.marginalized.risk.no.marker(dat.vac.seroneg)
            
         if(type==1) {
-        # conditional on s
-            fc.1(dat.b.ph2, dat.b)
+            # conditional on s
+            fc.1(dat.b.ph2, dat.b, categorical.s=F, n.dean=T)
                 
         } else if (type==2) {
-        # conditional on S>=s
-            tmp=try(marginalized.risk.threshold (form.0, marker.name, data=dat.b.ph2, weights=dat.b.ph2$wt, t=t, ss=ss))
-            if (class(tmp) != "try-error" ) tmp else rep(NA,length(ss))
+            # conditional on S>=s
+            fc.2(dat.b.ph2)        
             
         } else if (type==3) {
-        # conditional on a categorical S
-            fit.risk=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)))
-            if ( class (fit.risk)[1] != "try-error" ) {
-                marginalized.risk(fit.risk, marker.name, dat.b.ph2, t=t, ss=NULL, weights=dat.b.ph2$wt, categorical.s=T)
-            } else {
-                rep(NA, 3)
-            }
+            # conditional on a categorical S
+            fc.1(dat.b.ph2, dat.b, n.dean=F, categorical.s=T)
             
         } else if (type==4) {
-        # conditional on S=s (quantitative)
+            # conditional on S=s (quantitative)
             fit.risk.b=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.b)))
             if ( class (fit.risk.b)[1] != "try-error" ) {
             } else {
@@ -153,9 +143,9 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
     
     # restore rng state 
     assign(".Random.seed", save.seed, .GlobalEnv)    
-    
+        
     if (ci.type=="quantile") {
-        ci.band=t(apply(res, 1, function(x) quantile(x, c(.025,.975))))
+        ci.band=t(apply(res, 1, function(x) quantile(x, c(.025,.975), na.rm=T)))
     } else {
         stop("only quantile bootstrap CI supported for now")
     }
