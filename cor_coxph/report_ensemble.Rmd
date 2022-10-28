@@ -2,7 +2,7 @@
 <!-- D29start1 is ENSEMBLE specific -->
 
 ```{r, echo=FALSE, results='asis'}
-  for (i in 1:ifelse(endsWith(attr(config,"config"),"EUA") | attr(config,"config")=="janssen_pooled_partA",2,1)) {
+  for (i in 1:ifelse(endsWith(attr(config,"config"),"EUA") | attr(config,"config") %in% c("janssen_pooled_partA", "janssen_la_partA"),2,1)) {
     tpeak <- tt[1]
     COR <- ifelse(i==1, "D29IncludeNotMolecConfirmed", 
                   ifelse(endsWith(attr(config,"config"),"EUA"),"D29IncludeNotMolecConfirmedstart1",
