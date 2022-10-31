@@ -17,6 +17,8 @@ for (a in all.markers) {
     fits.scaled[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
 
+
+
 natrisk=nrow(dat.vac.seroneg)
 nevents=sum(dat.vac.seroneg$yy==1)
 
@@ -443,6 +445,7 @@ if (!is.null(config$interaction)) {
     mytex(tab, file.name="CoR_itxn_multitesting", align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
     
 }
+
 
 
 

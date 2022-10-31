@@ -159,10 +159,16 @@ dat.mock <- read.csv(path_to_data)
 # get marginalized risk without marker
 
 get.marginalized.risk.no.marker=function(formula, dat, day){
-    fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
-    dat$EventTimePrimary=day
-    risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
-    mean(risks)
+    if (!is.list(formula)) {
+        fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
+        dat$EventTimePrimary=day
+        risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
+        mean(risks)
+    } else {
+        # competing risk estimation
+        out=pcr2(formula, dat, day)
+        mean(out)
+    }
 }
 
 
@@ -189,6 +195,17 @@ if (exists("COR")) {
     form.0 = update (form.s, as.formula(config$covariates_riskscore))
     print(form.0)
     
+    if (COR=="D29SevereIncludeNotMolecConfirmed") {
+        # formulae for competing risk
+        form.0.list=list(
+            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, SevereEventIndPrimaryIncludeNotMolecConfirmedD29) ~ 1, 
+                as.formula(config$covariates_riskscore )),
+            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, ModerateEventIndPrimaryIncludeNotMolecConfirmedD29) ~ 1, 
+                as.formula(config$covariates_riskscore ))
+        )
+        comp.risk=TRUE
+    }
+    
     ###########################################################
     # single time point COR config such as D29
     if (is.null(config.cor$tinterm)) {    
@@ -201,7 +218,7 @@ if (exists("COR")) {
         dat.mock$wt=dat.mock[[config.cor$wt]]
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
         if (!is.null(config.cor$Earlyendpoint)) dat.mock$Earlyendpoint=dat.mock[[config.cor$Earlyendpoint]]
-
+    
         # data integrity checks
         if (!is.null(dat.mock$ph1)) {
             # missing values in variables that should have no missing values
@@ -218,7 +235,7 @@ if (exists("COR")) {
         
         # default rule for followup time is the last case in ph2 in vaccine arm
         tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        # exceptions
+    
         if (attr(config, "config") == "janssen_na_EUA") {
             tfinal.tpeak=53
         } else if (attr(config, "config") == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
@@ -227,25 +244,37 @@ if (exists("COR")) {
             tfinal.tpeak=40            
         } else if (attr(config, "config") == "janssen_pooled_EUA") {
             tfinal.tpeak=54
-            
-        # use startsWith because there are also senior and nonsenior
-        } else if (startsWith(attr(config, "config"), "janssen_pooled_partA") | startsWith(attr(config, "config"), "janssen_la_partA")) {
-            tfinal.tpeak=191
-        } else if (startsWith(attr(config, "config"), "janssen_na_partA") | startsWith(attr(config, "config"), "janssen_sa_partA")) {
-            tfinal.tpeak=111
+        
+        # data is censored by 191/111, the last case in ph2 is before these days
+#        # use startsWith because there are also senior and nonsenior
+#        } else if (startsWith(attr(config, "config"), "janssen_pooled_partA") | startsWith(attr(config, "config"), "janssen_la_partA")) {
+#            tfinal.tpeak=191
+#        } else if (startsWith(attr(config, "config"), "janssen_na_partA") | startsWith(attr(config, "config"), "janssen_sa_partA")) {
+#            tfinal.tpeak=111
             
         } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
             if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
             
         } else if (study_name=="HVTN705") {
             tfinal.tpeak=550
+            
+        } else if (startsWith(attr(config, "config"), "janssen_") & contain(attr(config, "config"), "partA")) {
+            # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+            tfinal.tpeak=min(
+                with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
+                with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+            )
         }
-
-        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
-        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
-        overall.ve = c(1 - prev.vacc/prev.plac)    
+        
+#        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
+#        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
+        # potential competing risk
+        prev.vacc = get.marginalized.risk.no.marker(if (COR=="D29SevereIncludeNotMolecConfirmed") form.0.list else form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)# competing risk estimation for severe cases            
+        prev.plac = get.marginalized.risk.no.marker(if (COR=="D29SevereIncludeNotMolecConfirmed") form.0.list else form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)# competing risk estimation for severe cases            
+        overall.ve = c(1 - prev.vacc/prev.plac) 
         myprint(prev.plac, prev.vacc, overall.ve)
         
+
 #        # get VE in the first month or two of followup
 #        dat.tmp=dat.mock
 #        t.tmp=30

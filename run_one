@@ -7,16 +7,10 @@ if [ $# -eq 0 ]
 fi
 
 
-for T in janssen_pooled_partA 
+for T in janssen_la_partAsenior
 do
     export TRIAL=$T 
     echo $TRIAL
-    if [[ "$1" == "cor_report" ]] 
-    then
-        make cor_report
-    else
-        make -k -C $1 all
-        bash ./_build_chapter.sh $1
-    fi
-
+    make -k -C $1 all
+    bash ./_build_chapter.sh $1
 done

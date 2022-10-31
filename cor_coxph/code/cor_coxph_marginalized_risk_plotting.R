@@ -193,7 +193,7 @@ for (eq.geq in 1:4) {
             # CVE with sensitivity analysis
             est = 1 - risks$prob*Bias/res.plac.cont["est"]
             boot = 1 - t( t(risks$boot*Bias)/res.plac.cont[2:(1+ncol(risks$boot))] ) # res.plac.cont may have more bootstrap replicates than risks$boot
-            ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))
+            ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975), na.rm=T))
             # for table
             tmp=10**risks$marker[table.order];     tmp=ifelse(tmp<100, signif(tmp,3), round(tmp))
             ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[table.order],digits.risk), " (", formatDouble(ci.band[1,table.order],digits.risk), ",", formatDouble(ci.band[2,table.order],digits.risk), ")"))
@@ -227,7 +227,7 @@ for (eq.geq in 1:4) {
             # add CVE curve
             est = 1 - risks$prob/res.plac.cont["est"]; boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )
             #est = 1 - (risks$prob+0.00227)/res.plac.cont["est"]; boot = 1 - t( t(risks$boot+0.00227)/res.plac.cont[2:(1+ncol(risks$boot))] )
-            ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))  
+            ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975), na.rm=T))  
             y= t(rbind(est, ci.band))[.subset,]
             if(eq.geq==4) y=-log(1-y)
             mymatplot(risks$marker[.subset], y, type="l", lty=c(1,2,2), col=if(eq.geq!=1) "black" else "pink", lwd=lwd, make.legend=F, add=T)
@@ -298,7 +298,7 @@ for(a in all.markers) {
     
     est = 1 - risks$prob/res.plac.cont["est"]
     boot = 1 - t( t(risks$boot)/res.plac.cont[2:(1+ncol(risks$boot))] )                         
-    ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975)))        
+    ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975), na.rm=T))        
     
     tmp=10**risks$marker[table.order];     tmp=ifelse(tmp<100, signif(tmp,3), round(tmp))
     ret = cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[table.order],digits.risk), " (", formatDouble(ci.band[1,table.order],digits.risk), ",", formatDouble(ci.band[2,table.order],digits.risk), ")"))
@@ -331,7 +331,7 @@ for(a in all.markers) {
     
 res=sapply (all.markers, function(a) {        
     risks=risks.all.3[[a]]
-    with(risks, c(prob[3]/prob[1], quantile(boot[3,]/boot[1,], c(.025,.975))))
+    with(risks, c(prob[3]/prob[1], quantile(boot[3,]/boot[1,], c(.025,.975), na.rm=T)))
 })
 #    
 tab=sapply (all.markers, function(a) {
