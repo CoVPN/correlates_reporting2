@@ -204,6 +204,8 @@ if (exists("COR")) {
                 as.formula(config$covariates_riskscore ))
         )
         comp.risk=TRUE
+    } else {
+        comp.risk=FALSE
     }
     
     ###########################################################
