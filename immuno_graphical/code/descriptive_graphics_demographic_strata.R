@@ -9,7 +9,7 @@ library(dplyr)
 library(stringr)
 library(GGally)
 library(ggpubr)
-renv::install("SWIM")
+#renv::install("SWIM")
 library(SWIM)
 library(ggplot2)
 library(scales)
@@ -407,100 +407,104 @@ for (tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)]
       }
       
       ##  (8) minority status
-      covid_corr_boxplot_facets(
-        plot_dat = minority.data,
-        x = "minority_label",
-        y = tp,
-        facet_by = "assay",
-        ylim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
-        plot_LLOX = !grepl("Delta", tp),
-        POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
-        LLOX = log10(lloxs[assay_immuno]),
-        ULOQ = log10(uloqs[assay_immuno]),
-        axis_titles_y = labels.axis[tp, ] %>% unlist(),
-        panel_titles = labels.title2[tp, ] %>% unlist(),
-        arrange_nrow = ceiling(length(assay_immuno) / 3),
-        arrange_ncol = 3,
-        filename = paste0(
-          save.results.to,
-          "/demographics/boxplots_",
-          tp, "_",
-          bstatus.labels.2[bstatus],
-          "_trt_", trt.labels[trt],
-          "_by_minority_group_",
-          study_name, ".pdf"
+      if(!attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
+                                       "janssen_la_partAsenior","janssen_la_partAnonsenior",
+                                       "janssen_sa_partAnonsenior")){
+        covid_corr_boxplot_facets(
+          plot_dat = minority.data,
+          x = "minority_label",
+          y = tp,
+          facet_by = "assay",
+          ylim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
+          plot_LLOX = !grepl("Delta", tp),
+          POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
+          LLOX = log10(lloxs[assay_immuno]),
+          ULOQ = log10(uloqs[assay_immuno]),
+          axis_titles_y = labels.axis[tp, ] %>% unlist(),
+          panel_titles = labels.title2[tp, ] %>% unlist(),
+          arrange_nrow = ceiling(length(assay_immuno) / 3),
+          arrange_ncol = 3,
+          filename = paste0(
+            save.results.to,
+            "/demographics/boxplots_",
+            tp, "_",
+            bstatus.labels.2[bstatus],
+            "_trt_", trt.labels[trt],
+            "_by_minority_group_",
+            study_name, ".pdf"
+          )
         )
-      )
-
-      covid_corr_rcdf_facets(
-        plot_dat = minority.data,
-        x = tp,
-        facet_by = "assay",
-        xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
-        color = "minority_label",
-        weight = "wt.subcohort",
-        panel_titles = labels.title2[tp, ] %>% unlist(),
-        axis_titles = labels.axis[tp, ] %>% unlist(),
-        arrange_nrow = ceiling(length(assay_immuno) / 3),
-        arrange_ncol = 3,
-        filename = paste0(
-          save.results.to,
-          "/demographics/Marker_Rcdf_",
-          tp, "_trt_",
-          c("placebo_", "vaccine_")[trt],
-          bstatus.labels.2[bstatus],
-          "_by_minority_group_",
-          study_name, ".pdf"
+  
+        covid_corr_rcdf_facets(
+          plot_dat = minority.data,
+          x = tp,
+          facet_by = "assay",
+          xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
+          color = "minority_label",
+          weight = "wt.subcohort",
+          panel_titles = labels.title2[tp, ] %>% unlist(),
+          axis_titles = labels.axis[tp, ] %>% unlist(),
+          arrange_nrow = ceiling(length(assay_immuno) / 3),
+          arrange_ncol = 3,
+          filename = paste0(
+            save.results.to,
+            "/demographics/Marker_Rcdf_",
+            tp, "_trt_",
+            c("placebo_", "vaccine_")[trt],
+            bstatus.labels.2[bstatus],
+            "_by_minority_group_",
+            study_name, ".pdf"
+          )
         )
-      )
-
-      ##  (9) age * minority status
-      covid_corr_boxplot_facets(
-        plot_dat = minority.data,
-        x = "age_minority_label",
-        y = tp,
-        facet_by = "assay",
-        ylim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
-        plot_LLOX = !grepl("Delta", tp),
-        POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
-        LLOX = log10(lloxs[assay_immuno]),
-        ULOQ = log10(uloqs[assay_immuno]),
-        axis_titles_y = labels.axis[tp, ] %>% unlist(),
-        panel_titles = labels.title2[tp, ] %>% unlist(),
-        arrange_nrow = ceiling(length(assay_immuno) / 3),
-        arrange_ncol = 3,
-        filename = paste0(
-          save.results.to,
-          "/demographics/boxplots_",
-          tp, "_",
-          bstatus.labels.2[bstatus],
-          "_trt_", trt.labels[trt],
-          "_by_age_x_minority_",
-          study_name, ".pdf"
+  
+        ##  (9) age * minority status
+        covid_corr_boxplot_facets(
+          plot_dat = minority.data,
+          x = "age_minority_label",
+          y = tp,
+          facet_by = "assay",
+          ylim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
+          plot_LLOX = !grepl("Delta", tp),
+          POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
+          LLOX = log10(lloxs[assay_immuno]),
+          ULOQ = log10(uloqs[assay_immuno]),
+          axis_titles_y = labels.axis[tp, ] %>% unlist(),
+          panel_titles = labels.title2[tp, ] %>% unlist(),
+          arrange_nrow = ceiling(length(assay_immuno) / 3),
+          arrange_ncol = 3,
+          filename = paste0(
+            save.results.to,
+            "/demographics/boxplots_",
+            tp, "_",
+            bstatus.labels.2[bstatus],
+            "_trt_", trt.labels[trt],
+            "_by_age_x_minority_",
+            study_name, ".pdf"
+          )
         )
-      )
-
-      covid_corr_rcdf_facets(
-        plot_dat = minority.data,
-        x = tp,
-        facet_by = "assay",
-        xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
-        color = "age_minority_label",
-        weight = "wt.subcohort",
-        panel_titles = labels.title2[tp, ] %>% unlist(),
-        axis_titles = labels.axis[tp, ] %>% unlist(),
-        arrange_nrow = ceiling(length(assay_immuno) / 3),
-        arrange_ncol = 3,
-        filename = paste0(
-          save.results.to,
-          "/demographics/Marker_Rcdf_",
-          tp, "_trt_",
-          c("placebo_", "vaccine_")[trt],
-          bstatus.labels.2[bstatus],
-          "_by_age_minority_group_",
-          study_name, ".pdf"
+  
+        covid_corr_rcdf_facets(
+          plot_dat = minority.data,
+          x = tp,
+          facet_by = "assay",
+          xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
+          color = "age_minority_label",
+          weight = "wt.subcohort",
+          panel_titles = labels.title2[tp, ] %>% unlist(),
+          axis_titles = labels.axis[tp, ] %>% unlist(),
+          arrange_nrow = ceiling(length(assay_immuno) / 3),
+          arrange_ncol = 3,
+          filename = paste0(
+            save.results.to,
+            "/demographics/Marker_Rcdf_",
+            tp, "_trt_",
+            c("placebo_", "vaccine_")[trt],
+            bstatus.labels.2[bstatus],
+            "_by_age_minority_group_",
+            study_name, ".pdf"
+          )
         )
-      )
+      }
       
       if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
         

@@ -347,9 +347,10 @@ spaghetti_ptid <- dat.twophase.sample[, c("Ptid", "Bserostatus", "Trt", var_name
   split(., .$BT) %>%
   lapply(function(xx) {
     if (xx$BT[1] %in% c("10", "00")) {
-      sample(xx$Ptid, 20)  ## sample 10 placebo recipients
+      sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 10 placebo recipients
+      # add ifelse(length(xx$Ptid)<20, F, T) because some subset has small sample e.g. janssen_sa_partA
     } else {
-      sample(xx$Ptid, 20)  ## sample 20 vaccine recipients
+      sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 20 vaccine recipients
     }
   }) %>% unlist %>% as.character
 
