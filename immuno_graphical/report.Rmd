@@ -17,9 +17,10 @@ all_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpik
                 "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
                 "bindN",
                 "pseudoneutid50", "pseudoneutid80", 
-                "liveneutmn50")
+                "liveneutmn50",
+                "ADCP")
 
-if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays)){
+if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config"))){
   assay_immuno <- all_assays[all_assays %in% c(assays, "bindN")]
   labels.assays.all <- c("Binding Antibody to N", labels.assays)
   names(labels.assays.all)[1] <- "bindN"
@@ -189,8 +190,8 @@ for (trt in c("trt_both", "trt_vaccine")){
             
       tpLabel <- gsub("ay ", "", labels.time[tp])
       
-      for (asy in c("","bAb","nAb")){
-        if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("pseudo", assays))==0 & asy=="nAb")) next
+      for (asy in c("","bAb","nAb","other")){
+        if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
         if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
         if (asy!="" & trt=="trt_both" & bsero=="bstatus_both") next  # trt_both & bstatus_both are only for all assays
         

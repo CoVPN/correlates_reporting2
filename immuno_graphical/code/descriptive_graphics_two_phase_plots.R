@@ -185,13 +185,15 @@ dat.long.twophase.sample$assay_labels <-
          levels = assay_immuno,
          labels = labels.assays.short)
 print("RCDF 2:")
-# plot bAb and PsV assays separately
-for (bAb in c(0, 1)) {
+# plot bAb, PsV and ADCP assays separately
+for (Ab in c(1, 2, 3)) {
   
-  if (bAb == 1) {
+  if (Ab == 1) {
     rcdf_assays <- assay_immuno[grepl("bind", assay_immuno)]
-  } else {
-    rcdf_assays <- assay_immuno[!grepl("bind", assay_immuno)]
+  } else if (Ab == 2) {
+    rcdf_assays <- assay_immuno[grepl("neut", assay_immuno)]
+  } else  {
+    rcdf_assays <- assay_immuno[grepl("ADCP", assay_immuno)]
   }
   
   if (length(rcdf_assays) > 0) {
@@ -212,7 +214,7 @@ for (bAb in c(0, 1)) {
                       1),
         plot_title = paste0(labels.time[tp], " Ab Markers"),
         filename = paste0(
-          save.results.to, "/Marker_Rcdf_", c("nAb", "bAb")[bAb + 1], "_", tp,
+          save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
           "_trt_vaccine_bstatus_both_", study_name, ".pdf"
         )
       )
@@ -245,7 +247,7 @@ for (bAb in c(0, 1)) {
           plot_title = paste0(labels.time[tp], " Ab Markers"
           ),
           filename = paste0(
-            save.results.to, "/Marker_Rcdf_", c("nAb", "bAb")[bAb + 1], "_", tp,
+            save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
             "_trt_vaccine_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, ".pdf"
           )
         )
