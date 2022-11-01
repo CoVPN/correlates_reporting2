@@ -31,7 +31,8 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
   # for ENSEMBLE, loop through "IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1"
   # for other studies, loop through ""
   COR_postfix_list = ""
-  if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") COR_postfix_list <- c("IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1")
+  if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & grepl("EUA", attr(config,"config")))) COR_postfix_list <- c("IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1")
+  if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & grepl("partA", attr(config,"config")))) COR_postfix_list <- c("IncludeNotMolecConfirmed")
   if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
 
   for (COR_postfix in COR_postfix_list){
