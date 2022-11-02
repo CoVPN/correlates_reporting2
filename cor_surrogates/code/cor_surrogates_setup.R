@@ -812,7 +812,7 @@ if (sum(dat.ph2 %>% pull(endpoint)) <= 25) {
   V_inner <- length(Y) - 1
   maxVar <- 5
 } else if(sum(dat.ph2 %>% pull(endpoint)) > 25){
-  V_inner <- 25
+  V_inner <- 5
   maxVar <- floor(nv/6)
 }
 
