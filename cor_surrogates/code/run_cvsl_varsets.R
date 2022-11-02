@@ -1,5 +1,6 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
+# Sys.setenv(TRIAL = "janssen_pooled_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -110,7 +111,7 @@ for (i in 1:length(seeds)) {
   cvaucs[[i]] = fits[[i]]$cvaucs$aucs
   cvfits[[i]] = fits[[i]]$cvfits
 }
-
+    
 # save off the output
 saveRDS(cvaucs, file = paste0("output/", Sys.getenv("TRIAL"), paste0("/CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
 saveRDS(cvfits, file = here("output/", Sys.getenv("TRIAL"), paste0("/CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))

@@ -1,5 +1,6 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
+# Sys.setenv(TRIAL = "janssen_pooled_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -40,11 +41,11 @@ pooled_ests_lst <- list.files(here(paste0("output/", Sys.getenv("TRIAL"))), patt
 all_estimates = as.data.frame(do.call("rbind", pooled_ests_lst$listdat))
 
 # add on the variable set name
-final_estimates <- all_estimates %>%
+vim_estimates <- all_estimates %>%
     mutate(variable_set = rep(varset_names[-1], each = 2), .before = "s")
 
 # save the output
-saveRDS(final_estimates, file = paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.rds"))
+saveRDS(vim_estimates, file = paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.rds"))
 # ----------------------------------------------------------------------------------------
 # read in the results; note that createRDAfiles_fromSLobjects has to be run prior to this
 
@@ -203,6 +204,30 @@ if (study_name == "HVTN705") {
                     ))
 
 }
+if (study_name %in% c("ENSEMBLE")) {
+  caption <- "The 16 variable sets on which an estimated optimal surrogate was built."
+  
+  only_varsets <- varset_names[1:16]
+  
+  tab <- data.frame(`Variable Set Name` = varset_names[1:16],
+                    `Variables included in the set` = c("Baseline risk factors only (Reference model)",
+                                                        "Baseline risk factors + Day 29 bAb anti-Spike markers",
+                                                        "Baseline risk factors + Day 29 bAb anti-RBD markers",
+                                                        "Baseline risk factors + Day 29 p-nAb ID50 markers",
+                                                        "Baseline risk factors + Day 29 ADCP markers",
+                                                        "Baseline risk factors + Day 29 Functional markers minus bAb markers",
+                                                        "Baseline risk factors + Day 29 bAb and p-nAb ID50 markers",
+                                                        "Baseline risk factors + Day 29 bAb and ADCP markers",
+                                                        "Baseline risk factors + Day 29 bAb and p-nAb ID50 markers and difference between them",
+                                                        "Baseline risk factors + Day 29 bAb and ADCP markers and difference between them",
+                                                        "Baseline risk factors + Day 29 bAb and p-nAb ID50 and ADCP markers",
+                                                        "Baseline risk factors + Day 29 bAb and p-nAb ID50 and ADCP markers and functional markers minus bAb markers",
+                                                        "Baseline risk factors + Day 29 bAb markers and combination scores across the four markers [PCA1, PCA2, FSDAM1/FSDAM2 (the first two
+components of nonlinear PCA), and the maximum signal diversity score]",
+                                                        "Baseline risk factors + Day 29 p-nAb ID50 markers and combination scores across the four markers",
+                                                        "Baseline risk factors + Day 29 ADCP markers and combination scores across the four markers",
+                                                        "Baseline risk factors + all individual Day 29 marker variables and their combination scores (Full model of Day 29 markers)"))
+}
 
 tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "varsets.csv"))
 
@@ -256,9 +281,10 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
   # Get cvsl fit and extract cv predictions
   if(study_name %in% c("COVE", "MockCOVE")){
     cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
-  }
-  if(study_name == "HVTN705"){
-    cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
+  } else if(study_name == "HVTN705"){
+    cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
+  } else if(study_name == "ENSEMBLE"){
+    cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
   }
 
   pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2, markerDAT = NULL)
@@ -290,10 +316,11 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
       width = 1000, height = 1000)
   if(study_name %in% c("COVE", "MockCOVE")){
     p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D57))
-  }
-  if(study_name == "HVTN705"){
-    p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D210))
-  }
+    } else if(study_name == "HVTN705"){
+      p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D210))
+    } else if(study_name == "ENSEMBLE"){
+      p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D29))
+    }
   print(p1)
   dev.off()
 
@@ -378,11 +405,15 @@ if(!study_name %in% c("HVTN705")){
     variableSet = only_varsets[i]
 
     # Get cvsl fit and extract cv predictions
-    cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
+    if(Sys.getenv("TRIAL") == "moderna_real"){
+      cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
+    } else if(Sys.getenv("TRIAL") == "janssen_pooled_partA"){
+      cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
+    }
     
     # For 1st random seed, get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds
     for (j in seq_along(cvfits[[1]]$whichDiscreteSL)) {
-      #print(j)
+      print(j)
       if(cvfits[[1]]$whichDiscreteSL[[j]] %in% c("SL.glm_screen_univariate_logistic_pval", 
                                                  "SL.glm.interaction_screen_highcor_random",
                                                  "SL.glm_screen_all",
@@ -392,7 +423,11 @@ if(!study_name %in% c("HVTN705")){
                                                  "SL.glm.interaction_screen_univariate_logistic_pval",
                                                  "SL.gam_screen_glmnet",
                                                  "SL.gam_screen_univariate_logistic_pval",
-                                                 "SL.gam_screen_highcor_random")) {
+                                                 "SL.gam_screen_highcor_random",
+                                                 "SL.bayesglm_screen_all",
+                                                 "SL.bayesglm_screen_glmnet",
+                                                 "SL.bayesglm_screen_univariate_logistic_pval",
+                                                 "SL.bayesglm_screen_highcor_random")) {
         
         model <- cvfits[[1]]$AllSL[[j]][["fitLibrary"]][[cvfits[[1]]$whichDiscreteSL[[j]]]]$object$coefficients %>%
           as.data.frame() %>%
@@ -458,14 +493,18 @@ if(!study_name %in% c("HVTN705")){
   }
 }
 
-
-all_varsets_models %>% 
-  mutate(`Predictors/Features` = ifelse(is.na(Predictors), Feature, Predictors)) %>%
-  select(-c(Predictors, Feature)) %>%
-  select(varset, fold, Learner, `Predictors/Features`, everything()) %>%
-  write.csv(here("output", Sys.getenv("TRIAL"), "all_varsets_all_folds_discreteSLmodels.csv"))
-
-
+if("Feature" %in% colnames(all_varsets_models)){
+  all_varsets_models %>% 
+    mutate(`Predictors/Features` = ifelse(is.na(Predictors), Feature, Predictors)) %>%
+    select(-c(Predictors, Feature)) %>%
+    select(varset, fold, Learner, `Predictors/Features`, everything()) %>%
+    write.csv(here("output", Sys.getenv("TRIAL"), "all_varsets_all_folds_discreteSLmodels.csv"))
+} else {
+  all_varsets_models %>% 
+    mutate(`Predictors/Features` = Predictors) %>%
+    select(varset, fold, Learner, `Predictors/Features`, everything()) %>%
+    write.csv(here("output", Sys.getenv("TRIAL"), "all_varsets_all_folds_discreteSLmodels.csv"))
+}
 
 # Variable importance forest plots ---------------------------------------------
 # save off all variable importance estimates as a table

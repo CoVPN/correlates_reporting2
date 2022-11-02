@@ -786,9 +786,19 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
 
   lowestXTick <- floor(min(allSLs$ci_ll)*10)/10
   highestXTick <- ceiling(max(allSLs$ci_ul)*10)/10
-  learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm")
-  if(Sys.getenv("TRIAL") == "moderna_real")
+  if(Sys.getenv("TRIAL") == "hvtn705second"){
+    learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm")
+    names.plot.margin = unit(c(0.1,-0.15,0.65,-0.15),"cm")
+    y_at = 35.2
+  } else if(Sys.getenv("TRIAL") == "moderna_real"){
     learner.plot.margin = unit(c(0.8,0.2,0.8,-0.15),"cm")
+    names.plot.margin = unit(c(-1.5,-0.15,0.65,-0.15),"cm")
+    y_at = 35.2
+  } else if(Sys.getenv("TRIAL") == "janssen_pooled_partA"){
+    learner.plot.margin = unit(c(3.25,0.2,0.8,-0.15),"cm")
+    names.plot.margin = unit(c(1.6,-0.15,1.39,-0.15),"cm")
+    y_at = 16.7
+  }
   
   top_learner_plot <- ggplot() +
     geom_pointrange(allSLs %>% mutate(varset = fct_reorder(varset, AUC, .desc = F)), mapping=aes(x=varset, y=AUC, ymin=ci_ll, ymax=ci_ul), size = 1, color="blue", fill="blue", shape=20) +
@@ -817,29 +827,26 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
                               columnVal=="AUCstr" ~ 2),
            ycoord = rep(total_learnerScreen_combos:1, 2))
   
-  names.plot.margin = unit(c(0.1,-0.15,0.65,-0.15),"cm")
-  
-  if(Sys.getenv("TRIAL") == "moderna_real")
-    names.plot.margin = unit(c(-1.5,-0.15,0.65,-0.15),"cm")
-
   top_learner_nms_plot <- ggplot(allSLs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
-    xlim(0.7,2) +
+    xlim(0.7, 2) +
+    theme_bw() +
     theme(plot.margin=names.plot.margin,
-          axis.line=element_blank(),
+          axis.line = element_blank(),
           axis.text.y = element_blank(),
           axis.text.x = element_text(size = 2, color = "white"),
           axis.ticks = element_blank(),
-          axis.title = element_blank()) +
-    annotate("text", x = 1.5, y = 35.2, size = 5,
+          axis.title = element_blank(),
+          panel.border = element_blank()) +
+    annotate("text", x = 1.5, y = y_at, size = 5,
              label = "Variable Set",
              fontface = "bold",
              hjust = 1) +
-    annotate("text", x = 2, y = 35.2, size = 5,
+    annotate("text", x = 2, y = y_at, size = 5,
              label = "CV-AUC [95% CI]",
              fontface = "bold",
              hjust = 1)
-
+  
   return(list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot))
 }
 
@@ -848,6 +855,15 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
 # @param avgs dataframe containing Screen, Learner, AUC estimates and CIs as columns
 # @return list of 2 ggplot objects: one containing forest plot and the other containing labels (Screen, Learner and CV-AUCs)
 make_forest_plot_prod <- function(avgs) {
+  
+  if(Sys.getenv("TRIAL") == "moderna_real"){
+    PLOT.MARGIN = unit(c(0.8, -0.15, 0.2, -0.15), "cm")
+    NAMES.PLOT.MARGIN = unit(c(1.0, -0.15, 1.7, -0.15), "cm")
+  } else if(Sys.getenv("TRIAL") == "janssen_pooled_partA"){
+    PLOT.MARGIN = unit(c(0.8, -0.15, 0.2, -0.15), "cm")
+    NAMES.PLOT.MARGIN = unit(c(1.0, -0.15, 1.7, -0.15), "cm")
+  }
+  
   lowestXTick <- floor(min(avgs$ci_ll) * 10) / 10
   top_learner_plot <- ggplot() +
     geom_pointrange(avgs %>% mutate(LearnerScreen = fct_reorder(LearnerScreen, AUC, .desc = F)), mapping = aes(x = LearnerScreen, y = AUC, ymin = ci_ll, ymax = ci_ul), size = 3, color = "blue", fill = "blue", shape = 20) +
@@ -861,7 +877,7 @@ make_forest_plot_prod <- function(avgs) {
       axis.title = element_text(size = 30),
       axis.ticks.length = unit(.35, "cm"),
       axis.text.y = element_blank(),
-      plot.margin = unit(c(0.8, -0.15, 0.2, -0.15), "cm"),
+      plot.margin = PLOT.MARGIN,
       panel.border = element_blank(),
       axis.line = element_line(colour = "black")
     )
@@ -873,7 +889,7 @@ make_forest_plot_prod <- function(avgs) {
     gather("columnVal", "strDisplay") %>%
     mutate(
       xcoord = case_when(
-        columnVal == "Learner" ~ 1,
+        columnVal == "Learner" ~ 2,
         columnVal == "Screen" ~ 1.5,
         columnVal == "AUCstr" ~ 2
       ),
@@ -884,7 +900,7 @@ make_forest_plot_prod <- function(avgs) {
     geom_text(hjust = 1, vjust = 0, size = 10) +
     xlim(0.7, 2) +
     theme(
-      plot.margin = unit(c(1.0, -0.15, 1.7, -0.15), "cm"),
+      plot.margin = NAMES.PLOT.MARGIN,
       axis.line = element_blank(),
       axis.text.y = element_blank(),
       axis.text.x = element_text(size = 2, color = "white"),
@@ -900,12 +916,24 @@ make_forest_plot_prod <- function(avgs) {
 # @param avgs dataframe containing Screen, Learner, AUC estimates and CIs as columns
 # @return list of 2 ggplot objects: one containing forest plot and the other containing labels (Screen, Learner and CV-AUCs)
 make_forest_plot <- function(avgs){
+
+  if(Sys.getenv("TRIAL") == "hvtn705second"){
+    PLOT.MARGIN = unit(c(3.4,-0.15,1,-0.15),"cm")
+    NAMES.PLOT.MARGIN = unit(c(1.6,-0.15,1.5,-0.15),"cm")
+    y_at = 18.75
+  } else if(Sys.getenv("TRIAL") == "moderna_real"){
+    PLOT.MARGIN = unit(c(2.8,-0.15,1,-0.15),"cm")
+    NAMES.PLOT.MARGIN = unit(c(1.0,-0.15,1.7,-0.15),"cm")
+    y_at = 15.75
+  } else if(Sys.getenv("TRIAL") == "janssen_pooled_partA"){
+    PLOT.MARGIN = unit(c(2.8,0.15,1,-0.15),"cm")
+    NAMES.PLOT.MARGIN = unit(c(0.6,-0.15,0.85,-0.15),"cm")
+    y_at = 31.25
+  }
+  
   lowestXTick <- floor(min(avgs$ci_ll)*10)/10
   highestXTick <- ceiling(max(avgs$ci_ul)*10)/10
-  learner.plot.margin = unit(c(3.4,-0.15,1,-0.15),"cm")
-  if(Sys.getenv("TRIAL") == "moderna_real")
-    learner.plot.margin = unit(c(2.8,-0.15,1,-0.15),"cm")
-    
+
   top_learner_plot <- ggplot() +
     geom_pointrange(avgs %>% mutate(LearnerScreen = fct_reorder(LearnerScreen, AUC, .desc = F)), mapping=aes(x=LearnerScreen, y=AUC, ymin=ci_ll, ymax=ci_ul), size = 1, color="blue", fill="blue", shape=20) +
     coord_flip() +
@@ -919,7 +947,7 @@ make_forest_plot <- function(avgs){
           axis.text.x = element_text(size=16),
           axis.title.x = element_text(size=16),
           axis.text.y = element_blank(),
-          plot.margin=learner.plot.margin,
+          plot.margin = PLOT.MARGIN,
           panel.border = element_blank(),
           axis.line = element_line(colour = "black"))
 
@@ -933,17 +961,11 @@ make_forest_plot <- function(avgs){
                               columnVal=="AUCstr" ~ 2),
            ycoord = rep(total_learnerScreen_combos:1, 3))
 
-  names.plot.margin = unit(c(1.6,-0.15,1.5,-0.15),"cm")
-  y_at = 18.75
-  if(Sys.getenv("TRIAL") == "moderna_real"){
-    names.plot.margin = unit(c(1.0,-0.15,1.7,-0.15),"cm")
-    y_at = 15.75
-  }
 
   top_learner_nms_plot <- ggplot(avgs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
     xlim(0.7,2) +
-    theme(plot.margin=names.plot.margin,
+    theme(plot.margin = NAMES.PLOT.MARGIN,
           axis.line=element_blank(),
           axis.text.y = element_blank(),
           axis.text.x = element_text(size = 2, color = "white"),

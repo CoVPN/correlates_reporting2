@@ -1,3 +1,4 @@
+# Sys.setenv(TRIAL = "janssen_pooled_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -170,4 +171,16 @@ if(study_name == "HVTN705"){
     arrange(varsetNo)
 
   saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_EventIndPrimaryD210.rds"))
+}
+
+
+if(study_name == "ENSEMBLE"){
+  cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryIncludeNotMolecConfirmedD29", trt = "vaccine") %>%
+    mutate(varset = str_replace(file, "CVSLaucs_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", ""),
+           varset = str_replace(varset, "_varset", ""),
+           varset = str_replace(varset, ".rds", ""),
+           varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
+    arrange(varsetNo)
+  
+  saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29.rds"))
 }

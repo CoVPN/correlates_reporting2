@@ -67,6 +67,66 @@ num_cores <- parallel::detectCores()
 #   5. identify the weights vector (call it "wt")
 #   6. define dataset dat.ph1 with all phase 1 data (all columns measured on all study participants)
 #   7. define dataset dat.ph2 with phase 2 data (all study participants with phase 2 variables measured)
+
+# Read in data from ENSEMBLE: TRIAL = "janssen_pooled_partA"
+if (study_name %in% c("ENSEMBLE")) {
+
+  # baseline risk factors
+  briskfactors <- c("risk_score", "HighRiskInd", "LatinAmerica", "SouthAfrica")
+  briskfactors_correction <- "Y ~ x + X$risk_score + X$HighRiskInd + X$LatinAmerica + X$SouthAfrica"
+  
+  individualMarkers <- c("Day29bindSpike",
+                         "Day29bindRBD",
+                         "Day29pseudoneutid50",
+                         "Day29ADCP",
+                         "Day29pseudoneutid50minusbindRBD",
+                         "Day29ADCPminusbindRBD")
+  
+  # markers of interest
+  markerVars <- c("Day29bindSpike", #"Delta29overBbindSpike",
+                  "Delta29overBbindSpike_2fold", "Delta29overBbindSpike_4fold",
+                  "Day29bindRBD", #"Delta29overBbindRBD",
+                  "Delta29overBbindRBD_2fold", "Delta29overBbindRBD_4fold",
+                  "Day29pseudoneutid50", #"Delta29overBpseudoneutid50",
+                  "Delta29overBpseudoneutid50_2fold", "Delta29overBpseudoneutid50_4fold",
+                  "Day29ADCP", #"Delta29overBADCP",
+                  "Delta29overBADCP_2fold", "Delta29overBADCP_4fold",
+                  "Day29pseudoneutid50minusbindRBD",
+                  "Day29ADCPminusbindRBD")
+  
+  # Identify the endpoint variable
+  endpoint <- "EventIndPrimaryIncludeNotMolecConfirmedD29"
+  wt <- "wt.D29"
+  ptidvar <- "Ptid"
+  
+  # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
+  # imputed values for markers (for phase 2 data) from dat.wide.v
+  dat.ph1 <- dat.mock %>%
+    filter(Perprotocol == 1 & Trt == 1 & Bserostatus == 0) %>%
+    mutate(Day29pseudoneutid50minusbindRBD = Day29pseudoneutid50 - Day29bindRBD,
+           Day29ADCPminusbindRBD = Day29ADCP - Day29bindRBD,
+           Delta29overBbindSpike_2fold = ifelse(Day29bindSpike > (BbindSpike + log10(2)), 1, 0),
+           Delta29overBbindSpike_4fold = ifelse(Day29bindSpike > (BbindSpike + log10(4)), 1, 0),
+           Delta29overBbindRBD_2fold = ifelse(Day29bindRBD > (BbindRBD  + log10(2)), 1, 0),
+           Delta29overBbindRBD_4fold = ifelse(Day29bindRBD > (BbindRBD  + log10(4)), 1, 0),
+           Delta29overBpseudoneutid50_2fold = ifelse(Day29pseudoneutid50 > (Bpseudoneutid50 + log10(2)), 1, 0),
+           Delta29overBpseudoneutid50_4fold = ifelse(Day29pseudoneutid50 > (Bpseudoneutid50 + log10(4)), 1, 0),
+           Delta29overBADCP_2fold = ifelse(Day29ADCP > (BADCP + log10(2)), 1, 0),
+           Delta29overBADCP_4fold = ifelse(Day29ADCP > (BADCP + log10(4)), 1, 0),
+           # Code Region as binary indicator variables
+           LatinAmerica = ifelse(Region == 1, 1, 0),
+           SouthAfrica = ifelse(Region == 2, 1, 0)) %>%
+    # Drop any observation with NA values in Ptid, Trt, briskfactors, endpoint and wt.D57
+    drop_na(Ptid, Trt, all_of(briskfactors), all_of(endpoint), all_of(wt)) %>%
+    arrange(desc(get(endpoint)))
+  
+  # phase two data (all variables measured on all participants in phase 2 data)
+  dat.ph2_init <- dat.ph1 %>%
+    filter(TwophasesampIndD29 == TRUE) %>%
+    select(Ptid, Trt, all_of(briskfactors), all_of(endpoint), all_of(wt), any_of(markerVars)) %>%
+    arrange(desc(get(endpoint)))
+}
+
 # Read in data from either COVE or MockCOVE studies
 if (study_name %in% c("COVE", "MockCOVE")) {
   # baseline risk factors
@@ -372,6 +432,41 @@ if (study_name == "HVTN705") {
                "comb_nlPCA2_prim", "comb_nlPCA1_all", "comb_nlPCA2_all")
 }
 
+
+if (study_name %in% c("ENSEMBLE")) {
+  # Create combination scores across the 5 markers
+  dat.ph2 <- dat.ph2 %>%
+    # generate combination scores for d29
+    left_join(get.pca.scores(dat.ph2 %>%
+                               select(all_of(ptidvar), Day29bindSpike, Day29bindRBD,
+                                      Day29pseudoneutid50, Day29ADCP)) %>%
+                rename(comb_PC1_d29 = PC1,
+                       comb_PC2_d29 = PC2),
+              by = ptidvar) %>%
+    mutate(
+      comb_maxsig.div.score_d29 = get.maxSignalDivScore(
+        dat.ph2 %>%
+          select(Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29ADCP),
+        "Day29"
+      )
+    ) 
+  
+  if (run_prod) {
+    dat.ph2 <- dat.ph2 %>%
+      # generate non-linear combination scores for d29
+      left_join(get.nonlinearPCA.scores(dat.ph2 %>%
+                                          select(all_of(ptidvar), Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29ADCP)) %>%
+                  rename(comb_nlPCA1_d29 = nlPCA1,
+                         comb_nlPCA2_d29 = nlPCA2),
+                by = ptidvar) 
+  }
+  
+  # finalize marker data
+  markers <- dat.ph2 %>%
+    select(-all_of(ptidvar), -Trt, -all_of(briskfactors), -all_of(endpoint), -all_of(wt)) %>%
+    colnames()
+}
+
 # Define study-specific variable sets of interest ------------------------------
 # Results in two objects:
 #   1. varset_names: the names of the variable sets
@@ -572,6 +667,59 @@ if (study_name == "HVTN705") {
                          varset_M7_3_4_5_12_13,varset_M7_2_3_4_5_12_13)
 }
 
+
+
+
+if (study_name %in% c("ENSEMBLE")) {
+  # 1. None (No markers; only baseline risk variables), phase 2 data
+  varset_baselineRiskFactors <- rep(FALSE, length(markers))
+  
+  # 2-16 (Day29)
+  varset_bAbSpike_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*bindSpike)", markers, value=TRUE, perl=TRUE))
+  varset_bAbRBD_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*bindRBD)", markers, value=TRUE, perl=TRUE))
+  varset_pnabID50_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*id50)", markers, value=TRUE, perl=TRUE))
+  varset_ADCP_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*ADCP)", markers, value=TRUE, perl=TRUE))
+  varset_FunctionalminusbAb_D29 <- create_varsets(markers, grep("(?=.*29)(?=.*minus)", markers, value=TRUE, perl=TRUE))
+  varset_bAb_pnabID50_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)", markers, value=TRUE, perl=TRUE),
+                                                       grep("(?=.*29)(?=.*id50)", markers, value=TRUE, perl=TRUE)))
+  varset_bAb_ADCP_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)", markers, value=TRUE, perl=TRUE),
+                                                       grep("(?=.*29)(?=.*ADCP)", markers, value=TRUE, perl=TRUE)))
+  varset_bAb_pnabID50_diff_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)(^((?!ADCP).)*$)", markers, value=TRUE, perl=TRUE),
+                                                       grep("(?=.*29)(?=.*id50)", markers, value=TRUE, perl=TRUE)))
+  varset_bAb_ADCP_diff_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)(^((?!id50).)*$)", markers, value=TRUE, perl=TRUE),
+                                                        grep("(?=.*29)(?=.*ADCP)", markers, value=TRUE, perl=TRUE)))
+  varset_bAb_pnabID50_ADCP_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)(^((?!minus).)*$)", markers, value=TRUE, perl=TRUE),
+                                                            grep("(?=.*29)(?=.*id50)(^((?!minus).)*$)", markers, value=TRUE, perl=TRUE),
+                                                            grep("(?=.*29)(?=.*ADCP)(^((?!minus).)*$)", markers, value=TRUE, perl=TRUE)))
+  varset_allMarkers_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)", markers, value=TRUE, perl=TRUE),
+                                                     grep("(?=.*29)(?=.*id50)", markers, value=TRUE, perl=TRUE),
+                                                     grep("(?=.*29)(?=.*ADCP)", markers, value=TRUE, perl=TRUE)))
+  varset_bAb_combScores_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*bind)(^((?!minus).)*$)", markers, value=TRUE, perl=TRUE),
+                                                         grep("(?=.*29)(?=.*comb)", markers, value=TRUE, perl=TRUE)))
+  varset_pnabID50_combScores_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*id50)(^((?!minus).)*$)", markers, value=TRUE, perl=TRUE),
+                                                         grep("(?=.*29)(?=.*comb)", markers, value=TRUE, perl=TRUE)))
+  varset_ADCP_combScores_D29 <- create_varsets(markers, c(grep("(?=.*29)(?=.*ADCP)(^((?!minus).)*$)", markers, value=TRUE, perl=TRUE),
+                                                         grep("(?=.*29)(?=.*comb)", markers, value=TRUE, perl=TRUE)))
+  varset_allMarkers_combScores_D29 <- create_varsets(markers, grep("(?=.*29)", markers, value=TRUE, perl=TRUE))
+  
+  varset_names <- c("1_baselineRiskFactors",
+                    "2_bAbSpike_D29", "3_bAbRBD_D29", "4_pnabID50_D29",
+                    "5_ADCP_D29", "6_FunctionalminusbAb_D29", "7_bAb_pnabID50_D29", "8_bAb_ADCP_D29", 
+                    "9_bAb_pnabID50_diff_D29", "10_bAb_ADCP_diff_D29", 
+                    "11_bAb_pnabID50_ADCP_D29", "12_allMarkers_D29",
+                    "13_bAb_combScores_D29", "14_pnabID50_combScores_D29", "15_ADCP_combScores_D29",
+                    "16_allMarkers_combScores_D29")
+  
+  # set up a matrix of all
+  varset_matrix <- rbind(varset_baselineRiskFactors,
+                         varset_bAbSpike_D29, varset_bAbRBD_D29, varset_pnabID50_D29,
+                         varset_ADCP_D29, varset_FunctionalminusbAb_D29, varset_bAb_pnabID50_D29, varset_bAb_ADCP_D29, 
+                         varset_bAb_pnabID50_diff_D29, varset_bAb_ADCP_diff_D29, 
+                         varset_bAb_pnabID50_ADCP_D29, varset_allMarkers_D29, 
+                         varset_bAb_combScores_D29, varset_pnabID50_combScores_D29, varset_ADCP_combScores_D29, 
+                         varset_allMarkers_combScores_D29)
+}
+
 # add on all of the individual marker variables
 for (i in seq_len(length(markers))) {
   this_varset <- grepl(paste0("\\b", markers[i], "\\b"), markers, perl = TRUE)
@@ -618,6 +766,12 @@ if (study_name %in% c("COVE", "MockCOVE")) {
     select(all_of(ptidvar), Trt, wt.D210, Delta.D210, all_of(c(briskfactors, markers))) %>%
     filter(Trt == 1) %>%
     select(-Trt)
+} else if (study_name == "ENSEMBLE") {
+  weights <- dat.ph2$wt.D29
+  treatmentDAT <- dat.ph2 %>%
+    select(all_of(ptidvar), Trt, wt.D29, all_of(c(endpoint, briskfactors, markers))) %>%
+    filter(Trt == 1) %>%
+    select(-Trt)
 }
 
 # match the rows in treatmentDAT to get Z, C
@@ -645,6 +799,11 @@ if (study_name %in% c("COVE", "MockCOVE")) {
     select(-Ptid, -wt.D210)
   all_ipw_weights_treatment <- phase_1_data_treatmentDAT %>%
     pull(wt.D210)
+} else if (study_name == "ENSEMBLE") {
+  Z_treatmentDAT <- phase_1_data_treatmentDAT %>%
+    select(-Ptid, -all_of(wt))
+  all_ipw_weights_treatment <- phase_1_data_treatmentDAT %>%
+    pull(all_of(wt))
 }
 
 # set up outer folds for cv variable importance; do stratified sampling
@@ -653,7 +812,7 @@ if (sum(dat.ph2 %>% pull(endpoint)) <= 25) {
   V_inner <- length(Y) - 1
   maxVar <- 5
 } else if(sum(dat.ph2 %>% pull(endpoint)) > 25){
-  V_inner <- 5
+  V_inner <- 25
   maxVar <- floor(nv/6)
 }
 

@@ -445,18 +445,27 @@ SL.ranger.imp <- function (Y, X, newX, family, obsWeights, case.weights,
 if (run_prod) {
   # NOTE: fancier library for production run
   # learners in the method1 are also combined with no screen
-  methods1 <- c("SL.mean", "SL.glm", 
-                #"SL.bayesglm", "SL.glm.interaction",
+  if(Sys.getenv("TRIAL") %in% c("hvtn705second", "moderna_real"))
+    methods1 <- c("SL.mean", "SL.glm", 
                 "SL.glmnet.0", "SL.glmnet.1", 
                 "SL.xgboost.2.no", "SL.xgboost.4.no", "SL.xgboost.2.yes", "SL.xgboost.4.yes",
-                "SL.ranger.no", "SL.ranger.yes"
-                )  
+                "SL.ranger.no", "SL.ranger.yes")  
+  else if(Sys.getenv("TRIAL") == "janssen_pooled_partA"){
+    methods1 <- c("SL.mean", "SL.glm", "SL.bayesglm", "SL.glm.interaction",
+                  "SL.glmnet.1", #"SL.glmnet.0", 
+                  #"SL.gam", "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars",
+                  "SL.xgboost.4.no", #"SL.xgboost.2.no", "SL.xgboost.2.yes", "SL.xgboost.4.yes",
+                  "SL.ranger.no") #, "SL.ranger.yes"  
+  }
 
   # learners in the method2 are learners that can have screens
   if(Sys.getenv("TRIAL") == "moderna_real")
     methods2 <- c("SL.glm")
-  else
+  else if(Sys.getenv("TRIAL") == "hvtn705second")
     methods2 <- c("SL.glm", "SL.gam") #, "SL.bayesglm", "SL.glm.interaction", "SL.gam", "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars"
+  else if(Sys.getenv("TRIAL") == "janssen_pooled_partA")
+    methods2 <- c("SL.glm", "SL.bayesglm", "SL.glm.interaction", "SL.gam",
+                  "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars") #, "SL.bayesglm", "SL.glm.interaction", "SL.gam", "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars"
                 
 } else {
   # NOTE: smaller library for ~faster~ demo run
