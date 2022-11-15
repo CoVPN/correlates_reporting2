@@ -152,7 +152,10 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-
+if(attr(config, "config") %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA")) {
+    # make endpointDate.Bin a factor variable
+    dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
+}
 
 
 ###################################################################################################
@@ -204,6 +207,8 @@ if (exists("COR")) {
                 as.formula(config$covariates_riskscore ))
         )
         comp.risk=TRUE
+    } else {
+        comp.risk=FALSE
     }
     
     ###########################################################
