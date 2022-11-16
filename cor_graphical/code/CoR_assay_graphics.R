@@ -129,13 +129,13 @@ for (tp in tps){
   for (aa in seq_along(assays)) {
     boxplot_list[[aa]] <-  ggplot(subset(subdat, assay == assays[aa] & Trt == "Vaccine"), 
                                   aes_string(x = "cohort_event", y = tp)) +
-      geom_boxplot(aes(colour = cohort_event), width = 0.6, lwd = 1, alpha = 0.1) + 
+      geom_boxplot(aes(colour = cohort_event), width = 0.6, lwd = 1, outlier.shape = NA) + 
       stat_boxplot(geom = "errorbar", aes(colour = cohort_event), width = 0.45, lwd = 1) +
-      geom_jitter(data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"), 
+      geom_jitter(#data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"), 
                   mapping = aes(colour = cohort_event), width = 0.1, 
-                  size = 1.4, show.legend = FALSE) +
+                  size = 1.4, alpha = 0.2, show.legend = FALSE) +
       theme_pubr(legend = "none") + 
-      guides(alpha = "none") +
+      #guides(alpha = "none") +
       ylab(labels.axis[tp, aa]) + xlab("") + ggtitle(labels.title2[tp, aa]) +
       scale_color_manual(values = c("#1749FF", "#D92321")) +
       scale_y_continuous(limits = c(ifelse(study_name=="PROFISCOV",-1,-2), ifelse(study_name=="PROFISCOV",3.5,6)), labels = label_math(10^.x), 
@@ -214,12 +214,13 @@ for (tp in tps){
   for (aa in seq_along(assays)) {
     boxplots <-  ggplot(subset(subdat, assay == assays[aa] & Trt == "Vaccine"), aes_string(x = "cohort_event", y = tp)) +
       geom_boxplot(aes(colour = cohort_event), width = 0.6, lwd = 1) + 
-      stat_boxplot(geom = "errorbar", aes(colour = cohort_event), width = 0.45, lwd = 1) +
-      geom_jitter(data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"),
+      stat_boxplot(geom = "errorbar", aes(colour = cohort_event), width = 0.45, lwd = 1, outlier.shape = NA) +
+      geom_jitter(#data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"),
                   mapping = aes(colour = cohort_event), width = 0.1, 
-                  size = 1.4, show.legend = FALSE) +
+                  size = 1.4, alpha = 0.2, show.legend = FALSE) +
       theme_pubr() + 
-      guides(alpha = "none", color = guide_legend(nrow = 1, byrow = TRUE)) +
+      guides(#alpha = "none", 
+             color = guide_legend(nrow = 1, byrow = TRUE)) +
       facet_wrap(~ demo_lab) +
       ylab(labels.axis[tp, aa]) + xlab("") + ggtitle(labels.title2[tp, aa]) +
       scale_color_manual(values = c("#1749FF", "#D92321")) +
