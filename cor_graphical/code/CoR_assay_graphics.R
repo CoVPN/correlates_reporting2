@@ -131,7 +131,7 @@ for (tp in tps){
                                   aes_string(x = "cohort_event", y = tp)) +
       geom_boxplot(aes(colour = cohort_event), width = 0.6, lwd = 1, outlier.shape = NA) + 
       stat_boxplot(geom = "errorbar", aes(colour = cohort_event), width = 0.45, lwd = 1) +
-      geom_jitter(#data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"), 
+      geom_jitter(data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"), 
                   mapping = aes(colour = cohort_event), width = 0.1, 
                   size = 1.4, alpha = 0.2, show.legend = FALSE) +
       theme_pubr(legend = "none") + 
@@ -215,7 +215,7 @@ for (tp in tps){
     boxplots <-  ggplot(subset(subdat, assay == assays[aa] & Trt == "Vaccine"), aes_string(x = "cohort_event", y = tp)) +
       geom_boxplot(aes(colour = cohort_event), width = 0.6, lwd = 1) + 
       stat_boxplot(geom = "errorbar", aes(colour = cohort_event), width = 0.45, lwd = 1, outlier.shape = NA) +
-      geom_jitter(#data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"),
+      geom_jitter(data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"),
                   mapping = aes(colour = cohort_event), width = 0.1, 
                   size = 1.4, alpha = 0.2, show.legend = FALSE) +
       theme_pubr() + 
