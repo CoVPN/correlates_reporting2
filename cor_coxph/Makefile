@@ -16,9 +16,11 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janss
 	Rscript code/cor_coxph.R D29start1
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_EUA janssen_na_EUA janssen_la_EUA janssen_sa_EUA))
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
-	Rscript code/cor_coxph.R SevereD29IncludeNotMolecConfirmed
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmedstart1
-else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA janssen_pooled_partAsenior janssen_pooled_partAnonsenior janssen_na_partA janssen_na_partAsenior janssen_na_partAnonsenior janssen_la_partA janssen_la_partAsenior janssen_la_partAnonsenior janssen_sa_partA  janssen_sa_partAnonsenior)) # janssen_sa_partAsenior has too few cases
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA  janssen_la_partA ))
+	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
+	Rscript code/cor_coxph.R D29SevereIncludeNotMolecConfirmed
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partAsenior janssen_pooled_partAnonsenior janssen_na_partA janssen_na_partAsenior janssen_na_partAnonsenior janssen_la_partAsenior janssen_la_partAnonsenior janssen_sa_partA  janssen_sa_partAnonsenior)) # janssen_sa_partAsenior has too few cases
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2 hvtn705second hvtn705secondprimary))
 	Rscript code/cor_coxph.R D210
