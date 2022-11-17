@@ -360,6 +360,13 @@ if (do.fold.change==1){
 )
 
 
+##### change cohort_event value for PROFISCOV because both groups in PROFISCOV are post-peak case groups
+dat.longer.cor.subset$cohort_event = factor(with(dat.longer.cor.subset,
+                                                 case_when(as.character(cohort_event)=="Intercurrent Cases" ~ "Early Post-Peak Cases",
+                                                           as.character(cohort_event)=="Post-Peak Cases" ~ "Late Post-Peak Cases",
+                                                           TRUE ~ as.character(cohort_event))),
+                                            levels = c(if(length(timepoints)!=1)"Early Post-Peak Cases", "Late Post-Peak Cases", "Non-Cases"))
+
 # subsets for violin/line plots
 #### figure specific data prep
 # 1. define response rate:
