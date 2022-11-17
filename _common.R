@@ -465,6 +465,17 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
         lloqs["pseudoneutid50"]=75*0.0653  #4.8975
         uloqs["pseudoneutid50"]=12936*0.0653 # 844.7208
         pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
+        
+        # repeat for two synthetic markers that are adapted to SA and LA
+        llods["pseudoneutid50sa"]=NA  
+        lloqs["pseudoneutid50sa"]=75*0.0653  #4.8975
+        uloqs["pseudoneutid50sa"]=12936*0.0653 # 844.7208
+        pos.cutoffs["pseudoneutid50sa"]=lloqs["pseudoneutid50sa"]
+        
+        llods["pseudoneutid50la"]=NA  
+        lloqs["pseudoneutid50la"]=75*0.0653  #4.8975
+        uloqs["pseudoneutid50la"]=12936*0.0653 # 844.7208
+        pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
     }
     
 } else if(study_name=="PREVENT19") {
