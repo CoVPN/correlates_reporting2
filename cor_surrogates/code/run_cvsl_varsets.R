@@ -1,6 +1,6 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
-# Sys.setenv(TRIAL = "janssen_pooled_partA")
+# Sys.setenv(TRIAL = "janssen_la_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -34,7 +34,6 @@ if (job_id == 1){
     select_if(function(x) any(!is.na(x))) # Drop column if it has 0 variance, and returned all NAN's from scale function.
 }
 
-
 cvControlVar = list(V = V_outer, stratifyCV = TRUE)
 cvControl_quote = quote(list(V = V_outer, stratifyCV = TRUE))
 
@@ -49,15 +48,15 @@ familyVar = "binomial"
 methodVar = "method.CC_nloglik"
 scaleVar = "identity"
 ipc_est_typeVar = "ipw"
-cvsl_args <- data.frame(matrix(ncol = 2, nrow = 9)) %>%
+cvsl_args <- data.frame(matrix(ncol = 2, nrow = 10)) %>%
   rename(Argument = X1,
          Value = X2) %>%
   mutate(Argument = as.character(c("Cases/Total Subjects in vaccine group (%)", "family",
                                    "method", "scale", "V_outer", "cvControl (outer CV control)",
-                                   "V_inner", "innerCvControl", "Weighting")),
+                                   "V_inner", "innerCvControl", "Weighting", "Maximum variables in a model")),
          Value = as.character(c(paste0(nv, "/", length(Y), " (", round(nv*100/length(Y), 2), "%)"), familyVar,
                                 methodVar, scaleVar, V_outer, cvControl_quote,
-                                V_inner, innerCvControl_quote, ipc_est_typeVar)))
+                                V_inner, innerCvControl_quote, ipc_est_typeVar, maxVar)))
 
 if(V_inner == length(Y) - 1){
   cvsl_args <- cvsl_args %>% mutate(Value = ifelse(Argument == "V_inner", V_inner_quote, Value))
@@ -119,6 +118,6 @@ saveRDS(cvfits, file = here("output/", Sys.getenv("TRIAL"), paste0("/CVSLfits_va
 if (job_id == 1) {
   saveRDS(ph2_vacc_ptids, file = paste0("output/", Sys.getenv("TRIAL"), "/ph2_vacc_ptids.rds"))
   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
-       V_outer, varset_names, individualMarkers, file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
+       V_outer, varset_names, individualMarkers, SL_library, file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 }
 cat("\n Finished ", varset_names[job_id], "variable set \n") 

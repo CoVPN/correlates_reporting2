@@ -100,9 +100,36 @@ cvsl_args %>%
 
 \clearpage
 ```{r variable-sets, warning=FALSE, echo=FALSE}
+### create footnotes ###
+dropped.predVars.fewer.0s1s <- read.table(here("cor_surrogates", "output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv")) %>%
+  separate(V1, c("droppedVars"), sep = " ") %>%
+  .$droppedVars %>%
+  paste(collapse=", ") 
+
+if(dropped.predVars.fewer.0s1s == "No"){
+  footnote1 <- "All binary input variables had >3 cases in the variable = 1 or 0 subgroup."
+  eval.footnote1.table = FALSE
+}else{
+  footnote1 <- paste0("Binary input variable/s ", paste(unlist(strsplit(dropped.predVars.fewer.0s1s, ",")), collapse = ", "), " had <= 3 cases in the variable = 1 or 0 subgroup and dropped from analysis.")
+  eval.footnote1.table = TRUE
+}
+
+dropped.predVars.high.NAs <- read.table(here("cor_surrogates", "output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv")) %>%
+  separate(V1, c("droppedVars"), sep = " ") %>%
+  .$droppedVars %>%
+  paste(collapse=", ") 
+
+if(dropped.predVars.high.NAs == "No"){
+  footnote2 <- "No input variable had more than 5% missing values."
+  eval.footnote2.table = FALSE
+}else{
+  footnote2 <- paste0(dropped.predVars.high.NAs, " had more than 5% missing values and dropped from analysis.")
+  eval.footnote2.table = TRUE
+}
+
 caption <- "All variable sets (16 in total) with immunological markers for which Super Learner was run."
 
-read.csv(paste0("output/", Sys.getenv("TRIAL"), "/varsets.csv"),
+tab <- read.csv(here("cor_surrogates", "output", Sys.getenv("TRIAL"), "varsets.csv"),
          row.names = 1, header = TRUE) %>%
   rename(`Variable Set Name` = `Variable.Set.Name`,
          `Variables included in the set` = `Variables.included.in.the.set`) %>%
@@ -115,19 +142,28 @@ read.csv(paste0("output/", Sys.getenv("TRIAL"), "/varsets.csv"),
                 font_size = 9) %>%
   column_spec(2, width = "10cm") %>%
   row_spec(0,bold=TRUE) %>%
-  footnote(c("Baseline risk factors includes the following: ",
+  footnote(c(paste0("Baseline risk factors includes the following: ", paste0(briskfactors, collapse=", ")),
              "1. Risk score",
              "2. HighRiskInd: Heightened At-Risk binary indicator",
-             "3. LatinAmerica: Binary indicator for subjects from Latin America except Columbia",
-             "4. SouthAfrica: Binary indicator for subjects from South Africa",
-             "5. Columbia: Binary indicator for subjects from Columbia",
-             "6. EnrollPeriod2: Binary indicator for subjects enrolled in the 2nd biweekly enrollment period",
-             "7. EnrollPeriod3: Binary indicator for subjects enrolled in the 3rd biweekly enrollment period",
-             "8. EnrollPeriod4: Binary indicator for subjects enrolled in the 4th biweekly enrollment period",
-             "9. EnrollPeriod5: Binary indicator for subjects enrolled in the 5th biweekly enrollment period",
-             "10. EnrollPeriod6: Binary indicator for subjects enrolled in the 6th biweekly enrollment period",
-             "11. EnrollPeriod7: Binary indicator for subjects enrolled in the 7th biweekly enrollment period"),
+             "3. Columbia: Binary indicator for subjects from Columbia",
+             "4. EnrollPeriod2: Binary indicator for subjects enrolled in the 2nd biweekly enrollment period",
+             "5. EnrollPeriod3: Binary indicator for subjects enrolled in the 3rd biweekly enrollment period",
+             "6. EnrollPeriod4: Binary indicator for subjects enrolled in the 4th biweekly enrollment period",
+             "7. EnrollPeriod5: Binary indicator for subjects enrolled in the 5th biweekly enrollment period",
+             "8. EnrollPeriod6: Binary indicator for subjects enrolled in the 6th biweekly enrollment period",
+             " ",
+             "Note:",
+             footnote1, 
+             footnote2),
            threeparttable = TRUE)
+
+# tab <- tab %>% 
+#     footnote(c(footnote1,
+#                footnote2),
+#              threeparttable = TRUE)
+
+tab
+rm(tab, footnote1, footnote2)
 
 ```
 
@@ -611,40 +647,40 @@ knitr::include_graphics(paste0("figs/", paste0(Sys.getenv("TRIAL"), "/forest_vac
 ```
 
 
-\clearpage
-\begin{landscape}
+<!-- \clearpage -->
+<!-- \begin{landscape} -->
 
-```{r allvarsets-allFolds-discreteSLs, warning=FALSE, echo=FALSE, message=FALSE}
-caption <- "Predictors and their coefficients in the Discrete SL learner (top-performing learner) selected for each of the 5 folds across all 16 variable sets. Results shown are for the first random seed (out of 10 random seeds). Variable sets important for manuscript are highlighted in red."
+<!-- ```{r allvarsets-allFolds-discreteSLs, warning=FALSE, echo=FALSE, message=FALSE} -->
+<!-- caption <- "Predictors and their coefficients in the Discrete SL learner (top-performing learner) selected for each of the 5 folds across all 16 variable sets. Results shown are for the first random seed (out of 10 random seeds). Variable sets important for manuscript are highlighted in red." -->
 
-tab <- read.csv(paste0("output/", Sys.getenv("TRIAL"), "/all_varsets_all_folds_discreteSLmodels.csv"),
-         row.names = 1,
-         header = TRUE) %>%
-  select(varset, fold, Learner, everything()) %>%
-  mutate(Coefficient = format(round(Coefficient, 3), nsmall = 3),
-         Odds.Ratio = format(round(Odds.Ratio, 3), nsmall = 3),
-         #Gain = format(round(Gain, 3), nsmall = 3),
-         #Cover = format(round(Cover, 3), nsmall = 3),
-         #Frequency = format(round(Frequency, 3), nsmall = 3)
-         ) %>%
-  rename(`Variable Set` = varset,
-         Fold = fold) 
+<!-- tab <- read.csv(paste0("output/", Sys.getenv("TRIAL"), "/all_varsets_all_folds_discreteSLmodels.csv"), -->
+<!--          row.names = 1, -->
+<!--          header = TRUE) %>% -->
+<!--   select(varset, fold, Learner, everything()) %>% -->
+<!--   mutate(Coefficient = format(round(Coefficient, 3), nsmall = 3), -->
+<!--          Odds.Ratio = format(round(Odds.Ratio, 3), nsmall = 3), -->
+<!--          #Gain = format(round(Gain, 3), nsmall = 3), -->
+<!--          #Cover = format(round(Cover, 3), nsmall = 3), -->
+<!--          #Frequency = format(round(Frequency, 3), nsmall = 3) -->
+<!--          ) %>% -->
+<!--   rename(`Variable Set` = varset, -->
+<!--          Fold = fold)  -->
 
-tab %>%
-  kable(
-    booktabs = TRUE,
-    longtable = TRUE,
-    linesep = "",
-    caption = caption
-  ) %>%
-  kable_styling(latex_options = c("hold_position", "repeat_header"),
-                font_size = 6) %>%
-  row_spec(which(tab$`Variable Set` %in% c("1_baselineRiskFactors",
-                                       "2_bAbSpike_D57",
-                                       "27_pnabID80_D29_D57",
-                                       "34_allMarkers_combScores_D29_D57")), bold = T, color = "red")
+<!-- tab %>% -->
+<!--   kable( -->
+<!--     booktabs = TRUE, -->
+<!--     longtable = TRUE, -->
+<!--     linesep = "", -->
+<!--     caption = caption -->
+<!--   ) %>% -->
+<!--   kable_styling(latex_options = c("hold_position", "repeat_header"), -->
+<!--                 font_size = 6) %>% -->
+<!--   row_spec(which(tab$`Variable Set` %in% c("1_baselineRiskFactors", -->
+<!--                                        "2_bAbSpike_D57", -->
+<!--                                        "27_pnabID80_D29_D57", -->
+<!--                                        "34_allMarkers_combScores_D29_D57")), bold = T, color = "red") -->
 
-```
+<!-- ``` -->
 
-\end{landscape}
+<!-- \end{landscape} -->
 

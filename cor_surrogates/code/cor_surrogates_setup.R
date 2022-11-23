@@ -70,10 +70,60 @@ num_cores <- parallel::detectCores()
 
 # Read in data from ENSEMBLE: TRIAL = "janssen_pooled_partA"
 if (study_name %in% c("ENSEMBLE")) {
+  
+  # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
+  # imputed values for markers (for phase 2 data) from dat.wide.v
+  dat.ph1 <- dat.mock %>%
+    filter(Perprotocol == 1 & Trt == 1 & Bserostatus == 0) %>%
+    mutate(Day29pseudoneutid50minusbindRBD = Day29pseudoneutid50 - Day29bindRBD,
+           Day29ADCPminusbindRBD = Day29ADCP - Day29bindRBD,
+           Delta29overBbindSpike_2fold = ifelse(Day29bindSpike > (BbindSpike + log10(2)), 1, 0),
+           Delta29overBbindSpike_4fold = ifelse(Day29bindSpike > (BbindSpike + log10(4)), 1, 0),
+           Delta29overBbindRBD_2fold = ifelse(Day29bindRBD > (BbindRBD  + log10(2)), 1, 0),
+           Delta29overBbindRBD_4fold = ifelse(Day29bindRBD > (BbindRBD  + log10(4)), 1, 0),
+           Delta29overBpseudoneutid50_2fold = ifelse(Day29pseudoneutid50 > (Bpseudoneutid50 + log10(2)), 1, 0),
+           Delta29overBpseudoneutid50_4fold = ifelse(Day29pseudoneutid50 > (Bpseudoneutid50 + log10(4)), 1, 0),
+           Delta29overBADCP_2fold = ifelse(Day29ADCP > (BADCP + log10(2)), 1, 0),
+           Delta29overBADCP_4fold = ifelse(Day29ADCP > (BADCP + log10(4)), 1, 0))
+  
+  if(Sys.getenv("TRIAL") == "janssen_pooled_partA"){
+    # baseline risk factors
+    briskfactors <- c("risk_score", "HighRiskInd", "LatinAmerica", "SouthAfrica", "Columbia", 
+                      "EnrollPeriod2", "EnrollPeriod3", "EnrollPeriod4", 
+                      "EnrollPeriod5", "EnrollPeriod6", "EnrollPeriod7")
+    # briskfactors_correction <- "Y ~ x + X$risk_score + X$HighRiskInd + X$LatinAmerica + X$SouthAfrica + X$Columbia + X$EnrollPeriod2 + X$EnrollPeriod3 + X$EnrollPeriod4 + X$EnrollPeriod5 + X$EnrollPeriod6 + X$EnrollPeriod7"
+    
+    dat.ph1 <- dat.ph1 %>% 
+      mutate(
+        # Code Region and Columbia as binary indicator variables
+        LatinAmerica = ifelse(Region == 1 & Country != 4, 1, 0),
+        SouthAfrica = ifelse(Region == 2, 1, 0),
+        Columbia = ifelse(Country == 4, 1, 0),
+        # Code Enroll Period as binary indicator variables
+        EnrollPeriod2 = ifelse(BinnedEnrollmentBiweekly == 1, 1, 0),
+        EnrollPeriod3 = ifelse(BinnedEnrollmentBiweekly == 2, 1, 0),
+        EnrollPeriod4 = ifelse(BinnedEnrollmentBiweekly == 3, 1, 0),
+        EnrollPeriod5 = ifelse(BinnedEnrollmentBiweekly == 4, 1, 0),
+        EnrollPeriod6 = ifelse(BinnedEnrollmentBiweekly == 5, 1, 0),
+        EnrollPeriod7 = ifelse(BinnedEnrollmentBiweekly == 6, 1, 0))
+    }else if(Sys.getenv("TRIAL") == "janssen_la_partA"){
+      # baseline risk factors
+      briskfactors <- c("risk_score", "HighRiskInd", "Columbia", 
+                        "EnrollPeriod2", "EnrollPeriod3", "EnrollPeriod4", 
+                        "EnrollPeriod5", "EnrollPeriod6", "EnrollPeriod7")
 
-  # baseline risk factors
-  briskfactors <- c("risk_score", "HighRiskInd", "LatinAmerica", "SouthAfrica")
-  briskfactors_correction <- "Y ~ x + X$risk_score + X$HighRiskInd + X$LatinAmerica + X$SouthAfrica"
+      dat.ph1 <- dat.ph1 %>% 
+        mutate(
+          # Code Columbia as binary indicator variables
+          Columbia = ifelse(Country == 4, 1, 0),
+          # Code Enroll Period as binary indicator variables
+          EnrollPeriod2 = ifelse(BinnedEnrollmentBiweekly == 1, 1, 0),
+          EnrollPeriod3 = ifelse(BinnedEnrollmentBiweekly == 2, 1, 0),
+          EnrollPeriod4 = ifelse(BinnedEnrollmentBiweekly == 3, 1, 0),
+          EnrollPeriod5 = ifelse(BinnedEnrollmentBiweekly == 4, 1, 0),
+          EnrollPeriod6 = ifelse(BinnedEnrollmentBiweekly == 5, 1, 0),
+          EnrollPeriod7 = ifelse(BinnedEnrollmentBiweekly == 6, 1, 0))
+    }
   
   individualMarkers <- c("Day29bindSpike",
                          "Day29bindRBD",
@@ -99,24 +149,8 @@ if (study_name %in% c("ENSEMBLE")) {
   wt <- "wt.D29"
   ptidvar <- "Ptid"
   
-  # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
-  # imputed values for markers (for phase 2 data) from dat.wide.v
-  dat.ph1 <- dat.mock %>%
-    filter(Perprotocol == 1 & Trt == 1 & Bserostatus == 0) %>%
-    mutate(Day29pseudoneutid50minusbindRBD = Day29pseudoneutid50 - Day29bindRBD,
-           Day29ADCPminusbindRBD = Day29ADCP - Day29bindRBD,
-           Delta29overBbindSpike_2fold = ifelse(Day29bindSpike > (BbindSpike + log10(2)), 1, 0),
-           Delta29overBbindSpike_4fold = ifelse(Day29bindSpike > (BbindSpike + log10(4)), 1, 0),
-           Delta29overBbindRBD_2fold = ifelse(Day29bindRBD > (BbindRBD  + log10(2)), 1, 0),
-           Delta29overBbindRBD_4fold = ifelse(Day29bindRBD > (BbindRBD  + log10(4)), 1, 0),
-           Delta29overBpseudoneutid50_2fold = ifelse(Day29pseudoneutid50 > (Bpseudoneutid50 + log10(2)), 1, 0),
-           Delta29overBpseudoneutid50_4fold = ifelse(Day29pseudoneutid50 > (Bpseudoneutid50 + log10(4)), 1, 0),
-           Delta29overBADCP_2fold = ifelse(Day29ADCP > (BADCP + log10(2)), 1, 0),
-           Delta29overBADCP_4fold = ifelse(Day29ADCP > (BADCP + log10(4)), 1, 0),
-           # Code Region as binary indicator variables
-           LatinAmerica = ifelse(Region == 1, 1, 0),
-           SouthAfrica = ifelse(Region == 2, 1, 0)) %>%
-    # Drop any observation with NA values in Ptid, Trt, briskfactors, endpoint and wt.D57
+  # Drop any observation with NA values in Ptid, Trt, briskfactors, endpoint and wt.D57
+  dat.ph1 <- dat.ph1 %>%
     drop_na(Ptid, Trt, all_of(briskfactors), all_of(endpoint), all_of(wt)) %>%
     arrange(desc(get(endpoint)))
   
@@ -255,19 +289,19 @@ if (study_name == "HVTN705") {
 # Limit total variables that will be included in models
 nv <- sum(dat.ph2_init %>% select(matches(endpoint)))
 
-# Remove any predictor variables that are indicator variables and have fewer than 10  0's or 1's
-dat.ph2_drop_rare <- drop_riskVars_with_fewer_0s_or_1s(dat.ph2_init, c(briskfactors, markerVars))
+# Remove any predictor variables that are indicator variables and have fewer than 10  0's or 1's (if study_name == "COVE")
+# Remove a variable if the number of cases in the variable = 1 subgroup is <= 3 or the number of cases in the variable = 0 subgroup is <= 3 (if study_name != "COVE")
+dat.ph2_drop_rare <- drop_predVars_with_fewer_0s_or_1s(dat.ph2_init, c(briskfactors, markerVars))
 
 # Update predictor variables
-# pred_vars <- dat.ph2 %>%
-#   select(-all_of(ptidvar), -Trt, -all_of(endpoint), -all_of(wt)) %>%
-#   colnames()
+pred_vars <- dat.ph2_drop_rare %>%
+  select(-all_of(ptidvar), -Trt, -all_of(endpoint), -all_of(wt)) %>%
+  colnames()
 
-# Remove any baseline risk factors with more than 5% missing values. Impute the missing
-# values for other risk variables using mice package!
-dat.ph2 <- drop_riskVars_with_high_total_missing_values(dat.ph2_drop_rare, briskfactors)
+# Remove any baseline risk factors with more than 5% missing values. 
+dat.ph2 <- drop_predVars_with_high_total_missing_values(dat.ph2_drop_rare, pred_vars)
 
-# Update risk_vars
+# Update pred_vars
 pred_vars <- dat.ph2 %>%
   select(-all_of(ptidvar), -Trt, -all_of(endpoint), -all_of(wt)) %>%
   colnames()
@@ -275,6 +309,10 @@ pred_vars <- dat.ph2 %>%
 # Save ptids to merge with predictions later
 ph2_vacc_ptids <- dat.ph2 %>%
   select(all_of(ptidvar), all_of(endpoint), all_of(wt))
+
+# Update briskfactors
+briskfactors <- briskfactors[briskfactors %in% pred_vars]
+briskfactors_correction <- paste0("Y ~ x + X$", paste0(briskfactors, collapse = " + X$"))
 
 # create "Z" matrix to use for (A)IPW efficient influence function computation
 Z_plus_weights <- dat.ph1 %>%
@@ -449,7 +487,7 @@ if (study_name %in% c("ENSEMBLE")) {
           select(Day29bindSpike, Day29bindRBD, Day29pseudoneutid50, Day29ADCP),
         "Day29"
       )
-    ) 
+    )  
   
   if (run_prod) {
     dat.ph2 <- dat.ph2 %>%
@@ -807,7 +845,7 @@ if (study_name %in% c("COVE", "MockCOVE")) {
 }
 
 # set up outer folds for cv variable importance; do stratified sampling
-V_outer <- 5
+V_outer <- 10
 if (sum(dat.ph2 %>% pull(endpoint)) <= 25) {
   V_inner <- length(Y) - 1
   maxVar <- 5
@@ -827,3 +865,4 @@ if (study_name == "HVTN705"){
   V_inner <- length(Y) - 1
   maxVar <- floor(nv/6)
 }
+

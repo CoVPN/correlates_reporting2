@@ -14,10 +14,15 @@ figs/janssen_pooled_partA/*.png
 output/janssen_pooled_partA/*.csv
 output/janssen_pooled_partA/*.rda
 output/janssen_pooled_partA/*.rds
+figs/janssen_la_partA/*.png
+output/janssen_la_partA/*.csv
+output/janssen_la_partA/*.rda
+output/janssen_la_partA/*.rds
 output/*.csv
 output/*.rda
 output/*.rds
 output/*.*
 report.pdf
+*.pdf
 slurm*.out
 core

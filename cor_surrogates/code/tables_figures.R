@@ -1,6 +1,6 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
-# Sys.setenv(TRIAL = "janssen_pooled_partA")
+# Sys.setenv(TRIAL = "janssen_la_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -12,7 +12,7 @@ source(here::here("..", "_common.R"))
 #-----------------------------------------------
 ## ----load-all-SLobjects, message=FALSE, error=FALSE, warning=FALSE----------------------------------------------------------------------------------------------------
 
-library("cvAUC")
+
 library("conflicted")
 library("tidyr")
 library("purrr")
@@ -21,6 +21,7 @@ library("cowplot")
 library("ggplot2")
 library("vimp")
 library("kyotil")
+library("cvAUC")
 library(gridExtra)
 library(forcats)
 library(cowplot)
@@ -42,7 +43,7 @@ all_estimates = as.data.frame(do.call("rbind", pooled_ests_lst$listdat))
 
 # add on the variable set name
 vim_estimates <- all_estimates %>%
-    mutate(variable_set = rep(varset_names[-1], each = 2), .before = "s")
+    mutate(variable_set = rep(varset_names, each = 2), .before = "s")
 
 # save the output
 saveRDS(vim_estimates, file = paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.rds"))
@@ -59,7 +60,18 @@ if (study_name == "HVTN705") {
   vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) %>%
     mutate(group = ifelse(variable_set %in% c("3_M7Tcells", "36_M7_2_3_4_5_12_13"), TRUE, group))
 }
+if (study_name == "ENSEMBLE") {
+  cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29.rds"))
+  vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
+}
 ph2_vacc_ptids <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "ph2_vacc_ptids.rds"))
+
+# Select the random seed from which to display results
+if(study_name %in% c("COVE", "MockCOVE", "HVTN705")){
+  rseed = 1
+} else if(study_name %in% c("ENSEMBLE")){
+  rseed = 2
+}
 
 # Create tables ------------------------------------------------------------------------
 # Table of learner/screen combinations
@@ -280,14 +292,14 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
 
   # Get cvsl fit and extract cv predictions
   if(study_name %in% c("COVE", "MockCOVE")){
-    cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
+    cvfit <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
   } else if(study_name == "HVTN705"){
     cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
   } else if(study_name == "ENSEMBLE"){
     cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
   }
 
-  pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2, markerDAT = NULL)
+  pred <- get_cv_predictions(cv_fit = cvfit[[rseed]], cvaucDAT = top2, markerDAT = NULL)
   # #Take average of predictions from the 10 random seeds
   # pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2) %>% rename(pred1 = pred) %>%
   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[2]], cvaucDAT = top2) %>% select(pred) %>% rename(pred2 = pred))  %>%
@@ -407,14 +419,14 @@ if(!study_name %in% c("HVTN705")){
     # Get cvsl fit and extract cv predictions
     if(Sys.getenv("TRIAL") == "moderna_real"){
       cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
-    } else if(Sys.getenv("TRIAL") == "janssen_pooled_partA"){
+    } else if(Sys.getenv("TRIAL") %in% c("janssen_pooled_partA", "janssen_la_partA")){
       cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
     }
     
-    # For 1st random seed, get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds
-    for (j in seq_along(cvfits[[1]]$whichDiscreteSL)) {
+    # For selected random seed (rseed variable), get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds
+    for (j in seq_along(cvfits[[rseed]]$whichDiscreteSL)) {
       print(j)
-      if(cvfits[[1]]$whichDiscreteSL[[j]] %in% c("SL.glm_screen_univariate_logistic_pval", 
+      if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glm_screen_univariate_logistic_pval", 
                                                  "SL.glm.interaction_screen_highcor_random",
                                                  "SL.glm_screen_all",
                                                  "SL.glm_screen_glmnet",
@@ -429,48 +441,48 @@ if(!study_name %in% c("HVTN705")){
                                                  "SL.bayesglm_screen_univariate_logistic_pval",
                                                  "SL.bayesglm_screen_highcor_random")) {
         
-        model <- cvfits[[1]]$AllSL[[j]][["fitLibrary"]][[cvfits[[1]]$whichDiscreteSL[[j]]]]$object$coefficients %>%
+        model <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$coefficients %>%
           as.data.frame() %>%
           tibble::rownames_to_column(var = "Predictors") %>%
           rename(`Coefficient` = ".") %>%
           mutate(
             `Odds Ratio` = exp(`Coefficient`),
-            Learner = cvfits[[1]]$whichDiscreteSL[[j]],
+            Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
             fold = j)
       }
       
-      if (cvfits[[1]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_all", "SL.glmnet.1_screen_all")) {
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_all", "SL.glmnet.1_screen_all")) {
         
-        model <- coef(cvfits[[1]]$AllSL[[j]][["fitLibrary"]][[cvfits[[1]]$whichDiscreteSL[[j]]]]$object, s = "lambda.min") %>%
+        model <- coef(cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object, s = "lambda.min") %>%
           as.matrix() %>%
           as.data.frame() %>%
           tibble::rownames_to_column(var = "Predictors") %>%
           rename(`Coefficient` = "s1") %>%
           mutate(`Odds Ratio` = exp(`Coefficient`),
-                 Learner = cvfits[[1]]$whichDiscreteSL[[j]], 
+                 Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
                  fold = j)
       }
       
-      if (cvfits[[1]]$whichDiscreteSL[[j]] %in% c("SL.xgboost.2.no_screen_all",
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.xgboost.2.no_screen_all",
                                                   "SL.xgboost.4.no_screen_all",
                                                   "SL.xgboost.2.yes_screen_all",
                                                   "SL.xgboost.4.yes_screen_all")) {
-        model <- xgboost::xgb.importance(model = cvfits[[1]]$AllSL[[j]][["fitLibrary"]][[cvfits[[1]]$whichDiscreteSL[[j]]]]$object) %>%
+        model <- xgboost::xgb.importance(model = cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object) %>%
           as.data.frame() %>%
-          mutate(Learner = cvfits[[1]]$whichDiscreteSL[[j]], 
+          mutate(Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
                  fold = j)
       }
       
-      if (cvfits[[1]]$whichDiscreteSL[[j]] %in% c("SL.ranger.yes_screen_all", "SL.ranger.no_screen_all")) {
-        model <- cvfits[[1]]$AllSL[[j]][["fitLibrary"]][[cvfits[[1]]$whichDiscreteSL[[j]]]]$object$variable.importance %>%
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.ranger.yes_screen_all", "SL.ranger.no_screen_all")) {
+        model <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$variable.importance %>%
           as.data.frame() %>%
           rename(Importance = ".") %>%
           tibble::rownames_to_column(var = "Predictors") %>%
-          mutate(Learner = cvfits[[1]]$whichDiscreteSL[[j]], 
+          mutate(Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
                  fold = j)
       }
       
-      if (cvfits[[1]]$whichDiscreteSL[[j]] == "SL.mean_screen_all"){
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] == "SL.mean_screen_all"){
         model <- data.frame(Learner="SL.mean_screen_all", 
                             fold = j) 
       }
@@ -542,7 +554,7 @@ group_vim_forest_plot <- est_group_vims %>%
   ggplot(aes(x = est, y = plot_name)) +
   geom_point(color = "blue") +
   geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
-  geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims)), label = text_ci), hjust = "left") +
+  geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims)-1), label = text_ci), hjust = "left") +
   ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
   xlab("Estimated Difference in CV-AUC [95% CI]") +
   ylab("Variable Set Name") +
