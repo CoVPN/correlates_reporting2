@@ -82,10 +82,6 @@ janssen_trial: &janssen_trial
 
 janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
   <<: *janssen_trial
-  assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
-  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, Phagocytic Score]
-  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Phagocytic Score]
-  llox_label: [LOD, LOD, LLOQ, LLOQ]
   primary_assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
   study_name: ENSEMBLE
   num_boot_replicates: 1000
@@ -96,9 +92,13 @@ janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
 
 janssen_pooled_partA: &janssen_pooled_partA
   <<: *janssen_trial_partA
-  #data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
-  data_cleaned: ../../data/janssen/janssen_pooled_partA_data_processed_with_riskscore.csv
-  covariates_riskscore: ~.+ risk_score
+  assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, Phagocytic Score]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Phagocytic Score]
+  llox_label: [LOD, LOD, LLOQ, LLOQ]
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
+  #data_cleaned: ../../data/janssen/janssen_pooled_partA_data_processed_with_riskscore.csv
+  covariates_riskscore: ~.+ risk_score + as.factor(Region)
 
 janssen_pooled_partAsenior: &janssen_pooled_partAsenior
   inherits: janssen_pooled_partA
@@ -110,6 +110,10 @@ janssen_pooled_partAnonsenior: &janssen_pooled_partAnonsenior
 
 janssen_na_partA: &janssen_na_partA
   <<: *janssen_trial_partA
+  assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, Phagocytic Score]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Phagocytic Score]
+  llox_label: [LOD, LOD, LLOQ, LLOQ]
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
 
@@ -123,8 +127,12 @@ janssen_na_partAnonsenior: &janssen_na_partAnonsenior
 
 janssen_la_partA: &janssen_la_partA
   <<: *janssen_trial_partA
-  #data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partA_data_processed_with_riskscore.csv
-  data_cleaned: ../../data/janssen/janssen_la_partA_data_processed_with_riskscore.csv
+  assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid50la, ADCP]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer (LA), Phagocytic Score]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 LA (IU50/ml), Phagocytic Score]
+  llox_label: [LOD, LOD, LLOQ, LLOQ, LLOQ]
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partA_data_processed_with_riskscore.csv
+  #data_cleaned: ../../data/janssen/janssen_la_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
 
 janssen_la_partAsenior: &janssen_la_partAsenior
@@ -137,6 +145,10 @@ janssen_la_partAnonsenior: &janssen_la_partAnonsenior
 
 janssen_sa_partA: &janssen_sa_partA
   <<: *janssen_trial_partA
+  assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid50sa, ADCP]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer (SA), Phagocytic Score]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (SA) (IU50/ml), Phagocytic Score]
+  llox_label: [LOD, LOD, LLOQ, LLOQ, LLOQ]
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
 

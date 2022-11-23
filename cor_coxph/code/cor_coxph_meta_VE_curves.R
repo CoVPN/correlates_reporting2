@@ -153,7 +153,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
                 axis(side=2,at=yat,labels=(yat*100)%.%"%")            
             } else {
                 yat=c(seq(0,.90,by=.1),.95)
-                axis(side=2,at=transf(yat),labels=(yat*100)%.%"%")            
+                if (file.name=="nejm") yat=c(yat, .975)
+                axis(side=2,at=transf(yat),labels=if(file.name=="nejm") yat*100 else (yat*100)%.%"%" )
             }
             # save image data per Nat Microbiology requirements
             img.dat=cbind(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]))

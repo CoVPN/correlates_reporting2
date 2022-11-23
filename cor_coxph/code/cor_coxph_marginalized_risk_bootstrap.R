@@ -25,6 +25,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
     # many variables are not passed but defined in the scope of marginalized.risk.svycoxph.boot
     fc.1=function(data.ph2, data, categorical.s, n.dean=FALSE){
         if (comp.risk) {
+        # competing risk implementation
             newdata=data.ph2
             sapply(ss, function(x) {
                 newdata[[marker.name]]=x
@@ -33,6 +34,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
             })
         
         } else {        
+        # non-competing risk implementation
             # inline design object b/c it may also throw an error
             fit.risk.1=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)))        
             if ( !inherits(fit.risk.1, "try-error" )) {
@@ -52,7 +54,12 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
                 ifelse (inherits(risks, "try-error"), NA, weighted.mean(risks, newdata$wt))
             })
         } else {
-            marginalized.risk.threshold (form.0, marker.name, data=data.ph2, weights=data.ph2$wt, t=t, ss=ss)
+            out = try(marginalized.risk.threshold (form.0, marker.name, data=data.ph2, weights=data.ph2$wt, t=t, ss=ss))
+            if ( !inherits(out, "try-error" )) {
+                out
+            } else {
+                NA # no need to rep, b/c results will be a list when called in bootstrap. for the point est, it is unlikely to be NA
+            }
         }
     }    
     
