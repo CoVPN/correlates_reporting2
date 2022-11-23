@@ -845,7 +845,12 @@ if (study_name %in% c("COVE", "MockCOVE")) {
 }
 
 # set up outer folds for cv variable importance; do stratified sampling
-V_outer <- 10
+if(Sys.getenv("TRIAL") %in%  c("janssen_pooled_partA", "janssen_la_partA")){
+  V_outer <- 10
+}else{
+  V_outer <- 5
+}
+
 if (sum(dat.ph2 %>% pull(endpoint)) <= 25) {
   V_inner <- length(Y) - 1
   maxVar <- 5
