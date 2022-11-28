@@ -9,6 +9,11 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janss
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_real janssen_pooled_realADCP janssen_na_real janssen_na_realADCP janssen_la_real janssen_la_realADCP janssen_sa_real janssen_sa_realADCP))
 	Rscript code/mediation.R D29IncludeNotMolecConfirmed
 	Rscript code/mediation.R D29IncludeNotMolecConfirmedstart1
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA  janssen_la_partA ))
+	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
+	Rscript code/cor_coxph.R D29SevereIncludeNotMolecConfirmed
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partAsenior janssen_pooled_partAnonsenior janssen_na_partA janssen_na_partAsenior janssen_na_partAnonsenior janssen_la_partAsenior janssen_la_partAnonsenior janssen_sa_partA  janssen_sa_partAnonsenior)) # janssen_sa_partAsenior has too few cases
+	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2 hvtn705second hvtn705secondprimary))
 	Rscript code/mediation.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))

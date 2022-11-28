@@ -17,11 +17,16 @@ print(
 
 impute_placebo_to_lod_over_2 <- FALSE
 if(study_name == "ENSEMBLE"){
-  covariates <- c("risk_score", "Region1", "Region2")
-  data$Region1 <- as.numeric(data$Region == 1)
-  data$Region2 <- as.numeric(data$Region == 2)
+  if(length(unique(data$Region)) == 1){
+    covariates <- "risk_score"
+  }else{
+    covariates <- c("risk_score", "Region1", "Region2")
+    data$Region1 <- as.numeric(data$Region == 1)
+    data$Region2 <- as.numeric(data$Region == 2)
+  }
   run_survtmle <- TRUE
   cut_size <- 6
+  impute_placebo_to_lod_over_2 <- TRUE
 }else if(study_name == "COVE"){
   covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
   run_survtmle <- FALSE
@@ -75,6 +80,7 @@ variables_to_keep <- c(
 )
 
 data_keep <- data[!is.na(data[[config.cor$wt]]), variables_to_keep]
+row.names(data_keep) <- seq_len(dim(data_keep)[1])
 
 # remove events after tf_Day from estimation
 data_keep$EventTimePrimary[data_keep$EventTimePrimary >= tf_Day] <- tf_Day
@@ -127,6 +133,24 @@ sl_library <- list(
   c("SL.earth", "screen_all")
 )
 
+
+# results without marker used to compute PM
+# does not need to be updated with each marker
+if(run_survtmle){
+    fit1 <- survtmle::hazard_tmle(
+      ftime = data_keep$EventTimePrimary,
+      ftype = data_keep$EventIndPrimary,
+      trt = data_keep$Trt,
+      adjustVars = data_keep[ , covariates],
+      t0 = tf_Day,
+      SL.ctime = sl_library,
+      SL.ftime = sl_library, 
+      verbose = TRUE,
+      returnModels = TRUE
+    )
+    print(fit1)
+}
+
 quant_result <- day_col <- assay_col <- NULL
 for (marker in include_assays) {
   print(marker)
@@ -155,28 +179,18 @@ for (marker in include_assays) {
       SL_QY_WA = sl_library
   	)
   }else{
-    fit1 <- survtmle::hazard_tmle(
-      ftime = data_keep$EventTimePrimary,
-      ftype = data_keep$EventIndPrimary,
-      trt = data_keep$Trt,
-      adjustVars = data_keep[ , covariates],
-      t0 = tf_Day,
-      SL.ctime = sl_library,
-      SL.ftime = sl_library
-    )
-
     fit2 <- survtmle::hazard_tmle(
       ftime = data_keep$EventTimePrimary,
       ftype = data_keep$EventIndPrimary,
       trt = data_keep$Trt,
-      adjustVars = data_keep[ , covariates],
+      adjustVars = data_keep[ , covariates, drop = FALSE],
       mediator = data_keep[ , marker, drop = FALSE],
       mediatorTrtVal = 0,
       trtOfInterest = 1,
       mediatorSampProb = 1 / data_keep$wt,
       mediatorInCensMod = FALSE,
       t0 = tf_Day,
-      SL.ctime = sl_library,
+      SL.ctime = fit1$ctimeMod,
       SL.ftime = sl_library,
       SL.mediator = sl_library,
       SL.trtMediator = sl_library,
