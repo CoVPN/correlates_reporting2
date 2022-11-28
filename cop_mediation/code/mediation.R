@@ -126,13 +126,14 @@ saveRDS(
 sl_library <- list(
   c("SL.mean", "screen_all"),
   c("SL.glm", "screen_all"),
-  c("SL.glmnet", "screen_all"), # no need for screens
-  c("SL.xgboost", "screen_all"), # no need for screens
+  #c("SL.glmnet", "screen_all"), # no need for screens
+  #c("SL.xgboost", "screen_all"), # no need for screens
   c("SL.ranger", "screen_all"),   # faster than cforest?
   c("SL.gam", "screen_all"),
   c("SL.earth", "screen_all")
 )
 
+sl_library <- "SL.mean"
 
 # results without marker used to compute PM
 # does not need to be updated with each marker
@@ -151,8 +152,14 @@ if(run_survtmle){
     print(fit1)
 }
 
+if(!is.null(Args[2])){
+  assay_for_this_run <- Args[2]
+}else{
+  assay_for_this_run <- include_assays
+}
+
 quant_result <- day_col <- assay_col <- NULL
-for (marker in include_assays) {
+for (marker in include_assays[include_assays %in% assay_for_this_run]) {
   print(marker)
 
   if(!run_survtmle){
@@ -194,9 +201,12 @@ for (marker in include_assays) {
       SL.ftime = sl_library,
       SL.mediator = sl_library,
       SL.trtMediator = sl_library,
-      SL.eif = sl_library
+      SL.eif = sl_library,
+      verbose = TRUE
     )
+    print(fit2)
     fit <- compute_mediation_params(fit1, fit2)
+    print(fit)
   }
 	this_row <- format_row(fit)
 	quant_result <- rbind(quant_result, this_row)
@@ -213,7 +223,9 @@ saveRDS(
   file = here::here("output", 
     paste0("full_result_", 
            attr(config,"config"), "_",
-           COR, ".rds")
+           COR, "_", 
+           paste0(include_assays[include_assays %in% assay_for_this_run], collapse = "_"),
+           ".rds")
   )
 )
 
