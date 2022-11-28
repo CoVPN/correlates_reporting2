@@ -419,7 +419,16 @@ hvtn705second: &hvtn705second
          ICS4AnyEnvIFNg_OR_IL2,ICS8AnyEnvIFNg_OR_IL2,
          IgG3AE.A244.V1V2.Tags_293F40delta,IgG3C.1086C.V1.V2.Tags40delta,IgG3gp70.001428.2.42.V1V240delta,IgG3gp70.1012.11.TC21.3257.V1V240delta,IgG3gp70.1394C9G1.V1V240delta,IgG3gp70.BF1266.431a.V1V240delta,IgG3gp70.Ce1086.B2.V1V240delta,IgG3gp70.B.CaseA.V1.V240delta,
          IgGAE.A244.V1V2.Tags_293F50delta,IgGC.1086C.V1.V2.Tags50delta,IgGgp70_001428.2.42.V1V250delta,IgGgp70_1012.11.TC21.3257.V1V250delta,IgGgp70_1394C9G1.V1V250delta,IgGgp70_9004SS.A3.4.V1V250delta,IgGgp70_BF1266.431a.V1V250delta,IgGgp70_Ce1086.B2.V1V250delta,IgGgp70.B.CaseA.V1.V250delta,
-         ICS4JMos1gp120IFNg_OR_IL2, ICS4JMos1gp41IFNg_OR_IL2, ICS4JMos2GagIFNg_OR_IL2, ICS4JMos2RNAseIntIFNg_OR_IL2, ICS4JMos2Sgp120IFNg_OR_IL2, ICS4JMos2Sgp41IFNg_OR_IL2, ICS8JMos1gp120IFNg_OR_IL2, ICS8JMos1gp41IFNg_OR_IL2, ICS8JMos2GagIFNg_OR_IL2, ICS8JMos2RNAseIntIFNg_OR_IL2, ICS8JMos2Sgp120IFNg_OR_IL2, ICS8JMos2Sgp41IFNg_OR_IL2         
+         ICS4JMos1gp120IFNg_OR_IL2, ICS4JMos1gp41IFNg_OR_IL2, ICS4JMos2GagIFNg_OR_IL2, ICS4JMos2RNAseIntIFNg_OR_IL2, ICS4JMos2Sgp120IFNg_OR_IL2, ICS4JMos2Sgp41IFNg_OR_IL2, ICS8JMos1gp120IFNg_OR_IL2, ICS8JMos1gp41IFNg_OR_IL2, ICS8JMos2GagIFNg_OR_IL2, ICS8JMos2RNAseIntIFNg_OR_IL2, ICS8JMos2Sgp120IFNg_OR_IL2, ICS8JMos2Sgp41IFNg_OR_IL2,
+         IgG340mdw_V2i, 
+         IgG340mdw_V2p, 
+         IgG31012.11.TC21D11gp120.avi40delta, 
+         IgG31086C.D7gp120.avi293F40delta, 
+         IgG31394C9.G1.D11gp120.avi40delta,
+         IgG31428.D11gp120.avi293F40delta,
+         IgG3Con.6.gp120B40delta,
+         ADCPgp701428Alter
+         #, IgG3.gp70V1V2.CaseA2Alter
   ]
   assay_labels: [
         IgG to VT-C (EU/ml),
@@ -472,7 +481,16 @@ hvtn705second: &hvtn705second
         Pct CD8+ T-cells expressing IFN-g/IL-2 JMos2 Gag,
         Pct CD8+ T-cells expressing IFN-g/IL-2 JMos2 RNAseInt,
         Pct CD8+ T-cells expressing IFN-g/IL-2 JMos2s gp120,
-        Pct CD8+ T-cells expressing IFN-g/IL-2 JMos2s gp41
+        Pct CD8+ T-cells expressing IFN-g/IL-2 JMos2s gp41,
+         IgG3 V2i breadth score, 
+         IgG3 V2p breadth score, 
+         IgG3 Net MFI to gp120 1012.11.TC21D11, 
+         IgG3 Net MFI to gp120 1086C.D7, 
+         IgG3 Net MFI to gp120 1394C9.G1.D11,
+         IgG3 Net MFI to gp120 1428.D11,
+         IgG3 Net MFI to gp120 Con6,
+         ADCP gp70-1428 V1V2 Alter
+         #, IgG3 Net MFI to gp70-CaseA2 V1V2 Alter
   ]
   assay_labels_short: [
         IgG to VT-C,
@@ -525,33 +543,26 @@ hvtn705second: &hvtn705second
         CD8+ T-cells IFN-g/IL-2 JMos2 Gag,
         CD8+ T-cells IFN-g/IL-2 JMos2 RNAseInt,
         CD8+ T-cells IFN-g/IL-2 JMos2s gp120,
-        CD8+ T-cells IFN-g/IL-2 JMos2s gp41
+        CD8+ T-cells IFN-g/IL-2 JMos2s gp41,
+        IgG3 V2i breadth score, 
+        IgG3 V2p breadth score, 
+        IgG3 gp120 1012.11.TC21D11, 
+        IgG3 gp120 1086C.D7, 
+        IgG3 gp120 1394C9.G1.D11,
+        IgG3 gp120 1428.D11,
+        IgG3 gp120 Con6,
+        ADCP gp70-1428 V1V2 Alter
+        #, IgG3 gp70-CaseA2 V1V2 Alter
   ]
-  llox_label: [LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ]
-  lloxs:      [80,  100,   NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,   NA,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ]
-  uloqs: [1884160,1869824,NA,NA,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA]
+  llox_label: [LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ]#,LLOQ]
+  lloxs:      [80,  100,   NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,   NA,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA  ,NA,NA,1,1,1,1,1,NA]#,1]
+  uloqs: [1884160,1869824,NA,NA,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,NA]#,22000]
   primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm]
   multivariate_assays: [
             ELCZ+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm
             #ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm,
-            #IgG340mdw_V1V2+ADCPgp140C97ZAfib+IgG340mdw_V1V2*ADCPgp140C97ZAfib,
             #ELCZ+ADCPgp140C97ZAfib+IgG50mdw_V1V2+IgG340mdw_gp120_gp140_vm,
-            #IgG340mdw_V1V2+IgG50mdw_V1V2
-    
-            #IgG340mdw_V1V2+ICS4AnyEnvIFNg_OR_IL2     +IgG340mdw_V1V2*ICS4AnyEnvIFNg_OR_IL2,    
-            #IgG340mdw_V1V2+ICS4JMos1gp120IFNg_OR_IL2 +IgG340mdw_V1V2*ICS4JMos1gp120IFNg_OR_IL2,
-            #IgG340mdw_V1V2+ICS4JMos1gp41IFNg_OR_IL2  +IgG340mdw_V1V2*ICS4JMos1gp41IFNg_OR_IL2,
-            #IgG340mdw_V1V2+ICS4JMos2Sgp120IFNg_OR_IL2+IgG340mdw_V1V2*ICS4JMos2Sgp120IFNg_OR_IL2,
-            #IgG340mdw_V1V2+ICS4JMos2Sgp41IFNg_OR_IL2 +IgG340mdw_V1V2*ICS4JMos2Sgp41IFNg_OR_IL2,            
-            #IgG340mdw_V1V2+ICS4JMos2GagIFNg_OR_IL2      +IgG340mdw_V1V2*ICS4JMos2GagIFNg_OR_IL2,
-            #IgG340mdw_V1V2+ICS4JMos2RNAseIntIFNg_OR_IL2 +IgG340mdw_V1V2*ICS4JMos2RNAseIntIFNg_OR_IL2,    
-            #IgG3gp70.001428.2.42.V1V240delta+ICS4AnyEnvIFNg_OR_IL2     +IgG3gp70.001428.2.42.V1V240delta*ICS4AnyEnvIFNg_OR_IL2,            
-            #IgG3gp70.001428.2.42.V1V240delta+ICS4JMos1gp120IFNg_OR_IL2 +IgG3gp70.001428.2.42.V1V240delta*ICS4JMos1gp120IFNg_OR_IL2,
-            #IgG3gp70.001428.2.42.V1V240delta+ICS4JMos1gp41IFNg_OR_IL2  +IgG3gp70.001428.2.42.V1V240delta*ICS4JMos1gp41IFNg_OR_IL2,
-            #IgG3gp70.001428.2.42.V1V240delta+ICS4JMos2Sgp120IFNg_OR_IL2+IgG3gp70.001428.2.42.V1V240delta*ICS4JMos2Sgp120IFNg_OR_IL2,
-            #IgG3gp70.001428.2.42.V1V240delta+ICS4JMos2Sgp41IFNg_OR_IL2 +IgG3gp70.001428.2.42.V1V240delta*ICS4JMos2Sgp41IFNg_OR_IL2,    
-            #IgG3gp70.001428.2.42.V1V240delta+ICS4JMos2GagIFNg_OR_IL2+IgG3gp70.001428.2.42.V1V240delta*ICS4JMos2GagIFNg_OR_IL2,
-            #IgG3gp70.001428.2.42.V1V240delta+ICS4JMos2RNAseIntIFNg_OR_IL2 +IgG3gp70.001428.2.42.V1V240delta*ICS4JMos2RNAseIntIFNg_OR_IL2
+            #IgG340mdw_V1V2+IgG50mdw_V1V2    
   ]
   interaction: [
             IgG340mdw_V1V2*ICS4AnyEnvIFNg_OR_IL2,    
@@ -597,7 +608,7 @@ hvtn705second: &hvtn705second
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2GagIFNg_OR_IL2,
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2RNAseIntIFNg_OR_IL2
   ]
-  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_excludeELISpotmarkersaddICSmarkers.csv
+  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v7.csv
 
 
 
