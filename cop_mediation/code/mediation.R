@@ -133,7 +133,6 @@ sl_library <- list(
   c("SL.earth", "screen_all")
 )
 
-sl_library <- "SL.mean"
 
 # results without marker used to compute PM
 # does not need to be updated with each marker
