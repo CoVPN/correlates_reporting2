@@ -89,11 +89,12 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(),
             height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
             width = max(1.3 * length(assay_immuno), 5.5),
+            column_label_size = ifelse(max(str_length(assay_labels_short)) > 28, 5, 6.5),
             filename = paste0(
               save.results.to, "/pairs_", tp,
               "_Markers_", bstatus.labels.2[bserostatus + 1],
               c("_placebo_arm", "_vaccine_arm")[trt + 1], "_", ifelse(country=="Nvx_US", "US_only_",""),
-              study_name, ".png"
+              study_name, ".pdf"
             )
           )
         }
@@ -134,12 +135,13 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           ),
           column_labels = paste(gsub("ay ","", labels.time[times_selected]),
                                 "\n", labels.axis[, aa][1]),
-          column_label_size = ifelse(study_name=="VAT08m", 4.5, 6.5),
+          column_label_size = ifelse(study_name=="VAT08m", 4.5, 
+                                     ifelse(max(str_length(assay_labels_short)) > 28, 5, 6.5)),
           axis_label_size = ifelse(study_name=="VAT08m", 7, 9),
           filename = paste0(
             save.results.to, "/pairs_", aa, "_by_times_",
             bstatus.labels.2[bserostatus + 1], "_", c("placebo_", "vaccine_")[trt + 1], ifelse(country=="Nvx_US", "US_only_",""),
-            study_name, ".png"
+            study_name, ".pdf"
           )
         )
       }
@@ -167,7 +169,7 @@ for (tp in tps_no_B_and_delta_over_tinterm) { # "Day29", "Day57", "Day29overB", 
     axis_titles = labels.axis[tp, ] %>% unlist(),
     filename = paste0(
       save.results.to, "/Marker_Rcdf_", tp,
-      "_trt_both_bstatus_both_", study_name, ".png"
+      "_trt_both_bstatus_both_", study_name, ".pdf"
     )
   )
 }
@@ -183,13 +185,15 @@ dat.long.twophase.sample$assay_labels <-
          levels = assay_immuno,
          labels = labels.assays.short)
 print("RCDF 2:")
-# plot bAb and PsV assays separately
-for (bAb in c(0, 1)) {
+# plot bAb, PsV and ADCP assays separately
+for (Ab in c(1, 2, 3)) {
   
-  if (bAb == 1) {
-    rcdf_assays <- intersect(c("bindN", "bindSpike", "bindRBD"), assay_immuno) 
-  } else {
-    rcdf_assays <- assay_immuno[!assay_immuno %in% c("bindN", "bindSpike", "bindRBD")]
+  if (Ab == 1) {
+    rcdf_assays <- assay_immuno[grepl("bind", assay_immuno)]
+  } else if (Ab == 2) {
+    rcdf_assays <- assay_immuno[grepl("neut", assay_immuno)]
+  } else  {
+    rcdf_assays <- assay_immuno[grepl("ADCP", assay_immuno)]
   }
   
   if (length(rcdf_assays) > 0) {
@@ -210,8 +214,8 @@ for (bAb in c(0, 1)) {
                       1),
         plot_title = paste0(labels.time[tp], " Ab Markers"),
         filename = paste0(
-          save.results.to, "/Marker_Rcdf_", c("nAb", "bAb")[bAb + 1], "_", tp,
-          "_trt_vaccine_bstatus_both_", study_name, ".png"
+          save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
+          "_trt_vaccine_bstatus_both_", study_name, ".pdf"
         )
       )
     }
@@ -243,8 +247,8 @@ for (bAb in c(0, 1)) {
           plot_title = paste0(labels.time[tp], " Ab Markers"
           ),
           filename = paste0(
-            save.results.to, "/Marker_Rcdf_", c("nAb", "bAb")[bAb + 1], "_", tp,
-            "_trt_vaccine_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, ".png"
+            save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
+            "_trt_vaccine_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, ".pdf"
           )
         )
       }
@@ -287,7 +291,7 @@ for (bstatus in 1:2) {
       panel_titles = labels.title2[tp, ] %>% unlist(),
       filename = paste0(
         save.results.to, "/boxplots_", tp, "_x_trt_", bstatus.labels.2[bstatus],
-        "_", study_name, ".png"
+        "_", study_name, ".pdf"
       )
     )
   }
@@ -319,7 +323,7 @@ for (trt in 1:2) {
       filename = paste0(
         save.results.to, "/boxplots_", tp,
         "_x_bstatus_", c("placebo_arm_", "vaccine_arm_")[trt],
-        study_name, ".png"
+        study_name, ".pdf"
       )
     )
   }
@@ -345,9 +349,10 @@ spaghetti_ptid <- dat.twophase.sample[, c("Ptid", "Bserostatus", "Trt", var_name
   split(., .$BT) %>%
   lapply(function(xx) {
     if (xx$BT[1] %in% c("10", "00")) {
-      sample(xx$Ptid, 20)  ## sample 10 placebo recipients
+      sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 10 placebo recipients
+      # add ifelse(length(xx$Ptid)<20, F, T) because some subset has small sample e.g. janssen_sa_partA
     } else {
-      sample(xx$Ptid, 20)  ## sample 20 vaccine recipients
+      sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 20 vaccine recipients
     }
   }) %>% unlist %>% as.character
 
@@ -385,7 +390,7 @@ for (bstatus in 1:2) {
                               filename = paste0(
                                 save.results.to, "/spaghetti_plot_",
                                 bstatus.labels.2[bstatus], "_",
-                                study_name, ".png"
+                                study_name, ".pdf"
                               ))
 }
 
@@ -424,7 +429,7 @@ for (tp in tps_no_fold_change) {
           ) +
           theme_pubr() +
           theme(
-            plot.title = element_text(hjust = 0.5, size = 10),
+            plot.title = element_text(hjust = 0.5, size = ifelse(max(str_length(assays)) > 14, 9.5, 10)),
             panel.border = element_rect(fill = NA),
             panel.grid.minor.y = element_line(),
             panel.grid.major.y = element_line(),
@@ -443,7 +448,7 @@ for (tp in tps_no_fold_change) {
         filename = paste0(
           save.results.to, "/scatter_", tp, "_vs_age_",
           "trt_", trt.labels[trt], "_", bstatus.labels.2[bstatus],
-          "_", study_name, ".png"
+          "_", study_name, ".pdf"
         ), 
         plot = output_plot, 
         width = 9,

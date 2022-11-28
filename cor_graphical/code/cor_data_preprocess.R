@@ -73,7 +73,8 @@ if (study_name=="VAT08m" & grepl("omi", COR)){
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705" | study_name=="PREVENT19")  {
+if(#study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19"
+  length(timepoints)==1)  {
   
   #intcur2 <- paste0("Day 15-", 28+tpeaklag, " Cases")
 dat = dat %>%
@@ -199,9 +200,16 @@ dat.long$Dich_RaceEthnic = with(dat.long,
 
 # add label = LLoD / poscutoff, uloq values to show in the plot
 dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
+dat.long$LLoQ = with(dat.long, log10(lloqs[as.character(assay)]))
 dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
-dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
-dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
+
+if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE"){ # for ENSEMBLE, ID50 uses LLOQ, ADCP uses LLOD
+  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", ifelse(assay=="ADCP", "LoD", "LoQ"))) 
+  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, ifelse(assay=="ADCP", LLoD, LLoQ))) 
+} else {
+  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
+  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
+}
 dat.long$ULoQ = with(dat.long, log10(uloqs[as.character(assay)]))
 dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), "ULoQ", ""))
 dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), ULoQ, -99))
@@ -291,7 +299,7 @@ dat.long$minority_label <-
 
 # Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
 # since it should only happen for D57-related figures.
-if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="HVTN705" | study_name=="PREVENT19"){ # one timepoint study: ph2.tpeak
+if(length(timepoints)==1){ # one timepoint study: ph2.tpeak
   dat.long.cor.subset <- dat.long #%>%
     #dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 } else {# two timepoints study: ph2.tinterm
@@ -309,10 +317,10 @@ dat.longer.cor.subset <- dat.long.cor.subset %>%
 #    include only +++ at D57 for Post-Peak Cases
 #    non-cases is defined as +++ only for Moderna, but ++-/+++ at D29/57 for AZ and Sanofi
 #    for intercurrent cases at D57, Day 2-14 Cases & Day 15-35 Cases at D29, can't use ph2.D57/ph2.D29 because they are before D57/D29
-#if(!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19")) {
+if(length(timepoints)>1) {
 dat.longer.cor.subset <- dat.longer.cor.subset %>% 
   filter(!(time == paste0("Day", tpeak) & (!!as.name(paste0("ph2.D", tpeak)))==0))  # set "Day 57" in the ph2.D57 cohort  
-#}
+}
 
 if (study_name=="AZD1222") {
   # for studies like AZ, exclude non-cases with EarlyendpointD57==1 for Day 57 panel
@@ -351,6 +359,13 @@ if (do.fold.change==1){
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl("Day", time))
 )
 
+
+##### change cohort_event value for PROFISCOV because both groups in PROFISCOV are post-peak case groups
+dat.longer.cor.subset$cohort_event = factor(with(dat.longer.cor.subset,
+                                                 case_when(as.character(cohort_event)=="Intercurrent Cases" ~ "Early Post-Peak Cases",
+                                                           as.character(cohort_event)=="Post-Peak Cases" ~ "Late Post-Peak Cases",
+                                                           TRUE ~ as.character(cohort_event))),
+                                            levels = c(if(length(timepoints)!=1)"Early Post-Peak Cases", "Late Post-Peak Cases", "Non-Cases"))
 
 # subsets for violin/line plots
 #### figure specific data prep

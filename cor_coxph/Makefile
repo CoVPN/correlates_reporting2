@@ -14,9 +14,14 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janssen_la_mock janssen_sa_mock))
 	Rscript code/cor_coxph.R D29
 	Rscript code/cor_coxph.R D29start1
-else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_real janssen_pooled_realADCP janssen_na_real janssen_na_realADCP janssen_la_real janssen_la_realADCP janssen_sa_real janssen_sa_realADCP))
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_EUA janssen_na_EUA janssen_la_EUA janssen_sa_EUA))
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmedstart1
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA  janssen_la_partA ))
+	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
+	Rscript code/cor_coxph.R D29SevereIncludeNotMolecConfirmed
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partAsenior janssen_pooled_partAnonsenior janssen_na_partA janssen_na_partAsenior janssen_na_partAnonsenior janssen_la_partAsenior janssen_la_partAnonsenior janssen_sa_partA  janssen_sa_partAnonsenior)) # janssen_sa_partAsenior has too few cases
+	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2 hvtn705second hvtn705secondprimary))
 	Rscript code/cor_coxph.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
@@ -39,10 +44,10 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
 	Rscript code/cor_graphical_time_to_event.R D22D43
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D43
+	Rscript code/cor_coxph.R D43start48
 	Rscript code/cor_coxph.R D91
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov_lvmn))
 	Rscript code/cor_coxph.R D43
-	Rscript code/cor_coxph.R D91
 endif
 
 collate:

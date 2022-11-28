@@ -24,8 +24,9 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 # draw VE curves for several trials, the same marker
 # TRIALS is a subset of all.trials
 # a is an assay
-draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
-#a="bindSpike"; TRIALS=c("moderna_real", "janssen_pooled_real", "prevent19"); file.name=1; include.az=T; log=""
+draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist=T, show.cb=T) {
+#a="pseudoneutid50"; TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"); file.name="nejm"; include.az=T; log="y"; add.hist=F; show.cb=F
+    
     myprint(a)
     
     transf=if(log=="y") function(y) -log(1-y) else identity 
@@ -33,12 +34,12 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     ylim=if(log=="y") transf(c(0,.98)) else c(0, 1) 
     hist.shrink=1/c(ADCP=2,pseudoneutid50=1.2,bindSpike=1.3,bindRBD=1.3)
     
-    all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real",    "janssen_la_real",    "janssen_sa_real",    "AZ-COV002", "prevent19",      "azd1222")
+    all.trials=c("moderna_real", "janssen_pooled_EUA", "janssen_na_EUA",    "janssen_la_EUA",    "janssen_sa_EUA",    "AZ-COV002", "prevent19",      "azd1222")
     studies   =c("Moderna COVE", "Janssen ENSEMBLE",    "Janssen ENSEMBLE US","Janssen ENSEMBLE LA","Janssen ENSEMBLE SA","AZCOV002",  "NVX PREVENT-19", "AZD1222")
     cols      =c("purple",       "green",               "green",              "olivedrab3",         "darkseagreen4",      "orange",    "cyan",           "tan")
     names(studies)=all.trials
     names(cols)=all.trials
-    hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*0.5, maxColorValue=255)})
+    hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*.5, maxColorValue=255)})
     
     .subset=match(TRIALS, all.trials)
     
@@ -52,8 +53,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     for (x in TRIALS) {    
         TRIAL=get.trial(x, a)
         COR = switch(x, moderna_real="D57",
-            janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", 
-            janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
+            janssen_pooled_EUA="D29IncludeNotMolecConfirmedstart1", janssen_na_EUA="D29IncludeNotMolecConfirmedstart1", 
+            janssen_la_EUA="D29IncludeNotMolecConfirmedstart1", janssen_sa_EUA="D29IncludeNotMolecConfirmedstart1",
             prevent19="D35", 
             azd1222="D57",
             stop("wrong trial label for COR")
@@ -78,17 +79,37 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     myprint(xlim)
     
     
-    mypdf(file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name,"_",a), width=5.2, height=5.2)
+    mypdf(file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name,"_",a), width=6.2, height=5.2)
         par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         
         # need several variables from sourcing _common.R: lloxs, labels.assays, draw.x.axis.cor
         overall.ve.ls=list()
+        hist.ls=list()
         for (x in TRIALS) {    
+            
+            if(x==TRIALS[3]) {
+                # show az curve on top of cove and janssen
+                if(include.az ) {
+                    lines(log10(ve.az[[a]]),        transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5)
+                    if(show.cb) lines(log10(ve.az[[a%.%"LL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
+                    if(show.cb) lines(log10(ve.az[[a%.%"UL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
+                    
+                    # plot az uk trial density. the values are extracted from fig4c of Feng et al
+                    if(a=="pseudoneutid50"){
+                        tmp.cpy=tmp
+                        tmp.cpy$density = c(0, 0, 55*12/17, 33, 77, 129, 163, 148, 115, 81, 48, 21, 9, 2)/(92.5*2)
+                        tmp.cpy$breaks=c(0.00000,0.20000,0.40000,0.60000,0.80000,1.00000,1.20000,1.40000,1.60000,1.80000,2.00000,2.20000,2.40000,2.60000,2.8)
+                        hist.ls[["AZ-COV002"]]=tmp.cpy
+                        if (add.hist) plot(tmp.cpy,col=hist.col.ls[["AZ-COV002"]],axes=F,labels=F,border=0,freq=F,add=T)             
+                    }
+                }            
+            }
+        
             myprint(x, a)
             TRIAL=get.trial(x, a)
             COR = switch(x, moderna_real="D57",
-                janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", 
-                janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
+                janssen_pooled_EUA="D29IncludeNotMolecConfirmedstart1", janssen_na_EUA="D29IncludeNotMolecConfirmedstart1", 
+                janssen_la_EUA="D29IncludeNotMolecConfirmedstart1", janssen_sa_EUA="D29IncludeNotMolecConfirmedstart1",
                 prevent19="D35", 
                 azd1222="D57",
                 stop("wrong trial label for COR")
@@ -119,9 +140,11 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
 #                ci.band=rep.matrix(ci.band, each=2, by.row=F)
 #            }            
         
+            
+            # make plot of VE curves
             shown=risks$marker>=wtd.quantile(markers.x[[x]], weight[[x]], 2.5/100) & risks$marker<=wtd.quantile(markers.x[[x]], weight[[x]], 1-2.5/100)
             #shown=risks$marker>=ifelse(x=="moderna_real",log10(10),quantile(markers.x[[x]], 2.5/100, na.rm=T)) & risks$marker<=quantile(markers.x[[x]], 1-2.5/100, na.rm=T)
-            mymatplot(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE against COVID-19"), xlab=labels.assays.short[a]%.%" (=s)", 
+            mymatplot(risks$marker[shown], transf(t(rbind(est, if(show.cb) ci.band))[shown,]), type="l", lty=c(1,3,3), lwd=2.5, make.legend=F, col=cols[x], ylab=paste0("Controlled VE against COVID-19"), xlab=labels.assays.short[a]%.%" (=s)", 
                 #main=paste0(labels.assays.long["Day"%.%tpeak,a]),
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F, add=x!=TRIALS[1])
             draw.x.axis.cor(xlim, NA)
@@ -130,31 +153,28 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
                 axis(side=2,at=yat,labels=(yat*100)%.%"%")            
             } else {
                 yat=c(seq(0,.90,by=.1),.95)
-                axis(side=2,at=transf(yat),labels=(yat*100)%.%"%")            
+                if (file.name=="nejm") yat=c(yat, .975)
+                axis(side=2,at=transf(yat),labels=if(file.name=="nejm") yat*100 else (yat*100)%.%"%" )
             }
-        
+            # save image data per Nat Microbiology requirements
             img.dat=cbind(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]))
-            mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_",x))
+            #mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_",x))
             
             # add histogram
-            #  par(new=TRUE) #this changes ylim, so we cannot use it in this loop
+            # par(new=TRUE) #this changes ylim, so we cannot use it in this loop
             tmp=get.marker.histogram(markers.x[[x]], weight[[x]], x)
             if (log=="") {
                 tmp$density=tmp$density/hist.shrink[a] # so that it will fit vertically
             } else{
                 tmp$density=tmp$density/hist.shrink[a]*3 # so that it will fit vertically
             }            
-            plot(tmp,col=hist.col.ls[[x]],axes=F,labels=F,border=0,freq=F,add=T) 
-            
+            hist.ls[[x]]=tmp
+            if(add.hist) {
+                plot(tmp,col=hist.col.ls[[x]],axes=F,labels=F,border=0,freq=F,add=T) 
+            }
+                        
             overall.ve.ls[[x]]=overall.ve
         }        
-    
-        # add az curve
-        if(include.az) {
-            lines(log10(ve.az[[a]]),        transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5)
-            lines(log10(ve.az[[a%.%"LL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
-            lines(log10(ve.az[[a%.%"UL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
-        }
     
         # legend
 #        legend=paste0(studies[TRIALS], ", ", sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%"))
@@ -166,14 +186,43 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="") {
     
     dev.off()    
     
+    # if histogram is not add to the same panel, make a new figure with the histograms
+    if(!add.hist) {
+        # use non-opaque color
+        hist.col.ls=lapply(cols, function(col) {hist.col <- c(col2rgb(col)); rgb(hist.col[1], hist.col[2], hist.col[3], alpha=255*1, maxColorValue=255)})
+        mypdf(file=paste0("output/meta/meta_hist_",file.name,"_",a), width=5.2, height=5, mfrow=c(5,1))
+            par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientatio        
+            par(mar=c(0,4,0,1), mfrow=c(5,1), oma=c(3,0,1,0))
+            for (x in c(TRIALS, if(a=="pseudoneutid50") "AZ-COV002")) {    
+                plot(hist.ls[[x]],col=hist.col.ls[[x]],axes=T,labels=F,border=0,freq=F,add=F,xaxt="n",ylim=c(0,1.6),xlim=c(0,4),ylab="density",main="")
+                title(main=studies[[x]], cex=.5, line=-1)
+                if (x==TRIALS[1]) {
+                    lines(par("usr")[1:2],c(par("usr")[4],par("usr")[4]), lwd=.5) # top border
+                    x.right = par("usr")[2]
+                }
+                lines(c(x.right,x.right),c(-1,2), lwd=.5) # right border
+                if (x=="AZ-COV002") {
+                    draw.x.axis.cor(xlim, NA)
+                    axis(side=1,tick=T,line=0,labels=F)
+                }
+            }
+            mtext("Neutralizing Antibody Titer (IU50/ml)", side=1, line=2, outer=T, at=1/2, cex=.75)
+        dev.off()
+    
+    }    
+    #return (list(markers.x, weight))
+    
 }
+
+# for NEJM perspective
+draw.ve.curves(a="pseudoneutid50", TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19", "azd1222"), file.name="nejm", include.az=T, log="y", add.hist=F, show.cb=F)
 
 
 # draw VE curves for several markers
 draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
-#aa=c("pseudoneutid50","pseudoneutid50la"); TRIALS=c("janssen_la_real"); file.name=tmp; log=""
+#aa=c("pseudoneutid50","pseudoneutid50la"); TRIALS=c("janssen_la_EUA"); file.name=tmp; log=""
     
-    all.trials=c("moderna_real", "janssen_pooled_real", "janssen_na_real",    "janssen_la_real",    "janssen_sa_real",    "AZ-COV002", "prevent19",      "azd1222")
+    all.trials=c("moderna_real", "janssen_pooled_EUA", "janssen_na_EUA",    "janssen_la_EUA",    "janssen_sa_EUA",    "AZ-COV002", "prevent19",      "azd1222")
     studies   =c("Moderna COVE", "Janssen ENSEMBLE",    "Janssen ENSEMBLE US","Janssen ENSEMBLE LA","Janssen ENSEMBLE SA","AZCOV002",  "NVX PREVENT-19", "AZD1222")
     names(studies)=all.trials
     
@@ -214,7 +263,7 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
         TRIAL=get.trial(x[i], a)
         COR = switch(x[i], 
             moderna_real="D57",
-            janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
+            janssen_pooled_EUA="D29IncludeNotMolecConfirmedstart1", janssen_na_EUA="D29IncludeNotMolecConfirmedstart1", janssen_la_EUA="D29IncludeNotMolecConfirmedstart1", janssen_sa_EUA="D29IncludeNotMolecConfirmedstart1",
             prevent19="D35", 
             azd1222="D57",
             stop("wrong trial label for COR")
@@ -247,8 +296,8 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
             a=aa[i]  
             TRIAL=get.trial(x[i], a)
             COR = switch(x[i], moderna_real="D57",
-                janssen_pooled_real="D29IncludeNotMolecConfirmedstart1", janssen_na_real="D29IncludeNotMolecConfirmedstart1", 
-                janssen_la_real="D29IncludeNotMolecConfirmedstart1", janssen_sa_real="D29IncludeNotMolecConfirmedstart1",
+                janssen_pooled_EUA="D29IncludeNotMolecConfirmedstart1", janssen_na_EUA="D29IncludeNotMolecConfirmedstart1", 
+                janssen_la_EUA="D29IncludeNotMolecConfirmedstart1", janssen_sa_EUA="D29IncludeNotMolecConfirmedstart1",
                 prevent19="D35", 
                 azd1222="D57",
                 stop("wrong trial label for COR")
@@ -317,29 +366,35 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
 }
 
 
+
+
+
 # for ENSEMBLE manuscript 1 
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="circ")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_real", "janssen_sa_real", "janssen_la_real"), file.name="circ", log="y")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_EUA", "janssen_sa_EUA", "janssen_la_EUA"), file.name="circ")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa","pseudoneutid50la"), TRIALS=c("janssen_na_EUA", "janssen_sa_EUA", "janssen_la_EUA"), file.name="circ", log="y")
 
 # 
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", file.name="janssen_la_real")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real", file.name="janssen_sa_real")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_real", file.name="janssen_la_real", log="y")
-draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_real", file.name="janssen_sa_real", log="y")
-
-
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_EUA", file.name="janssen_la_EUA")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_EUA", file.name="janssen_sa_EUA")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50la"), TRIALS="janssen_la_EUA", file.name="janssen_la_EUA", log="y")
+draw.ve.curves.aa(aa=c("pseudoneutid50","pseudoneutid50sa"), TRIALS="janssen_sa_EUA", file.name="janssen_sa_EUA", log="y")
 
 
 # COVE + ENSEMBLE/US + AZ + PREVENT19 + AZD1222
 for (a in c("pseudoneutid50","bindSpike")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"), file.name="9", include.az=T, log="y")
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19", "azd1222"), file.name="9", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19", "azd1222"), file.name="9", include.az=T, log="y")
 }
+
+# 
+a="bindRBD"
+draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="9", include.az=T)
+draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="9", include.az=T, log="y")
 
 # COVE + ENSEMBLE/US + AZ + AZD1222
 for (a in c("pseudoneutid50","bindSpike")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "azd1222"), file.name="10", include.az=T)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "azd1222"), file.name="10", include.az=T, log="y")
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "azd1222"), file.name="10", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "azd1222"), file.name="10", include.az=T, log="y")
 }
 
 # AZ + AZD1222
@@ -350,48 +405,48 @@ for (a in c("pseudoneutid50","bindSpike")) {
 
 # COVE + ENSEMBLE + AZ
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_pooled_real"), file.name="1", include.az=T)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_pooled_real"), file.name="1", include.az=T, log="y")
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_pooled_EUA"), file.name="1", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_pooled_EUA"), file.name="1", include.az=T, log="y")
 }
 
 # COVE + ENSEMBLE regions
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="2", include.az=F)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="2", include.az=F, log="y")
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="2", include.az=F)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="2", include.az=F, log="y")
 }
 
 # ENSEMBLE regions
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
-    draw.ve.curves(a, TRIALS=c("janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="3", include.az=F)
-    draw.ve.curves(a, TRIALS=c("janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="3", include.az=F, log="y")
+    draw.ve.curves(a, TRIALS=c("janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="3", include.az=F)
+    draw.ve.curves(a, TRIALS=c("janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="3", include.az=F, log="y")
 }
 
 # COVE + ENSEMBLE/US + AZ
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real"), file.name="4", include.az=T)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real"), file.name="4", include.az=T, log="y")
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA"), file.name="4", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA"), file.name="4", include.az=T, log="y")
 }
 
 # COVE + ENSEMBLE/US
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real"), file.name="5", include.az=F)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real"), file.name="5", include.az=F, log="y")
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA"), file.name="5", include.az=F)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA"), file.name="5", include.az=F, log="y")
 }
 
 # COVE + ENSEMBLE regions + AZ
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="6", include.az=T)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "janssen_la_real", "janssen_sa_real"), file.name="6", include.az=T, log="y")
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="6", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="6", include.az=T, log="y")
 }
 
 # COVE + ENSEMBLE/US + AZ + PREVENT19
 for (a in c("bindSpike", "pseudoneutid50")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="7", include.az=T)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="7", include.az=T, log="y")
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="7", include.az=T)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="7", include.az=T, log="y")
 }
 
 # COVE + ENSEMBLE/US + PREVENT19
 for (a in c("bindSpike", "pseudoneutid50")) {
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="8", include.az=F)
-    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_real", "prevent19"), file.name="8", include.az=F, log="y")
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="8", include.az=F)
+    draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="8", include.az=F, log="y")
 }

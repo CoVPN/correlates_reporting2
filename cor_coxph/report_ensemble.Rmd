@@ -2,12 +2,14 @@
 <!-- D29start1 is ENSEMBLE specific -->
 
 ```{r, echo=FALSE, results='asis'}
-  for (i in 1:2) {
+  for (i in 1:ifelse(endsWith(attr(config,"config"),"EUA") | attr(config,"config") %in% c("janssen_pooled_partA", "janssen_la_partA"),2,1)) {
     tpeak <- tt[1]
-    COR <- ifelse(i==1, "D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
+    COR <- ifelse(i==1, "D29IncludeNotMolecConfirmed", 
+                  ifelse(endsWith(attr(config,"config"),"EUA"),"D29IncludeNotMolecConfirmedstart1",
+                                                               "D29SevereIncludeNotMolecConfirmed"))
     config.cor <- config::get(config = COR)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    special.note = paste0("$\\ddagger$ Count cases starting ", ifelse(i==1,7,1), " days post Day 29.")
+    special.note = paste0("$\\ddagger$ Count cases starting ", ifelse(endsWith(COR,"start1"),1,7), " days post Day 29.")
     pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
 
     all.markers=paste0("Day", tpeak, assays)

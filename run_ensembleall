@@ -9,7 +9,7 @@ fi
 
 
 
-for T in  janssen_pooled_real janssen_na_real janssen_la_real janssen_sa_real # janssen_pooled_realADCP janssen_na_realADCP janssen_la_realADCP janssen_sa_realADCP 
+for T in  janssen_pooled_partA janssen_na_partA janssen_la_partA janssen_sa_partA
 do
     export TRIAL=$T 
     echo $TRIAL

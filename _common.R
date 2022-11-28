@@ -97,7 +97,7 @@ if (exists("COR")) {
     myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE") {
-        if (contain(attr(config, "config"), "real")) {
+        if (contain(attr(config, "config"), "EUA")) {
             # EUA datasets
             if (COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
         } 
@@ -106,9 +106,8 @@ if (exists("COR")) {
     config.cor <- config::get(config = COR)
     tpeak=as.integer(paste0(config.cor$tpeak))
     tpeaklag=as.integer(paste0(config.cor$tpeaklag))
-    tfinal.tpeak=as.integer(paste0(config.cor$tfinal.tpeak))
     tinterm=as.integer(paste0(config.cor$tinterm))
-    myprint(tpeak, tpeaklag, tfinal.tpeak, tinterm)
+    myprint(tpeak, tpeaklag, tinterm)
     # some config may not have all fields
     if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
 
@@ -153,17 +152,26 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-
+if(attr(config, "config") %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA")) {
+    # make endpointDate.Bin a factor variable
+    dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
+}
 
 
 ###################################################################################################
 # get marginalized risk without marker
 
 get.marginalized.risk.no.marker=function(formula, dat, day){
-    fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
-    dat$EventTimePrimary=day
-    risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
-    mean(risks)
+    if (!is.list(formula)) {
+        fit.risk = coxph(formula, dat, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
+        dat$EventTimePrimary=day
+        risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
+        mean(risks)
+    } else {
+        # competing risk estimation
+        out=pcr2(formula, dat, day)
+        mean(out)
+    }
 }
 
 
@@ -177,10 +185,6 @@ if (exists("COR")) {
         dat.mock=subset(dat.mock, Bserostatus==config$Bserostatus)
     }
     
-    # subset to require risk_score
-    # note that it is assumed there no risk_score is missing for anyone in the analysis population
-    if(!is.null(dat.mock$risk_score)) dat.mock=subset(dat.mock, !is.na(risk_score))
-    
     # for Novavax trial only, subset to US for the correlates modules
     # this is redundant in a way because only US participants have non-NA risk scores, but good to add
     if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
@@ -189,6 +193,19 @@ if (exists("COR")) {
     form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
     form.0 = update (form.s, as.formula(config$covariates_riskscore))
     print(form.0)
+    
+    if (COR=="D29SevereIncludeNotMolecConfirmed") {
+        # formulae for competing risk
+        form.0.list=list(
+            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, SevereEventIndPrimaryIncludeNotMolecConfirmedD29) ~ 1, 
+                as.formula(config$covariates_riskscore )),
+            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, ModerateEventIndPrimaryIncludeNotMolecConfirmedD29) ~ 1, 
+                as.formula(config$covariates_riskscore ))
+        )
+        comp.risk=TRUE
+    } else {
+        comp.risk=FALSE
+    }
     
     ###########################################################
     # single time point COR config such as D29
@@ -202,7 +219,14 @@ if (exists("COR")) {
         dat.mock$wt=dat.mock[[config.cor$wt]]
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
         if (!is.null(config.cor$Earlyendpoint)) dat.mock$Earlyendpoint=dat.mock[[config.cor$Earlyendpoint]]
-
+        
+        # subset to require risk_score
+        # check to make sure that risk score is not missing in ph1
+        if(!is.null(dat.mock$risk_score)) {
+            stopifnot(nrow(subset(dat.mock, ph1 & is.na(risk_score)))==0)
+            dat.mock=subset(dat.mock, !is.na(risk_score))
+        }        
+    
         # data integrity checks
         if (!is.null(dat.mock$ph1)) {
             # missing values in variables that should have no missing values
@@ -217,29 +241,48 @@ if (exists("COR")) {
             # may not be defined if COR is not provided in command line and used the default value
         }
         
-        # followup time for the last case in ph2 in vaccine arm
-        if (tfinal.tpeak==0) tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-        
-        if (startsWith(attr(config, "config"), "janssen_na_real")) {
+        # default rule for followup time is the last case in ph2 in vaccine arm
+        tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+    
+        if (attr(config, "config") == "janssen_na_EUA") {
             tfinal.tpeak=53
-        } else if (startsWith(attr(config, "config"), "janssen_la_real")) { # from day 48 to 58, risk jumps from .008 to .027
+        } else if (attr(config, "config") == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
             tfinal.tpeak=48 
-        } else if (startsWith(attr(config, "config"), "janssen_sa_real")) {
-            tfinal.tpeak=40
+        } else if (attr(config, "config") == "janssen_sa_EUA") {
+            tfinal.tpeak=40            
+        } else if (attr(config, "config") == "janssen_pooled_EUA") {
+            tfinal.tpeak=54
+        
+        # data is censored by 191/111, the last case in ph2 is before these days
+#        # use startsWith because there are also senior and nonsenior
+#        } else if (startsWith(attr(config, "config"), "janssen_pooled_partA") | startsWith(attr(config, "config"), "janssen_la_partA")) {
+#            tfinal.tpeak=191
+#        } else if (startsWith(attr(config, "config"), "janssen_na_partA") | startsWith(attr(config, "config"), "janssen_sa_partA")) {
+#            tfinal.tpeak=111
             
         } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
-			if (COR=="D91") {
-    	        tfinal.tpeak=66
-			} else if(COR=="D43") {
-        	    tfinal.tpeak= 91+66-43
-			}
-		}
-
-        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
-        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)
-        overall.ve = c(1 - prev.vacc/prev.plac)    
+            if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
+            
+        } else if (study_name=="HVTN705") {
+            tfinal.tpeak=550
+            
+        } else if (startsWith(attr(config, "config"), "janssen_") & contain(attr(config, "config"), "partA")) {
+            # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+            tfinal.tpeak=min(
+                with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
+                with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+            )
+        }
+        
+#        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
+#        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
+        # potential competing risk
+        prev.vacc = get.marginalized.risk.no.marker(if (COR=="D29SevereIncludeNotMolecConfirmed") form.0.list else form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)# competing risk estimation for severe cases            
+        prev.plac = get.marginalized.risk.no.marker(if (COR=="D29SevereIncludeNotMolecConfirmed") form.0.list else form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)# competing risk estimation for severe cases            
+        overall.ve = c(1 - prev.vacc/prev.plac) 
         myprint(prev.plac, prev.vacc, overall.ve)
         
+
 #        # get VE in the first month or two of followup
 #        dat.tmp=dat.mock
 #        t.tmp=30
@@ -249,8 +292,12 @@ if (exists("COR")) {
 #        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==1 & ph1), t.tmp)
 #        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==0 & ph1), t.tmp)
 #        overall.ve = c(1 - prev.vacc/prev.plac)    
-#        myprint(prev.plac, prev.vacc, overall.ve)
+#        myprint(prev.plac, prev.vacc, overall.ve)        
         
+    } else {
+        # subset to require risk_score
+        # note that it is assumed there no risk_score is missing for anyone in the analysis population. in the case of single time point COR, we do a check for that after definining ph1, which is why we have to do subset separately here again
+        if(!is.null(dat.mock$risk_score)) dat.mock=subset(dat.mock, !is.na(risk_score))
         
     }
     
@@ -311,14 +358,14 @@ if(config$is_ows_trial) {
 
 names(assays)=assays # add names so that lapply results will have names
 
-pos.cutoffs<-llods<-lloqs<-uloqs<-c()
-lloxs=NULL
+# if the following part changes, make sure to copy to _common.R in the processing repo
 
 # uloqs etc are hardcoded for ows trials but driven by config for other trials
-
 # For bAb, IU and BAU are the same thing
 # all values on BAU or IU
 # LOQ can not be NA, it is needed for computing delta
+pos.cutoffs<-llods<-lloqs<-uloqs<-c()
+lloxs=NULL
 if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     tmp=list(
         bindSpike=c(
@@ -372,66 +419,70 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
         
 } else if(study_name=="ENSEMBLE") {
     
-    if (contain(attr(config, "config"), "real")) {
+    # data less than pos cutoff is set to pos.cutoff/2
+    llods["bindSpike"]=NA 
+    lloqs["bindSpike"]=1.7968 
+    uloqs["bindSpike"]=238.1165 
+    pos.cutoffs["bindSpike"]=10.8424
+    
+    # data less than pos cutoff is set to pos.cutoff/2
+    llods["bindRBD"]=NA                 
+    lloqs["bindRBD"]=3.4263                 
+    uloqs["bindRBD"]=172.5755    
+    pos.cutoffs["bindRBD"]=14.0858
+            
+    # data less than lod is set to lod/2
+    llods["ADCP"]=11.57
+    lloqs["ADCP"]=8.87
+    uloqs["ADCP"]=211.56
+    pos.cutoffs["ADCP"]=11.57# as same lod
+    
+    llods["bindN"]=0.093744
+    lloqs["bindN"]=4.4897
+    uloqs["bindN"]=574.6783
+    pos.cutoffs["bindN"]=23.4711
+    
+    # the limits below are different for EUA and Part A datasets
+    if (contain(attr(config, "config"), "EUA")) {
     # EUA data
         
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindSpike"]=NA 
-        lloqs["bindSpike"]=1.7968 
-        uloqs["bindSpike"]=238.1165 
-    
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindRBD"]=NA                 
-        lloqs["bindRBD"]=3.4263                 
-        uloqs["bindRBD"]=172.5755    
-                
         # data less than lloq is set to lloq/2
         llods["pseudoneutid50"]=NA  
         lloqs["pseudoneutid50"]=42*0.0653  #2.7426
-        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         uloqs["pseudoneutid50"]=9484*0.0653 # 619.3052
+        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         
-            # repeat for two synthetic markers that are adapted to SA and LA
-            llods["pseudoneutid50sa"]=NA  
-            lloqs["pseudoneutid50sa"]=42*0.0653  #2.7426
-            pos.cutoffs["pseudoneutid50sa"]=lloqs["pseudoneutid50sa"]
-            uloqs["pseudoneutid50sa"]=9484*0.0653 # 619.3052
+        # repeat for two synthetic markers that are adapted to SA and LA
+        llods["pseudoneutid50sa"]=NA  
+        lloqs["pseudoneutid50sa"]=42*0.0653  #2.7426
+        uloqs["pseudoneutid50sa"]=9484*0.0653 # 619.3052
+        pos.cutoffs["pseudoneutid50sa"]=lloqs["pseudoneutid50sa"]
     
-            llods["pseudoneutid50la"]=NA  
-            lloqs["pseudoneutid50la"]=42*0.0653  #2.7426
-            pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
-            uloqs["pseudoneutid50la"]=9484*0.0653 # 619.3052
+        llods["pseudoneutid50la"]=NA  
+        lloqs["pseudoneutid50la"]=42*0.0653  #2.7426
+        uloqs["pseudoneutid50la"]=9484*0.0653 # 619.3052
+        pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
     
-        # data less than lod is set to lod/2
-        llods["ADCP"]=11.57
-        lloqs["ADCP"]=8.87
-        pos.cutoffs["ADCP"]=11.57# as same lod
-        uloqs["ADCP"]=211.56
         
     } else if (contain(attr(config, "config"), "partA")) {
     # complete part A data
         
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindSpike"]=NA 
-        lloqs["bindSpike"]=1.7968 
-        uloqs["bindSpike"]=238.1165 
-    
-        # data less than pos cutoff is set to pos.cutoff/2
-        llods["bindRBD"]=NA                 
-        lloqs["bindRBD"]=3.4263                 
-        uloqs["bindRBD"]=172.5755    
-                
         # data less than lloq is set to lloq/2
         llods["pseudoneutid50"]=NA  
         lloqs["pseudoneutid50"]=75*0.0653  #4.8975
-        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
         uloqs["pseudoneutid50"]=12936*0.0653 # 844.7208
-    
-        # data less than lod is set to lod/2
-        llods["ADCP"]=11.57
-        lloqs["ADCP"]=8.87
-        pos.cutoffs["ADCP"]=11.57# as same lod
-        uloqs["ADCP"]=211.56
+        pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
+        
+        # repeat for two synthetic markers that are adapted to SA and LA
+        llods["pseudoneutid50sa"]=NA  
+        lloqs["pseudoneutid50sa"]=75*0.0653  #4.8975
+        uloqs["pseudoneutid50sa"]=12936*0.0653 # 844.7208
+        pos.cutoffs["pseudoneutid50sa"]=lloqs["pseudoneutid50sa"]
+        
+        llods["pseudoneutid50la"]=NA  
+        lloqs["pseudoneutid50la"]=75*0.0653  #4.8975
+        uloqs["pseudoneutid50la"]=12936*0.0653 # 844.7208
+        pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
     }
     
 } else if(study_name=="PREVENT19") {
@@ -443,11 +494,22 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     uloqs["bindSpike"]=770464.6*0.0090 # 6934.181
     pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
     
+    # data less than lloq is set to lloq/2
+    llods["bindRBD"]=NA  
+    lloqs["bindRBD"]=1126.7*0.0272  #30.6
+    uloqs["bindRBD"]=360348.7*0.0272 # 9801
+    pos.cutoffs["bindRBD"]=lloqs["bindRBD"]
+    
     # data less than lod is set to lod/2 in the raw data
     llods["pseudoneutid50"]=2.612 # 40 * 0.0653
     lloqs["pseudoneutid50"]=51*0.0653 # 3.3303
     uloqs["pseudoneutid50"]=127411*0.0653 # 8319.938
     pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
+    
+    llods["bindN"]=0.093744
+    lloqs["bindN"]=4.4897
+    uloqs["bindN"]=574.6783
+    pos.cutoffs["bindN"]=23.4711
     
 } else if(study_name=="AZD1222") {
        
@@ -463,6 +525,8 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     uloqs["pseudoneutid50"]=47806*0.0653 # 3121.732
     pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
     
+    # bindN info missing in SAP
+    
 } else if(study_name=="VAT08m") { # Sanofi
        
     # data less than lod is set to lod/2
@@ -470,6 +534,11 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     lloqs["pseudoneutid50"]=95*0.0653 # 3.6568
     uloqs["pseudoneutid50"]=191429*0.0653 # 3121.732
     pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
+    
+    llods["bindN"]=0.093744
+    lloqs["bindN"]=4.4897
+    uloqs["bindN"]=574.6783
+    pos.cutoffs["bindN"]=23.4711
     
 } else if(study_name=="HVTN705") {
     
@@ -485,61 +554,62 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     # lod and lloq are the same
     # data less than lod is set to lloq/2
     
-    #SARS-CoV-2 Spike           49 70,000 1,668 49
-    #SARS-CoV-2 Spike (P.1)     32 36,000 806 32
-    #SARS-CoV-2 Spike (B.1.351) 72 21,000 467 72
-    #SARS-CoV-2 Spike (B.1.1.7) 70 47,000 1,323 70
+    #SARS-CoV-2 Spike           49 70,000 696 49
+    #SARS-CoV-2 Spike (P.1)     32 36,000 463 32
+    #SARS-CoV-2 Spike (B.1.351) 72 21,000 333 72
+    #SARS-CoV-2 Spike (B.1.1.7) 70 47,000 712 70
     
     lloqs["bindSpike"] <- llods["bindSpike"] <- 49*0.0090 # 0.441
     uloqs["bindSpike"]=70000*0.0090 # 630
-    pos.cutoffs["bindSpike"]=1668*0.0090 # 15.0
+    pos.cutoffs["bindSpike"]=696*0.0090 # 15.0
     
     lloqs["bindSpike_P.1"] <- llods["bindSpike_P.1"] <- 32*0.0090 
     uloqs["bindSpike_P.1"]=36000*0.0090 
-    pos.cutoffs["bindSpike_P.1"]=806*0.0090 
+    pos.cutoffs["bindSpike_P.1"]=463*0.0090 
     
     lloqs["bindSpike_B.1.351"] <- llods["bindSpike_B.1.351"] <- 72*0.0090 
     uloqs["bindSpike_B.1.351"]=21000*0.0090 
-    pos.cutoffs["bindSpike_B.1.351"]=467*0.0090 
+    pos.cutoffs["bindSpike_B.1.351"]=333*0.0090 
     
     lloqs["bindSpike_B.1.1.7"] <- llods["bindSpike_B.1.1.7"] <- 70*0.0090 
     uloqs["bindSpike_B.1.1.7"]=47000*0.0090 
-    pos.cutoffs["bindSpike_B.1.1.7"]=1323*0.0090 
+    pos.cutoffs["bindSpike_B.1.1.7"]=712*0.0090 
     
-    #SARS-CoV-2 S1 RBD           35  30,000 1,867 35
-    #SARS-CoV-2 S1 RBD (P.1)     91  10,000 929   91
-    #SARS-CoV-2 S1 RBD (B.1.351) 53  6,300  484   53
-    #SARS-CoV-2 S1 RBD (B.1.1.7) 224 20,000 1,575 224
+    #SARS-CoV-2 S1 RBD           35  30,000 1264 35
+    #SARS-CoV-2 S1 RBD (P.1)     91  10,000 572  91
+    #SARS-CoV-2 S1 RBD (B.1.351) 53  6,300  368  53
+    #SARS-CoV-2 S1 RBD (B.1.1.7) 224 20,000 1111 224
             
     lloqs["bindRBD"] <- llods["bindRBD"] <- 35*0.0272 
     uloqs["bindRBD"]=30000*0.0272 # 630
-    pos.cutoffs["bindRBD"]=1867*0.0272 # 15.0
+    pos.cutoffs["bindRBD"]=1264*0.0272 # 15.0
     
     lloqs["bindRBD_P.1"] <- llods["bindRBD_P.1"] <- 91*0.0272 
     uloqs["bindRBD_P.1"]=10000*0.0272 
-    pos.cutoffs["bindRBD_P.1"]=929*0.0272 
+    pos.cutoffs["bindRBD_P.1"]=572*0.0272 
     
     lloqs["bindRBD_B.1.351"] <- llods["bindRBD_B.1.351"] <- 53*0.0272 
     uloqs["bindRBD_B.1.351"]=6300*0.0272 
-    pos.cutoffs["bindRBD_B.1.351"]=484*0.0272 
+    pos.cutoffs["bindRBD_B.1.351"]=368*0.0272 
     
     lloqs["bindRBD_B.1.1.7"] <- llods["bindRBD_B.1.1.7"] <- 224*0.0272 
     uloqs["bindRBD_B.1.1.7"]=20000*0.0272 
-    pos.cutoffs["bindRBD_B.1.1.7"]=1575*0.0272 
+    pos.cutoffs["bindRBD_B.1.1.7"]=1111*0.0272 
   
-    #SARS-CoV-2 Nucleocapsid 46 80,000 59,115 46
+    #SARS-CoV-2 Nucleocapsid 46 80,000 7015 46
     
     lloqs["bindN"] <- llods["bindN"] <- 46*0.00236 
     uloqs["bindN"]=80000*0.00236 
-    pos.cutoffs["bindN"]=59115*0.00236 
+    pos.cutoffs["bindN"]=7015*0.00236 
     
     #LVMN
     llods["liveneutmn50"]=27.56 
     lloqs["liveneutmn50"]=27.84
     uloqs["liveneutmn50"]=20157.44 
-    pos.cutoffs["liveneutmn50"]=13.78 
+    pos.cutoffs["liveneutmn50"]=llods["liveneutmn50"] 
     
 } else stop("unknown study_name 1")
+
 
 # llox is for plotting and can be either llod or lloq depending on trials
 if (is.null(lloxs)) lloxs=ifelse(config$llox_label=="LOD", llods[names(config$llox_label)], lloqs[names(config$llox_label)])
@@ -1082,7 +1152,7 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         # since that leads to uneven distribution of markers between low/med/high among ph2
         # this issue did not affect earlier trials much, but it is a problem with vat08m. We are changing the code for trials after vat08m
         if (attr(config, "config") %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondprimary","moderna_real","moderna_mock","prevent19",
-                "janssen_pooled_real","janssen_na_real","janssen_la_real","janssen_sa_real")) {
+                "janssen_pooled_EUA","janssen_na_EUA","janssen_la_EUA","janssen_sa_EUA")) {
             flag=rep(TRUE, length(tmp.a))
         } else {
             flag=dat$ph2
@@ -1090,8 +1160,8 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
     
         if(startsWith(a, "Day")) {
             # not fold change
-            uppercut=log10(uloqs[get.assay.from.name(a)])*.9999
-            lowercut=min(tmp.a, na.rm=T)*1.0001
+            uppercut=log10(uloqs[get.assay.from.name(a)]); uppercut=uppercut*ifelse(uppercut>0,.9999,1.0001)
+            lowercut=min(tmp.a, na.rm=T)*1.0001; lowercut=lowercut*ifelse(lowercut>0,1.0001,.9999)
             if (mean(tmp.a>uppercut, na.rm=T)>1/3) {
                 # if more than 1/3 of vaccine recipients have value > ULOQ, let q.a be (median among those < ULOQ, ULOQ)
                 if (verbose) cat("more than 1/3 of vaccine recipients have value > ULOQ\n")

@@ -70,16 +70,17 @@ for (tp in tps){
       guides(linetype = "none",
              color = guide_legend(nrow = 3, byrow = TRUE)) +
       ggtitle(labels.title2[tp, aa]) +
-      theme(plot.title = element_text(hjust = 0.5, size = 14),
+      theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assays)>6, 6, 14)),
             legend.title = element_blank(),
             legend.text = element_text(size = 14),
             panel.grid.minor.y = element_line(),
             panel.grid.major.y = element_line(),
-            axis.title = element_text(size = 14),
+            axis.title = element_text(size = ifelse(length(assays)>6, 8, 14)),
             axis.text = element_text(size = 14))
   }
   
-  ggsave(ggarrange(plotlist = rcdf_list, ncol = 2, nrow=ceiling(length(assays) / 2),
+  if (length(assays) > 6) {ncol_val = 3} else {ncol_val = 2}
+  ggsave(ggarrange(plotlist = rcdf_list, ncol = ncol_val, nrow=ceiling(length(assays) / ncol_val),
                    common.legend = TRUE, legend = "bottom",
                    align = "h"),
          filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
@@ -128,21 +129,22 @@ for (tp in tps){
   for (aa in seq_along(assays)) {
     boxplot_list[[aa]] <-  ggplot(subset(subdat, assay == assays[aa] & Trt == "Vaccine"), 
                                   aes_string(x = "cohort_event", y = tp)) +
-      geom_boxplot(aes(colour = cohort_event), width = 0.6, lwd = 1) + 
+      geom_boxplot(aes(colour = cohort_event), width = 0.6, lwd = 1, outlier.shape = NA) + 
       stat_boxplot(geom = "errorbar", aes(colour = cohort_event), width = 0.45, lwd = 1) +
       geom_jitter(data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"), 
                   mapping = aes(colour = cohort_event), width = 0.1, 
-                  size = 1.4, show.legend = FALSE) +
+                  size = 1.4, alpha = 0.2, show.legend = FALSE) +
       theme_pubr(legend = "none") + 
-      guides(alpha = "none") +
+      #guides(alpha = "none") +
       ylab(labels.axis[tp, aa]) + xlab("") + ggtitle(labels.title2[tp, aa]) +
       scale_color_manual(values = c("#1749FF", "#D92321")) +
-      scale_y_continuous(limits = c(-2, 6), labels = label_math(10^.x), breaks = seq(-2, 6, 2)) +
-      theme(plot.title = element_text(hjust = 0.5, size = 14),
+      scale_y_continuous(limits = c(ifelse(study_name=="PROFISCOV",-1,-2), ifelse(study_name=="PROFISCOV",3.5,6)), labels = label_math(10^.x), 
+                         breaks = seq(ifelse(study_name=="PROFISCOV",-1,-2), ifelse(study_name=="PROFISCOV",3.5,6), 2)) +
+      theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assays)>6, 8, 14)),
             panel.border = element_rect(fill = NA),
             panel.grid.minor.y = element_line(),
             panel.grid.major.y = element_line(),
-            axis.title = element_text(size = 14),
+            axis.title = element_text(size = ifelse(length(assays)>6, 10, 14)),
             axis.text.x = element_text(size = 14),
             axis.text.y = element_text(size = 14),
             strip.text = element_text(size = 14, face = "bold"),
@@ -166,8 +168,9 @@ for (tp in tps){
   }
   
   # Suppress hline warnings
+  if (length(assays) > 6) {ncol_val = 3} else {ncol_val = 2}
   suppressWarnings(ggsave(ggarrange(plotlist = boxplot_list, 
-                   ncol = 2, nrow=ceiling(length(assays) / 2), 
+                   ncol = ncol_val, nrow=ceiling(length(assays) / ncol_val), 
                    common.legend = TRUE, legend = "bottom",
                    align = "h") + 
            theme(plot.title = element_text(hjust = 0.5, size = 10)),
@@ -211,12 +214,13 @@ for (tp in tps){
   for (aa in seq_along(assays)) {
     boxplots <-  ggplot(subset(subdat, assay == assays[aa] & Trt == "Vaccine"), aes_string(x = "cohort_event", y = tp)) +
       geom_boxplot(aes(colour = cohort_event), width = 0.6, lwd = 1) + 
-      stat_boxplot(geom = "errorbar", aes(colour = cohort_event), width = 0.45, lwd = 1) +
+      stat_boxplot(geom = "errorbar", aes(colour = cohort_event), width = 0.45, lwd = 1, outlier.shape = NA) +
       geom_jitter(data = filter(subdat_jitter, assay == assays[aa] & Trt == "Vaccine"),
                   mapping = aes(colour = cohort_event), width = 0.1, 
-                  size = 1.4, show.legend = FALSE) +
+                  size = 1.4, alpha = 0.2, show.legend = FALSE) +
       theme_pubr() + 
-      guides(alpha = "none", color = guide_legend(nrow = 1, byrow = TRUE)) +
+      guides(#alpha = "none", 
+             color = guide_legend(nrow = 1, byrow = TRUE)) +
       facet_wrap(~ demo_lab) +
       ylab(labels.axis[tp, aa]) + xlab("") + ggtitle(labels.title2[tp, aa]) +
       scale_color_manual(values = c("#1749FF", "#D92321")) +

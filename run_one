@@ -7,11 +7,10 @@ if [ $# -eq 0 ]
 fi
 
 
-
-for T in profiscov profiscov_lvmn
+for T in janssen_la_partAsenior
 do
     export TRIAL=$T 
     echo $TRIAL
-    make -k -C $1 all 
+    make -k -C $1 all
     bash ./_build_chapter.sh $1
 done

@@ -17,6 +17,8 @@ for (a in all.markers) {
     fits.scaled[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
 
+
+
 natrisk=nrow(dat.vac.seroneg)
 nevents=sum(dat.vac.seroneg$yy==1)
 
@@ -71,6 +73,9 @@ overall.p.0=formatDouble(c(rbind(overall.p.tri, NA,NA)), digits=3, remove.leadin
 ###################################################################################################
 if(verbose) print("# multitesting adjustment for continuous and trichotomized markers together")
 
+# If primary_assays is not defined in config, multitesting adjustment is over all assays. 
+# If primary_assays defined, multitesting adjustment is only over this subset. If this set is empty, then no multitesting adjustment is done
+
 p.unadj=c(cont=pvals.cont, tri=overall.p.tri)
 # save a copy for later use
 p.unadj.1 = p.unadj 
@@ -102,7 +107,9 @@ if (length(p.unadj)>1) {
     
     #    # if want to only do multitesting when liveneutmn50 is included
     #    if (!"liveneutmn50" %in% assays) numPerm=5
-    
+        
+        # TODO: there is no need to permutate all.markers
+        
         out=mclapply(1:numPerm, mc.cores = numCores, FUN=function(seed) {   
             # store the current rng state 
             save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -118,7 +125,7 @@ if (length(p.unadj)>1) {
             }
             design.vacc.seroneg.perm$phase1$sample$variables = tmp
             
-            # rename all.markers so that out has the proper names. this is only effective within in permutation
+            # rename all.markers so that out has the proper names. this is only effective within permutation
             names(all.markers)=all.markers
             out=c(
                 cont=sapply (all.markers, function(a) {
@@ -169,6 +176,7 @@ pvals.adj = cbind(p.unadj=p.unadj.1, pvals.adj[match(names(p.unadj.1), rownames(
 
 if (study_name=="PREVENT19") {
     # bindSpike tertiary has no cases in the upper tertile, cannot do P value
+    # this code somehow works even though there are also RBD and ID50
     pvals.adj=rbind(pvals.adj, tri.Day35bindSpike=c(NA,NA,NA))
 }
 
@@ -198,7 +206,11 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%study_name, align="c
          \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
          \\hline\n 
-    ")
+    "),
+    longtable=T, 
+    label=paste0("tab:CoR_univariable_svycoxph_pretty"), 
+    caption.placement = "top", 
+    caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios per 10-fold increment in the marker*")
 )
 tab.cont=tab.1
 
@@ -215,7 +227,11 @@ mytex(tab.1.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_"%.%study_
          \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
          \\hline\n 
-    ")
+    "),
+    longtable=T, 
+    label=paste0("tab:CoR_univariable_svycoxph_pretty_scaled"), 
+    caption.placement = "top", 
+    caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios per SD increment in the marker*")
 )
 tab.cont.scaled=tab.1.scaled
 
@@ -373,7 +389,7 @@ if (!is.null(config$additional_models)) {
 }
 
 
-if (attr(config,"config")=="janssen_pooled_real") {
+if (attr(config,"config")=="janssen_pooled_EUA") {
     f=Surv(EventTimePrimary, EventIndPrimary) ~ risk_score + as.factor(Region) * Day29pseudoneutid50    
     fit=svycoxph(f, design=design.vacc.seroneg) 
     var.ind=5:6
@@ -442,6 +458,7 @@ if (!is.null(config$interaction)) {
     mytex(tab, file.name="CoR_itxn_multitesting", align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
     
 }
+
 
 
 
