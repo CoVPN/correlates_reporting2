@@ -73,13 +73,18 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
             lines(risks$marker[shown], risks$prob[shown], lwd=lwd)
             lines(risks$marker[shown], risks$lb[shown],   lwd=lwd, lty=3)
             lines(risks$marker[shown], risks$ub[shown],   lwd=lwd, lty=3)    
+            img.dat=cbind(risks$marker[shown], risks$prob[shown], risks$lb[shown], risks$ub[shown])
         } else {
             abline(h=prev.vacc[1], col="gray", lty=c(1), lwd=lwd)
             lines(risks$marker[ncases>=5], risks$prob[ncases>=5], lwd=lwd)
             lines(risks$marker[ncases>=5], risks$lb[ncases>=5],   lwd=lwd, lty=3)
             lines(risks$marker[ncases>=5], risks$ub[ncases>=5],   lwd=lwd, lty=3)    
+            img.dat=cbind(risks$marker[ncases>=5], risks$prob[ncases>=5], risks$lb[ncases>=5], risks$ub[ncases>=5])
         }
         
+        # save to satisfy some journal requirements
+        if(w.wo.plac==1) mywrite.csv(img.dat, file=paste0(save.results.to, a, "_risk_curves",ifelse(eq.geq==1,"_eq","_geq"),"_"%.%study_name))    
+
         # text overall risks
         if (w.wo.plac==1) {
             text(x=par("usr")[2]-diff(par("usr")[1:2])/3.5, y=prev.plac[1]+(prev.plac[1]-prev.plac[2])/2, "placebo overall "%.%formatDouble(prev.plac[1],3,remove.leading0=F))        
