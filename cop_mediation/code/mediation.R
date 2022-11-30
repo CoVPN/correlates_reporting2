@@ -35,6 +35,7 @@ if(study_name == "ENSEMBLE"){
   covariates <- c("Age", "risk_score")
   run_survtmle <- TRUE
   cut_size <- 6
+  impute_placebo_to_lod_over_2 <- TRUE
 }else if(study_name == "HVTN705"){
   covariates <- c("RSA", "Age", "BMI", "Riskscore")
   run_survtmle <- FALSE
@@ -133,20 +134,20 @@ sl_library <- list(
   c("SL.earth", "screen_all")
 )
 
-
 # results without marker used to compute PM
 # does not need to be updated with each marker
 if(run_survtmle){
     fit1 <- survtmle::hazard_tmle(
-      ftime = data_keep$EventTimePrimary,
+      ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
       ftype = data_keep$EventIndPrimary,
       trt = data_keep$Trt,
       adjustVars = data_keep[ , covariates],
-      t0 = tf_Day,
+      t0 = floor(tf_Day / 7.00001) + 1,
       SL.ctime = sl_library,
       SL.ftime = sl_library, 
       verbose = TRUE,
-      returnModels = TRUE
+      returnModels = TRUE,
+      maxIter = 2
     )
     print(fit1)
 }
@@ -186,7 +187,7 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
   	)
   }else{
     fit2 <- survtmle::hazard_tmle(
-      ftime = data_keep$EventTimePrimary,
+      ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
       ftype = data_keep$EventIndPrimary,
       trt = data_keep$Trt,
       adjustVars = data_keep[ , covariates, drop = FALSE],
@@ -195,13 +196,14 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
       trtOfInterest = 1,
       mediatorSampProb = 1 / data_keep$wt,
       mediatorInCensMod = FALSE,
-      t0 = tf_Day,
+      t0 = floor(tf_Day / 7.00001) + 1,
       SL.ctime = fit1$ctimeMod,
       SL.ftime = sl_library,
       SL.mediator = sl_library,
       SL.trtMediator = sl_library,
       SL.eif = sl_library,
-      verbose = TRUE
+      verbose = TRUE,
+      maxIter = 2
     )
     print(fit2)
     fit <- compute_mediation_params(fit1, fit2)

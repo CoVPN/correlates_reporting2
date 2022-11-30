@@ -58,5 +58,18 @@ do
     done
 done
 
+# AZD 
+for TRIAL in azd1222
+do
+    for MARKER in Day57pseudoneutid50
+    do
+        sbatch --export=TRIAL=${TRIAL} \
+       --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D57 ${MARKER}"
+    done
 
-
+    for MARKER in Day29pseudoneutid50 Day29bindSpike
+    do
+        sbatch --export=TRIAL=${TRIAL} \
+       --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29 ${MARKER}"
+    done
+done
