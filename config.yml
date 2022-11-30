@@ -313,7 +313,7 @@ azd1222_base: &azd1222_base
   
 azd1222: &azd1222
   <<: *azd1222_base
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv
+  data_cleaned: ~/janssen_data/azd1222_data_processed_with_riskscore.csv
   assays: [pseudoneutid50]
   llox_label: [LOD]
   assay_labels: [PsV Neutralization 50% Titer]
@@ -322,7 +322,7 @@ azd1222: &azd1222
 
 azd1222_bAb: &azd1222_bAb
   <<: *azd1222_base
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_bAb_data_processed_with_riskscore.csv
+  data_cleaned: ~/janssen_data/azd1222_bAb_data_processed_with_riskscore.csv
   assays: [bindSpike]
   llox_label: [LLOQ]
   assay_labels: [Binding Antibody to Spike]
