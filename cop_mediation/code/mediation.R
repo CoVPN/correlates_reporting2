@@ -84,8 +84,8 @@ data_keep <- data[!is.na(data[[config.cor$wt]]), variables_to_keep]
 row.names(data_keep) <- seq_len(dim(data_keep)[1])
 
 # remove events after tf_Day from estimation
-data_keep$EventTimePrimary[data_keep$EventTimePrimary >= tf_Day] <- tf_Day
-data_keep$EventIndPrimary[data_keep$EventTimePrimary >= tf_Day] <- 0
+data_keep$EventIndPrimary[data_keep$EventTimePrimary > tf_Day] <- 0
+data_keep$EventTimePrimary[data_keep$EventTimePrimary > tf_Day] <- tf_Day
 
 W <- data_keep[, covariates, drop = FALSE]
 A <- data_keep$Trt
@@ -104,7 +104,7 @@ if(impute_placebo_to_lod_over_2){
 }
 
 # summaries for report
-tab1 <- data.frame(table(Y[R == 1], A[R==1]))
+tab1 <- data.frame(table(Y[R == 1], A[R == 1]))
 colnames(tab1) <- c("Endpoint", "Vaccine", "n")
 
 tab2 <- data.frame(table(Y, A))
@@ -129,7 +129,7 @@ sl_library <- list(
   c("SL.glm", "screen_all"),
   #c("SL.glmnet", "screen_all"), # no need for screens
   #c("SL.xgboost", "screen_all"), # no need for screens
-  c("SL.ranger", "screen_all"),   # faster than cforest?
+  # c("SL.ranger", "screen_all"),   # faster than cforest?
   c("SL.gam", "screen_all"),
   c("SL.earth", "screen_all")
 )
@@ -147,10 +147,12 @@ if(run_survtmle){
       SL.ftime = sl_library, 
       verbose = TRUE,
       returnModels = TRUE,
-      maxIter = 2
+      maxIter = 2, 
+      gtol = 0.05
     )
     print(fit1)
 }
+
 
 if(!is.null(Args[2])){
   assay_for_this_run <- Args[2]
@@ -203,7 +205,8 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
       SL.trtMediator = sl_library,
       SL.eif = sl_library,
       verbose = TRUE,
-      maxIter = 2
+      maxIter = 2,
+      tolg = 0.05
     )
     print(fit2)
     fit <- compute_mediation_params(fit1, fit2)
