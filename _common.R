@@ -220,6 +220,9 @@ if (exists("COR")) {
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
         if (!is.null(config.cor$Earlyendpoint)) dat.mock$Earlyendpoint=dat.mock[[config.cor$Earlyendpoint]]
         
+        # this day may be different from tpeak. it is the origin of followup days
+        tpeak1 = as.integer(sub(".*[^0-9]+", "", config.cor$EventTimePrimary))
+        
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
         if(!is.null(dat.mock$risk_score)) {
