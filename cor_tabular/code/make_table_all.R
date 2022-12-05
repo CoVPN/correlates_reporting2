@@ -83,13 +83,15 @@ tlf <-
     tab_strtm1 = list(
       table_header = "",
       deselect = "Arm",
-      pack_row = "Arm"
+      pack_row = "Arm",
+      col1="7cm"
     ),
     
     tab_strtm2 = list(
       table_header = "",
       deselect = "Arm",
-      pack_row = "Arm"
+      pack_row = "Arm",
+      col1="7cm"
     ),
     
     tab_case_cnt = list(
