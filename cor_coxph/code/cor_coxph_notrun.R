@@ -183,3 +183,7 @@ with(dat.vac.seroneg, table(SevereEventIndPrimaryIncludeNotMolecConfirmedD29, !i
 
 
 with(dat.vac.seroneg, summary(Day35bindSpike))
+
+
+
+###################################################################################################

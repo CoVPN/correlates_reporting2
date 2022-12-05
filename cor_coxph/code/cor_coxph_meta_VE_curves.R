@@ -93,6 +93,10 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
                     lines(log10(ve.az[[a]]),        transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5)
                     if(show.cb) lines(log10(ve.az[[a%.%"LL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
                     if(show.cb) lines(log10(ve.az[[a%.%"UL"]]), transf(ve.az$VE/100), col=cols["AZ-COV002"], lwd=2.5, lty=3)
+    
+                    # save image data per some journal requirements
+                    img.dat=cbind(est=log10(ve.az[[a]]), lb=log10(ve.az[[a%.%"LL"]]), ub=log10(ve.az[[a%.%"UL"]]), VE=ve.az$VE/100)
+                    mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_","AZCOV002"))
                     
                     # plot az uk trial density. the values are extracted from fig4c of Feng et al
                     if(a=="pseudoneutid50"){
@@ -153,11 +157,12 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
                 axis(side=2,at=yat,labels=(yat*100)%.%"%")            
             } else {
                 yat=c(seq(0,.90,by=.1),.95)
-                axis(side=2,at=transf(yat),labels=(yat*100)%.%"%")            
+                if (file.name=="nejm") yat=c(yat, .975)
+                axis(side=2,at=transf(yat),labels=if(file.name=="nejm") yat*100 else (yat*100)%.%"%" )
             }
-            # save image data per Nat Microbiology requirements
-            img.dat=cbind(risks$marker[shown], transf(t(rbind(est, ci.band))[shown,]))
-            #mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_",x))
+            # save image data per some journal requirements
+            img.dat=cbind(risks$marker[shown], t(rbind(est, ci.band))[shown,])
+            mywrite.csv(img.dat, file=paste0("output/meta/meta_controlled_ve_curves",ifelse(log=="","","log"),"_",file.name, "_",a, "_",x))
             
             # add histogram
             # par(new=TRUE) #this changes ylim, so we cannot use it in this loop
@@ -438,6 +443,7 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="6", include.az=T, log="y")
 }
 
+# for PREVENT19 manuscript
 # COVE + ENSEMBLE/US + AZ + PREVENT19
 for (a in c("bindSpike", "pseudoneutid50")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="7", include.az=T)

@@ -152,7 +152,10 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-
+if(attr(config, "config") %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA")) {
+    # make endpointDate.Bin a factor variable
+    dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
+}
 
 
 ###################################################################################################
@@ -182,10 +185,6 @@ if (exists("COR")) {
         dat.mock=subset(dat.mock, Bserostatus==config$Bserostatus)
     }
     
-    # subset to require risk_score
-    # note that it is assumed there no risk_score is missing for anyone in the analysis population
-    if(!is.null(dat.mock$risk_score)) dat.mock=subset(dat.mock, !is.na(risk_score))
-    
     # for Novavax trial only, subset to US for the correlates modules
     # this is redundant in a way because only US participants have non-NA risk scores, but good to add
     if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
@@ -204,6 +203,8 @@ if (exists("COR")) {
                 as.formula(config$covariates_riskscore ))
         )
         comp.risk=TRUE
+    } else {
+        comp.risk=FALSE
     }
     
     ###########################################################
@@ -218,6 +219,18 @@ if (exists("COR")) {
         dat.mock$wt=dat.mock[[config.cor$wt]]
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
         if (!is.null(config.cor$Earlyendpoint)) dat.mock$Earlyendpoint=dat.mock[[config.cor$Earlyendpoint]]
+        
+        # this day may be different from tpeak. it is the origin of followup days
+        tpeak1 = as.integer(sub(".*[^0-9]+", "", config.cor$EventTimePrimary))
+        
+        # subset to require risk_score
+        # check to make sure that risk score is not missing in ph1
+        if(!is.null(dat.mock$risk_score)) {
+            if (!attr(config, "config") %in% c("janssen_na_EUA")) { # make an exception for backward compatibility
+                stopifnot(nrow(subset(dat.mock, ph1 & is.na(risk_score)))==0)
+            }
+            dat.mock=subset(dat.mock, !is.na(risk_score))
+        }        
     
         # data integrity checks
         if (!is.null(dat.mock$ph1)) {
@@ -284,8 +297,12 @@ if (exists("COR")) {
 #        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==1 & ph1), t.tmp)
 #        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==0 & ph1), t.tmp)
 #        overall.ve = c(1 - prev.vacc/prev.plac)    
-#        myprint(prev.plac, prev.vacc, overall.ve)
+#        myprint(prev.plac, prev.vacc, overall.ve)        
         
+    } else {
+        # subset to require risk_score
+        # note that it is assumed there no risk_score is missing for anyone in the analysis population. in the case of single time point COR, we do a check for that after definining ph1, which is why we have to do subset separately here again
+        if(!is.null(dat.mock$risk_score)) dat.mock=subset(dat.mock, !is.na(risk_score))
         
     }
     
@@ -460,6 +477,17 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
         lloqs["pseudoneutid50"]=75*0.0653  #4.8975
         uloqs["pseudoneutid50"]=12936*0.0653 # 844.7208
         pos.cutoffs["pseudoneutid50"]=lloqs["pseudoneutid50"]
+        
+        # repeat for two synthetic markers that are adapted to SA and LA
+        llods["pseudoneutid50sa"]=NA  
+        lloqs["pseudoneutid50sa"]=75*0.0653  #4.8975
+        uloqs["pseudoneutid50sa"]=12936*0.0653 # 844.7208
+        pos.cutoffs["pseudoneutid50sa"]=lloqs["pseudoneutid50sa"]
+        
+        llods["pseudoneutid50la"]=NA  
+        lloqs["pseudoneutid50la"]=75*0.0653  #4.8975
+        uloqs["pseudoneutid50la"]=12936*0.0653 # 844.7208
+        pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
     }
     
 } else if(study_name=="PREVENT19") {

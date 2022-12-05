@@ -25,6 +25,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
     # many variables are not passed but defined in the scope of marginalized.risk.svycoxph.boot
     fc.1=function(data.ph2, data, categorical.s, n.dean=FALSE){
         if (comp.risk) {
+        # competing risk implementation
             newdata=data.ph2
             sapply(ss, function(x) {
                 newdata[[marker.name]]=x
@@ -33,6 +34,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
             })
         
         } else {        
+        # non-competing risk implementation
             # inline design object b/c it may also throw an error
             fit.risk.1=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)))        
             if ( !inherits(fit.risk.1, "try-error" )) {
@@ -52,22 +54,28 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
                 ifelse (inherits(risks, "try-error"), NA, weighted.mean(risks, newdata$wt))
             })
         } else {
-            marginalized.risk.threshold (form.0, marker.name, data=data.ph2, weights=data.ph2$wt, t=t, ss=ss)
+            out = try(marginalized.risk.threshold (form.0, marker.name, data=data.ph2, weights=data.ph2$wt, t=t, ss=ss))
+            if ( !inherits(out, "try-error" )) {
+                out
+            } else {
+                NA # no need to rep, b/c results will be a list when called in bootstrap. for the point est, it is unlikely to be NA
+            }
         }
     }    
     
     
     if (type==1) {
         # conditional on S=s (quantitative)
-        ss=sort(c(
-            # Lars quantiles so that to be consistent with his analyses 
-            # every 5% to include s1 and s2 for sensitivity analyses
+        ss=unique(sort(c(
+            # Lars quantiles so that to be consistent with his analyses, also add every 5% to include s1 and s2 for sensitivity analyses
             report.assay.values(data[[marker.name]][data$EventIndPrimary==1], marker.name.to.assay(marker.name)), 
             # 2.5% and 97.5% as the leftmost and rightmost points 
             wtd.quantile(data[[marker.name]], data$wt, c(0.025,0.05,0.95,0.975)),
             # equally spaced values so that the curves look good  
-            seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)]
-        ))
+            seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)],
+            # useful for reports
+            if (log10(100)>min(data[[marker.name]], na.rm=TRUE) & log10(100)<max(data[[marker.name]], na.rm=TRUE)) log10(100)
+        )))
         prob = fc.1(data.ph2, data, n.dean=TRUE, categorical.s=F)
         if (!comp.risk) {
             n.dean=prob[1]
