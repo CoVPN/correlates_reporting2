@@ -15,8 +15,8 @@ print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)
 )
 
-run_survtmle <- Args[2]
-impute_placebo_to_lod_over_2 <- Args[3]
+run_survtmle <- (Args[2] == "TRUE")
+impute_placebo_to_lod_over_2 <- (Args[3] == "TRUE")
 
 if(study_name == "ENSEMBLE"){
   if(length(unique(data$Region)) == 1){
