@@ -1,10 +1,14 @@
+for run_survtmle in TRUE FALSE
+do
+for impute_placebo in TRUE FALSE
+do
 # Geog regions pooled COVID-19 endpoint: 4 markers, for Overall, Senior, and non-Senior
 for TRIAL in janssen_pooled_partA janssen_pooled_partAsenior janssen_pooled_partAnonsenior
 do
     for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29ADCP
     do
     sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${MARKER}"
+           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${run_survtmle} ${impute_placebo} ${MARKER}"
     done
 done
 
@@ -14,7 +18,7 @@ do
     for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29pseudoneutid50la Day29ADCP
     do
     sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${MARKER}"
+           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${run_survtmle} ${impute_placebo} ${MARKER}"
     done
 done
 
@@ -24,7 +28,7 @@ do
     for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29pseudoneutid50sa Day29ADCP
     do
     sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${MARKER}"
+           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${run_survtmle} ${impute_placebo} ${MARKER}"
     done
 done
 
@@ -34,7 +38,7 @@ do
     for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29ADCP
     do
     sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${MARKER}"
+           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${run_survtmle} ${impute_placebo} ${MARKER}"
     done
 done
 
@@ -44,7 +48,7 @@ do
     for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29ADCP
     do
     sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29SevereIncludeNotMolecConfirmed ${MARKER}"
+           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29SevereIncludeNotMolecConfirmed ${run_survtmle} ${impute_placebo} ${MARKER}"
     done
 done
 
@@ -54,7 +58,7 @@ do
     for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29pseudoneutid50la Day29ADCP
     do
     sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29SevereIncludeNotMolecConfirmed ${MARKER}"
+           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29SevereIncludeNotMolecConfirmed ${run_survtmle} ${impute_placebo} ${MARKER}"
     done
 done
 
@@ -64,15 +68,18 @@ do
     for MARKER in Day57pseudoneutid50
     do
         sbatch --export=TRIAL=${TRIAL} \
-       --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D57 ${MARKER}"
+       --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D57 ${run_survtmle} ${impute_placebo} ${MARKER}"
     done
 
     for MARKER in Day29pseudoneutid50
     do
         sbatch --export=TRIAL=${TRIAL} \
-       --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29 ${MARKER}"
+       --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29 ${run_survtmle} ${impute_placebo} ${MARKER}"
     done
 done
 
 sbatch --export=TRIAL=azd1222_bAb \
-       --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29 Day29bindSpike"
+       --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29 ${run_survtmle} ${impute_placebo} Day29bindSpike"
+
+done
+done

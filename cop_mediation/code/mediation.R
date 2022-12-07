@@ -15,7 +15,9 @@ print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)
 )
 
-impute_placebo_to_lod_over_2 <- FALSE
+run_survtmle <- Args[2]
+impute_placebo_to_lod_over_2 <- Args[3]
+
 if(study_name == "ENSEMBLE"){
   if(length(unique(data$Region)) == 1){
     covariates <- "risk_score"
@@ -24,23 +26,23 @@ if(study_name == "ENSEMBLE"){
     data$Region1 <- as.numeric(data$Region == 1)
     data$Region2 <- as.numeric(data$Region == 2)
   }
-  run_survtmle <- TRUE
+  # run_survtmle <- TRUE
   cut_size <- 6
-  impute_placebo_to_lod_over_2 <- TRUE
+  # impute_placebo_to_lod_over_2 <- TRUE
 }else if(study_name == "COVE"){
   covariates <- c("MinorityInd", "HighRiskInd", "risk_score")
-  run_survtmle <- FALSE
+  # run_survtmle <- FALSE
   cut_size <- 6
 }else if(study_name == "AZD1222"){
   covariates <- c("Age", "risk_score")
-  run_survtmle <- TRUE
+  # run_survtmle <- TRUE
   cut_size <- 6
-  impute_placebo_to_lod_over_2 <- TRUE
+  # impute_placebo_to_lod_over_2 <- TRUE
 }else if(study_name == "HVTN705"){
   covariates <- c("RSA", "Age", "BMI", "Riskscore")
-  run_survtmle <- FALSE
+  # run_survtmle <- FALSE
   cut_size <- 7
-  impute_placebo_to_lod_over_2 <- TRUE
+  # impute_placebo_to_lod_over_2 <- TRUE
 }
 
 
@@ -127,12 +129,13 @@ saveRDS(
 sl_library <- list(
   c("SL.mean", "screen_all"),
   c("SL.glm", "screen_all"),
-  #c("SL.glmnet", "screen_all"), # no need for screens
-  #c("SL.xgboost", "screen_all"), # no need for screens
+  # c("SL.glmnet", "screen_all"), # no need for screens
+  # c("SL.xgboost", "screen_all"), # no need for screens
   # c("SL.ranger", "screen_all"),   # faster than cforest?
   c("SL.gam", "screen_all"),
   c("SL.earth", "screen_all")
 )
+
 
 # results without marker used to compute PM
 # does not need to be updated with each marker
@@ -148,14 +151,14 @@ if(run_survtmle){
       verbose = TRUE,
       returnModels = TRUE,
       maxIter = 2, 
-      gtol = 0.05
+      gtol = 0.01
     )
     print(fit1)
 }
 
 
-if(!is.null(Args[2])){
-  assay_for_this_run <- Args[2]
+if(!is.null(Args[4])){
+  assay_for_this_run <- Args[4]
 }else{
   assay_for_this_run <- include_assays
 }
@@ -187,6 +190,7 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
       glm_QY_WA = NULL,
       SL_QY_WA = sl_library
   	)
+    print(fit)
   }else{
     fit2 <- survtmle::hazard_tmle(
       ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
@@ -206,7 +210,7 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
       SL.eif = sl_library,
       verbose = TRUE,
       maxIter = 2,
-      tolg = 0.05
+      tolg = 0.01
     )
     print(fit2)
     fit <- compute_mediation_params(fit1, fit2)
@@ -225,9 +229,11 @@ colnames(full_result) <- c("Assay", "Direct VE", "Indirect VE", "Prop. mediated"
 saveRDS(
   full_result, 
   file = here::here("output", 
-    paste0("full_result_", 
+    paste0("full_result_",
            attr(config,"config"), "_",
            COR, "_", 
+           ifelse(run_survtmle, "survival_", "binary_"),
+           ifelse(impute_placebo_to_lod_over_2, "impute_", "noimpute_"),
            paste0(include_assays[include_assays %in% assay_for_this_run], collapse = "_"),
            ".rds")
   )
