@@ -37,7 +37,7 @@ if (class(MaxbAbB) == "try-error") {  ## bAb assays are unavailable
 }
 
 MaxID50ID80B <- try(dat.long.twophase.sample %>%
-  filter(assay %in% c("pseudoneutid50", "pseudoneutid80")) %>%
+  filter(assay %in% c("pseudoneutid50", "pseudoneutid80", "pseudoneutid50sa", "pseudoneutid80la")) %>%
   select(B) %>%
   max(na.rm = TRUE), silent = TRUE)
 
