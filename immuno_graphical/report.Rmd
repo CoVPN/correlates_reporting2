@@ -36,7 +36,7 @@ is.ensemble <- study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" # only ENSEMB
 
 config <- config::get(config = Sys.getenv("TRIAL"))
 if.pair <- ifelse(length(config$assays)>1, 1, 0)
-if.pos.exist <- ifelse(study_name=="AZD1222", 0, 1)
+if.pos.exist <- 1#ifelse(study_name=="AZD1222", 0, 1)
 
 minority.disclaimer <- switch(study_name, 
                               "COVE"="",
