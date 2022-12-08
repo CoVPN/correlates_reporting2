@@ -103,7 +103,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")){
 
 ### Baseline SARS-CoV-2 Positive
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis', eval = if.pos.exist==1}
 
 bsero="BaselinePos"
 bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
@@ -113,7 +113,7 @@ trt="vaccine"
 for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")){
   
   # only doable when there are >1 assays
-  if (if.pair==1 & if.pos.exist==1){
+  if (if.pair==1){
       
     for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
       
@@ -139,7 +139,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")){
 
 ### Baseline SARS-CoV-2 Positive Placebo Arm
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis', eval = if.pos.exist==1}
 
 bsero="BaselinePos"
 bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
@@ -149,7 +149,7 @@ trt="placebo"
 for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")){
   
   # only doable when there are >1 assays
-  if (if.pair==1 & if.pos.exist==1){
+  if (if.pair==1){
     
     for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
       
@@ -230,7 +230,7 @@ for(tp in times[!grepl("Delta", times)]) {
 
 ### Baseline SARS-CoV-2 Positive
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis', eval = if.pos.exist==1}
  
 bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
 bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
@@ -253,7 +253,7 @@ if (if.pos.exist==1) {
 
 ### Baseline SARS-CoV-2 Positive Placebo Arm
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis', eval = if.pos.exist==1}
 
 bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
 bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
@@ -318,20 +318,18 @@ for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"ove
 
 ### Baseline SARS-CoV-2 Positive
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis', eval = if.pos.exist==1}
 
 bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
 bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
 
-if (if.pos.exist==1){  
-  for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
-    
-    tpLabel <- gsub("ay ", "", labels.time[tp])
-    
-    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
-    cat("\\clearpage", sep = '\n')
-  }
+for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+  
+  tpLabel <- gsub("ay ", "", labels.time[tp])
+  
+  res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+  cat("\\clearpage", sep = '\n')
 }
     
 ```
@@ -432,7 +430,7 @@ for (dm in demos){
 
 ### Baseline SARS-CoV-2 Positive
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis', eval = if.pos.exist==1}
 
 bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
 bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
@@ -450,19 +448,16 @@ race and ethnic group","age and dichotomous classification of
 race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(study_name=="ENSEMBLE")"HIV
 positivity")
 names(demoLabels) <- demos
-
-if (if.pos.exist==1){ 
   
-  for (dm in demos){
-    for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
-      
-      tpLabel <- gsub("ay ", "", labels.time[tp])
-      dmLabel <- demoLabels[dm]
-      
-      res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_demographic.Rmd')), quiet = TRUE)
-      cat(res, sep = '\n')
-      cat("\\clearpage", sep = '\n')
-    }
+for (dm in demos){
+  for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    
+    tpLabel <- gsub("ay ", "", labels.time[tp])
+    dmLabel <- demoLabels[dm]
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_demographic.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
   }
 }
     
@@ -470,7 +465,7 @@ if (if.pos.exist==1){
 
 ### Baseline SARS-CoV-2 Positive Placebo Arm
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis', eval = if.pos.exist==1}
 
 bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
 bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
@@ -489,18 +484,15 @@ race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(stu
 positivity")
 names(demoLabels) <- demos
 
-if (if.pos.exist==1){ 
-  
-  for (dm in demos){
-    for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
-      
-      tpLabel <- gsub("ay ", "", labels.time[tp])
-      dmLabel <- demoLabels[dm]
-      
-      res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_demographic.Rmd')), quiet = TRUE)
-      cat(res, sep = '\n')
-      cat("\\clearpage", sep = '\n')
-    }
+for (dm in demos){
+  for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    
+    tpLabel <- gsub("ay ", "", labels.time[tp])
+    dmLabel <- demoLabels[dm]
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_demographic.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
   }
 }
     
@@ -547,7 +539,7 @@ for (dm in demos){
 
 ### Baseline SARS-CoV-2 Positive
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis', eval = if.pos.exist==1}
 
 bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
 bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
@@ -583,7 +575,7 @@ for (dm in demos){
 \clearpage
 ### Baseline SARS-CoV-2 Positive Placebo Arm
 
-```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis', eval = if.pos.exist==1}
 
 bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
 bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")

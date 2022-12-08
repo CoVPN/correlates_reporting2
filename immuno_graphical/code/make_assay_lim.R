@@ -82,6 +82,19 @@ assay_lim[assay_immuno %in% live_assays, !grepl("Delta", times), "ub"] <-
 assay_lim[, grepl("Delta", times), "lb"] <- -2 # lower bound same for all assays - delta
 assay_lim[assay_immuno %in% bAb_assays, grepl("Delta", times), "ub"] <- 
   ceiling(MaxbAb - min(log10(llods[bAb_assays] / 2), na.rm=T)) + ceiling(MaxbAb - min(log10(llods[bAb_assays] / 2), na.rm=T)) %% 2
+
+if (study_name=="AZD1222" & grepl("bind", assays)) {
+  assay_lim[assay_immuno %in% bAb_assays, grepl("Delta", times), "ub"] <- 
+    ceiling(MaxbAb - min(log10(lloqs[bAb_assays] / 2), na.rm=T)) + ceiling(MaxbAb - min(log10(lloqs[bAb_assays] / 2), na.rm=T)) %% 2
+}# prevent19 and AZ has llod for bAb as NA, use lloq instead
+if (study_name=="PREVENT19") {
+  assay_lim["bindSpike", grepl("Delta", times), "ub"] <- 
+    ceiling(MaxbAb - min(log10(lloqs["bindSpike"] / 2), na.rm=T)) + ceiling(MaxbAb - min(log10(lloqs["bindSpike"] / 2), na.rm=T)) %% 2
+  
+  assay_lim["bindRBD", grepl("Delta", times), "ub"] <- 
+    ceiling(MaxbAb - min(log10(lloqs["bindRBD"] / 2), na.rm=T)) + ceiling(MaxbAb - min(log10(lloqs["bindRBD"] / 2), na.rm=T)) %% 2
+}
+
 assay_lim[assay_immuno %in% nAb_assays, grepl("Delta", times), "ub"] <- 
   ceiling(MaxID50ID80 - min(log10(llods[nAb_assays] / 2), na.rm=T)) + ceiling(MaxID50ID80 - min(log10(llods[nAb_assays] / 2), na.rm=T)) %% 2
 assay_lim[assay_immuno %in% live_assays, grepl("Delta", times), "ub"] <- 
