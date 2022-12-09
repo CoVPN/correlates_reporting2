@@ -63,7 +63,8 @@ fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
                            Z = Z_treatmentDAT,
                            C = C,
                            z_lib = "SL.glm",
-                           scale = "identity", # new argument
+                           scale = "logit", # scale on which intervals are computed (helps with intervals lying outside (0, 1))
+                           ipc_scale = "identity", # scale on which IPW correction is applied
                            vimp = FALSE,
                            mc.cores = num_cores
 )
