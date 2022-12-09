@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]
+  then
+    echo "********* Please provide a module name, e.g. cor_coxph, as an argument."
+    exit
+fi
+
+
+for T in vat08m_nonnaive
+do
+    export TRIAL=$T 
+    echo $TRIAL
+    if [[ "$1" == "cor_report" ]] 
+    then
+        make cor_report
+    else
+        make -k -C $1 all
+        bash ./_build_chapter.sh $1
+    fi
+
+done

@@ -24,7 +24,7 @@ getResponder <- function(data,
                          cutoff.name, 
                          times=times, 
                          assays=assays, 
-                         folds=c(2, 4),
+                         #folds=c(2, 4),
                          grtns=c(2, 4),
                          responderFR = 4,
                          pos.cutoffs = pos.cutoffs) {
@@ -38,24 +38,25 @@ getResponder <- function(data,
       
       data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
       data[, post] <- pmin(data[, post], log10(uloqs[j]))
-      data[, delta] <- ifelse(10^data[, post] < cutoff[j], log10(cutoff[j]/2), data[, post])-ifelse(10^data[, bl] < cutoff[j], log10(cutoff[j]/2), data[, bl])
+      #data[, delta] <- ifelse(10^data[, post] < cutoff[j], log10(cutoff[j]/2), data[, post])-ifelse(10^data[, bl] < cutoff[j], log10(cutoff[j]/2), data[, bl])
       
-      for (k in folds){
-        data[, paste0(post, k, cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
-      }
+      #for (k in folds){
+      #  data[, paste0(post, k, cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
+      #}
       
       for (k in grtns){
         data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
       }
       
-      if (!is.na(pos.cutoffs[j])) {
+      # if (!is.na(pos.cutoffs[j])
+      if (grepl("bind", j)) {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
         data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
       } else {
         data[, paste0(post, "Resp")] <- as.numeric(
-          (data[, bl] < log10(cutoff[j]) & data[, post] > log10(cutoff[j])) |
-            (data[, bl] >= log10(cutoff[j]) & data[, paste0(post, "FR", responderFR)] == 1))
-        data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(cutoff[j]))
+          (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > log10(pos.cutoffs[j])) |
+            (data[, bl] >= log10(pos.cutoffs[j]) & data[, paste0(post, "FR", responderFR)] == 1))
+        data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
       }
     }
   }
@@ -65,9 +66,14 @@ getResponder <- function(data,
 # a function to define response rate by group
 get_resp_by_group <- function(dat=dat, group=group){
   
-  if( (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & !grepl("start1", COR)) {wt="wt.D29"
-  } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & grepl("start1", COR)) {wt="wt.D29start1"
-    } else {wt=paste0("wt.D", tpeak)}
+  if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19") {
+    dat[which(dat$time=="Day 1"), "wt"]=1
+    dat[which(dat$time!="Day 1"), "wt"]=dat[which(dat$time!="Day 1"), config.cor$wt] # wt.D29 or wt.D29start1
+  } else {
+    dat[which(dat$time=="Day 1" | !dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), "wt"]=1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
+    dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[1])]
+    dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[length(timepoints)])]
+    }
   
   complete <- complete.cases(dat[, group])
   
@@ -76,10 +82,10 @@ get_resp_by_group <- function(dat=dat, group=group){
     group_by_at(group) %>%
     mutate(counts = n(),
            counts_severe = sum(severe, na.rm=T),
-           num = round(sum(response * ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)), na.rm=T), 1), # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
-           num_severe = round(sum(response * ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)) & severe==1, na.rm=T), 1),
-           denom = round(sum(ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)), na.rm=T), 1),
-           denom_severe = round(sum(ifelse(!cohort_event %in% c("Post-Peak Cases", "Non-Cases"), 1, !!as.name(wt)) & severe==1, na.rm=T), 1),
+           num = sum(response * wt, na.rm=T), 
+           num_severe = sum(response * wt & severe==1, na.rm=T),
+           denom = sum(wt, na.rm=T),
+           denom_severe = sum(wt & severe==1, na.rm=T),
            N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
            N_RespRate_severe = paste0(counts_severe, "\n",round(num_severe/denom_severe*100, 1),"%"),
            min = min(value),

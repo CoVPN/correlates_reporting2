@@ -18,7 +18,7 @@ library(stringr)
 suppressMessages(conflicted::conflict_prefer("filter", "dplyr"))
 suppressMessages(conflicted::conflict_prefer("summarise", "dplyr"))
 source(here("code", "utils.R"))
-load(file = here("output", "objects_for_running_SL.rda"))
+load(file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 
 # Create fancy/tidy screen names for use in tables and figures
 # @param avgs dataframe containing Screen, Learner, AUCs information as columns
@@ -147,7 +147,7 @@ readin_SLobjects_fromFolder <- function(data_path, file_pattern, endpoint, trt){
 
 # Read CV.SL object and save relevant columns as dataframe
 # For vaccine, yd57 endpoint
-data_folder <- here("output")
+data_folder <- here("output", Sys.getenv("TRIAL"))
 if(study_name %in% c("COVE", "MockCOVE")){
   cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
     filter(file %in% c(paste0("CVSLaucs_vacc_EventIndPrimaryD57_", varset_names[1:34], ".rds"))) %>%
@@ -157,7 +157,7 @@ if(study_name %in% c("COVE", "MockCOVE")){
            varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
     arrange(varsetNo)
 
-  saveRDS(cvaucs_vacc, file = here("output", "cvaucs_vacc_EventIndPrimaryD57.rds"))
+  saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_EventIndPrimaryD57.rds"))
 }
 
 
@@ -169,5 +169,5 @@ if(study_name == "HVTN705"){
            varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
     arrange(varsetNo)
 
-  saveRDS(cvaucs_vacc, file = here("output", "cvaucs_vacc_EventIndPrimaryD210.rds"))
+  saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_EventIndPrimaryD210.rds"))
 }

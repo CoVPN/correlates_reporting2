@@ -19,6 +19,7 @@ bibliography: ref.bib
 renv::activate(project = here::here(".."))    
 ```
 
+\pagenumbering{gobble}
 
 \counterwithin{table}{section}
 \counterwithin{figure}{section}
@@ -26,8 +27,7 @@ renv::activate(project = here::here(".."))
 \clearpage
 
 
-# COVE + ENSEMBLE + AZ
-
+# COVE + ENSEMBLE + AZCOV002
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub1.Rmd')), quiet = TRUE)
@@ -35,8 +35,15 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 }
 ```
 
-# COVE + ENSEMBLE regions
+# COVE + ENSEMBLE regions + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub6.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
 
+# COVE + ENSEMBLE regions
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub2.Rmd')), quiet = TRUE)
@@ -45,16 +52,14 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 ```
 
 # ENSEMBLE regions
-
 ```{r, echo=FALSE, results='asis'}
-for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
+for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub3.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```
 
-# COVE + ENSEMBLE/US + AZ
-
+# COVE + ENSEMBLE/US + AZCOV002
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub4.Rmd')), quiet = TRUE)
@@ -63,7 +68,6 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 ```
 
 # COVE + ENSEMBLE/US
-
 ```{r, echo=FALSE, results='asis'}
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub5.Rmd')), quiet = TRUE)
@@ -71,33 +75,81 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 }
 ```
 
-# COVE + ENSEMBLE regions + AZ
-
+# COVE + ENSEMBLE US + PREVENT19 + AZCOV002
 ```{r, echo=FALSE, results='asis'}
-for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
-  res = knitr::knit_child(c(here::here('meta_collate_sub6.Rmd')), quiet = TRUE)
-  cat(res, sep = '\n')
-}
-```
-
-
-# COVE + ENSEMBLE regions + AZ + PREVENT19
-
-```{r, echo=FALSE, results='asis'}
-for (a in c("bindSpike")) {
+for (a in c("pseudoneutid50","bindSpike")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub7.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```
 
-# COVE + ENSEMBLE regions + PREVENT19
-
+# COVE + ENSEMBLE US + PREVENT19
 ```{r, echo=FALSE, results='asis'}
-for (a in c("bindSpike")) {
+for (a in c("pseudoneutid50","bindSpike")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub8.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```
+
+# COVE + ENSEMBLE US + PREVENT19 + AZD1222 + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub9.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# COVE + ENSEMBLE US + AZD1222 + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub10.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+# AZD1222 + AZCOV002
+```{r, echo=FALSE, results='asis'}
+for (a in c("pseudoneutid50","bindSpike")) {
+  res = knitr::knit_child(c(here::here('meta_collate_sub11.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+```
+
+
+# ID50, ID50 (LA), and ID50 (SA)
+
+\begin{figure}
+  \center
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curveslog_janssen_la_real.pdf}
+  \hspace{10pt}
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curves_janssen_la_real.pdf}
+  \caption{Controlled VE curves. 
+  ENSEMBLE: starting 1 days post Day 29; LA: ending 48 days. 
+  }
+\end{figure}
+\clearpage
+
+\begin{figure}
+  \center
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curveslog_janssen_sa_real.pdf}
+  \hspace{10pt}
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curves_janssen_sa_real.pdf}
+  \caption{Controlled VE curves. 
+  ENSEMBLE: starting 1 days post Day 29; SA: ending 40 days. 
+  }
+\end{figure}
+\clearpage
+
+\begin{figure}
+  \center
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curveslog_1.pdf}
+  \hspace{10pt}
+  \includegraphics[width=.48\textwidth,keepaspectratio]{output/meta/meta_controlled_ve_curves_1.pdf}
+  \caption{Controlled VE curves. 
+  ENSEMBLE: starting 1 days post Day 29; US: ending 53 days; LA: ending 48 days; SA: ending 40 days. 
+  }
+\end{figure}
+\clearpage
 
 
 
@@ -111,5 +163,3 @@ for (a in c("bindSpike")) {
     \input{output/meta/id50_ve.tex}\\
 \end{center}
 \end{table}
-
-

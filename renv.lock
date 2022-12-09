@@ -931,12 +931,12 @@
       "Version": "0.1.5",
       "Source": "GitHub",
       "RemoteType": "github",
+      "Remotes": "github::tlverse/hal9001@devel",
       "RemoteHost": "api.github.com",
-      "RemoteUsername": "nhejazi",
       "RemoteRepo": "haldensify",
+      "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "16350cc39b68e61566f03a11f633e08073405355",
-      "Remotes": "github::tlverse/hal9001@devel",
       "Hash": "47c34f41535fb9c16bd44e760d61cb67"
     },
     "haven": {
@@ -1079,15 +1079,15 @@
     },
     "kyotil": {
       "Package": "kyotil",
-      "Version": "2021.6-16",
+      "Version": "2022.9-17",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "kyotil",
       "RemoteUsername": "youyifong",
       "RemoteRef": "HEAD",
-      "RemoteSha": "747b28ab902e16d9cbe4da0095f71e75489d6009",
-      "Hash": "f00706e1862a9d267b1a01854c2b44cd"
+      "RemoteSha": "38a6d0e9f63b568518c3a40c6c3e1904b2bcdea8",
+      "Hash":      "d51d9b607bbf27599a0f8503f908cd5d"
     },
     "labeling": {
       "Package": "labeling",
@@ -1217,15 +1217,15 @@
     },
     "marginalizedRisk": {
       "Package": "marginalizedRisk",
-      "Version": "2021.10-22",
+      "Version": "2022.7-26",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "marginalizedRisk",
       "RemoteUsername": "youyifong",
       "RemoteRef": "HEAD",
-      "RemoteSha": "24dbdfa28cfdb5476367dcb7d2a6ffd776c787b6",
-      "Hash": "89ae2b1c282cc6135bd70c9cd053828c"
+      "RemoteSha": "ef9625ed8cda59b1fc16bc991b781800c66edf02",
+      "Hash": "c4337823c55443a4b1fc0543763bc065"
     },
     "markdown": {
       "Package": "markdown",
@@ -2150,15 +2150,15 @@
     },
     "vimp": {
       "Package": "vimp",
-      "Version": "2.2.7",
+      "Version": "2.2.10",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "vimp",
       "RemoteUsername": "bdwilliamson",
       "RemoteRef": "HEAD",
-      "RemoteSha": "b4c9f37f3fd12ff4d46d9f2beca58ced6bb5ba48",
-      "Hash": "bf9162e71eb7cdf608e303f4ad2fdbc1"
+      "RemoteSha": "a36c80060b79f090cbf9c4149054e2dd20bb4221",
+      "Hash": "41db5910a2ebb9c34a7ff643b5d4bcdc"
     },
     "viridis": {
       "Package": "viridis",

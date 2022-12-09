@@ -1,6 +1,15 @@
 #!/bin/bash
 
-for T in  janssen_pooled_realbAb janssen_pooled_realADCP janssen_pooled_realPsV  janssen_na_realbAb janssen_na_realADCP janssen_na_realPsV janssen_la_realbAb janssen_la_realADCP janssen_la_realPsV janssen_sa_realbAb janssen_sa_realADCP janssen_sa_realPsV 
+
+if [ $# -eq 0 ]
+  then
+    echo "********* Please provide a module name, e.g. cor_coxph, as an argument."
+    exit
+fi
+
+
+
+for T in  janssen_pooled_partA janssen_na_partA janssen_la_partA janssen_sa_partA
 do
     export TRIAL=$T 
     echo $TRIAL

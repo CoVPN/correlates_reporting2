@@ -1,4 +1,4 @@
-Sys.setenv(TRIAL = "janssen_pooled_realPsV"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
+Sys.setenv(TRIAL = "janssen_pooled_EUA"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -153,6 +153,8 @@ tmp=subset(dat.vac.seroneg.id50, ph2==1, select=c(EventIndPrimary, EventTimePrim
 tail(tmp[order(tmp[,2]),], 50)
 
 
+
+
 tmp=subset(dat.vac.seroneg.id50.na, ph2==1, select=c(EventIndPrimary, EventTimePrimary))
 tmp[order(tmp[,2]),]
 # case 66 42
@@ -181,3 +183,7 @@ with(dat.vac.seroneg, table(SevereEventIndPrimaryIncludeNotMolecConfirmedD29, !i
 
 
 with(dat.vac.seroneg, summary(Day35bindSpike))
+
+
+
+###################################################################################################

@@ -1,0 +1,37 @@
+
+
+\begin{table}[H] 
+\centering
+\input{`r pathCoRoutput`/CoR_itxn_`r a`_`r b`}  
+\caption{ Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} in the vaccine arm. Hazard ratios per 10-fold increment in the marker are shown. `r special.note`}
+\end{table}
+
+
+
+\begin{figure}
+\center
+  \subfloat[][]{\includegraphics
+  [width=.48\textwidth,keepaspectratio]{`r pathCoRoutput`/itxn_marginalized_risks_`r a`_`r b`}}
+  \hspace{10pt}
+  \subfloat[][]{\includegraphics
+  [width=.48\textwidth,keepaspectratio]{`r pathCoRoutput`/itxn_marginalized_risks_`r b`_`r a`}}
+\caption{Marginalized cumulative risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} as functions of Day `r tpeak` marker with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates_`r study_name`} replicates). Marginalization is overall the vaccine arm. The horizontal lines indicate the overall cumulative risk of the placebo arm. Histogram of the marker in the vaccine arm is overlaid. `r special.note`}
+\end{figure}
+\clearpage
+
+
+
+
+<!-- \clearpage -->
+
+<!-- \begin{table}[H]  -->
+<!-- \centering -->
+<!-- \input{`r pathCoRoutput`/CoR_itxn_1_Day210`r a`}   -->
+<!-- \caption{ Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} in the whole trial;: vaccine+placebo, where structural knowledge is used to set V1V2 binding to 0 and CD4+ T cells IFNg/IL2 to -2 in the placebo arm. Hazard ratios per 10-fold increment in the marker are shown. `r special.note`} -->
+<!-- \end{table} -->
+
+<!-- \begin{figure}[H] -->
+<!-- \centering -->
+<!-- \includegraphics[width=.6\textwidth,keepaspectratio]{`r pathCoRoutput`/itxn_marginalized_risks_1_Day210`r a`} -->
+<!-- \caption{Marginalized cumulative risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} as functions of Day `r tpeak` IgG3 1428 V1V2 (=s) at three levels of CD4+ T-cells IFN-g/IL-2 with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates_`r study_name`} replicates). Marginalization is overall the whole trial, including placebo where structural knowledge is used to set V1V2 to 0 and CD4+ T cells IFNg/IL2 to -2 in the placebo arm. The horizontal lines indicate the overall cumulative risk of the placebo arm. Histogram of the marker in the vaccine arm is overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_label[assay], "=", lloxs[assay], ".")` `r special.note`} -->
+<!-- \end{figure} -->

@@ -72,7 +72,7 @@ monotone <- FALSE
 TRIAL <- Sys.getenv("TRIAL")
 TRIAL <- "janssen_trial_real"
 ENSEMBLE <- FALSE
-if(tolower(TRIAL) %in% c("janssen_pooled_mock", "janssen_pooled_real", "janssen_na_mock", "janssen_na_real", "janssen_la_mock", "janssen_la_real", "janssen_sa_mock", 'janssen_sa_real', "janssen_trial_real")) {
+if(tolower(TRIAL) %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", "janssen_na_EUA", "janssen_la_mock", "janssen_la_EUA", "janssen_sa_mock", 'janssen_sa_EUA', "janssen_trial_EUA")) {
   ENSEMBLE <- TRUE
   
   keys <-  c("D29", "D29start1") 

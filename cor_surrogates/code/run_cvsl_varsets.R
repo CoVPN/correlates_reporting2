@@ -1,4 +1,4 @@
-# Sys.setenv(TRIAL = "hvtn705")
+# Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 #-----------------------------------------------
 # obligatory to append to the top of each script
@@ -10,13 +10,13 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
-# common setup for CV super learners and variable importance
-source(here::here("code", "cor_surrogates_setup.R"))
-
 # obtain the job id
 #args <- commandArgs(trailingOnly = TRUE)
 #job_id <- as.numeric(args[2])
 job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+
+# common setup for CV super learners and variable importance
+source(here::here("code", "cor_surrogates_setup.R"))
 
 # grab the current variable set based on the job id
 this_var_set <- varset_matrix[job_id, ]
@@ -33,6 +33,39 @@ if (job_id == 1){
     select_if(function(x) any(!is.na(x))) # Drop column if it has 0 variance, and returned all NAN's from scale function.
 }
 
+
+cvControlVar = list(V = V_outer, stratifyCV = TRUE)
+cvControl_quote = quote(list(V = V_outer, stratifyCV = TRUE))
+
+if(V_inner == length(Y) - 1){
+  V_inner_quote <- paste0("length(Y) - 1 = ", length(Y) - 1)
+}
+innerCvControlVar = list(list(V = V_inner))
+innerCvControl_quote = quote(list(list(V = V_inner)))
+
+# CV.SL inputs
+familyVar = "binomial"
+methodVar = "method.CC_nloglik"
+interval_scaleVar = "logit"
+ipc_scaleVar <- "identity"
+ipc_est_typeVar = "ipw"
+cvsl_args <- data.frame(matrix(ncol = 2, nrow = 9)) %>%
+  rename(Argument = X1,
+         Value = X2) %>%
+  mutate(Argument = as.character(c("Cases/Total Subjects in vaccine group (%)", "family",
+                                   "method", "CI scale", "IPW correction scale", "V_outer", "cvControl (outer CV control)",
+                                   "V_inner", "innerCvControl", "Weighting")),
+         Value = as.character(c(paste0(nv, "/", length(Y), " (", round(nv*100/length(Y), 2), "%)"), familyVar,
+                                methodVar, interval_scaleVar, ipc_scaleVar, V_outer, cvControl_quote,
+                                V_inner, innerCvControl_quote, ipc_est_typeVar)))
+
+if(V_inner == length(Y) - 1){
+  cvsl_args <- cvsl_args %>% mutate(Value = ifelse(Argument == "V_inner", V_inner_quote, Value))
+}
+
+cvsl_args %>% add_row(Argument = "vimp package version",
+                      Value = paste0(packageVersion("vimp"))) %>%    # Add vimp package version
+  write.csv(paste0("output/", Sys.getenv("TRIAL"), "/cvsl_args.csv"))
 # ---------------------------------------------------------------------------------
 # run super learner, with leave-one-out cross-validation and all screens
 # do 10 random starts, average over these
@@ -46,26 +79,27 @@ seeds <- round(runif(10, 1000, 10000)) # average over 10 random starts
 library(RhpcBLASctl)
 blas_get_num_procs()
 blas_set_num_threads(1L)
-stopifnot(blas_get_num_procs() == 1L)
+#stopifnot(blas_get_num_procs() == 1L) # Commented this out as it does not work as expected any more!
 omp_set_num_threads(1L)
+stopifnot(omp_get_max_threads() == 1L)
 
 # run the Super Learners
 fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
                            Y = Y,
                            X_mat = X_markers_varset,
-                           family = "binomial",
+                           family = familyVar,
                            obsWeights = weights,
                            all_weights = all_ipw_weights_treatment,
-                           ipc_est_type = "ipw",
+                           ipc_est_type = ipc_est_typeVar,
                            sl_lib = sl_lib,
-                           method = "method.CC_nloglik",
-                           cvControl = list(V = V_outer, stratifyCV = TRUE),
-                           innerCvControl = list(list(V = V_inner)),
+                           method = methodVar,
+                           cvControl = cvControlVar,
+                           innerCvControl = innerCvControlVar,
                            Z = Z_treatmentDAT,
                            C = C,
                            z_lib = "SL.glm",
-                           scale = "logit", # scale on which intervals are computed (helps with intervals lying outside (0, 1))
-                           ipc_scale = "identity", # scale on which IPW correction is applied
+                           scale = interval_scaleVar, # scale on which intervals are computed (helps with intervals lying outside (0, 1))
+                           ipc_scale = ipc_scaleVar, # scale on which IPW correction is applied
                            vimp = FALSE,
                            mc.cores = num_cores
 )
@@ -80,11 +114,12 @@ for (i in 1:length(seeds)) {
 }
 
 # save off the output
-saveRDS(cvaucs, file = here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
-saveRDS(cvfits, file = here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+saveRDS(cvaucs, file = paste0("output/", Sys.getenv("TRIAL"), paste0("/CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+saveRDS(cvfits, file = here("output/", Sys.getenv("TRIAL"), paste0("/CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
 # only save these objects once
 if (job_id == 1) {
-  saveRDS(ph2_vacc_ptids, file = here("output", "ph2_vacc_ptids.rds"))
+  saveRDS(ph2_vacc_ptids, file = paste0("output/", Sys.getenv("TRIAL"), "/ph2_vacc_ptids.rds"))
   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
-       V_outer, varset_names, individualMarkers, file = here("output", "objects_for_running_SL.rda"))
+       V_outer, varset_names, individualMarkers, file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 }
+cat("\n Finished ", varset_names[job_id], "variable set \n") 

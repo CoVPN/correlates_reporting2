@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("Marker_Rcdf_", ifelse(asy=="","", paste0(asy,"_")), tp, "_", trt, "_", bsero, "_", study_name, ".pdf"))`}
+
+\caption{`r paste0("RCDF plots for ", tpLabel, " ", ifelse(asy=="","Ab",asy), " markers: ", bseroLabel," ", ifelse(grepl("by", bseroLabel) & trt!="trt_both", paste0("for the ", trtLabel), trtLabel))`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}

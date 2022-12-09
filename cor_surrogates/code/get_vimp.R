@@ -1,3 +1,4 @@
+# Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 #-----------------------------------------------
 # obligatory to append to the top of each script
@@ -8,6 +9,11 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
+
+# obtain the job id
+#args <- commandArgs(trailingOnly = TRUE)
+#job_id <- as.numeric(args[2])
+job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 # common setup for CV super learners and variable importance
 source(here::here("code", "cor_surrogates_setup.R"))
@@ -41,8 +47,8 @@ X <- phase_1_data_treatmentDAT %>%
   select(-!!ptidvar)
 
 # read in the fits for the baseline risk factors
-baseline_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[1], ".rds")))
-baseline_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[1], ".rds")))
+baseline_fits <- readRDS(here("output", paste0(Sys.getenv("TRIAL"), "/CVSLfits_vacc_", endpoint, "_", varset_names[1], ".rds")))
+baseline_aucs <- readRDS(here("output", paste0(Sys.getenv("TRIAL"), "/CVSLaucs_vacc_", endpoint, "_", varset_names[1], ".rds")))
 if (!use_ensemble_sl) {
   baseline_fits <- lapply(as.list(1:length(baseline_fits)), function(i) {
     make_discrete_sl_auc(cvsl_fit = baseline_fits[[i]], all_aucs = baseline_aucs[[i]])
@@ -78,28 +84,33 @@ naive_fits <- lapply(list_of_indices, function(l) {
 })
 
 # get VIMs etc.
+# obtain the job id
+job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+
+# grab the current variable set based on the job id
+this_var_set <- varset_matrix[job_id, ]
+cat("\n Running", varset_names[job_id], "variable set \n")
 interval_scale <- "logit" # CIs are computed on logit scale; helps with values outside boundary of [0, 1]
 ipw_scale <- "identity" # IPW correction is applied on identity scale
 final_point_estimate <- "average" # helps with point estimate stability
-for (i in seq_len(nrow(varset_matrix))) {
-  # the column indices of interest
-  if (i == 1) {
+# the column indices of interest
+  if (job_id == 1) {
     this_s <- which(briskfactors %in% names(X))
   } else {
-    this_s <- which(varset_matrix[i, ]) + length(briskfactors)
+    this_s <- which(varset_matrix[job_id, ]) + length(briskfactors)
   }
   # get the correct CV.SL lists
-  full_fits <- readRDS(here("output", paste0("CVSLfits_vacc_", endpoint, "_", varset_names[i], ".rds")))
-  full_aucs <- readRDS(here("output", paste0("CVSLaucs_vacc_", endpoint, "_", varset_names[i], ".rds")))
+  full_fits <- readRDS(here("output", paste0(Sys.getenv("TRIAL"), "/CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
+  full_aucs <- readRDS(here("output", paste0(Sys.getenv("TRIAL"), "/CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
   if (!use_ensemble_sl) {
     full_fits <- lapply(as.list(1:length(baseline_fits)), function(i) {
       make_discrete_sl_auc(cvsl_fit = full_fits[[i]], all_aucs = full_aucs[[i]])
     })
   }
-  if (i == 1) {
+  if (job_id == 1) {
     vim_lst <- lapply(list_of_indices, function(l) {
       get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = naive_fits[[l]],
-                 index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
+                 index = this_s, type = "auc", scale = interval_scale, cross_fitting_folds = cf_folds[[l]],
                  sample_splitting_folds = sample_splitting_folds_baseline[[l]], V = vim_V,
                  C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
                  ipc_scale = ipw_scale, ipc_est_type = "ipw", 
@@ -121,12 +132,9 @@ for (i in seq_len(nrow(varset_matrix))) {
     })
   }
   # pool variable importance and predictiveness over the list
-  pooled_ests <- pool_cv_vim(vim_lst = vim_lst, scale = "identity")
-  all_estimates <- bind_rows(all_estimates, pooled_ests)
-}
-# add on the variable set name
-final_estimates <- all_estimates %>%
-  mutate(variable_set = rep(varset_names, each = 2), .before = "s")
+  pooled_ests <- pool_cv_vim(vim_lst = vim_lst, scale = interval_scale)
+  
+  # save off the output
+  saveRDS(pooled_ests, file = here("output", paste0(Sys.getenv("TRIAL"), "/pooled_ests_", endpoint, "_", varset_names[job_id], ".rds")))
 
-# save the output
-saveRDS(final_estimates, file = here::here("output", "vim_estimates.rds"))
+  

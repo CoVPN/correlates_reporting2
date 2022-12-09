@@ -1,0 +1,9 @@
+\newif\ifShowCountry
+
+
+```{r, echo=FALSE, results='asis'}
+  for (a in assays) {
+    res = knitr::knit_child(c(here::here('cor_coxph', 'forestplots_fig.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+```

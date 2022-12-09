@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), currCOR, paste0("RCDF_VE_", tp, "_trt_Vaccine_BaselineNeg_", assay, "_", study_name, ".png"))`}
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), currCOR, paste0("RCDF_VE_", tp, "_trt_Vaccine_", bsero, "_", assay, "_", study_name, ".png"))`}
 
-\caption{`r paste0("Marker RCDF of ",  tpLabel, " ", assayLabel, ": vaccine arm.", ifelse(grepl("start1", COR), " (start1)", ""))`}
+\caption{`r paste0("Marker RCDF of ",  tpLabel, " ", gsub("_", " ", assayLabel), ": vaccine arm.", COR_postfix_label)`}
 \end{figure}
 
 \hphantom{Random text to appease the latex god}

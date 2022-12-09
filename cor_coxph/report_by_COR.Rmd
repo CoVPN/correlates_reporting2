@@ -1,0 +1,155 @@
+# `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
+
+The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise.
+
+## Hazard ratios
+
+\setlength{\tabcolsep}{.5ex}
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r study_name`}
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
+$\ast$`r txt.coxph.note2`
+$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(study_name=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
+`r special.note`
+
+\vspace{10pt}
+
+\setlength{\tabcolsep}{.5ex}
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.
+$\ast$$\ast$`r txt.coxph.note2`
+$\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
+`r special.note`
+
+
+\clearpage
+\scriptsize
+\input{`r paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", study_name)`}
+\normalsize
+\vspace{-15pt}
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_Day", tpeak, assays, "_", study_name, "}"), sep=",")`
+$\ast\ast$`r txt.coxph.note2`
+$\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
+`r special.note`
+
+\vspace{30pt}
+
+
+`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA")) '<!--'`
+\begin{table}[H]
+\caption{The ratio of sample sizes required to power a future trial for the column marker compared to the row marker (Follmann 2018). Confidence intervals are based on $10^3$ bootstrap replicates. }
+\begin{center}
+    \input{`r pathCoRoutput`/follmann2018_samplesizeratio}\\
+    (lb, ub)\\
+    \input{`r pathCoRoutput`/follmann2018_samplesizeratio_lbub}\\
+\end{center}
+`r special.note`
+    %\label{tab:follmann2018_samplesizeratio}
+\end{table}
+\vspace{10pt}
+`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA"))'-->'`
+
+
+\begin{table}[H]
+\caption{Number of cases and non-cases in ph2 or not}
+\begin{center}
+  \input{`r pathCoRoutput`/tab1}\\
+\end{center}
+\end{table}
+
+
+\clearpage
+
+
+
+<!-- Forest plots -->
+
+```{r, echo=FALSE, results='asis'}
+
+if(!contain(attr(config,"config"),"senior") & file.exists(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd')))) {
+  message ("forest plots")
+  res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
+  cat(res, sep = '\n')
+  cat("\\clearpage\n")
+}
+```
+
+
+## Marginalized risk and controlled vaccine efficacy plots
+
+
+\begin{table}[H] 
+\caption{Analysis of Day `r tpeak` markers (upper vs. lower tertile) as a CoR and a controlled risk CoP.}
+\begin{center}
+\setlength{\tabcolsep}{.5ex}
+\begin{tabular}{lcccccc} \hline 
+ & \multicolumn{2}{c}{marginalized risk} & \multicolumn{2}{c}{controlled risk} & & \\ 
+ & \multicolumn{2}{c}{ratio $RR_M(0,1)$} & \multicolumn{2}{c}{ratio $RR_C(0,1)^1$} & \multicolumn{2}{c}{e(0,1)$^2$} \\ 
+  & Point Est. & 95\% CI  &    Point Est. & 95\% CI  &   Point Est.  & 95\% CI UL \\ \hline
+\input{`r pathCoRoutput`/marginalized_risks_cat_`r study_name`}  \\ \hline 
+\end{tabular}
+\end{center}
+$^1$Conservative (upper bound) estimate assuming unmeasured confounding at level $RR_{UD}(0,1)=RR_{EU}(0,1) = 2$ and thus $B(0,1)=4/3$. \\
+$^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) biomarker subgroups after controlling for `r covariates_adjusted`; UL = upper limit.\\
+`r special.note`
+\end{table}
+
+\clearpage
+
+
+```{r, echo=FALSE, results='asis'}
+  for (a in all.markers) {
+    assay=get.assay.from.name(a)
+    res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+```
+
+
+## Multivariate Cox Models of Risk {#cor-multicoxph-Day`r COR`}
+
+```{r, echo=FALSE, results='asis'}
+  if (!is.null(config$multivariate_assays)) {
+    for (i in 1:length(config$multivariate_assays)) {
+      res = knitr::knit_child(c(here::here('cor_coxph', 'multiple_regression.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+  }
+```
+
+
+
+```{r, echo=FALSE, results='asis'}
+  if (!is.null(config$additional_models)) {
+  cat("## Additional posthoc Cox Models of Risk")
+    for (i in 1:length(config$additional_models)) {
+      res = knitr::knit_child(c(here::here('cor_coxph', 'additional_model.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+  }
+```
+
+
+`r if (is.null(config$interaction)) '<!--'`
+## Interaction Cox Models of Risk
+
+\begin{table}[H] 
+\centering
+\input{`r pathCoRoutput`/CoR_itxn_multitesting}  
+\caption{ Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} in the vaccine arm. Interaction P values. `r special.note`}
+\end{table}
+
+\clearpage
+
+`r if (is.null(config$interaction)) '  -->'`
+```{r, echo=FALSE, results='asis'}
+if (!is.null(config$interaction)) {
+  for (ab in config$interaction) {
+      tmp=trim(strsplit(ab, " *\\* *")[[1]])
+      a=tmp[1]
+      b=tmp[2]            
+      res = knitr::knit_child(c(here::here('cor_coxph', 'itxn_by_assays.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+  }
+}
+```

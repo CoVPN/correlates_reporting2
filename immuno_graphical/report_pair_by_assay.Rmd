@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_", asy, "_by_times_", bsero, "_", trt, "_", ifelse(study_name=="PREVENT19" & country=="Nvx_US", "US_only_", ""), study_name, ".pdf"))`}
+
+\caption{`r paste0("Pair plots of D1, ", paste0("D",timepoints, collapse = " and "), ifelse(study_name=="VAT08m", " and fold-change ", " "), asyLabel, ": baseline ", bseroLabel, " ", trt, " arm", ifelse(study_name=="PREVENT19" & country=="Nvx_US", " (US only)", ""))`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}

@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), "demographics", paste0("Marker_Rcdf_", tp, "_trt_", trtLabel, "_", bsero, "_by_", dm, "_", study_name, ".pdf"))`}
+
+\caption{`r paste0("RCDF plots for ", tpLabel, " Ab markers: baseline ", bseroLabel," ", trtLabel, " arm by ", dmLabel)`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}

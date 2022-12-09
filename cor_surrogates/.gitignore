@@ -1,5 +1,15 @@
-figs/*.png
-figs/*.*
+figs/moderna_real/*.png
+figs/moderna_real_previous/*.png
+figs/hvtn705second/*.png
+output/moderna_real/*.csv
+output/moderna_real_previous/*.csv
+output/hvtn705second/*.csv
+output/moderna_real/*.rda
+output/moderna_real_previous/*.rda
+output/hvtn705second/*.rda
+output/moderna_real/*.rds
+output/moderna_real_previous/*.rds
+output/hvtn705second/*.rds
 output/*.csv
 output/*.rda
 output/*.rds

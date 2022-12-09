@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("scatter_", tp, "_vs_age_trt_", trt, "_", bsero, "_", study_name, ".pdf"))`}
+
+\caption{`r paste0("Scatter plots for ", tpLabel, " Ab markers vs. age: baseline ", bseroLabel, " ", trtLabel, " arm")`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}

@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("scatter_daysince_", assay, "_", cohort, "_", study_name, ".pdf"))`}
 
-\caption{`r paste0("scatterplots of ", gsub("%", "\\\\%", labels.assays[grepl(substr(assay, nchar(assay)-4+1, nchar(assay)), names(labels.assays))]), " vs Days Since the ", labels.time.no.fold[length(labels.time.no.fold)-1], " Visit: ", ifelse(cohort=="Vaccine_BaselineNeg", "baseline negative vaccine", "by"), " arm at ", labels.time.no.fold[length(labels.time.no.fold)-1], " and ", last(labels.time.no.fold), ifelse(grepl("start1", COR), " (start1)", ""))`}
+\caption{`r paste0("scatterplots of ", gsub("%", "\\\\%", labels.assays[grepl(paste0(assay,"$"), names(labels.assays))]), " vs Days Since the ", labels.time.no.fold[length(labels.time.no.fold)-1], " Visit: ", ifelse(cohort=="Vaccine", paste0(bseroLabel," vaccine"), "by"), " arm at ", labels.time.no.fold[length(labels.time.no.fold)-1], " and ", last(labels.time.no.fold), COR_postfix_label)`}
 \end{figure}
 
 \hphantom{Random text to appease the latex god}

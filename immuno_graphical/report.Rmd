@@ -1,0 +1,617 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+  
+---
+# Graphical Description of Immunogenicity Data {#immuno-graphical}
+
+```{r immuno-graphical-setup, echo = FALSE, message = FALSE, include=FALSE}
+library(here)
+library(latex2exp)
+library(knitr)
+
+here::i_am("immuno_graphical/report.Rmd")
+
+all_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
+                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
+                "bindN",
+                "pseudoneutid50", "pseudoneutid80", 
+                "liveneutmn50",
+                "ADCP")
+
+if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config"))){
+  assay_immuno <- all_assays[all_assays %in% c(assays, "bindN")]
+  labels.assays.all <- c("Binding Antibody to N", labels.assays)
+  names(labels.assays.all)[1] <- "bindN"
+  labels.assays <- labels.assays.all[assay_immuno]
+} else {
+  assay_immuno <- assays
+}
+```
+
+```{r immuno-graphical-caption-setup, echo = FALSE, message = FALSE, include=FALSE}
+
+is.ensemble <- study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" # only ENSEMBLE has by country and by HIV group figures
+
+config <- config::get(config = Sys.getenv("TRIAL"))
+if.pair <- ifelse(length(config$assays)>1, 1, 0)
+if.pos.exist <- ifelse(study_name=="AZD1222", 0, 1)
+
+minority.disclaimer <- switch(study_name, 
+                              "COVE"="",
+                              "MockCOVE"="",
+                              "ENSEMBLE"="These plots are restricted to only United States trial participants.",
+                              "MockENSEMBLE"="These plots are restricted to only United States trial participants.",
+                              "PREVENT19"="",
+                              "AZD1222"="",
+                              "VAT08m"="",
+                              "PROFISCOV"="")
+
+neut.marker.captions <- switch(study_name, 
+                               "COVE"="The dashed lines in each figure are ULOQ, LLOQ, and positivity cutoffs for binding antibody assays, or ULOQ, LLOQ, and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               "MockCOVE"="The dashed lines in each figure are ULOQ, LLOQ, and positivity cutoffs for binding antibody assays, or ULOQ, LLOQ, and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               "ENSEMBLE"="The dashed lines in each figure are ULOQ and positivity cut-off from top to bottom for binding antibody assays, or ULOQ and LLOQ for neutralizing antibody assays, from top to bottom respectively.",
+                               "MockENSEMBLE"="The dashed lines in each figure are ULOQ and positivity cut-off for binding antibody assays, or ULOQ and LLOQ for neutralizing antibody assays, from top to bottom respectively.",
+                               "PREVENT19"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               
+                               "AZD1222"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               
+                               "VAT08m"="The dashed lines in each figure is LLOD for neutralizing antibody assays.",
+                               "PROFISCOV"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOD for binding antibody assays, or LLOD/positivity cut-off for neutralizing antibody assays, from top to bottom respectively."
+                               # PROFISCOV nAb has a ULOQ value out of figure limit
+                               )
+
+```
+
+## Pairs plots of antibody markers for overall per-protocal cohort
+
+### Baseline SARS-CoV-2 Negative
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselineNeg" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="vaccine"
+  
+for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")){
+  # only doable when there are >1 assays
+  if (if.pair==1){
+    
+    for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+      
+      tpLabel <- gsub("ay ", "", labels.time[tp])
+      
+      res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_time.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+    }
+  }
+      
+  for (asy in assay_immuno){
+    
+    asyLabel <- gsub("%","\\\\%", labels.assays[asy])
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+  }
+  
+}
+```
+
+### Baseline SARS-CoV-2 Positive
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselinePos"
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="vaccine"
+  
+for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")){
+  
+  # only doable when there are >1 assays
+  if (if.pair==1 & if.pos.exist==1){
+      
+    for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+      
+      tpLabel <- gsub("ay ", "", labels.time[tp])
+      
+      res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_time.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+    }
+  }
+
+  for (asy in assay_immuno){
+    
+    asyLabel <- gsub("%","\\\\%", labels.assays[asy])
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+    
+  }
+}
+```
+
+### Baseline SARS-CoV-2 Positive Placebo Arm
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselinePos"
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="placebo"
+  
+for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")){
+  
+  # only doable when there are >1 assays
+  if (if.pair==1 & if.pos.exist==1){
+    
+    for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+      
+      tpLabel <- gsub("ay ", "", labels.time[tp])
+      
+      res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_time.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+    }
+    
+  }
+  
+  for (asy in assay_immuno){
+    
+    asyLabel <- gsub("%","\\\\%", labels.assays[asy])
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+  }
+    
+}
+```
+
+## RCDF plots of antibody markers for overall per-protocol cohort
+```{r, echo=FALSE, results='asis'}
+  
+for (trt in c("trt_both", "trt_vaccine")){
+  trtLabel <- ifelse(trt=="trt_both", "x randomization arm", "vaccine arm")
+  
+  for (bsero in c("bstatus_both", "bstatus_Neg", "bstatus_Pos")){
+    if (bsero=="bstatus_Pos" & if.pos.exist==0) next
+    if (trt=="trt_both" & bsero!="bstatus_both") next # trt_both is only for bstatus both
+    
+    bseroLabel <- ifelse(bsero=="bstatus_both", "by baseline status", ifelse(bsero=="bstatus_Neg", "baseline negative", "baseline positive"))
+    
+    for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+            
+      tpLabel <- gsub("ay ", "", labels.time[tp])
+      
+      for (asy in c("","bAb","nAb","other")){
+        if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
+        if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
+        if (asy!="" & trt=="trt_both" & bsero=="bstatus_both") next  # trt_both & bstatus_both are only for all assays
+        
+        res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+      }
+    }
+  }
+}
+```
+
+\clearpage
+## Scatter plots of antibody markers versus age for overall per-protocol cohort
+
+### Baseline SARS-CoV-2 Negative
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselineNeg" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Vaccine"
+trtLabel="vaccine"
+  
+for(tp in times[!grepl("Delta", times)]) {
+  
+  tpLabel <- gsub("ay ", "", labels.time[tp])
+  
+  res = knitr::knit_child(c(here::here('immuno_graphical', 'report_scatter.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+  cat("\\clearpage", sep = '\n')
+}
+    
+```
+
+### Baseline SARS-CoV-2 Positive
+
+```{r, echo=FALSE, results='asis'}
+ 
+bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Vaccine"
+trtLabel="vaccine"
+
+if (if.pos.exist==1) {  
+  for(tp in times[!grepl("Delta", times)]) {
+    
+    tpLabel <- gsub("ay ", "", labels.time[tp])
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_scatter.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+  }
+}
+    
+```
+
+### Baseline SARS-CoV-2 Positive Placebo Arm
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Placebo"
+trtLabel="placebo"
+
+if (if.pos.exist==1) {  
+  for(tp in times[!grepl("Delta", times)]) {
+    
+    tpLabel <- gsub("ay ", "", labels.time[tp])
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_scatter.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+  }
+}
+    
+```
+
+### Baseline SARS-CoV-2 Negative Placebo Arm
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselineNeg" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Placebo"
+trtLabel="placebo"
+
+for(tp in times[!grepl("Delta", times)]) {
+  
+  tpLabel <- gsub("ay ", "", labels.time[tp])
+  
+  res = knitr::knit_child(c(here::here('immuno_graphical', 'report_scatter.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+  cat("\\clearpage", sep = '\n')
+}
+    
+```
+
+\clearpage
+## Box plots of antibody markers for overall per-protocol cohort
+
+### Baseline SARS-CoV-2 Negative
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselineNeg" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+  
+for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+  
+  tpLabel <- gsub("ay ", "", labels.time[tp])
+  
+  res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+  cat("\\clearpage", sep = '\n')
+}
+    
+```
+
+### Baseline SARS-CoV-2 Positive
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+if (if.pos.exist==1){  
+  for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    
+    tpLabel <- gsub("ay ", "", labels.time[tp])
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+  }
+}
+    
+```
+
+### Baseline negative vs. positive vaccine recipients
+
+```{r, echo=FALSE, results='asis'}
+
+trt="vaccine"
+  
+for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+  
+  tpLabel <- gsub("ay ", "", labels.time[tp])
+  
+  res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box_neg_vs_pos.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+  cat("\\clearpage", sep = '\n')
+}
+    
+```
+
+### Baseline negative vs. positive placebo recipients
+
+```{r, echo=FALSE, results='asis'}
+
+trt="placebo"
+  
+for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+  
+  tpLabel <- gsub("ay ", "", labels.time[tp])
+  
+  res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box_neg_vs_pos.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+  cat("\\clearpage", sep = '\n')
+}
+    
+```
+
+\clearpage
+## Spaghetti plots of antibody markers over time for overall per-protocol cohort
+
+### Baseline SARS-CoV-2 Negative
+
+```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline negative vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times)}
+include_graphics(here(
+  "immuno_graphical", "output", attr(config,"config"), 
+  paste0("spaghetti_plot_BaselineNeg_", study_name, ".pdf")
+))
+```
+
+\clearpage
+### Baseline SARS-CoV-2 Positive
+
+```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline positive vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & if.pos.exist==1)}
+include_graphics(here(
+  "immuno_graphical", "output", attr(config,"config"),
+  paste0("spaghetti_plot_BaselinePos_", study_name, ".pdf")
+))
+```
+
+\clearpage
+## RCDF plots of antibody markers by demographics for per-protocol cohort
+
+### Baseline SARS-CoV-2 Negative
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselineNeg" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Vaccine"
+trtLabel="vaccine"
+
+if_no_minority = attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
+                                       "janssen_la_partAsenior","janssen_la_partAnonsenior",
+                                       "janssen_sa_partAnonsenior")
+demos <- c("age_group","risk_group","age_risk_group","sex_group","age_sex_group","ethnicity","race",if(!if_no_minority)c("minority_group","age_minority_group"),if(study_name=="ENSEMBLE")"country", if(study_name=="ENSEMBLE")"hiv_group")
+
+demoLabels <- c("age groups","high-risk condition","age and high-risk condition","sex assigned at birth","age and sex assgined at birth","ethnicity","race",if(!if_no_minority)c("dichotomous classification of
+race and ethnic group","age and dichotomous classification of
+race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(study_name=="ENSEMBLE")"HIV
+positivity")
+names(demoLabels) <- demos
+  
+for (dm in demos){
+  for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    
+    tpLabel <- gsub("ay ", "", labels.time[tp])
+    dmLabel <- demoLabels[dm]
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_demographic.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+  }
+}
+    
+```
+
+### Baseline SARS-CoV-2 Positive
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Vaccine"
+trtLabel="vaccine"
+
+if_no_minority = attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
+                                       "janssen_la_partAsenior","janssen_la_partAnonsenior",
+                                       "janssen_sa_partAnonsenior")
+demos <- c("age_group","risk_group","age_risk_group","sex_group","age_sex_group","ethnicity","race",if(!if_no_minority)c("minority_group","age_minority_group"),if(study_name=="ENSEMBLE")"country", if(study_name=="ENSEMBLE")"hiv_group")
+
+demoLabels <- c("age groups","high-risk condition","age and high-risk condition","sex assigned at birth","age and sex assgined at birth","ethnicity","race",if(!if_no_minority)c("dichotomous classification of
+race and ethnic group","age and dichotomous classification of
+race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(study_name=="ENSEMBLE")"HIV
+positivity")
+names(demoLabels) <- demos
+
+if (if.pos.exist==1){ 
+  
+  for (dm in demos){
+    for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+      
+      tpLabel <- gsub("ay ", "", labels.time[tp])
+      dmLabel <- demoLabels[dm]
+      
+      res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_demographic.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+    }
+  }
+}
+    
+```
+
+### Baseline SARS-CoV-2 Positive Placebo Arm
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Placebo"
+trtLabel="placebo"
+
+if_no_minority = attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
+                                       "janssen_la_partAsenior","janssen_la_partAnonsenior",
+                                       "janssen_sa_partAnonsenior")
+demos <- c("age_group","risk_group","age_risk_group","sex_group","age_sex_group","ethnicity","race",if(!if_no_minority)c("minority_group","age_minority_group"),if(study_name=="ENSEMBLE")"country", if(study_name=="ENSEMBLE")"hiv_group")
+
+demoLabels <- c("age groups","high-risk condition","age and high-risk condition","sex assigned at birth","age and sex assgined at birth","ethnicity","race",if(!if_no_minority)c("dichotomous classification of
+race and ethnic group","age and dichotomous classification of
+race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(study_name=="ENSEMBLE")"HIV
+positivity")
+names(demoLabels) <- demos
+
+if (if.pos.exist==1){ 
+  
+  for (dm in demos){
+    for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+      
+      tpLabel <- gsub("ay ", "", labels.time[tp])
+      dmLabel <- demoLabels[dm]
+      
+      res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_demographic.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+    }
+  }
+}
+    
+```
+
+
+\clearpage
+## Boxplots of antibody markers by demographics for per-protocol cohort
+
+### Baseline SARS-CoV-2 Negative
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselineNeg" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Vaccine"
+trtLabel="vaccine"
+
+if_no_minority = attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
+                                       "janssen_la_partAsenior","janssen_la_partAnonsenior",
+                                       "janssen_sa_partAnonsenior")
+demos <- c("age_group","risk_group","age_x_risk_group","sex","age_x_sex_group","ethnicity","race",if(!if_no_minority)c("minority_group","age_x_minority"),if(study_name=="ENSEMBLE")"country", if(study_name=="ENSEMBLE")"hiv_group")
+
+demoLabels <- c("age groups","high-risk condition","age and high-risk condition","sex assigned at birth","age and sex assgined at birth","ethnicity","race",if(!if_no_minority)c("dichotomous classification of
+race and ethnic group","age and dichotomous classification of
+race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(study_name=="ENSEMBLE")"HIV
+positivity")
+names(demoLabels) <- demos
+  
+for (dm in demos){
+  for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    
+    tpLabel <- gsub("ay ", "", labels.time[tp])
+    dmLabel <- demoLabels[dm]
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box_demographic.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+  }
+}
+    
+```
+
+### Baseline SARS-CoV-2 Positive
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Vaccine"
+trtLabel="vaccine"
+
+if_no_minority = attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
+                                       "janssen_la_partAsenior","janssen_la_partAnonsenior",
+                                       "janssen_sa_partAnonsenior")
+demos <- c("age_group","risk_group","age_x_risk_group","sex","age_x_sex_group","ethnicity","race",if(!if_no_minority)c("minority_group","age_x_minority"),if(study_name=="ENSEMBLE")"country", if(study_name=="ENSEMBLE")"hiv_group")
+
+demoLabels <- c("age groups","high-risk condition","age and high-risk condition","sex assigned at birth","age and sex assgined at birth","ethnicity","race",if(!if_no_minority)c("dichotomous classification of
+race and ethnic group","age and dichotomous classification of
+race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(study_name=="ENSEMBLE")"HIV
+positivity")
+names(demoLabels) <- demos
+  
+for (dm in demos){
+  for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    
+    tpLabel <- gsub("ay ", "", labels.time[tp])
+    dmLabel <- demoLabels[dm]
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box_demographic.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+  }
+}
+    
+```
+
+\clearpage
+### Baseline SARS-CoV-2 Positive Placebo Arm
+
+```{r, echo=FALSE, results='asis'}
+
+bsero="BaselinePos" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
+bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+
+trt="Placebo"
+trtLabel="placebo"
+
+if_no_minority = attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
+                                       "janssen_la_partAsenior","janssen_la_partAnonsenior",
+                                       "janssen_sa_partAnonsenior")
+demos <- c("age_group","risk_group","age_x_risk_group","sex","age_x_sex_group","ethnicity","race",if(!if_no_minority)c("minority_group","age_x_minority"),if(study_name=="ENSEMBLE")"country", if(study_name=="ENSEMBLE")"hiv_group")
+
+demoLabels <- c("age groups","high-risk condition","age and high-risk condition","sex assigned at birth","age and sex assgined at birth","ethnicity","race",if(!if_no_minority)c("dichotomous classification of
+race and ethnic group","age and dichotomous classification of
+race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(study_name=="ENSEMBLE")"HIV
+positivity")
+names(demoLabels) <- demos
+  
+for (dm in demos){
+  for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    
+    tpLabel <- gsub("ay ", "", labels.time[tp])
+    dmLabel <- demoLabels[dm]
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box_demographic.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+  }
+}
+    
+```
