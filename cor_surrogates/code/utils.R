@@ -33,7 +33,7 @@ one_auc <- function(preds, Y, full_y = NULL, scale = "identity",
                     Z = NULL, ...) {
   auc_lst <- vimp::measure_auc(
     fitted_values = preds, y = Y, full_y = full_y, C = C, Z = Z,
-    ipc_weights = weights,
+    ipc_weights = weights, scale = scale,
     ipc_fit_type = "SL", ...
   )
   list(auc = auc_lst$point_est, eif = auc_lst$eif)
@@ -43,7 +43,8 @@ one_auc <- function(preds, Y, full_y = NULL, scale = "identity",
 # @param preds the fitted values
 # @param Y the outcome
 # @param folds the different cv folds that the learner was evaluated on
-# @param scale what scale should the IPCW correction be applied on?
+# @param scale what scale should the CI be applied on? Can help with numbers outside of (0, 1)
+# @param ipc_scale what scale should the IPCW correction be applied on?
 #              Can help with numbers outside of (0, 1)
 #             ("identity" denotes the identity scale;
 #              "logit" means that AUC is transformed to the logit scale,
@@ -57,7 +58,8 @@ one_auc <- function(preds, Y, full_y = NULL, scale = "identity",
 #            and may include control parameters for the super learner
 #            (e.g., cvControl = list(V = 5)
 #             for 5-fold cross-validated super learner)
-cv_auc <- function(preds, Y, folds, scale = "identity",
+cv_auc <- function(preds, Y, folds, scale = "logit",
+                   ipc_scale = "identity",
                    weights = rep(1, length(Y)), C = rep(1, length(Y)),
                    Z = NULL, ...) {
   V <- length(folds)
@@ -72,7 +74,7 @@ cv_auc <- function(preds, Y, folds, scale = "identity",
   ests_eifs <- lapply(as.list(seq_len(V)), function(v) {
     one_auc(
       preds = preds[folds_numeric == v], Y[folds_numeric == v],
-      full_y = Y, scale = scale,
+      full_y = Y, scale = ipc_scale,
       weights = weights[folds_z == v], C = C[folds_z == v],
       Z = Z[folds_z == v, , drop = FALSE], ...
     )
@@ -104,12 +106,14 @@ get_cv_sl_folds <- function(cv_sl_folds) {
 # get the CV-AUC for an individual learner in the SL
 # @param sl_fit the fitted SL
 # @param col the column of interest (corresponds to a fitted algorithm)
-# @param scale scale for EIF estimation
+# @param scale scale for intervals estimation
+# @param ipc_scale scale for EIF estimation
 # @param weights IPC weights
 # @param C the censoring indicator
 # @param Z data observed on all participants
 # @param ... other arguments to pass to Super Learner (for EIF estimation)
-get_individual_auc <- function(sl_fit, col, scale = "identity",
+get_individual_auc <- function(sl_fit, col, scale = "logit",
+                               ipc_scale = "identity",
                                weights = rep(1, length(sl_fit$Y)),
                                C = rep(1, length(sl_fit$Y)), Z = NULL, ...) {
   if (any(is.na(sl_fit$library.predict[, col]))) {
@@ -117,7 +121,7 @@ get_individual_auc <- function(sl_fit, col, scale = "identity",
   }
   alg_auc <- cv_auc(
     preds = sl_fit$library.predict[, col], Y = sl_fit$Y,
-    scale = scale,
+    scale = scale, ipc_scale = ipc_scale,
     folds = sl_fit$folds, weights = weights,
     C = C, Z = Z, ...
   )
@@ -141,7 +145,8 @@ get_individual_auc <- function(sl_fit, col, scale = "identity",
 }
 # get the CV-AUC for all learners fit with SL
 # @param sl_fit the super learner fit object
-# @param scale what scale should the IPCW correction be applied on?
+# @param scale scale for interval estimation
+# @param ipc_scale what scale should the IPCW correction be applied on?
 #              Can help with numbers outside of (0, 1)
 #             ("identity" denotes the identity scale;
 #              "logit" means that AUC is transformed to the logit scale,
@@ -155,15 +160,15 @@ get_individual_auc <- function(sl_fit, col, scale = "identity",
 #            and may include control parameters for the super learner
 #            (e.g., cvControl = list(V = 5)
 #             for 5-fold cross-validated super learner)
-get_all_aucs <- function(sl_fit, scale = "identity",
+get_all_aucs <- function(sl_fit, scale = "logit", ipc_scale = "identity",
                          weights = rep(1, length(sl_fit$Y)),
                          C = rep(1, length(sl_fit$Y)),
                          Z = NULL, ...) {
   # get the CV-AUC of the SuperLearner predictions
   sl_auc <- cv_auc(
     preds = sl_fit$SL.predict, Y = sl_fit$Y,
-    folds = sl_fit$folds,
-    scale = scale, weights = weights, C = C, Z = Z, ...
+    folds = sl_fit$folds, scale = scale,
+    ipc_scale = ipc_scale, weights = weights, C = C, Z = Z, ...
   )
   out <- data.frame(
     Learner = "SL", Screen = "All", AUC = sl_auc$auc,
@@ -173,7 +178,7 @@ get_all_aucs <- function(sl_fit, scale = "identity",
   # Get the CV-auc of the Discrete SuperLearner predictions
   discrete_sl_auc <- cv_auc(
     preds = sl_fit$discreteSL.predict, Y = sl_fit$Y,
-    folds = sl_fit$folds, scale = scale,
+    folds = sl_fit$folds, scale = scale, ipc_scale = ipc_scale,
     weights = weights, C = C,
     Z = Z, ...
   )
@@ -193,6 +198,7 @@ get_all_aucs <- function(sl_fit, scale = "identity",
         sl_fit = sl_fit,
         col = x,
         scale = scale,
+        ipc_scale = ipc_scale,
         weights = weights,
         C = C, Z = Z, ...
       )
@@ -232,7 +238,8 @@ make_discrete_sl_auc <- function(cvsl_fit, all_aucs) {
 #                  involves data from phase 2)
 # @param C the outcome from the entire (phase 1) dataset
 # @param z_lib the learner/s to be used for weighted auc calculations
-# @param scale the scale that the IPC correction should be computed on
+# @param ipc_scale the scale that the IPC correction should be computed on
+# @param scale scale for interval estimation
 # @param vimp determines whether or not we save the entire SL fit object
 #        (for variable importance, we don't need it so can save some memory
 #         by excluding large objects)
@@ -248,7 +255,8 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
                            Z = NULL,
                            C = rep(1, length(Y)),
                            z_lib = "SL.glm",
-                           scale = "identity",
+                           scale = "logit",
+                           ipc_scale = "identity",
                            vimp = FALSE) {
 
   set.seed(seed)
@@ -261,7 +269,7 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
     verbose = FALSE
   )
 
-  aucs <- get_all_aucs(sl_fit = fit, scale = scale, weights = all_weights,
+  aucs <- get_all_aucs(sl_fit = fit, scale = scale, ipc_scale = ipc_scale, weights = all_weights,
                        C = C, Z = Z, SL.library = z_lib, ipc_est_type = ipc_est_type, family = gaussian())
 
   ret_lst <- list(fit = fit, folds = fit$folds, aucs = aucs)
@@ -288,17 +296,22 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
 # @param sample_splitting_folds folds for sample splitting (splits up cross-fitting folds into unique groups)
 # @param V the number of folds used for variable importance (equal to the number of folds for outer cross-fitting in the CV.SL / 2)
 # @param sl_library the Super Learner library, for IPW estimation of the efficient influence function
+# @param ipc_scale the scale to apply IPW or AIPW correction on
 # @param ipc_est_type whether to use IPW or AIPW for the EIF
 # @param ipc_weights the inverse probability weights for coarsened data
 # @param Z the predictors of the missingness mechanism (a character vector)
 # @param C the indicator of missing (0) or selected into phase 2 (1)
 # @param baseline should we get predictiveness of the baseline risk factors (TRUE) or of the risk factors + variables of interest?
 # @param use_ensemble should we use the ensemble SL (TRUE) or the discrete SL (FALSE)?
+# @param final_point_estimate should the final point estimate returned be based on the sample split for inference ("split"),
+#         the average of the split-specific importance ("average"), or on the full dataset ("full")? All three point estimates
+#         are valid; sample-splitting is only required for inference.
 # @return an object of class "vimp" with the results
 get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced_fit = NULL, index = 1, type = "auc", scale = "logit",
-                       cross_fitting_folds = NULL, sample_splitting_folds = NULL, V = 2,
+                       cross_fitting_folds = NULL, sample_splitting_folds = NULL, V = 2, ipc_scale = "identity",
                        sl_library = c("SL.glmnet"), ipc_est_type = "ipw", ipc_weights = rep(1, length(cross_fitting_folds)), Z = NULL,
-                       C = NULL, baseline = FALSE, use_ensemble = TRUE, sample_splitting = TRUE) {
+                       C = NULL, baseline = FALSE, use_ensemble = TRUE, sample_splitting = TRUE, 
+                       final_point_estimate = "average") {
 
   # if not passing sample-splitting folds, create them
   if (all(is.null(sample_splitting_folds))) {
@@ -314,15 +327,6 @@ get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced
   if (is.null(cross_fitting_folds)) {
     cross_fitting_folds <- full_cv_fit$folds
   }
-  # extract independent predictions
-  full_cv_preds <- vimp::extract_sampled_split_predictions(
-    cvsl_obj = NULL, preds = full_cv_fit, sample_splitting = sample_splitting, sample_splitting_folds = switch(as.numeric(sample_splitting) + 1, rep(1, V), sample_splitting_folds),
-    full = TRUE, cross_fitting_folds = cross_fitting_folds
-  )
-  reduced_cv_preds <- vimp::extract_sampled_split_predictions(
-    cvsl_obj = NULL, preds = reduced_cv_fit, sample_splitting = sample_splitting, sample_splitting_folds = switch(as.numeric(sample_splitting) + 1, rep(2, V), sample_splitting_folds),
-    full = FALSE, cross_fitting_folds = cross_fitting_folds
-  )
   # add on CV folds for the people only sampled into phase 1
   if (is.null(Z)) {
     cf_folds <- cross_fitting_folds
@@ -331,23 +335,28 @@ get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced
   }
   set.seed(seed)
   # estimate variable importance
-  est_vim <- vimp::cv_vim(Y = Y, X = X, cross_fitted_f1 = full_cv_preds,
-                          cross_fitted_f2 = reduced_cv_preds, indx = index,
+  est_vim <- vimp::cv_vim(Y = Y, X = X, cross_fitted_f1 = full_cv_fit,
+                          cross_fitted_f2 = reduced_cv_fit, indx = index,
                           delta = 0, V = V, run_regression = FALSE,
                           sample_splitting = sample_splitting, cross_fitting_folds = cf_folds,
                           sample_splitting_folds = sample_splitting_folds,
-                          type = type, scale = scale,
+                          type = type, scale = scale, ipc_scale = ipc_scale
                           SL.library = sl_library, ipc_est_type = ipc_est_type,
-                          ipc_weights = ipc_weights, Z = Z, C = C)
+                          ipc_weights = ipc_weights, Z = Z, C = C,
+                          final_point_estimate = final_point_estimate)
   # return the vimp object
   return(est_vim)
 }
 
 # pool CV-VIM estimates over multiple random starts
 # @param vim_lst a list of vimp objects (from a call to get_cv_vim for each of a list of random number seeds)
-# @param scale the scale that intervals should be on (should match the scale used for estimation)
+# @param scale the scale that intervals should be on (should match the scale used for each individual random start)
 # @return a tibble, with: the quantity (predictiveness, VIM), the point estimate, SE, 95% CI, and a p-value for variable importance
-pool_cv_vim <- function (vim_lst, scale = "identity") {
+pool_cv_vim <- function (vim_lst, scale = "logit") {
+  # for variable importance
+  vim_point_est <- mean(unlist(lapply(vim_lst, function(l) l$est)), na.rm = TRUE)
+  vim_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se ^ 2)), na.rm = TRUE))
+  vim_ci <- vimp::vimp_ci(vim_point_est, vim_se, scale = scale, level = 0.95)
   # for predictiveness
   pred_point_est <- mean(unlist(lapply(vim_lst, function(l) l$predictiveness_full)), na.rm = TRUE)
   pred_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se_full ^ 2)), na.rm = TRUE))
