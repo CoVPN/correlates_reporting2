@@ -46,16 +46,17 @@ innerCvControl_quote = quote(list(list(V = V_inner)))
 # CV.SL inputs
 familyVar = "binomial"
 methodVar = "method.CC_nloglik"
-scaleVar = "identity"
+interval_scaleVar = "logit"
+ipc_scaleVar <- "identity"
 ipc_est_typeVar = "ipw"
 cvsl_args <- data.frame(matrix(ncol = 2, nrow = 9)) %>%
   rename(Argument = X1,
          Value = X2) %>%
   mutate(Argument = as.character(c("Cases/Total Subjects in vaccine group (%)", "family",
-                                   "method", "scale", "V_outer", "cvControl (outer CV control)",
+                                   "method", "CI scale", "IPW correction scale", "V_outer", "cvControl (outer CV control)",
                                    "V_inner", "innerCvControl", "Weighting")),
          Value = as.character(c(paste0(nv, "/", length(Y), " (", round(nv*100/length(Y), 2), "%)"), familyVar,
-                                methodVar, scaleVar, V_outer, cvControl_quote,
+                                methodVar, interval_scaleVar, ipc_scaleVar, V_outer, cvControl_quote,
                                 V_inner, innerCvControl_quote, ipc_est_typeVar)))
 
 if(V_inner == length(Y) - 1){
@@ -97,7 +98,8 @@ fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
                            Z = Z_treatmentDAT,
                            C = C,
                            z_lib = "SL.glm",
-                           scale = scaleVar, # new argument
+                           scale = interval_scaleVar, # scale on which intervals are computed (helps with intervals lying outside (0, 1))
+                           ipc_scale = ipc_scaleVar, # scale on which IPW correction is applied
                            vimp = FALSE,
                            mc.cores = num_cores
 )

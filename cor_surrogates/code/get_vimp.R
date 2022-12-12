@@ -90,7 +90,9 @@ job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 # grab the current variable set based on the job id
 this_var_set <- varset_matrix[job_id, ]
 cat("\n Running", varset_names[job_id], "variable set \n")
-
+interval_scale <- "logit" # CIs are computed on logit scale; helps with values outside boundary of [0, 1]
+ipw_scale <- "identity" # IPW correction is applied on identity scale
+final_point_estimate <- "average" # helps with point estimate stability
 # the column indices of interest
   if (job_id == 1) {
     this_s <- which(briskfactors %in% names(X))
@@ -108,24 +110,29 @@ cat("\n Running", varset_names[job_id], "variable set \n")
   if (job_id == 1) {
     vim_lst <- lapply(list_of_indices, function(l) {
       get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = naive_fits[[l]],
-                 index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
+                 index = this_s, type = "auc", scale = interval_scale, cross_fitting_folds = cf_folds[[l]],
                  sample_splitting_folds = sample_splitting_folds_baseline[[l]], V = vim_V,
                  C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
-                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, baseline = TRUE,
-                 use_ensemble = use_ensemble_sl)
+                 ipc_scale = ipw_scale, ipc_est_type = "ipw", 
+                 ipc_weights = all_ipw_weights_treatment, baseline = TRUE,
+                 use_ensemble = use_ensemble_sl,
+                 final_point_estimate = final_point_estimate) # this last argument helps with point estimates
     })
   } else {
     # get variable importance for each fold
     vim_lst <- lapply(list_of_indices, function(l) {
       get_cv_vim(seed = seeds[l], Y = full_y, X = X, full_fit = full_fits[[l]], reduced_fit = baseline_fits[[l]],
-                 index = this_s, type = "auc", scale = "identity", cross_fitting_folds = cf_folds[[l]],
+                 index = this_s, type = "auc", scale = interval_scale, cross_fitting_folds = cf_folds[[l]],
                  sample_splitting_folds = sample_splitting_folds[[l]], V = vim_V,
                  C = C, Z = c("Y", paste0("X", which(briskfactors %in% names(X)))), sl_lib = sl_lib,
-                 ipc_est_type = "ipw", ipc_weights = all_ipw_weights_treatment, use_ensemble = use_ensemble_sl)
+                 ipc_scale = ipw_scale, ipc_est_type = "ipw", 
+                 ipc_weights = all_ipw_weights_treatment, 
+                 use_ensemble = use_ensemble_sl,
+                 final_point_estimate = final_point_estimate)
     })
   }
   # pool variable importance and predictiveness over the list
-  pooled_ests <- pool_cv_vim(vim_lst = vim_lst, scale = "identity")
+  pooled_ests <- pool_cv_vim(vim_lst = vim_lst, scale = interval_scale)
   
   # save off the output
   saveRDS(pooled_ests, file = here("output", paste0(Sys.getenv("TRIAL"), "/pooled_ests_", endpoint, "_", varset_names[job_id], ".rds")))
