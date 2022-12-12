@@ -34,7 +34,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
     ylim=if(log=="y") transf(c(0,.98)) else c(0, 1) 
     hist.shrink=1/c(ADCP=2,pseudoneutid50=1.2,bindSpike=1.3,bindRBD=1.3)
     
-    all.trials=c("moderna_real", "janssen_pooled_EUA", "janssen_na_EUA",    "janssen_la_EUA",    "janssen_sa_EUA",    "AZ-COV002", "prevent19",      "azd1222")
+    # on Dec 6, 2022 janssen EUA is replaced with partA
+    all.trials=c("moderna_real", "janssen_pooled_partA", "janssen_na_partA",    "janssen_la_partA",    "janssen_sa_partA",    "AZ-COV002", "prevent19",      "azd1222")
     studies   =c("Moderna COVE", "Janssen ENSEMBLE",    "Janssen ENSEMBLE US","Janssen ENSEMBLE LA","Janssen ENSEMBLE SA","AZCOV002",  "NVX PREVENT-19", "AZD1222")
     cols      =c("purple",       "green",               "green",              "olivedrab3",         "darkseagreen4",      "orange",    "cyan",           "tan")
     names(studies)=all.trials
@@ -53,8 +54,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
     for (x in TRIALS) {    
         TRIAL=get.trial(x, a)
         COR = switch(x, moderna_real="D57",
-            janssen_pooled_EUA="D29IncludeNotMolecConfirmedstart1", janssen_na_EUA="D29IncludeNotMolecConfirmedstart1", 
-            janssen_la_EUA="D29IncludeNotMolecConfirmedstart1", janssen_sa_EUA="D29IncludeNotMolecConfirmedstart1",
+            janssen_pooled_partA="D29IncludeNotMolecConfirmed", janssen_na_partA="D29IncludeNotMolecConfirmed", 
+            janssen_la_partA="D29IncludeNotMolecConfirmed", janssen_sa_partA="D29IncludeNotMolecConfirmed",
             prevent19="D35", 
             azd1222="D57",
             stop("wrong trial label for COR")
@@ -112,8 +113,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
             myprint(x, a)
             TRIAL=get.trial(x, a)
             COR = switch(x, moderna_real="D57",
-                janssen_pooled_EUA="D29IncludeNotMolecConfirmedstart1", janssen_na_EUA="D29IncludeNotMolecConfirmedstart1", 
-                janssen_la_EUA="D29IncludeNotMolecConfirmedstart1", janssen_sa_EUA="D29IncludeNotMolecConfirmedstart1",
+                janssen_pooled_partA="D29IncludeNotMolecConfirmed", janssen_na_partA="D29IncludeNotMolecConfirmed", 
+                janssen_la_partA="D29IncludeNotMolecConfirmed", janssen_sa_partA="D29IncludeNotMolecConfirmed",
                 prevent19="D35", 
                 azd1222="D57",
                 stop("wrong trial label for COR")
@@ -219,7 +220,10 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
 }
 
 # for NEJM perspective
-draw.ve.curves(a="pseudoneutid50", TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19", "azd1222"), file.name="nejm", include.az=T, log="y", add.hist=F, show.cb=F)
+#draw.ve.curves(a="pseudoneutid50", TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19", "azd1222"), file.name="nejm", include.az=T, log="y", add.hist=F, show.cb=F)
+# on Dec 6, 2022 janssen EUA is replaced with partA
+draw.ve.curves(a="pseudoneutid50", TRIALS=c("moderna_real", "janssen_na_partA", "prevent19", "azd1222"), file.name="nejm", include.az=T, log="y", add.hist=F, show.cb=F)
+
 
 
 # draw VE curves for several markers

@@ -226,7 +226,7 @@ if (exists("COR")) {
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
         if(!is.null(dat.mock$risk_score)) {
-            if (!attr(config, "config") %in% c("janssen_na_EUA")) { # make an exception for backward compatibility
+            if (!attr(config, "config") %in% c("janssen_na_EUA","janssen_na_partA")) { # make an exception for backward compatibility
                 stopifnot(nrow(subset(dat.mock, ph1 & is.na(risk_score)))==0)
             }
             dat.mock=subset(dat.mock, !is.na(risk_score))
