@@ -490,6 +490,12 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
         pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
     }
     
+    # data less than lloq is set to lod/2
+    llods["pseudoneutid50uncensored"]=40*0.0653 #2.612
+    lloqs["pseudoneutid50uncensored"]=40*0.0653  
+    uloqs["pseudoneutid50uncensored"]=12936*0.0653 # 844.7208
+    pos.cutoffs["pseudoneutid50uncensored"]=lloqs["pseudoneutid50uncensored"]
+
 } else if(study_name=="PREVENT19") {
     # Novavax
     
