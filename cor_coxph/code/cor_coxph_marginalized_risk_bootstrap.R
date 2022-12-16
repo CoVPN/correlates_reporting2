@@ -66,7 +66,8 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
     
     if (type==1) {
         # conditional on S=s (quantitative)
-        ss=unique(sort(c(
+        # don't sort ss or do ss=ss[!duplicated(ss)] because e.g. 15% will be lost and later code depends on that
+        ss=sort(c(
             # Lars quantiles so that to be consistent with his analyses, also add every 5% to include s1 and s2 for sensitivity analyses
             report.assay.values(data[[marker.name]][data$EventIndPrimary==1], marker.name.to.assay(marker.name)), 
             # 2.5% and 97.5% as the leftmost and rightmost points 
@@ -75,7 +76,8 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
             seq(min(data[[marker.name]], na.rm=TRUE), max(data[[marker.name]], na.rm=TRUE), length=100)[-c(1,100)],
             # useful for reports
             if (log10(100)>min(data[[marker.name]], na.rm=TRUE) & log10(100)<max(data[[marker.name]], na.rm=TRUE)) log10(100)
-        )))
+        ))
+        
         prob = fc.1(data.ph2, data, n.dean=TRUE, categorical.s=F)
         if (!comp.risk) {
             n.dean=prob[1]
