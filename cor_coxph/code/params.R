@@ -24,7 +24,7 @@ get.trial=function(x, assay) {
     if (startsWith(x,"janssen")) {
         if(startsWith(assay,"bind")) x=paste0(x, "")
         if(startsWith(assay,"pseudo")) x=paste0(x, "")
-        if(startsWith(assay,"ADCP")) x=paste0(x, "ADCP")
+        if(startsWith(assay,"ADCP")) x=paste0(x, "")
     } else if (startsWith(x,"azd1222")) {
         if(startsWith(assay,"bind")) x=paste0(x, "_bAb")
         if(startsWith(assay,"pseudo")) x=paste0(x, "")
