@@ -24,7 +24,7 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 # draw VE curves for several trials, the same marker
 # TRIALS is a subset of all.trials
 # a is an assay
-draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist=T, show.cb=T) {
+draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist=T, show.cb=T, show.ve.in.legend=F) {
 #a="pseudoneutid50"; TRIALS=c("moderna_real", "janssen_na_real", "prevent19", "azd1222"); file.name="nejm"; include.az=T; log="y"; add.hist=F; show.cb=F
     
     myprint(a)
@@ -184,11 +184,13 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
         }        
     
         # legend
-#        legend=paste0(studies[TRIALS], ", ", sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%"))
-#        if (include.az) legend=c(legend, "AZCOV002, 71.8%")
-        # remove VE from legend
-        legend=studies[TRIALS]
-        if (include.az) legend=c(legend, "AZCOV002")
+        if (show.ve.in.legend) {
+            legend=paste0(studies[TRIALS], ", ", sapply(overall.ve.ls, function(x) formatDouble(x*100,1)%.%"%"))
+            if (include.az) legend=c(legend, "AZCOV002, 71.8%")
+        } else {
+            legend=studies[TRIALS]
+            if (include.az) legend=c(legend, "AZCOV002")
+        }
         mylegend(x=ifelse(log=="",6,1), col=cols[c(TRIALS, if(include.az) "AZ-COV002")], legend=legend, lty=1, lwd=2, cex=.7)
     
     dev.off()    
@@ -369,6 +371,12 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
 }
 
 
+# ENSEMBLE regions
+for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
+    draw.ve.curves(a, TRIALS=c("janssen_na_partA", "janssen_la_partA", "janssen_sa_partA"), file.name="3", include.az=F, show.ve.in.legend=T)
+    draw.ve.curves(a, TRIALS=c("janssen_na_partA", "janssen_la_partA", "janssen_sa_partA"), file.name="3", include.az=F, show.ve.in.legend=T, log="y")
+}
+
 # COVE + ENSEMBLE/US + AZ + PREVENT19 + AZD1222 + PROFISCOV
 for (a in c("bindSpike")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_partA", "janssen_la_partA", "prevent19", "azd1222", "profiscov"), file.name="11", include.az=T, log="y")
@@ -427,12 +435,6 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="2", include.az=F)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="2", include.az=F, log="y")
-}
-
-# ENSEMBLE regions
-for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
-    draw.ve.curves(a, TRIALS=c("janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="3", include.az=F)
-    draw.ve.curves(a, TRIALS=c("janssen_na_EUA", "janssen_la_EUA", "janssen_sa_EUA"), file.name="3", include.az=F, log="y")
 }
 
 # COVE + ENSEMBLE/US + AZ
