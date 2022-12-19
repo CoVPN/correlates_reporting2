@@ -467,3 +467,34 @@ for (a in c("bindSpike", "pseudoneutid50")) {
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="8", include.az=F)
     draw.ve.curves(a, TRIALS=c("moderna_real", "janssen_na_EUA", "prevent19"), file.name="8", include.az=F, log="y")
 }
+
+
+###################################################################################################
+# test of equality
+
+a="pseudoneutid50"
+
+TRIALS=c("moderna_real", "janssen_na_partA", "prevent19", "azd1222")
+coefs=sapply(TRIALS, function(x) {
+    myprint(x, a)
+    TRIAL=get.trial(x, a)
+    COR = switch(x, moderna_real="D57",
+        janssen_pooled_partA="D29IncludeNotMolecConfirmed", janssen_na_partA="D29IncludeNotMolecConfirmed", 
+        janssen_la_partA="D29IncludeNotMolecConfirmed", janssen_sa_partA="D29IncludeNotMolecConfirmed",
+        prevent19="D35", 
+        azd1222="D57",
+        profiscov="D91",
+        stop("wrong trial label for COR")
+    )
+    load(here::here("output", TRIAL, COR, "coxph_fits.Rdata"))
+    
+    coef=fits.cont.coef.ls[[which(sapply(names(fits.cont.coef.ls), function(x) endsWith(x,a)))]]
+    coef[nrow(coef),c("HR","se")]
+})
+
+# inverse variance weighte mean
+mean=weighted.mean(coefs["HR",], coefs["se",]**(-2))
+# chi squared statistic
+stat = sum((coefs["HR",]-mean)**2 / coefs["se",]**2)
+# p value
+pchisq(stat, df=3, lower.tail=F)
