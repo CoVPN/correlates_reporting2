@@ -142,26 +142,30 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
     
     labels.time.no.fold <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)]
     
-    for (cohort in c("Vaccine", "all")) {
-    	for (assay_long in assays) {
-    	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
-        for (day in gsub(" ","", labels.time.no.fold)) {
-          if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
-    		  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub2.Rmd')), quiet = TRUE)
-      		cat(res, sep = '\n')
-          cat("\\clearpage", sep = '\n')
-    		} 
-    	}
+    for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
+      for (cohort in c("Vaccine", "all")) {
+      	for (assay_long in assays) {
+      	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
+          for (day in gsub(" ","", labels.time.no.fold)) {
+            if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
+      		  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub2.Rmd')), quiet = TRUE)
+        		cat(res, sep = '\n')
+            cat("\\clearpage", sep = '\n')
+      		} 
+      	}
+      }
     }
     
-    for (cohort in c("Vaccine", "all")){
-    	for (assay_long in assays){
-    	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
-        if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
-    	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
-    		cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
-    	}
+    for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
+      for (cohort in c("Vaccine", "all")){
+      	for (assay_long in assays){
+      	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
+          if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
+      	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
+      		cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+      	}
+      }
     }
   
     
