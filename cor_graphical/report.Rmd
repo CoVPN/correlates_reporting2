@@ -124,7 +124,8 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
       for (facet in facets) {
       	for (ver in c("v1", "v2", if(do.fold.change==1)"v3")) {
       		for (type in c("linebox", "violinbox")) {
-      		  for (assay in gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays))))) {
+      		  for (assay_long in assays) {
+      		    assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
       		    for (trt in c("Placebo", "Vaccine")) {
                 if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
       		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
@@ -142,7 +143,8 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
     labels.time.no.fold <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)]
     
     for (cohort in c("Vaccine", "all")) {
-    	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))) {
+    	for (assay_long in assays) {
+    	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
         for (day in gsub(" ","", labels.time.no.fold)) {
           if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
     		  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub2.Rmd')), quiet = TRUE)
@@ -153,7 +155,8 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
     }
     
     for (cohort in c("Vaccine", "all")){
-    	for (assay in gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assays)))){
+    	for (assay_long in assays){
+    	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
         if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
     	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
     		cat(res, sep = '\n')
