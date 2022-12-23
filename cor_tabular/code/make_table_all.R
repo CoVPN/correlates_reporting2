@@ -193,7 +193,11 @@ tlf <-
                         "Baseline SARS-CoV-2 Positive Placebo Recipients" = 8),
       col1="1cm"))
 
-
+if (grepl("severe", tolower(config.cor$EventIndPrimary))) {
+  for (i in c("case_vacc_neg", "case_plcb_neg", "case_vacc_pos", "case_plcb_pos" )){
+    names(tlf[[i]]$header_above1) <- gsub("Cases*", "Severe Cases*", names(tlf[[i]]$header_above1), fixed=T)
+  }
+}
     
 # cutoff.name <- config$llox_label
 
