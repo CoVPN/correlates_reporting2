@@ -734,7 +734,7 @@ D43omi:
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 
-# primary endpoint D29 markers, but the analysis population is D57. For AZ
+# primary endpoint D29 markers, but the analysis population is D57. For AZ and COVE
 D29start28:
   ph1: ph1.D57
   ph2: ph2.D57
