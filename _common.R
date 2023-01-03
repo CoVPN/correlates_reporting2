@@ -84,7 +84,8 @@ labels.title <- as.data.frame(t(labels.title))
 #labels.assays.short <- labels.axis[1, ] # should not create this again
 labels.assays.long <- labels.title
 
-do.fold.change=attr(config, "config") %in% c("vat08m_nonnaive")
+do.fold.change.overB=attr(config, "config") %in% c("vat08m_nonnaive")
+do.fold.change=F
 
 # if this flag is true, then the N IgG binding antibody is reported 
 # in the immuno report (but is not analyzed in the cor or cop reports).
@@ -104,24 +105,48 @@ if (exists("COR")) {
     } 
     
     config.cor <- config::get(config = COR)
-    tpeak=as.integer(paste0(config.cor$tpeak))
+    
+    if (startsWith(config.cor$tpeak,"Delta")) {
+        tpeak = as.integer(strsplit(sub("Delta","",config.cor$tpeak), "over")[[1]][1])    
+        do.fold.change=T    
+    } else {
+        tpeak=as.integer(paste0(config.cor$tpeak))
+    }
+    
     tpeaklag=as.integer(paste0(config.cor$tpeaklag))
     tinterm=as.integer(paste0(config.cor$tinterm))
     myprint(tpeak, tpeaklag, tinterm)
     # some config may not have all fields
     if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
 
-    all.markers=paste0("Day", tpeak, assays)
-    if (do.fold.change) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
-    names(all.markers)=all.markers
-    all.markers.names.short=c(
-        labels.assays.short,
-        if (do.fold.change) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
-    ); names(all.markers.names.short)=all.markers
-    all.markers.names.long=c(
-        as.matrix(labels.assays.long)["Day"%.%tpeak, assays],
-        if (do.fold.change) as.matrix(labels.assays.long)["Delta"%.%tpeak%.%"overB", assays]
-    ); names(all.markers.names.long)=all.markers
+    if (do.fold.change) {
+        all.markers=paste0(config.cor$tpeak, assays)
+        names(all.markers)=all.markers
+        
+        all.markers.names.short=sub("\\(.+\\)", config.cor$tpeak, labels.assays.short)    # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 D57over29"
+        names(all.markers.names.short)=all.markers
+        
+        all.markers.names.long=as.matrix(labels.assays.long)[config.cor$tpeak, assays]
+        names(all.markers.names.long)=all.markers
+        
+    } else {
+        all.markers=paste0("Day", tpeak, assays)
+        if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+        names(all.markers)=all.markers
+        
+        all.markers.names.short=c(
+            labels.assays.short,
+            if (do.fold.change.overB) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
+        )
+        names(all.markers.names.short)=all.markers
+        
+        all.markers.names.long=c(
+            as.matrix(labels.assays.long)["Day"%.%tpeak, assays],
+            if (do.fold.change.overB) as.matrix(labels.assays.long)["Delta"%.%tpeak%.%"overB", assays]
+        )
+        names(all.markers.names.long)=all.markers
+    }
+    
 }
     
 # to be deprecated
@@ -930,6 +955,8 @@ get.assay.from.name=function(a) {
         sub("Day[[0123456789]+", "", a)
     } else if (contain(a,"overB")) {
         sub("Delta[[0123456789]+overB", "", a)
+    } else if (contain(a,"over")) {
+        sub("Delta[[0123456789]+over[[0123456789]+", "", a)
     } else stop("get.assay.from.name: not sure what to do")
 }
 
@@ -957,12 +984,14 @@ draw.x.axis.cor=function(xlim, llox, llox.label){
         
     xx=seq(ceiling(xlim[1]), floor(xlim[2]))        
     if (is.na(llox)) {
-        # if llox is NA
         for (x in xx) {
             axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )    
         }
+    } else if (llox.label=="delta") {
+        for (x in xx) {
+            axis(1, at=x, labels=if (x>=3 | x<=-3) bquote(10^.(x)) else 10^x )    
+        }    
     } else {
-        # if llox is not NA
         axis(1, at=log10(llox), labels=llox.label)
         for (x in xx[xx>log10(llox*1.8)]) {
             axis(1, at=x, labels= if(x>=3) bquote(10^.(x)) else 10^x)
