@@ -268,7 +268,7 @@ vat08m_nonnaive: &vat08m_nonnaive
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]
   additional_models: [
-    risk_score + Bpseudoneutid50 + DeltatpeakoverBpseudoneutid50,
+    risk_score + Bpseudoneutid50 + DeltatpeakoverBpseudoneutid50, # study baseline and fold change, also see _common.R do.fold.change
     Age + I(Country==3)+ Daytpeakpseudoneutid50cat
   ]
   
@@ -630,6 +630,21 @@ D57:
   EventTimePrimary: EventTimePrimaryD57
   Earlyendpoint: EarlyendpointD57
   tpeak: 57
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+# primary endpoint, Delta57over29 markers
+# used to study fold change in moderna
+D57over29:
+  ph1: ph1.D57
+  ph2: ph2.D57
+  wt: wt.D57
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndPrimaryD57
+  EventTimePrimary: EventTimePrimaryD57
+  Earlyendpoint: EarlyendpointD57
+  tpeak: Delta57over29
   tpeaklag: 7
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.

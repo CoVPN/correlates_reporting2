@@ -61,8 +61,8 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         plot(risks$marker[shown], risks$prob[shown], 
             xlab=all.markers.names.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), 
             xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by ", tfinal.tpeak, " days post Day ", tpeak1, " Visit"), lwd=lwd, ylim=ylim, 
-            type="n", main=paste0(all.markers.names.long[a]), xaxt=ifelse(is.delta,"s","n"))    
-        if(!is.delta) draw.x.axis.cor(xlim, lloxs[assay], config$llox_label[assay])
+            type="n", main=paste0(all.markers.names.long[a]), xaxt="n")
+        draw.x.axis.cor(xlim, lloxs[assay], if(is.delta) "delta" else config$llox_label[assay])
             
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)
@@ -210,7 +210,7 @@ for (eq.geq in 1:4) {
                 ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by ", tfinal.tpeak, " days post Day ", tpeak1, " Visit"), 
                 main=paste0(all.markers.names.long[a]),
                 xlab=all.markers.names.short[a]%.%ifelse(eq.geq!=2," (=s)"," (>=s)"), 
-                ylim=ylim, xlim=xlim, yaxt="n", xaxt=ifelse(is.delta,"s","n"), draw.x.axis=is.delta)
+                ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
             # y axis labels
             if (eq.geq!=4) {
                 yat=seq(-1,1,by=.1)
@@ -220,7 +220,7 @@ for (eq.geq in 1:4) {
                 axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
             }
             # x axis
-            if(!is.delta) draw.x.axis.cor(xlim, lloxs[assay], config$llox_label[assay])
+            draw.x.axis.cor(xlim, lloxs[assay], if(is.delta) "delta" else config$llox_label[assay])
             
             img.dat=cbind(risks$marker[.subset], t(rbind(est, ci.band))[.subset,])
         

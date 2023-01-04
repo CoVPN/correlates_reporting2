@@ -26,7 +26,7 @@ $\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over th
 \input{`r paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", study_name)`}
 \normalsize
 \vspace{-15pt}
-$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_Day", tpeak, assays, "_", study_name, "}"), sep=",")`
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, "_", study_name, "}"), sep=",")`
 $\ast\ast$`r txt.coxph.note2`
 $\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
 $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
