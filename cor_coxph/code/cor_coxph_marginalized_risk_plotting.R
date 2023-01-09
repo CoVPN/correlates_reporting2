@@ -84,7 +84,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         
         # save to satisfy some journal requirements
         if(w.wo.plac==1) mywrite.csv(img.dat, file=paste0(save.results.to, a, "_risk_curves",ifelse(eq.geq==1,"_eq","_geq"),"_"%.%study_name))    
-
+    
         # text overall risks
         if (w.wo.plac==1) {
             text(x=par("usr")[2]-diff(par("usr")[1:2])/3.5, y=prev.plac[1]+(prev.plac[1]-prev.plac[2])/2, "placebo overall "%.%formatDouble(prev.plac[1],3,remove.leading0=F))        
@@ -145,7 +145,7 @@ for (a in all.markers) {
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on -log(1-) scale
 for (eq.geq in 1:4) {  
-# eq.geq=1; a=all.markers[1]
+# eq.geq=4; a=all.markers[1]
     
     outs=lapply (all.markers, function(a) {        
         is.delta=startsWith(a,"Delta")
@@ -257,6 +257,15 @@ for (eq.geq in 1:4) {
                 col=c("gray", if(eq.geq==1) "pink" else "black", if(eq.geq==1) "red"), 
                 lty=1, lwd=2, cex=.8)
         
+            
+#            # add segments if needed
+#            newx=log10(c(54,247,563))
+#            fit.tmp=try(svycoxph(update(form.0, as.formula(paste0("~.+",a))), design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)))        
+#            out=marginalized.risk(fit.tmp, a, dat.vac.seroneg.ph2, t=tfinal.tpeak, ss=newx, weights=dat.vac.seroneg.ph2$wt, categorical.s=F)
+#            out=-log(out/res.plac.cont["est"])
+#            segments(newx, -1, newx, out, col=c("darkgreen","darkorchid3","deepskyblue3"), lwd=2)
+#            segments(rep(-2,3),out, newx,out, col=c("darkgreen","darkorchid3","deepskyblue3"), lwd=2)
+
         
             # add histogram
             par(new=TRUE) 
@@ -269,6 +278,7 @@ for (eq.geq in 1:4) {
             if(eq.geq==4) tmp$density=tmp$density*3
             plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25))) 
             
+    
         dev.off()    
             
         ret        
