@@ -8,9 +8,48 @@ source(here::here("code", "params.R")) # load parameters
 library(here)
 library(dplyr)
 library(stringr)
+if (F){
+  # adhoc for AZ, pair plot with spike and pseudovirus side by side
+  # 1. add azd1222_all with both assays in config.yml, Sys.setenv(TRIAL="azd1222_all")
+  # azd1222_all: &azd1222_all
+  # <<: *azd1222_base
+  # assays: [bindSpike, pseudoneutid50]
+  # llox_label: [LLOQ, LOD]
+  # assay_labels: [Binding Antibody to Spike, PsV Neutralization 50% Titer]
+  # assay_labels_short: [Anti Spike IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
+  # 2. create azd1222_all_data_processed_with_riskscore 
+  # by combining azd1222_data_processed_with_riskscore.csv and azd1222_bAb_data_processed_with_riskscore.csv and assign to dat.mock
+  azd1222_bAb <- read.csv(here("..", "data_clean", "azd1222_bAb_data_processed_with_riskscore.csv"), header = TRUE)
+  azd1222 <- read.csv(here("..", "data_clean", "azd1222_data_processed_with_riskscore.csv"), header = TRUE)
+  azd1222_bAb$Bpseudoneutid50=NULL
+  azd1222_bAb$Day29pseudoneutid50=NULL
+  azd1222_bAb$Day57pseudoneutid50=NULL
+  azd1222_bAb$wt.subcohort=NULL
+  dat.mock <- azd1222_bAb %>%
+    left_join(azd1222[,c("Ptid","Bpseudoneutid50","Day29pseudoneutid50","Day57pseudoneutid50",
+                         "Delta29overBpseudoneutid50","Delta57overBpseudoneutid50","Delta57over29pseudoneutid50",
+                         "ph2.immuno","wt.subcohort","TwophasesampIndD29","TwophasesampIndD57")], by="Ptid")
+  # wt.subcohort is from nAb dataset based on email discussion with Youyi on 7/22/2022:
+  # Youyi: one based on ID50 weights because we have less ID50 samples than bAb samples
+  table(dat.mock$ph2.immuno.x, dat.mock$ph2.immuno.y)
+  dat.mock$ph2.immuno = with(dat.mock, ph2.immuno.x==1 & ph2.immuno.y==1, 1, 0) # 628
+  dat.mock$TwophasesampIndD29 = with(dat.mock, TwophasesampIndD29.x==1 & TwophasesampIndD29.y==1, 1, 0) # 828
+  dat.mock$TwophasesampIndD57 = with(dat.mock, TwophasesampIndD57.x==1 & TwophasesampIndD57.y==1, 1, 0) # 659
+  
+  dim(subset(dat.mock, EarlyendpointD57==0 & Perprotocol==1 & SubcohortInd==1 & 
+               !is.na(Bpseudoneutid50) & !is.na(Day29pseudoneutid50) & 
+               !is.na(BbindSpike) & !is.na(Day29bindSpike))) # 773, 
+  # if change to EarlyendpointD29==0, save three participants by using EarlyendpointD29 instead of EarlyendpointD57 for Day 29 plots
+  dim(subset(dat.mock, EarlyendpointD57==0 & Perprotocol==1 & SubcohortInd==1 & 
+               !is.na(Bpseudoneutid50) & !is.na(Day29pseudoneutid50) & !is.na(Day57pseudoneutid50) & 
+               !is.na(BbindSpike) & !is.na(Day29bindSpike) & !is.na(Day57bindSpike))) # 628
 
-
+  # subsetting on vaccine recipients with ID50 value > LOD and with IgG spike > positivity cut-off at Day 57
+  dat.mock <- subset(dat.mock, Day57bindSpike > log10(pos.cutoffs["bindSpike"]) & Day57pseudoneutid50 > log10(llods["pseudoneutid50"]))
+}
+  
 dat.mock <- read.csv(data_name, header = TRUE)
+
 # for unknown reason, the Senior variable has no value in the PROFISCOV dataset
 if (study_name=="PROFISCOV") {
   dat.mock$Senior <- as.numeric(with(dat.mock, Age >= age.cutoff, 1, 0))
