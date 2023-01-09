@@ -106,7 +106,7 @@ if (exists("COR")) {
     
     config.cor <- config::get(config = COR)
     
-    if (startsWith(config.cor$tpeak,"Delta")) {
+    if (startsWith(config.cor$tpeak%.%"","Delta")) { 
         tpeak = as.integer(strsplit(sub("Delta","",config.cor$tpeak), "over")[[1]][1])    
         do.fold.change=T    
     } else {
