@@ -1,3 +1,6 @@
+<!-- add D29start28 for review responses to Benkeser et al -->
+
+
 ```{r, echo=FALSE, results='asis'}
 
 tpeak <- 29
@@ -57,5 +60,6 @@ pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
 
 res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
 cat(res, sep = '\n')
+
 
 ```

@@ -60,9 +60,9 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
               risks$marker<=wtd.quantile(dat.vac.seroneg[[a]], dat.vac.seroneg$wt, 1-2.5/100)
         plot(risks$marker[shown], risks$prob[shown], 
             xlab=all.markers.names.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), 
-            xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), lwd=lwd, ylim=ylim, 
-            type="n", main=paste0(all.markers.names.long[a]), xaxt=ifelse(is.delta,"s","n"))    
-        if(!is.delta) draw.x.axis.cor(xlim, lloxs[assay], config$llox_label[assay])
+            xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by ", tfinal.tpeak, " days post Day ", tpeak1, " Visit"), lwd=lwd, ylim=ylim, 
+            type="n", main=paste0(all.markers.names.long[a]), xaxt="n")
+        draw.x.axis.cor(xlim, lloxs[assay], if(is.delta) "delta" else config$llox_label[assay])
             
         # prevelance lines
         abline(h=prev.plac, col="gray", lty=c(1,3,3), lwd=lwd)
@@ -73,13 +73,18 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
             lines(risks$marker[shown], risks$prob[shown], lwd=lwd)
             lines(risks$marker[shown], risks$lb[shown],   lwd=lwd, lty=3)
             lines(risks$marker[shown], risks$ub[shown],   lwd=lwd, lty=3)    
+            img.dat=cbind(risks$marker[shown], risks$prob[shown], risks$lb[shown], risks$ub[shown])
         } else {
             abline(h=prev.vacc[1], col="gray", lty=c(1), lwd=lwd)
             lines(risks$marker[ncases>=5], risks$prob[ncases>=5], lwd=lwd)
             lines(risks$marker[ncases>=5], risks$lb[ncases>=5],   lwd=lwd, lty=3)
             lines(risks$marker[ncases>=5], risks$ub[ncases>=5],   lwd=lwd, lty=3)    
+            img.dat=cbind(risks$marker[ncases>=5], risks$prob[ncases>=5], risks$lb[ncases>=5], risks$ub[ncases>=5])
         }
         
+        # save to satisfy some journal requirements
+        if(w.wo.plac==1) mywrite.csv(img.dat, file=paste0(save.results.to, a, "_risk_curves",ifelse(eq.geq==1,"_eq","_geq"),"_"%.%study_name))    
+    
         # text overall risks
         if (w.wo.plac==1) {
             text(x=par("usr")[2]-diff(par("usr")[1:2])/3.5, y=prev.plac[1]+(prev.plac[1]-prev.plac[2])/2, "placebo overall "%.%formatDouble(prev.plac[1],3,remove.leading0=F))        
@@ -140,7 +145,7 @@ for (a in all.markers) {
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on -log(1-) scale
 for (eq.geq in 1:4) {  
-# eq.geq=1; a=all.markers[1]
+# eq.geq=4; a=all.markers[1]
     
     outs=lapply (all.markers, function(a) {        
         is.delta=startsWith(a,"Delta")
@@ -202,10 +207,10 @@ for (eq.geq in 1:4) {
             mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), 
                 col=ifelse(eq.geq==1,"red","white"), # white is no plot
                 lwd=lwd, make.legend=F, 
-                ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by Day ",tfinal.tpeak), 
+                ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by ", tfinal.tpeak, " days post Day ", tpeak1, " Visit"), 
                 main=paste0(all.markers.names.long[a]),
                 xlab=all.markers.names.short[a]%.%ifelse(eq.geq!=2," (=s)"," (>=s)"), 
-                ylim=ylim, xlim=xlim, yaxt="n", xaxt=ifelse(is.delta,"s","n"), draw.x.axis=is.delta)
+                ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
             # y axis labels
             if (eq.geq!=4) {
                 yat=seq(-1,1,by=.1)
@@ -215,7 +220,7 @@ for (eq.geq in 1:4) {
                 axis(side=2,at=-log(1-yat),labels=(yat*100)%.%"%")            
             }
             # x axis
-            if(!is.delta) draw.x.axis.cor(xlim, lloxs[assay], config$llox_label[assay])
+            draw.x.axis.cor(xlim, lloxs[assay], if(is.delta) "delta" else config$llox_label[assay])
             
             img.dat=cbind(risks$marker[.subset], t(rbind(est, ci.band))[.subset,])
         
@@ -252,6 +257,15 @@ for (eq.geq in 1:4) {
                 col=c("gray", if(eq.geq==1) "pink" else "black", if(eq.geq==1) "red"), 
                 lty=1, lwd=2, cex=.8)
         
+            
+#            # add segments if needed
+#            newx=log10(c(54,247,563))
+#            fit.tmp=try(svycoxph(update(form.0, as.formula(paste0("~.+",a))), design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)))        
+#            out=marginalized.risk(fit.tmp, a, dat.vac.seroneg.ph2, t=tfinal.tpeak, ss=newx, weights=dat.vac.seroneg.ph2$wt, categorical.s=F)
+#            out=-log(out/res.plac.cont["est"])
+#            segments(newx, -1, newx, out, col=c("darkgreen","darkorchid3","deepskyblue3"), lwd=2)
+#            segments(rep(-2,3),out, newx,out, col=c("darkgreen","darkorchid3","deepskyblue3"), lwd=2)
+
         
             # add histogram
             par(new=TRUE) 
@@ -264,6 +278,7 @@ for (eq.geq in 1:4) {
             if(eq.geq==4) tmp$density=tmp$density*3
             plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25))) 
             
+    
         dev.off()    
             
         ret        
@@ -316,7 +331,7 @@ for(a in all.markers) {
     mytex(tab, file.name=paste0(a, "_controlled_ve_eq", "_"%.%study_name), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
         longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", COR), caption=paste0("Controlled VE as functions of Day ",
             tpeak," ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
-            ncol(risks.all[[1]]$boot)," replicates). ", "Overall cumulative incidence from ", tpeaklag, " to ",tfinal.tpeak," days post Day ",tpeak," was ",
+            ncol(risks.all[[1]]$boot)," replicates). ", "Overall cumulative incidence from ", tpeaklag, " to ",tfinal.tpeak," days post Day ",tpeak1," was ",
             formatDouble(prev.vacc[1], 3, remove.leading0=F)," in vaccine recipients compared to ",
             formatDouble(prev.plac[1], 3, remove.leading0=F)," in placebo recipients, with cumulative vaccine efficacy ",
             formatDouble(overall.ve[1]*100,1),"\\% (95\\% CI ",formatDouble(overall.ve[2]*100,1)," to ",formatDouble(overall.ve[3]*100,1),"\\%).")
@@ -415,9 +430,9 @@ for (a in all.markers) {
     q.a=marker.cutpoints[[a]]
     
     if(length(out)==1) empty.plot() else {
-        mymatplot(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,], lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak), ylim=ylim, xlab="", las=1, 
+        mymatplot(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,], lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint), ylim=ylim, xlab="", las=1, 
             xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
-        title(xlab="Days Since Day "%.%tpeak%.%" Visit", line=2)
+        title(xlab="Days Since Day "%.%tpeak1%.%" Visit", line=2)
         title(main=all.markers.names.long[a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
         legend=c("Vaccine low","Vaccine medium","Vaccine high","Placebo")
@@ -505,7 +520,7 @@ for (a in all.markers) {
             lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, 
             ylab=paste0("log(-log(Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak, "))"), xlab="", 
             las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
-        title(xlab="Days Since Day "%.%tpeak%.%" Visit", line=2)
+        title(xlab="Days Since Day "%.%tpeak1%.%" Visit", line=2)
         title(main=all.markers.names.long[a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
         legend=c("Vaccine low","Vaccine medium","Vaccine high")

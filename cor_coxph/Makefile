@@ -10,6 +10,8 @@ cor_coxph:
 ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 	Rscript code/cor_coxph.R D29
 	Rscript code/cor_coxph.R D57
+	Rscript code/cor_coxph.R D57over29
+	Rscript code/cor_coxph.R D29start28
 	Rscript code/cor_graphical_time_to_event.R D29D57
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janssen_la_mock janssen_sa_mock))
 	Rscript code/cor_coxph.R D29
@@ -29,11 +31,13 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222))
 	Rscript code/cor_coxph.R D29
 	Rscript code/cor_coxph.R D57
+	Rscript code/cor_coxph.R D57over29
 	Rscript code/cor_coxph.R D29start28
 	Rscript code/cor_graphical_time_to_event.R D29D57
 else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_bAb)) ## for some reason if this is merged with azd1222, azd1222 won't run
 	Rscript code/cor_coxph.R D29
 	Rscript code/cor_coxph.R D57
+	Rscript code/cor_coxph.R D57over29
 	Rscript code/cor_coxph.R D29start28
 	Rscript code/cor_graphical_time_to_event.R D29D57
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
