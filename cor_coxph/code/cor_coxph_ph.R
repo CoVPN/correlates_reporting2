@@ -17,7 +17,8 @@ for (a in all.markers) {
     fits.scaled[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
 
-
+# put coxph model coef together to save
+fits.cont.coef.ls = lapply(fits, function (fit) getFixedEf(fit, robust=T))
 
 natrisk=nrow(dat.vac.seroneg)
 nevents=sum(dat.vac.seroneg$yy==1)
@@ -55,6 +56,9 @@ for (a in all.markers) {
     fits.tri[[a]]=run.svycoxph(f, design=design.vacc.seroneg) 
 }
 fits.tri=fits.tri
+
+fits.tri.coef.ls= lapply(fits.tri, function (fit) getFixedEf(fit, robust=T))
+
 
 rows=length(coef(fits.tri[[1]]))-1:0
 # get generalized Wald p values
@@ -461,5 +465,6 @@ if (!is.null(config$interaction)) {
 
 
 
+save(fits.cont.coef.ls, fits.tri.coef.ls, file=paste0(save.results.to, "coxph_fits.Rdata"))
 
 save (tab.cont, tab.cat, tab.cont.scaled, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))
