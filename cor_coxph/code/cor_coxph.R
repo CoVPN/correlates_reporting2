@@ -3,6 +3,7 @@
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "moderna_real"); COR="D57over29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "moderna_real"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222_bAb"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_EUA"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "profiscov"); COR="D91"; Sys.setenv(VERBOSE = 1) 
@@ -13,6 +14,7 @@
 #Sys.setenv(TRIAL = "janssen_la_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -109,7 +111,16 @@ print(date())
 # misc stuff
 #with(dat.vac.seroneg.ph2, weighted.mean(Day35bindRBD<log10(100), wt))
 
+#with(dat.vac.seroneg.ph2, table(EventIndPrimary, is.na(seq1.spike.weighted.hamming)))
+#with(dat.vac.seroneg.ph2, table(EventIndPrimary, is.na(seq1.log10vl)))
 
+#with(dat.vac.seroneg, table(EventIndPrimary, sieve.status, EventTimePrimary>0))
+#with(dat.vac.seroneg, table(EventIndPrimaryD29, sieve.status, EventTimePrimary>0))
+#with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, sieve.status, EventTimePrimary>0))
+#
+#with(dat.vac.seroneg, plot(EventTimePrimary, sieve.time, cex=.2)); abline(0,1)
+#
+#subset(dat.vac.seroneg, EventIndPrimary==0 & sieve.status==1)
 
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
