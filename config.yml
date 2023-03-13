@@ -4,6 +4,7 @@
 # multivariate_assays and additional_models are both optional. 
 #       The difference between the two is that in multivariate_assays for each formula, both models are fit, once scaled and once non-scaled 
 #           and that in multivariate_assays, a generalized wald test p value is computed over all markers
+#       another difference is that covariates_riskscore is automatically adjusted in multivariate but not in additional
 
 # interaction: optional. 
 #       For each interaction model, a regression coefficient table and two marginalized risk curves plots with bootstrap are made, one with marker a on the x axis and evaluated at three levels of marker b,
@@ -116,6 +117,9 @@ janssen_na_partA: &janssen_na_partA
   llox_label: [LOD, LOD, LLOQ, LLOQ]
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
+  additional_models: [
+    risk_score + Daytpeakpseudoneutid50 + DaytpeakADCP
+  ]
 
 janssen_na_partAsenior: &janssen_na_partAsenior
   inherits: janssen_na_partA
@@ -134,6 +138,9 @@ janssen_la_partA: &janssen_la_partA
   #data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partA_data_processed_with_riskscore.csv
   data_cleaned: ../../data/janssen/janssen_la_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
+  additional_models: [
+    risk_score + Daytpeakpseudoneutid50 + DaytpeakADCP
+  ]
 
 janssen_la_partAsenior: &janssen_la_partAsenior
   inherits: janssen_la_partA

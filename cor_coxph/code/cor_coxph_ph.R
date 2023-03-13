@@ -464,6 +464,15 @@ if (!is.null(config$interaction)) {
 }
 
 
+###################################################################################################
+# special code for janssen LA
+
+if (attr(config,"config")=="janssen_la_partA") {
+    
+}
+
+
+###################################################################################################
 
 save(fits.cont.coef.ls, fits.tri.coef.ls, file=paste0(save.results.to, "coxph_fits.Rdata"))
 
