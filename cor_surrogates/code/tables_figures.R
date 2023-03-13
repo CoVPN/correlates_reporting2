@@ -1,6 +1,6 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
-# Sys.setenv(TRIAL = "janssen_la_partA")
+# Sys.setenv(TRIAL = "janssen_pooled_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -29,6 +29,7 @@ library(here)
 # filter() is used in both dplyr and stats, so need to set the preference to dplyr
 conflict_prefer("filter", "dplyr")
 conflict_prefer("summarise", "dplyr")
+conflict_prefer("load", "base")
 source(here("code", "utils.R"))
 method <- "method.CC_nloglik" # since SuperLearner relies on this to be in GlobalEnv
 ggplot2::theme_set(theme_cowplot())
@@ -447,6 +448,37 @@ if(!study_name %in% c("HVTN705")){
           rename(`Coefficient` = ".") %>%
           mutate(
             `Odds Ratio` = exp(`Coefficient`),
+            Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
+            fold = j)
+      }
+      
+      # For SL.polymars
+      if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.polymars_screen_glmnet", 
+                                                     "SL.polymars_screen_univariate_logistic_pval",
+                                                     "SL.polymars_screen_highcor_random")) {
+        
+        model <- flevr::extract_importance_polymars(polymars.obj$fit, feature_names = cvfits[[rseed]]$AllSL[[j]]$varNames[cvfits[[rseed]]$AllSL[[j]]$whichScreen[grepl(gsub("^[^_]*_", "", cvfits[[rseed]]$whichDiscreteSL[[j]]), rownames(cvfits[[rseed]]$AllSL[[j]]$whichScreen)),]]) %>%
+          filter(!is.na(importance)) %>%
+          as.data.frame() %>%
+          select(feature, importance) %>%
+          rename(`Coefficient` = `importance`,
+                 Predictors = feature) %>%
+          mutate(
+            Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
+            fold = j)
+      }
+      
+      # For SL.ksvm
+      if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.polymars_screen_glmnet", 
+                                                     "SL.polymars_screen_univariate_logistic_pval",
+                                                     "SL.polymars_screen_highcor_random")) {
+        
+        model <- flevr::extract_importance_polymars(polymars.obj$fit, feature_names = cvfits[[rseed]]$AllSL[[j]]$varNames[cvfits[[rseed]]$AllSL[[j]]$whichScreen[grepl(gsub("^[^_]*_", "", cvfits[[rseed]]$whichDiscreteSL[[j]]), rownames(cvfits[[rseed]]$AllSL[[j]]$whichScreen)),]]) %>%
+          filter(!is.na(importance)) %>%
+          as.data.frame() %>%
+          select(feature, importance) %>%
+          rename(`Coefficient` = `importance`) %>%
+          mutate(
             Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
             fold = j)
       }

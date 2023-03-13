@@ -341,7 +341,7 @@ get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced
                           delta = 0, V = V, run_regression = FALSE,
                           sample_splitting = sample_splitting, cross_fitting_folds = cf_folds,
                           sample_splitting_folds = sample_splitting_folds,
-                          type = type, scale = scale, ipc_scale = ipc_scale
+                          type = type, scale = scale, ipc_scale = ipc_scale,
                           SL.library = sl_library, ipc_est_type = ipc_est_type,
                           ipc_weights = ipc_weights, Z = Z, C = C,
                           final_point_estimate = final_point_estimate)

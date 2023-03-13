@@ -23,5 +23,5 @@ here::i_am("cor_surrogates/report.Rmd")
 
 \tableofcontents
 
-```{r, child=here("cor_surrogates", 'report_sub_janssen_la_partA.Rmd')}
+```{r, child=here("cor_surrogates", 'report_sub_janssen_pooled_partA.Rmd')}
 ```
