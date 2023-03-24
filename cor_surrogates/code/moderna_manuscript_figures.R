@@ -226,7 +226,7 @@ ph2_vacc_ptids <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "ph2_
 cvaucs_vacc_discreteSL <- cvaucs_vacc %>% filter(Learner == "Discrete SL") %>%
   arrange(-AUC) %>%
   filter(varset %in% c("1_baselineRiskFactors", "2_bAbSpike_D57", 
-                       "27_pnabID80_D29_D57", "34_allMarkers_combScores_D29_D57"))
+                       "27_pnabID80_D29_D57", "6_lnabMN50_D57", "34_allMarkers_combScores_D29_D57"))
 
 write.csv(cvaucs_vacc_discreteSL, here("output", Sys.getenv("TRIAL"), "for_manuscript_discreteSL_forestplot.csv"))
 

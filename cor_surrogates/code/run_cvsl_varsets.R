@@ -1,5 +1,6 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
+# Sys.setenv(TRIAL = "janssen_pooled_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -33,7 +34,6 @@ if (job_id == 1){
     select_if(function(x) any(!is.na(x))) # Drop column if it has 0 variance, and returned all NAN's from scale function.
 }
 
-
 cvControlVar = list(V = V_outer, stratifyCV = TRUE)
 cvControl_quote = quote(list(V = V_outer, stratifyCV = TRUE))
 
@@ -49,7 +49,7 @@ methodVar = "method.CC_nloglik"
 interval_scaleVar = "logit"
 ipc_scaleVar <- "identity"
 ipc_est_typeVar = "ipw"
-cvsl_args <- data.frame(matrix(ncol = 2, nrow = 9)) %>%
+cvsl_args <- data.frame(matrix(ncol = 2, nrow = 10)) %>%
   rename(Argument = X1,
          Value = X2) %>%
   mutate(Argument = as.character(c("Cases/Total Subjects in vaccine group (%)", "family",
@@ -112,7 +112,7 @@ for (i in 1:length(seeds)) {
   cvaucs[[i]] = fits[[i]]$cvaucs$aucs
   cvfits[[i]] = fits[[i]]$cvfits
 }
-
+    
 # save off the output
 saveRDS(cvaucs, file = paste0("output/", Sys.getenv("TRIAL"), paste0("/CVSLaucs_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
 saveRDS(cvfits, file = here("output/", Sys.getenv("TRIAL"), paste0("/CVSLfits_vacc_", endpoint, "_", varset_names[job_id], ".rds")))
@@ -120,6 +120,6 @@ saveRDS(cvfits, file = here("output/", Sys.getenv("TRIAL"), paste0("/CVSLfits_va
 if (job_id == 1) {
   saveRDS(ph2_vacc_ptids, file = paste0("output/", Sys.getenv("TRIAL"), "/ph2_vacc_ptids.rds"))
   save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
-       V_outer, varset_names, individualMarkers, file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
+       V_outer, varset_names, individualMarkers, SL_library, file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 }
 cat("\n Finished ", varset_names[job_id], "variable set \n") 
