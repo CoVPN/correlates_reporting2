@@ -14,7 +14,7 @@
 #Sys.setenv(TRIAL = "janssen_la_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29VL"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -68,6 +68,7 @@ write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_
 dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
 
+
 # define trichotomized markers
 dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
 marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
@@ -108,7 +109,8 @@ dat.vac.seroneg.ph2=subset(dat.vac.seroneg, ph2)
 begin=Sys.time()
 print(date())
 
-# misc stuff
+# some checks
+
 #with(dat.vac.seroneg.ph2, weighted.mean(Day35bindRBD<log10(100), wt))
 
 #with(dat.vac.seroneg.ph2, table(EventIndPrimary, is.na(seq1.spike.weighted.hamming)))
@@ -117,10 +119,11 @@ print(date())
 #with(dat.vac.seroneg, table(EventIndPrimary, sieve.status, EventTimePrimary>0))
 #with(dat.vac.seroneg, table(EventIndPrimaryD29, sieve.status, EventTimePrimary>0))
 #with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, sieve.status, EventTimePrimary>0))
-#
 #with(dat.vac.seroneg, plot(EventTimePrimary, sieve.time, cex=.2)); abline(0,1)
-#
 #subset(dat.vac.seroneg, EventIndPrimary==0 & sieve.status==1)
+
+#with(subset(dat.vac.seroneg, EventIndPrimaryIncludeNotMolecConfirmedD29==1), table(is.na(seq1.variant), EventIndPrimaryHasVLD29))
+
 
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
