@@ -244,7 +244,7 @@ if (exists("COR")) {
 #            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, EventIndPrimaryHasnoVLD29) ~ 1, 
 #                as.formula(config$covariates_riskscore ))
 #        )
-    }
+#   }
     
     ###########################################################
     # single time point COR config such as D29
@@ -265,7 +265,8 @@ if (exists("COR")) {
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
         if(!is.null(dat.mock$risk_score)) {
-            if (!attr(config, "config") %in% c("janssen_na_EUA","janssen_na_partA")) { # make an exception for backward compatibility
+            if (!attr(config, "config") %in% c("janssen_na_EUA","janssen_na_partA")) { 
+                # check this for backward compatibility
                 stopifnot(nrow(subset(dat.mock, ph1 & is.na(risk_score)))==0)
             }
             dat.mock=subset(dat.mock, !is.na(risk_score))
@@ -320,11 +321,8 @@ if (exists("COR")) {
 
         }
         
-#        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
-#        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
-        # potential competing risk
-        prev.vacc = get.marginalized.risk.no.marker(if (COR %in% c("D29SevereIncludeNotMolecConfirmed","D29VL")) form.0.list else form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)# competing risk estimation for severe cases            
-        prev.plac = get.marginalized.risk.no.marker(if (COR %in% c("D29SevereIncludeNotMolecConfirmed","D29VL")) form.0.list else form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)# competing risk estimation for severe cases            
+        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
+        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
         overall.ve = c(1 - prev.vacc/prev.plac) 
         myprint(prev.plac, prev.vacc, overall.ve)
         
@@ -342,7 +340,9 @@ if (exists("COR")) {
         
     } else {
         # subset to require risk_score
-        # note that it is assumed there no risk_score is missing for anyone in the analysis population. in the case of single time point COR, we do a check for that after definining ph1, which is why we have to do subset separately here again
+        # note that it is assumed there no risk_score is missing for anyone in the analysis population. 
+        # in the case of single time point COR, we do a check for that after definining ph1, 
+        # which is why we have to do subset separately here again
         if(!is.null(dat.mock$risk_score)) dat.mock=subset(dat.mock, !is.na(risk_score))
         
     }
