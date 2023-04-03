@@ -16,7 +16,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
     data.ph2=subset(data, ph2==1)     
         
     if (comp.risk) {
-        f1=lapply(form.0.list, function(x) update(x, as.formula(paste0("~.+",marker.name))))
+        f1=lapply(form.0, function(x) update(x, as.formula(paste0("~.+",marker.name))))
     } else {
         f1=update(form.0, as.formula(paste0("~.+",marker.name)))        
     }
