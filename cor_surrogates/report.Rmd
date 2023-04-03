@@ -2,8 +2,9 @@
 header-includes:
    - \usepackage{float}
    
-title: "`r ifelse(Sys.getenv('TRIAL') == 'moderna_real', 'Moderna Optimal Surrogate Analysis Report', 
-                     'NA')`"
+title: "`r ifelse(Sys.getenv('TRIAL') == 'janssen_pooled_partA', 'ENSEMBLE Optimal Surrogate Analysis Report: janssen_pooled_partA', 
+                     ifelse(Sys.getenv('TRIAL') == 'janssen_la_partA', 'ENSEMBLE Optimal Surrogate Analysis Report: janssen_la_partA', 
+                     'NA'))`"
 subtitle: "`r Sys.Date()`"
 
 output:
@@ -22,5 +23,5 @@ here::i_am("cor_surrogates/report.Rmd")
 
 \tableofcontents
 
-```{r, child=here("cor_surrogates", 'report_sub_Moderna.Rmd')}
+```{r, child=here("cor_surrogates", 'report_sub_janssen_pooled_partA.Rmd')}
 ```
