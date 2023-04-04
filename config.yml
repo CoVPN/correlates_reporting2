@@ -121,6 +121,7 @@ janssen_na_partA: &janssen_na_partA
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
   additional_models: [
+    risk_score + DaytpeakbindSpike + Daytpeakpseudoneutid50,
     risk_score + Daytpeakpseudoneutid50 + DaytpeakADCP
   ]
 
@@ -163,6 +164,7 @@ janssen_sa_partA: &janssen_sa_partA
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
   additional_models: [
+    risk_score + DaytpeakbindSpike + Daytpeakpseudoneutid50,
     risk_score + Daytpeakpseudoneutid50 + DaytpeakADCP
   ]
 

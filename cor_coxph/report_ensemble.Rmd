@@ -11,7 +11,7 @@
     if (attr(config,"config") %in% c("janssen_pooled_partA", "janssen_la_partA")) {
       CORs=c("D29IncludeNotMolecConfirmed", "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
     } else {
-      CORs=c("D29IncludeNotMolecConfirmed")
+      CORs=c("D29IncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
     }
     
   }
