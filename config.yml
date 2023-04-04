@@ -100,6 +100,7 @@ janssen_pooled_partA: &janssen_pooled_partA
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score + as.factor(Region)
   additional_models: [
+    risk_score + as.factor(Region) + DaytpeakbindSpike + Daytpeakpseudoneutid50,
     risk_score + as.factor(Region) + Daytpeakpseudoneutid50 + DaytpeakADCP
   ]
 
@@ -140,6 +141,7 @@ janssen_la_partA: &janssen_la_partA
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score
   additional_models: [
+    risk_score + DaytpeakbindSpike + Daytpeakpseudoneutid50,
     risk_score + Daytpeakpseudoneutid50 + DaytpeakADCP
   ]
   variants: [Ancestral.Lineage,Zeta,Mu,Gamma,Lambda]
@@ -839,8 +841,8 @@ D29SevereIncludeNotMolecConfirmed:
   ph2: ph2.D29
   wt: wt.D29
   WtStratum: Wstratum
-  EventIndPrimary: SevereEventIndPrimaryIncludeNotMolecConfirmedD29
-  EventTimePrimary: EventTimePrimaryIncludeNotMolecConfirmedD29
+  EventIndPrimary:  SevereEventIndPrimaryIncludeNotMolecConfirmedD29
+  EventTimePrimary: SevereEventTimePrimaryIncludeNotMolecConfirmedD29
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7
@@ -852,8 +854,8 @@ D29ModerateIncludeNotMolecConfirmed:
   ph2: ph2.D29
   wt: wt.D29
   WtStratum: Wstratum
-  EventIndPrimary: ModerateEventIndPrimaryIncludeNotMolecConfirmedD29
-  EventTimePrimary: EventTimePrimaryIncludeNotMolecConfirmedD29
+  EventIndPrimary:  ModerateEventIndPrimaryIncludeNotMolecConfirmedD29
+  EventTimePrimary: ModerateEventTimePrimaryIncludeNotMolecConfirmedD29
   Earlyendpoint: EarlyendpointD29
   tpeak: 29
   tpeaklag: 7
