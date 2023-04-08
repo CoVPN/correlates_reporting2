@@ -81,13 +81,14 @@ get_resp_by_group <- function(dat=dat, group=group){
     dat %>% filter(complete==1) %>%
     group_by_at(group) %>%
     mutate(counts = n(),
-           counts_severe = sum(severe, na.rm=T),
+           #counts_severe = sum(severe, na.rm=T),
+           # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
            num = sum(response * wt, na.rm=T), 
-           num_severe = sum(response * wt & severe==1, na.rm=T),
+           #num_severe = sum(response * wt & severe==1, na.rm=T),
            denom = sum(wt, na.rm=T),
-           denom_severe = sum(wt & severe==1, na.rm=T),
+           #denom_severe = sum(wt & severe==1, na.rm=T),
            N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
-           N_RespRate_severe = paste0(counts_severe, "\n",round(num_severe/denom_severe*100, 1),"%"),
+           #N_RespRate_severe = paste0(counts_severe, "\n",round(num_severe/denom_severe*100, 1),"%"),
            min = min(value),
            q1 = quantile(value, 0.25, na.rm=T),
            median = median(value, na.rm=T),
