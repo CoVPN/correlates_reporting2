@@ -476,7 +476,7 @@ for (i in 1:length(plots)) {
         mutate(cohort_event = factor(cohort_event, levels = head(levels(cohort_event), -1)))
       
       xvar <- ifelse(length(timepoints)>1, paste0("EventTimePrimaryD", tinterm),
-                     ifelse(incNotMol=="IncludeNotMolecConfirmed", gsub(tpeak, "1", config.cor$EventIndPrimary), "EventTimePrimaryD1"))
+                     ifelse(incNotMol=="IncludeNotMolecConfirmed", gsub(tpeak, "1", config.cor$EventTimePrimary), "EventTimePrimaryD1"))
       xlb <- ifelse(length(timepoints)>1, paste0("Days Since the Day ", tinterm," Visit"), "Days Since the Day 1 Visit")
       y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
       y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
