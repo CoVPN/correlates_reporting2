@@ -14,6 +14,7 @@
 #Sys.setenv(TRIAL = "janssen_la_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
     # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -108,7 +109,9 @@ dat.vac.seroneg.ph2=subset(dat.vac.seroneg, ph2)
 begin=Sys.time()
 print(date())
 
-# some checks
+# last event time
+# sapply(0:2, function (i) max(subset(dat.vac.seroneg, EventIndPrimary==1 & Region==i, EventTimePrimary)[[1]]))
+
 
 #with(dat.vac.seroneg.ph2, weighted.mean(Day35bindRBD<log10(100), wt))
 
