@@ -209,7 +209,9 @@ for (i in 1:length(plots)) {
   for (j in 1:length(bstatus)) {
     for (k in 1:length(trt)) {
       for (t in 1:length(timesls)) { # v1 and v2
-        for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
+        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+          "Perprotocol")){
         
           y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
           y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 0.25 + ifelse(log10(uloqs[plots[i]])==maxs[plots[i]], 0.1, 0))
@@ -266,7 +268,9 @@ for (i in 1:length(plots)) {
   for (j in 1:length(bstatus)) {
     for (k in 1:length(trt)) {
       for (t in 1:length(timesls)) {
-        for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
+        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+          "Perprotocol")){
+          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
           for (s in c("age_geq_65_label","highrisk_label","sex_label","minority_label","Dich_RaceEthnic")) {
             
             groupby_vars2 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", s)
@@ -347,7 +351,9 @@ for (i in 1:length(plots)) {
   for (j in 1:length(bstatus)) {
     for (k in 1:length(trt)) {
       for (t in 1:length(timesls)) {
-        for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
+        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+          "Perprotocol")){
+          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
   
           y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
           y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 1.5)
@@ -406,7 +412,9 @@ for (i in 1:length(plots)) {
 for (i in 1:length(plots)) {
   for (d in 1:length(timesls[[2]])) { # Day 1, Day 29, Day 57
     for (c in c("Vaccine","all")) {
-      for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
+      for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+        # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+        "Perprotocol")){
         
         ds.tmp <- subset(longer_cor_data, assay==plots[i] & time==timesls[[2]][d] & eval(as.name(case_set))==1)
         ds.tmp$size <- with(ds.tmp, ifelse(cohort_event == "Non-Cases", 2.5, 4))
@@ -450,8 +458,9 @@ for (i in 1:length(plots)) {
 #### Figure 5. Scatter plot, assay vs. days since Day 29/Day 1, cases only, 1 panel per assay
 for (i in 1:length(plots)) {
   for (c in c("Vaccine","all")) {
-    for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
-    
+    for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+      "Perprotocol")){
+      # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
       if(length(timepoints)==1) {
         timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)] 
       } else {timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1]}
@@ -467,7 +476,7 @@ for (i in 1:length(plots)) {
         mutate(cohort_event = factor(cohort_event, levels = head(levels(cohort_event), -1)))
       
       xvar <- ifelse(length(timepoints)>1, paste0("EventTimePrimaryD", tinterm),
-                     ifelse(incNotMol=="IncludeNotMolecConfirmed", "EventTimePrimaryIncludeNotMolecConfirmedD1", "EventTimePrimaryD1"))
+                     ifelse(incNotMol=="IncludeNotMolecConfirmed", gsub(tpeak, "1", config.cor$EventTimePrimary), "EventTimePrimaryD1"))
       xlb <- ifelse(length(timepoints)>1, paste0("Days Since the Day ", tinterm," Visit"), "Days Since the Day 1 Visit")
       y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
       y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
