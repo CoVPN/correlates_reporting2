@@ -92,4 +92,3 @@ tab
 mytex(tab, file.name="CoR_lineage1", align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
 
     
-
