@@ -32,7 +32,7 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
   # for other studies, loop through ""
   COR_postfix_list = ""
   if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & grepl("EUA", attr(config,"config")))) COR_postfix_list <- c("IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1")
-  if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & grepl("partA", attr(config,"config")))) COR_postfix_list <- c("IncludeNotMolecConfirmed")
+  if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & grepl("partA", attr(config,"config")))) COR_postfix_list <- c("SevereIncludeNotMolecConfirmed") # ModerateIncludeNotMolecConfirmed
   if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
 
   for (COR_postfix in COR_postfix_list){
@@ -40,6 +40,8 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
     # show in figure title
     COR_postfix_label = ""
     if (COR_postfix == "IncludeNotMolecConfirmedstart1") COR_postfix_label=" (start1)"
+    if (COR_postfix == "ModerateIncludeNotMolecConfirmed") COR_postfix_label=" (Moderate Endpoint)"
+    if (COR_postfix == "SevereIncludeNotMolecConfirmed") COR_postfix_label=" (Severe Endpoint)"
     if (COR_postfix == "omi") COR_postfix_label=" (Omicron Endpoint)"
 
     ########################################### Boxplots ########################################### 
@@ -120,7 +122,8 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
     facets <- c("", "Age", "Risk", "Age_Risk", "Sex", "RaceEthnic", "Dich_RaceEthnic")
     names(facets) <- c("", "age", "risk condition", "age and risk condition", "sex assigned at birth", "race and ethnic group", "dichotomous classification of race and ethnic group")
     
-    for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
+    #for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
+    # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
       for (facet in facets) {
       	for (ver in c("v1", "v2", if(do.fold.change==1)"v3")) {
       		for (type in c("linebox", "violinbox")) {
@@ -136,13 +139,14 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
           }
       	}
       }
-    }
+    #}
     
     ###################################################### Scatter plots ###################################################
     
     labels.time.no.fold <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)]
     
-    for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
+    # (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
+    # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
       for (cohort in c("Vaccine", "all")) {
       	for (assay_long in assays) {
       	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
@@ -154,9 +158,10 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
       		} 
       	}
       }
-    }
+    #}
     
-    for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
+    #for (sev in c("", if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe")){
+    # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
       for (cohort in c("Vaccine", "all")){
       	for (assay_long in assays){
       	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
@@ -169,6 +174,6 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
     }
   
     
-  }
+  #}
 #}
 ```

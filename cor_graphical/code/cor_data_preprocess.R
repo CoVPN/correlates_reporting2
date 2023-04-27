@@ -97,7 +97,7 @@ dat = dat %>%
       case_when(!!as.name(config.cor$ph2)==1 &
                   !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
                 !!as.name(config.cor$ph2)==1 & 
-                  !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 & 
+                  !!as.name(gsub(tpeak, "1", config.cor$EventIndPrimary))==0 & 
                   AnyinfectionD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
@@ -356,14 +356,15 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
     time = labels.time[time])
 
 # define severe: severe case or non-case
-if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
-  dat.longer.cor.subset <- dat.longer.cor.subset %>%
-    mutate(severe = case_when((time=="Day 1" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D1")))==1) ~ 1,
-                              (time=="Day 29" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D29")))==1) ~ 1,
-                              cohort_event == "Non-Cases" ~ 1,
-                              TRUE ~ 0)
-           )
-} else {dat.longer.cor.subset$severe = NA}
+# comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+#if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
+#  dat.longer.cor.subset <- dat.longer.cor.subset %>%
+#    mutate(severe = case_when((time=="Day 1" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D1")))==1) ~ 1,
+#                              (time=="Day 29" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D29")))==1) ~ 1,
+#                              cohort_event == "Non-Cases" ~ 1,
+#                              TRUE ~ 0)
+#           )
+#} else {dat.longer.cor.subset$severe = NA}
 
 # only keep fold change for do.fold.change=1: e.g. vat08m_nonnaive
 if (do.fold.change==1){

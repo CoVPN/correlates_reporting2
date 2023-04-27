@@ -65,13 +65,14 @@ else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_EUA janssen_na_EUA jansse
 	Rscript code/CoR_assay_graphics.R D29IncludeNotMolecConfirmedstart1
 	Rscript code/CoR_wrcdf_with_VE_lines.R D29IncludeNotMolecConfirmedstart1
 	
-else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_partA janssen_na_partA janssen_la_partA janssen_sa_partA janssen_pooled_partAsenior janssen_na_partAsenior janssen_la_partAsenior  janssen_pooled_partAnonsenior janssen_na_partAnonsenior janssen_la_partAnonsenior janssen_sa_partAnonsenior))
-	Rscript code/cor_data_preprocess.R D29IncludeNotMolecConfirmed # Yiwen's
-	Rscript code/cor_graphics_violin_scatter.R D29IncludeNotMolecConfirmed
+# else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_partA janssen_na_partA janssen_la_partA janssen_sa_partA janssen_pooled_partAsenior janssen_na_partAsenior janssen_la_partAsenior  janssen_pooled_partAnonsenior janssen_na_partAnonsenior janssen_la_partAnonsenior janssen_sa_partAnonsenior))
+else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_partA janssen_na_partA janssen_la_partA janssen_sa_partA))
+	Rscript code/cor_data_preprocess.R D29SevereIncludeNotMolecConfirmed # Yiwen's
+	Rscript code/cor_graphics_violin_scatter.R D29SevereIncludeNotMolecConfirmed
 
-	Rscript code/cor_data_preprocess_2.R D29IncludeNotMolecConfirmed # Brian's
-	Rscript code/CoR_assay_graphics.R D29IncludeNotMolecConfirmed
-	Rscript code/CoR_wrcdf_with_VE_lines.R D29IncludeNotMolecConfirmed
+	Rscript code/cor_data_preprocess_2.R D29SevereIncludeNotMolecConfirmed # Brian's
+	Rscript code/CoR_assay_graphics.R D29SevereIncludeNotMolecConfirmed
+	Rscript code/CoR_wrcdf_with_VE_lines.R D29SevereIncludeNotMolecConfirmed
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/cor_data_preprocess.R D35 # Yiwen's

@@ -72,8 +72,7 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
     ))
   
 } else if (study_name=="AZD1222") {
-  # for whatever reason very different sets of ptids had D29 or D57 measured for AZ, so for D29, include a ptid if have D29 data ignoring D57 availability; for D57, include a ptid if have D57 data ignoing D29 availability
-  # keep Sanofi here as well
+  # for whatever reason very different sets of ptids had D29 or D57 measured for AZ, so for D29, include a ptid if have D29 data ignoring D57 availability; for D57, include a ptid if have D57 data ignoring D29 availability
   
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
@@ -91,6 +90,7 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
         "Cases", "Non-Cases")
     ))
 } else {# keep Sanofi and other two timepoint studies except for AZ and Moderna here
+  # keep ENSEMBLE here
   
   dat = dat %>%
     mutate(cohort_event = factor(case_when(
@@ -103,7 +103,7 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
       Perprotocol==1 & # do not use config.cor$ph2 here for now because it doesn't include AnyinfectionD1
         AnyinfectionD1==0 &
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
-        !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 ~ "Non-Cases"),
+        !!as.name(gsub(tpeak, "1", config.cor$EventIndPrimary))==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Cases", "Non-Cases")
     ))
