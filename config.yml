@@ -820,6 +820,19 @@ D43start48:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
+D91over43:
+  ph1: ph1.D91
+  ph2: ph2.D91
+  wt: wt.D91
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndPrimaryD91
+  EventTimePrimary: EventTimePrimaryD91
+  Earlyendpoint: EarlyendpointD91
+  tpeak: Delta91over43
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
 
 # Sanofi
 D22omi:
