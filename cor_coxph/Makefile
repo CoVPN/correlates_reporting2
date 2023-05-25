@@ -56,6 +56,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D43
 	Rscript code/cor_coxph.R D43start48
 	Rscript code/cor_coxph.R D91
+	Rscript code/cor_coxph.R D91over43
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov_lvmn))
 	Rscript code/cor_coxph.R D43
 endif
