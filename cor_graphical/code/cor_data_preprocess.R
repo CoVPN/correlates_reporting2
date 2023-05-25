@@ -366,8 +366,8 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
 #           )
 #} else {dat.longer.cor.subset$severe = NA}
 
-# only keep fold change for do.fold.change=1: e.g. vat08m_nonnaive
-if (do.fold.change==1){
+# only keep fold change for do.fold.change.overB=1: e.g. vat08m_nonnaive
+if (do.fold.change.overB==1){
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
 } else (
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl("Day", time))
