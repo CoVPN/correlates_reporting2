@@ -116,17 +116,6 @@ print(date())
 
 #with(dat.vac.seroneg.ph2, weighted.mean(Day35bindRBD<log10(100), wt))
 
-#with(dat.vac.seroneg.ph2, table(EventIndPrimary, is.na(seq1.spike.weighted.hamming)))
-#with(dat.vac.seroneg.ph2, table(EventIndPrimary, is.na(seq1.log10vl)))
-
-#with(dat.vac.seroneg, table(EventIndPrimary, sieve.status, EventTimePrimary>0))
-#with(dat.vac.seroneg, table(EventIndPrimaryD29, sieve.status, EventTimePrimary>0))
-#with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, sieve.status, EventTimePrimary>0))
-#with(dat.vac.seroneg, plot(EventTimePrimary, sieve.time, cex=.2)); abline(0,1)
-#subset(dat.vac.seroneg, EventIndPrimary==0 & sieve.status==1)
-
-#with(subset(dat.vac.seroneg, EventIndPrimaryIncludeNotMolecConfirmedD29==1), table(is.na(seq1.variant), EventIndPrimaryHasVLD29))
-
 
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms

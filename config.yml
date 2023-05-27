@@ -97,7 +97,7 @@ janssen_pooled_partA: &janssen_pooled_partA
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer 2, Phagocytic Score]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (IU50/ml) 2, Phagocytic Score]
   llox_label: [LOD, LOD, LLOQ, LOD, LLOQ] 
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore_hotdeck.csv
   covariates_riskscore: ~.+ risk_score + as.factor(Region)
   additional_models: [
     risk_score + as.factor(Region) + DaytpeakbindSpike + Daytpeakpseudoneutid50,
@@ -118,7 +118,7 @@ janssen_na_partA: &janssen_na_partA
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, Phagocytic Score]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Phagocytic Score]
   llox_label: [LOD, LOD, LLOQ, LLOQ]
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partA_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_na_partA_data_processed_with_riskscore_hotdeck.csv
   covariates_riskscore: ~.+ risk_score
   additional_models: [
     risk_score + DaytpeakbindSpike + Daytpeakpseudoneutid50,
@@ -139,7 +139,7 @@ janssen_la_partA: &janssen_la_partA
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer (LA), Phagocytic Score]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 LA (IU50/ml), Phagocytic Score]
   llox_label: [LOD, LOD, LLOQ, LLOQ, LLOQ]
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partA_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_la_partA_data_processed_with_riskscore_hotdeck.csv
   covariates_riskscore: ~.+ risk_score
   additional_models: [
     risk_score + DaytpeakbindSpike + Daytpeakpseudoneutid50,
@@ -161,7 +161,7 @@ janssen_sa_partA: &janssen_sa_partA
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer (SA), Phagocytic Score]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (SA) (IU50/ml), Phagocytic Score]
   llox_label: [LOD, LOD, LLOQ, LLOQ, LLOQ]
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partA_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partA_data_processed_with_riskscore_hotdeck.csv
   covariates_riskscore: ~.+ risk_score
   additional_models: [
     risk_score + DaytpeakbindSpike + Daytpeakpseudoneutid50,
