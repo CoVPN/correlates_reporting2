@@ -24,6 +24,7 @@ dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
 
 # test new :
 # test new :
+# test new :
 
 with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.spike.weighted.hamming)))
 with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.log10vl)))
