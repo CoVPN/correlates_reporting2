@@ -22,7 +22,7 @@ COR="D29xxx"; Sys.setenv(VERBOSE = 1)
 dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
 
-
+# test new :
 
 with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.spike.weighted.hamming)))
 with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.log10vl)))
