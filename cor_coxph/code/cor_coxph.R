@@ -17,10 +17,7 @@
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
-    # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
-    if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
-source(here::here("..", "_common.R"))
-# dat.mock is made
+source(here::here("..", "_common.R")) # dat.mock is made
 
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
@@ -116,16 +113,10 @@ print(date())
 
 #with(dat.vac.seroneg.ph2, weighted.mean(Day35bindRBD<log10(100), wt))
 
-#with(dat.vac.seroneg.ph2, table(EventIndPrimary, is.na(seq1.spike.weighted.hamming)))
-#with(dat.vac.seroneg.ph2, table(EventIndPrimary, is.na(seq1.log10vl)))
 
-#with(dat.vac.seroneg, table(EventIndPrimary, sieve.status, EventTimePrimary>0))
-#with(dat.vac.seroneg, table(EventIndPrimaryD29, sieve.status, EventTimePrimary>0))
-#with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, sieve.status, EventTimePrimary>0))
-#with(dat.vac.seroneg, plot(EventTimePrimary, sieve.time, cex=.2)); abline(0,1)
-#subset(dat.vac.seroneg, EventIndPrimary==0 & sieve.status==1)
+# with(dat.vac.seroneg, table(ph2, SevereEventIndPrimaryIncludeNotMolecConfirmedD29))
+# with(dat.vac.seroneg, table(ph2, SevereEventIndPrimaryMolecConfirmedD29))
 
-#with(subset(dat.vac.seroneg, EventIndPrimaryIncludeNotMolecConfirmedD29==1), table(is.na(seq1.variant), EventIndPrimaryHasVLD29))
 
 
 ###################################################################################################

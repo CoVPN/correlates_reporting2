@@ -1,3 +1,9 @@
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+renv::activate(project = here::here(".."))     
+source(here::here("..", "_common.R")) 
+source(here::here("code", "params.R"))
+
+
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
 library(tools) # toTitleCase
@@ -13,11 +19,24 @@ print(date())
 
 COR="D29xxx"; Sys.setenv(VERBOSE = 1) 
 
+dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
+dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
 
+# test new :
+# test new :
+# test new :
 
-renv::activate(project = here::here(".."))     
-source(here::here("..", "_common.R")) # dat.mock is made
-source(here::here("code", "params.R"))
+with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.spike.weighted.hamming)))
+with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.log10vl)))
+
+with(dat.vac.seroneg, table(EventIndPrimary, sieve.status, EventTimePrimary>0))
+with(dat.vac.seroneg, table(EventIndPrimaryD29, sieve.status, EventTimePrimary>0))
+with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, sieve.status, EventTimePrimary>0))
+with(dat.vac.seroneg, plot(EventTimePrimary, sieve.time, cex=.2)); abline(0,1)
+subset(dat.vac.seroneg, EventIndPrimary==0 & sieve.status==1)
+
+with(subset(dat.vac.seroneg, EventIndPrimaryIncludeNotMolecConfirmedD29==1), table(is.na(seq1.variant), EventIndPrimaryHasVLD29))
+
 
 # path for figures and tables etc
 save.results.to = here::here("output");                                if (!dir.exists(save.results.to))  dir.create(save.results.to)
@@ -46,8 +65,6 @@ dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
     
-dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
-dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
 
 
 # define trichotomized markers
@@ -70,6 +87,13 @@ tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
 names(dimnames(tab))[2]="Event Indicator"
 print(tab)
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
+
+
+
+
+
+
+
 
 # for use in competing risk estimation
 dat.vac.seroneg.ph2=subset(dat.vac.seroneg, ph2)
