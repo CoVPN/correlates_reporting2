@@ -17,10 +17,7 @@
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
-    # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
-    if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
-source(here::here("..", "_common.R"))
-# dat.mock is made
+source(here::here("..", "_common.R")) # dat.mock is made
 
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
@@ -115,6 +112,11 @@ print(date())
 
 
 #with(dat.vac.seroneg.ph2, weighted.mean(Day35bindRBD<log10(100), wt))
+
+
+# with(dat.vac.seroneg, table(ph2, SevereEventIndPrimaryIncludeNotMolecConfirmedD29))
+# with(dat.vac.seroneg, table(ph2, SevereEventIndPrimaryMolecConfirmedD29))
+
 
 
 ###################################################################################################
