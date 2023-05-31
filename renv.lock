@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.1.2",
+    "Version": "4.0.4",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -1079,15 +1079,19 @@
     },
     "kyotil": {
       "Package": "kyotil",
-      "Version": "2022.9-17",
+      "Version": "2023.5-31",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "kyotil",
       "RemoteUsername": "youyifong",
       "RemoteRef": "HEAD",
-      "RemoteSha": "38a6d0e9f63b568518c3a40c6c3e1904b2bcdea8",
-      "Hash":      "d51d9b607bbf27599a0f8503f908cd5d"
+      "RemoteSha": "8126efad5d0cbed7ff580d8da1f4e4917771dee5",
+      "Requirements": [
+        "R",
+        "methods"
+      ],
+      "Hash": "e4f3f3ad9104abdfb3e76c6453a2f878"
     },
     "labeling": {
       "Package": "labeling",
@@ -1701,10 +1705,8 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.14.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "30e5eba91b67f7f4d75d31de14bbfbdc"
+      "Version": "0.17.3",
+      "Source": "Repository"
     },
     "repr": {
       "Package": "repr",

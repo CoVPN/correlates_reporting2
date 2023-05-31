@@ -22,20 +22,46 @@ COR="D29xxx"; Sys.setenv(VERBOSE = 1)
 dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
 
-# test new :
-# test new :
-# test new :
+# Iota not in dat.vac.seroneg
+variants=c("", "Ancestral.Lineage", "Alpha", "Beta", "Delta", "Epsilon", "Gamma", "Lambda", "Mu", "Zeta")
 
-with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.spike.weighted.hamming)))
-with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.log10vl)))
+# define
+for (imp in 1:10) {
+  
+  dat.vac.seroneg$EventIndPrimary = factor(dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]], labels=variants)
+  
+  
+  
+  dat.mock$EventIndPrimaryIncludeNotMolecConfirmedD29
+  # censor cases without VL (this includes some not molec confirmed)
+  dat.mock$EventIndPrimary[is.na(dat.mock$seq1.log10vl)] = 0
+  
+  summary(dat.mock[["seq1.variant.hotdeck"%.%imp]])
+  with(dat.vac.seroneg, table(seq1.variant, EventIndPrimary))
+  
+  
+  # define competing risk outcome
+  # endpoint=factor(c(1,1,2,0,1,1,3,0,2,3,0),                labels=c("censor", "a", "b", "c")),
+  
+  
+  
+  dat$ph1=dat$ph1.D29
+  dat$ph2=dat$ph2.D29
+  dat$wt=dat$wt.D29
+  dat$EventIndPrimary =dat$EventIndOmicronBD29
+  dat$EventTimePrimary=dat$EventTimeOmicronBD29
+  dat$yy=dat$EventIndPrimary
+  
+  
+  
+}
 
-with(dat.vac.seroneg, table(EventIndPrimary, sieve.status, EventTimePrimary>0))
-with(dat.vac.seroneg, table(EventIndPrimaryD29, sieve.status, EventTimePrimary>0))
-with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, sieve.status, EventTimePrimary>0))
-with(dat.vac.seroneg, plot(EventTimePrimary, sieve.time, cex=.2)); abline(0,1)
-subset(dat.vac.seroneg, EventIndPrimary==0 & sieve.status==1)
 
-with(subset(dat.vac.seroneg, EventIndPrimaryIncludeNotMolecConfirmedD29==1), table(is.na(seq1.variant), EventIndPrimaryHasVLD29))
+
+# with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.spike.weighted.hamming)))
+# with(dat.vac.seroneg, table(EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.log10vl)))
+# with(dat.vac.seroneg, table(EventIndPrimaryMolecConfirmedD29, EventIndPrimaryIncludeNotMolecConfirmedD29, is.na(seq1.log10vl)))
+# with(subset(dat.vac.seroneg, EventIndPrimaryIncludeNotMolecConfirmedD29==1), table(is.na(seq1.variant), EventIndPrimaryHasVLD29))
 
 
 # path for figures and tables etc
