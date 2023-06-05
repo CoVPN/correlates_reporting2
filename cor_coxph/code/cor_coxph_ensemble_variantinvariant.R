@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+# Sys.setenv(TRIAL = "janssen_pooled_partA_VL"); COR="D29VL"; Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
@@ -16,6 +16,19 @@ library(xtable) # this is a dependency of kyotil
 
 begin=Sys.time()
 print(date())
+
+
+with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29), table(is.na(seq1.spike.weighted.hamming.hotdeck1), is.na(seq1.log10vl), EventIndPrimaryMolecConfirmedD29))
+
+with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0), summary(EventTimePrimary))
+with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==1), summary(EventTimePrimary))
+
+with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0), summary(EventTimePrimary+CalendarDateEnrollment))
+with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==1), summary(EventTimePrimary+CalendarDateEnrollment))
+
+subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0, select=Ptid, drop=T)
+
+
 
 COR="D29xxx"; Sys.setenv(VERBOSE = 1) 
 

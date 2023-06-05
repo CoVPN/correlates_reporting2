@@ -33,56 +33,70 @@ if(!exists("COR")) {
 ###################################################################################################
 # read config
 
-if(Sys.getenv("TRIAL")=="") stop(" *************************************  environmental variable TRIAL not defined  *************************************")
+if(Sys.getenv("TRIAL")=="") {
+  stop(" *************************************  environmental variable TRIAL not defined  *************************************")
+}
 
-# TRIAL-related config
 config <- config::get(config = Sys.getenv("TRIAL"))
-if(length(config$llox_label)==1) {
-    config$llox_label=rep(config$llox_label, length(config$assays))
+for(opt in names(config)) eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
+
+if (!is.null(config$assay_metadata)) {
+  
+  # created named lists for assay metadata to easier access, e.g. assay_labels_short["bindSpike"]
+  assay_metadata = read.csv(paste0(dirname(attr(config,"file")),"/",config$assay_metadata))
+  assays=assay_metadata$assay
+  labels.assays=assay_metadata$assay_label; names(labels.assays)=assays
+  labels.assays.short=assay_metadata$assay_label_short; names(labels.assays.short)=assays
+  labels.assays.long = labels.assays
+  
+  llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
+  lloqs=assay_metadata$lloq; names(lloqs)=assays
+  lods=assay_metadata$lod; names(lods)=assays
+  lloxs=ifelse(llox_labels=="lloq", lloqs, lods)
+  
 } else {
-    stopifnot(length(config$assays)==length(config$llox_label))
-}
-names(config$llox_label)=config$assays
-for(opt in names(config)){
-  eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
-}
+  
+  if(length(config$llox_label)==1) {
+    llox_labels = rep(config$llox_label, length(config$assays))
+  } else {
+    stopifnot(length(config$llox_label)==length(config$assays))
+    llox_labels = config$llox_label
+  }
+  names(llox_labels)=config$assays
 
-
-
-# assays labels. This needs to come before all.markers
-labels.assays = config$assay_labels
-names(labels.assays) = config$assays
-
-if (is.null(config$assay_labels_short)) {
+  # assays labels. This needs to come before all.markers
+  labels.assays = config$assay_labels
+  names(labels.assays) = config$assays
+  
+  if (is.null(config$assay_labels_short)) {
     labels.assays.short=labels.assays
-} else {
+  } else {
     labels.assays.short = config$assay_labels_short
     names(labels.assays.short) = config$assays
+  }
+  
+  # hacky fix for tabular, since unclear who else is using
+  # the truncated labels.assays.short later
+  labels.assays.short.tabular <- labels.assays.short
+  
+  labels.time = config$time_labels
+  names(labels.time) = config$times
+  
+  # axis labeling
+  labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
+  labels.axis <- as.data.frame(labels.axis)
+  rownames(labels.axis) <- times
+  
+  # title labeling
+  labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
+  labels.title <- as.data.frame(labels.title)
+  colnames(labels.title) <- times
+  # NOTE: hacky solution to deal with changes in the number of markers
+  rownames(labels.title)[seq_along(assays)] <- assays
+  labels.title <- as.data.frame(t(labels.title))
+
 }
 
-# hacky fix for tabular, since unclear who else is using
-# the truncated labels.assays.short later
-labels.assays.short.tabular <- labels.assays.short
-
-labels.time = config$time_labels
-names(labels.time) = config$times
-
-# axis labeling
-labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
-labels.axis <- as.data.frame(labels.axis)
-rownames(labels.axis) <- times
-
-# title labeling
-labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
-labels.title <- as.data.frame(labels.title)
-colnames(labels.title) <- times
-# NOTE: hacky solution to deal with changes in the number of markers
-rownames(labels.title)[seq_along(assays)] <- assays
-labels.title <- as.data.frame(t(labels.title))
-
-# creating short and long labels
-#labels.assays.short <- labels.axis[1, ] # should not create this again
-labels.assays.long <- labels.title
 
 do.fold.change.overB=attr(config, "config") %in% c("vat08m_nonnaive")
 do.fold.change=F
@@ -126,9 +140,6 @@ if (exists("COR")) {
         all.markers.names.short=sub("\\(.+\\)", config.cor$tpeak, labels.assays.short)    # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 D57over29"
         names(all.markers.names.short)=all.markers
         
-        all.markers.names.long=as.matrix(labels.assays.long)[config.cor$tpeak, assays]
-        names(all.markers.names.long)=all.markers
-        
     } else {
         all.markers=paste0("Day", tpeak, assays)
         if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
@@ -139,12 +150,6 @@ if (exists("COR")) {
             if (do.fold.change.overB) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
         )
         names(all.markers.names.short)=all.markers
-        
-        all.markers.names.long=c(
-            as.matrix(labels.assays.long)["Day"%.%tpeak, assays],
-            if (do.fold.change.overB) as.matrix(labels.assays.long)["Delta"%.%tpeak%.%"overB", assays]
-        )
-        names(all.markers.names.long)=all.markers
     }
     
 }
@@ -177,7 +182,8 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-if(attr(config, "config") %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA")) {
+if(attr(config, "config") %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA",
+                                 "janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
     # make endpointDate.Bin a factor variable
     dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
 }
@@ -222,30 +228,17 @@ if (exists("COR")) {
     
     comp.risk=FALSE
     
-####Deprecated since we now take a simpler approach for the severe disease paper to treat severe endpoints as marginal survival endpoint
-#    if (COR=="D29SevereIncludeNotMolecConfirmed") {
-#        # formulae for competing risk
-#        comp.risk=TRUE
-#        form.0=list(
-#            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, SevereEventIndPrimaryIncludeNotMolecConfirmedD29) ~ 1, 
-#                as.formula(config$covariates_riskscore )),
-#            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, ModerateEventIndPrimaryIncludeNotMolecConfirmedD29) ~ 1, 
-#                as.formula(config$covariates_riskscore ))
-#        )
-#    }
-    
-#### Deprecated since we now use the hotdeck imputation approach
-#    if (COR=="D29VL") {
-#        # formulae for competing risk
-#        comp.risk=TRUE
-#        form.0=list(
-#            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, EventIndPrimaryHasVLD29) ~ 1, 
-#                as.formula(config$covariates_riskscore )),
-#            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, EventIndPrimaryHasnoVLD29) ~ 1, 
-#                as.formula(config$covariates_riskscore ))
-#        )
-#   }
-    
+    if (COR=="D29VL") {
+       # formulae for competing risk
+       comp.risk=TRUE
+       # form.0=list(
+       #     update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, EventIndPrimaryHasVLD29) ~ 1,
+       #         as.formula(config$covariates_riskscore )),
+       #     update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, EventIndPrimaryHasnoVLD29) ~ 1,
+       #         as.formula(config$covariates_riskscore ))
+       # )
+    }
+
     ###########################################################
     # single time point COR config such as D29
     if (is.null(config.cor$tinterm)) {    
