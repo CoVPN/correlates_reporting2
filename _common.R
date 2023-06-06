@@ -292,20 +292,53 @@ if (exists("COR")) {
         } else if (attr(config, "config") == "janssen_pooled_EUA") {
             tfinal.tpeak=54
             
-        } else if (startsWith(attr(config, "config"), "janssen_") & contain(attr(config, "config"), "partA")) {
-            # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+        } else if (startsWith(attr(config, "config"), "janssen_") & endsWith(attr(config, "config"), "partA")) {
+          # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+          tfinal.tpeak=min(
+            with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
+            with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+          )
+          # for moderate, we choose to use the same tfinal.tpeak as the overall COVID
+          if (COR=="D29ModerateIncludeNotMolecConfirmed") {
             tfinal.tpeak=min(
-                with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
-                with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+              with(subset(dat.mock, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
+              with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
             )
-            # for moderate, we choose to use the same tfinal.tpeak as the overall COVID
-            if (COR=="D29ModerateIncludeNotMolecConfirmed") {
-            tfinal.tpeak=min(
-                with(subset(dat.mock, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
-                with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+          }
+          
+        } else if (attr(config, "config") %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+          # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
+          tfinal.tpeak = NULL 
+          # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+          tfinal.tpeak.ls=list(
+            US=list(
+              Ancestral.Lineage=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==0 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                                    with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+            ),
+            
+            LatAme=list(
+              Ancestral.Lineage = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              
+              Gamma = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Gamma"), max(EventTimePrimary)),
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+              
+              Lambda =min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Lambda"), max(EventTimePrimary)),
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+              
+              Mu    = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Mu"), max(EventTimePrimary)),
+                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              
+              Zeta  = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Zeta"), max(EventTimePrimary)),
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+            ),
+            
+            RSA=list(
+              Beta  = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==2 & seq1.variant=="Beta"), max(EventTimePrimary)),
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
             )
-            }
-
+          )
+          
         } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
             if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
             
@@ -314,11 +347,13 @@ if (exists("COR")) {
 
         }
         
-        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
-        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
-        overall.ve = c(1 - prev.vacc/prev.plac) 
-        myprint(prev.plac, prev.vacc, overall.ve)
-        
+        if (!attr(config, "config") %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+          # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
+          prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
+          prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
+          overall.ve = c(1 - prev.vacc/prev.plac) 
+          myprint(prev.plac, prev.vacc, overall.ve)
+        }
 
 #        # get VE in the first month or two of followup
 #        dat.tmp=dat.mock

@@ -18,25 +18,22 @@ begin=Sys.time()
 print(date())
 
 
-with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29), table(is.na(seq1.spike.weighted.hamming.hotdeck1), is.na(seq1.log10vl), EventIndPrimaryMolecConfirmedD29))
+# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29), table(is.na(seq1.spike.weighted.hamming.hotdeck1), is.na(seq1.log10vl), EventIndPrimaryMolecConfirmedD29))
+# 
+# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0), summary(EventTimePrimary))
+# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==1), summary(EventTimePrimary))
+# 
+# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0), summary(EventTimePrimary+CalendarDateEnrollment))
+# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==1), summary(EventTimePrimary+CalendarDateEnrollment))
+# 
+# subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0, select=Ptid, drop=T)
 
-with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0), summary(EventTimePrimary))
-with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==1), summary(EventTimePrimary))
-
-with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0), summary(EventTimePrimary+CalendarDateEnrollment))
-with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==1), summary(EventTimePrimary+CalendarDateEnrollment))
-
-subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0, select=Ptid, drop=T)
-
-
-
-COR="D29xxx"; Sys.setenv(VERBOSE = 1) 
 
 dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
 
-# Iota not in dat.vac.seroneg
-variants=c("", "Ancestral.Lineage", "Alpha", "Beta", "Delta", "Epsilon", "Gamma", "Lambda", "Mu", "Zeta")
+# "Ancestral.Lineage", "Alpha", "Beta", "Delta", "Epsilon", "Gamma", "Lambda", "Mu", "Zeta", "Iota"
+variants=lapply(tfinal.tpeak.ls, function(x) names(x))
 
 # define
 for (imp in 1:10) {
