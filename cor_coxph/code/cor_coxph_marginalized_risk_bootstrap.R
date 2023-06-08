@@ -226,7 +226,7 @@ if (!is.null(config$interaction)) {
             data.ph2=subset(dat.ph1, ph2==1)     
             
             # fit the interaction model and save regression results to a table
-            f=as.formula(paste("Surv(EventTimePrimary, EventIndPrimary) ~ RSA + Age + BMI + Riskscore + ",a," + ",b," + ",a,":",b))            
+            f= update(form.0, as.formula(paste0("~.+", a," + ",b," + ",a,":",b)))
             fit=svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.ph1)) 
             
             # first treat a as the x axis variable, second treat b as the x axis variable

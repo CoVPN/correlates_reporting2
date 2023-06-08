@@ -3,19 +3,37 @@
 
 ```{r, echo=FALSE, results='asis'}
 
+if (endsWith(attr(config,"config"),"_VL")) {
+  
+  CORs=c("D29VL")
 
+  for (COR in CORs) {
+    tpeak <- tt[1]
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count cases starting ", ifelse(endsWith(COR,"start1"),1,7), " days post Day 29.")
+    pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
+
+    all.markers=paste0("Day", tpeak, assays)
+    if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_VL.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+
+  
+} else {
+  
   if (endsWith(attr(config,"config"),"EUA")) {
     CORs=c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
-  
   } else {
     if (attr(config,"config") %in% c("janssen_pooled_partA", "janssen_la_partA")) {
       CORs=c("D29IncludeNotMolecConfirmed", "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
     } else {
       CORs=c("D29IncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
     }
-    
   }
-
 
   for (COR in CORs) {
     tpeak <- tt[1]
@@ -31,4 +49,6 @@
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
+  
+}
 ```

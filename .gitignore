@@ -1,3 +1,6 @@
+cor_coxph/output/*
+.nfs80ca7186000a11ce00000044
+renv/settings.json
 .Rproj.user
 *.Rproj
 *.rds

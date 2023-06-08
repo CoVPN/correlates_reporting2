@@ -48,7 +48,7 @@ for (a in assays) {
             tmp[nrow(tmp),c("HR", "(lower", "upper)", "p.value")]
         })
         theforestplot(point.estimates=est.ci[1,], lower.bounds=est.ci[2,], upper.bounds=est.ci[3,], p.values=NA, graphwidth=unit(120, "mm"), fontsize=1.2,
-            table.labels = c("Group", "HR (95% CI)","No. Events"), group=colnames(est.ci), decimal.places=2, nEvents=nevents, title=paste0(labels.assays.long["Day"%.%tpeak,a]))
+            table.labels = c("Group", "HR (95% CI)","No. Events"), group=colnames(est.ci), decimal.places=2, nEvents=nevents, title=paste0("Day"%.%tpeak,labels.assays[a]))
     dev.off()
     
     rv$fr.1[[a]]=est.ci
@@ -174,7 +174,7 @@ for (a in assays) {
     })
     mypdf(onefile=F, file=paste0(save.results.to, "hr_forest_marginal_", a, "_", study_name), width=10,height=.45*ncol(est.ci)) #width and height decide margin
         theforestplot (lineheight=unit(.75,"cm"), point.estimates=est.ci[1,], lower.bounds=est.ci[2,], upper.bounds=est.ci[3,], p.values=NA, graphwidth=unit(120, "mm"), fontsize=1.2,
-            table.labels = c("Group (Baseline Negative)", "HR (95% CI)","No. Events"), group=colnames(est.ci), decimal.places=2, nEvents=nevents, title=paste0(labels.assays.long["Day"%.%tpeak,a]))
+            table.labels = c("Group (Baseline Negative)", "HR (95% CI)","No. Events"), group=colnames(est.ci), decimal.places=2, nEvents=nevents, title=paste0("Day"%.%tpeak,labels.assays[a]))
     dev.off()    
     
     rv$fr.2[[a]]=est.ci
@@ -245,7 +245,7 @@ if (startsWith(attr(config, "config"), "janssen_pooled") | startsWith(attr(confi
         if (is.pooled) colnames(est.ci)[4:9] = "    "%.%colnames(est.ci)[4:9]
         mypdf(onefile=F, file=paste0(save.results.to, "hr_forest_countries_", a, "_", study_name), width=10,height=4.5) #width and height decide margin
             theforestplot (lineheight=unit(.75,"cm"), point.estimates=est.ci[1,], lower.bounds=est.ci[2,], upper.bounds=est.ci[3,], p.values=NA, graphwidth=unit(120, "mm"), fontsize=1.2,
-                table.labels = c("Group (Baseline Negative)", "HR (95% CI)","No. Events"), group=colnames(est.ci), decimal.places=2, nEvents=nevents, title=paste0(labels.assays.long["Day"%.%tpeak,a]))
+                table.labels = c("Group (Baseline Negative)", "HR (95% CI)","No. Events"), group=colnames(est.ci), decimal.places=2, nEvents=nevents, title=paste0("Day"%.%tpeak,labels.assays[a]))
         dev.off()        
         rv$fr.3[[a]]=est.ci
     }

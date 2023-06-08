@@ -33,31 +33,53 @@ if(!exists("COR")) {
 ###################################################################################################
 # read config
 
-if(Sys.getenv("TRIAL")=="") stop(" *************************************  environmental variable TRIAL not defined  *************************************")
+if(Sys.getenv("TRIAL")=="") {
+  stop(" *************************************  environmental variable TRIAL not defined  *************************************")
+}
 
-# TRIAL-related config
 config <- config::get(config = Sys.getenv("TRIAL"))
-if(length(config$llox_label)==1) {
-    config$llox_label=rep(config$llox_label, length(config$assays))
+for(opt in names(config)) eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
+
+if (!is.null(config$assay_metadata)) {
+  
+  # created named lists for assay metadata to easier access, e.g. assay_labels_short["bindSpike"]
+  assay_metadata = read.csv(paste0(dirname(attr(config,"file")),"/",config$assay_metadata))
+  
+  # remove bindN
+  assay_metadata=subset(assay_metadata, assay!="bindN")
+  
+  assays=assay_metadata$assay
+  
+  labels.assays=assay_metadata$assay_label; names(labels.assays)=assays
+  labels.assays.short=assay_metadata$assay_label_short; names(labels.assays.short)=assays
+  labels.assays.long = labels.assays
+  
+  llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
+  lloqs=assay_metadata$lloq; names(lloqs)=assays
+  lods=assay_metadata$lod; names(lods)=assays
+  lloxs=ifelse(llox_labels=="lloq", lloqs, lods)
+  
 } else {
-    stopifnot(length(config$assays)==length(config$llox_label))
-}
-names(config$llox_label)=config$assays
-for(opt in names(config)){
-  eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
-}
+  
+  if(length(config$llox_label)==1) {
+    llox_labels = rep(config$llox_label, length(config$assays))
+  } else {
+    stopifnot(length(config$llox_label)==length(config$assays))
+    llox_labels = config$llox_label
+  }
+  names(llox_labels)=config$assays
 
-
-
-# assays labels. This needs to come before all.markers
-labels.assays = config$assay_labels
-names(labels.assays) = config$assays
-
-if (is.null(config$assay_labels_short)) {
+  # assays labels. This needs to come before all.markers
+  labels.assays = config$assay_labels
+  names(labels.assays) = config$assays
+  
+  if (is.null(config$assay_labels_short)) {
     labels.assays.short=labels.assays
-} else {
+  } else {
     labels.assays.short = config$assay_labels_short
     names(labels.assays.short) = config$assays
+  }
+  
 }
 
 # hacky fix for tabular, since unclear who else is using
@@ -80,9 +102,6 @@ colnames(labels.title) <- times
 rownames(labels.title)[seq_along(assays)] <- assays
 labels.title <- as.data.frame(t(labels.title))
 
-# creating short and long labels
-#labels.assays.short <- labels.axis[1, ] # should not create this again
-labels.assays.long <- labels.title
 
 do.fold.change.overB=attr(config, "config") %in% c("vat08m_nonnaive")
 do.fold.change=F
@@ -126,9 +145,6 @@ if (exists("COR")) {
         all.markers.names.short=sub("\\(.+\\)", config.cor$tpeak, labels.assays.short)    # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 D57over29"
         names(all.markers.names.short)=all.markers
         
-        all.markers.names.long=as.matrix(labels.assays.long)[config.cor$tpeak, assays]
-        names(all.markers.names.long)=all.markers
-        
     } else {
         all.markers=paste0("Day", tpeak, assays)
         if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
@@ -139,12 +155,6 @@ if (exists("COR")) {
             if (do.fold.change.overB) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
         )
         names(all.markers.names.short)=all.markers
-        
-        all.markers.names.long=c(
-            as.matrix(labels.assays.long)["Day"%.%tpeak, assays],
-            if (do.fold.change.overB) as.matrix(labels.assays.long)["Delta"%.%tpeak%.%"overB", assays]
-        )
-        names(all.markers.names.long)=all.markers
     }
     
 }
@@ -177,9 +187,15 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-if(attr(config, "config") %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA")) {
-    # make endpointDate.Bin a factor variable
-    dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
+# some special treatment
+if(attr(config, "config") %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA",
+                                 "janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+  # make endpointDate.Bin a factor variable
+  dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
+
+} else if (attr(config, "config") %in% c("hvtn705secondRSA", "hvtn705secondNonRSA")) {
+  # subset to RSA or non-RSA
+  dat.mock = subset(dat.mock, RSA==ifelse(attr(config, "config")=="hvtn705secondRSA", 1, 0))
 }
 
 
@@ -221,30 +237,6 @@ if (exists("COR")) {
     print(form.0)
     
     comp.risk=FALSE
-    
-####Deprecated since we now take a simpler approach for the severe disease paper to treat severe endpoints as marginal survival endpoint
-#    if (COR=="D29SevereIncludeNotMolecConfirmed") {
-#        # formulae for competing risk
-#        comp.risk=TRUE
-#        form.0=list(
-#            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, SevereEventIndPrimaryIncludeNotMolecConfirmedD29) ~ 1, 
-#                as.formula(config$covariates_riskscore )),
-#            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, ModerateEventIndPrimaryIncludeNotMolecConfirmedD29) ~ 1, 
-#                as.formula(config$covariates_riskscore ))
-#        )
-#    }
-    
-#### Deprecated since we now use the hotdeck imputation approach
-#    if (COR=="D29VL") {
-#        # formulae for competing risk
-#        comp.risk=TRUE
-#        form.0=list(
-#            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, EventIndPrimaryHasVLD29) ~ 1, 
-#                as.formula(config$covariates_riskscore )),
-#            update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, EventIndPrimaryHasnoVLD29) ~ 1, 
-#                as.formula(config$covariates_riskscore ))
-#        )
-#   }
     
     ###########################################################
     # single time point COR config such as D29
@@ -299,20 +291,53 @@ if (exists("COR")) {
         } else if (attr(config, "config") == "janssen_pooled_EUA") {
             tfinal.tpeak=54
             
-        } else if (startsWith(attr(config, "config"), "janssen_") & contain(attr(config, "config"), "partA")) {
-            # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+        } else if (startsWith(attr(config, "config"), "janssen_") & endsWith(attr(config, "config"), "partA")) {
+          # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+          tfinal.tpeak=min(
+            with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
+            with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+          )
+          # for moderate, we choose to use the same tfinal.tpeak as the overall COVID
+          if (COR=="D29ModerateIncludeNotMolecConfirmed") {
             tfinal.tpeak=min(
-                with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
-                with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+              with(subset(dat.mock, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
+              with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
             )
-            # for moderate, we choose to use the same tfinal.tpeak as the overall COVID
-            if (COR=="D29ModerateIncludeNotMolecConfirmed") {
-            tfinal.tpeak=min(
-                with(subset(dat.mock, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
-                with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+          }
+          
+        } else if (attr(config, "config") %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+          # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
+          tfinal.tpeak = NULL 
+          # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+          tfinal.tpeak.ls=list(
+            US=list(
+              Ancestral.Lineage=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==0 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                                    with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+            ),
+            
+            LatAme=list(
+              Ancestral.Lineage = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              
+              Gamma = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Gamma"), max(EventTimePrimary)),
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+              
+              Lambda =min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Lambda"), max(EventTimePrimary)),
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+              
+              Mu    = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Mu"), max(EventTimePrimary)),
+                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              
+              Zeta  = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Zeta"), max(EventTimePrimary)),
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+            ),
+            
+            RSA=list(
+              Beta  = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==2 & seq1.variant=="Beta"), max(EventTimePrimary)),
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
             )
-            }
-
+          )
+          
         } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
             if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
             
@@ -321,11 +346,13 @@ if (exists("COR")) {
 
         }
         
-        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
-        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
-        overall.ve = c(1 - prev.vacc/prev.plac) 
-        myprint(prev.plac, prev.vacc, overall.ve)
-        
+        if (!attr(config, "config") %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+          # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
+          prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
+          prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
+          overall.ve = c(1 - prev.vacc/prev.plac) 
+          myprint(prev.plac, prev.vacc, overall.ve)
+        }
 
 #        # get VE in the first month or two of followup
 #        dat.tmp=dat.mock
@@ -1207,7 +1234,7 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         # if we estimate cutpoints using all non-NA markers, it may have an issue when a lot of subjects outside ph2 have non-NA markers
         # since that leads to uneven distribution of markers between low/med/high among ph2
         # this issue did not affect earlier trials much, but it is a problem with vat08m. We are changing the code for trials after vat08m
-        if (attr(config, "config") %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondprimary","moderna_real","moderna_mock","prevent19",
+        if (attr(config, "config") %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondRSA","hvtn705secondNonRSA","moderna_real","moderna_mock","prevent19",
                 "janssen_pooled_EUA","janssen_na_EUA","janssen_la_EUA","janssen_sa_EUA")) {
             flag=rep(TRUE, length(tmp.a))
         } else {
