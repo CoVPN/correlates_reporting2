@@ -15,7 +15,7 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 
 \setlength{\tabcolsep}{.5ex}
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
-$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Maximum failure event time in ph2 subjects \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. 
 $\ast$$\ast$`r txt.coxph.note2`
 $\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
 `r special.note`

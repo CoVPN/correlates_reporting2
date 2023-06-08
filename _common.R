@@ -44,7 +44,12 @@ if (!is.null(config$assay_metadata)) {
   
   # created named lists for assay metadata to easier access, e.g. assay_labels_short["bindSpike"]
   assay_metadata = read.csv(paste0(dirname(attr(config,"file")),"/",config$assay_metadata))
+  
+  # remove bindN
+  assay_metadata=subset(assay_metadata, assay!="bindN")
+  
   assays=assay_metadata$assay
+  
   labels.assays=assay_metadata$assay_label; names(labels.assays)=assays
   labels.assays.short=assay_metadata$assay_label_short; names(labels.assays.short)=assays
   labels.assays.long = labels.assays
@@ -75,27 +80,27 @@ if (!is.null(config$assay_metadata)) {
     names(labels.assays.short) = config$assays
   }
   
-  # hacky fix for tabular, since unclear who else is using
-  # the truncated labels.assays.short later
-  labels.assays.short.tabular <- labels.assays.short
-  
-  labels.time = config$time_labels
-  names(labels.time) = config$times
-  
-  # axis labeling
-  labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
-  labels.axis <- as.data.frame(labels.axis)
-  rownames(labels.axis) <- times
-  
-  # title labeling
-  labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
-  labels.title <- as.data.frame(labels.title)
-  colnames(labels.title) <- times
-  # NOTE: hacky solution to deal with changes in the number of markers
-  rownames(labels.title)[seq_along(assays)] <- assays
-  labels.title <- as.data.frame(t(labels.title))
-
 }
+
+# hacky fix for tabular, since unclear who else is using
+# the truncated labels.assays.short later
+labels.assays.short.tabular <- labels.assays.short
+
+labels.time = config$time_labels
+names(labels.time) = config$times
+
+# axis labeling
+labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
+labels.axis <- as.data.frame(labels.axis)
+rownames(labels.axis) <- times
+
+# title labeling
+labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
+labels.title <- as.data.frame(labels.title)
+colnames(labels.title) <- times
+# NOTE: hacky solution to deal with changes in the number of markers
+rownames(labels.title)[seq_along(assays)] <- assays
+labels.title <- as.data.frame(t(labels.title))
 
 
 do.fold.change.overB=attr(config, "config") %in% c("vat08m_nonnaive")
@@ -182,10 +187,15 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
+# some special treatment
 if(attr(config, "config") %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA",
                                  "janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
-    # make endpointDate.Bin a factor variable
-    dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
+  # make endpointDate.Bin a factor variable
+  dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
+
+} else if (attr(config, "config") %in% c("hvtn705secondRSA", "hvtn705secondNonRSA")) {
+  # subset to RSA or non-RSA
+  dat.mock = subset(dat.mock, RSA==ifelse(attr(config, "config")=="hvtn705secondRSA", 1, 0))
 }
 
 
@@ -228,17 +238,6 @@ if (exists("COR")) {
     
     comp.risk=FALSE
     
-    if (COR=="D29VL") {
-       # formulae for competing risk
-       comp.risk=TRUE
-       # form.0=list(
-       #     update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, EventIndPrimaryHasVLD29) ~ 1,
-       #         as.formula(config$covariates_riskscore )),
-       #     update(Surv(EventTimePrimaryIncludeNotMolecConfirmedD29, EventIndPrimaryHasnoVLD29) ~ 1,
-       #         as.formula(config$covariates_riskscore ))
-       # )
-    }
-
     ###########################################################
     # single time point COR config such as D29
     if (is.null(config.cor$tinterm)) {    
@@ -1235,7 +1234,7 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         # if we estimate cutpoints using all non-NA markers, it may have an issue when a lot of subjects outside ph2 have non-NA markers
         # since that leads to uneven distribution of markers between low/med/high among ph2
         # this issue did not affect earlier trials much, but it is a problem with vat08m. We are changing the code for trials after vat08m
-        if (attr(config, "config") %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondprimary","moderna_real","moderna_mock","prevent19",
+        if (attr(config, "config") %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondRSA","hvtn705secondNonRSA","moderna_real","moderna_mock","prevent19",
                 "janssen_pooled_EUA","janssen_na_EUA","janssen_la_EUA","janssen_sa_EUA")) {
             flag=rep(TRUE, length(tmp.a))
         } else {

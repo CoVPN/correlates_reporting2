@@ -8,8 +8,9 @@ if(verbose) print("Regression for continuous markers")
 fits=list()
 for (a in all.markers) {
     f= update(form.0, as.formula(paste0("~.+", a)))
-    fits[[a]]=svycoxph(f, design=design.vacc.seroneg) 
+    fits[[a]]=sappsvycoxph(f, design=design.vacc.seroneg) 
 }
+
 # scaled marker
 fits.scaled=list()
 for (a in all.markers) {
@@ -433,7 +434,7 @@ if (!is.null(config$interaction)) {
         b=paste0("Day",tpeak,bold)
                 
         # fit the interaction model and save regression results to a table
-        f=as.formula(paste("Surv(EventTimePrimary, EventIndPrimary) ~ RSA + Age + BMI + Riskscore + ",a," + ",b," + ",a,":",b))            
+        f= update(form.0, as.formula(paste0("~.+", a," + ",b," + ",a,":",b)))
         fit=svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)) 
         fits=list(fit)
         est=getFormattedSummary(fits, exp=T, robust=T, type=1)
@@ -441,7 +442,7 @@ if (!is.null(config$interaction)) {
         est = paste0(est, " ", ci)
         p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
         # generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
-        var.ind=5:7
+        var.ind=length(coef(fit))-2:0
         stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
         p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
         # put together the table
@@ -463,13 +464,6 @@ if (!is.null(config$interaction)) {
     
 }
 
-
-###################################################################################################
-# special code for janssen LA
-
-if (attr(config,"config")=="janssen_la_partA") {
-    
-}
 
 
 ###################################################################################################
