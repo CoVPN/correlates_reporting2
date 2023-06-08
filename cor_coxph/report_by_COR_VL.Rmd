@@ -1,0 +1,64 @@
+# `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
+
+The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise.
+
+## Hazard ratios
+
+
+
+
+```{r, echo=FALSE, results='asis'}
+
+variants=list(US="Ancestral.Lineage",
+              LatAme=c("Ancestral.Lineage", "Gamma", "Lambda", "Mu", "Zeta"),
+              RSA="Beta")
+
+regions=c("US","LatAm","RSA")
+
+for (iRegion in 1:3) {
+  region=regions[iRegion]
+  for (variant in variants[[iRegion]]) {
+    cat(paste0("
+\\subsection{",region,", ",variant,"}    
+    
+\\setlength{\\tabcolsep}{.5ex}
+  \\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_", region, "_", variant, "}
+\\vspace{-20pt}
+$\\ast$Baseline covariates adjusted for: ", covariates_adjusted, ".
+", special.note, "
+
+\\vspace{10pt}
+
+\\setlength{\\tabcolsep}{.5ex}
+  \\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_scaled_", region, "_", variant, "}
+\\vspace{-20pt}
+$\\ast$Baseline covariates adjusted for: ", covariates_adjusted, ". 
+", special.note, "
+
+\\vspace{10pt}
+
+\\scriptsize
+\\input{", paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", region, "_", variant), "}
+\\normalsize
+\\vspace{-20pt}
+$\\ast$Baseline covariates adjusted for: ", covariates_adjusted, ". Cutpoints (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, "_", study_name, "}"), sep=","), "
+$\\ast\\ast$$\\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
+", special.note, "
+
+\\vspace{10pt}
+
+\\begin{table}[H]
+\\caption{Number of cases (", variant, ") and non-cases in ph2 or not (",region,")}
+\\begin{center}
+  \\input{", pathCoRoutput, "/tab1_",region,"_",variant,"}
+\\end{center}
+\\end{table}
+
+
+\\clearpage
+"))
+
+  }
+}
+
+```

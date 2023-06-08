@@ -74,7 +74,7 @@ regions=c("US","LatAm","RSA")
 # loop through regions. 1: US, 2: LatAm, 3: RSA
 
 for (iRegion in 1:3) {
-# iRegion=1; variant="Ancestral.Lineage"
+# iRegion=2; variant="Ancestral.Lineage"
   region=regions[iRegion]
   
   # subset dataset to region
@@ -90,14 +90,22 @@ for (iRegion in 1:3) {
       dat.vac.seroneg
     })
     
+    # table of ph1 and ph2 cases
+    tab=with(datasets[[1]], table(ph2, EventIndOfInterest))
+    names(dimnames(tab))[2]="Event Indicator"
+    mytex(tab, file.name=paste0("tab1_",region,"_",variant), save2input.only=T, input.foldername=save.results.to)
+
     # coxph formula
     form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
 
-    source(here::here("code", "cor_coxph_ph_MI.R"))
+    # source(here::here("code", "cor_coxph_ph_MI.R"))
     
   } # for variant
   
-    # # loop through imputed datasets
+} # for iRegion
+
+
+# # loop through imputed datasets
     # for (imp in 1:10) {
     #   # imp=1; iRegion=0; v="Ancestral.Lineage"
     #   
@@ -133,4 +141,3 @@ for (iRegion in 1:3) {
     #   
     # } # for imp
 
-} # for iRegion
