@@ -118,11 +118,11 @@ for (iRegion in 1:3) {
 
     tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
 
-    source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
+    source(here::here("code", "cor_coxph_risk_no_marker.R"))
 
     # for (variant in variants[[iRegion]]) {
-    #   source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
-    #   source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
+    #   source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+    #   source(here::here("code", "cor_coxph_risk_plotting.R"))
     # }
 
   } # for variant

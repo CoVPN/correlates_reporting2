@@ -124,7 +124,7 @@ print(date())
 # estimate overall VE in the placebo and vaccine arms
 ###################################################################################################
 
-source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
+source(here::here("code", "cor_coxph_risk_no_marker.R"))
 
 if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 
@@ -183,9 +183,9 @@ if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m"
 tmp=paste0(here::here(), paste0("/output/", attr(config,"config"), "/", COR, "/ylims.cor.", study_name, ".Rdata"))
 if (file.exists(tmp)) load(tmp) # if it does not exist, the code will find alternative ylim
 
-source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
+source(here::here("code", "cor_coxph_risk_bootstrap.R"))
 
-source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
+source(here::here("code", "cor_coxph_risk_plotting.R"))
 
 if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_EUA")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
 
