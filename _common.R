@@ -232,12 +232,17 @@ if (exists("COR")) {
     # this is redundant in a way because only US participants have non-NA risk scores, but good to add
     if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
     
-    # formulae
-    form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
-    form.0 = update (form.s, as.formula(config$covariates_riskscore))
-    print(form.0)
-    
-    comp.risk=FALSE
+    # formula
+    if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+      # form.0 is different for cox model and risk estimate, and will be defined in cor_coxph_ensemble_variant.R
+      comp.risk=TRUE
+      
+    } else {
+      form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
+      form.0 = update (form.s, as.formula(config$covariates_riskscore))
+      comp.risk=FALSE
+      print(form.0)
+    }
     
     ###########################################################
     # single time point COR config such as D29
