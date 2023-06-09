@@ -24,10 +24,6 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
   # used in both point est and bootstrap
   # many variables are not passed but defined in the scope of marginalized.risk.svycoxph.boot
   fc.1=function(data.ph2, data, categorical.s, n.dean=FALSE){
-    rowMeans(sapply(1:10, function(imp) {
-      data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-        
       if (comp.risk) {
         # competing risk implementation
         newdata=data.ph2
@@ -38,8 +34,6 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
         })
         
       } else {        
-        data$EventIndOfInterest = ifelse(data$EventIndPrimary==1 & data[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-        data$EventIndCompeting  = ifelse(data$EventIndPrimary==1 & data[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
         # non-competing risk implementation
         # inline design object b/c it may also throw an error
         fit.risk.1=try(svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=data)))        
@@ -50,14 +44,9 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
           rep(NA, ifelse(n.dean,1,0)+length(ss))
         }
       } 
-    }))
   }
   
   fc.2=function(data.ph2){
-    rowMeans(sapply(1:10, function(imp) {
-      data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-      
       if (comp.risk) {
         sapply(ss, function(x) {
           newdata=data.ph2[data.ph2[[marker.name]]>=x, ]
@@ -72,7 +61,6 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
           NA # no need to rep, b/c results will be a list when called in bootstrap. for the point est, it is unlikely to be NA
         }
       }
-    }))
   }    
   
   
@@ -90,7 +78,18 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
       if (log10(100)>min(data[[marker.name]], na.rm=TRUE) & log10(100)<max(data[[marker.name]], na.rm=TRUE)) log10(100)
     ))
     
-    prob = fc.1(data.ph2, data, n.dean=TRUE, categorical.s=F)
+    prob = if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_NA_partA_VL","janssen_LA_partA_VL", "janssen_SA_partA_VL")) {
+      rowMeans(sapply(1:10, function(imp) {
+        data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+        data$EventIndOfInterest = ifelse(data$EventIndPrimary==1 & data[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        data$EventIndCompeting  = ifelse(data$EventIndPrimary==1 & data[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+        fc.1(data.ph2, data, n.dean=TRUE, categorical.s=F)
+      }))
+    } else {
+      fc.1(data.ph2, data, n.dean=TRUE, categorical.s=F)
+    }
+    
     if (!comp.risk) {
       n.dean=prob[1]
       prob=prob[-1]
@@ -99,12 +98,33 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
   } else if (type==2) {
     # conditional on S>=s
     ss=quantile(data[[marker.name]], seq(0,.9,by=0.05), na.rm=TRUE); if(verbose) myprint(ss)
-    prob = fc.2(data.ph2)        
+    prob = fc.2(data.ph2)
+    prob = if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_NA_partA_VL","janssen_LA_partA_VL", "janssen_SA_partA_VL")) {
+      rowMeans(sapply(1:10, function(imp) {
+        data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+        fc.2(data.ph2)
+      }))
+    } else {
+      fc.2(data.ph2)
+    }
+    
     
   } else if (type==3) {
     # conditional on S=s (categorical)
     ss=unique(data[[marker.name]]); ss=sort(ss[!is.na(ss)]); if(verbose) myprint(ss)        
-    prob = fc.1(data.ph2, data, n.dean=F, categorical.s=T)
+    prob = if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_NA_partA_VL","janssen_LA_partA_VL", "janssen_SA_partA_VL")) {
+      rowMeans(sapply(1:10, function(imp) {
+        data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+        data$EventIndOfInterest = ifelse(data$EventIndPrimary==1 & data[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        data$EventIndCompeting  = ifelse(data$EventIndPrimary==1 & data[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+        fc.1(data.ph2, data, n.dean=F, categorical.s=T)
+      }))
+    } else {
+      fc.1(data.ph2, data, n.dean=F, categorical.s=T)
+    }
+    
     
   } else if (type==4) {
     # conditional on S=s (quantitative)

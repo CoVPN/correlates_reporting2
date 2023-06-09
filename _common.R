@@ -39,6 +39,7 @@ if(Sys.getenv("TRIAL")=="") {
 
 config <- config::get(config = Sys.getenv("TRIAL"))
 for(opt in names(config)) eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
+TRIAL=attr(config, "config")
 
 if (!is.null(config$assay_metadata)) {
   
