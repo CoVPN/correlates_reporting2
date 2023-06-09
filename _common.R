@@ -190,7 +190,7 @@ dat.mock <- read.csv(path_to_data)
 
 # some special treatment
 if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA",
-                                 "janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+                                 "janssen_partA_VL")) {
   # make endpointDate.Bin a factor variable
   dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
 
@@ -233,7 +233,7 @@ if (exists("COR")) {
     if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
     
     # formula
-    if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+    if (TRIAL %in% c("janssen_partA_VL")) {
       # form.0 is different for cox model and risk estimate, and will be defined in cor_coxph_ensemble_variant.R
       comp.risk=TRUE
       
@@ -311,7 +311,7 @@ if (exists("COR")) {
             )
           }
           
-        } else if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+        } else if (TRIAL %in% c("janssen_partA_VL")) {
           # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
           tfinal.tpeak = NULL 
           # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
@@ -352,7 +352,7 @@ if (exists("COR")) {
 
         }
         
-        if (!TRIAL %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+        if (!TRIAL %in% c("janssen_partA_VL")) {
           # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
