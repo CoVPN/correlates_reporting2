@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_partA_VL"); COR="D29VL"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29VL"; Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
@@ -74,7 +74,7 @@ regions=c("US","LatAm","RSA")
 # loop through regions. 1: US, 2: LatAm, 3: RSA
 
 for (iRegion in 1:3) {
-# iRegion=2; variant="Ancestral.Lineage"
+# iRegion=3; variant="Ancestral.Lineage"
   region=regions[iRegion]
   
   # subset dataset to region
@@ -84,31 +84,32 @@ for (iRegion in 1:3) {
   # loop through variants within this region
   for (variant in variants[[iRegion]]) {
     
-    # make a list of imputed dataset
-    datasets.vac = lapply(1:10, function (imp) {
-      dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      dat.vac.seroneg$EventIndCompeting  = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-      dat.vac.seroneg
-    })
+    ############################
+    # count ph1 and ph2 cases
     
-    datasets.pla = lapply(1:10, function (imp) {
-      dat.pla.seroneg$EventIndOfInterest = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      dat.pla.seroneg$EventIndCompeting  = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-      dat.pla.seroneg
+    # imputed
+    tabs=sapply(1:10, simplify="array", function (imp) {
+      dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      with(dat.vac.seroneg, table(ph2, EventIndOfInterest))
     })
-
-    # table of ph1 and ph2 cases
-    tab=with(datasets[[1]], table(ph2, EventIndOfInterest))
+    tab =apply(tabs, c(1,2), mean)
     names(dimnames(tab))[2]="Event Indicator"
-    mytex(tab, file.name=paste0("tab1_",region,"_",variant), save2input.only=T, input.foldername=save.results.to)
+    mytex(tab, file.name=paste0("tab1_",region,"_",variant), save2input.only=T, input.foldername=save.results.to, digits=1)
 
+    # non-imputed
+    dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant"]]==variant, 1, 0)
+    tab = with(dat.vac.seroneg, table(ph2, EventIndOfInterest)) # NA not counted, which is what we want
+    names(dimnames(tab))[2]="Event Indicator"
+    mytex(tab, file.name=paste0("tab1_nonimputed_",region,"_",variant), save2input.only=T, input.foldername=save.results.to, digits=0)
+
+    ############################
     # formula for coxph
     form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
 
     source(here::here("code", "cor_coxph_ph_MI.R"))
-    
-    comp.risk=TRUE
 
+
+    ############################
     # formula for competing risk
     form.0=list(
       update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
@@ -116,14 +117,15 @@ for (iRegion in 1:3) {
     )
 
     tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
-    
-    source(here::here("code", "cor_coxph_marginalized_risk_no_marker_MI.R"))
 
-    for (variant in variants[[iRegion]]) {
-      source(here::here("code", "cor_coxph_marginalized_risk_bootstrap_MI.R"))
-      source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
-    }
-    
+    source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
+
+    # for (variant in variants[[iRegion]]) {
+    #   source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
+    #   source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
+    # }
+
   } # for variant
   
 } # for iRegion
+

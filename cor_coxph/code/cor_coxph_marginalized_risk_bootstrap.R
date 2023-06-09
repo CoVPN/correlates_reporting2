@@ -78,7 +78,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
       if (log10(100)>min(data[[marker.name]], na.rm=TRUE) & log10(100)<max(data[[marker.name]], na.rm=TRUE)) log10(100)
     ))
     
-    prob = if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_NA_partA_VL","janssen_LA_partA_VL", "janssen_SA_partA_VL")) {
+    prob = if (TRIAL %in% c("janssen_partA_VL")) {
       rowMeans(sapply(1:10, function(imp) {
         data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
         data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
@@ -98,7 +98,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
   } else if (type==2) {
     # conditional on S>=s
     ss=quantile(data[[marker.name]], seq(0,.9,by=0.05), na.rm=TRUE); if(verbose) myprint(ss)
-    prob = if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_NA_partA_VL","janssen_LA_partA_VL", "janssen_SA_partA_VL")) {
+    prob = if (TRIAL %in% c("janssen_partA_VL")) {
       rowMeans(sapply(1:10, function(imp) {
         data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
         data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
@@ -112,7 +112,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
   } else if (type==3) {
     # conditional on S=s (categorical)
     ss=unique(data[[marker.name]]); ss=sort(ss[!is.na(ss)]); if(verbose) myprint(ss)        
-    prob = if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_NA_partA_VL","janssen_LA_partA_VL", "janssen_SA_partA_VL")) {
+    prob = if (TRIAL %in% c("janssen_partA_VL")) {
       rowMeans(sapply(1:10, function(imp) {
         data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
         data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)

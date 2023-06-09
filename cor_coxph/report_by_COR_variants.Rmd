@@ -30,6 +30,8 @@ $\\dagger$ Results are based on analyses of ten imputed data sets combined throu
 
 \\vspace{10pt}
 
+
+
 \\setlength{\\tabcolsep}{.5ex}
   \\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_scaled_", region, "_", variant, "}
 \\vspace{-20pt}
@@ -40,6 +42,8 @@ $\\ast$Baseline covariates adjusted for: ", covariates_adjusted, ".
 $\\dagger$ Results are based on analyses of ten imputed data sets combined through Robin's rule.
 
 \\vspace{10pt}
+
+
 
 \\scriptsize
 \\input{", paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", region, "_", variant), "}
@@ -55,10 +59,20 @@ $\\dagger$ Results are based on analyses of ten imputed data sets combined throu
 
 \\vspace{10pt}
 
+
+
 \\begin{table}[H]
-\\caption{Number of cases (", variant, ") and non-cases in ph2 or not (",region,") from one imputed dataset}
+\\caption{Average number of cases (", variant, ") and non-cases in ph2 or not (",region,") across ten imputed datasets.}
 \\begin{center}
   \\input{", pathCoRoutput, "/tab1_",region,"_",variant,"}
+\\end{center}
+\\end{table}
+
+
+\\begin{table}[H]
+\\caption{Number of cases (", variant, ") and non-cases in ph2 or not (",region,"), un-imputed.}
+\\begin{center}
+  \\input{", pathCoRoutput, "/tab1_nonimputed_",region,"_",variant,"}
 \\end{center}
 \\end{table}
 

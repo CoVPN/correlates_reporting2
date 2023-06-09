@@ -6,28 +6,28 @@ if(verbose) print("Regression for continuous markers")
 # for the entire baseline negative vaccine cohort
 
 fits=list()
-for (a in all.markers) {
-  f= update(form.0, as.formula(paste0("~.+", a)))
-  models=lapply(datasets.vac, function (dataset) {
-    design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dataset)
-    svycoxph(f, design=design.vacc.seroneg) 
-  })
-  betas<-MIextract(models, fun=coef)
-  vars<-MIextract(models, fun=vcov)
-  fits[[a]]<-summary(MIcombine(betas,vars))
-}
-
-# scaled marker
 fits.scaled=list()
-for (a in all.markers) {
-  f= update(form.0, as.formula(paste0("~.+scale(", a, ")")))
-  models=lapply(datasets.vac, function (dataset) {
-    design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dataset)
-    svycoxph(f, design=design.vacc.seroneg) 
-  })
-  betas<-MIextract(models, fun=coef)
-  vars<-MIextract(models, fun=vcov)
-  fits.scaled[[a]]<-summary(MIcombine(betas,vars))
+for (i in 1:2) {
+  for (a in all.markers) {
+    if(i==1) {
+      f= update(form.0, as.formula(paste0("~.+", a)))
+    } else {
+      f= update(form.0, as.formula(paste0("~.+scale(", a, ")")))
+    }
+    models = lapply(1:10, function (imp) {
+      dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
+      svycoxph(f, design=design.vacc.seroneg) 
+    })
+    betas<-MIextract(models, fun=coef)
+    vars<-MIextract(models, fun=vcov)
+    res<-summary(MIcombine(betas,vars))
+    if (i==1) {
+      fits[[a]]=res
+    } else {
+      fits.scaled[[a]]=res
+    }
+  }
 }
 
 
@@ -75,8 +75,9 @@ overall.p.tri=c()
 for (a in all.markers) {
   if(verbose) myprint(a)
   f= update(form.0, as.formula(paste0("~.+", a, "cat")))
-  models=lapply(datasets.vac, function (dataset) {
-    design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dataset)
+  models = lapply(1:10, function (imp) {
+    dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+    design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
     svycoxph(f, design=design.vacc.seroneg) 
   })
   betas<-MIextract(models, fun=coef)

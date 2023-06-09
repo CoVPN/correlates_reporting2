@@ -21,14 +21,14 @@
 #})
 #prevs
 
-if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))) {    
-    if (verbose) print("bootstrap marginalized.risk.no.marker Rdata")
+if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.",region,".Rdata"))) {    
+    if (verbose) print("bootstrap marginalized risk no marker Rdata")
 
     for (.trt in 0:1) {
         dat.tmp=if(.trt==1) dat.vac.seroneg else dat.pla.seroneg
                 
-        prob = if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_NA_partA_VL","janssen_LA_partA_VL", "janssen_SA_partA_VL")) {
-            rowMeans(sapply(1:10, function(imp) {
+        prob = if (TRIAL %in% c("janssen_partA_VL")) {
+            mean(sapply(1:10, function(imp) {
                 dat.tmp$EventIndOfInterest = ifelse(dat.tmp$EventIndPrimary==1 & dat.tmp[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
                 dat.tmp$EventIndCompeting  = ifelse(dat.tmp$EventIndPrimary==1 & dat.tmp[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
                 get.marginalized.risk.no.marker(form.0, dat.tmp, tfinal.tpeak)
@@ -52,17 +52,22 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))) {
             } else {
                 dat.b = bootstrap.case.control.samples(dat.tmp, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=0) 
             }
-            prob = if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_NA_partA_VL","janssen_LA_partA_VL", "janssen_SA_partA_VL")) {
-                rowMeans(sapply(1:10, function(imp) {
-                    dat.b$EventIndOfInterest = ifelse(dat.b$EventIndPrimary==1 & dat.b[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-                    dat.b$EventIndCompeting  = ifelse(dat.b$EventIndPrimary==1 & dat.b[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+            prob = if (TRIAL %in% c("janssen_partA_VL")) {
+                # check if there are any missing info in the bootstrap data
+                if (all(with(subset(dat.b, EventIndPrimary==1), !is.na(seq1.variant)))) {
+                    # no missing variant in this bootstrap dataset, no need to do MI
                     get.marginalized.risk.no.marker(form.0, dat.b, tfinal.tpeak)
-                }))
+                } else {
+                    mean(sapply(1:10, function(imp) {
+                        dat.b$EventIndOfInterest = ifelse(dat.b$EventIndPrimary==1 & dat.b[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+                        dat.b$EventIndCompeting  = ifelse(dat.b$EventIndPrimary==1 & dat.b[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+                        get.marginalized.risk.no.marker(form.0, dat.b, tfinal.tpeak)
+                    }))  
+                }
+                
             } else {
                 get.marginalized.risk.no.marker(form.0, dat.b, tfinal.tpeak)
             }
-            
-            
         })
         boot=do.call(cbind, out)
         
