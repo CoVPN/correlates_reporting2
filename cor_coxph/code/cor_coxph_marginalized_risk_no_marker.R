@@ -82,8 +82,8 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))) {
 
     print(cbind(prev.plac, prev.vacc, overall.ve))
     
-    save(res.plac.cont, res.vacc.cont, prev.plac, prev.vacc, overall.ve, file=paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))
+    save(res.plac.cont, res.vacc.cont, prev.plac, prev.vacc, overall.ve, file=paste0(save.results.to, "marginalized.risk.no.marker.",region,".Rdata"))
     
 } else {
-    load(paste0(save.results.to, "marginalized.risk.no.marker.Rdata"))
+    load(paste0(save.results.to, "marginalized.risk.no.marker.",region,".Rdata"))
 }
