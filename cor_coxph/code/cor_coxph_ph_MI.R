@@ -8,7 +8,7 @@ if(verbose) print("Regression for continuous markers")
 fits=list()
 for (a in all.markers) {
   f= update(form.0, as.formula(paste0("~.+", a)))
-  models=lapply(datasets, function (dataset) {
+  models=lapply(datasets.vac, function (dataset) {
     design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dataset)
     svycoxph(f, design=design.vacc.seroneg) 
   })
@@ -21,7 +21,7 @@ for (a in all.markers) {
 fits.scaled=list()
 for (a in all.markers) {
   f= update(form.0, as.formula(paste0("~.+scale(", a, ")")))
-  models=lapply(datasets, function (dataset) {
+  models=lapply(datasets.vac, function (dataset) {
     design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dataset)
     svycoxph(f, design=design.vacc.seroneg) 
   })
@@ -75,7 +75,7 @@ overall.p.tri=c()
 for (a in all.markers) {
   if(verbose) myprint(a)
   f= update(form.0, as.formula(paste0("~.+", a, "cat")))
-  models=lapply(datasets, function (dataset) {
+  models=lapply(datasets.vac, function (dataset) {
     design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dataset)
     svycoxph(f, design=design.vacc.seroneg) 
   })

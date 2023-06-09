@@ -18,7 +18,7 @@ if (endsWith(attr(config,"config"),"_VL")) {
     if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
     names(all.markers)=all.markers
 
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_VL.Rmd')), quiet = TRUE)
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_variants.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
 

@@ -85,59 +85,45 @@ for (iRegion in 1:3) {
   for (variant in variants[[iRegion]]) {
     
     # make a list of imputed dataset
-    datasets = lapply(1:10, function (imp) {
+    datasets.vac = lapply(1:10, function (imp) {
       dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      dat.vac.seroneg$EventIndCompeting  = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
       dat.vac.seroneg
     })
     
+    datasets.pla = lapply(1:10, function (imp) {
+      dat.pla.seroneg$EventIndOfInterest = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      dat.pla.seroneg$EventIndCompeting  = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+      dat.pla.seroneg
+    })
+
     # table of ph1 and ph2 cases
     tab=with(datasets[[1]], table(ph2, EventIndOfInterest))
     names(dimnames(tab))[2]="Event Indicator"
     mytex(tab, file.name=paste0("tab1_",region,"_",variant), save2input.only=T, input.foldername=save.results.to)
 
-    # coxph formula
+    # formula for coxph
     form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
 
-    # source(here::here("code", "cor_coxph_ph_MI.R"))
+    source(here::here("code", "cor_coxph_ph_MI.R"))
+    
+    comp.risk=TRUE
+
+    # formula for competing risk
+    form.0=list(
+      update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
+      update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
+    )
+
+    tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
+    
+    source(here::here("code", "cor_coxph_marginalized_risk_no_marker_MI.R"))
+
+    for (variant in variants[[iRegion]]) {
+      source(here::here("code", "cor_coxph_marginalized_risk_bootstrap_MI.R"))
+      source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
+    }
     
   } # for variant
   
 } # for iRegion
-
-
-# # loop through imputed datasets
-    # for (imp in 1:10) {
-    #   # imp=1; iRegion=0; v="Ancestral.Lineage"
-    #   
-    #   # create event indicator variables for competing risk analyses
-    #   dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]=="Ancestral.Lineage", 1, 0)
-    #   dat.vac.seroneg$EventIndCompeting  = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]!="Ancestral.Lineage", 1, 0)
-    #   dat.pla.seroneg$EventIndOfInterest = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]=="Ancestral.Lineage", 1, 0)
-    #   dat.pla.seroneg$EventIndCompeting  = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]!="Ancestral.Lineage", 1, 0)
-    #   dat.vac.seroneg$yy=dat.vac.seroneg$EventIndOfInterest
-    #   
-    #   # data.ph2=subset(dat.vac.seroneg, ph2)
-    #   
-    #   #create twophase design object
-    #   design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
-    #   with(dat.vac.seroneg, table(Wstratum, ph2))
-    #   
-    #   
-    #   # source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
-    #   
-    # 
-    #   # # competing risk analysis formula
-    #   # comp.risk=TRUE
-    #   # 
-    #   # form.0=list(
-    #   #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
-    #   #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
-    #   # )
-    #   # 
-    #   # tfinal.tpeak = tfinal.tpeak.ls[[1+iRegion]][[v]]
-    #   # source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
-    #   # 
-    #   # source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
-    #   
-    # } # for imp
-

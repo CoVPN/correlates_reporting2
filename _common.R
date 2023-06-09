@@ -315,7 +315,7 @@ if (exists("COR")) {
                                     with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
             ),
             
-            LatAme=list(
+            LatAm=list(
               Ancestral.Lineage = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
                         with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
               
