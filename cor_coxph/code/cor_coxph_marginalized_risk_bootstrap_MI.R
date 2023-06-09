@@ -98,7 +98,6 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
   } else if (type==2) {
     # conditional on S>=s
     ss=quantile(data[[marker.name]], seq(0,.9,by=0.05), na.rm=TRUE); if(verbose) myprint(ss)
-    prob = fc.2(data.ph2)
     prob = if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_NA_partA_VL","janssen_LA_partA_VL", "janssen_SA_partA_VL")) {
       rowMeans(sapply(1:10, function(imp) {
         data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)

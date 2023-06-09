@@ -104,7 +104,7 @@ rownames(labels.title)[seq_along(assays)] <- assays
 labels.title <- as.data.frame(t(labels.title))
 
 
-do.fold.change.overB=attr(config, "config") %in% c("vat08m_nonnaive")
+do.fold.change.overB=TRIAL %in% c("vat08m_nonnaive")
 do.fold.change=F
 
 # if this flag is true, then the N IgG binding antibody is reported 
@@ -118,7 +118,7 @@ if (exists("COR")) {
     myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE") {
-        if (contain(attr(config, "config"), "EUA")) {
+        if (contain(TRIAL, "EUA")) {
             # EUA datasets
             if (COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
         } 
@@ -169,7 +169,7 @@ has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
 ###################################################################################################
 # read data
 
-data_name = paste0(attr(config, "config"), "_data_processed.csv")
+data_name = paste0(TRIAL, "_data_processed.csv")
 if (startsWith(tolower(study_name), "mock")) {
     data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
     # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
@@ -189,14 +189,14 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 dat.mock <- read.csv(path_to_data)
 
 # some special treatment
-if(attr(config, "config") %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA",
+if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA",
                                  "janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
   # make endpointDate.Bin a factor variable
   dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
 
-} else if (attr(config, "config") %in% c("hvtn705secondRSA", "hvtn705secondNonRSA")) {
+} else if (TRIAL %in% c("hvtn705secondRSA", "hvtn705secondNonRSA")) {
   # subset to RSA or non-RSA
-  dat.mock = subset(dat.mock, RSA==ifelse(attr(config, "config")=="hvtn705secondRSA", 1, 0))
+  dat.mock = subset(dat.mock, RSA==ifelse(TRIAL=="hvtn705secondRSA", 1, 0))
 }
 
 
@@ -258,7 +258,7 @@ if (exists("COR")) {
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
         if(!is.null(dat.mock$risk_score)) {
-            if (!attr(config, "config") %in% c("janssen_na_EUA","janssen_na_partA")) { 
+            if (!TRIAL %in% c("janssen_na_EUA","janssen_na_partA")) { 
                 # check this for backward compatibility
                 stopifnot(nrow(subset(dat.mock, ph1 & is.na(risk_score)))==0)
             }
@@ -283,16 +283,16 @@ if (exists("COR")) {
         tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
         
         # exceptions
-        if (attr(config, "config") == "janssen_na_EUA") {
+        if (TRIAL == "janssen_na_EUA") {
             tfinal.tpeak=53
-        } else if (attr(config, "config") == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
+        } else if (TRIAL == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
             tfinal.tpeak=48 
-        } else if (attr(config, "config") == "janssen_sa_EUA") {
+        } else if (TRIAL == "janssen_sa_EUA") {
             tfinal.tpeak=40            
-        } else if (attr(config, "config") == "janssen_pooled_EUA") {
+        } else if (TRIAL == "janssen_pooled_EUA") {
             tfinal.tpeak=54
             
-        } else if (startsWith(attr(config, "config"), "janssen_") & endsWith(attr(config, "config"), "partA")) {
+        } else if (startsWith(TRIAL, "janssen_") & endsWith(TRIAL, "partA")) {
           # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
           tfinal.tpeak=min(
             with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
@@ -306,7 +306,7 @@ if (exists("COR")) {
             )
           }
           
-        } else if (attr(config, "config") %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+        } else if (TRIAL %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
           # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
           tfinal.tpeak = NULL 
           # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
@@ -339,7 +339,7 @@ if (exists("COR")) {
             )
           )
           
-        } else if (attr(config, "config") %in% c("profiscov", "profiscov_lvmn")) {
+        } else if (TRIAL %in% c("profiscov", "profiscov_lvmn")) {
             if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
             
         } else if (study_name=="HVTN705") {
@@ -347,7 +347,7 @@ if (exists("COR")) {
 
         }
         
-        if (!attr(config, "config") %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
+        if (!TRIAL %in% c("janssen_pooled_partA_VL", "janssen_na_partA_VL", "janssen_la_partA_VL", "janssen_sa_partA_VL")) {
           # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
@@ -517,7 +517,7 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     pos.cutoffs["bindN"]=23.4711
     
     # the limits below are different for EUA and Part A datasets
-    if (contain(attr(config, "config"), "EUA")) {
+    if (contain(TRIAL, "EUA")) {
     # EUA data
         
         # data less than lloq is set to lloq/2
@@ -538,7 +538,7 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
         pos.cutoffs["pseudoneutid50la"]=lloqs["pseudoneutid50la"]
     
         
-    } else if (contain(attr(config, "config"), "partA")) {
+    } else if (contain(TRIAL, "partA")) {
     # complete part A data
         
         # data less than lloq is set to lloq/2
@@ -708,7 +708,7 @@ labels.race <- c(
   "White", 
   "Black or African American",
   "Asian", 
-  if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & startsWith(attr(config, "config"),"janssen_la")) "Indigenous South American" else "American Indian or Alaska Native",
+  if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & startsWith(TRIAL,"janssen_la")) "Indigenous South American" else "American Indian or Alaska Native",
   "Native Hawaiian or Other Pacific Islander", 
   "Multiracial",
   if ((study_name=="COVE" | study_name=="MockCOVE")) "Other", 
@@ -1235,7 +1235,7 @@ add.trichotomized.markers=function(dat, markers, wt.col.name) {
         # if we estimate cutpoints using all non-NA markers, it may have an issue when a lot of subjects outside ph2 have non-NA markers
         # since that leads to uneven distribution of markers between low/med/high among ph2
         # this issue did not affect earlier trials much, but it is a problem with vat08m. We are changing the code for trials after vat08m
-        if (attr(config, "config") %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondRSA","hvtn705secondNonRSA","moderna_real","moderna_mock","prevent19",
+        if (TRIAL %in% c("hvtn705","hvtn705V1V2","hvtn705second","hvtn705secondRSA","hvtn705secondNonRSA","moderna_real","moderna_mock","prevent19",
                 "janssen_pooled_EUA","janssen_na_EUA","janssen_la_EUA","janssen_sa_EUA")) {
             flag=rep(TRUE, length(tmp.a))
         } else {
