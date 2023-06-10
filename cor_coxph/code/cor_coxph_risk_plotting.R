@@ -22,7 +22,7 @@ digits.risk=4
     
 for (eq.geq in 1:2) {  # 1 conditional on s,   2 is conditional on S>=s
 for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
-# eq.geq=1; w.wo.plac=1; a=all.markers[1]
+# eq.geq=2; w.wo.plac=1; a=all.markers[1]
     
     risks.all=get("risks.all."%.%eq.geq)
     
@@ -61,7 +61,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         plot(risks$marker[shown], risks$prob[shown], 
             xlab=all.markers.names.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), 
             xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by ", tfinal.tpeak, " days post Day ", tpeak1, " Visit"), lwd=lwd, ylim=ylim, 
-            type="n", main=paste0(labels.assays[a]), xaxt="n")
+            type="n", main=paste0(all.markers.names.short[a]), xaxt="n")
         draw.x.axis.cor(xlim, lloxs[assay], if(is.delta) "delta" else llox_labels[assay])
             
         # prevelance lines
@@ -115,6 +115,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
 }
 }
 save(ylims.cor, file=paste0(save.results.to, "ylims.cor."%.%study_name%.%".Rdata"))
+
 
 # show the results at select assay values
 risks.all=get("risks.all.1") 
@@ -209,7 +210,7 @@ for (eq.geq in 1:4) {
                 col=ifelse(eq.geq==1,"red","white"), # white is no plot
                 lwd=lwd, make.legend=F, 
                 ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by ", tfinal.tpeak, " days post Day ", tpeak1, " Visit"), 
-                main=paste0(labels.assays[a]),
+                main=paste0(all.markers.names.short[a]),
                 xlab=all.markers.names.short[a]%.%ifelse(eq.geq!=2," (=s)"," (>=s)"), 
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
             # y axis labels
@@ -435,7 +436,7 @@ for (a in all.markers) {
         mymatplot(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,], lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint), ylim=ylim, xlab="", las=1, 
             xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
         title(xlab="Days Since Day "%.%tpeak1%.%" Visit", line=2)
-        title(main=labels.assays[a], cex.main=.9, line=2)
+        title(main=all.markers.names.short[a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
         legend=c("Vaccine low","Vaccine medium","Vaccine high","Placebo")
         mylegend(x=1, legend=legend, lty=c(1:3,1), col=c("green3","green","darkgreen","gray"), lwd=2)
@@ -523,7 +524,7 @@ for (a in all.markers) {
             ylab=paste0("log(-log(Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak, "))"), xlab="", 
             las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
         title(xlab="Days Since Day "%.%tpeak1%.%" Visit", line=2)
-        title(main=labels.assays[a], cex.main=.9, line=2)
+        title(main=all.markers.names.short[a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
         legend=c("Vaccine low","Vaccine medium","Vaccine high")
         mylegend(x=3, legend=legend, lty=c(1:3), col=c("green3","green","darkgreen"), lwd=2)

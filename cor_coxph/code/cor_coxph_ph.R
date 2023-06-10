@@ -8,7 +8,7 @@ if(verbose) print("Regression for continuous markers")
 fits=list()
 for (a in all.markers) {
     f= update(form.0, as.formula(paste0("~.+", a)))
-    fits[[a]]=sappsvycoxph(f, design=design.vacc.seroneg) 
+    fits[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
 
 # scaled marker

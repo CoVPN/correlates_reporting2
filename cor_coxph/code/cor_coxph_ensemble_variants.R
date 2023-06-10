@@ -127,6 +127,8 @@ for (iRegion in 1:3) {
 
     for (variant in variants[[iRegion]]) {
       source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+      # yy is used to chose the boundary for showing >=s risk curves 
+      dat.vac.seroneg$yy = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck1"]]==variant, 1, 0)
       source(here::here("code", "cor_coxph_risk_plotting.R"))
     }
 

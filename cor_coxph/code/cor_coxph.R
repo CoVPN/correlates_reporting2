@@ -57,7 +57,6 @@ for (a in assays) {
 
 # define an alias for EventIndPrimaryDxx
 dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
-dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
 
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))

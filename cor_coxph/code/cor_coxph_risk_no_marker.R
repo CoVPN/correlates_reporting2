@@ -21,7 +21,13 @@
 #})
 #prevs
 
-if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.",region,".Rdata"))) {    
+if (TRIAL=="janssen_partA_VL") {
+    fname=paste0(save.results.to, "marginalized.risk.no.marker.",region,".Rdata")
+} else {
+    fname=paste0(save.results.to, "marginalized.risk.no.marker.Rdata")
+}
+
+if(!file.exists(fname)) {    
     if (verbose) print("bootstrap marginalized risk no marker Rdata")
 
     for (.trt in 0:1) {
@@ -82,8 +88,8 @@ if(!file.exists(paste0(save.results.to, "marginalized.risk.no.marker.",region,".
 
     print(cbind(prev.plac, prev.vacc, overall.ve))
     
-    save(res.plac.cont, res.vacc.cont, prev.plac, prev.vacc, overall.ve, file=paste0(save.results.to, "marginalized.risk.no.marker.",region,".Rdata"))
+    save(res.plac.cont, res.vacc.cont, prev.plac, prev.vacc, overall.ve, file=fname)
     
 } else {
-    load(paste0(save.results.to, "marginalized.risk.no.marker.",region,".Rdata"))
+    load(fname)
 }

@@ -204,11 +204,13 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
 # get marginalized risk without marker
 
 get.marginalized.risk.no.marker=function(formula, dat, day){
-  if (is.list(formula)) 
-    if (all(model.frame(formula[[2]], dat)[[1]][,2]==0)) 
-      # if there are no competing events, drop competing risk formula
-      formula=formula[[1]]
-    
+  # This is no longer necessary b/c pcr2 is updated to handle the situation when there are no competing events
+  # if (is.list(formula)) 
+  #   if (all(model.frame(formula[[2]], dat)[[1]][,2]==0)) {
+  #     # if there are no competing events, drop competing risk formula
+  #     formula=formula[[1]]
+  #   }
+  #   
   if (!is.list(formula)) {
     # model=T is required because the type of prediction requires it, see Notes in ?predict.coxph
     fit.risk = coxph(formula, dat, model=T) 
