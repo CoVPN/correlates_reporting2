@@ -107,10 +107,10 @@ for (iRegion in 1:3) {
 
     ############################
     # formula for coxph
-
-    form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
-    
-    source(here::here("code", "cor_coxph_ph_MI.R"))
+# 
+#     form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+#     
+#     source(here::here("code", "cor_coxph_ph_MI.R"))
 
 
     #####################################

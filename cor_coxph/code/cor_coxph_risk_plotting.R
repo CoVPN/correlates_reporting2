@@ -150,6 +150,7 @@ for (eq.geq in 1:4) {
 # eq.geq=4; a=all.markers[1]
     
     outs=lapply (all.markers, function(a) {        
+        myprint(a)
         is.delta=startsWith(a,"Delta")
         assay=get.assay.from.name(a)
         
@@ -373,19 +374,50 @@ write(concatList(tab, "\\\\"), file=paste0(save.results.to, "marginalized_risks_
 # trichotomized markers, marginalized risk curves over time
 # no bootstrap
 
+
+data.ph2<- subset(dat.vac.seroneg,ph2==1)
+
 risks.all.ter=list()
 for (a in all.markers) {        
     marker.name=a%.%"cat"    
-    f1=update(form.0, as.formula(paste0("~.+",marker.name)))        
-    fit.risk=run.svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg))
     
-#    f2=update(form.0, as.formula(paste0(marker.name,"~.")))
-#    fit.s=nnet::multinom(f2, dat.vac.seroneg, weights=dat.vac.seroneg$wt) 
+    if (is.list(form.0)) {
+        # competing risk implementation
+        f1=lapply(form.0, function(x) update(x, as.formula(paste0("~.+",marker.name))))
+        ss=unique(dat.vac.seroneg[[marker.name]]); ss=sort(ss[!is.na(ss)])
+        names(ss)=c("low","med","high")
         
-    if(length(fit.risk)==1) {
-        risks.all.ter[[a]]=NA
+        out=(lapply(1:10, function(imp) {
+            data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+            data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+            newdata=data.ph2
+            out=lapply(ss, function(s) {
+                newdata[[marker.name]]=s
+                risks = pcr2(f1, data.ph2, tfinal.tpeak, weights=data.ph2$wt, newdata=newdata)
+                cbind(t=attr(risks,"time"), 
+                      cumulative=apply(attr(risks,"cumulative"), 1, weighted.mean, weights=data.ph2$wt))
+            
+            })
+            cbind(out[[1]], out[[2]][,"cumulative"], out[[3]][,"cumulative"])
+        }))
+        all.t=lapply(out, function(x) x[,"t"])
+        common.t = Reduce(intersect, all.t)
+        risks = sapply(out, simplify="array", function(x) x[x[,"t"] %in% common.t,-1])
+        risks.all.ter[[a]]=list(time=common.t, risk=apply(risks, 1:2, mean))
+        
     } else {
-        risks.all.ter[[a]]=marginalized.risk(fit.risk, marker.name, subset(dat.vac.seroneg,ph2==1), weights=subset(dat.vac.seroneg,ph2==1,wt,drop=T), categorical.s=T, t.end=tfinal.tpeak)
+        f1=update(form.0, as.formula(paste0("~.+",marker.name)))        
+        fit.risk=run.svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg))
+        
+        #    f2=update(form.0, as.formula(paste0(marker.name,"~.")))
+        #    fit.s=nnet::multinom(f2, dat.vac.seroneg, weights=dat.vac.seroneg$wt) 
+        
+        if(length(fit.risk)==1) {
+            risks.all.ter[[a]]=NA
+        } else {
+            risks.all.ter[[a]]=marginalized.risk(fit.risk, marker.name, subset(dat.vac.seroneg,ph2==1), 
+                                                 weights=subset(dat.vac.seroneg,ph2==1,wt,drop=T), categorical.s=T, t.end=tfinal.tpeak)
+        }
     }
 }
 #rv$marginalized.risk.over.time=list()
@@ -393,13 +425,28 @@ for (a in all.markers) {
 
 
 # get cumulative risk from placebo
-fit.0=coxph(form.s, dat.pla.seroneg) 
-risk.0= 1 - exp(-predict(fit.0, type="expected"))
-time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
-# risk.0 for 7 and 7+ are different
-keep=dat.pla.seroneg[[config.cor$EventIndPrimary]]==1 & time.0<=tfinal.tpeak
-risk.0 = risk.0[keep]
-time.0 = time.0[keep]
+if (TRIAL=="janssen_partA_VL") {
+    imp=1
+    dat.pla.seroneg$EventIndOfInterest = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+    fit.0=coxph(Surv(EventTimePrimaryD29, EventIndOfInterest)~1, dat.pla.seroneg) 
+    risk.0= 1 - exp(-predict(fit.0, type="expected"))
+    time.0= dat.pla.seroneg$EventTimePrimaryD29
+    # risk.0 for 7 and 7+ are different
+    keep=dat.pla.seroneg$EventIndOfInterest==1 & time.0<=tfinal.tpeak
+    risk.0 = risk.0[keep]
+    time.0 = time.0[keep]
+    
+    
+} else {
+    fit.0=coxph(form.s, dat.pla.seroneg) 
+    risk.0= 1 - exp(-predict(fit.0, type="expected"))
+    time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
+    # risk.0 for 7 and 7+ are different
+    keep=dat.pla.seroneg[[config.cor$EventIndPrimary]]==1 & time.0<=tfinal.tpeak
+    risk.0 = risk.0[keep]
+    time.0 = time.0[keep]
+}
+
 
 #fit.1=coxph(form.s, dat.vac.seroneg) 
 #risk.1= 1 - exp(-predict(fit.1, type="expected"))
@@ -411,7 +458,11 @@ time.0 = time.0[keep]
 #dev.off()
 
 lwd=2
-ylim=c(0,max(risk.0, max(sapply(all.markers, function(a) max(risks.all.ter[[a]]$risk[risks.all.ter[[a]]$time<=tfinal.tpeak,])))))
+ylim=c(0,
+       max(risk.0, 
+           max(sapply(all.markers, function(a) 
+               max(risks.all.ter[[a]]$risk [risks.all.ter[[a]]$time<=tfinal.tpeak,])
+                     ))))
 
 if (config$is_ows_trial) {
     x.time<-seq(0,tfinal.tpeak,by=30)
