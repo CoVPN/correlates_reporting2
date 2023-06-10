@@ -21,7 +21,7 @@ for (i in 1:2) {
     })
     betas<-MIextract(models, fun=coef)
     vars<-MIextract(models, fun=vcov)
-    res<-summary(MIcombine(betas,vars))
+    res<-summary(MIcombine(betas,vars)) # MIcombine prints the results, there is no way to silent it
     if (i==1) {
       fits[[a]]=res
     } else {

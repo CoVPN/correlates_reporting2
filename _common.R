@@ -204,6 +204,11 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
 # get marginalized risk without marker
 
 get.marginalized.risk.no.marker=function(formula, dat, day){
+  if (is.list(formula)) 
+    if (all(model.frame(formula[[2]], dat)[[1]][,2]==0)) 
+      # if there are no competing events, drop competing risk formula
+      formula=formula[[1]]
+    
   if (!is.list(formula)) {
     # model=T is required because the type of prediction requires it, see Notes in ?predict.coxph
     fit.risk = coxph(formula, dat, model=T) 
@@ -214,24 +219,8 @@ get.marginalized.risk.no.marker=function(formula, dat, day){
   } else {
     # competing risk estimation
     out=pcr2(formula, dat, day)
-    res = mean(out)
+    mean(out)
     
-    if (is.na(res)) {
-      # check if there is any competing events
-      if (all(model.frame(form.0[[2]], dat)[[1]][,2]==0)) {
-        # if there are no competing events
-        warning("get.marginalized.risk.no.marker: no competing events, estimate risk regularly")
-        fit.risk = coxph(form.0[[1]], dat, model=T) 
-        dat$EventTimePrimary=day
-        risks = 1 - exp(-predict(fit.risk, newdata=dat, type="expected"))
-        mean(risks)
-      } else {
-        warning("get.marginalized.risk.no.marker: NA estimated")
-        NA
-      }
-    } else {
-      res
-    }
   }
 }
 
@@ -252,13 +241,13 @@ if (exists("COR")) {
     
     # formula
     if (TRIAL %in% c("janssen_partA_VL")) {
-      # form.0 is different for cox model and risk estimate, and will be defined in cor_coxph_ensemble_variant.R
-      comp.risk=TRUE
-      
+      # will be defined in cor_coxph_ensemble_variant.R
+      # form.0 is different for cox model and risk estimate
+      # for risk estimate, it uses competing risk 
+
     } else {
       form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
       form.0 = update (form.s, as.formula(config$covariates_riskscore))
-      comp.risk=FALSE
       print(form.0)
     }
     

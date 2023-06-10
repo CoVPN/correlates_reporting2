@@ -74,7 +74,8 @@ regions=c("US","LatAm","RSA")
 # loop through regions. 1: US, 2: LatAm, 3: RSA
 
 for (iRegion in 1:3) {
-# iRegion=3; variant="Ancestral.Lineage"
+# iRegion=1; variant=variants$US[1]
+# iRegion=3; variant=variants$RSA[1]
   region=regions[iRegion]
   
   # subset dataset to region
@@ -83,6 +84,7 @@ for (iRegion in 1:3) {
   
   # loop through variants within this region
   for (variant in variants[[iRegion]]) {
+    myprint(region, variant)
     
     ############################
     # count ph1 and ph2 cases
@@ -102,28 +104,31 @@ for (iRegion in 1:3) {
     names(dimnames(tab))[2]="Event Indicator"
     mytex(tab, file.name=paste0("tab1_nonimputed_",region,"_",variant), save2input.only=T, input.foldername=save.results.to, digits=0)
 
+
     ############################
     # formula for coxph
-    form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
 
+    form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+    
     source(here::here("code", "cor_coxph_ph_MI.R"))
 
 
-    ############################
+    #####################################
     # formula for competing risk
+    
     form.0=list(
       update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
       update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
     )
-
+  
     tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
 
     source(here::here("code", "cor_coxph_risk_no_marker.R"))
 
-    # for (variant in variants[[iRegion]]) {
-    #   source(here::here("code", "cor_coxph_risk_bootstrap.R"))
-    #   source(here::here("code", "cor_coxph_risk_plotting.R"))
-    # }
+    for (variant in variants[[iRegion]]) {
+      source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+      source(here::here("code", "cor_coxph_risk_plotting.R"))
+    }
 
   } # for variant
   
