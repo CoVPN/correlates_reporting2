@@ -70,6 +70,7 @@ rv=list()
 regions=c("US","LatAm","RSA")
 
 
+
 ################################################################################
 # loop through regions. 1: US, 2: LatAm, 3: RSA
 
@@ -84,6 +85,7 @@ for (iRegion in 1:3) {
   
   # loop through variants within this region
   for (variant in variants[[iRegion]]) {
+    print("==========================================")
     myprint(region, variant)
     
     ############################
@@ -107,14 +109,16 @@ for (iRegion in 1:3) {
 
     ############################
     # formula for coxph
-# 
-#     form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
-#     
-#     source(here::here("code", "cor_coxph_ph_MI.R"))
+
+    form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+
+    # source(here::here("code", "cor_coxph_ph_MI.R"))
 
 
     #####################################
-    # formula for competing risk
+    # formula for competing risk analysis
+    
+    # if there are very few competing events, the coxph for competing event may throw warnings
     
     form.0=list(
       update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
@@ -122,17 +126,15 @@ for (iRegion in 1:3) {
     )
   
     tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
+    write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_", region, "_", variant))
 
     source(here::here("code", "cor_coxph_risk_no_marker.R"))
 
-    for (variant in variants[[iRegion]]) {
-      source(here::here("code", "cor_coxph_risk_bootstrap.R"))
-      # yy is used to chose the boundary for showing >=s risk curves 
-      dat.vac.seroneg$yy = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck1"]]==variant, 1, 0)
-      source(here::here("code", "cor_coxph_risk_plotting.R"))
-    }
+    source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+    source(here::here("code", "cor_coxph_risk_plotting.R"))
 
   } # for variant
   
 } # for iRegion
 
+warnings() # print out warnings

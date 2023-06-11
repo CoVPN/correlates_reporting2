@@ -7,7 +7,7 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-  # marker.name=a; type=2; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
+  # marker.name=a; type=3; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
   
   # store the current rng state 
   save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -269,7 +269,7 @@ if(!file.exists(fname)) {
 }
   
   
-# vaccine arm, conditional on S>=s
+# vaccine arm, conditional on contiuous S>=s
 if (TRIAL=="janssen_partA_VL") {
   fname = paste0(save.results.to, "risks.all.2.", region, ".", variant, ".Rdata")
 } else fname = paste0(save.results.to, "risks.all.2.Rdata")
@@ -289,6 +289,7 @@ if(!file.exists(fname)) {
 if (TRIAL=="janssen_partA_VL") {
   fname = paste0(save.results.to, "risks.all.3.", region, ".", variant, ".Rdata")
 } else fname = paste0(save.results.to, "risks.all.3.Rdata")
+
 if(!file.exists(fname)) {    
   if (verbose) print("create risks.all.3")
   risks.all.3=lapply(all.markers, function (a) {
@@ -300,7 +301,7 @@ if(!file.exists(fname)) {
   load(fname)
 }
 
-write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_replicates_"%.%study_name))
+write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_replicates"))
 #rv$marginalized.risk.S.eq.s=list()
 #for (a in assays) rv$marginalized.risk.S.eq.s[[a]] = risks.all.1[[a]][c("marker","prob")]
 #rv$marginalized.risk.S.geq.s=list()

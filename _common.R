@@ -57,8 +57,10 @@ if (!is.null(config$assay_metadata)) {
   
   llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
   lloqs=assay_metadata$lloq; names(lloqs)=assays
+  uloqs=assay_metadata$uloq; names(uloqs)=assays
   lods=assay_metadata$lod; names(lods)=assays
   lloxs=ifelse(llox_labels=="lloq", lloqs, lods)
+  lloxs=ifelse(llox_labels=="pos", assay_metadata$pos.cutoff, lloxs)
   
 } else {
   
@@ -444,6 +446,8 @@ if(config$is_ows_trial) {
 
 ###################################################################################################
 
+if (!TRIAL %in% c("janssen_partA_VL")) {
+  
 names(assays)=assays # add names so that lapply results will have names
 
 # if the following part changes, make sure to copy to _common.R in the processing repo
@@ -453,7 +457,6 @@ names(assays)=assays # add names so that lapply results will have names
 # all values on BAU or IU
 # LOQ can not be NA, it is needed for computing delta
 pos.cutoffs<-llods<-lloqs<-uloqs<-c()
-lloxs=NULL
 if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     tmp=list(
         bindSpike=c(
@@ -707,6 +710,8 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
 
 # llox is for plotting and can be either llod or lloq depending on trials
 if (is.null(lloxs)) lloxs=ifelse(config$llox_label=="LOD", llods[names(config$llox_label)], lloqs[names(config$llox_label)])
+
+}
 
 
 
