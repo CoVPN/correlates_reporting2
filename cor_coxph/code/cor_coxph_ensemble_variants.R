@@ -16,7 +16,7 @@ library(Hmisc) # wtd.quantile, cut2
 library(mitools)
 library(glue)
 
-begin=Sys.time()
+time.start=Sys.time()
 print(date())
 
 # with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29), table(is.na(seq1.spike.weighted.hamming.hotdeck1), is.na(seq1.log10vl), EventIndPrimaryMolecConfirmedD29))
@@ -74,37 +74,58 @@ regions=c("US","LatAm","RSA")
 ################################################################################
 # loop through regions. 1: US, 2: LatAm, 3: RSA
 
-for (iRegion in 1:3) {
+for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are fewest cases and most likely to throw errors. 
 # iRegion=1; variant=variants$US[1]
+# iRegion=2; variant=variants$US[1]
 # iRegion=3; variant=variants$RSA[1]
+  
   region=regions[iRegion]
   
   # subset dataset to region
   dat.vac.seroneg=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
   dat.pla.seroneg=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
   
+  
   # loop through variants within this region
   for (variant in variants[[iRegion]]) {
-    print("==========================================")
-    myprint(region, variant)
+    cat("==============================  "); myprint(region, variant, newline=F); cat("  ==============================\n")
+    
+    # append to file names for figures and tables
+    if (TRIAL=="janssen_partA_VL") {
+      fname.suffix = paste0(region, "_", variant)
+    } else {
+      fname.suffix = study_name
+    }
+    
     
     ############################
     # count ph1 and ph2 cases
     
-    # imputed
+    # imputed events of interest
     tabs=sapply(1:10, simplify="array", function (imp) {
       dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
       with(dat.vac.seroneg, table(ph2, EventIndOfInterest))
     })
     tab =apply(tabs, c(1,2), mean)
     names(dimnames(tab))[2]="Event Indicator"
-    mytex(tab, file.name=paste0("tab1_",region,"_",variant), save2input.only=T, input.foldername=save.results.to, digits=1)
-
-    # non-imputed
+    tab
+    mytex(tab, file.name=paste0("tab1_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=1)
+    
+    # imputed competing events
+    tabs=sapply(1:10, simplify="array", function (imp) {
+      dat.vac.seroneg$EventIndCompeting = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+      with(dat.vac.seroneg, table(ph2, EventIndCompeting))
+    })
+    tab =apply(tabs, c(1,2), mean)
+    names(dimnames(tab))[2]="Event Indicator"
+    tab
+    mytex(tab[,1,drop=F], file.name=paste0("tab1_competing_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=1)
+    
+    # non-imputed events of interest
     dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant"]]==variant, 1, 0)
     tab = with(dat.vac.seroneg, table(ph2, EventIndOfInterest)) # NA not counted, which is what we want
     names(dimnames(tab))[2]="Event Indicator"
-    mytex(tab, file.name=paste0("tab1_nonimputed_",region,"_",variant), save2input.only=T, input.foldername=save.results.to, digits=0)
+    mytex(tab, file.name=paste0("tab1_nonimputed_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=0)
 
 
     ############################
@@ -112,29 +133,35 @@ for (iRegion in 1:3) {
 
     form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
 
-    # source(here::here("code", "cor_coxph_ph_MI.R"))
+    source(here::here("code", "cor_coxph_ph_MI.R"))
 
 
     #####################################
     # formula for competing risk analysis
-    
+
     # if there are very few competing events, the coxph for competing event may throw warnings
-    
+
     form.0=list(
       update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
       update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
     )
-  
+
     tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
-    write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_", region, "_", variant))
+    write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_", fname.suffix))
 
+    # run analyses
     source(here::here("code", "cor_coxph_risk_no_marker.R"))
-
     source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+
+    # make tables and figures
     source(here::here("code", "cor_coxph_risk_plotting.R"))
 
   } # for variant
   
 } # for iRegion
 
-warnings() # print out warnings
+# warnings() # print out warnings
+
+
+print(date())
+print("cor_coxph run time: "%.%format(Sys.time()-time.start, digits=1))

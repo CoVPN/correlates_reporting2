@@ -67,19 +67,26 @@ $\\dagger$ Results are based on analyses of ten imputed data sets combined throu
 \\vspace{10pt}
 
 
-
 \\begin{table}[H]
-\\caption{Average number of cases (", variant, ") and non-cases in ph2 or not (",region,") across ten imputed datasets.}
+\\caption{Number of ", variant, " cases and non-cases (latter includes other variant cases) in the ",region," in the un-imputed dataset.}
 \\begin{center}
-  \\input{", pathCoRoutput, "/tab1_",region,"_",variant,"}
+  \\input{", pathCoRoutput, "/tab1_nonimputed_",fname.suffix,"}
 \\end{center}
 \\end{table}
 
 
 \\begin{table}[H]
-\\caption{Number of cases (", variant, ") and non-cases in ph2 or not (",region,"), un-imputed.}
+\\caption{Average number of ", variant, " cases and non-cases (latter includes other variant cases) in the ",region," across ten hotdeck imputed datasets.}
 \\begin{center}
-  \\input{", pathCoRoutput, "/tab1_nonimputed_",region,"_",variant,"}
+  \\input{", pathCoRoutput, "/tab1_",fname.suffix,"}
+\\end{center}
+\\end{table}
+
+
+\\begin{table}[H]
+\\caption{Average number of cases non-", variant, " cases in the ",region," across ten hotdeck imputed datasets.}
+\\begin{center}
+  \\input{", pathCoRoutput, "/tab1_competing_",fname.suffix,"}
 \\end{center}
 \\end{table}
 

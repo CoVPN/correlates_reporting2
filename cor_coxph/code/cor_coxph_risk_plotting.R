@@ -1,25 +1,21 @@
-if (TRIAL=="janssen_partA_VL") {
-    fname.suffix = paste0(region, "_", variant)
-} else {
-    fname.suffix = study_name
-}
-
-
 # sensitivity analyses parameters
 s2="85%"; s1="15%" # these two reference quantiles are used in the next two blocks of code
 RRud=RReu=2
 bias.factor=bias.factor(RRud, RReu)
     
-# to be saved for cor_nonlinear
-if (!exists("ylims.cor")) {
+# load ylims.cor if exists
+# by changing which file to load, we can enforce the same ylim for different sets of tables/figures
+tmp=paste0(here::here(), paste0(save.results.to, "/ylims.cor.", fname.suffix, ".Rdata"))
+if (file.exists(tmp)) {
+    load(tmp)
+    create.ylims.cor=F
+} else {
     ylims.cor=list()
     ylims.cor[[1]]=list(NA,NA)
     ylims.cor[[2]]=list(NA,NA)
     create.ylims.cor=T
-} else {
-    create.ylims.cor=F
 }
-#
+
 report.ve.levels=c(.65,.9,.95)
 digits.risk=4
 
@@ -28,18 +24,18 @@ dat.vac.seroneg$yy = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg
 
 
 ###################################################################################################
-print("COR: marginalized risk curves for continuous markers")
+print("continuous markers, marginalized risk curves")
     
 for (eq.geq in 1:2) {  # 1 conditional on s,   2 is conditional on S>=s
 for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
-# eq.geq=2; w.wo.plac=1; a=all.markers[1]
+# eq.geq=2; w.wo.plac=2; a=all.markers[1]
     
     risks.all=get("risks.all."%.%eq.geq)
     
     if (!create.ylims.cor) {
-        ylim=ylims.cor[[eq.geq]][[w.wo.plac]] # use D14 values
+        ylim=ylims.cor[[eq.geq]][[w.wo.plac]] 
     } else {
-        print("no ylims.cor found")        
+        if(verbose>=2) print("no ylims.cor found")        
         if (eq.geq==2 & w.wo.plac==2) {
             # later values in prob may be wildly large due to lack of samples
             ylim=range(sapply(risks.all, function(x) x$prob[1]), if(w.wo.plac==1) prev.plac, prev.vacc, 0)
@@ -53,7 +49,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
     }
     # the following is done so that the ylim looks comparable to ID50 in this trial
     if (attr(config,"config")=="azd1222_bAb" & eq.geq==1 & w.wo.plac==1 & COR=="D57") ylim=c(0,0.05)    
-    if(verbose) myprint(ylim)
+    if(verbose>=2) myprint(ylim)
     lwd=2
      
     for (a in all.markers) {        
@@ -71,7 +67,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         plot(risks$marker[shown], risks$prob[shown], 
             xlab=all.markers.names.short[a]%.%ifelse(eq.geq==1," (=s)"," (>=s)"), 
             xlim=xlim, ylab=paste0("Probability* of ",config.cor$txt.endpoint," by ", tfinal.tpeak, " days post Day ", tpeak1, " Visit"), lwd=lwd, ylim=ylim, 
-            type="n", main=paste0(all.markers.names.short[a]), xaxt="n")
+            type="n", main=paste0(fname.suffix, ", ", all.markers.names.short[a]), xaxt="n")
         draw.x.axis.cor(xlim, lloxs[assay], if(is.delta) "delta" else llox_labels[assay])
             
         # prevelance lines
@@ -117,7 +113,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
         #axis(side=4, at=axTicks(side=4)[1:5])
         #mtext("Density", side=4, las=0, line=2, cex=1, at=.3)  
         #mylegend(x=6, fill=col, border=col, legend="Vaccine Group", bty="n", cex=0.7)      
-    #mtext(toTitleCase(study_name), side = 1, line = 0, outer = T, at = NA, adj = NA, padj = NA, cex = NA, col = NA, font = NA)
+        #mtext(toTitleCase(study_name), side = 1, line = 0, outer = T, at = NA, adj = NA, padj = NA, cex = NA, col = NA, font = NA)
     
     dev.off()    
     } # end assays
@@ -150,7 +146,7 @@ for (a in all.markers) {
 
 
 ###################################################################################################
-print("controlled VE curves for continuous markers")
+print("continuous markers, controlled VE curves")
     
 # 1 conditional on s
 # 2 conditional on S>=s
@@ -160,7 +156,7 @@ for (eq.geq in 1:4) {
 # eq.geq=4; a=all.markers[1]
     
     outs=lapply (all.markers, function(a) {        
-        myprint(a)
+        if (verbose>=2) myprint(a)
         is.delta=startsWith(a,"Delta")
         assay=get.assay.from.name(a)
         
@@ -355,6 +351,7 @@ for(a in all.markers) {
 }
 
 
+
 ###################################################################################################
 print("trichotomized markers, marginalized risk and controlled risk table")
     
@@ -383,7 +380,6 @@ write(concatList(tab, "\\\\"), file=paste0(save.results.to, "marginalized_risks_
 ###################################################################################################
 print("trichotomized markers, marginalized risk curves over time")
 # no bootstrap
-
 
 data.ph2<- subset(dat.vac.seroneg,ph2==1)
 
@@ -616,7 +612,8 @@ dev.off()
 
 
 ###################################################################################################
-print("for goodness of fit check on PH assumptions, plot log(-log) marginalized survival curves for the low medium and high tertile subgroups")
+print("trichotomized markers, log(-log) marginalized survival curves")
+# for goodness of fit check on PH assumptions
 
 for (a in all.markers) {        
     mypdf(onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_logclog"), mfrow=.mfrow)
@@ -628,9 +625,9 @@ for (a in all.markers) {
     
     if(length(out)==1) empty.plot() else {
         mymatplot(out$time[out$time<=tfinal.tpeak], log(-log(out$risk[out$time<=tfinal.tpeak,])), 
-            lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, 
-            ylab=paste0("log(-log(Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak, "))"), xlab="", 
-            las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
+                  lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, 
+                  ylab=paste0("log(-log(Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak, "))"), xlab="", 
+                  las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
         title(xlab="Days Since Day "%.%tpeak1%.%" Visit", line=2)
         title(main=all.markers.names.short[a], cex.main=.9, line=2)
         mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= .25, cex=.8)   
@@ -638,8 +635,9 @@ for (a in all.markers) {
         mylegend(x=3, legend=legend, lty=c(1:3), col=c("green3","green","darkgreen"), lwd=2)
     }
     
-dev.off()    
+    dev.off()    
 }
+
 
 
 
@@ -671,7 +669,7 @@ if (!is.null(config$interaction)) {
                 ylim=c(0,0.11)
                 #ylim=range(risks$lb[shown,], risks$ub[shown,], 0) # [shown] so that there is not too much empty space
                 xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(vx), tpeak) 
-                if(verbose) myprint(xlim, ylim)
+                if(verbose>=2) myprint(xlim, ylim)
                     
                 # set up an empty plot
                 plot(risks$marker[shown], risks$prob[shown,1], 

@@ -7,7 +7,7 @@
 # data: ph1 data
 # t: a time point near to the time of the last observed outcome will be defined
 marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type="quantile", numCores=1) {  
-  # marker.name=a; type=3; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
+#marker.name=a; type=2; data=dat.vac.seroneg; t=tfinal.tpeak; B=B; ci.type="quantile"; numCores=1
   
   # store the current rng state 
   save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
@@ -17,7 +17,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
   
   # used in both point est and bootstrap
   # many variables are not passed but defined in the scope of marginalized.risk.svycoxph.boot
-  fc.1=function(data.ph2, data, f1, categorical.s, n.dean=FALSE){
+  fc.1=function(data.ph2, data, f1, categorical.s, n.dean=FALSE, in.boot=FALSE){
     # This is no longer necessary b/c pcr2 is updated to handle the situation when there are no competing events
     # if (is.list(f1)) 
     #   if(all(model.frame(f1[[2]], data.ph2)[[1]][,2]==0)) 
@@ -29,7 +29,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
       newdata=data.ph2
       out=sapply(ss, function(x) {
         newdata[[marker.name]]=x
-        risks = try(pcr2(f1, data.ph2, t, weights=data.ph2$wt, newdata=newdata))
+        risks = try(pcr2(f1, data.ph2, t, weights=data.ph2$wt, newdata=newdata), silent=in.boot)
         ifelse (inherits(risks, "try-error"), NA, weighted.mean(risks, data.ph2$wt))
       })
       if (n.dean) c(NA,out) else out
@@ -47,18 +47,19 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
     } 
   }
   
-  fc.2=function(data.ph2, form.0){
-    # This is not enough to ensure there are no competing events b/c subsets of datasets are used in pcr2
+  fc.2=function(data.ph2, form.0, in.boot=FALSE){
     # This is no longer necessary b/c pcr2 is updated to handle the situation when there are no competing events
     # if (is.list(form.0)) 
+    ##    The following is not enough to ensure there are no competing events b/c subsets of datasets are used in pcr2
     #   if(all(model.frame(form.0[[2]], data.ph2)[[1]][,2]==0)) 
     #     # if there are no competing events, drop competing risk formula
     #     form.0 = form.0[[1]]
     # 
     if (is.list(form.0)) {
       sapply(ss, function(x) {
+        if (verbose>=2) myprint(x)
         newdata=data.ph2[data.ph2[[marker.name]]>=x, ]
-        risks=try(pcr2(form.0, newdata, t, weights=newdata$wt))
+        risks=try(pcr2(form.0, newdata, t, weights=newdata$wt), silent=in.boot)
         ifelse (inherits(risks, "try-error"), NA, weighted.mean(risks, newdata$wt))
       })
     } else {
@@ -109,7 +110,8 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
 
   } else if (type==2) {
     # conditional on S>=s
-    ss=quantile(data[[marker.name]], seq(0,.9,by=0.05), na.rm=TRUE); if(verbose) myprint(ss)
+    ss=quantile(data[[marker.name]], seq(0,.9,by=0.05), na.rm=TRUE)
+    if(verbose>=2) myprint(ss)
     prob = if (TRIAL %in% c("janssen_partA_VL")) {
       # do MI
       rowMeans(sapply(1:10, function(imp) {
@@ -124,7 +126,8 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
     
   } else if (type==3) {
     # conditional on S=s (categorical)
-    ss=unique(data[[marker.name]]); ss=sort(ss[!is.na(ss)]); if(verbose) myprint(ss)        
+    ss=unique(data[[marker.name]]); ss=sort(ss[!is.na(ss)])
+    if(verbose>=2) myprint(ss)        
     prob = if (TRIAL %in% c("janssen_partA_VL")) {
       # do MI
       rowMeans(sapply(1:10, function(imp) {
@@ -180,10 +183,10 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
           dat.b.ph2$EventIndCompeting  = ifelse(dat.b.ph2$EventIndPrimary==1 & dat.b.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
           dat.b$EventIndOfInterest = ifelse(dat.b$EventIndPrimary==1 & dat.b[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
           dat.b$EventIndCompeting  = ifelse(dat.b$EventIndPrimary==1 & dat.b[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-          fc.1(dat.b.ph2, dat.b, f1, n.dean=TRUE, categorical.s=FALSE)
+          fc.1(dat.b.ph2, dat.b, f1, n.dean=TRUE, categorical.s=FALSE, in.boot=T)
         }))
       } else {
-        fc.1(dat.b.ph2, dat.b, f1, n.dean=TRUE, categorical.s=FALSE)
+        fc.1(dat.b.ph2, dat.b, f1, n.dean=TRUE, categorical.s=FALSE, in.boot=T)
       }
       
     } else if (type==2) {
@@ -192,10 +195,10 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
         rowMeans(sapply(1:nImp, function(imp) {
           dat.b.ph2$EventIndOfInterest = ifelse(dat.b.ph2$EventIndPrimary==1 & dat.b.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
           dat.b.ph2$EventIndCompeting  = ifelse(dat.b.ph2$EventIndPrimary==1 & dat.b.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-          fc.2(dat.b.ph2, form.0)
+          fc.2(dat.b.ph2, form.0, in.boot=T)
         }))
       } else {
-        fc.2(dat.b.ph2, form.0)
+        fc.2(dat.b.ph2, form.0, in.boot=T)
       }
       
     } else if (type==3) {
@@ -206,10 +209,10 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
           dat.b.ph2$EventIndCompeting  = ifelse(dat.b.ph2$EventIndPrimary==1 & dat.b.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
           dat.b$EventIndOfInterest = ifelse(dat.b$EventIndPrimary==1 & dat.b[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
           dat.b$EventIndCompeting  = ifelse(dat.b$EventIndPrimary==1 & dat.b[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-          fc.1(dat.b.ph2, dat.b, f1, n.dean=FALSE, categorical.s=TRUE)
+          fc.1(dat.b.ph2, dat.b, f1, n.dean=FALSE, categorical.s=TRUE, in.boot=T)
         }))
       } else {
-        fc.1(dat.b.ph2, dat.b, f1, n.dean=FALSE, categorical.s=TRUE)
+        fc.1(dat.b.ph2, dat.b, f1, n.dean=FALSE, categorical.s=TRUE, in.boot=T)
       }
       
     } else if (type==4) {
@@ -250,15 +253,17 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
 
 ################################################################################
 
-cat("make marginalized.risk\n")
+cat("Bootstrap controlled risks")
 
 
 # vaccine arm, conditional on continuous S=s
+if (verbose) print("create risks.all.1")
+
 if (TRIAL=="janssen_partA_VL") {
   fname = paste0(save.results.to, "risks.all.1.", region, ".", variant, ".Rdata")
 } else fname = paste0(save.results.to, "risks.all.1.Rdata")
+
 if(!file.exists(fname)) {    
-  if (verbose) print("create risks.all.1")
   risks.all.1=lapply(all.markers, function (a) {
     if(verbose) myprint(a)
     marginalized.risk.svycoxph.boot(marker.name=a, type=1, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
@@ -269,12 +274,14 @@ if(!file.exists(fname)) {
 }
   
   
-# vaccine arm, conditional on contiuous S>=s
+# vaccine arm, conditional on continuous S>=s
+if (verbose) print("create risks.all.2")
+
 if (TRIAL=="janssen_partA_VL") {
   fname = paste0(save.results.to, "risks.all.2.", region, ".", variant, ".Rdata")
 } else fname = paste0(save.results.to, "risks.all.2.Rdata")
+
 if(!file.exists(fname)) {    
-  if (verbose) print("create risks.all.2")
   risks.all.2=lapply(all.markers, function (a) {
     if(verbose) myprint(a)
     marginalized.risk.svycoxph.boot(marker.name=a, type=2, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)        
@@ -286,12 +293,13 @@ if(!file.exists(fname)) {
 
 
 # vaccine arm, conditional on categorical S
+if (verbose) print("create risks.all.3")
+
 if (TRIAL=="janssen_partA_VL") {
   fname = paste0(save.results.to, "risks.all.3.", region, ".", variant, ".Rdata")
 } else fname = paste0(save.results.to, "risks.all.3.Rdata")
 
 if(!file.exists(fname)) {    
-  if (verbose) print("create risks.all.3")
   risks.all.3=lapply(all.markers, function (a) {
     if(verbose) myprint(a)
     marginalized.risk.svycoxph.boot(marker.name=a%.%"cat", type=3, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                

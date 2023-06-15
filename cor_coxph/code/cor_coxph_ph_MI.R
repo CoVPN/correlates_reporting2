@@ -50,7 +50,7 @@ for (i in 1:2) {
   rownames(tab.1)=all.markers.names.short
   tab.1
   
-  mytex(tab.1, file.name=paste0("CoR_univariable_svycoxph_pretty_",ifelse(i==1,"","scaled_"),region,"_",variant), align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
+  mytex(tab.1, file.name=paste0("CoR_univariable_svycoxph_pretty_",ifelse(i==1,"","scaled_"),fname.suffix), align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
         col.headers=paste0("\\hline\n 
          \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{2}{c}{HR per ",ifelse(i==1,"10-fold","SD")," incr.}                     & \\multicolumn{1}{c}{P-value}   \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)}  \\\\ 
@@ -128,7 +128,7 @@ rownames(tab)=c(tmp)
 tab
 
 # use longtable because this table could be long, e.g. in hvtn705second
-mytex(tab[1:(nrow(tab)),], file.name=paste0("CoR_univariable_svycoxph_cat_pretty_",region,"_",variant), align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
+mytex(tab[1:(nrow(tab)),], file.name=paste0("CoR_univariable_svycoxph_cat_pretty_",fname.suffix), align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
          \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}       \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***}\\\\ 
@@ -141,3 +141,67 @@ mytex(tab[1:(nrow(tab)),], file.name=paste0("CoR_univariable_svycoxph_cat_pretty
                      variant, "-", config.cor$txt.endpoint, " in ", region,
                      " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*")
 )
+
+
+
+
+###################################################################################################
+# multivariate_assays models
+
+if (!is.null(config$multivariate_assays)) {
+  if(verbose) print("Multiple regression")
+  
+  for (a in config$multivariate_assays) {
+    for (i in 1:2) {
+      # 1: per SD; 2: per 10-fold
+      a.tmp=a
+      aa=trim(strsplit(a, "\\+")[[1]])
+      for (x in aa[!contain(aa, "\\*")]) {
+        # replace every variable with Day210x, with or without scale
+        a.tmp=gsub(x, paste0(if(i==1) "scale","(Day",tpeak,x,")"), a.tmp) 
+      }
+      f= update(form.0, as.formula(paste0("~.+", a.tmp)))
+      
+      ## todo
+      models = lapply(1:10, function (imp) {
+        dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
+        svycoxph(f, design=design.vacc.seroneg) 
+      })
+      betas<-MIextract(models, fun=coef)
+      vars<-MIextract(models, fun=vcov)
+      res<-summary(MIcombine(betas,vars)) # MIcombine prints the results, there is no way to silent it
+      if (i==1) {
+        fits[[a]]=res
+      } else {
+        fits.scaled[[a]]=res
+      }
+
+            
+      fit=svycoxph(f, design=design.vacc.seroneg) 
+      var.ind=length(coef(fit)) - length(aa):1 + 1
+      
+      fits=list(fit)
+      est=getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=1)
+      ci= getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=13)
+      est = paste0(est, " ", ci)
+      p=  getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=10)
+      
+      #generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
+      stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
+      p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
+      
+      tab=cbind(est, p)
+      tmp=match(aa, colnames(labels.axis))
+      tmp[is.na(tmp)]=1 # otherwise, labels.axis["Day"%.%tpeak, tmp] would throw an error when tmp is NA
+      rownames(tab)=ifelse(aa %in% colnames(labels.axis), labels.axis["Day"%.%tpeak, tmp], aa)
+      colnames(tab)=c(paste0("HR per ",ifelse(i==1,"sd","10 fold")," incr."), "P value")
+      tab
+      tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
+      
+      mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold"), align="c", include.colnames = T, save2input.only=T, 
+            input.foldername=save.results.to)
+    }
+  }
+  
+}

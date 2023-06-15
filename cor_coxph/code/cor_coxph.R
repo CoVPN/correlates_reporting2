@@ -41,6 +41,11 @@ save.results.to = paste0(save.results.to, "/", attr(config,"config")); if (!dir.
 save.results.to = paste0(save.results.to, "/", COR,"/");               if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
+# append to file names for figures and tables
+# defined differently in cor_coxph_xx.R
+fname.suffix = study_name
+
+
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
 B <-       config$num_boot_replicates 
 numPerm <- config$num_perm_replicates # number permutation replicates 1e4
@@ -178,10 +183,6 @@ if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m"
 # marginalized risk and controlled VE
 ###################################################################################################
     
-# load ylims.cor[[1]] from D29 analyses, which is a list of two: 1 with placebo lines, 2 without placebo lines.
-tmp=paste0(here::here(), paste0("/output/", attr(config,"config"), "/", COR, "/ylims.cor.", study_name, ".Rdata"))
-if (file.exists(tmp)) load(tmp) # if it does not exist, the code will find alternative ylim
-
 source(here::here("code", "cor_coxph_risk_bootstrap.R"))
 
 source(here::here("code", "cor_coxph_risk_plotting.R"))

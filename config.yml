@@ -186,6 +186,7 @@ janssen_partA_VL: &janssen_partA_VL # binding Ab and ID50
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_VL_data_processed_with_riskscore.csv
   assay_metadata: assay_metadata/janssen_partA_VL_assay_metadata.csv
   covariates_riskscore: ~.+ risk_score
+  multivariate_assays: [bindSpike+pseudoneutid50]
   
 
 

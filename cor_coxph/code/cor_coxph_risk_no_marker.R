@@ -21,14 +21,10 @@
 #})
 #prevs
 
-if (TRIAL=="janssen_partA_VL") {
-    fname=paste0(save.results.to, "marginalized.risk.no.marker.",region,".Rdata")
-} else {
-    fname=paste0(save.results.to, "marginalized.risk.no.marker.Rdata")
-}
+fname=paste0(save.results.to, "marginalized.risk.no.marker.",fname.suffix,".Rdata")
 
 if(!file.exists(fname)) {    
-    if (verbose) print("bootstrap marginalized risk no marker Rdata")
+    cat("Bootstrap marginalized risks using models without markers")
 
     for (.trt in 0:1) {
         dat.tmp=if(.trt==1) dat.vac.seroneg else dat.pla.seroneg
