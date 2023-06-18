@@ -1,10 +1,10 @@
 # Appendix
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
-quiet <- capture.output({
-  renv::activate(project = here::here())
-  #source(here::here("_common.R"))
-})
+# quiet <- capture.output({
+#   renv::activate(project = here::here())
+#   #source(here::here("_common.R"))
+# })
 library(here)
 library(digest)
 
@@ -32,3 +32,5 @@ processed_file_digest <- digest(file = path_to_data, algo = hash_algorithm)
 * The `r hash_algorithm` hash sum of the processed file,  
 `r paste0(path_to_data)`:  
 `r processed_file_digest`
+
+

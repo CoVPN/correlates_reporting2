@@ -1,3 +1,8 @@
+```{r, echo=FALSE, results='asis'}
+fname.suffix = study_name
+```
+
+
 # `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
 
 The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise.
@@ -5,19 +10,19 @@ The main regression model is the Cox proportional hazards model. All plots are m
 ## Hazard ratios
 
 \setlength{\tabcolsep}{.5ex}
-  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r study_name`}
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
 $\ast$`r txt.coxph.note2`
-$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(study_name=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
+$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(study_name=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates). 
 `r special.note`
 
 \vspace{10pt}
 
 \setlength{\tabcolsep}{.5ex}
-  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r study_name`}
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r fname.suffix`}
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`. 
 $\ast$$\ast$`r txt.coxph.note2`
-$\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
+$\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates). 
 `r special.note`
 
 
@@ -29,7 +34,7 @@ $\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over th
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, "_", study_name, "}"), sep=",")`
 $\ast\ast$`r txt.coxph.note2`
 $\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
-$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r study_name`} replicates). 
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates). 
 `r special.note`
 
 \vspace{30pt}
@@ -86,7 +91,7 @@ if(!contain(attr(config,"config"),"senior") & file.exists(here::here('cor_coxph'
  & \multicolumn{2}{c}{marginalized risk} & \multicolumn{2}{c}{controlled risk} & & \\ 
  & \multicolumn{2}{c}{ratio $RR_M(0,1)$} & \multicolumn{2}{c}{ratio $RR_C(0,1)^1$} & \multicolumn{2}{c}{e(0,1)$^2$} \\ 
   & Point Est. & 95\% CI  &    Point Est. & 95\% CI  &   Point Est.  & 95\% CI UL \\ \hline
-\input{`r pathCoRoutput`/marginalized_risks_cat_`r study_name`}  \\ \hline 
+\input{`r pathCoRoutput`/marginalized_risks_cat_`r fname.suffix`}  \\ \hline 
 \end{tabular}
 \end{center}
 $^1$Conservative (upper bound) estimate assuming unmeasured confounding at level $RR_{UD}(0,1)=RR_{EU}(0,1) = 2$ and thus $B(0,1)=4/3$. \\
@@ -98,6 +103,7 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
 
 
 ```{r, echo=FALSE, results='asis'}
+
   for (a in all.markers) {
     assay=get.assay.from.name(a)
     res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
@@ -136,7 +142,7 @@ $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) bi
 \begin{table}[H] 
 \centering
 \input{`r pathCoRoutput`/CoR_itxn_multitesting}  
-\caption{ Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} in the vaccine arm. Interaction P values. `r special.note`}
+\caption{ Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r fname.suffix`} in the vaccine arm. Interaction P values. `r special.note`}
 \end{table}
 
 \clearpage

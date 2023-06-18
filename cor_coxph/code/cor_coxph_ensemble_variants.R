@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_partA_VL"); COR="D29VL"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29VL"; Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
@@ -16,7 +16,7 @@ library(Hmisc) # wtd.quantile, cut2
 library(mitools)
 library(glue)
 
-begin=Sys.time()
+time.start=Sys.time()
 print(date())
 
 # with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29), table(is.na(seq1.spike.weighted.hamming.hotdeck1), is.na(seq1.log10vl), EventIndPrimaryMolecConfirmedD29))
@@ -70,74 +70,99 @@ rv=list()
 regions=c("US","LatAm","RSA")
 
 
+
 ################################################################################
 # loop through regions. 1: US, 2: LatAm, 3: RSA
 
-for (iRegion in 1:3) {
-# iRegion=2; variant="Ancestral.Lineage"
+for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are fewest cases and most likely to throw errors. 
+# iRegion=1; variant=variants$US[1]
+# iRegion=2; variant=variants$US[1]
+# iRegion=3; variant=variants$RSA[1]
+  
   region=regions[iRegion]
   
   # subset dataset to region
   dat.vac.seroneg=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
   dat.pla.seroneg=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
   
+  
   # loop through variants within this region
   for (variant in variants[[iRegion]]) {
+    cat("==============================  "); myprint(region, variant, newline=F); cat("  ==============================\n")
     
-    # make a list of imputed dataset
-    datasets = lapply(1:10, function (imp) {
+    # append to file names for figures and tables
+    if (TRIAL=="janssen_partA_VL") {
+      fname.suffix = paste0(region, "_", variant)
+    } else {
+      fname.suffix = study_name
+    }
+    
+    for.title = paste0(variant, " COVID, ", region)
+    
+    ############################
+    # count ph1 and ph2 cases
+    
+    # imputed events of interest
+    tabs=sapply(1:10, simplify="array", function (imp) {
       dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      dat.vac.seroneg
+      with(dat.vac.seroneg, table(ph2, EventIndOfInterest))
     })
-    
-    # table of ph1 and ph2 cases
-    tab=with(datasets[[1]], table(ph2, EventIndOfInterest))
+    tab =apply(tabs, c(1,2), mean)
     names(dimnames(tab))[2]="Event Indicator"
-    mytex(tab, file.name=paste0("tab1_",region,"_",variant), save2input.only=T, input.foldername=save.results.to)
+    tab
+    mytex(tab, file.name=paste0("tab1_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=1)
+    
+    # imputed competing events
+    tabs=sapply(1:10, simplify="array", function (imp) {
+      dat.vac.seroneg$EventIndCompeting = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+      with(dat.vac.seroneg, table(ph2, EventIndCompeting))
+    })
+    tab =apply(tabs, c(1,2), mean)
+    names(dimnames(tab))[2]="Event Indicator"
+    tab
+    mytex(tab[,1,drop=F], file.name=paste0("tab1_competing_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=1)
+    
+    # non-imputed events of interest
+    dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant"]]==variant, 1, 0)
+    tab = with(dat.vac.seroneg, table(ph2, EventIndOfInterest)) # NA not counted, which is what we want
+    names(dimnames(tab))[2]="Event Indicator"
+    mytex(tab, file.name=paste0("tab1_nonimputed_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=0)
 
-    # coxph formula
+
+    ############################
+    # formula for coxph
+
     form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
 
-    # source(here::here("code", "cor_coxph_ph_MI.R"))
-    
+    source(here::here("code", "cor_coxph_ph_MI.R"))
+
+
+    #####################################
+    # formula for competing risk analysis
+
+    # if there are very few competing events, the coxph for competing event may throw warnings
+
+    form.0=list(
+      update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
+      update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
+    )
+
+    tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
+    write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_", fname.suffix))
+
+    # run analyses
+    source(here::here("code", "cor_coxph_risk_no_marker.R"))
+    source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+
+    # make tables and figures
+    source(here::here("code", "cor_coxph_risk_plotting.R"))
+
   } # for variant
   
 } # for iRegion
 
+# warnings() # print out warnings
 
-# # loop through imputed datasets
-    # for (imp in 1:10) {
-    #   # imp=1; iRegion=0; v="Ancestral.Lineage"
-    #   
-    #   # create event indicator variables for competing risk analyses
-    #   dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]=="Ancestral.Lineage", 1, 0)
-    #   dat.vac.seroneg$EventIndCompeting  = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]!="Ancestral.Lineage", 1, 0)
-    #   dat.pla.seroneg$EventIndOfInterest = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]=="Ancestral.Lineage", 1, 0)
-    #   dat.pla.seroneg$EventIndCompeting  = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]!="Ancestral.Lineage", 1, 0)
-    #   dat.vac.seroneg$yy=dat.vac.seroneg$EventIndOfInterest
-    #   
-    #   # data.ph2=subset(dat.vac.seroneg, ph2)
-    #   
-    #   #create twophase design object
-    #   design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
-    #   with(dat.vac.seroneg, table(Wstratum, ph2))
-    #   
-    #   
-    #   # source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
-    #   
-    # 
-    #   # # competing risk analysis formula
-    #   # comp.risk=TRUE
-    #   # 
-    #   # form.0=list(
-    #   #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
-    #   #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
-    #   # )
-    #   # 
-    #   # tfinal.tpeak = tfinal.tpeak.ls[[1+iRegion]][[v]]
-    #   # source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
-    #   # 
-    #   # source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
-    #   
-    # } # for imp
 
+print(date())
+print("cor_coxph run time: "%.%format(Sys.time()-time.start, digits=1))
