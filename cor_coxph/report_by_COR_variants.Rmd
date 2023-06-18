@@ -124,3 +124,32 @@ for (iRegion in 1:3) {
 
 ```
 
+
+
+
+
+## Multivariate Cox Models of Risk
+
+```{r, echo=FALSE, results='asis'}
+for (iRegion in 1:3) {
+  region=regions[iRegion]
+  for (variant in variants[[iRegion]]) {
+    fname.suffix = paste0(region, "_", variant)
+    txt.endpoint = paste0(variant, " COVID, ", region)
+
+    cat(paste0("
+\\subsection{",region,", ",variant,"}
+"))
+
+  if (!is.null(config$multivariate_assays)) {
+    for (i in 1:length(config$multivariate_assays)) {
+      res = knitr::knit_child(c(here::here('cor_coxph', 'multiple_regression.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+  }
+    
+    
+  }
+}
+```
+

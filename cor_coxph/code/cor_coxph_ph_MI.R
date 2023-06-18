@@ -32,7 +32,7 @@ for (i in 1:2) {
 
 
 ###################################################################################################
-# make two continuous markers tables
+# make continuous markers tables
 # one for per 10 fold inc and one for per SD increase
 
 for (i in 1:2) {
@@ -170,36 +170,28 @@ if (!is.null(config$multivariate_assays)) {
       })
       betas<-MIextract(models, fun=coef)
       vars<-MIextract(models, fun=vcov)
-      res<-summary(MIcombine(betas,vars)) # MIcombine prints the results, there is no way to silent it
-      if (i==1) {
-        fits[[a]]=res
-      } else {
-        fits.scaled[[a]]=res
-      }
-
-            
-      fit=svycoxph(f, design=design.vacc.seroneg) 
-      var.ind=length(coef(fit)) - length(aa):1 + 1
+      combined.model = MIcombine(betas,vars)
+      res<-summary(combined.model) # MIcombine prints the results, there is no way to silent it
       
-      fits=list(fit)
-      est=getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=1)
-      ci= getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=13)
+      est=formatDouble(exp(res[,1]), 2, remove.leading0=F)
+      ci= glue("({formatDouble(exp(res[,'(lower']), 2, remove.leading0=F)}-{formatDouble(exp(res[,'upper)']), 2, remove.leading0=F)})")
       est = paste0(est, " ", ci)
-      p=  getFormattedSummary(fits, exp=T, robust=T, rows=var.ind, type=10)
+      p=  formatDouble(2*pnorm(abs(res[,1])/res[,"se"], lower.tail=F), 3, remove.leading0=F)
       
-      #generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
-      stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
-      p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
+      # get generalized Wald p values
+      rows=length(betas[[1]]) - length(aa):1 + 1
+      stat=coef(combined.model)[rows] %*% solve(vcov(combined.model)[rows,rows]) %*% coef(combined.model)[rows]
+      p.gwald=pchisq(stat, length(rows), lower.tail = FALSE)
       
-      tab=cbind(est, p)
+      tab=cbind(est, p)[rows,,drop=F]
       tmp=match(aa, colnames(labels.axis))
       tmp[is.na(tmp)]=1 # otherwise, labels.axis["Day"%.%tpeak, tmp] would throw an error when tmp is NA
       rownames(tab)=ifelse(aa %in% colnames(labels.axis), labels.axis["Day"%.%tpeak, tmp], aa)
       colnames(tab)=c(paste0("HR per ",ifelse(i==1,"sd","10 fold")," incr."), "P value")
       tab
       tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
-      
-      mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold"), align="c", include.colnames = T, save2input.only=T, 
+
+      mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold",fname.suffix), align="c", include.colnames = T, save2input.only=T, 
             input.foldername=save.results.to)
     }
   }

@@ -97,6 +97,7 @@ for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are few
       fname.suffix = study_name
     }
     
+    for.title = paste0(variant, " COVID, ", region)
     
     ############################
     # count ph1 and ph2 cases

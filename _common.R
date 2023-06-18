@@ -53,8 +53,7 @@ if (!is.null(config$assay_metadata)) {
   
   labels.assays=assay_metadata$assay_label; names(labels.assays)=assays
   labels.assays.short=assay_metadata$assay_label_short; names(labels.assays.short)=assays
-  labels.assays.long = labels.assays
-  
+
   llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
   lloqs=assay_metadata$lloq; names(lloqs)=assays
   uloqs=assay_metadata$uloq; names(uloqs)=assays
@@ -148,6 +147,9 @@ if (exists("COR")) {
         all.markers.names.short=sub("\\(.+\\)", config.cor$tpeak, labels.assays.short)    # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 D57over29"
         names(all.markers.names.short)=all.markers
         
+        all.markers.names.long=as.matrix(labels.title)[config.cor$tpeak, assays]
+        names(all.markers.names.long)=all.markers
+        
     } else {
         all.markers=paste0("Day", tpeak, assays)
         if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
@@ -158,6 +160,12 @@ if (exists("COR")) {
             if (do.fold.change.overB) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
         )
         names(all.markers.names.short)=all.markers
+        
+        all.markers.names.long=c(
+          as.matrix(labels.title)["Day"%.%tpeak, assays],
+          if (do.fold.change.overB) as.matrix(labels.assays.long)["Delta"%.%tpeak%.%"overB", assays]
+        )
+        names(all.markers.names.long)=all.markers
     }
     
 }
