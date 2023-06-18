@@ -36,7 +36,7 @@ plots_titles <- labels.assays[names(labels.assays) %in% names(labels.assays.shor
 timesls <- list(labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1], 
                 labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)],
                 labels.time[(names(labels.time) %in% times) & grepl("fold-rise over D1", labels.time)])
-if (do.fold.change==0) {timesls[[3]]<-NULL}
+if (do.fold.change.overB==0) {timesls[[3]]<-NULL}
 
 # x-axis need a wrapped verion of label
 case_grp1 = ifelse(study_name=="PROFISCOV", "Early Post-Peak Cases", "Intercurrent Cases")
