@@ -177,15 +177,15 @@ janssen_sa_partAnonsenior: &janssen_sa_partAnonsenior
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_sa_partAnonsenior_data_processed_with_riskscore.csv
 
 
+
 janssen_partA_VL: &janssen_partA_VL # binding Ab and ID50 
   <<: *janssen_trial
-  primary_assays: [bindSpike, bindRBD, pseudoneutid50]
-  study_name: ENSEMBLE
-  num_boot_replicates: 1000
-  num_perm_replicates: 10
   data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_VL_data_processed_with_riskscore.csv
   assay_metadata: assay_metadata/janssen_partA_VL_assay_metadata.csv
   covariates_riskscore: ~.+ risk_score
+  study_name: ENSEMBLE
+  num_boot_replicates: 1000
+  num_perm_replicates: 10
   multivariate_assays: [bindSpike+pseudoneutid50]
   
 
