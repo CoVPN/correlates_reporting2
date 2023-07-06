@@ -183,6 +183,7 @@ for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are few
 } # for iRegion
 
 
+
 ###################################################################################################
 if(verbose) print("forest plots")
 
@@ -255,7 +256,7 @@ for (a in aa) {
     # subset by assay 
     est.ci = subset(cox.df, assay==paste0("Day",tpeak,a))
     # add row names (this needs to be done after subsetting)
-    rownames(est.ci) = paste0(est.ci$region, "_D614 Ab_", est.ci$variant)
+    rownames(est.ci) = paste0(est.ci$region, "_D614", if(a=="pseudoneutid50") "G", " Ab_", est.ci$variant)
     rownames(est.ci) = sub("Ancestral.Lineage", "D614G", rownames(est.ci))
     # order by rownames
     est.ci = est.ci[row.order,]
@@ -275,6 +276,13 @@ for (a in aa) {
 }
 
 
+
+###################################################################################################
+if(verbose) print("differences in risk curves")
+
+load(paste0("/home/yfong/dev/correlates_reporting2-2/cor_coxph/output/janssen_partA_VL/D29VL/risks.all.1.LatAm.Gamma.Rdata"))
+risks.gamma.covid = risks.all.1$Day29bindSpike
+risks.gamma.covid = risks.all.1$Day29bindSpike
 
 
 print(date())
