@@ -31,7 +31,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partAsenior janssen_pooled
 	# janssen_sa_partAsenior not included for having too few cases
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
-	Rscript code/cor_coxph_ensemble_variants.R D29VL
+	Rscript code/cor_coxph_janssen_partA_VL.R D29VL
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2 hvtn705second hvtn705secondRSA hvtn705secondNonRSA))
 	Rscript code/cor_coxph.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))

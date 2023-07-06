@@ -357,7 +357,7 @@ if (!is.null(config$multivariate_assays)) {
         tab
         tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
         
-        mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold"), align="c", include.colnames = T, save2input.only=T, 
+        mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold", study_name), align="c", include.colnames = T, save2input.only=T, 
             input.foldername=save.results.to)
       }
     }

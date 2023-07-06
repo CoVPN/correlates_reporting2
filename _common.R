@@ -63,6 +63,8 @@ if (!is.null(config$assay_metadata)) {
   
 } else {
   
+  lloxs=NULL
+  
   if(length(config$llox_label)==1) {
     llox_labels = rep(config$llox_label, length(config$assays))
   } else {
@@ -282,7 +284,7 @@ if (exists("COR")) {
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
         if(!is.null(dat.mock$risk_score)) {
-            if (!TRIAL %in% c("janssen_na_EUA","janssen_na_partA")) { 
+            if (!TRIAL %in% c("janssen_pooled_EUA","janssen_na_EUA","janssen_na_partA")) { 
                 # check this for backward compatibility
                 stopifnot(nrow(subset(dat.mock, ph1 & is.na(risk_score)))==0)
             }
@@ -336,30 +338,39 @@ if (exists("COR")) {
           # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
           tfinal.tpeak.ls=list(
             US=list(
+              # All=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==0), max(EventTimePrimary)),
+              #         with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              
               Ancestral.Lineage=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==0 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
-                                    with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+                                    with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1))
             ),
             
             LatAm=list(
+              # All=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==1), max(EventTimePrimary)),
+              #         with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              
               Ancestral.Lineage = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
-                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
               
               Gamma = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Gamma"), max(EventTimePrimary)),
-                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
               
               Lambda =min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Lambda"), max(EventTimePrimary)),
-                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
               
               Mu    = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Mu"), max(EventTimePrimary)),
-                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
               
               Zeta  = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Zeta"), max(EventTimePrimary)),
-                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
             ),
             
             RSA=list(
+              # All=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==2), max(EventTimePrimary)),
+              #         with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              
               Beta  = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==2 & seq1.variant=="Beta"), max(EventTimePrimary)),
-                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1))
             )
           )
           
@@ -717,7 +728,10 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
 
 
 # llox is for plotting and can be either llod or lloq depending on trials
-if (is.null(lloxs)) lloxs=ifelse(config$llox_label=="LOD", llods[names(config$llox_label)], lloqs[names(config$llox_label)])
+if (is.null(lloxs)) {
+  lloxs=ifelse(llox_labels=="LOD", llods[names(llox_labels)], lloqs[names(llox_labels)])
+  lloxs=ifelse(llox_labels=="POS", pos.cutoffs[names(llox_labels)], lloxs)
+}
 
 }
 

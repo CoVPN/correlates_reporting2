@@ -1,6 +1,5 @@
 #Sys.setenv(TRIAL = "vat08m_naive"); COR="D43"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "moderna_real"); COR="D57over29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "moderna_real"); COR="D57"; Sys.setenv(VERBOSE = 1) 
@@ -11,11 +10,11 @@
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_partAsenior"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "janssen_la_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705secondNonRSA"); COR="D210"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_na_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) # dat.mock is made
@@ -123,6 +122,10 @@ print(date())
 # with(dat.vac.seroneg, table(ph2, SevereEventIndPrimaryMolecConfirmedD29))
 
 
+# with(dat.vac.seroneg, table(ph2, EventIndPrimary))
+# with(subset(dat.vac.seroneg, Ptid %in% sevcases$USUBJID), table(ph2, EventIndPrimary))
+# mywrite.csv(subset(dat.vac.seroneg, EventIndPrimary==1, select=c(Ptid,ph2)), file="~/sevcases_1")
+
 
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
@@ -185,6 +188,7 @@ if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m"
     
 source(here::here("code", "cor_coxph_risk_bootstrap.R"))
 
+for.title="" # need to be defined even if it is empty
 source(here::here("code", "cor_coxph_risk_plotting.R"))
 
 if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_EUA")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
