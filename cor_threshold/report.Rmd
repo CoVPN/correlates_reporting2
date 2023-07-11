@@ -16,13 +16,14 @@ message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_threshold report ~~~~~~~~~~~
 
 
 ```{r setup, include=FALSE}
-Sys.setenv(TRIAL="janssen_trial_real")
 knitr::opts_chunk$set(echo = TRUE)
 folder_var <- "cor_threshold"
 library(here)
 library(dplyr)
 print(here::here())
-config <- config::get(config = Sys.getenv("TRIAL"))
+TRIAL <- Sys.getenv("TRIAL")
+message(TRIAL)
+config <- config::get(config = TRIAL)
 for(opt in names(config)){
   eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
 }
@@ -69,26 +70,30 @@ monotone <- FALSE
 ```
 
 ```{r, echo = F, include = F}
-TRIAL <- Sys.getenv("TRIAL")
-TRIAL <- "janssen_trial_real"
-ENSEMBLE <- FALSE
-if(tolower(TRIAL) %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", "janssen_na_EUA", "janssen_la_mock", "janssen_la_EUA", "janssen_sa_mock", 'janssen_sa_EUA', "janssen_trial_EUA")) {
+
+if(TRIAL %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", "janssen_na_EUA", "janssen_la_mock", "janssen_la_EUA", "janssen_sa_mock", 'janssen_sa_EUA', "janssen_trial_EUA")) {
+
   ENSEMBLE <- TRUE
-  
   keys <-  c("D29", "D29start1") 
+
+} else if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 'janssen_sa_partA')) {
+  
+  ENSEMBLE <- TRUE
+  keys <-  c("D29IncludeNotMolecConfirmed") 
+  # to be added
+  # "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed"
  
-}
+} else if(TRIAL %in% c("hvtn705")) {
 
-if(tolower(TRIAL) %in% c("hvtn705")) {
+  ENSEMBLE <- FALSE
   keys <- c("D210") 
-}
 
-
-if(tolower(TRIAL) %in% c("moderna_mock", 
-"moderna_real")) {
+} else if(TRIAL %in% c("moderna_mock", "moderna_real")) {
+  
+  ENSEMBLE <- FALSE
   keys <- c("D29", "D57") 
-}
-
+  
+} else stop("TRIAL not supported")
 
 ```
 
