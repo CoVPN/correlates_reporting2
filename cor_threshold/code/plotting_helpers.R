@@ -98,7 +98,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   print(quantile(data[[marker]]))
   print(xlim)
   llod <- lloxs[a]
-  labels_info <- get.labels.x.axis.cor(xlim, lloxs[a])
+  labels_info <- draw.x.axis.cor(xlim, lloxs[a], llox_labels[a], for.ggplot=T)
   print(labels_info)
   xx <- labels_info$ticks
   labels <- as.list(labels_info$labels)

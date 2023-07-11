@@ -1065,22 +1065,21 @@ get.range.cor=function(dat, assay, time) {
     c(ret[1]-delta, ret[2]+delta)
 }
 
-draw.x.axis.cor=function(xlim, llox, llox.label){
+draw.x.axis.cor=function(xlim, llox, llox.label, for.ggplot=FALSE){
         
     xx=seq(ceiling(xlim[1]), floor(xlim[2]))        
     if (is.na(llox)) {
-        for (x in xx) {
-            axis(1, at=x, labels=if (x>=3) bquote(10^.(x)) else 10^x )    
-        }
+        labels = sapply (xx, function(x) if (x>=3) bquote(10^.(x)) else 10^x )
+        
     } else if (llox.label=="delta") {
-        for (x in xx) {
-            axis(1, at=x, labels=if (x>=3 | x<=-3) bquote(10^.(x)) else 10^x )    
-        }    
+      labels = sapply (xx, function(x) if (x>=3 | x<=-3) bquote(10^.(x)) else 10^x )
+      
     } else {
-        axis(1, at=log10(llox), labels=llox.label)
-        for (x in xx[xx>log10(llox*1.8)]) {
-            axis(1, at=x, labels= if(x>=3) bquote(10^.(x)) else 10^x)
-        }
+      
+      xx=xx[xx>log10(llox*1.8)]
+      labels = sapply (xx, function(x) if(x>=3) bquote(10^.(x)) else 10^x)
+      xx=c(log10(llox), xx)
+      labels=c(llox.label, labels)
     }
     
     # add e.g. 30 between 10 and 100
@@ -1089,34 +1088,20 @@ draw.x.axis.cor=function(xlim, llox, llox.label){
         tmp=2:length(xx)
         if (study_name=="PREVENT19") tmp=3:length(xx)
         for (i in tmp) {
-            x=xx[i-1]
-            axis(1, at=x+log10(3), labels=if (x>=3) bquote(3%*%10^.(x)) else 3*10^x )
+            x=xx[i]
+            xx=c(xx, x+log10(.3))
+            labels=c(labels, if (x>=3) bquote(3%*%10^.(x-1)) else 3*10^(x-1) )
         }
+    }
+    
+    if (for.ggplot) {
+      return(list(ticks = xx, labels = labels))
+    } else {
+      axis(1, at=xx, labels=labels)
     }
     
 }
 
-##### Copy of draw.x.axis.cor but returns the x-axis ticks and labels
-# This is necessary if one works with ggplot as the "axis" function does not work.
-get.labels.x.axis.cor=function(xlim, llox){
-  xx=seq(floor(xlim[1]), ceiling(xlim[2]))
-  if (!is.na(llox)) xx=xx[xx>log10(llox*2)]
-  x_ticks <- xx
-  if (is.na(llox)) {
-      labels <- sapply(xx, function(x) {
-        if (x>=3) bquote(10^.(x)) else 10^x
-      })
-  } else {
-      labels <- sapply(xx, function(x) {
-        if (log10(llox)==x) config$llox_label else if (x>=3) bquote(10^.(x)) else 10^x
-      })
-      #if(!any(log10(llox)==x_ticks)){
-        x_ticks <- c(log10(llox), x_ticks)
-        labels <- c(config$llox_label, labels)
-      #}
-  }
-  return(list(ticks = x_ticks, labels = labels))
-}
 
 
 # bootstrap from case control studies is done by resampling cases, ph2 controls, and non-ph2 controls separately. 
