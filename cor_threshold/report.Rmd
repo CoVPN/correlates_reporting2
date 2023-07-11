@@ -79,7 +79,9 @@ if(TRIAL %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", 
 } else if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 'janssen_sa_partA')) {
   
   ENSEMBLE <- TRUE
-  keys <-  c("D29") 
+  keys <-  c("D29IncludeNotMolecConfirmed") 
+  # to be added
+  # "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed"
  
 } else if(TRIAL %in% c("hvtn705")) {
 
