@@ -76,12 +76,15 @@ if(TRIAL %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", 
   ENSEMBLE <- TRUE
   keys <-  c("D29", "D29start1") 
 
-} else if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 'janssen_sa_partA')) {
+} else if(TRIAL %in% c("janssen_pooled_partA", "janssen_la_partA")) {
   
   ENSEMBLE <- TRUE
-  keys <-  c("D29IncludeNotMolecConfirmed") 
-  # to be added
-  # "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed"
+  keys <-  c("D29IncludeNotMolecConfirmed", "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
+ 
+} else if(TRIAL %in% c("janssen_na_partA", "janssen_sa_partA")) {
+  
+  ENSEMBLE <- TRUE
+  keys <-  c("D29IncludeNotMolecConfirmed", "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
  
 } else if(TRIAL %in% c("hvtn705")) {
 
@@ -116,14 +119,14 @@ for(short_key in keys){
   
   
   
-  title <- paste0("Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+  title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
   if(monotone) {
-    title <- paste0(title, " (monotone-corrected)")
+    title <- paste0(title0, " (monotone-corrected)")
   }
   if(countAfter1) {
-    title <- paste0(title, " (events after 1 day post dose)")
+    title <- paste0(title0, " (events after 1 day post dose)")
   } else {
-    
+    title = title0
   }
   cat("##", title, "\n")
    
@@ -149,14 +152,14 @@ for(short_key in keys){
   
    
   
- title <- paste0("Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+ title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
   if(monotone) {
-    title <- paste0(title, " (monotone-corrected)")
+    title <- paste0(title0, " (monotone-corrected)")
   }
   if(countAfter1) {
-    title <- paste0(title, " (events after 1 day post dose)")
+    title <- paste0(title0, " (events after 1 day post dose)")
   } else {
-    
+    title = title0
   }
   cat("##", title, "\n")
    
@@ -196,14 +199,14 @@ for(short_key in keys){
   
   
   
-  title <- paste0("Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+  title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
   if(monotone) {
-    title <- paste0(title, " (monotone-corrected)")
+    title <- paste0(title0, " (monotone-corrected)")
   }
   if(countAfter1) {
-    title <- paste0(title, " (events after 1 day post dose)")
+    title <- paste0(title0, " (events after 1 day post dose)")
   } else {
-    
+    title = title0
   }
   cat("##", title, "\n")
   
@@ -223,14 +226,14 @@ for(short_key in keys){
   
    
   
- title <- paste0("Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+ title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
   if(monotone) {
-    title <- paste0(title, " (monotone-corrected)")
+    title <- paste0(title0, " (monotone-corrected)")
   }
   if(countAfter1) {
-    title <- paste0(title, " (events after 1 day post dose)")
+    title <- paste0(title0, " (events after 1 day post dose)")
   } else {
-    
+    title = title0
   }
   cat("##", title, "\n")
    
