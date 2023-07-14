@@ -1,3 +1,4 @@
+nohup.out
 data_clean/*.RData
 data_clean/*.rda
 data_clean/*.rds

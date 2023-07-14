@@ -33,6 +33,14 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA janssen_la_partA))
 	Rscript code/params.R D29ModerateIncludeNotMolecConfirmed
 	Rscript code/clean_data.R D29ModerateIncludeNotMolecConfirmed
 	Rscript code/Run_Threshold_analysis.R D29ModerateIncludeNotMolecConfirmed
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_na_partA janssen_sa_partA))
+	Rscript code/params.R D29IncludeNotMolecConfirmed
+	Rscript code/clean_data.R D29IncludeNotMolecConfirmed
+	Rscript code/Run_Threshold_analysis.R D29IncludeNotMolecConfirmed
+	
+	Rscript code/params.R D29ModerateIncludeNotMolecConfirmed
+	Rscript code/clean_data.R D29ModerateIncludeNotMolecConfirmed
+	Rscript code/Run_Threshold_analysis.R D29ModerateIncludeNotMolecConfirmed
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
 	Rscript code/params.R D210
 	Rscript code/clean_data.R D210
@@ -70,6 +78,12 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA janssen_la_partA))
 	
 	Rscript code/params.R D29SevereIncludeNotMolecConfirmed
 	Rscript code/plotting.R D29SevereIncludeNotMolecConfirmed
+	
+	Rscript code/params.R D29ModerateIncludeNotMolecConfirmed
+	Rscript code/plotting.R D29ModerateIncludeNotMolecConfirmed
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_na_partA janssen_sa_partA))
+	Rscript code/params.R D29IncludeNotMolecConfirmed
+	Rscript code/plotting.R D29IncludeNotMolecConfirmed
 	
 	Rscript code/params.R D29ModerateIncludeNotMolecConfirmed
 	Rscript code/plotting.R D29ModerateIncludeNotMolecConfirmed

@@ -84,7 +84,7 @@ if(TRIAL %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", 
 } else if(TRIAL %in% c("janssen_na_partA", "janssen_sa_partA")) {
   
   ENSEMBLE <- TRUE
-  keys <-  c("D29IncludeNotMolecConfirmed", "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
+  keys <-  c("D29IncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
  
 } else if(TRIAL %in% c("hvtn705")) {
 
@@ -138,7 +138,6 @@ for(short_key in keys){
       assay <- assays[stringr::str_detect(marker, assays)]
     }
 
-    
     res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
     #res = knitr::knit_child(c(here::here( 'sub_report.Rmd')), quiet = TRUE)
 
