@@ -1,9 +1,3 @@
-    Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
-    Rscript code/cor_coxph.R D29SevereIncludeNotMolecConfirmed
-    Rscript code/cor_coxph.R D29ModerateIncludeNotMolecConfirmed
-
-    janssen_pooled_partA  janssen_na_partA janssen_la_partA janssen_sa_partA 
-
 for run_survtmle in TRUE FALSE
   do
   for impute_placebo in TRUE FALSE
