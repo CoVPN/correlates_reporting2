@@ -33,7 +33,7 @@ one_auc <- function(preds, Y, full_y = NULL, scale = "identity",
                     Z = NULL, ...) {
   auc_lst <- vimp::measure_auc(
     fitted_values = preds, y = Y, full_y = full_y, C = C, Z = Z,
-    ipc_weights = weights,
+    ipc_weights = weights, scale = scale,
     ipc_fit_type = "SL", ...
   )
   list(auc = auc_lst$point_est, eif = auc_lst$eif)
@@ -43,7 +43,8 @@ one_auc <- function(preds, Y, full_y = NULL, scale = "identity",
 # @param preds the fitted values
 # @param Y the outcome
 # @param folds the different cv folds that the learner was evaluated on
-# @param scale what scale should the IPCW correction be applied on?
+# @param scale what scale should the CI be applied on? Can help with numbers outside of (0, 1)
+# @param ipc_scale what scale should the IPCW correction be applied on?
 #              Can help with numbers outside of (0, 1)
 #             ("identity" denotes the identity scale;
 #              "logit" means that AUC is transformed to the logit scale,
@@ -57,7 +58,8 @@ one_auc <- function(preds, Y, full_y = NULL, scale = "identity",
 #            and may include control parameters for the super learner
 #            (e.g., cvControl = list(V = 5)
 #             for 5-fold cross-validated super learner)
-cv_auc <- function(preds, Y, folds, scale = "identity",
+cv_auc <- function(preds, Y, folds, scale = "logit",
+                   ipc_scale = "identity",
                    weights = rep(1, length(Y)), C = rep(1, length(Y)),
                    Z = NULL, ...) {
   V <- length(folds)
@@ -72,7 +74,7 @@ cv_auc <- function(preds, Y, folds, scale = "identity",
   ests_eifs <- lapply(as.list(seq_len(V)), function(v) {
     one_auc(
       preds = preds[folds_numeric == v], Y[folds_numeric == v],
-      full_y = Y, scale = scale,
+      full_y = Y, scale = ipc_scale,
       weights = weights[folds_z == v], C = C[folds_z == v],
       Z = Z[folds_z == v, , drop = FALSE], ...
     )
@@ -104,12 +106,14 @@ get_cv_sl_folds <- function(cv_sl_folds) {
 # get the CV-AUC for an individual learner in the SL
 # @param sl_fit the fitted SL
 # @param col the column of interest (corresponds to a fitted algorithm)
-# @param scale scale for EIF estimation
+# @param scale scale for intervals estimation
+# @param ipc_scale scale for EIF estimation
 # @param weights IPC weights
 # @param C the censoring indicator
 # @param Z data observed on all participants
 # @param ... other arguments to pass to Super Learner (for EIF estimation)
-get_individual_auc <- function(sl_fit, col, scale = "identity",
+get_individual_auc <- function(sl_fit, col, scale = "logit",
+                               ipc_scale = "identity",
                                weights = rep(1, length(sl_fit$Y)),
                                C = rep(1, length(sl_fit$Y)), Z = NULL, ...) {
   if (any(is.na(sl_fit$library.predict[, col]))) {
@@ -117,7 +121,7 @@ get_individual_auc <- function(sl_fit, col, scale = "identity",
   }
   alg_auc <- cv_auc(
     preds = sl_fit$library.predict[, col], Y = sl_fit$Y,
-    scale = scale,
+    scale = scale, ipc_scale = ipc_scale,
     folds = sl_fit$folds, weights = weights,
     C = C, Z = Z, ...
   )
@@ -141,7 +145,8 @@ get_individual_auc <- function(sl_fit, col, scale = "identity",
 }
 # get the CV-AUC for all learners fit with SL
 # @param sl_fit the super learner fit object
-# @param scale what scale should the IPCW correction be applied on?
+# @param scale scale for interval estimation
+# @param ipc_scale what scale should the IPCW correction be applied on?
 #              Can help with numbers outside of (0, 1)
 #             ("identity" denotes the identity scale;
 #              "logit" means that AUC is transformed to the logit scale,
@@ -155,15 +160,15 @@ get_individual_auc <- function(sl_fit, col, scale = "identity",
 #            and may include control parameters for the super learner
 #            (e.g., cvControl = list(V = 5)
 #             for 5-fold cross-validated super learner)
-get_all_aucs <- function(sl_fit, scale = "identity",
+get_all_aucs <- function(sl_fit, scale = "logit", ipc_scale = "identity",
                          weights = rep(1, length(sl_fit$Y)),
                          C = rep(1, length(sl_fit$Y)),
                          Z = NULL, ...) {
   # get the CV-AUC of the SuperLearner predictions
   sl_auc <- cv_auc(
     preds = sl_fit$SL.predict, Y = sl_fit$Y,
-    folds = sl_fit$folds,
-    scale = scale, weights = weights, C = C, Z = Z, ...
+    folds = sl_fit$folds, scale = scale,
+    ipc_scale = ipc_scale, weights = weights, C = C, Z = Z, ...
   )
   out <- data.frame(
     Learner = "SL", Screen = "All", AUC = sl_auc$auc,
@@ -173,7 +178,7 @@ get_all_aucs <- function(sl_fit, scale = "identity",
   # Get the CV-auc of the Discrete SuperLearner predictions
   discrete_sl_auc <- cv_auc(
     preds = sl_fit$discreteSL.predict, Y = sl_fit$Y,
-    folds = sl_fit$folds, scale = scale,
+    folds = sl_fit$folds, scale = scale, ipc_scale = ipc_scale,
     weights = weights, C = C,
     Z = Z, ...
   )
@@ -193,6 +198,7 @@ get_all_aucs <- function(sl_fit, scale = "identity",
         sl_fit = sl_fit,
         col = x,
         scale = scale,
+        ipc_scale = ipc_scale,
         weights = weights,
         C = C, Z = Z, ...
       )
@@ -232,7 +238,8 @@ make_discrete_sl_auc <- function(cvsl_fit, all_aucs) {
 #                  involves data from phase 2)
 # @param C the outcome from the entire (phase 1) dataset
 # @param z_lib the learner/s to be used for weighted auc calculations
-# @param scale the scale that the IPC correction should be computed on
+# @param ipc_scale the scale that the IPC correction should be computed on
+# @param scale scale for interval estimation
 # @param vimp determines whether or not we save the entire SL fit object
 #        (for variable importance, we don't need it so can save some memory
 #         by excluding large objects)
@@ -248,7 +255,8 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
                            Z = NULL,
                            C = rep(1, length(Y)),
                            z_lib = "SL.glm",
-                           scale = "identity",
+                           scale = "logit",
+                           ipc_scale = "identity",
                            vimp = FALSE) {
 
   set.seed(seed)
@@ -262,7 +270,7 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
     #, verbose = FALSE
   )
 
-  aucs <- get_all_aucs(sl_fit = fit, scale = scale, weights = all_weights,
+  aucs <- get_all_aucs(sl_fit = fit, scale = scale, ipc_scale = ipc_scale, weights = all_weights,
                        C = C, Z = Z, SL.library = z_lib, ipc_est_type = ipc_est_type, family = gaussian())
 
   ret_lst <- list(fit = fit, folds = fit$folds, aucs = aucs)
@@ -289,17 +297,22 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
 # @param sample_splitting_folds folds for sample splitting (splits up cross-fitting folds into unique groups)
 # @param V the number of folds used for variable importance (equal to the number of folds for outer cross-fitting in the CV.SL / 2)
 # @param sl_library the Super Learner library, for IPW estimation of the efficient influence function
+# @param ipc_scale the scale to apply IPW or AIPW correction on
 # @param ipc_est_type whether to use IPW or AIPW for the EIF
 # @param ipc_weights the inverse probability weights for coarsened data
 # @param Z the predictors of the missingness mechanism (a character vector)
 # @param C the indicator of missing (0) or selected into phase 2 (1)
 # @param baseline should we get predictiveness of the baseline risk factors (TRUE) or of the risk factors + variables of interest?
 # @param use_ensemble should we use the ensemble SL (TRUE) or the discrete SL (FALSE)?
+# @param final_point_estimate should the final point estimate returned be based on the sample split for inference ("split"),
+#         the average of the split-specific importance ("average"), or on the full dataset ("full")? All three point estimates
+#         are valid; sample-splitting is only required for inference.
 # @return an object of class "vimp" with the results
 get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced_fit = NULL, index = 1, type = "auc", scale = "logit",
-                       cross_fitting_folds = NULL, sample_splitting_folds = NULL, V = 2,
+                       cross_fitting_folds = NULL, sample_splitting_folds = NULL, V = 2, ipc_scale = "identity",
                        sl_library = c("SL.glmnet"), ipc_est_type = "ipw", ipc_weights = rep(1, length(cross_fitting_folds)), Z = NULL,
-                       C = NULL, baseline = FALSE, use_ensemble = TRUE, sample_splitting = TRUE) {
+                       C = NULL, baseline = FALSE, use_ensemble = TRUE, sample_splitting = TRUE, 
+                       final_point_estimate = "average") {
 
   # if not passing sample-splitting folds, create them
   if (all(is.null(sample_splitting_folds))) {
@@ -315,15 +328,6 @@ get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced
   if (is.null(cross_fitting_folds)) {
     cross_fitting_folds <- full_cv_fit$folds
   }
-  # extract independent predictions
-  full_cv_preds <- vimp::extract_sampled_split_predictions(
-    cvsl_obj = NULL, preds = full_cv_fit, sample_splitting = sample_splitting, sample_splitting_folds = switch(as.numeric(sample_splitting) + 1, rep(1, V), sample_splitting_folds),
-    full = TRUE, cross_fitting_folds = cross_fitting_folds
-  )
-  reduced_cv_preds <- vimp::extract_sampled_split_predictions(
-    cvsl_obj = NULL, preds = reduced_cv_fit, sample_splitting = sample_splitting, sample_splitting_folds = switch(as.numeric(sample_splitting) + 1, rep(2, V), sample_splitting_folds),
-    full = FALSE, cross_fitting_folds = cross_fitting_folds
-  )
   # add on CV folds for the people only sampled into phase 1
   if (is.null(Z)) {
     cf_folds <- cross_fitting_folds
@@ -332,23 +336,28 @@ get_cv_vim <- function(seed = NULL, Y = NULL, X = NULL, full_fit = NULL, reduced
   }
   set.seed(seed)
   # estimate variable importance
-  est_vim <- vimp::cv_vim(Y = Y, X = X, cross_fitted_f1 = full_cv_preds,
-                          cross_fitted_f2 = reduced_cv_preds, indx = index,
+  est_vim <- vimp::cv_vim(Y = Y, X = X, cross_fitted_f1 = full_cv_fit,
+                          cross_fitted_f2 = reduced_cv_fit, indx = index,
                           delta = 0, V = V, run_regression = FALSE,
                           sample_splitting = sample_splitting, cross_fitting_folds = cf_folds,
                           sample_splitting_folds = sample_splitting_folds,
-                          type = type, scale = scale,
+                          type = type, scale = scale, ipc_scale = ipc_scale,
                           SL.library = sl_library, ipc_est_type = ipc_est_type,
-                          ipc_weights = ipc_weights, Z = Z, C = C)
+                          ipc_weights = ipc_weights, Z = Z, C = C,
+                          final_point_estimate = final_point_estimate)
   # return the vimp object
   return(est_vim)
 }
 
 # pool CV-VIM estimates over multiple random starts
 # @param vim_lst a list of vimp objects (from a call to get_cv_vim for each of a list of random number seeds)
-# @param scale the scale that intervals should be on (should match the scale used for estimation)
+# @param scale the scale that intervals should be on (should match the scale used for each individual random start)
 # @return a tibble, with: the quantity (predictiveness, VIM), the point estimate, SE, 95% CI, and a p-value for variable importance
-pool_cv_vim <- function (vim_lst, scale = "identity") {
+pool_cv_vim <- function (vim_lst, scale = "logit") {
+  # for variable importance
+  vim_point_est <- mean(unlist(lapply(vim_lst, function(l) l$est)), na.rm = TRUE)
+  vim_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se ^ 2)), na.rm = TRUE))
+  vim_ci <- vimp::vimp_ci(vim_point_est, vim_se, scale = scale, level = 0.95)
   # for predictiveness
   pred_point_est <- mean(unlist(lapply(vim_lst, function(l) l$predictiveness_full)), na.rm = TRUE)
   pred_se <- sqrt(mean(unlist(lapply(vim_lst, function(l) l$se_full ^ 2)), na.rm = TRUE))
@@ -466,39 +475,130 @@ get.nonlinearPCA.scores <- function(dat){
 
 
 
-# remove any binary risk variables with fewer than 10 ptids that have a 0 or 1 for that variable
+##########################################################################################################
+
+# # remove any binary risk variables with fewer than 10 ptids that have a 0 or 1 for that variable
+# # @param dat the phase 1 dataset
+# # @param risk_vars the vector of column names of risk variables
+# # @return a data frame upon removal of any binary risk variables with fewer than 10 ptids that have a 0 or 1 for that variable
+# drop_predVars_with_fewer_0s_or_1s <- function(dat, risk_vars) {
+#   for (i in 1:length(risk_vars)) {
+#     if ((dat %>% select(matches(risk_vars[i])) %>% unique() %>% dim())[1] == 2) {
+#       if ((dim(dat %>% filter(get(risk_vars[i]) == 1))[1] < 10) | (dim(dat %>% filter(get(risk_vars[i]) == 0))[1] < 10)){
+#         dat <- dat %>% select(-matches(risk_vars[i]))
+#       }
+#     }
+#   }
+#   return(dat)
+# }
+
+
 # @param dat the phase 1 dataset
-# @param risk_vars the vector of column names of risk variables
-# @return a data frame upon removal of any binary risk variables with fewer than 10 ptids that have a 0 or 1 for that variable
-drop_riskVars_with_fewer_0s_or_1s <- function(dat, risk_vars) {
-  for (i in 1:length(risk_vars)) {
-    if ((dat %>% select(matches(risk_vars[i])) %>% unique() %>% dim())[1] == 2) {
-      if ((dim(dat %>% filter(get(risk_vars[i]) == 1))[1] < 10) | (dim(dat %>% filter(get(risk_vars[i]) == 0))[1] < 10)){
-        dat <- dat %>% select(-matches(risk_vars[i]))
+# @param pred_vars the vector of column names of predictor variables
+# @return a data frame upon removal of any binary predictor variables with fewer than 10 ptids that have a 0 or 1 for that variable (COVE analysis)
+# @return a data frame upon removal of any binary predictor variables with number of cases in the variable = 1 or 0 subgroup is <= 3 (ENSEMBLE analysis)
+drop_predVars_with_fewer_0s_or_1s <- function(dat, pred_vars) {
+  
+  if(study_name == "COVE"){
+    # delete the file drop_predVars_with_fewer_0s_or_1s.csv
+    unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))
+    # Remove binary risk variables with fewer than 10 ptids that have a 0 or 1 for that variable
+    for (i in 1:length(pred_vars)) {
+      if ((dat %>% select(starts_with(pred_vars[i])) %>% unique() %>% dim())[1] == 2) {
+        if ((dim(dat %>% filter(get(pred_vars[i]) == 1))[1] < 10) | (dim(dat %>% filter(get(pred_vars[i]) == 0))[1] < 10)){
+          dat <- dat %>% select(-starts_with(pred_vars[i]))
+          print(paste0(pred_vars[i], " dropped from risk score analysis as it had fewer than 10 1's or 0's."))
+          # Also print to file
+          paste0(pred_vars[i], " dropped from risk score analysis as it had fewer than 10 1's or 0's.") %>%
+            write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+        }
       }
     }
   }
+  
+  if(study_name == "COVE" & !file.exists(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))){
+    paste0("No binary input variable had fewer than 10 ptids with a 0 or 1 for that variable.") %>%
+      write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+  }
+  
+  if(study_name != "COVE"){
+    # delete the file drop_predVars_with_fewer_0s_or_1s.csv
+    unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))
+    # Remove a variable if the number of cases in the variable = 1 subgroup is <= 3 or the number of cases in the variable = 0 subgroup is <= 3
+    for (i in 1:length(pred_vars)) {
+      if ((dat %>% select(starts_with(pred_vars[i])) %>% unique())[[1]] == c(0,1) | 
+          (dat %>% select(starts_with(pred_vars[i])) %>% unique())[[1]] == c(1,0)) {
+        if (dat %>% filter(get(pred_vars[i]) == 1) %>% pull(endpoint) %>% sum() <= 3 | dat %>% filter(get(pred_vars[i]) == 0) %>% pull(endpoint) %>% sum() <= 3){
+          dat <- dat %>% select(-starts_with(pred_vars[i]))
+          print(paste0(pred_vars[i], " dropped from risk score analysis as the number of cases in the variable = 1 or 0 subgroup is <= 3."))
+          # Also print to file
+          paste0(pred_vars[i], " dropped from risk score analysis as the number of cases in the variable = 1 or 0 subgroup is <= 3.") %>%
+            write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+        }
+      }
+    }
+  }
+  
+  if(study_name != "COVE" & !file.exists(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))){
+    paste0("No binary input variable had number of cases in the variable = 1 or 0 subgroup <= 3") %>%
+      write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+  }
+  
   return(dat)
 }
 
 
 
-# remove any binary risk variables that have more than 5% values missing
-# @param X dataframe containing all risk variables
-# @param riskVars the vector of column names of risk variables
-# @return a data frame upon removal of any binary risk variables that have more than 5% values missing
-drop_riskVars_with_high_total_missing_values <- function(X, riskVars) {
-  covars_highNAvalues <- vector()
-  for (i in 1:length(riskVars)) {
-    total_NAs <- sum(is.na(X %>% pull(riskVars[i])))
-    percent_NAs <- total_NAs / length(X %>% pull(riskVars[i]))
+# # remove any binary risk variables that have more than 5% values missing
+# # @param X dataframe containing all risk variables
+# # @param predVars the vector of column names of risk variables
+# # @return a data frame upon removal of any binary risk variables that have more than 5% values missing
+# drop_predVars_with_high_total_missing_values <- function(X, predVars) {
+#   covars_highNAvalues <- vector()
+#   for (i in 1:length(predVars)) {
+#     total_NAs <- sum(is.na(X %>% pull(predVars[i])))
+#     percent_NAs <- total_NAs / length(X %>% pull(predVars[i]))
+# 
+#     if (percent_NAs > 0.05) {
+#       print(paste0("WARNING: ", predVars[i], " variable has more than 5% values missing! This variable will be dropped from SuperLearner analysis."))
+#       covars_highNAvalues <- predVars[i]
+#     }
+#   }
+# 
+#   if(length(covars_highNAvalues) == 0)
+#     return(X)
+#   else
+#     return(X %>% select(-all_of(covars_highNAvalues)))
+# }
 
+
+
+# remove any binary risk variables that have more than 5% values missing
+# @param X dataframe containing all predictor variables
+# @param predVars the vector of column names of predictor variables
+# @return a data frame upon removal of any binary predictor variables that have more than 5% values missing
+drop_predVars_with_high_total_missing_values <- function(X, predVars) {
+  # delete the file drop_predVars_with_high_total_missing_values.csv
+  unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"))
+  covars_highNAvalues <- vector()
+  for (i in 1:length(predVars)) {
+    total_NAs <- sum(is.na(X %>% pull(predVars[i])))
+    percent_NAs <- total_NAs / length(X %>% pull(predVars[i]))
+    
     if (percent_NAs > 0.05) {
-      print(paste0("WARNING: ", riskVars[i], " variable has more than 5% values missing! This variable will be dropped from SuperLearner analysis."))
-      covars_highNAvalues <- riskVars[i]
+      print(paste0("WARNING: ", predVars[i], " variable has more than 5% values missing! This variable will be dropped from SuperLearner analysis."))
+      # Also print to file
+      paste0(predVars[i], " variable has more than 5% values missing and was dropped from risk score analysis.") %>%
+        write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+      covars_highNAvalues <- predVars[i]
     }
   }
-
+  
+  if(!file.exists(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"))){
+    paste0("No variables had more than 5% values missing.") %>%
+      write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+  }
+  
   if(length(covars_highNAvalues) == 0)
     return(X)
   else
@@ -506,48 +606,118 @@ drop_riskVars_with_high_total_missing_values <- function(X, riskVars) {
 }
 
 
+
+
+# # impute missing values in the risk variables using mice package
+# # @param X dataframe containing all risk variables
+# # @param predVars the vector of column names of risk variables
+# # @return a data frame updated with imputations for missing values of risk variables
+# impute_missing_values <- function(X, predVars) {
+#   covars <- vector()
+#   # First identify risk demographic variables having missing values
+#   for (i in 1:length(predVars)) {
+#     total_NAs <- sum(is.na(X %>% pull(predVars[i])))
+#     percent_NAs <- total_NAs / length(X %>% pull(predVars[i]))
+# 
+#     if (percent_NAs > 0.05) {
+#       print(paste0("WARNING: ", predVars[i], " variable has more than 5% values missing; all missing values will be imputed!"))
+#     }
+# 
+#     if (total_NAs > 0) {
+#       if (i == 1) {
+#         covars <- predVars[i]
+#       } else {
+#         covars <- c(covars, predVars[i])
+#       }
+#     }
+#   }
+# 
+#   if (length(covars) == 0) {
+#     print("No missing values to impute in any risk variables!")
+#   } else {
+#     print(paste("Imputing missing values in following variables: ", paste(as.character(covars), collapse = ", ")))
+#     n.imp <- 1
+# 
+#     imp <- X %>% select(all_of(covars))
+# 
+#     # deal with constant variables
+#     for (a in names(imp)) {
+#       if (all(imp[[a]]==min(imp[[a]], na.rm=TRUE), na.rm=TRUE)) imp[[a]]=min(imp[[a]], na.rm=TRUE)
+#     }
+# 
+#     # diagnostics = FALSE , remove_collinear=F are needed to avoid errors due to collinearity
+#     imp <- imp %>%
+#       mice(m = n.imp, printFlag = FALSE, seed=1, diagnostics = FALSE, remove_collinear = FALSE)
+# 
+#     X[, covars] <- mice::complete(imp, action = 1L)
+#   }
+#   return(X)
+# }
+
+
+
 # impute missing values in the risk variables using mice package
 # @param X dataframe containing all risk variables
-# @param riskVars the vector of column names of risk variables
+# @param predVars the vector of column names of risk variables
 # @return a data frame updated with imputations for missing values of risk variables
-impute_missing_values <- function(X, riskVars) {
+impute_missing_values <- function(X, predVars) {
+  # delete the file impute_missing_values.csv
+  unlink(here("output", Sys.getenv("TRIAL"), "impute_missing_values.csv"))
   covars <- vector()
   # First identify risk demographic variables having missing values
-  for (i in 1:length(riskVars)) {
-    total_NAs <- sum(is.na(X %>% pull(riskVars[i])))
-    percent_NAs <- total_NAs / length(X %>% pull(riskVars[i]))
-
+  for (i in 1:length(predVars)) {
+    total_NAs <- sum(is.na(X %>% pull(predVars[i])))
+    percent_NAs <- total_NAs / length(X %>% pull(predVars[i]))
+    
     if (percent_NAs > 0.05) {
-      print(paste0("WARNING: ", riskVars[i], " variable has more than 5% values missing; all missing values will be imputed!"))
+      print(paste0("WARNING: ", predVars[i], " variable has more than 5% values missing; all missing values will be imputed!"))
     }
-
+    
     if (total_NAs > 0) {
       if (i == 1) {
-        covars <- riskVars[i]
+        covars <- predVars[i]
       } else {
-        covars <- c(covars, riskVars[i])
+        covars <- c(covars, predVars[i])
       }
     }
   }
-
+  
   if (length(covars) == 0) {
     print("No missing values to impute in any risk variables!")
+    # Also print to file
+    paste("Imputing missing values in following variables: None") %>%
+      write.table(file = here("output", Sys.getenv("TRIAL"), "impute_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
   } else {
     print(paste("Imputing missing values in following variables: ", paste(as.character(covars), collapse = ", ")))
+    # Also print to file
+    paste("Missing values were imputed for the following variables:", paste(as.character(covars), collapse = ", ")) %>%
+      write.table(file = here("output", Sys.getenv("TRIAL"), "impute_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+    
     n.imp <- 1
-
-    imp <- X %>% select(all_of(covars))
-
+    
+    impVars <- X %>% select(all_of(covars))
+    
     # deal with constant variables
-    for (a in names(imp)) {
-      if (all(imp[[a]]==min(imp[[a]], na.rm=TRUE), na.rm=TRUE)) imp[[a]]=min(imp[[a]], na.rm=TRUE)
+    for (a in names(impVars)) {
+      print(a)
+      if (all(impVars[[a]]==min(impVars[[a]], na.rm=TRUE), na.rm=TRUE)) {
+        X[[a]] = min(impVars[[a]], na.rm=TRUE)
+        covars = covars[!covars %in% a]
+      }
     }
-
+    
+    noimpVars <- X %>% select(-all_of(covars)) %>% colnames()
+    
+    init = mice(X, maxit=0) 
+    meth = init$method
+    predM = init$predictorMatrix 
+    meth[c(noimpVars)] = ""
+    
     # diagnostics = FALSE , remove_collinear=F are needed to avoid errors due to collinearity
-    imp <- imp %>%
-      mice(m = n.imp, printFlag = FALSE, seed=1, diagnostics = FALSE, remove_collinear = FALSE)
-
-    X[, covars] <- mice::complete(imp, action = 1L)
+    X <- mice(X, method=meth, predictorMatrix=predM, m=n.imp,
+              printFlag = FALSE, seed=1, diagnostics = FALSE, remove_collinear = FALSE)
+    X <- mice::complete(X, action = 1L)
+    
   }
   return(X)
 }
@@ -786,9 +956,19 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
 
   lowestXTick <- floor(min(allSLs$ci_ll)*10)/10
   highestXTick <- ceiling(max(allSLs$ci_ul)*10)/10
-  learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm")
-  if(Sys.getenv("TRIAL") == "moderna_real")
+  if(Sys.getenv("TRIAL") == "hvtn705second"){
+    learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm")
+    names.plot.margin = unit(c(0.1,-0.15,0.65,-0.15),"cm")
+    y_at = 35.2
+  } else if(Sys.getenv("TRIAL") == "moderna_real"){
     learner.plot.margin = unit(c(0.8,0.2,0.8,-0.15),"cm")
+    names.plot.margin = unit(c(-1.5,-0.15,0.65,-0.15),"cm")
+    y_at = 35.2
+  } else if(Sys.getenv("TRIAL") %in% c("janssen_pooled_partA", "janssen_la_partA")){
+    learner.plot.margin = unit(c(3.25,0.2,0.8,-0.15),"cm")
+    names.plot.margin = unit(c(1.6,-0.15,1.39,-0.15),"cm")
+    y_at = 16.7
+  }
   
   top_learner_plot <- ggplot() +
     geom_pointrange(allSLs %>% mutate(varset = fct_reorder(varset, AUC, .desc = F)), mapping=aes(x=varset, y=AUC, ymin=ci_ll, ymax=ci_ul), size = 1, color="blue", fill="blue", shape=20) +
@@ -817,29 +997,26 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
                               columnVal=="AUCstr" ~ 2),
            ycoord = rep(total_learnerScreen_combos:1, 2))
   
-  names.plot.margin = unit(c(0.1,-0.15,0.65,-0.15),"cm")
-  
-  if(Sys.getenv("TRIAL") == "moderna_real")
-    names.plot.margin = unit(c(-1.5,-0.15,0.65,-0.15),"cm")
-
   top_learner_nms_plot <- ggplot(allSLs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
-    xlim(0.7,2) +
+    xlim(0.7, 2) +
+    theme_bw() +
     theme(plot.margin=names.plot.margin,
-          axis.line=element_blank(),
+          axis.line = element_blank(),
           axis.text.y = element_blank(),
           axis.text.x = element_text(size = 2, color = "white"),
           axis.ticks = element_blank(),
-          axis.title = element_blank()) +
-    annotate("text", x = 1.5, y = 35.2, size = 5,
+          axis.title = element_blank(),
+          panel.border = element_blank()) +
+    annotate("text", x = 1.5, y = y_at, size = 5,
              label = "Variable Set",
              fontface = "bold",
              hjust = 1) +
-    annotate("text", x = 2, y = 35.2, size = 5,
+    annotate("text", x = 2, y = y_at, size = 5,
              label = "CV-AUC [95% CI]",
              fontface = "bold",
              hjust = 1)
-
+  
   return(list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot))
 }
 
@@ -848,6 +1025,15 @@ make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
 # @param avgs dataframe containing Screen, Learner, AUC estimates and CIs as columns
 # @return list of 2 ggplot objects: one containing forest plot and the other containing labels (Screen, Learner and CV-AUCs)
 make_forest_plot_prod <- function(avgs) {
+  
+  if(Sys.getenv("TRIAL") == "moderna_real"){
+    PLOT.MARGIN = unit(c(0.8, -0.15, 0.2, -0.15), "cm")
+    NAMES.PLOT.MARGIN = unit(c(1.0, -0.15, 1.7, -0.15), "cm")
+  } else if(Sys.getenv("TRIAL") == "janssen_pooled_partA"){
+    PLOT.MARGIN = unit(c(0.8, -0.15, 0.2, -0.15), "cm")
+    NAMES.PLOT.MARGIN = unit(c(1.0, -0.15, 1.7, -0.15), "cm")
+  }
+  
   lowestXTick <- floor(min(avgs$ci_ll) * 10) / 10
   top_learner_plot <- ggplot() +
     geom_pointrange(avgs %>% mutate(LearnerScreen = fct_reorder(LearnerScreen, AUC, .desc = F)), mapping = aes(x = LearnerScreen, y = AUC, ymin = ci_ll, ymax = ci_ul), size = 3, color = "blue", fill = "blue", shape = 20) +
@@ -861,7 +1047,7 @@ make_forest_plot_prod <- function(avgs) {
       axis.title = element_text(size = 30),
       axis.ticks.length = unit(.35, "cm"),
       axis.text.y = element_blank(),
-      plot.margin = unit(c(0.8, -0.15, 0.2, -0.15), "cm"),
+      plot.margin = PLOT.MARGIN,
       panel.border = element_blank(),
       axis.line = element_line(colour = "black")
     )
@@ -873,7 +1059,7 @@ make_forest_plot_prod <- function(avgs) {
     gather("columnVal", "strDisplay") %>%
     mutate(
       xcoord = case_when(
-        columnVal == "Learner" ~ 1,
+        columnVal == "Learner" ~ 2,
         columnVal == "Screen" ~ 1.5,
         columnVal == "AUCstr" ~ 2
       ),
@@ -884,7 +1070,7 @@ make_forest_plot_prod <- function(avgs) {
     geom_text(hjust = 1, vjust = 0, size = 10) +
     xlim(0.7, 2) +
     theme(
-      plot.margin = unit(c(1.0, -0.15, 1.7, -0.15), "cm"),
+      plot.margin = NAMES.PLOT.MARGIN,
       axis.line = element_blank(),
       axis.text.y = element_blank(),
       axis.text.x = element_text(size = 2, color = "white"),
@@ -900,12 +1086,24 @@ make_forest_plot_prod <- function(avgs) {
 # @param avgs dataframe containing Screen, Learner, AUC estimates and CIs as columns
 # @return list of 2 ggplot objects: one containing forest plot and the other containing labels (Screen, Learner and CV-AUCs)
 make_forest_plot <- function(avgs){
+
+  if(Sys.getenv("TRIAL") == "hvtn705second"){
+    PLOT.MARGIN = unit(c(3.4,-0.15,1,-0.15),"cm")
+    NAMES.PLOT.MARGIN = unit(c(1.6,-0.15,1.5,-0.15),"cm")
+    y_at = 18.75
+  } else if(Sys.getenv("TRIAL") == "moderna_real"){
+    PLOT.MARGIN = unit(c(2.8,-0.15,1,-0.15),"cm")
+    NAMES.PLOT.MARGIN = unit(c(1.0,-0.15,1.7,-0.15),"cm")
+    y_at = 15.75
+  } else if(Sys.getenv("TRIAL") %in% c("janssen_pooled_partA", "janssen_la_partA")){
+    PLOT.MARGIN = unit(c(2.8,0.15,1,-0.15),"cm")
+    NAMES.PLOT.MARGIN = unit(c(0.6,-0.15,0.85,-0.15),"cm")
+    y_at = 31.25
+  }
+  
   lowestXTick <- floor(min(avgs$ci_ll)*10)/10
   highestXTick <- ceiling(max(avgs$ci_ul)*10)/10
-  learner.plot.margin = unit(c(3.4,-0.15,1,-0.15),"cm")
-  if(Sys.getenv("TRIAL") == "moderna_real")
-    learner.plot.margin = unit(c(2.8,-0.15,1,-0.15),"cm")
-    
+
   top_learner_plot <- ggplot() +
     geom_pointrange(avgs %>% mutate(LearnerScreen = fct_reorder(LearnerScreen, AUC, .desc = F)), mapping=aes(x=LearnerScreen, y=AUC, ymin=ci_ll, ymax=ci_ul), size = 1, color="blue", fill="blue", shape=20) +
     coord_flip() +
@@ -919,7 +1117,7 @@ make_forest_plot <- function(avgs){
           axis.text.x = element_text(size=16),
           axis.title.x = element_text(size=16),
           axis.text.y = element_blank(),
-          plot.margin=learner.plot.margin,
+          plot.margin = PLOT.MARGIN,
           panel.border = element_blank(),
           axis.line = element_line(colour = "black"))
 
@@ -933,17 +1131,11 @@ make_forest_plot <- function(avgs){
                               columnVal=="AUCstr" ~ 2),
            ycoord = rep(total_learnerScreen_combos:1, 3))
 
-  names.plot.margin = unit(c(1.6,-0.15,1.5,-0.15),"cm")
-  y_at = 18.75
-  if(Sys.getenv("TRIAL") == "moderna_real"){
-    names.plot.margin = unit(c(1.0,-0.15,1.7,-0.15),"cm")
-    y_at = 15.75
-  }
 
   top_learner_nms_plot <- ggplot(avgs_withCoord, aes(x = xcoord, y = ycoord, label = strDisplay)) +
     geom_text(hjust=1, vjust=0, size=5) +
     xlim(0.7,2) +
-    theme(plot.margin=names.plot.margin,
+    theme(plot.margin = NAMES.PLOT.MARGIN,
           axis.line=element_blank(),
           axis.text.y = element_blank(),
           axis.text.x = element_text(size = 2, color = "white"),

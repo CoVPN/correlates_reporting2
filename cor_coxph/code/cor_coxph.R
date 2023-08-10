@@ -1,23 +1,23 @@
 #Sys.setenv(TRIAL = "vat08m_naive"); COR="D43"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "moderna_real"); COR="D57over29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "moderna_real"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222_bAb"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_EUA"); COR="D29IncludeNotMolecConfirmedstart1"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "profiscov"); COR="D91"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "profiscov"); COR="D91over43"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "profiscov_lvmn"); COR="D43start48"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_partAsenior"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "janssen_la_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "hvtn705secondNonRSA"); COR="D210"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_na_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
-    # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
-    if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))    
-source(here::here("..", "_common.R"))
-# dat.mock is made
+source(here::here("..", "_common.R")) # dat.mock is made
 
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
@@ -40,6 +40,11 @@ save.results.to = paste0(save.results.to, "/", attr(config,"config")); if (!dir.
 save.results.to = paste0(save.results.to, "/", COR,"/");               if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
+# append to file names for figures and tables
+# defined differently in cor_coxph_xx.R
+fname.suffix = study_name
+
+
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
 B <-       config$num_boot_replicates 
 numPerm <- config$num_perm_replicates # number permutation replicates 1e4
@@ -56,7 +61,6 @@ for (a in assays) {
 
 # define an alias for EventIndPrimaryDxx
 dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
-dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
 
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
@@ -64,6 +68,7 @@ write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_
     
 dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
+
 
 # define trichotomized markers
 dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
@@ -75,7 +80,8 @@ for (a in all.markers) {
         write(paste0(labels.axis[1,get.assay.from.name(a)], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
     } else {
         # fold change
-        write(paste0(a, " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
+        # gsub("_", "\\\_", a, fixed = TRUE) is a bandaid to escape the marker name for latex, which may have _
+        write(paste0(gsub("_", "\\_", a, fixed = TRUE), " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
     }
 }
 
@@ -105,16 +111,27 @@ dat.vac.seroneg.ph2=subset(dat.vac.seroneg, ph2)
 begin=Sys.time()
 print(date())
 
-# misc stuff
+# last event time
+# sapply(0:2, function (i) max(subset(dat.vac.seroneg, EventIndPrimary==1 & Region==i, EventTimePrimary)[[1]]))
+
+
 #with(dat.vac.seroneg.ph2, weighted.mean(Day35bindRBD<log10(100), wt))
 
+
+# with(dat.vac.seroneg, table(ph2, SevereEventIndPrimaryIncludeNotMolecConfirmedD29))
+# with(dat.vac.seroneg, table(ph2, SevereEventIndPrimaryMolecConfirmedD29))
+
+
+# with(dat.vac.seroneg, table(ph2, EventIndPrimary))
+# with(subset(dat.vac.seroneg, Ptid %in% sevcases$USUBJID), table(ph2, EventIndPrimary))
+# mywrite.csv(subset(dat.vac.seroneg, EventIndPrimary==1, select=c(Ptid,ph2)), file="~/sevcases_1")
 
 
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
 ###################################################################################################
 
-source(here::here("code", "cor_coxph_marginalized_risk_no_marker.R"))
+source(here::here("code", "cor_coxph_risk_no_marker.R"))
 
 if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 
@@ -169,13 +186,10 @@ if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m"
 # marginalized risk and controlled VE
 ###################################################################################################
     
-# load ylims.cor[[1]] from D29 analyses, which is a list of two: 1 with placebo lines, 2 without placebo lines.
-tmp=paste0(here::here(), paste0("/output/", attr(config,"config"), "/", COR, "/ylims.cor.", study_name, ".Rdata"))
-if (file.exists(tmp)) load(tmp) # if it does not exist, the code will find alternative ylim
+source(here::here("code", "cor_coxph_risk_bootstrap.R"))
 
-source(here::here("code", "cor_coxph_marginalized_risk_bootstrap.R"))
-
-source(here::here("code", "cor_coxph_marginalized_risk_plotting.R"))
+for.title="" # need to be defined even if it is empty
+source(here::here("code", "cor_coxph_risk_plotting.R"))
 
 if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_EUA")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
 

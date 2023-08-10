@@ -10,6 +10,7 @@ for (a in all.markers) {
     f= update(form.0, as.formula(paste0("~.+", a)))
     fits[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
+
 # scaled marker
 fits.scaled=list()
 for (a in all.markers) {
@@ -17,7 +18,8 @@ for (a in all.markers) {
     fits.scaled[[a]]=svycoxph(f, design=design.vacc.seroneg) 
 }
 
-
+# put coxph model coef together to save
+fits.cont.coef.ls = lapply(fits, function (fit) getFixedEf(fit, robust=T))
 
 natrisk=nrow(dat.vac.seroneg)
 nevents=sum(dat.vac.seroneg$yy==1)
@@ -55,6 +57,9 @@ for (a in all.markers) {
     fits.tri[[a]]=run.svycoxph(f, design=design.vacc.seroneg) 
 }
 fits.tri=fits.tri
+
+fits.tri.coef.ls= lapply(fits.tri, function (fit) getFixedEf(fit, robust=T))
+
 
 rows=length(coef(fits.tri[[1]]))-1:0
 # get generalized Wald p values
@@ -352,7 +357,7 @@ if (!is.null(config$multivariate_assays)) {
         tab
         tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
         
-        mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold"), align="c", include.colnames = T, save2input.only=T, 
+        mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold", study_name), align="c", include.colnames = T, save2input.only=T, 
             input.foldername=save.results.to)
       }
     }
@@ -429,7 +434,7 @@ if (!is.null(config$interaction)) {
         b=paste0("Day",tpeak,bold)
                 
         # fit the interaction model and save regression results to a table
-        f=as.formula(paste("Surv(EventTimePrimary, EventIndPrimary) ~ RSA + Age + BMI + Riskscore + ",a," + ",b," + ",a,":",b))            
+        f= update(form.0, as.formula(paste0("~.+", a," + ",b," + ",a,":",b)))
         fit=svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)) 
         fits=list(fit)
         est=getFormattedSummary(fits, exp=T, robust=T, type=1)
@@ -437,7 +442,7 @@ if (!is.null(config$interaction)) {
         est = paste0(est, " ", ci)
         p=  getFormattedSummary(fits, exp=T, robust=T, type=10)
         # generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)
-        var.ind=5:7
+        var.ind=length(coef(fit))-2:0
         stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
         p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE)
         # put together the table
@@ -461,5 +466,8 @@ if (!is.null(config$interaction)) {
 
 
 
+###################################################################################################
+
+save(fits.cont.coef.ls, fits.tri.coef.ls, file=paste0(save.results.to, "coxph_fits.Rdata"))
 
 save (tab.cont, tab.cat, tab.cont.scaled, save.s.1, save.s.2, pvals.adj, file=paste0(save.results.to, "coxph_slopes.Rdata"))

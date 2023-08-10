@@ -1,0 +1,177 @@
+# `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
+
+The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise.
+
+## Hazard ratios
+
+
+```{r, echo=FALSE, results='asis'}
+
+variants=list(US=c("Ancestral.Lineage"),
+              LatAme=c("Ancestral.Lineage", "Gamma", "Lambda", "Mu", "Zeta"),
+              RSA=c("Beta"))
+
+regions=c("US","LatAm","RSA")
+
+```
+
+
+
+```{r, echo=FALSE, results='asis'}
+
+for (iRegion in 1:3) {
+  region=regions[iRegion]
+  for (variant in variants[[iRegion]]) {
+    fname.suffix = paste0(region, "_", variant)
+    
+    cat(paste0("
+\\subsection{",region,", ",variant,"}    
+    
+\\setlength{\\tabcolsep}{.5ex}
+  \\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_", fname.suffix, "}
+\\vspace{-20pt}
+$\\ast$Baseline covariates adjusted for: ", covariates_adjusted, ".
+
+", special.note, "
+
+$\\dagger$ Results are based on analyses of ten imputed data sets combined through Robin's rule.
+
+\\vspace{10pt}
+
+
+
+\\setlength{\\tabcolsep}{.5ex}
+  \\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_scaled_", fname.suffix, "}
+\\vspace{-20pt}
+$\\ast$Baseline covariates adjusted for: ", covariates_adjusted, ". 
+
+", special.note, "
+
+$\\dagger$ Results are based on analyses of ten imputed data sets combined through Robin's rule.
+
+\\vspace{10pt}
+
+
+
+\\scriptsize
+\\input{", paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", fname.suffix), "}
+\\normalsize
+\\vspace{-20pt}
+$\\ast$Baseline covariates adjusted for: ", covariates_adjusted, ". Cutpoints (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, "_", study_name, "}"), sep=","), "
+
+$\\ast\\ast$$\\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
+
+", special.note, "
+
+$\\dagger$ Results are based on analyses of ten imputed data sets combined through Robin's rule.
+
+\\vspace{10pt}
+
+
+\\begin{table}[H]
+\\caption{Number of ", variant, " cases and non-cases (latter includes other variant cases) in the ",region," in the un-imputed dataset.}
+\\begin{center}
+  \\input{", pathCoRoutput, "/tab1_nonimputed_",fname.suffix,"}
+\\end{center}
+\\end{table}
+
+
+\\begin{table}[H]
+\\caption{Average number of ", variant, " cases and non-cases (latter includes other variant cases) in the ",region," across ten hotdeck imputed datasets.}
+\\begin{center}
+  \\input{", pathCoRoutput, "/tab1_",fname.suffix,"}
+\\end{center}
+\\end{table}
+
+
+\\begin{table}[H]
+\\caption{Average number of cases non-", variant, " cases in the ",region," across ten hotdeck imputed datasets.}
+\\begin{center}
+  \\input{", pathCoRoutput, "/tab1_competing_",fname.suffix,"}
+\\end{center}
+\\end{table}
+
+
+\\clearpage
+"))
+
+  }
+}
+
+```
+
+
+### Forest plots
+
+\begin{figure}[H]
+    \includegraphics[width=1\textwidth]{`r pathCoRoutput`/hr_forest_bindSpike}
+    \caption{Forest plots of hazard ratios per 10-fold increase. `r special.note`}
+\end{figure}
+\clearpage
+
+\begin{figure}[H]
+    \includegraphics[width=1\textwidth]{`r pathCoRoutput`/hr_forest_bindRBD}
+    \caption{Forest plots of hazard ratios per 10-fold increase. `r special.note`}
+\end{figure}
+\clearpage
+
+\begin{figure}[H]
+    \includegraphics[width=1\textwidth]{`r pathCoRoutput`/hr_forest_pseudoneutid50}
+    \caption{Forest plots of hazard ratios per 10-fold increase. `r special.note`}
+\end{figure}
+\clearpage
+
+
+## Marginalized risk and controlled vaccine efficacy plots
+
+```{r, echo=FALSE, results='asis'}
+for (iRegion in 1:3) {
+  region=regions[iRegion]
+  for (variant in variants[[iRegion]]) {
+    fname.suffix = paste0(region, "_", variant)
+    
+    cat(paste0("
+\\subsection{",region,", ",variant,"}
+"))
+  
+    for (a in all.markers) {
+      assay=get.assay.from.name(a)
+      res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+
+  }
+}
+
+
+```
+
+
+
+
+
+## Multivariate Cox Models of Risk
+
+```{r, echo=FALSE, results='asis'}
+for (iRegion in 1:3) {
+  region=regions[iRegion]
+  for (variant in variants[[iRegion]]) {
+    fname.suffix = paste0(region, "_", variant)
+    txt.endpoint = paste0(variant, " COVID, ", region)
+
+    cat(paste0("
+\\subsection{",region,", ",variant,"}
+"))
+
+  if (!is.null(config$multivariate_assays)) {
+    for (i in 1:length(config$multivariate_assays)) {
+      res = knitr::knit_child(c(here::here('cor_coxph', 'multiple_regression.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+  }
+    
+    
+  }
+}
+```
+

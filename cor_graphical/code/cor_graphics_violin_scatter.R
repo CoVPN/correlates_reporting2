@@ -36,7 +36,7 @@ plots_titles <- labels.assays[names(labels.assays) %in% names(labels.assays.shor
 timesls <- list(labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1], 
                 labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)],
                 labels.time[(names(labels.time) %in% times) & grepl("fold-rise over D1", labels.time)])
-if (do.fold.change==0) {timesls[[3]]<-NULL}
+if (do.fold.change.overB==0) {timesls[[3]]<-NULL}
 
 # x-axis need a wrapped verion of label
 case_grp1 = ifelse(study_name=="PROFISCOV", "Early Post-Peak Cases", "Intercurrent Cases")
@@ -44,10 +44,9 @@ case_grp1_wrap = ifelse(study_name=="PROFISCOV", "Early\nPost-Peak\nCases", "Int
 case_grp2 = ifelse(study_name=="PROFISCOV", "Late Post-Peak Cases", "Post-Peak Cases")
 case_grp2_wrap = ifelse(study_name=="PROFISCOV", "Late\nPost-Peak\nCases", "Post-Peak\nCases")
 
-cohort_event_lb = c(case_grp1=case_grp1,
-                    case_grp2=case_grp2,
-                    "Non-Cases"="Non-Cases"
-                    )
+cohort_event_lb = c(case_grp1, case_grp2, "Non-Cases")
+names(cohort_event_lb) = c(case_grp1, case_grp2, "Non-Cases")
+
 ## common variables with in loop
 min_max_plot <- longer_cor_data %>% group_by(assay) %>% summarise(min=min(value, na.rm=T), max=max(value, na.rm=T))
 mins <- min_max_plot$min
@@ -210,7 +209,9 @@ for (i in 1:length(plots)) {
   for (j in 1:length(bstatus)) {
     for (k in 1:length(trt)) {
       for (t in 1:length(timesls)) { # v1 and v2
-        for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
+        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+          "Perprotocol")){
         
           y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
           y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 0.25 + ifelse(log10(uloqs[plots[i]])==maxs[plots[i]], 0.1, 0))
@@ -267,7 +268,9 @@ for (i in 1:length(plots)) {
   for (j in 1:length(bstatus)) {
     for (k in 1:length(trt)) {
       for (t in 1:length(timesls)) {
-        for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
+        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+          "Perprotocol")){
+          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
           for (s in c("age_geq_65_label","highrisk_label","sex_label","minority_label","Dich_RaceEthnic")) {
             
             groupby_vars2 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", s)
@@ -348,7 +351,9 @@ for (i in 1:length(plots)) {
   for (j in 1:length(bstatus)) {
     for (k in 1:length(trt)) {
       for (t in 1:length(timesls)) {
-        for (case_set in c(if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", "Perprotocol")){
+        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+          "Perprotocol")){
+          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
   
           y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
           y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 1.5)
@@ -402,46 +407,50 @@ for (i in 1:length(plots)) {
   }
 }
 
+
 #### Figure 4. Scatter plot, assay vs. age in years, case vs non-case, (Day 1), Day 29, and Day 57 if exists
 for (i in 1:length(plots)) {
   for (d in 1:length(timesls[[2]])) { # Day 1, Day 29, Day 57
     for (c in c("Vaccine","all")) {
-      
-      ds.tmp <- subset(longer_cor_data, assay==plots[i] & time==timesls[[2]][d])
-      ds.tmp$size <- with(ds.tmp, ifelse(cohort_event == "Non-Cases", 2.5, 4))
-      
-      if (timesls[[2]][d]==tail(timesls[[2]], n=1)) {ds.tmp <- ds.tmp %>% 
-        filter(!(time==tail(timesls[[2]], n=1) & cohort_event %in% c(case_grp1#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
-                                                                     ))) %>%
-        mutate(cohort_event = factor(cohort_event, levels = tail(levels(cohort_event), 2)))
+      for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+        # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+        "Perprotocol")){
+        
+        ds.tmp <- subset(longer_cor_data, assay==plots[i] & time==timesls[[2]][d] & eval(as.name(case_set))==1)
+        ds.tmp$size <- with(ds.tmp, ifelse(cohort_event == "Non-Cases", 2.5, 4))
+        
+        if (timesls[[2]][d]==tail(timesls[[2]], n=1)) {ds.tmp <- ds.tmp %>% 
+          filter(!(time==tail(timesls[[2]], n=1) & cohort_event %in% c(case_grp1#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
+                                                                       ))) %>%
+          mutate(cohort_event = factor(cohort_event, levels = tail(levels(cohort_event), 2)))
+        }
+        
+        y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+        y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+        
+        # subset for vaccine arm
+        if (c=="Vaccine"){ds.tmp <- subset(ds.tmp, Trt=="Vaccine")}
+  
+        p <- ggplot(ds.tmp, aes(x = Age, y = value)) + 
+          facet_wrap(~Bserostatus+Trt, nrow = 1) + 
+          geom_point(alpha = 1, aes(color = cohort_event, shape = cohort_event, size = size)) + 
+          geom_smooth(aes(group = cohort_event, color = cohort_event), size=1.5, method = 'loess', se= F, span = 1.15) + 
+          scale_y_continuous(limits=y.lim, breaks=y.breaks, labels=math_format(10^.x)) +
+          scale_x_continuous(breaks = seq(from=18, to=86, by=17)) +
+          labs(title = paste0(plots_titles[i],": ",timesls[[2]][d]), x = 'Age (years)', y = plots_ytitles[i],
+               color="Category", shape="Category") +
+          scale_color_manual(values = col_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
+          scale_shape_manual(values = shp_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
+          guides(size = "none") +
+          theme(plot.margin = unit(c(1, 1, 1, 1), "cm"), 
+                panel.grid = element_blank(),
+                legend.title = element_text(size=22),
+                plot.title = element_text(hjust = 0.5),
+                axis.text.x = element_text(size=ifelse(c=="Vaccine", 27, 19)))
+        
+        file_name <- paste0("scatter_",gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])),"_",c,"_",gsub(" ","",timesls[[2]][d]),"_", if(case_set=="severe") "severe_", study_name, ".pdf")
+        suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))
       }
-      
-      y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-      y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-      
-      # subset for vaccine arm
-      if (c=="Vaccine"){ds.tmp <- subset(ds.tmp, Trt=="Vaccine")}
-
-      p <- ggplot(ds.tmp, aes(x = Age, y = value)) + 
-        facet_wrap(~Bserostatus+Trt, nrow = 1) + 
-        geom_point(alpha = 1, aes(color = cohort_event, shape = cohort_event, size = size)) + 
-        geom_smooth(aes(group = cohort_event, color = cohort_event), size=1.5, method = 'loess', se= F, span = 1.15) + 
-        scale_y_continuous(limits=y.lim, breaks=y.breaks, labels=math_format(10^.x)) +
-        scale_x_continuous(breaks = seq(from=18, to=86, by=17)) +
-        labs(title = paste0(plots_titles[i],": ",timesls[[2]][d]), x = 'Age (years)', y = plots_ytitles[i],
-             color="Category", shape="Category") +
-        scale_color_manual(values = col_val, labels = cohort_event_lb, drop=F) +
-        scale_shape_manual(values = shp_val, labels = cohort_event_lb, drop=F) +
-        guides(size = "none") +
-        theme(plot.margin = unit(c(1, 1, 1, 1), "cm"), 
-              panel.grid = element_blank(),
-              legend.title = element_text(size=22),
-              plot.title = element_text(hjust = 0.5),
-              axis.text.x = element_text(size=ifelse(c=="Vaccine", 27, 19)))
-      
-      file_name <- paste0("scatter_",gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])),"_",c,"_",gsub(" ","",timesls[[2]][d]),"_", study_name, ".pdf")
-      suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))
-      
     }
   }
 }
@@ -449,51 +458,54 @@ for (i in 1:length(plots)) {
 #### Figure 5. Scatter plot, assay vs. days since Day 29/Day 1, cases only, 1 panel per assay
 for (i in 1:length(plots)) {
   for (c in c("Vaccine","all")) {
+    for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+      "Perprotocol")){
+      # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+      if(length(timepoints)==1) {
+        timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)] 
+      } else {timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1]}
+      
+      ds.tmp <- longer_cor_data %>%
+        filter(assay==plots[i]) %>%
+        filter(eval(as.name(case_set))==1) %>%
+        filter(!(time==timesince[2] & cohort_event %in% c(case_grp1#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
+                                                          ))) %>% 
+        # case only and remove "intercurrent" cases from the last timepoint
+        filter(time %in% timesince) %>%
+        filter(!cohort_event == "Non-Cases") %>% 
+        mutate(cohort_event = factor(cohort_event, levels = head(levels(cohort_event), -1)))
+      
+      xvar <- ifelse(length(timepoints)>1, paste0("EventTimePrimaryD", tinterm),
+                     ifelse(incNotMol=="IncludeNotMolecConfirmed", gsub(tpeak, "1", config.cor$EventTimePrimary), "EventTimePrimaryD1"))
+      xlb <- ifelse(length(timepoints)>1, paste0("Days Since the Day ", tinterm," Visit"), "Days Since the Day 1 Visit")
+      y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+      y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+      x.breaks <- seq(from=0, to=max(ds.tmp[, xvar], na.rm=T), by=floor(max(ds.tmp[, xvar], na.rm=T)/5))
+      x.lim <- c(min(ds.tmp[, xvar], na.rm=T), max(ds.tmp[, xvar], na.rm=T))
+      
+      # subset for vaccine baseline neg arm
+      if (c=="Vaccine"){ds.tmp <- subset(ds.tmp, Trt=="Vaccine")}
     
-    if(length(timepoints)==1) {
-      timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)] 
-    } else {timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1]}
-    
-    ds.tmp <- longer_cor_data %>%
-      filter(assay==plots[i]) %>%
-      filter(!(time==timesince[2] & cohort_event %in% c(case_grp1#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
-                                                        ))) %>% 
-      # case only and remove "intercurrent" cases from the last timepoint
-      filter(time %in% timesince) %>%
-      filter(!cohort_event == "Non-Cases") %>% 
-      mutate(cohort_event = factor(cohort_event, levels = head(levels(cohort_event), -1)))
-    
-    xvar <- ifelse(length(timepoints)>1, paste0("EventTimePrimaryD", tinterm),
-                   ifelse(incNotMol=="IncludeNotMolecConfirmed", "EventTimePrimaryIncludeNotMolecConfirmedD1", "EventTimePrimaryD1"))
-    xlb <- ifelse(length(timepoints)>1, paste0("Days Since the Day ", tinterm," Visit"), "Days Since the Day 1 Visit")
-    y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-    y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-    x.breaks <- seq(from=0, to=max(ds.tmp[, xvar], na.rm=T), by=floor(max(ds.tmp[, xvar], na.rm=T)/5))
-    x.lim <- c(min(ds.tmp[, xvar], na.rm=T), max(ds.tmp[, xvar], na.rm=T))
-    
-    # subset for vaccine baseline neg arm
-    if (c=="Vaccine"){ds.tmp <- subset(ds.tmp, Trt=="Vaccine")}
-  
-    p <- ggplot(ds.tmp, aes(x = !!as.name(xvar), y = value, group = time)) + 
-      facet_wrap(~Bserostatus+Trt, nrow = 1) + 
-      geom_point(alpha = 1, aes(color = cohort_event, shape = cohort_event), size = 4) + 
-      geom_line(aes(group = Ptid)) + 
-      scale_y_continuous(limits=y.lim, breaks=y.breaks, labels=math_format(10^.x)) +
-      scale_x_continuous(limits= x.lim, breaks = x.breaks) +
-      scale_color_manual(values = col_val, labels = cohort_event_lb, drop=F) +
-      scale_shape_manual(values = shp_val, labels = cohort_event_lb, drop=F) +
-      #guides(color = guide_legend(nrow=1)) +
-      labs(title = paste0(plots_titles[i], ": ", paste(timesince, collapse=" and ")), x = xlb, y = plots_ytitles[i],
-           color="Category", shape="Category") +
-      theme(plot.margin = unit(c(1, 1, 1, 1), "cm"), 
-            panel.grid = element_blank(),
-            legend.title = element_text(size=22),
-            plot.title = element_text(hjust = 0.5),
-            axis.text.x = element_text(size=ifelse(c=="Vaccine", 27, 19)))
-    
-    file_name <- paste0("scatter_daysince_",gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])),"_",c,"_",study_name, ".pdf")
-    suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))
-    
+      p <- ggplot(ds.tmp, aes(x = !!as.name(xvar), y = value, group = time)) + 
+        facet_wrap(~Bserostatus+Trt, nrow = 1) + 
+        geom_point(alpha = 1, aes(color = cohort_event, shape = cohort_event), size = 4) + 
+        geom_line(aes(group = Ptid)) + 
+        scale_y_continuous(limits=y.lim, breaks=y.breaks, labels=math_format(10^.x)) +
+        scale_x_continuous(limits= x.lim, breaks = x.breaks) +
+        scale_color_manual(values = col_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
+        scale_shape_manual(values = shp_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
+        #guides(color = guide_legend(nrow=1)) +
+        labs(title = paste0(plots_titles[i], ": ", paste(timesince, collapse=" and ")), x = xlb, y = plots_ytitles[i],
+             color="Category", shape="Category") +
+        theme(plot.margin = unit(c(1, 1, 1, 1), "cm"), 
+              panel.grid = element_blank(),
+              legend.title = element_text(size=22),
+              plot.title = element_text(hjust = 0.5),
+              axis.text.x = element_text(size=ifelse(c=="Vaccine", 27, 19)))
+      
+      file_name <- paste0("scatter_daysince_",gsub("bind", "", gsub("pseudoneut","pnAb_",plots[i])), "_", c, "_", if(case_set=="severe") "severe_", study_name, ".pdf")
+      suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))
+    }
   }
 }
 

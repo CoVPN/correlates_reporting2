@@ -21,12 +21,12 @@ bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
 all_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
                 "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
                 "bindN",
-                "pseudoneutid50", "pseudoneutid80", 
+                "pseudoneutid50", "pseudoneutid80", "pseudoneutid50sa", "pseudoneutid50la",
                 "liveneutmn50")
 bAb_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
                 "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
                 "bindN")
-nAb_assays <- c("pseudoneutid50", "pseudoneutid80")
+nAb_assays <- c("pseudoneutid50", "pseudoneutid80", "pseudoneutid50sa", "pseudoneutid50la")
 live_assays <- c("liveneutmn50")
 times <- c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
 
@@ -51,12 +51,16 @@ labels.assays.short <- c("Anti Spike IgG (BAU/ml)",
                          "Anti N IgG (BAU/ml)",
                          "Pseudovirus-nAb ID50 (IU50/ml)", 
                          "Pseudovirus-nAb ID80 (IU50/ml)", 
+                         "Pseudovirus-nAb ID50 (SA) (IU50/ml)", 
+                         "Pseudovirus-nAb ID50 (LA) (IU50/ml)", 
                          "Live Virus-mnAb ID50 (IU50/ml)",
                          "Phagocytic Score")
 names(labels.assays.short) <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
                                 "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
                                 "bindN",
                                 "pseudoneutid50", "pseudoneutid80", 
+                                "pseudoneutid50sa", 
+                                "pseudoneutid50la", 
                                 "liveneutmn50",
                                 "ADCP")
 

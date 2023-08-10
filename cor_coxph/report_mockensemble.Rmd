@@ -11,7 +11,7 @@
     pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
 
     all.markers=paste0("Day", tpeak, assays)
-    if (do.fold.change) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
     names(all.markers)=all.markers
 
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)

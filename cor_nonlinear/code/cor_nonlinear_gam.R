@@ -112,7 +112,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
     if (exists("ylims.cor")) {
         ylim=ylims.cor[[1]][[w.wo.plac]] # from cor_coxph
     } else {
-        print("no ylims.cor found")
+        if(verbose>=2) print("no ylims.cor found")
         ylim=range(sapply(risks.all, function(x) x$prob), if(w.wo.plac==1) prev.plac, prev.vacc, 0)
     }
     

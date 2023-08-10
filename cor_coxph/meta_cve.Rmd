@@ -53,7 +53,7 @@ for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
 
 # ENSEMBLE regions
 ```{r, echo=FALSE, results='asis'}
-for (a in c("pseudoneutid50","bindSpike","bindRBD")) {
+for (a in c("pseudoneutid50","bindSpike","bindRBD","ADCP")) {
   res = knitr::knit_child(c(here::here('meta_collate_sub3.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }

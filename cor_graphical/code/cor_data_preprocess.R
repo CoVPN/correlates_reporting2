@@ -30,6 +30,19 @@ config.cor <- config::get(config = COR)
 wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
 for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
 
+if(T){ # for ENSEMBLE SA and LA reports only
+  # copy Bpseudoneutid50 to Bpseudoneutid50la & calculate delta value if Day29pseudoneutid50la exists and is required for reporting
+  # copy Bpseudoneutid50 to Bpseudoneutid50sa & calculate delta value if Day29pseudoneutid50sa exists and is required for reporting
+  if ("Day29pseudoneutid50la" %in% colnames(dat.mock) & "pseudoneutid50la" %in% assays) {
+    dat.mock$Bpseudoneutid50la = dat.mock$Bpseudoneutid50
+    dat.mock$Delta29overBpseudoneutid50la = pmin(log10(uloqs["pseudoneutid50la"]), dat.mock$Day29pseudoneutid50la) - pmin(log10(uloqs["pseudoneutid50la"]), dat.mock$Bpseudoneutid50la)
+    }
+  if ("Day29pseudoneutid50sa" %in% colnames(dat.mock) & "pseudoneutid50sa" %in% assays) {
+    dat.mock$Bpseudoneutid50sa = dat.mock$Bpseudoneutid50
+    dat.mock$Delta29overBpseudoneutid50sa = pmin(log10(uloqs["pseudoneutid50sa"]), dat.mock$Day29pseudoneutid50sa) - pmin(log10(uloqs["pseudoneutid50sa"]), dat.mock$Bpseudoneutid50sa)
+    }
+}
+
 if(F){# for simulated figure Peter requested on 8/2/2022, hardly lower the readouts for AZ PsV in dat.mock
   set.seed(12345)
   dat.mock <- dat.mock %>%
@@ -84,7 +97,7 @@ dat = dat %>%
       case_when(!!as.name(config.cor$ph2)==1 &
                   !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
                 !!as.name(config.cor$ph2)==1 & 
-                  !!as.name(paste0("EventIndPrimary", incNotMol, "D1"))==0 & 
+                  !!as.name(gsub(tpeak, "1", config.cor$EventIndPrimary))==0 & 
                   AnyinfectionD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
@@ -343,17 +356,18 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
     time = labels.time[time])
 
 # define severe: severe case or non-case
-if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
-  dat.longer.cor.subset <- dat.longer.cor.subset %>%
-    mutate(severe = case_when((time=="Day 1" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D1")))==1) ~ 1,
-                              (time=="Day 29" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D29")))==1) ~ 1,
-                              cohort_event == "Non-Cases" ~ 1,
-                              TRUE ~ 0)
-           )
-} else {dat.longer.cor.subset$severe = NA}
+# comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+#if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
+#  dat.longer.cor.subset <- dat.longer.cor.subset %>%
+#    mutate(severe = case_when((time=="Day 1" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D1")))==1) ~ 1,
+#                              (time=="Day 29" & cohort_event != "Non-Cases" & (!!as.name(paste0("SevereEventIndPrimary", incNotMol, "D29")))==1) ~ 1,
+#                              cohort_event == "Non-Cases" ~ 1,
+#                              TRUE ~ 0)
+#           )
+#} else {dat.longer.cor.subset$severe = NA}
 
-# only keep fold change for do.fold.change=1: e.g. vat08m_nonnaive
-if (do.fold.change==1){
+# only keep fold change for do.fold.change.overB=1: e.g. vat08m_nonnaive
+if (do.fold.change.overB==1){
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
 } else (
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl("Day", time))
@@ -361,12 +375,13 @@ if (do.fold.change==1){
 
 
 ##### change cohort_event value for PROFISCOV because both groups in PROFISCOV are post-peak case groups
-dat.longer.cor.subset$cohort_event = factor(with(dat.longer.cor.subset,
+if (study_name=="PROFISCOV"){
+  dat.longer.cor.subset$cohort_event = factor(with(dat.longer.cor.subset,
                                                  case_when(as.character(cohort_event)=="Intercurrent Cases" ~ "Early Post-Peak Cases",
                                                            as.character(cohort_event)=="Post-Peak Cases" ~ "Late Post-Peak Cases",
                                                            TRUE ~ as.character(cohort_event))),
                                             levels = c(if(length(timepoints)!=1)"Early Post-Peak Cases", "Late Post-Peak Cases", "Non-Cases"))
-
+}
 # subsets for violin/line plots
 #### figure specific data prep
 # 1. define response rate:
