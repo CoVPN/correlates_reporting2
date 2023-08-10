@@ -25,7 +25,7 @@ for run_survtmle in TRUE FALSE
         for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29pseudoneutid50la
           do
           sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${run_survtmle} ${impute_placebo} ${MARKER}"
+           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER}"
         done
       done
       # SOUTH AFRICA
@@ -34,7 +34,7 @@ for run_survtmle in TRUE FALSE
         for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29pseudoneutid50sa
           do
           sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${run_survtmle} ${impute_placebo} ${MARKER}"
+           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER}"
         done
       done
       # NORTH AMERICA 
@@ -43,7 +43,7 @@ for run_survtmle in TRUE FALSE
         for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50
           do
           sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R D29IncludeNotMolecConfirmed ${run_survtmle} ${impute_placebo} ${MARKER}"
+           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER}"
         done
       done
     done # END OUTCOME
