@@ -12,6 +12,7 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 	Rscript code/cor_coxph.R D57
 	Rscript code/cor_coxph.R D57over29
 	Rscript code/cor_coxph.R D29start28
+	#Rscript code/cor_coxph.R D57a
 	Rscript code/cor_graphical_time_to_event.R D29D57
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janssen_la_mock janssen_sa_mock))
 	Rscript code/cor_coxph.R D29
@@ -31,7 +32,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partAsenior janssen_pooled
 	# janssen_sa_partAsenior not included for having too few cases
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
-	Rscript code/cor_coxph_ensemble_variants.R D29VL
+	Rscript code/cor_coxph_janssen_partA_VL.R D29VL
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2 hvtn705second hvtn705secondRSA hvtn705secondNonRSA))
 	Rscript code/cor_coxph.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))

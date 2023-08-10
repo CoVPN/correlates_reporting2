@@ -14,6 +14,7 @@ for (i in 1:2) {
     } else {
       f= update(form.0, as.formula(paste0("~.+scale(", a, ")")))
     }
+    
     models = lapply(1:10, function (imp) {
       dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
       design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
@@ -22,13 +23,36 @@ for (i in 1:2) {
     betas<-MIextract(models, fun=coef)
     vars<-MIextract(models, fun=vcov)
     res<-summary(MIcombine(betas,vars)) # MIcombine prints the results, there is no way to silent it
+    
     if (i==1) {
       fits[[a]]=res
+      
+      # save for forest plots
+      cox.df=rbind(cox.df, list(
+        region = region, 
+        variant = variant, 
+        assay = a, 
+        est = exp(res[nrow(res),"results"]),
+        lb =exp(res[nrow(res),"(lower"]),
+        ub = exp(res[nrow(res),"upper)"])
+      ))
+
     } else {
       fits.scaled[[a]]=res
     }
   }
 }
+
+# # sanity check
+# i=1
+# a="Day29pseudoneutid50"
+# # remove cases with missing variants info and cases with competing types
+# dat.tmp=dat.vac.seroneg
+# dat.tmp=subset(dat.tmp, !(EventIndPrimary==1 & (is.na(seq1.variant) | seq1.variant!=variant)))
+# design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.tmp)
+# svycoxph(Surv(EventTimePrimaryD29, EventIndPrimary) ~ risk_score + Day29pseudoneutid50, design=design.vacc.seroneg) 
+
+
 
 
 ###################################################################################################

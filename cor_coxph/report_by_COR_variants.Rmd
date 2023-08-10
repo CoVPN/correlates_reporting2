@@ -7,13 +7,14 @@ The main regression model is the Cox proportional hazards model. All plots are m
 
 ```{r, echo=FALSE, results='asis'}
 
-variants=list(US="Ancestral.Lineage",
+variants=list(US=c("Ancestral.Lineage"),
               LatAme=c("Ancestral.Lineage", "Gamma", "Lambda", "Mu", "Zeta"),
-              RSA="Beta")
+              RSA=c("Beta"))
 
 regions=c("US","LatAm","RSA")
 
 ```
+
 
 
 ```{r, echo=FALSE, results='asis'}
@@ -98,6 +99,27 @@ $\\dagger$ Results are based on analyses of ten imputed data sets combined throu
 }
 
 ```
+
+
+### Forest plots
+
+\begin{figure}[H]
+    \includegraphics[width=1\textwidth]{`r pathCoRoutput`/hr_forest_bindSpike}
+    \caption{Forest plots of hazard ratios per 10-fold increase. `r special.note`}
+\end{figure}
+\clearpage
+
+\begin{figure}[H]
+    \includegraphics[width=1\textwidth]{`r pathCoRoutput`/hr_forest_bindRBD}
+    \caption{Forest plots of hazard ratios per 10-fold increase. `r special.note`}
+\end{figure}
+\clearpage
+
+\begin{figure}[H]
+    \includegraphics[width=1\textwidth]{`r pathCoRoutput`/hr_forest_pseudoneutid50}
+    \caption{Forest plots of hazard ratios per 10-fold increase. `r special.note`}
+\end{figure}
+\clearpage
 
 
 ## Marginalized risk and controlled vaccine efficacy plots
