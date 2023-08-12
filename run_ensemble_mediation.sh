@@ -1,6 +1,6 @@
-for run_survtmle in TRUE FALSE
+for run_survtmle in TRUE
   do
-  for impute_placebo in TRUE FALSE
+  for impute_placebo in TRUE
     do
     for outcome in D29IncludeNotMolecConfirmed D29SevereIncludeNotMolecConfirmed D29ModerateIncludeNotMolecConfirmed
       do

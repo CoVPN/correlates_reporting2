@@ -151,7 +151,8 @@ if(run_survtmle){
       verbose = TRUE,
       returnModels = TRUE,
       maxIter = 2, 
-      gtol = 0.01
+      gtol = 0.01,
+      truncateH = 0.9
     )
     print(fit1)
 }
@@ -202,15 +203,17 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
       trtOfInterest = 1,
       mediatorSampProb = 1 / data_keep$wt,
       mediatorInCensMod = FALSE,
+      mediatorStratify.ftime = TRUE,
       t0 = floor(tf_Day / 7.00001) + 1,
-      SL.ctime = fit1$ctimeMod,
+      SL.ctime = sl_library,
       SL.ftime = sl_library,
       SL.mediator = sl_library,
       SL.trtMediator = sl_library,
       SL.eif = sl_library,
       verbose = TRUE,
       maxIter = 2,
-      tolg = 0.01
+      tolg = 0.01,
+      truncateH = 0.9
     )
     print(fit2)
     fit <- compute_mediation_params(fit1, fit2)
