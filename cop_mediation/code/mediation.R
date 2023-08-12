@@ -126,14 +126,14 @@ saveRDS(
   )
 )
 
-sl_library <- list(
-  c("SL.mean", "screen_all"),
-  c("SL.glm", "screen_all"),
+sl_library <- c(
+  "SL.mean"
+  "SL.glm",
   # c("SL.glmnet", "screen_all"), # no need for screens
   # c("SL.xgboost", "screen_all"), # no need for screens
   # c("SL.ranger", "screen_all"),   # faster than cforest?
-  c("SL.gam", "screen_all"),
-  c("SL.earth", "screen_all")
+  "SL.gam",
+  "SL.earth"
 )
 
 
@@ -144,14 +144,14 @@ if(run_survtmle){
       ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
       ftype = data_keep$EventIndPrimary,
       trt = data_keep$Trt,
-      adjustVars = data_keep[ , covariates],
+      adjustVars = data_keep[ , covariates, drop = FALSE],
       t0 = floor(tf_Day / 7.00001) + 1,
       SL.ctime = sl_library,
       SL.ftime = sl_library, 
       verbose = TRUE,
       returnModels = TRUE,
       maxIter = 2, 
-      gtol = 0.01,
+      gtol = 0.05,
       truncateH = 0.9
     )
     print(fit1)
@@ -212,7 +212,7 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
       SL.eif = sl_library,
       verbose = TRUE,
       maxIter = 2,
-      tolg = 0.01,
+      tolg = 0.05,
       truncateH = 0.9
     )
     print(fit2)
