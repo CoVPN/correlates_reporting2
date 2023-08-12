@@ -127,7 +127,7 @@ saveRDS(
 )
 
 sl_library <- c(
-  "SL.mean"
+  "SL.mean",
   "SL.glm",
   # c("SL.glmnet", "screen_all"), # no need for screens
   # c("SL.xgboost", "screen_all"), # no need for screens
