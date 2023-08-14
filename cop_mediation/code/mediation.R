@@ -129,9 +129,9 @@ saveRDS(
 sl_library <- c(
   "SL.mean",
   "SL.glm",
-  # c("SL.glmnet", "screen_all"), # no need for screens
-  # c("SL.xgboost", "screen_all"), # no need for screens
-  # c("SL.ranger", "screen_all"),   # faster than cforest?
+  "SL.glmnet",
+  "SL.xgboost",
+  "SL.ranger",
   "SL.gam",
   "SL.earth"
 )
@@ -151,7 +151,8 @@ if(run_survtmle){
       verbose = TRUE,
       returnModels = TRUE,
       maxIter = 2, 
-      gtol = 0.05,
+      gtol = 0.01,
+      gtolCens = 0.05,
       truncateH = 0.9
     )
     print(fit1)
@@ -212,7 +213,8 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
       SL.eif = sl_library,
       verbose = TRUE,
       maxIter = 2,
-      tolg = 0.05,
+      gtol = 0.01,
+      gtolCens = 0.05,
       truncateH = 0.9
     )
     print(fit2)
