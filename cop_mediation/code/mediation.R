@@ -146,6 +146,7 @@ if(run_survtmle){
       trt = data_keep$Trt,
       adjustVars = data_keep[ , covariates, drop = FALSE],
       t0 = floor(tf_Day / 7.00001) + 1,
+      mediatorStratify.ftime = FALSE,
       SL.ctime = sl_library,
       SL.ftime = sl_library, 
       verbose = TRUE,
