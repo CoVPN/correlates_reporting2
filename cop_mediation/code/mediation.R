@@ -131,7 +131,7 @@ sl_library <- c(
   "SL.glm",
   # "SL.glmnet",
   # "SL.xgboost",
-  "SL.ranger",
+  # "SL.ranger",
   "SL.gam",
   "SL.earth"
 )
