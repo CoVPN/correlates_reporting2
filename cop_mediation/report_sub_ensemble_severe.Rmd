@@ -39,7 +39,7 @@ all_MARKERS <- c(
 )
 
 full_result <- NULL
-for(marker in all_Markers){
+for(marker in all_MARKERS){
   this_result <- readRDS(
     here::here("cop_mediation/output", 
       paste0(
