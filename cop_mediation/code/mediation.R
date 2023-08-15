@@ -129,8 +129,8 @@ saveRDS(
 sl_library <- c(
   "SL.mean",
   "SL.glm",
-  "SL.glmnet",
-  "SL.xgboost",
+  # "SL.glmnet",
+  # "SL.xgboost",
   "SL.ranger",
   "SL.gam",
   "SL.earth"
@@ -152,7 +152,7 @@ if(run_survtmle){
       verbose = TRUE,
       returnModels = TRUE,
       maxIter = 2, 
-      gtol = 0.01,
+      gtol = 0.05,
       gtolCens = 0.05,
       truncateH = 0.9
     )
@@ -214,7 +214,7 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
       SL.eif = sl_library,
       verbose = TRUE,
       maxIter = 2,
-      gtol = 0.01,
+      gtol = 0.05,
       gtolCens = 0.05,
       truncateH = 0.9
     )
