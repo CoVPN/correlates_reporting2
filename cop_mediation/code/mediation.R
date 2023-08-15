@@ -154,7 +154,7 @@ if(run_survtmle){
       maxIter = 2, 
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0
+      truncateH = 0.9
     )
     print(fit1)
 }
@@ -216,7 +216,7 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
       maxIter = 2,
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0
+      truncateH = 0.9
     )
     print(fit2)
     fit <- compute_mediation_params(fit1, fit2)
