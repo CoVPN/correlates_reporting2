@@ -5,7 +5,11 @@ library(here)
 config <- config::get(config = Sys.getenv("TRIAL"))
 if(!inherits(NULL, config$study_name)){
 	if(config$study_name == "ENSEMBLE"){
-		all_COR <- c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
+		all_COR <- c(
+		   "D29IncludeNotMolecConfirmed", 
+		   "D29SevereIncludeNotMolecConfirmed", 
+		   "D29ModerateIncludeNotMolecConfirmed"
+		)
 	}else if(config$study_name == "COVE"){
 		all_COR <- c("D29")
 	}else if(config$study_name == "AZD1222"){

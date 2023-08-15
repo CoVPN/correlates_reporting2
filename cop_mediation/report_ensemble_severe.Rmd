@@ -1,0 +1,29 @@
+# Mediators of Vaccine Efficacy {#cop-mediators}
+
+```{r cop-mediator-setup, echo = FALSE, message = FALSE, warning = FALSE, results="asis"}
+library(here)
+config <- config::get(config = Sys.getenv("TRIAL"))
+
+all_COR <- c(
+	"D29IncludeNotMolecConfirmed", 
+	"D29SevereIncludeNotMolecConfirmed", 
+	"D29ModerateIncludeNotMolecConfirmed"
+)
+
+all_TRIAL <- c(
+  "janssen_pooled_partA",
+  "janssen_la_partA",
+  "janssen_sa_partA",
+  "janssen_na_partA"
+)
+
+for(COR in all_COR){
+	for(TRIAL in all_TRIAL){
+		res = knitr::knit_child(
+	  	  here::here('cop_mediation', 'report_sub_ensemble_severe.Rmd')
+		)
+	  cat(res, sep = '\n')
+	}
+}
+```
+

@@ -1,0 +1,63 @@
+```{r, echo = FALSE}
+if(COR == "D29IncludeNotMolecConfirmed"){
+  info <- paste0(
+    "Day 29 analysis all endpoints, including non-molecularly confirmed endpoints starting seven days after first dose."
+  )
+  title <- "All endpoints"
+}else if(COR == "D29ModerateIncludeNotMolecConfirmed"){
+  info <- paste0(
+    "Day 29 analysis moderate endpoints, including non-molecularly confirmed endpoints starting seven days after first dose."
+  )
+  title <- "Moderate endpoints"
+}else if(COR == "D29SevereIncludeNotMolecConfirmed"){
+  info <- paste0(
+    "Day 29 analysis severe endpoints, including non-molecularly confirmed endpoints starting seven days after first dose."
+  )
+  title <- "Severe endpoints"
+}
+
+if(TRIAL == "janssen_pooled_partA"){
+  title <- paste0(title, ", All countries")
+}else if(TRIAL == "janssen_la_partA"){
+  title <- paste0(title, ", Latin America")
+}else if(TRIAL == "janssen_sa_partA"){
+  title <- paste0(title, ", South Africa")
+}else{
+  title <- paste0(title, ", North America")
+}
+
+```
+
+## `r title`
+
+This section contains results from the `r info`.
+
+```{r, results = "asis"}
+here::i_am("cop_mediation/report_sub.Rmd")
+all_MARKERS <- c(
+  "Day29bindSpike", "Day29bindRBD", "Day29pseudoneutid50"
+)
+
+full_result <- NULL
+for(marker in all_Markers){
+  this_result <- readRDS(
+    here::here("cop_mediation/output", 
+      paste0(
+        "full_result_", TRIAL, "_", COR, "_", 
+        "survival_impute_", marker, ".rds", collapse = ""
+      )
+    )
+  )
+
+  full_result <- rbind(full_result, this_result)
+}
+
+init_kable <- knitr::kable(full_result, 
+            format = "latex", row.names = FALSE, booktabs = TRUE, escape = FALSE,
+            caption = paste0("Table of mediation effect estimates for quantitative markers with 95\\% confidence intervals. \\newline{} Direct VE = VE comparing vaccine vs. placebo with marker set to distribution in placebo. \\newline{} Indirect VE = VE in vaccinated comparing observed marker vs. hypothetical marker under placebo. \\newline{} Prop. mediated = fraction of total risk reduction from vaccine attributed to antibody response."),
+            linesep = '')
+if(any(is.na(full_result))){
+	init_kable <- kableExtra::add_footnote(init_kable, "NA denotes insufficient overlap in antibody response between vaccinated and control participants.")
+}
+kableExtra::kable_styling(init_kable, latex_options = c("scale_down", "HOLD_position"))
+```
