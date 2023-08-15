@@ -34,15 +34,15 @@ This section contains results from the `r info`.
 
 ```{r, results = "asis"}
 here::i_am("cop_mediation/report_sub.Rmd")
-cat(TRIAL)
-cat(COR)
+message(TRIAL)
+message(COR)
 all_MARKERS <- c(
   "Day29bindSpike", "Day29bindRBD", "Day29pseudoneutid50"
 )
 
 full_result <- NULL
 for(marker in all_MARKERS){
-  cat(marker)
+  message(marker)
   this_result <- readRDS(
     here::here("cop_mediation/output", 
       paste0(
