@@ -65,7 +65,7 @@ if (F){
   # assay_labels_short: [Live Virus-mnAb ID50 (IU50/ml), Anti Spike IgG (BAU/ml), Anti Spike B.1.1.7 IgG (BAU/ml), Anti Spike B.1.351 IgG (BAU/ml), Anti Spike P.1 IgG (BAU/ml), Anti RBD IgG (BAU/ml), Anti RBD B.1.1.7 IgG (BAU/ml), Anti RBD B.1.351 IgG (BAU/ml), Anti RBD P.1 IgG (BAU/ml), Anti N IgG (BAU/ml)]
   # llox_label: [LOD,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ]
   # 2. create profiscov_all_data_processed_with_riskscore 
-  # by combining profiscov_processed_with_riskscore.csv and profiscov_lvmn_data_processed_with_riskscore.csv and assign to dat.mock
+  # by combining profiscov_data_processed_with_riskscore.csv and profiscov_lvmn_data_processed_with_riskscore.csv and assign to dat.mock
   profiscov <- read.csv(here("..", "data_clean", "profiscov_data_processed_with_riskscore.csv"), header = TRUE)
   profiscov_lvmn <- read.csv(here("..", "data_clean", "profiscov_lvmn_data_processed_with_riskscore.csv"), header = TRUE)
   profiscov$Bliveneutmn50=NULL
