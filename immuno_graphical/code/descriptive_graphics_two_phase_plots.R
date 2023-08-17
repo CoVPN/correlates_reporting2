@@ -78,7 +78,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             plot_dat = subdat,
             time = tp,
             assays = assay_immuno, # adhoc request by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
-                                   # adhoc request 2 by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
+                                   # adhoc request 2 by David: assay_immuno = c("liveneutmn50", "bindSpike_P.1", "bindRBD_P.1", "bindN")
             strata = "Bstratum",
             weight = "wt.subcohort",
             plot_title = paste0(
