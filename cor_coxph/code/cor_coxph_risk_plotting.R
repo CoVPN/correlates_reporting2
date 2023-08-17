@@ -20,7 +20,12 @@ report.ve.levels=c(.65,.9,.95)
 digits.risk=4
 
 # yy is used to chose the boundary for showing >=s risk curves 
-dat.vac.seroneg$yy = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck1"]]==variant, 1, 0)
+if (TRIAL=="janssen_partA_VL") {
+    dat.vac.seroneg$yy = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck1"]]==variant, 1, 0)    
+} else {
+    dat.vac.seroneg$yy = ifelse(dat.vac.seroneg$EventIndPrimary==1, 1, 0)
+}
+
 
 
 ###################################################################################################
@@ -153,7 +158,8 @@ print("continuous markers, controlled VE curves")
 # 2 conditional on S>=s
 # 3 same as 1 except that no sens curve is shown
 # 4 same as 3 except that y axis on -log(1-) scale
-for (eq.geq in 1:4) {  
+# 5 same as 1 except that y axis on -log(1-) scale
+for (eq.geq in 1:5) {  
 # eq.geq=4; a=all.markers[1]
     
     outs=lapply (all.markers, function(a) {        
@@ -161,7 +167,7 @@ for (eq.geq in 1:4) {
         is.delta=startsWith(a,"Delta")
         assay=get.assay.from.name(a)
         
-        tmp.1=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq==4) tmp.1=4
+        tmp.1=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq %in% c(4,5)) tmp.1=eq.geq; 
         
         mypdf(onefile=F, file=paste0(save.results.to, a, "_controlled_ve_curves",tmp.1,"_"%.%fname.suffix), mfrow=.mfrow, oma=c(0,0,0,0))
  
@@ -192,7 +198,7 @@ for (eq.geq in 1:4) {
                 } else {
                     ylim=c(0,1)
                 }
-            } else if (eq.geq==4) {
+            } else if (eq.geq %in% c(4,5)) {
                 ylim=-log(1-ve_ylim_log)
             } else {
                 ylim=ve_ylim
@@ -214,15 +220,17 @@ for (eq.geq in 1:4) {
             ret=cbind("s"=tmp, "Estimate"=paste0(formatDouble(est[table.order],digits.risk), " (", formatDouble(ci.band[1,table.order],digits.risk), ",", formatDouble(ci.band[2,table.order],digits.risk), ")"))
                         
             # draw CVE curve with sensitivity analysis
-            mymatplot(risks$marker[.subset], t(rbind(est, ci.band))[.subset,], type="l", lty=c(1,2,2), 
-                col=ifelse(eq.geq==1,"red","white"), # white is no plot
+            y= t(rbind(est, ci.band))[.subset,]
+            if(eq.geq%in% c(4,5)) y=-log(1-y)
+            mymatplot(risks$marker[.subset], y, type="l", lty=c(1,2,2), 
+                col=ifelse(eq.geq%in% c(1,5),"red","white"), # white is no plot
                 lwd=lwd, make.legend=F, 
                 ylab=paste0("Controlled VE against ",config.cor$txt.endpoint," by ", tfinal.tpeak, " days post Day ", tpeak1, " Visit"), 
                 main=paste0(all.markers.names.long[a]),
                 xlab=all.markers.names.short[a]%.%ifelse(eq.geq!=2," (=s)"," (>=s)"), 
                 ylim=ylim, xlim=xlim, yaxt="n", xaxt="n", draw.x.axis=F)
             # y axis labels
-            if (eq.geq!=4) {
+            if (!eq.geq%in% c(4,5)) {
                 yat=seq(-1,1,by=.1)
                 axis(side=2,at=yat,labels=(yat*100)%.%"%")            
             } else {
@@ -236,7 +244,7 @@ for (eq.geq in 1:4) {
             img.dat=cbind(risks$marker[.subset], t(rbind(est, ci.band))[.subset,])
         
             # add overall CVE horizontal line
-            abline(h=if(eq.geq==4) -log(1-overall.ve) else overall.ve, col="gray", lwd=2, lty=c(1,3,3))
+            abline(h=if(eq.geq%in% c(4,5)) -log(1-overall.ve) else overall.ve, col="gray", lwd=2, lty=c(1,3,3))
             #text(x=par("usr")[1], y=overall.ve[1]+(overall.ve[1]-overall.ve[2])/2,     "overall VE "%.%round(overall.ve[1]*100)%.%"%", adj=0)
         
                 
@@ -245,8 +253,8 @@ for (eq.geq in 1:4) {
             #est = 1 - (risks$prob+0.00227)/res.plac.cont["est"]; boot = 1 - t( t(risks$boot+0.00227)/res.plac.cont[2:(1+ncol(risks$boot))] )
             ci.band=apply(boot, 1, function (x) quantile(x, c(.025,.975), na.rm=T))  
             y= t(rbind(est, ci.band))[.subset,]
-            if(eq.geq==4) y=-log(1-y)
-            mymatplot(risks$marker[.subset], y, type="l", lty=c(1,2,2), col=if(eq.geq!=1) "black" else "pink", lwd=lwd, make.legend=F, add=T)
+            if(eq.geq%in% c(4,5)) y=-log(1-y)
+            mymatplot(risks$marker[.subset], y, type="l", lty=c(1,2,2), col=if(!eq.geq%in% c(1,5)) "black" else "pink", lwd=lwd, make.legend=F, add=T)
 #            if (config$is_ows_trial) {
 #                # find marker values under specific VE
 #                tmpind=sapply(report.ve.levels, function (x) ifelse (x>min(est)-0.01 & x<max(est)+0.01, which.min(abs(est-x)), NA))
@@ -260,12 +268,12 @@ for (eq.geq in 1:4) {
             
             # legend
             tmp=formatDouble(overall.ve*100,1)%.%"%"        
-            legend.x=9; if(eq.geq %in% c(1,3) & config$low_efficacy) legend.x=1; if(eq.geq==4) legend.x=1
+            legend.x=9; if(eq.geq %in% c(1,3) & config$low_efficacy) legend.x=1; if(eq.geq%in% c(4,5)) legend.x=1
             mylegend(x=legend.x,legend=c(
                     paste0("Overall VE ",tmp[1]," (",tmp[2],", ",tmp[3],")"), 
                     "Controlled VE",
-                    if(eq.geq==1) "Controlled VE Sens. Analysis"), 
-                col=c("gray", if(eq.geq==1) "pink" else "black", if(eq.geq==1) "red"), 
+                    if(eq.geq%in% c(1,5)) "Controlled VE Sens. Analysis"), 
+                col=c("gray", if(eq.geq%in% c(1,5)) "pink" else "black", if(eq.geq%in% c(1,5)) "red"), 
                 lty=1, lwd=2, cex=.8)
         
             
@@ -286,7 +294,7 @@ for (eq.geq in 1:4) {
             tmp.w=dat.vac.seroneg$wt[dat.vac.seroneg$ph2]
             tmp=get.marker.histogram(tmp.x, tmp.w, attr(config,"config"))
             if (is.nan(tmp$density[1])) tmp=hist(tmp.x, plot=F)
-            if(eq.geq==4) tmp$density=tmp$density*3
+            if(eq.geq%in% c(4,5)) tmp$density=tmp$density*3
             plot(tmp,col=col,axes=F,labels=F,main="",xlab="",ylab="",border=0,freq=F,xlim=xlim, ylim=c(0,max(tmp$density*1.25))) 
             
     

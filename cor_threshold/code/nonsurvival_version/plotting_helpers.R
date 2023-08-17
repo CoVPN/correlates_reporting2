@@ -96,7 +96,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   xlim <- get.range.cor(data, a, sub('...', '', time))
   print(xlim)
   llod <- llods[a]
-  labels_info <- get.labels.x.axis.cor(xlim, llods[a])
+  labels_info <- draw.x.axis.cor(xlim, llods[a], for.ggplot=T)
   xx <- labels_info$ticks
   labels <- labels_info$labels
 
