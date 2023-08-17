@@ -2,4 +2,10 @@ panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_shor
 bindSpike,1,bindSpike,1.7968,238.1165,NA,10.8424,Binding Antibody to D614G Spike,Anti Spike IgG - D614G (IU/ml),pos
 bindRBD,1,bindRBD,3.4263,172.5755,NA,14.0858,Binding Antibody to D614G RBD,Anti RBD IgG - D614G (IU/ml),pos
 ,,bindN,4.4897,574.6783,0.093744,23.4711,Binding Antibody to N,Anti N IgG (IU/ml),lod
-id50,1,pseudoneutid50,4.8975,844.7208,NA,NA,PsV Neutralization to D614G,Pseudovirus-nAb - D614G (IU50/ml),lloq
+id50,1,pseudoneutid50,4.8975,844.7208,2.612,2.612,PsV Neutralization to Ancestral D614G,Pseudovirus-nAb - Ancestral D614G (IU50/ml),lod
+id50,2,pseudoneutid50_Beta,3.918,844.7208,2.612,2.612,PsV Neutralization to Beta Variant,Pseudovirus-nAb - Beta Variant (IU50/ml),lod
+id50,3,pseudoneutid50_Delta,3.265,844.7208,2.612,2.612,PsV Neutralization to Delta Variant,Pseudovirus-nAb - Delta Variant (IU50/ml),lod
+id50,4,pseudoneutid50_Gamma,4.9628,844.7208,2.612,2.612,PsV Neutralization to Gamma Variant,Pseudovirus-nAb - Gamma Variant (IU50/ml),lod
+id50,5,pseudoneutid50_Lambda,,844.7208,2.612,2.612,PsV Neutralization to Lambda Variant,Pseudovirus-nAb - Lambda Variant (IU50/ml),lod
+id50,6,pseudoneutid50_Mu,,844.7208,2.612,2.612,PsV Neutralization to Mu Variant,Pseudovirus-nAb - Mu Variant (IU50/ml),lod
+id50,7,pseudoneutid50_Zeta,,844.7208,2.612,2.612,PsV Neutralization to Zeta Variant,Pseudovirus-nAb - Zeta Variant (IU50/ml),lod
