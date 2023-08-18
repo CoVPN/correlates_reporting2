@@ -318,3 +318,110 @@ for (tp in tps){
 #                             ),
 #                             height = 6, width = 5)
 # 
+
+
+# RCDF, SA, nab_reference, nab_Delta, nab_Beta, for vaccine and placebo, respectively
+# RCDF, LA, nab_reference, nab_Zeta, nab_Mu, nab_Gamma, nab_Lambda, for vaccine and placebo, respectively
+if (# study label is xxxx
+  ) {
+  
+  for (tp in c("Day29")){
+    #dat.long.cor.subset$TrtEvent <- 
+    #  factor(
+    #    paste(as.character(dat.long.cor.subset$Trt), 
+    #          as.character(dat.long.cor.subset$cohort_event),sep = ", "),
+    #    levels = c("Placebo, Non-Cases", "Placebo, Cases",
+    #               "Vaccine, Non-Cases", "Vaccine, Cases"))
+    
+    assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
+                                                                 "pseudoneutid50_Beta"))
+    dat.long.cor.subset.SA <- subset(dat.long.cor.subset, Region == 2)
+    
+    rcdf_list_sa <- vector("list", length(assay_metadata_sub_sa$assay))
+    
+    assay_metadata_sub_la <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Zeta",
+                                                                 "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
+                                                                 "pseudoneutid50_Lambda"))
+    dat.long.cor.subset.LA <- subset(dat.long.cor.subset, Region == 1)
+    
+    rcdf_list_la <- vector("list", length(assay_metadata_sub_la$assay))
+    
+    for (trt in c("Vaccine", "Placebo")) {
+      
+      # SA, nab_reference, nab_Delta, nab_Beta, for vaccine and placebo, respectively
+      for (aa in seq_along(assay_metadata_sub_sa$assay)) {
+        rcdf_list_sa[[aa]] <- ggplot(subset(dat.long.cor.subset.SA, Trt == trt & assay == assay_metadata_sub_sa$assay[aa]), 
+                                  aes_string(
+                                    x = tp, 
+                                    colour = "cohort_event", 
+                                    linetype = "cohort_event",
+                                    weight = config.cor$wt
+                                  )
+        ) +
+          geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
+          theme_pubr(legend = "none") +
+          ylab("Reverse ECDF") + xlab(labels.axis[tp, match(assay_metadata_sub_sa$assay[aa], colnames(labels.axis))]) +
+          scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
+          scale_color_manual(values = c("#1749FF", "#D92321"#, "#0AB7C9", "#FF6F1B"
+                                        )) +
+          guides(linetype = "none",
+                 color = guide_legend(nrow = 3, byrow = TRUE)) +
+          ggtitle(labels.title2[tp, match(assay_metadata_sub_sa$assay[aa], colnames(labels.title2))]) +
+          theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_sa$assay)>6, 6, 10)),
+                legend.title = element_blank(),
+                legend.text = element_text(size = 14),
+                panel.grid.minor.y = element_line(),
+                panel.grid.major.y = element_line(),
+                axis.title = element_text(size = ifelse(length(assay_metadata_sub_sa$assay)>6, 8, 9)),
+                axis.text = element_text(size = 14))
+      }
+      
+      if (length(assay_metadata_sub_sa$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
+      ggsave(ggarrange(plotlist = rcdf_list_sa, ncol = ncol_val, nrow=ceiling(length(assay_metadata_sub_sa$assay) / ncol_val),
+                       common.legend = TRUE, legend = "bottom",
+                       align = "h"),
+             filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
+                               "_", trt, "_", 
+                               study_name,"_SA.png"),
+             height = 7, width = 6.5)
+    
+      # LA, nab_reference, nab_Zeta, nab_Mu, nab_Gamma, nab_Lambda, for vaccine and placebo, respectively
+      for (aa in seq_along(assay_metadata_sub_la$assay)) {
+        rcdf_list_la[[aa]] <- ggplot(subset(dat.long.cor.subset.LA, Trt == trt & assay == assay_metadata_sub_la$assay[aa]), 
+                                  aes_string(
+                                    x = tp, 
+                                    colour = "cohort_event", 
+                                    linetype = "cohort_event",
+                                    weight = config.cor$wt
+                                  )
+        ) +
+          geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
+          theme_pubr(legend = "none") +
+          ylab("Reverse ECDF") + xlab(labels.axis[tp, match(assay_metadata_sub_la$assay[aa], colnames(labels.axis))]) +
+          scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
+          scale_color_manual(values = c("#1749FF", "#D92321"#, "#0AB7C9", "#FF6F1B"
+          )) +
+          guides(linetype = "none",
+                 color = guide_legend(nrow = 3, byrow = TRUE)) +
+          ggtitle(labels.title2[tp, match(assay_metadata_sub_la$assay[aa], colnames(labels.title2))]) +
+          theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_la$assay)>6, 6, 10)),
+                legend.title = element_blank(),
+                legend.text = element_text(size = 14),
+                panel.grid.minor.y = element_line(),
+                panel.grid.major.y = element_line(),
+                axis.title = element_text(size = ifelse(length(assay_metadata_sub_la$assay)>6, 8, 9)),
+                axis.text = element_text(size = 14))
+      }
+      
+      if (length(assay_metadata_sub_la$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
+      ggsave(ggarrange(plotlist = rcdf_list_la, ncol = ncol_val, nrow=ceiling(length(assay_metadata_sub_la$assay) / ncol_val),
+                       common.legend = TRUE, legend = "bottom",
+                       align = "h"),
+             filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
+                               "_", trt, "_", 
+                               study_name,"_LA.png"),
+             height = 7, width = 6.5)
+      
+    } # end of vaccine, placebo
+  } # end of tp
+}
