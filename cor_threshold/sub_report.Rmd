@@ -18,7 +18,7 @@ if(above) {
 }
 if(above) {
   dashed_line <- "The dashed red line marks the threshold after which no more COVID events are observed."
-  if(tolower(TRIAL) %in% c("hvtn705")) {
+  if(tolower(TRIAL) %in% c("hvtn705second")) {
     dashed_line <- "The dashed red line marks the threshold after which no more HIV events are observed."
   }
 } else {

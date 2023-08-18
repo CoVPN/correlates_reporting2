@@ -86,7 +86,7 @@ if(TRIAL %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", 
   ENSEMBLE <- TRUE
   keys <-  c("D29IncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
  
-} else if(TRIAL %in% c("hvtn705")) {
+} else if(TRIAL %in% c("hvtn705second")) {
 
   ENSEMBLE <- FALSE
   keys <- c("D210") 

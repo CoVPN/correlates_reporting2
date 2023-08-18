@@ -28,7 +28,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   } else {
       form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + Age)
   }
-  if(TRIAL == "hvtn705") {
+  if(TRIAL == "hvtn705second") {
     form.0 =            update (form.s, as.formula(config$covariates_riskscore))
   }
  
@@ -54,7 +54,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   }
   time <- tpeak
   day <- ""
-  if(TRIAL == "hvtn705"){
+  if(TRIAL == "hvtn705second"){
     laby <- paste0("Probability of HIV by Day ",max_t)
   } else {
     laby <- paste0("Probability of COVID by Day ",max_t)

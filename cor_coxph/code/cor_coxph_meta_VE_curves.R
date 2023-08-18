@@ -111,8 +111,12 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
                 }            
             }
         
-            myprint(x, a)
+            
             TRIAL=get.trial(x, a)
+            myprint(x, TRIAL, a)
+            # key to have local = T
+            Sys.setenv("TRIAL"=TRIAL)
+            
             COR = switch(x, moderna_real="D57",
                 janssen_pooled_partA="D29IncludeNotMolecConfirmed", janssen_na_partA="D29IncludeNotMolecConfirmed", 
                 janssen_la_partA="D29IncludeNotMolecConfirmed", janssen_sa_partA="D29IncludeNotMolecConfirmed",
@@ -121,11 +125,17 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
                 profiscov="D91",
                 stop("wrong trial label for COR")
             )
-            load(here::here("output", TRIAL, COR, "marginalized.risk.no.marker.Rdata"))
-            load(here::here("output", TRIAL, COR, "marginalized.risk.Rdata"))
-            # key to have local = T
-            Sys.setenv("TRIAL"=TRIAL)
+            
             source(here::here("..", "_common.R"), local=T)
+            
+            load(here::here("output", TRIAL, COR, "marginalized.risk.no.marker."%.%config$study_name%.%".Rdata"))
+            print(paste0("output/", TRIAL, "/", COR, "/marginalized.risk.Rdata"))
+            if (file.exists(paste0("output/", TRIAL, "/", COR, "/marginalized.risk.Rdata"))) {
+                load(here::here("output", TRIAL, COR, "marginalized.risk.Rdata")) # legacy
+            } else {
+                load(here::here("output", TRIAL, COR, "risks.all.1.Rdata"))
+            }
+            
             tmp="Day"%.%config.cor$tpeak %.% a            
             risks=get("risks.all.1")[[tmp]] 
             if (is.null(risks)) {
