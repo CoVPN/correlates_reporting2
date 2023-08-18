@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_real")
+#Sys.setenv(TRIAL = "janssen_partA_VL")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -160,7 +160,11 @@ dat = dat %>%
 }
 
 dat <- dat[!is.na(dat$cohort_event),]
+dat.cor.subset <- dat %>%
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 
+write.csv(dat.cor.subset, file = here::here("data_clean", "cor_data_pair.csv"), row.names=F)
+saveRDS(dat.cor.subset, file = here::here("data_clean", "cor_data_pair.rds"))
 
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;
