@@ -1,8 +1,6 @@
 # putting controlled VE curves in one plot
 renv::activate(project = here::here(".."))    
-    # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
-    if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
-    
+
 library(kyotil)
 library(tools) # toTitleCase
 library(xtable) # this is a dependency of kyotil
