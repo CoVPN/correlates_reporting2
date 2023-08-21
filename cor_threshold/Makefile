@@ -1,7 +1,10 @@
 ## all              : run threshold analysis and get plots
-all: clean threshold plot
+all: clean threshold plot report
 
-allbutclean: threshold plot
+allbutclean: threshold plot report
+
+report:
+	bash _build_chapter.sh
 
 ## threshold        : run threshold analysis 
 threshold:
@@ -118,10 +121,6 @@ clean:
 style:
 	Rscript -e "styler::style_file('report.Rmd')"
 	Rscript -e "styler::style_dir('code')"
-
-## report        : create a standalone report
-report:
-	Rscript -e "rmarkdown::render('report.Rmd', output_file='cor_threshold_report_$(TRIAL).pdf')"
 
 
 # type 'make help' to show all make commands
