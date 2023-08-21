@@ -93,9 +93,9 @@ cox.df=data.frame(
 # loop through regions. 1: US, 2: LatAm, 3: RSA
 
 for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are fewest cases and most likely to throw errors. 
-# iRegion=1; variant=variants$US[1]
-# iRegion=2; variant=variants$US[1]
-# iRegion=3; variant=variants$RSA[1]
+# iRegion=1; variant="Ancestral.Lineage"
+# iRegion=3; variant="Beta"
+# iRegion=2; variant="Ancestral.Lineage"
   
   region=regions[iRegion]
   
