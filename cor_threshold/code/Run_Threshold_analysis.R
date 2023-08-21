@@ -1,3 +1,4 @@
+#Sys.setenv(TRIAL = "hvtn705secondNonRSA"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 
 #-----------------------------------------------
 # obligatory to append to the top of each script

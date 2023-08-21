@@ -178,9 +178,9 @@ janssen_sa_partAnonsenior: &janssen_sa_partAnonsenior
 
 
 
-janssen_partA_VL: &janssen_partA_VL # binding Ab and ID50 
+janssen_partA_VL: &janssen_partA_VL 
   <<: *janssen_trial
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_VL_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20230820.csv
   assay_metadata: assay_metadata/janssen_partA_VL_assay_metadata.csv
   covariates_riskscore: ~.+ risk_score
   study_name: ENSEMBLE
@@ -440,6 +440,8 @@ hvtn705V1V2: &hvtn705V1V2
   primary_assays: [IgG3AE.A244.V1V2.Tags.293F40delta,IgG3C.1086C.V1.V2.Tags40delta,IgG3gp70.001428.2.42.V1V240delta,IgG3gp70.1012.11.TC21.3257.V1V240delta,IgG3gp70.1394C9G1.V1V240delta,IgG3gp70.BF1266.431a.V1V240delta,IgG3gp70.Ce1086.B2.V1V240delta,IgG3gp70.B.CaseA.V1.V240delta]
   data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_firstcasecontrolprocesseddata_withindividualV1V2markers.csv
 
+
+# in labels, % is allowed in the middle, but not in the beginning
 hvtn705second: &hvtn705second
   <<: *hvtn705base
   assays: [
@@ -483,31 +485,36 @@ IgAgp70.001428.2.42.V1V210delta,
 IgAgp70.Ce1086.B2.V1V210delta,
 IgA10mdw_gp120_gp140,  
 ADCC_CAP8_CH58_WITO_peak_breadth,
-ADCC_CAP8_CH58_WITO_pAUC_breadth
+ADCC_CAP8_CH58_WITO_pAUC_breadth,
+ELISpotPTEEnv,
+mdw_xassay_overall,
+mdw_xassay_select_igg3v1v2
   ]
   assay_labels: [
-        IgG to VT-C (EU/ml),
+        IgG to gp140 C97ZA (EU/ml),
         IgG to VT-M (EU/ml),
         Average phagocytosis score to gp140 C97ZA,
         Average phagocytosis score to gp140 Mos1,
         IgG3 Net MFI to gp140 C97ZA,
         IgG3 Net MFI to gp140 Mosaic,
-        IgG3 gp120 breadth (Weighted avg log10 Net MFI),
-        IgG3 gp140 breadth (Weighted avg log10 Net MFI),
-        IgG3 V1V2 breadth (Weighted avg log10 Net MFI),
+        IgG3 gp120 breadth (Wt avg log10 Net MFI),
+        IgG3 gp140 breadth (Wt avg log10 Net MFI),
+        IgG3 V1V2 breadth (Wt avg log10 Net MFI),
         IgG3 Net MFI to gp41,
         IgG3 multi-epitope breadth (Wt avg log10 Net MFI),
         IgG3 gp120 + gp140 breadth (Wt avg log10 Net MFI),
         IgG V1V2 breadth (Wt avg log10 Net MFI),
         Overall maximal diversity score,
-        Peak baseline-subtracted pct loss luc activity to CAP8,
-        Peak baseline-subtracted pct loss luc activity to CH58,
-        Peak baseline-subtracted pct loss luc activity to WITO,
-        AUC baseline-subtracted pct loss luc activity to CAP8,
-        AUC baseline-subtracted pct loss luc activity to CH58,
-        AUC baseline-subtracted pct loss luc activity to WITO,
-        Pct CD4+ T-cells expressing IFN-g/IL-2,
-        Pct CD8+ T-cells expressing IFN-g/IL-2,
+        
+        Peak baseline-subtracted % loss luc activity to CAP8,
+        Peak baseline-subtracted % loss luc activity to CH58,
+        Peak baseline-subtracted % loss luc activity to WITO,
+        AUC baseline-subtracted CAP8 (% loss of luc activity),
+        AUC baseline-subtracted CH58 (% loss of luc activity),
+        AUC baseline-subtracted WITO (% loss of luc activity),
+
+        CD4+ T cell responses to any Env peptide pools,
+        CD8+ T cell responses to any Env peptide pools,
         IgG3 Net MFI to AE.A244 V1V2 Tags 293F,
         IgG3 Net MFI to C.1086C V1V2 Tags,
         IgG3 Net MFI to gp70-001428.2.42 V1V2,
@@ -568,9 +575,13 @@ IgA gp70-001428.2.42 V1V2,
 IgA gp70-Ce1086 B2 V1V2,         
 IgA Env breadth score,           
 ADCC peak breadth score,         
-ADCC pAUC breadth score     ]
+ADCC pAUC breadth score,
+ELISPot PTE Env,
+Multi-epitope functions,
+IgG3 V1V2 breadth (AE.A244/C.1086/B.CaseA)
+]
   assay_labels_short: [
-        IgG to VT-C,
+        IgG to gp140 C97ZA,
         IgG to VT-M,
         ADCP gp140 C97ZA,
         ADCP gp140 Mos1,
@@ -587,11 +598,11 @@ ADCC pAUC breadth score     ]
         ADCC Peak CAP8,
         ADCC Peak CH58,
         ADCC Peak WITO,
-        ADCC  AUC CAP8,
+        ADCC AUC CAP8,
         ADCC AUC CH58,
         ADCC AUC WITO,
-        CD4+ T-cells IFN-g/IL-2,
-        CD8+ T-cells IFN-g/IL-2,
+        Pct CD4+ T-cells expressing IFN-g/IL-2,
+        Pct CD8+ T-cells expressing IFN-g/IL-2,
         IgG3 AE.A244 V1V2 Tags 293F,
         IgG3 C.1086C V1V2 Tags,
         IgG3 gp70-001428.2.42 V1V2,
@@ -652,12 +663,15 @@ IgA gp70-001428.2.42 V1V2,
 IgA gp70-Ce1086 B2 V1V2,         
 IgA Env breadth score,           
 ADCC peak breadth score,         
-ADCC pAUC breadth score                  
+ADCC pAUC breadth score,
+ELISPot PTE Env,
+Multi-epitope functions,
+IgG3 V1V2 A244/1086/CaseA
   ]
-  llox_label: [LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ ]
-  lloxs:      [80,  100,   NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,   NA,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA  ,NA,NA,1,1,1,1,1,NA,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,NA,NA,NA]
-  uloqs: [1884160,1869824,NA,NA,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA]
-  primary_assays: [ELCZ,ADCPgp140C97ZAfib,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm]
+  llox_label: [LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ]
+  lloxs:      [80,  100,   NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,   NA,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA  ,NA,NA,1,1,1,1,1,NA,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,NA,NA,NA,1,NA,NA]
+  uloqs: [1884160,1869824,NA,NA,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,A]
+  primary_assays: [ELCZ,ADCPgp140C97ZAfib,ELISpotPTEEnv,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay_overall]
   multivariate_assays: [
             ELCZ+ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm
             #ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm,
@@ -708,7 +722,7 @@ ADCC pAUC breadth score
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2GagIFNg_OR_IL2,
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2RNAseIntIFNg_OR_IL2
   ]
-  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v8.csv
+  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v9.csv
 
 hvtn705secondRSA: &hvtn705secondRSA
   inherits: hvtn705second
@@ -941,12 +955,26 @@ D29IncludeNotMolecConfirmed:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
-# for variants analysis
+# for ancestral ID50 analysis in the variants dataset
 D29VL:
   ph1: ph1.D29
   ph2: ph2.D29
   wt: wt.D29
   WtStratum: Wstratum
+  EventIndPrimary:  EventIndPrimaryHasVLD29
+  EventTimePrimary: EventTimePrimaryIncludeNotMolecConfirmedD29
+  Earlyendpoint: EarlyendpointD29
+  tpeak: 29
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+# for variants ID50 analysis in the variants dataset
+D29VLvariant:
+  ph1: ph1.D29
+  ph2: ph2.D29variant
+  wt: wt.D29variant
+  WtStratum: Wstratum.variant
   EventIndPrimary:  EventIndPrimaryHasVLD29
   EventTimePrimary: EventTimePrimaryIncludeNotMolecConfirmedD29
   Earlyendpoint: EarlyendpointD29

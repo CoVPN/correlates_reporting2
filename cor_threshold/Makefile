@@ -1,7 +1,10 @@
 ## all              : run threshold analysis and get plots
-all: clean threshold plot
+all: clean threshold plot report
 
-allbutclean: threshold plot
+allbutclean: threshold plot report
+
+report:
+	bash _build_chapter.sh
 
 ## threshold        : run threshold analysis 
 threshold:
@@ -41,7 +44,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_na_partA janssen_sa_partA))
 	Rscript code/params.R D29ModerateIncludeNotMolecConfirmed
 	Rscript code/clean_data.R D29ModerateIncludeNotMolecConfirmed
 	Rscript code/Run_Threshold_analysis.R D29ModerateIncludeNotMolecConfirmed
-else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
+else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705second))
 	Rscript code/params.R D210
 	Rscript code/clean_data.R D210
 	Rscript code/Run_Threshold_analysis.R D210
@@ -55,7 +58,7 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_trial_EUA janssen_pooled_mock janssen_pooled_EUA janssen_na_mock janssen_na_EUA janssen_la_mock janssen_la_EUA janssen_sa_mock janssen_sa_EUA))
 	Rscript code/clean_data.R D29
 	Rscript code/clean_data.R D29start1
-else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
+else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705second))
 	Rscript code/clean_data.R D210
 endif
 	 
@@ -87,7 +90,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_na_partA janssen_sa_partA))
 	
 	Rscript code/params.R D29ModerateIncludeNotMolecConfirmed
 	Rscript code/plotting.R D29ModerateIncludeNotMolecConfirmed
-else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
+else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705second))
 	Rscript code/params.R D210
 	Rscript code/plotting.R D210
 endif
@@ -100,7 +103,7 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_trial_EUA janssen_pooled_mock janssen_pooled_EUA janssen_na_mock janssen_na_EUA janssen_la_mock janssen_la_EUA janssen_sa_mock janssen_sa_EUA))
 	Rscript code/params.R D29
 	Rscript code/params.R D29start1
-else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705))
+else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705second))
 	Rscript code/params.R D210
 endif
 
@@ -118,10 +121,6 @@ clean:
 style:
 	Rscript -e "styler::style_file('report.Rmd')"
 	Rscript -e "styler::style_dir('code')"
-
-## report        : create a standalone report
-report:
-	Rscript -e "rmarkdown::render('report.Rmd', output_file='cor_threshold_report_$(TRIAL).pdf')"
 
 
 # type 'make help' to show all make commands
