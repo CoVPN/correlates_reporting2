@@ -10,6 +10,11 @@ library(here)
 library(dplyr)
 library(tidyverse)
 library(stringr)
+uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assays
+pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assays
+lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assays
+uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assays
+llods=assay_metadata$lod; names(llods)=assay_metadata$assays
 #dat.mock <- read.csv(here("..", "data_clean", data_name))# superceded by _common.R data read
 
 ## moved to _common.R
@@ -97,7 +102,7 @@ dat = dat %>%
       case_when(!!as.name(config.cor$ph2)==1 &
                   !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
                 !!as.name(config.cor$ph2)==1 & 
-                  !!as.name(gsub(tpeak, "1", config.cor$EventIndPrimary))==0 & 
+                  !!as.name(gsub(tpeak, "1", gsub("HasVL", "", config.cor$EventIndPrimary)))==0 & # remove HasVL because the there is no D1 endpoint indicator with "HasVL" in the variable name
                   AnyinfectionD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
