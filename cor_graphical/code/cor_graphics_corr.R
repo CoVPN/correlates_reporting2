@@ -19,7 +19,6 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 } else {incNotMol <- ""}
 #-----------------------------------------------
 
-source(here::here("code", "cor_process_function.R"))
 source(here::here("code", "covid_corr_plot_functions.R"))
 source(here::here("..", "_common.R"))
 
@@ -36,10 +35,9 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
 
-###### Set 3 plots: Correlation plots across markers at a given time point
+###### Correlation plots across markers at a given time point
 # 3 markers (Anc, Delta, Beta), SA, Day 29
-for ( # study label is xxxx
-  ) {
+if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
 
   for (t in "Day29"){
     assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
@@ -85,7 +83,7 @@ for ( # study label is xxxx
       column_labels = paste(t, assay_metadata_sub_la$assay_label_short),
       height = max(1.3 * length(assay_metadata_sub_la$assay) + 0.1, 5.5),
       width = max(1.3 * length(assay_metadata_sub_la$assay), 5.5),
-      column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_la$assay_label_short)))>40, 3.8, 4.3),
+      column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_la$assay_label_short)))>40, 3.3, 4.3),
       filename = paste0(
         save.results.to, "/pairs_by_time_", t,
         "_5_markers_LA.pdf"
