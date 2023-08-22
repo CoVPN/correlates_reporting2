@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("Marker_RCDF_Day29_Vaccine_", marker, "_", region, ".png"))`}
 
-\caption{`r paste0("Marker RCDF of Day 29 ", ifelse(marker=="NAb, "PsV-nAb ID50", "anti-Spike binding Ab"), ": Vaccine Arm.")`}
+\caption{`r paste0("Marker RCDF of Day 29 ", ifelse(marker=="NAb", "PsV-nAb ID50", "anti-Spike binding Ab"), ": Vaccine Arm.")`}
 \end{figure}
 
 \hphantom{Random text to appease the latex god}

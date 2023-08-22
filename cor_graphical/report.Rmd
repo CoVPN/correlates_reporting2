@@ -58,7 +58,13 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
         		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_rcdf_variant.Rmd')), quiet = TRUE)
         		      cat(res, sep = '\n')
         		      cat("\\clearpage", sep = '\n')
-        		      
+      }
+    }
+    
+    
+    for (region in c("LA", "SA")) {
+      for (marker in ("NAb" #,"Spike"
+                      )) {
         		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_spider_variant.Rmd')), quiet = TRUE)
         		      cat(res, sep = '\n')
         		      cat("\\clearpage", sep = '\n')
