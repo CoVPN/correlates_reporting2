@@ -63,6 +63,7 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
         		      cat(res, sep = '\n')
         		      cat("\\clearpage", sep = '\n')
       }
+    }
     
   } else {
     
