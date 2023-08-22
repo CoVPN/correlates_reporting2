@@ -40,55 +40,57 @@ print(paste0("save.results.to equals ", save.results.to))
 if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
 
   for (t in "Day29"){
-    assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
-                                                              "pseudoneutid50_Beta"))
-    dat.cor.data.pair.SA <- subset(dat.cor.data.pair, Region == 2)
-    dat.cor.data.pair.SA$Day29pseudoneutid50_Delta = sample(dat.cor.data.pair.SA$Day29pseudoneutid50, dim(dat.cor.data.pair.SA)[1])
-    dat.cor.data.pair.SA$Day29pseudoneutid50_Beta = sample(dat.cor.data.pair.SA$Day29pseudoneutid50, dim(dat.cor.data.pair.SA)[1])
-      
-    covid_corr_pairplots(
-      plot_dat = dat.cor.data.pair.SA,
-      time = t,
-      assays = assay_metadata_sub_sa$assay,
-      strata = "all_one",
-      weight = "wt.D29",
-      plot_title = paste0(
-        "Correlations of 3 ", t, " antibody markers in Southern Africa,\nCorr = Weighted Spearman Rank Correlation."
-      ),
-      column_labels = paste(t, assay_metadata_sub_sa$assay_label_short),
-      height = max(1.3 * length(assay_metadata_sub_sa$assay) + 0.1, 5.5),
-      width = max(1.3 * length(assay_metadata_sub_sa$assay), 5.5),
-      column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_sa$assay_label_short)))>40, 3.8, 4.3),
-      filename = paste0(
-        save.results.to, "/pairs_by_time_", t,
-        "_3_markers_SA.pdf"
+    for (trt in c(1)){
+      assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
+                                                                "pseudoneutid50_Beta"))
+      dat.cor.data.pair.SA <- subset(dat.cor.data.pair, Region == 2 & Trt==1)
+      dat.cor.data.pair.SA$Day29pseudoneutid50_Delta = sample(dat.cor.data.pair.SA$Day29pseudoneutid50, dim(dat.cor.data.pair.SA)[1])
+      dat.cor.data.pair.SA$Day29pseudoneutid50_Beta = sample(dat.cor.data.pair.SA$Day29pseudoneutid50, dim(dat.cor.data.pair.SA)[1])
+        
+      covid_corr_pairplots(
+        plot_dat = dat.cor.data.pair.SA,
+        time = t,
+        assays = assay_metadata_sub_sa$assay,
+        strata = "all_one",
+        weight = "wt.D29",
+        plot_title = paste0(
+          "Correlations of 3 ", t, " antibody markers in Southern Africa,\nCorr = Weighted Spearman Rank Correlation."
+        ),
+        column_labels = paste(t, assay_metadata_sub_sa$assay_label_short),
+        height = max(1.3 * length(assay_metadata_sub_sa$assay) + 0.1, 5.5),
+        width = max(1.3 * length(assay_metadata_sub_sa$assay), 5.5),
+        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_sa$assay_label_short)))>40, 3.8, 4.3),
+        filename = paste0(
+          save.results.to, "/pairs_by_time_", t,
+          "_markers_",ifelse(trt==1, "vaccine", "placebo"), "_NAb_SA.pdf"
+        )
       )
-    )
-    
-    assay_metadata_sub_la <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Zeta",
-                                                              "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
-                                                              "pseudoneutid50_Lambda"))
-    
-    dat.cor.data.pair.LA <- subset(dat.cor.data.pair, Region == 1)
       
-    covid_corr_pairplots(
-      plot_dat = dat.cor.data.pair.LA,
-      time = t,
-      assays = assay_metadata_sub_la$assay,
-      strata = "all_one",
-      weight = "wt.D29",
-      plot_title = paste0(
-        "Correlations of 5 ", t, " antibody markers in Latin America,\nCorr = Weighted Spearman Rank Correlation."
-      ),
-      column_labels = paste(t, assay_metadata_sub_la$assay_label_short),
-      height = max(1.3 * length(assay_metadata_sub_la$assay) + 0.1, 5.5),
-      width = max(1.3 * length(assay_metadata_sub_la$assay), 5.5),
-      column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_la$assay_label_short)))>40, 3.3, 4.3),
-      filename = paste0(
-        save.results.to, "/pairs_by_time_", t,
-        "_5_markers_LA.pdf"
+      assay_metadata_sub_la <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Zeta",
+                                                                "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
+                                                                "pseudoneutid50_Lambda"))
+      
+      dat.cor.data.pair.LA <- subset(dat.cor.data.pair, Region == 1 & Trt==1)
+        
+      covid_corr_pairplots(
+        plot_dat = dat.cor.data.pair.LA,
+        time = t,
+        assays = assay_metadata_sub_la$assay,
+        strata = "all_one",
+        weight = "wt.D29",
+        plot_title = paste0(
+          "Correlations of 5 ", t, " antibody markers in Latin America,\nCorr = Weighted Spearman Rank Correlation."
+        ),
+        column_labels = paste(t, assay_metadata_sub_la$assay_label_short),
+        height = max(1.3 * length(assay_metadata_sub_la$assay) + 0.1, 5.5),
+        width = max(1.3 * length(assay_metadata_sub_la$assay), 5.5),
+        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_la$assay_label_short)))>40, 3.3, 4.3),
+        filename = paste0(
+          save.results.to, "/pairs_by_time_", t,
+          "_markers_", ifelse(trt==1, "vaccine", "placebo"), "_NAb_LA.pdf"
+        )
       )
-    )
-  
+    
+      }
   }
 }

@@ -69,7 +69,7 @@ for (outtype in c("PDF")) {
     
     # Latin America
     if(outtype=="PDF"){
-        filename = paste0(save.results.to, "radar_plot_max_weighted_geomean_NAb_LA.pdf")
+        filename = paste0(save.results.to, "radar_plot_weighted_geomean_vaccine_NAb_LA.pdf")
         #pdf(filename, width=9.1, height=8.5)
         pdf(filename, width=5.5, height=6)
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
@@ -83,7 +83,7 @@ for (outtype in c("PDF")) {
                #label size
                vlcex=0.8,
                #title
-               title=paste0("Geometric Mean of Pseudovirus-nAb at Day 29, in LA"))
+               title=paste0("Geometric Mean of PsV-nAb ID50 at Day 29, in LA"))
     
     par(xpd=NA)
     
@@ -97,7 +97,7 @@ for (outtype in c("PDF")) {
     
     # Southern America
     if(outtype=="PDF"){
-        filename = paste0(save.results.to, "radar_plot_max_weighted_geomean_NAb_SA.pdf")
+        filename = paste0(save.results.to, "radar_plot_weighted_geomean_vaccine_NAb_SA.pdf")
         #pdf(filename, width=9.1, height=8.5)
         pdf(filename, width=5.5, height=6)
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
@@ -111,7 +111,7 @@ for (outtype in c("PDF")) {
                #label size
                vlcex=0.8,
                #title
-               title=paste0("Geometric Mean of Pseudovirus-nAb at Day 29, in SA"))
+               title=paste0("Geometric Mean of PsV-nAb ID50 at Day 29, in SA"))
     
     par(xpd=NA)
     

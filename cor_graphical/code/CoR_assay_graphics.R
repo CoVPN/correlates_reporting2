@@ -346,7 +346,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
     
     rcdf_list_la <- vector("list", length(assay_metadata_sub_la$assay))
     
-    for (trt in c("Vaccine", "Placebo")) {
+    for (trt in c("Vaccine")) {
       
       # SA, nab_reference, nab_Delta, nab_Beta, for vaccine and placebo, respectively
       for (aa in seq_along(assay_metadata_sub_sa$assay)) {
@@ -381,8 +381,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
                        common.legend = TRUE, legend = "bottom",
                        align = "h"),
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_", 
-                               study_name,"_SA.png"),
+                               "_", trt, "_NAb_SA.png"),
              height = 7, width = 6.5)
     
       # LA, nab_reference, nab_Zeta, nab_Mu, nab_Gamma, nab_Lambda, for vaccine and placebo, respectively
@@ -418,8 +417,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
                        common.legend = TRUE, legend = "bottom",
                        align = "h"),
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_", 
-                               study_name,"_LA.png"),
+                               "_", trt, "_NAb_LA.png"),
              height = 7, width = 6.5)
       
     } # end of vaccine, placebo
