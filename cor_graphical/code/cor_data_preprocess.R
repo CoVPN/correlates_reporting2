@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "janssen_pooled_real")
+#Sys.setenv(TRIAL = "janssen_partA_VL")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -10,6 +10,11 @@ library(here)
 library(dplyr)
 library(tidyverse)
 library(stringr)
+uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assays
+pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assays
+lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assays
+uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assays
+llods=assay_metadata$lod; names(llods)=assay_metadata$assays
 #dat.mock <- read.csv(here("..", "data_clean", data_name))# superceded by _common.R data read
 
 ## moved to _common.R
@@ -97,7 +102,7 @@ dat = dat %>%
       case_when(!!as.name(config.cor$ph2)==1 &
                   !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
                 !!as.name(config.cor$ph2)==1 & 
-                  !!as.name(gsub(tpeak, "1", config.cor$EventIndPrimary))==0 & 
+                  !!as.name(gsub(tpeak, "1", gsub("HasVL", "", config.cor$EventIndPrimary)))==0 & # remove HasVL because the there is no D1 endpoint indicator with "HasVL" in the variable name
                   AnyinfectionD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
@@ -160,7 +165,11 @@ dat = dat %>%
 }
 
 dat <- dat[!is.na(dat$cohort_event),]
+dat.cor.subset <- dat %>%
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 
+write.csv(dat.cor.subset, file = here::here("data_clean", "cor_data_pair.csv"), row.names=F)
+saveRDS(dat.cor.subset, file = here::here("data_clean", "cor_data_pair.rds"))
 
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;

@@ -77,7 +77,8 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           covid_corr_pairplots(
             plot_dat = subdat,
             time = tp,
-            assays = assay_immuno,
+            assays = assay_immuno, # adhoc request by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
+                                   # adhoc request 2 by David: assay_immuno = c("liveneutmn50", "bindSpike_P.1", "bindRBD_P.1", "bindN")
             strata = "Bstratum",
             weight = "wt.subcohort",
             plot_title = paste0(
@@ -86,7 +87,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
               ifelse(bserostatus, "positive", "negative"), ", ",
               c("placebo", "vaccine")[trt + 1], " arm"
             ),
-            column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(),
+            column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
             height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
             width = max(1.3 * length(assay_immuno), 5.5),
             column_label_size = ifelse(max(str_length(assay_labels_short)) > 28, 5, 6.5),
