@@ -10,6 +10,9 @@ source(here::here("code", "format_utils.R"))
 data <- dat.mock
 
 tf_Day <- tfinal.tpeak
+if(Args[5] == "TRUE"){
+  tf_Day <- round(tf_Day * 0.75)
+}
 
 print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)

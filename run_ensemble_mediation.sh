@@ -2,44 +2,47 @@ for run_survtmle in TRUE
   do
   for impute_placebo in TRUE
     do
-    for outcome in D29IncludeNotMolecConfirmed D29SevereIncludeNotMolecConfirmed D29ModerateIncludeNotMolecConfirmed
+    for truncate_tf_day in TRUE
       do
-      # POOLED
-      for TRIAL in janssen_pooled_partA
+      for outcome in D29IncludeNotMolecConfirmed D29SevereIncludeNotMolecConfirmed D29ModerateIncludeNotMolecConfirmed
         do
-        for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50
+        # POOLED
+        for TRIAL in janssen_pooled_partA
           do
-          sbatch --export=TRIAL=${TRIAL} \
-          --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER}"
+          for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50
+            do
+            sbatch --export=TRIAL=${TRIAL} \
+            --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER} ${truncate_tf_day}"
+          done
         done
-      done
-      # LATIN AMERICA
-      for TRIAL in janssen_la_partA
-        do
-        for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29pseudoneutid50la
+        # LATIN AMERICA
+        for TRIAL in janssen_la_partA
           do
-          sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER}"
+          for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29pseudoneutid50la
+            do
+            sbatch --export=TRIAL=${TRIAL} \
+             --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER} ${truncate_tf_day}"
+          done
         done
-      done
-      # SOUTH AFRICA
-      for TRIAL in janssen_sa_partA
-        do
-        for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29pseudoneutid50sa
+        # SOUTH AFRICA
+        for TRIAL in janssen_sa_partA
           do
-          sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER}"
+          for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50 Day29pseudoneutid50sa
+            do
+            sbatch --export=TRIAL=${TRIAL} \
+             --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER} ${truncate_tf_day}"
+          done
         done
-      done
-      # NORTH AMERICA 
-      for TRIAL in janssen_na_partA
-        do
-        for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50
+        # NORTH AMERICA 
+        for TRIAL in janssen_na_partA
           do
-          sbatch --export=TRIAL=${TRIAL} \
-           --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER}"
+          for MARKER in Day29bindSpike Day29bindRBD Day29pseudoneutid50
+            do
+            sbatch --export=TRIAL=${TRIAL} \
+             --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER} ${truncate_tf_day}"
+          done
         done
-      done
-    done # END OUTCOME
+      done # END OUTCOME
+    done # END TRUNCATE TF DAY
   done # END IMPUTE PLACEBO
 done # END SURVTMLE
