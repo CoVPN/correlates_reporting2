@@ -102,7 +102,7 @@ marginalized.risk.svycoxph.boot=function(marker.name, type, data, t, B, ci.type=
         fc.1(data.ph2, data, f1, n.dean=TRUE, categorical.s=FALSE)
       }))
     } else {
-        fc.1(data.ph2, data, f1, n.dean=TRUE, categorical.s=FALSE)
+      fc.1(data.ph2, data, f1, n.dean=TRUE, categorical.s=FALSE)
     }
     
     n.dean=prob[1]
@@ -266,7 +266,7 @@ if (TRIAL=="janssen_partA_VL") {
 if(!file.exists(fname)) {    
   risks.all.1=lapply(all.markers, function (a) {
     if(verbose) myprint(a)
-    marginalized.risk.svycoxph.boot(marker.name=a, type=1, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
+    marginalized.risk.svycoxph.boot(marker.name=a, type=1, data=dat.vac.seroneg, t=tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
   })
   save(risks.all.1, file=fname)
 } else {
