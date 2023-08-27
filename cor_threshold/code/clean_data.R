@@ -109,8 +109,12 @@ for (a in assays) {
           na.rm = T
         ))
       
-       
+      thresh_grid = c(thresh_grid,
+                      # add the overall min since both vectors are based on cases only
+                      min(data_secondstage[[marker]], na.rm=T))
+      
       thresh_mand <- report.assay.values(data_secondstage[[marker]][data_secondstage[["Delta"]]==1], marker)
+      
       thresh_grid <- sort(union(thresh_grid, thresh_mand))
        
       #thresh_grid <- sort(union(thresh_mand, thresh_grid))

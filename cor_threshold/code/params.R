@@ -17,7 +17,7 @@ TRIAL <- Sys.getenv("TRIAL")
 # Right-censoring is taken into account for  this analysis.
 covariate_adjusted <- T #### Estimate threshold-response function with covariate adjustment
 fast_analysis <- F ### Perform a fast analysis using glmnet at cost of accuracy
-super_fast_analysis <- F
+super_fast_analysis <- T
 threshold_grid_size <- 30 ### Number of thresholds to estimate (equally spaced in quantiles). Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
 plotting_assay_label_generator <- function(marker, above = T) {
   if(above) {

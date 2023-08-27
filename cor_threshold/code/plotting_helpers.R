@@ -114,15 +114,16 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
       sec.axis = sec_axis(~ . / scale_coef, name = "Reverse CDF"), n.breaks = 10
     )  +
     theme(plot.title = element_text(size = 25), axis.text.x = element_text(angle = 0, hjust = 1, size = 18), axis.text.y = element_text(angle = 0, hjust = 1, size = 18)) +
-   # geom_hline(aes(yintercept=risk_vac), alpha = 0.4) + geom_text(alpha = 0.75,aes(median(v$data$cutoffs),risk_vac,label = "vaccine overall risk"), vjust = -0.5, size = 5) +
- geom_text(alpha = 0.75, aes(quantile(v$data$cutoffs, 0.1),min(max(v$data$upper),risk_plac),label = paste0("placebo overall risk: ", risk_plac)), vjust = 0, size = 5)+ scale_x_continuous(
-  breaks = xx,#union(floor(esttmle[, 1]), ceiling(esttmle[, 1])),
-   labels = do.call(expression,labels),
-  name =labx,
-  limits = xlimits
-    #trans_format("ident", math_format(10^.x)),
-  #limits = c(min(esttmle[, 1]) - 0.1, max(esttmle[, 1]) + 0.1)
- )
+    # geom_hline(aes(yintercept=risk_vac), alpha = 0.4) + geom_text(alpha = 0.75,aes(median(v$data$cutoffs),risk_vac,label = "vaccine overall risk"), vjust = -0.5, size = 5) +
+    geom_text(alpha = 0.75, aes(quantile(v$data$cutoffs, 0.1),min(max(v$data$upper),risk_plac),label = paste0("placebo overall risk: ", risk_plac)), vjust = 0, size = 5) + 
+    scale_x_continuous(
+      breaks = xx,#union(floor(esttmle[, 1]), ceiling(esttmle[, 1])),
+       labels = do.call(expression,labels),
+      name =labx,
+      limits = xlimits
+        #trans_format("ident", math_format(10^.x)),
+      #limits = c(min(esttmle[, 1]) - 0.1, max(esttmle[, 1]) + 0.1)
+     )
   
  if(above  && max_thresh < log10(uloqs[a]) - 0.05) {
      plot <- plot + geom_vline(xintercept = max_thresh, colour = "red", linetype = "longdash")
