@@ -103,7 +103,7 @@ if(study_name=="COVE" | study_name=="MockCOVE")  {
       Perprotocol==1 & # do not use config.cor$ph2 here for now because it doesn't include AnyinfectionD1
         AnyinfectionD1==0 &
         !!as.name(paste0("TwophasesampIndD", timepoints[length(timepoints)]))==1 & 
-        !!as.name(gsub(tpeak, "1", config.cor$EventIndPrimary))==0 ~ "Non-Cases"),
+        !!as.name(gsub(tpeak, "1", gsub("HasVL", "", config.cor$EventIndPrimary)))==0 ~ "Non-Cases"), # remove HasVL because the there is no D1 endpoint indicator with "HasVL" in the variable name
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Cases", "Non-Cases")
     ))
