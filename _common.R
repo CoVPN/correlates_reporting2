@@ -2,6 +2,7 @@
 library(methods)
 library(dplyr)
 library(kyotil)
+library(copcor)
 library(marginalizedRisk)
 library(survival)
     
