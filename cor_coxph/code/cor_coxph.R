@@ -16,8 +16,12 @@
 #Sys.setenv(TRIAL = "janssen_na_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 
+print(date())
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) # dat.mock is made
+
+# hack to bring in uncheck commited changes to copcor
+# source("~/copcor/R/plotting.R")
 
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
@@ -77,7 +81,7 @@ for (a in all.markers) {
     q.a=marker.cutpoints[[a]]
     if (startsWith(a, "Day")) {
         # not fold change
-        write(paste0(labels.axis[1,get.assay.from.name(a)], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
+        write(paste0(labels.axis[1,marker.name.to.assay(a)], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
     } else {
         # fold change
         # gsub("_", "\\\_", a, fixed = TRUE) is a bandaid to escape the marker name for latex, which may have _
@@ -109,7 +113,6 @@ mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to
 dat.vac.seroneg.ph2=subset(dat.vac.seroneg, ph2)
 
 begin=Sys.time()
-print(date())
 
 # last event time
 # sapply(0:2, function (i) max(subset(dat.vac.seroneg, EventIndPrimary==1 & Region==i, EventTimePrimary)[[1]]))
