@@ -20,7 +20,7 @@
 
 default: &default
   is_ows_trial: no
-  case_cohort: no
+  sampling_scheme: none
   use_ensemble_sl: no
   
 
@@ -30,7 +30,7 @@ default: &default
 ows_trial: &ows_trial
   forestplot_script: cor_coxph_forestplots_ows.R
   is_ows_trial: yes
-  case_cohort: yes
+  sampling_scheme: case_cohort
   Bserostatus: 0 # use inherits to overwrite
 
 moderna_trial: &moderna_trial
@@ -406,6 +406,7 @@ profiscov_lvmn: &profiscov_lvmn
 # Non-COVID trials
 
 hvtn705base: &hvtn705base
+  sampling_scheme: case_control
   two_marker_timepoints: no
   timepoints: [210]
   times: [B, Day210]

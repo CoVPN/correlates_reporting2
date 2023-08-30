@@ -3,9 +3,9 @@ library(methods)
 library(dplyr)
 library(kyotil)
 library(copcor)
-library(marginalizedRisk)
+?library(marginalizedRisk)
 library(survival)
-    
+
 # disable lower level parallelization in favor of higher level of parallelization
 library(RhpcBLASctl)
 blas_get_num_procs()
@@ -605,22 +605,24 @@ if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE")) {
     uloqs["bindN"]=574.6783
     pos.cutoffs["bindN"]=23.4711
     
-} else if(study_name=="AZD1222") {
-       
-    # data less than lloq is set to lloq/2 in the raw data, Nexelis
-    llods["bindSpike"]=NA 
-    lloqs["bindSpike"]=62.8*0.0090 # 0.5652
-    uloqs["bindSpike"]=238528.4*0.0090 # 2146.756
-    pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
-    
-    # data less than lod is set to lod/2
-    llods["pseudoneutid50"]=2.612  
-    lloqs["pseudoneutid50"]=56*0.0653 # 3.6568
-    uloqs["pseudoneutid50"]=47806*0.0653 # 3121.732
-    pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
-    
-    # bindN info missing in SAP
-    
+} else if(TRIAL=="azd1222") {
+  
+  # data less than lod is set to lod/2
+  llods["pseudoneutid50"]=2.612  
+  lloqs["pseudoneutid50"]=56*0.0653 # 3.6568
+  uloqs["pseudoneutid50"]=47806*0.0653 # 3121.732
+  pos.cutoffs["pseudoneutid50"]=llods["pseudoneutid50"]
+  
+  # bindN info missing in SAP
+  
+} else if(TRIAL=="azd1222_bAb") {
+  
+  # data less than lloq is set to lloq/2 in the raw data, Nexelis
+  llods["bindSpike"]=NA 
+  lloqs["bindSpike"]=62.8*0.0090 # 0.5652
+  uloqs["bindSpike"]=238528.4*0.0090 # 2146.756
+  pos.cutoffs["bindSpike"]=10.8424 # use same as COVE
+  
 } else if(study_name=="VAT08m") { # Sanofi
        
     # data less than lod is set to lod/2
@@ -713,6 +715,11 @@ if (is.null(lloxs)) {
 
 }
 
+
+# create config$assay_metadata from llods etc if not existed
+if (is.null(config$assay_metadata)) {
+  config$assay_metadata = data.frame(assay=names(lloqs), lod=llods, lloq=lloqs, uloq=uloqs, llox_label=llox_labels)
+}
 
 
 
