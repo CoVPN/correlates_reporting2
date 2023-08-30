@@ -718,7 +718,7 @@ if (is.null(lloxs)) {
 
 # create config$assay_metadata from llods etc if not existed
 if (is.null(config$assay_metadata)) {
-  config$assay_metadata = data.frame(assay=names(lloqs), lod=llods, lloq=lloqs, uloq=uloqs, llox_label=llox_labels)
+  assay_metadata = data.frame(assay=names(lloqs), lod=llods, lloq=lloqs, uloq=uloqs, llox_label=llox_labels)
 }
 
 
