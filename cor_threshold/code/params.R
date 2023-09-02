@@ -1,35 +1,29 @@
-
-#-----------------------------------------------
-# obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R"))
-#-----------------------------------------------
-print("ADE")
-TRIAL <- Sys.getenv("TRIAL") 
 
-### #####
-#### NOTE Currently only supports Day29 and Day57 markers
-#########
- 
+
 
 # Reference time to perform analysis. Y = 1(T <= tf) where T is event time of Covid.
 # tf should be large enough that most events are observed but small enough so that not many people are right censored. For the practice dataset, tf = 170 works.
 # Right-censoring is taken into account for  this analysis.
-covariate_adjusted <- T #### Estimate threshold-response function with covariate adjustment
-fast_analysis <- F ### Perform a fast analysis using glmnet at cost of accuracy
+covariate_adjusted <-
+  T #### Estimate threshold-response function with covariate adjustment
+fast_analysis <-
+  F ### Perform a fast analysis using glmnet at cost of accuracy
 super_fast_analysis <- T
-threshold_grid_size <- 30 ### Number of thresholds to estimate (equally spaced in quantiles). Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
+# hack
+threshold_grid_size <- 2 ### Number of thresholds to estimate (equally spaced in quantiles). Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
 plotting_assay_label_generator <- function(marker, above = T) {
-  if(above) {
+  if (above) {
     add <- " (>=s)"
   } else {
     add <- " (<=s)"
   }
   day <- ""
   
-  time <- paste0("Day", tpeak)
+  time <- paste0(DayPrefix, tpeak)
   assay <- marker_to_assay[[marker]]
- 
+  
   labx <- labels.axis[time, assay]
   labx <- paste0(labx, add)
   
@@ -39,7 +33,7 @@ plotting_assay_label_generator <- function(marker, above = T) {
 
 plotting_assay_title_generator <- function(marker) {
   day <- ""
-  time <- paste0("Day", tpeak)
+  time <- paste0(DayPrefix, tpeak)
   assay <- marker_to_assay[[marker]]
   title <- labels.title[time, assay]
   
@@ -47,20 +41,25 @@ plotting_assay_title_generator <- function(marker) {
   
 }
 
-assays <- config$assays
-time <- paste0("Day", tpeak)
+if (TRIAL=='moderna_boost') {
+  assays=c("bindSpike_BA.1", "pseudoneutid50_BA.1", "bindSpike", "pseudoneutid50")
+} else {
+  assays <- config$assays
+}
+
+
+time <- paste0(DayPrefix, tpeak)
 key <- COR
-markers <- paste0("Day", tpeak, assays)
- 
- print("OK")
-markers <- intersect(markers, colnames(dat.mock) ) 
+markers <- paste0(DayPrefix, tpeak, assays)
+
+markers <- intersect(markers, colnames(dat.mock))
 print(markers)
 marker_to_assay <- sapply(markers, function(v) {
- unname(gsub(paste0("Day", tpeak),  "", v))
+  unname(gsub(paste0(DayPrefix, tpeak),  "", v))
 })
- 
- 
- 
+
+
+
 
 # max_t <- max(dat.mock[dat.mock$EventIndPrimary==1 & dat.mock$Trt == 1 & dat.mock$ph2 == 1, "EventTimePrimary" ])
 max_t = tfinal.tpeak
@@ -68,16 +67,16 @@ max_t = tfinal.tpeak
 
 data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
 
-covariates = strsplit(sub("~","",config$covariates_riskscore), "\\+")[[1]][-1] 
-covariates=kyotil::trim(covariates)
+covariates = strsplit(sub("~", "", config$covariates_riskscore), "\\+")[[1]][-1]
+covariates = kyotil::trim(covariates)
 
-if("risk_score" %in% covariates) {
+if ("risk_score" %in% covariates) {
   append_data <- "_with_riskscore"
 } else {
   append_data <- ""
 }
 
- 
+
 ####################
 #### Internal variables
 ###################

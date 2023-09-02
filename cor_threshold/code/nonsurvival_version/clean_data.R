@@ -6,8 +6,9 @@ source(here::here("..", "_common.R"))
 # load parameters
 source(here::here("code", "params.R"))
 
+# this step is now done in _common.R
 # load data
-dat.mock <- read.csv(here::here("..", "data_clean", paste0(stringr::str_match(data_name,"(.+).csv")[,2],append_data,".csv")))
+# dat.mock <- read.csv(here::here("..", "data_clean", paste0(stringr::str_match(data_name,"(.+).csv")[,2],append_data,".csv")))
 
 for (a in assays) {
   for (t in c("B", "Day57", if(has29) "Day29") ) {
@@ -16,23 +17,18 @@ for (a in assays) {
 }
 
 
-data <- dat.mock
-
-
-
-
 # Generate the outcome and censoring indicator variables
 for (time in times) {
-  if(time == "Day57") {
-    Earlyendpoint <- "EarlyendpointD57"
-  } else if(time == "Day29") {
-    Earlyendpoint <- "EarlyendpointD29"
-    
-  }
-  print(time)
+  # if(time == "Day57") {
+  #   Earlyendpoint <- "EarlyendpointD57"
+  # } else if(time == "Day29") {
+  #   Earlyendpoint <- "EarlyendpointD29"
+  #   
+  # }
+  
+  myprint(time)
   data <- dat.mock
-  outcome <-
-    data[[Event_Ind_variable[[time]]]] == 1 & data[[Event_Time_variable[[time]]]] <= tf[[time]]
+  outcome <- data[[Event_Ind_variable[[time]]]] == 1 & data[[Event_Time_variable[[time]]]] <= tf[[time]]
   outcome <- as.numeric(outcome)
   # TO CHANGE
 

@@ -27,7 +27,9 @@ config <- config::get(config = TRIAL)
 for(opt in names(config)){
   eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
 }
- 
+DayPrefix = ifelse (TRIAL == 'moderna_boost', "BD", "Day")
+
+
 ```
 
 # Univariate CoR: Nonparametric Threshold Modeling (>=s)
@@ -57,12 +59,12 @@ observed.
 
 The blue dots on the plots represent the risk predictions at marker values where there was an observed case.
 
- 
+
 
 \newpage
 
 ```{r, echo = F, include = F}
- 
+
 ci <- "pointwise"
 above = TRUE
 monotone <- FALSE
@@ -72,29 +74,34 @@ monotone <- FALSE
 ```{r, echo = F, include = F}
 
 if(TRIAL %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", "janssen_na_EUA", "janssen_la_mock", "janssen_la_EUA", "janssen_sa_mock", 'janssen_sa_EUA', "janssen_trial_EUA")) {
-
+  
   ENSEMBLE <- TRUE
   keys <-  c("D29", "D29start1") 
-
+  
 } else if(TRIAL %in% c("janssen_pooled_partA", "janssen_la_partA")) {
   
   ENSEMBLE <- TRUE
   keys <-  c("D29IncludeNotMolecConfirmed", "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
- 
+  
 } else if(TRIAL %in% c("janssen_na_partA", "janssen_sa_partA")) {
   
   ENSEMBLE <- TRUE
   keys <-  c("D29IncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
- 
+  
 } else if(TRIAL %in% c("hvtn705second")) {
-
+  
   ENSEMBLE <- FALSE
   keys <- c("D210") 
-
+  
 } else if(TRIAL %in% c("moderna_mock", "moderna_real")) {
   
   ENSEMBLE <- FALSE
   keys <- c("D29", "D57") 
+  
+} else if(TRIAL %in% c("moderna_boost")) {
+  
+  ENSEMBLE <- FALSE
+  keys <- c("BD29") 
   
 } else stop("TRIAL not supported")
 
@@ -102,8 +109,14 @@ if(TRIAL %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", 
 
 
 ```{r, results="asis", echo = F }
- 
- 
+
+if (TRIAL=='moderna_boost') {
+  assays=c("bindSpike_BA.1", "pseudoneutid50_BA.1", "bindSpike", "pseudoneutid50")
+} else {
+  assays <- config$assays
+}
+
+
 for(short_key in keys){
   COR <- strsplit(short_key, "_")[[1]][1]
   config.cor <- config::get(config = COR)
@@ -111,14 +124,43 @@ for(short_key in keys){
   tpeak <- config.cor$tpeak
   countAfter1 <- COR == "D29start1"
   
-  assays <- config$assays
-  time <- paste0("Day", tpeak)
-  markers <- paste0("Day", tpeak, assays)
+  time <- paste0(DayPrefix, tpeak)
+  markers <- paste0(DayPrefix, tpeak, assays)
+  
+  
+  # ## non-monotone
+  # title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+  # if(monotone) {
+  #   title <- paste0(title0, " (monotone-corrected)")
+  # }
+  # if(countAfter1) {
+  #   title <- paste0(title0, " (events after 1 day post dose)")
+  # } else {
+  #   title = title0
+  # }
+  # cat("##", title, "\n")
+  # 
+  # for(marker in markers) {
+  #   key <- paste0(short_key, "_", marker)
+  #   assay <- gsub(time, "" , marker)
+  #   if(!(assay %in% assays)) {
+  #     assay <- assays[stringr::str_detect(marker, assays)]
+  #   }
+  #   
+  #   message(key)
+  #   message(assay)
+  #   
+  #   res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
+  #   #res = knitr::knit_child(c(here::here( 'sub_report.Rmd')), quiet = TRUE)
+  #   
+  #   cat(res, sep = '\n')
+  #   cat("\\clearpage", sep = '\n')
+  # }
+  
+  
+  # monotone
+  monotone <- TRUE
 
-
-  
-  
-  
   title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
   if(monotone) {
     title <- paste0(title0, " (monotone-corrected)")
@@ -129,39 +171,7 @@ for(short_key in keys){
     title = title0
   }
   cat("##", title, "\n")
-   
-  for(marker in markers) {
-    key <- paste0(short_key, "_", marker)
-    
-    assay <- gsub(time, "" , marker)
-    if(!(assay %in% assays)) {
-      assay <- assays[stringr::str_detect(marker, assays)]
-    }
-
-    res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
-    #res = knitr::knit_child(c(here::here( 'sub_report.Rmd')), quiet = TRUE)
-
-    cat(res, sep = '\n')
-    cat("\\clearpage", sep = '\n')
-  }
   
-   
-  
-  monotone <- TRUE
-  
-   
-  
- title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
-  if(monotone) {
-    title <- paste0(title0, " (monotone-corrected)")
-  }
-  if(countAfter1) {
-    title <- paste0(title0, " (events after 1 day post dose)")
-  } else {
-    title = title0
-  }
-  cat("##", title, "\n")
-   
   for(marker in markers) {
     key <- paste0(short_key, "_", marker)
     #assay <- assays[stringr::str_detect(marker, assays)]
@@ -174,9 +184,6 @@ for(short_key in keys){
     cat("\\clearpage", sep = '\n')
   }
 }
-
-
-
 
 ```
 
@@ -192,12 +199,37 @@ for(short_key in keys){
   tpeak <- config.cor$tpeak
   countAfter1 <- COR == "D29start1"
   
-  assays <- config$assays
-  time <- paste0("Day", tpeak)
-  markers <- paste0("Day", tpeak, assays)
+  time <- paste0(DayPrefix, tpeak)
+  markers <- paste0(DayPrefix, tpeak, assays)
+  message(markers)
   
   
+  # ## non-monotone
+  # title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+  # if(monotone) {
+  #   title <- paste0(title0, " (monotone-corrected)")
+  # }
+  # if(countAfter1) {
+  #   title <- paste0(title0, " (events after 1 day post dose)")
+  # } else {
+  #   title = title0
+  # }
+  # cat("##", title, "\n")
+  # 
+  # for(marker in markers) {
+  #   key <- paste0(short_key, "_", marker)
+  #   #assay <- assays[stringr::str_detect(marker, assays)]
+  #   assay <- gsub(time, "" , marker)
+  #   res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
+  #   
+  #   cat(res, sep = '\n')
+  #   cat("\\clearpage", sep = '\n')
+  # }
   
+  
+  # monotone
+  monotone <- TRUE
+
   title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
   if(monotone) {
     title <- paste0(title0, " (monotone-corrected)")
@@ -213,34 +245,7 @@ for(short_key in keys){
     key <- paste0(short_key, "_", marker)
     #assay <- assays[stringr::str_detect(marker, assays)]
     assay <- gsub(time, "" , marker)
-    res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
     
-    cat(res, sep = '\n')
-    cat("\\clearpage", sep = '\n')
-  }
-  
-   
-  
-  monotone <- TRUE
-  
-   
-  
- title0 <- paste0(short_key, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
-  if(monotone) {
-    title <- paste0(title0, " (monotone-corrected)")
-  }
-  if(countAfter1) {
-    title <- paste0(title0, " (events after 1 day post dose)")
-  } else {
-    title = title0
-  }
-  cat("##", title, "\n")
-   
-  for(marker in markers) {
-    key <- paste0(short_key, "_", marker)
-    #assay <- assays[stringr::str_detect(marker, assays)]
-    assay <- gsub(time, "" , marker)
-
     res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
     
     cat(res, sep = '\n')
@@ -255,4 +260,4 @@ for(short_key in keys){
 
 
 
- 
+

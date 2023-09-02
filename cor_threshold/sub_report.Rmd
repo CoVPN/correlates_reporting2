@@ -62,6 +62,7 @@ if(countAfter1) {
  
 ```{r, output = "asis", echo = FALSE, eval = TRUE}
  file <- (here::here(folder_var,   "figs", paste0(ci,"_CI"), paste0("TABLE_", dir_term, key0,   key, "_", ci_key, "CI", dir_term, ".rds")))
+message(file)
 if(!file.exists(file)) {
   stop(key)
   stop(file)
