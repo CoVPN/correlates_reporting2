@@ -68,6 +68,57 @@ moderna_mock: &moderna_mock
   study_name: MockCOVE
   num_boot_replicates: 10
   num_perm_replicates: 10
+  
+
+moderna_boost: &moderna_boost
+  study_name: COVEBoost
+  txt.endpoint: COVID
+  timepoints: [29]
+  times: [B, BD29, DeltaBD29overBD1]
+  time_labels: [BD1, BD29, BD29/BD1]
+  data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_C_Unblinded_Phase_Data/adata/moderna_boost_data_processed_20230819.csv
+  assay_metadata: assay_metadata/moderna_boost_assay_metadata.csv
+  sampling_scheme: case_control
+  covariates_riskscore: ~. + MinorityInd + HighRiskInd + risk_score
+  covariates: ~. + MinorityInd + HighRiskInd + risk_score
+  multivariate_assays: [
+    BD1bindSpike_BA.1,
+    BD29bindSpike_BA.1,
+    BD1bindSpike_BA.1 + BD29bindSpike_BA.1,
+    BD1bindSpike_BA.1 * BD29bindSpike_BA.1,
+    
+    BD1bindSpike + BD29bindSpike,
+    BD1pseudoneutid50_BA.1 + BD29pseudoneutid50_BA.1, 
+    BD1pseudoneutid50 + BD29pseudoneutid50,
+
+    BD29pseudoneutid50_BA.1 + BD29pseudoneutid50, 
+    BD29bindSpike_BA.1 + BD29bindSpike, 
+    BD29pseudoneutid50_BA.1 + BD29bindSpike_BA.1, 
+    BD29pseudoneutid50 + BD29bindSpike, 
+    
+    DeltaBD29overBD1pseudoneutid50_BA.1 + DeltaBD29overBD1pseudoneutid50, 
+    DeltaBD29overBD1bindSpike_BA.1 + DeltaBD29overBD1bindSpike, 
+    DeltaBD29overBD1pseudoneutid50_BA.1 + DeltaBD29overBD1bindSpike_BA.1, 
+    DeltaBD29overBD1pseudoneutid50 + DeltaBD29overBD1bindSpike
+  ]
+  interaction: [
+    BD1bindSpike_BA.1 * BD29bindSpike_BA.1,
+    BD1bindSpike_BA.1 * DeltaBD29overBD1bindSpike_BA.1,
+    BD1pseudoneutid50_BA.1 * BD29pseudoneutid50_BA.1, 
+    BD1pseudoneutid50_BA.1 * DeltaBD29overBD1pseudoneutid50_BA.1
+  ]
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
+  low_efficacy: no
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  ph1: [ph1.BD29]
+  endpoints: [EventIndOmicron]
+  peak_visit: BD29
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post BD29 visit; no. cases = number of this cohort with an observed COVID endpoint. 
+
+  
+  
 
 janssen_trial: &janssen_trial
   <<: *ows_trial
@@ -997,6 +1048,19 @@ D29IncludeNotMolecConfirmedstart1:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
+D29variant:
+  ph1: ph1.D29
+  ph2: ph2.D29variant
+  wt: wt.D29variant
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndPrimaryD29
+  EventTimePrimary: EventTimePrimaryD29
+  Earlyendpoint: EarlyendpointD29
+  tpeak: 29
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
 D210:
   ph1: Ph1ptids.D210
   ph2: Ph2ptids.D210
@@ -1009,6 +1073,35 @@ D210:
   tpeaklag: 1
   txt.endpoint: HIV
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. per-protocol vaccine recipients not infected through 1 days post Month 7 visit; no. cases = number of this cohort with an observed endpoint.
+
+
+BD29naive:
+  ph1: ph1.BD29
+  ph2: ph2.BD29
+  wt: wt.BD29
+  WtStratum: Wstratum
+  EventIndPrimary:  EventIndOmicronBD29
+  EventTimePrimary: EventTimeOmicronBD29
+  Earlyendpoint: EarlyendpointBD29
+  tpeak: 29
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. trial participants not experiencing the COVID endpoint or infected through 6 days post BD29 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+# BD29nnaive and BD29naive are identical in config, but in the code, different data are analyzed through cleandata.R
+BD29nnaive:
+  ph1: ph1.BD29
+  ph2: ph2.BD29
+  wt: wt.BD29
+  WtStratum: Wstratum
+  EventIndPrimary:  EventIndOmicronBD29
+  EventTimePrimary: EventTimeOmicronBD29
+  Earlyendpoint: EarlyendpointBD29
+  tpeak: 29
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. trial participants not experiencing the COVID endpoint or infected through 6 days post BD29 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
 
 
 ####################
