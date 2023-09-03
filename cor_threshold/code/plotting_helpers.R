@@ -6,7 +6,7 @@
 #' Assume monotone nonincreasing
 get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   
-  # will get risk_plac from cor_coxph
+  # commented out since it may not be correct. if needed, get risk_plac from cor_coxph
   # library(survival)
   # data <- dat.mock
   # 
@@ -112,7 +112,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
     )  +
     theme(plot.title = element_text(size = 25), axis.text.x = element_text(angle = 0, hjust = 1, size = 18), axis.text.y = element_text(angle = 0, hjust = 1, size = 18)) +
     # geom_hline(aes(yintercept=risk_vac), alpha = 0.4) + geom_text(alpha = 0.75,aes(median(v$data$cutoffs),risk_vac,label = "vaccine overall risk"), vjust = -0.5, size = 5) +
-    # hack: comment out till we get risk_plac
+    # comment out till we get risk_plac
     # geom_text(alpha = 0.75, aes(quantile(v$data$cutoffs, 0.1),min(max(v$data$upper),risk_plac),label = paste0("placebo overall risk: ", risk_plac)), vjust = 0, size = 5) + 
     scale_x_continuous(
       breaks = xx,#union(floor(esttmle[, 1]), ceiling(esttmle[, 1])),
@@ -126,7 +126,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   if(above  && max_thresh < log10(uloqs[a]) - 0.05) {
     plot <- plot + geom_vline(xintercept = max_thresh, colour = "red", linetype = "longdash")
   } 
-  # hack: comment out till we get risk_plac
+  # comment out till we get risk_plac
   # else if(!above && risk_plac<= max(v$data$upper, na.rm = T)) {
   #   plot <- plot + geom_hline(aes(yintercept=risk_plac), alpha = 0.4, linetype = "longdash", colour = "red")
   # }

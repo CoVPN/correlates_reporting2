@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "moderna_boost"); COR="BD29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "moderna_boost"); COR="BD29naive"; Sys.setenv(VERBOSE = 1) 
 
 
 #-----------------------------------------------
@@ -35,7 +35,7 @@ data$TwophasesampInd <- data$ph2
 ##### Discretize time grid
 
 max_t <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2 == 1, "EventTimePrimary" ])
-size_time_grid <- 15 # hack
+size_time_grid <- 15 
 
 time_grid <- unique(sort(c(max_t ,quantile(data$Ttilde[data$Ttilde <= max_t + 5 & data$TwophasesampInd ==1 & !is.na(data$Delta)& data$Delta==1 ], seq(0,1, length = size_time_grid)))))
 time_grid[which.min(abs(time_grid -max_t))[1]] <- max_t
@@ -102,28 +102,14 @@ thresholds_list <- list()
 for (marker in markers) {
   
   if (length(unique(data_secondstage[[marker]])) > threshold_grid_size) {
-    # Choose grid of 15 thresholds
-    # Make sure the thresholds are supported by data (so that A >=v has enough people)
-    #  seq(0, 1, length.out = threshold_grid_size) will error code
-    # Upper threshold must be less than the 0.99 quantile
-    thresh_grid <-
-      unique(quantile(
-        data_secondstage[[marker]][data_secondstage[["Delta"]]==1],
-        # hack
-        seq(0,1,length.out=30),
-        na.rm = T
-      ))
     
-    # hack
-    thresh_grid = c(thresh_grid,
-                    # add the overall min since both vectors are based on cases only
-                    min(data_secondstage[[marker]], na.rm=T))
+    # quantiles from cases
+    thresh_grid <- report.assay.values(data_secondstage[[marker]][data_secondstage[["Delta"]]==1], marker, grid_size=threshold_grid_size)
+    # minimum from both cases and controls
+    min = min(data_secondstage[[marker]], na.rm=T)
+    # no need to sort b/c report.assay.values sorts, but need unique
+    thresh_grid = unique(c(min, thresh_grid))
     
-    thresh_mand <- report.assay.values(data_secondstage[[marker]][data_secondstage[["Delta"]]==1], marker)
-    
-    thresh_grid <- sort(union(thresh_grid, thresh_mand))
-     
-    #thresh_grid <- sort(union(thresh_mand, thresh_grid))
   } else {
     
     thresh_grid <- sort(unique(data_secondstage[[marker]]))

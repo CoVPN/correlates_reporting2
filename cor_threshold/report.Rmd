@@ -111,7 +111,8 @@ if(TRIAL %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", 
 ```{r, results="asis", echo = F }
 
 if (TRIAL=='moderna_boost') {
-  assays=c("bindSpike_BA.1", "pseudoneutid50_BA.1", "bindSpike", "pseudoneutid50")
+  # assays=c("bindSpike_BA.1", "pseudoneutid50_BA.1", "bindSpike", "pseudoneutid50")
+  assays=c("bindSpike_BA.1")
 } else {
   assays <- config$assays
 }
@@ -129,34 +130,36 @@ for(COR in CORs){
   if (TRIAL=='moderna_boost') markers = c(markers, paste0("DeltaBD29overBD1", assays))
 
   
-  # ## non-monotone
-  # title0 <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
-  # if(monotone) {
-  #   title <- paste0(title0, " (monotone-corrected)")
-  # }
-  # if(countAfter1) {
-  #   title <- paste0(title0, " (events after 1 day post dose)")
-  # } else {
-  #   title = title0
-  # }
-  # cat("##", title, "\n")
-  # 
-  # for(marker in markers) {
-  #   key <- paste0(marker)
-  #   assay <- gsub(time, "" , marker)
-  #   if(!(assay %in% assays)) {
-  #     assay <- assays[stringr::str_detect(marker, assays)]
-  #   }
-  #   
-  #   message(key)
-  #   message(assay)
-  #   
-  #   res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
-  #   #res = knitr::knit_child(c(here::here( 'sub_report.Rmd')), quiet = TRUE)
-  #   
-  #   cat(res, sep = '\n')
-  #   cat("\\clearpage", sep = '\n')
-  # }
+  ## non-monotone
+  if (!config$threshold_monotone_only) {
+    title0 <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+    if(monotone) {
+      title <- paste0(title0, " (monotone-corrected)")
+    }
+    if(countAfter1) {
+      title <- paste0(title0, " (events after 1 day post dose)")
+    } else {
+      title = title0
+    }
+    cat("##", title, "\n")
+  
+    for(marker in markers) {
+      key <- paste0(marker)
+      assay <- gsub(time, "" , marker)
+      if(!(assay %in% assays)) {
+        assay <- assays[stringr::str_detect(marker, assays)]
+      }
+  
+      message(key)
+      message(assay)
+  
+      res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
+      #res = knitr::knit_child(c(here::here( 'sub_report.Rmd')), quiet = TRUE)
+  
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+    }
+  }
   
   
   # monotone
@@ -204,30 +207,32 @@ for(COR in CORs){
   markers <- paste0(DayPrefix, tpeak, assays)
   
   
-  # ## non-monotone
-  # title0 <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
-  # if(monotone) {
-  #   title <- paste0(title0, " (monotone-corrected)")
-  # }
-  # if(countAfter1) {
-  #   title <- paste0(title0, " (events after 1 day post dose)")
-  # } else {
-  #   title = title0
-  # }
-  # cat("##", title, "\n")
-  # 
-  # for(marker in markers) {
-  #   key <- paste0(marker)
-  #   #assay <- assays[stringr::str_detect(marker, assays)]
-  #   assay <- gsub(time, "" , marker)
-  #   res = knitr::knit_child(c(here::here('sub_report.Rmd')), quiet = TRUE)
-  #   
-  #   cat(res, sep = '\n')
-  #   cat("\\clearpage", sep = '\n')
-  # }
+  ## non-monotone
+  if (!config$threshold_monotone_only) {
+    title0 <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+    if(monotone) {
+      title <- paste0(title0, " (monotone-corrected)")
+    }
+    if(countAfter1) {
+      title <- paste0(title0, " (events after 1 day post dose)")
+    } else {
+      title = title0
+    }
+    cat("##", title, "\n")
+    
+    for(marker in markers) {
+      key <- paste0(marker)
+      #assay <- assays[stringr::str_detect(marker, assays)]
+      assay <- gsub(time, "" , marker)
+      res = knitr::knit_child(c(here::here('sub_report.Rmd')), quiet = TRUE)
+    
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+    }
+  }
   
   
-  # monotone
+  ## monotone
   monotone <- TRUE
 
   title0 <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")

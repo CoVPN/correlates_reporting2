@@ -12,7 +12,7 @@ library(earth)
 
 begin=Sys.time()
 
-source(here::here("code", "params.R"))
+source(here::here("code", "clean_data.R"))
 
 source(here::here("code", "tmleThresh.R"))
 source(here::here("code", "learners.R"))
@@ -63,7 +63,6 @@ run_threshold_analysis <- function(marker, direction = "above") {
     lrnr_A <- Lrnr_hal9001_custom$new(max_degree = 2, smoothness_orders = 0, num_knots = c(10,3), reduce_basis=1e-4, fit_control = list(n_folds = 10, parallel = TRUE))
   }
   if(super_fast_analysis) {
-    #hack
     ngrid_A <- 15
     print("super fast analysis")
     form <- paste0("Y~h(.) + h(t,.)")
@@ -73,7 +72,7 @@ run_threshold_analysis <- function(marker, direction = "above") {
   }
   
   thresholds <- read.csv(here::here('output', TRIAL, COR, "data_clean", "Thresholds_by_marker", paste0("thresholds_", marker, ".csv")))
-  thresholds <- as.vector(unlist(thresholds[, 1])) # hack
+  thresholds <- as.vector(unlist(thresholds[, 1])) 
   print(thresholds)
   #time <- marker_to_time[[marker]]
   data_full <- read.csv(here::here('output', TRIAL, COR, "data_clean", paste0("data_firststage", ".csv")))
@@ -106,9 +105,11 @@ run_threshold_analysis <- function(marker, direction = "above") {
     thresholds <- thresholds[-1]
     data_full[[marker]] <- -data_full[[marker]]
     esttmle_full <- survivalThresh(as.data.table(data_full), trt = marker, Ttilde = "Ttilde",Delta = "Delta", J = "J", covariates = covariates, target_times = unique(data_full$target_time),cutoffs_A = sort(-thresholds), cutoffs_J = 1, type_J = "equal", lrnr =lrnr, lrnr_A = lrnr_A, lrnr_N = lrnr_N, lrnr_C = lrnr_C, biased_sampling_group= NULL, biased_sampling_indicator = "TwophasesampInd", weights_var = "wt", monotone_decreasing = F, ngrid_A = min(2,ngrid_A) )
-    ## non-monotone
-    # esttmle_full[[1]][,1] <- - esttmle_full[[1]][,1]
-    # esttmle_full[[1]] <- esttmle_full[[1]][order(esttmle_full[[1]][,1]),]
+    # non-monotone
+    if (!config$threshold_monotone_only) {
+      esttmle_full[[1]][,1] <- - esttmle_full[[1]][,1]
+      esttmle_full[[1]] <- esttmle_full[[1]][order(esttmle_full[[1]][,1]),]
+    }
     esttmle_full[[2]][,1] <- - esttmle_full[[2]][,1]
     esttmle_full[[2]] <- esttmle_full[[2]][order(esttmle_full[[2]][,1]),]
     
@@ -121,17 +122,20 @@ run_threshold_analysis <- function(marker, direction = "above") {
   }
   print(direction_append)
 
+  # Save estimates and CI of threshold-response function
+  
   ## non-monotone
-  # esttmle <- esttmle_full[[1]]
-  # 
-  # # Save estimates and CI of threshold-response function
-  # save("esttmle", file = here::here('output', TRIAL, COR, 
-  #   paste0("tmleThresh_",   marker, direction_append,".RData")
-  # ))
-  # write.csv(esttmle, file = here::here(
-  #   "output", TRIAL, COR,
-  #   paste0("tmleThresh_",  marker,direction_append, ".csv")
-  # ), row.names = F)
+  if (!config$threshold_monotone_only) {
+    esttmle <- esttmle_full[[1]]
+    
+    save("esttmle", file = here::here('output', TRIAL, COR,
+                                      paste0("tmleThresh_",   marker, direction_append,".RData")
+    ))
+    write.csv(esttmle, file = here::here(
+      "output", TRIAL, COR,
+      paste0("tmleThresh_",  marker,direction_append, ".csv")
+    ), row.names = F)
+  }
   
   esttmle <- esttmle_full[[2]]
   save("esttmle", file = here::here(
