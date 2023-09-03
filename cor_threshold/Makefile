@@ -5,12 +5,7 @@ allbutclean: threshold report
 
 ## clean            : delete contents of data_clean/ and figs/
 clean:
-	rm -f data_clean/*.csv
-	rm -f data_clean/Thresholds_by_marker/*.csv
-	rm -f figs/simultaneous_CI/*.pdf
-	rm -f figs/pointwise_CI/*.pdf
-	rm -f figs/pointwise_CI/*.rds
-	rm -f figs/simultaneous_CI/*.rds
+	rm -rf output/$(TRIAL)/*
 
 threshold:
 ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
@@ -23,9 +18,13 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 	Rscript code/plotting.R 							D57
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), moderna_boost))
-	Rscript code/clean_data.R 						BD29
-	Rscript code/Run_Threshold_analysis.R BD29
-	Rscript code/plotting.R 							BD29
+	Rscript code/clean_data.R BD29naive
+	Rscript code/Run_Threshold_analysis.R BD29naive
+	Rscript code/plotting.R BD29naive
+	
+	Rscript code/clean_data.R BD29nnaive
+	Rscript code/Run_Threshold_analysis.R BD29nnaive
+	Rscript code/plotting.R BD29nnaive
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_trial_EUA janssen_pooled_mock janssen_pooled_EUA janssen_na_mock janssen_na_EUA janssen_la_mock janssen_la_EUA janssen_sa_mock janssen_sa_EUA))
 	Rscript code/clean_data.R 						D29

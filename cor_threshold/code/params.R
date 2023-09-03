@@ -1,6 +1,12 @@
 renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R"))
 
+# path for figures and tables etc
+save.results.to = here::here("output", TRIAL, COR, 'figs', 'pointwise_CI'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
+save.results.to = here::here("output", TRIAL, COR, 'figs', 'simultaneous_CI'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
+save.results.to = here::here("output", TRIAL, COR, 'data_clean', 'Thresholds_by_marker'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
+
+
 
 
 # Reference time to perform analysis. Y = 1(T <= tf) where T is event time of Covid.
@@ -12,7 +18,7 @@ fast_analysis <-
   F ### Perform a fast analysis using glmnet at cost of accuracy
 super_fast_analysis <- T
 # hack
-threshold_grid_size <- 2 ### Number of thresholds to estimate (equally spaced in quantiles). Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
+threshold_grid_size <- 30 ### Number of thresholds to estimate (equally spaced in quantiles). Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
 plotting_assay_label_generator <- function(marker, above = T) {
   if (above) {
     add <- " (>=s)"
@@ -32,9 +38,9 @@ plotting_assay_label_generator <- function(marker, above = T) {
 }
 
 plotting_assay_title_generator <- function(marker) {
-  day <- ""
-  time <- paste0(DayPrefix, tpeak)
   assay <- marker_to_assay[[marker]]
+  # time <- paste0(DayPrefix, tpeak)
+  time = sub(assay,"",marker)
   title <- labels.title[time, assay]
   
   return(title)
@@ -51,13 +57,11 @@ if (TRIAL=='moderna_boost') {
 time <- paste0(DayPrefix, tpeak)
 key <- COR
 markers <- paste0(DayPrefix, tpeak, assays)
+if (TRIAL=='moderna_boost') markers = c(markers, paste0("DeltaBD29overBD1", assays))
 
 markers <- intersect(markers, colnames(dat.mock))
 print(markers)
-marker_to_assay <- sapply(markers, function(v) {
-  unname(gsub(paste0(DayPrefix, tpeak),  "", v))
-})
-
+marker_to_assay <- sapply(markers, function(v) marker.name.to.assay(v))
 
 
 

@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "moderna_boost"); COR="BD29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "moderna_boost"); COR="BD29naive"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))
 

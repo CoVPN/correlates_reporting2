@@ -35,7 +35,7 @@ data$TwophasesampInd <- data$ph2
 ##### Discretize time grid
 
 max_t <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2 == 1, "EventTimePrimary" ])
-size_time_grid <- 2 # hack
+size_time_grid <- 15 # hack
 
 time_grid <- unique(sort(c(max_t ,quantile(data$Ttilde[data$Ttilde <= max_t + 5 & data$TwophasesampInd ==1 & !is.na(data$Delta)& data$Delta==1 ], seq(0,1, length = size_time_grid)))))
 time_grid[which.min(abs(time_grid -max_t))[1]] <- max_t
@@ -71,9 +71,13 @@ variables_to_keep <- intersect(variables_to_keep, colnames(data))
 
 #keep <- data[[Earlyendpoint]] ==0 & data$Trt == 1 & data$Bserostatus == 0 & data$Perprotocol==1 & !is.na(data$wt) & data[[Event_Time_variable[[time]]]] >=7 & !is.na(data$Wstratum)
 
-# hack
 if (TRIAL=="moderna_boost") {
-  keep = data[["naive"]]==1
+  if (COR=='BD29naive') {
+    keep = data[["ph1"]]==1 & data[["naive"]]==1  
+  } else if (COR=='BD29nnaive') {
+    keep = data[["ph1"]]==1 & data[["naive"]]==0
+  } else stop('wrong COR: '%.% COR)
+  
 } else {
   keep = data[["ph1"]]==1 & data$Trt == 1  
 }
@@ -85,11 +89,11 @@ data_firststage <- data[keep, variables_to_keep]
 data_secondstage <- data_firststage[data_firststage$TwophasesampInd == 1, ]
 
 write.csv(data_firststage,
-          here::here("data_clean", paste0("data_firststage_", short_key, ".csv")),
+          here::here('output', TRIAL, COR, "data_clean", paste0("data_firststage.csv")),
           row.names = F
 )
 write.csv(data_secondstage,
-          here::here("data_clean", paste0("data_secondstage_", short_key, ".csv")),
+          here::here('output', TRIAL, COR, "data_clean", paste0("data_secondstage.csv")),
           row.names = F
 )
 
@@ -106,12 +110,12 @@ for (marker in markers) {
       unique(quantile(
         data_secondstage[[marker]][data_secondstage[["Delta"]]==1],
         # hack
-        seq(0,1,length.out=10),
+        seq(0,1,length.out=30),
         na.rm = T
       ))
     
     # hack
-    thresh_grid = c(# thresh_grid,
+    thresh_grid = c(thresh_grid,
                     # add the overall min since both vectors are based on cases only
                     min(data_secondstage[[marker]], na.rm=T))
     
@@ -126,7 +130,7 @@ for (marker in markers) {
   }
   
   
-  write.csv(data.frame(thresh = thresh_grid), here::here("data_clean", "Thresholds_by_marker", paste0("thresholds_", marker, ".csv")), row.names = F)
+  write.csv(data.frame(thresh = thresh_grid), here::here('output', TRIAL, COR, "data_clean", "Thresholds_by_marker", paste0("thresholds_", marker, ".csv")), row.names = F)
   
   #thresholds_list[[marker]] <- thresh_grid
 }

@@ -4,7 +4,7 @@
 #' @param simultaneous_CI True if simultaneous CI should be plotted. Otherwise if False pointwise CI are plotted.
 #' @param monotone True if monotone correction should be done on estimates. Otherwise no monotone correction. This should be done if one expects monotonicity.
 #' Assume monotone nonincreasing
-get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
+get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   
   # will get risk_plac from cor_coxph
   # library(survival)
@@ -35,6 +35,8 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   # risks = 1 - exp(-predict(fit.risk, newdata=tmp, type="expected"))
   # risk_plac <- round(mean(risks),3)
   
+  is.delta=startsWith(marker,"Delta")
+  
   key <- marker
   if(above){
     append <- ""
@@ -42,9 +44,9 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
     append <- "_below"
   }
   if(monotone) {
-    load(file = here::here("output", paste0("tmleThresh_monotone_",  COR, "_", marker,append, ".RData")))
+    load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_monotone_", marker,append, ".RData")))
   } else {
-    load(file = here::here("output", paste0("tmleThresh_",  COR, "_", marker,append, ".RData")))
+    load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_",  marker,append, ".RData")))
   }
   time <- tpeak
   day <- ""
@@ -56,7 +58,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   
   labx <- plotting_assay_label_generator(marker, above)
   # subtitle_main <- "Nonparametric estimate of Threshold-response function"
-  data <- read.csv(here::here("data_clean", paste0("data_secondstage_", COR, ".csv")))
+  data <- read.csv(here::here("output", TRIAL, COR, "data_clean", paste0("data_secondstage.csv")))
   main <- plotting_assay_title_generator(marker)
   if(length(grep("start", key)) > 0) {
     main <- paste0(main , " (1-day-post)")
@@ -88,7 +90,8 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   a <- marker_to_assay[[marker]]
   print(marker)
   print(a)
-  xlim <- get.range.cor(data, a,   tpeak)
+  if (!is.delta) xlim=get.range.cor(data, a,   tpeak) else xlim=range(data[[marker]], na.rm=T)
+  
   print(quantile(data[[marker]]))
   print(xlim)
   llod <- lloxs[a]
@@ -154,9 +157,9 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   print(folder)
   
   ggsave(
-    filename = here::here(
+    filename = here::here("output", TRIAL, COR,
       "figs", folder,
-      paste0(append_start,  COR, "_", marker, append_end, ".pdf")
+      paste0(append_start, marker, append_end, ".pdf")
     ),
     plot = plot, height = 7, width = 9
   )
@@ -170,7 +173,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
 generate_tables <- function(marker, num_show = 10, monotone = F, above = T) {
   print("TABLES")
   
-  data_secondstage <- read.csv(here::here("data_clean", paste0("data_secondstage_", COR, ".csv")))
+  data_secondstage <- read.csv(here::here("output", TRIAL, COR, "data_clean", paste0("data_secondstage.csv")))
   
   if(above){
     append <- ""
@@ -178,9 +181,9 @@ generate_tables <- function(marker, num_show = 10, monotone = F, above = T) {
     append <- "_below"
   }
   if(monotone) {
-    load(file = here::here("output", paste0("tmleThresh_monotone_",  COR, "_",marker,append, ".RData")))
+    load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_monotone_",  marker,append, ".RData")))
   } else {
-    load(file = here::here("output", paste0("tmleThresh_",  COR, "_",marker,append, ".RData")))
+    load(file = here::here("output", TRIAL, COR,, paste0("tmleThresh_",  marker,append, ".RData")))
   }
   esttmle_table <- esttmle
   esttmle_table[, 1] <- round(esttmle_table[, 1], 3)
@@ -209,15 +212,15 @@ generate_tables <- function(marker, num_show = 10, monotone = F, above = T) {
   } else {
     aadd1 <- append
   }
-  saveRDS(ptwise_tab_guts, file = here::here(
+  saveRDS(ptwise_tab_guts, file = here::here("output", TRIAL, COR,
     "figs", "pointwise_CI",
-    paste0("TABLE_",aadd1,  COR, "_",marker, "_pointwiseCI.rds")
+    paste0("TABLE_",aadd1,  marker, "_pointwiseCI.rds")
   ))
   simul_tab_guts <- esttmle_table[index_to_show, c(1, 2, 3, 6, 7)]
   
-  saveRDS(simul_tab_guts, file = here::here(
+  saveRDS(simul_tab_guts, file = here::here("output", TRIAL, COR,
     "figs", "simultaneous_CI",
-    paste0("TABLE_", aadd1, COR, "_", marker, "_simultCI.rds")
+    paste0("TABLE_", aadd1, marker, "_simultCI.rds")
   ))
   return(list(pointwise = esttmle_table[index_to_show, c(1, 2, 3, 4, 5)], simult = esttmle_table[index_to_show, c(1, 2, 3, 6, 7)]))
 } 
