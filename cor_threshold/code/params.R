@@ -1,5 +1,3 @@
-renv::activate(project = here::here(".."))
-source(here::here("..", "_common.R"))
 
 # path for figures and tables etc
 save.results.to = here::here("output", TRIAL, COR, 'figs', 'pointwise_CI'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
@@ -7,15 +5,13 @@ save.results.to = here::here("output", TRIAL, COR, 'figs', 'simultaneous_CI'); i
 save.results.to = here::here("output", TRIAL, COR, 'data_clean', 'Thresholds_by_marker'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
 
 
-
-
 # Reference time to perform analysis. Y = 1(T <= tf) where T is event time of Covid.
 # tf should be large enough that most events are observed but small enough so that not many people are right censored. For the practice dataset, tf = 170 works.
 # Right-censoring is taken into account for  this analysis.
 covariate_adjusted <- T #### Estimate threshold-response function with covariate adjustment
 
-fast_analysis <- F ### Perform a fast analysis using glmnet at cost of accuracy
-super_fast_analysis <- T 
+fast_analysis <- config$threshold_fast ### Perform a fast analysis using glmnet at cost of accuracy
+super_fast_analysis <- config$threshold_superfast 
 
 plotting_assay_label_generator <- function(marker, above = T) {
   if (above) {

@@ -2,6 +2,11 @@
 
 renv::activate(project = here::here(".."))
 
+source(here::here("..", "_common.R"))
+
+source(here::here("code", "params.R"))
+
+
 library(sl3)
 library(SuperLearner)
 library(data.table)
@@ -9,10 +14,6 @@ library(mvtnorm)
 library(uuid)
 library(doMC)
 library(earth)
-
-begin=Sys.time()
-
-source(here::here("code", "clean_data.R"))
 
 source(here::here("code", "tmleThresh.R"))
 source(here::here("code", "learners.R"))
@@ -24,8 +25,97 @@ source(here::here("code", "survivalThresh", "survival_helper_functions.R"))
 source(here::here("code", "survivalThresh", "targeting_functions.R"))
 source(here::here("code", "survivalThresh", "task_generators.R"))
 
+begin=Sys.time()
 
 
+################################################################################
+for (a in assays) {
+  for (t in DayPrefix%.%tpeak ) {
+    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
+  }
+}    
+
+# Generate the outcome and censoring indicator variables
+
+short_key <- COR
+
+data <- dat.mock
+data$Ttilde <- data$EventTimePrimary
+data$Delta <- data$EventIndPrimary
+data$TwophasesampInd <- data$ph2
+
+##### Discretize time grid
+
+max_t <- max(data[data$EventIndPrimary==1 & data$Trt == 1 & data$ph2 == 1, "EventTimePrimary" ])
+size_time_grid <- 15 
+
+time_grid <- unique(sort(c(max_t ,quantile(data$Ttilde[data$Ttilde <= max_t + 5 & data$TwophasesampInd ==1 & !is.na(data$Delta)& data$Delta==1 ], seq(0,1, length = size_time_grid)))))
+time_grid[which.min(abs(time_grid -max_t))[1]] <- max_t
+time_grid <- sort(unique(time_grid))
+
+Ttilde_discrete <- findInterval(data$Ttilde, time_grid, all.inside = TRUE)
+target_time <- findInterval(max_t, time_grid, all.inside = TRUE)
+data$Ttilde <- Ttilde_discrete
+data$target_time <- target_time
+data$J <- 1
+
+
+####
+# Subset data
+
+print(markers)
+variables_to_keep <- c(covariates, markers, "TwophasesampInd", "wt", "Ttilde", "Delta", "target_time", "J")
+variables_to_keep <- intersect(variables_to_keep, colnames(data))
+
+
+if (TRIAL=="moderna_boost") {
+  if (COR=='BD29naive') {
+    keep = data[["ph1"]]==1 & data[["naive"]]==1  
+  } else if (COR=='BD29nnaive') {
+    keep = data[["ph1"]]==1 & data[["naive"]]==0
+  } else stop('wrong COR: '%.% COR)
+  
+} else {
+  keep = data[["ph1"]]==1 & data$Trt == 1  
+}
+
+
+data_firststage <- data[keep, variables_to_keep]
+
+#data_firststage <- na.omit(data_firststage)
+data_secondstage <- data_firststage[data_firststage$TwophasesampInd == 1, ]
+
+write.csv(data_firststage,
+          here::here('output', TRIAL, COR, "data_clean", paste0("data_firststage.csv")),
+          row.names = F
+)
+write.csv(data_secondstage,
+          here::here('output', TRIAL, COR, "data_clean", paste0("data_secondstage.csv")),
+          row.names = F
+)
+
+
+thresholds_list <- list()
+for (marker in markers) {
+  if (length(unique(data_secondstage[[marker]])) > threshold_grid_size) {
+    # quantiles from cases
+    thresh_grid <- report.assay.values(data_secondstage[[marker]][data_secondstage[["Delta"]]==1], marker, grid_size=threshold_grid_size)
+    # minimum from both cases and controls
+    min = min(data_secondstage[[marker]], na.rm=T)
+    # no need to sort b/c report.assay.values sorts, but need unique
+    thresh_grid = unique(c(min, thresh_grid))
+    
+  } else {
+    thresh_grid <- sort(unique(data_secondstage[[marker]]))
+  }
+  
+  write.csv(data.frame(thresh = thresh_grid), here::here('output', TRIAL, COR, "data_clean", "Thresholds_by_marker", paste0("thresholds_", marker, ".csv")), row.names = F)
+}
+
+
+
+################################################################################
+# Runs threshold analysis and saves raw results.
 
 #lrnr <- get_learner(fast_analysis = fast_analysis, include_interactions = include_interactions, covariate_adjusted = covariate_adjusted)
 
@@ -34,7 +124,6 @@ source(here::here("code", "survivalThresh", "task_generators.R"))
 #lrnr_C <-lrnr
 #lrnr_A <-lrnr
 
-# Runs threshold analysis and saves raw results.
 #' @param marker Marker to run threshold analysis for
 run_threshold_analysis <- function(marker, direction = "above") {
   # markers=markers[1]; direction = "above"
