@@ -6,34 +6,7 @@
 #' Assume monotone nonincreasing
 get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   
-  # commented out since it may not be correct. if needed, get risk_plac from cor_coxph
-  # library(survival)
-  # data <- dat.mock
-  # 
-  # #keep <- data[[Earlyendpoint]] ==0 & data$Trt == 0 & data$Bserostatus == 0 & data$Perprotocol==1  & data[[Event_Time_variable[[time]]]] >=7 & !is.na(data$Wstratum)
-  # keep <- data[["ph1"]]==1  & data$Trt == 0 
-  # #keep <-   data$Trt == 0 & data$Bserostatus == 0   & !is.na(data[[weight_variable[[time]]]])
-  # tmp <- dat.mock[keep,]
-  # 
-  # tmp$time <-  as.numeric(tmp[["EventTimePrimary"]])
-  # tmp$Delta <-  as.numeric(tmp[["EventIndPrimary"]])
-  # data <- tmp
-  # 
-  # form.s = as.formula(paste0("Surv( time, Delta) ~ 1"))
-  # if (endsWith(data_name, "riskscore.csv")) {
-  #   form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + risk_score)
-  # } else {
-  #   form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + Age)
-  # }
-  # if(TRIAL == "hvtn705second") {
-  #   form.0 =            update (form.s, as.formula(config$covariates_riskscore))
-  # }
-  # 
-  # fit.risk = coxph(form.0, data = tmp, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
-  # tmp[["time"]] <-  as.numeric(max_t)
-  # 
-  # risks = 1 - exp(-predict(fit.risk, newdata=tmp, type="expected"))
-  # risk_plac <- round(mean(risks),3)
+  risk_plac = prev.plac # computed in _common.R
   
   is.delta=startsWith(marker,"Delta")
   

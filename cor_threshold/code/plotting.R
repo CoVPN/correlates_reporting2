@@ -2,14 +2,16 @@
 
 renv::activate(project = here::here(".."))
 
+source(here::here("..", "_common.R"))
+
+source(here::here("code", "params.R"))
+
 library(cowplot)
 library(scales)
 library(knitr)
 library(dplyr)
 library(magrittr)
 library(ggplot2)
-
-source(here::here("code", "params.R"))
 
 source(here::here("code", "learners.R"))
 source(here::here("code", "tmleThresh.R"))

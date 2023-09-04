@@ -5,46 +5,7 @@
 #' @param monotone True if monotone correction should be done on estimates. Otherwise no monotone correction. This should be done if one expects monotonicity.
 #' Assume monotone nonincreasing
 get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
-    library(survival)
-  dat.mock <- read.csv(here::here("..", "data_clean", paste0(stringr::str_match(data_name,"(.+).csv")[,2],append_data,".csv")))
-  data <- dat.mock
-   time <- marker_to_time[[marker]]
-   if(time == "Day57") {
-     Earlyendpoint <- "EarlyendpointD57"
-   } else if(time == "Day29") {
-     Earlyendpoint <- "EarlyendpointD29"
-     
-   }
-   #keep <- data[[Earlyendpoint]] ==0 & data$Trt == 0 & data$Bserostatus == 0 & data$Perprotocol==1  & data[[Event_Time_variable[[time]]]] >=7 & !is.na(data$Wstratum)
-  keep <- data[[ph1_id_list[[time]]]]==1  & data$Trt == 0 & data$Bserostatus == 0
-  #keep <-   data$Trt == 0 & data$Bserostatus == 0   & !is.na(data[[weight_variable[[time]]]])
-  tmp <- dat.mock[keep,]
-  print(time)
-  print(ph1_id_list[[time]])
-  print(dim(tmp))
-  #dat.mock <- read.csv(here::here( "data_clean", data_name))
-  #tmp <- dat.mock[dat.mock$Perprotocol==1 & dat.mock$Bserostatus == 0,]
-  
-  tmp$time <-  as.numeric(tmp[[Event_Time_variable[[time]]]])
-  tmp$Delta <-  as.numeric(tmp[[Event_Ind_variable[[time]]]])
-  data <- tmp
- 
-  form.s = as.formula(paste0("Surv( time, Delta) ~ 1"))
-  if (endsWith(data_name, "riskscore.csv")) {
-      form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + risk_score)
-  } else {
-      form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + Age)
-  }
- 
- 
-  fit.risk = coxph(form.0, data = tmp, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
-  tmp[["time"]] <-  as.numeric(tf[time])
- 
-  
- 
-  risks = 1 - exp(-predict(fit.risk, newdata=tmp, type="expected"))
-  risk_plac <- round(mean(risks),3)
-  
+  risk_plac = prev.plac # computed in _common.R
   
   #fit <- summary(survival::survfit(survival::Surv(time, Delta) ~ 1, data = tmp[tmp$Trt==1,]), times = tf[[time]] )
   #risk_vac <- round(mean(1-fit$surv),4)

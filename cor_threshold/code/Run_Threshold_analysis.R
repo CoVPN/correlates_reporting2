@@ -253,4 +253,4 @@ for (marker in markers) {
 }
 
 
-print("run time: "%.%format(Sys.time()-begin, digits=1))
+print("run time: "%.%format(Sys.time()-begin, digits=2))

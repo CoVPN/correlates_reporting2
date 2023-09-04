@@ -153,7 +153,7 @@ for(COR in CORs){
       message(key)
       message(assay)
   
-      res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
+      res = knitr::knit_child(c(here::here('cor_threshold', 'sub_report.Rmd')), quiet = TRUE)
       #res = knitr::knit_child(c(here::here( 'sub_report.Rmd')), quiet = TRUE)
   
       cat(res, sep = '\n')
