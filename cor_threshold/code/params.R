@@ -42,8 +42,7 @@ plotting_assay_title_generator <- function(marker) {
 }
 
 if (TRIAL=='moderna_boost') {
-  assays=c("bindSpike_BA.1")
-  # assays=c("bindSpike_BA.1", "pseudoneutid50_BA.1", "bindSpike", "pseudoneutid50")
+  assays=c("bindSpike_BA.1", "pseudoneutid50_BA.1", "bindSpike", "pseudoneutid50")
 } else {
   assays <- config$assays
 }

@@ -111,8 +111,7 @@ if(TRIAL %in% c("janssen_pooled_mock", "janssen_pooled_EUA", "janssen_na_mock", 
 ```{r, results="asis", echo = F }
 
 if (TRIAL=='moderna_boost') {
-  # assays=c("bindSpike_BA.1", "pseudoneutid50_BA.1", "bindSpike", "pseudoneutid50")
-  assays=c("bindSpike_BA.1")
+  assays=c("bindSpike_BA.1", "pseudoneutid50_BA.1", "bindSpike", "pseudoneutid50")
 } else {
   assays <- config$assays
 }

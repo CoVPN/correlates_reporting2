@@ -23,7 +23,7 @@ default: &default
   sampling_scheme: none
   use_ensemble_sl: no
   
-  threshold_grid_size: 3
+  threshold_grid_size: 30
   threshold_monotone_only: no
   threshold_fast: no
   threshold_superfast: no
