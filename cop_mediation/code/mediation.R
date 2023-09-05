@@ -14,6 +14,8 @@ if(Args[5] == "TRUE"){
   tf_Day <- round(tf_Day * 0.75)
 }
 
+compatible_total_ve <- (Args[6] == "TRUE")
+
 print(
   paste0("The follow-up day used to define primary binary endpoint is: ", tf_Day)
 )
@@ -143,6 +145,7 @@ sl_library <- c(
 # results without marker used to compute PM
 # does not need to be updated with each marker
 if(run_survtmle){
+  if(!compatible_total_ve){
     fit1 <- survtmle::hazard_tmle(
       ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
       ftype = data_keep$EventIndPrimary,
@@ -159,7 +162,62 @@ if(run_survtmle){
       gtolCens = 0.05,
       truncateH = 0.9
     )
-    print(fit1)
+  }else{
+    fit1_1 <- survtmle::hazard_tmle(
+      ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
+      ftype = data_keep$EventIndPrimary,
+      trt = data_keep$Trt,
+      adjustVars = data_keep[ , covariates, drop = FALSE],
+      mediator = data_keep[ , marker, drop = FALSE],
+      mediatorTrtVal = 1,
+      trtOfInterest = 1,
+      mediatorSampProb = 1 / data_keep$wt,
+      mediatorInCensMod = FALSE,
+      mediatorStratify.ftime = TRUE,
+      t0 = floor(tf_Day / 7.00001) + 1,
+      SL.ctime = sl_library,
+      SL.ftime = sl_library,
+      SL.mediator = sl_library,
+      SL.trtMediator = sl_library,
+      SL.eif = sl_library,
+      verbose = TRUE,
+      maxIter = 2,
+      gtol = 0.05,
+      gtolCens = 0.05,
+      truncateH = 0.9
+    )
+    fit1_0 <- survtmle::hazard_tmle(
+      ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
+      ftype = data_keep$EventIndPrimary,
+      trt = data_keep$Trt,
+      adjustVars = data_keep[ , covariates, drop = FALSE],
+      mediator = data_keep[ , marker, drop = FALSE],
+      mediatorTrtVal = 0,
+      trtOfInterest = 0,
+      mediatorSampProb = 1 / data_keep$wt,
+      mediatorInCensMod = FALSE,
+      mediatorStratify.ftime = TRUE,
+      t0 = floor(tf_Day / 7.00001) + 1,
+      SL.ctime = sl_library,
+      SL.ftime = sl_library,
+      SL.mediator = sl_library,
+      SL.trtMediator = sl_library,
+      SL.eif = sl_library,
+      verbose = TRUE,
+      maxIter = 2,
+      gtol = 0.05,
+      gtolCens = 0.05,
+      truncateH = 0.9
+    )
+    print(fit1_0)
+    print(fit1_1)
+
+    fit1 <- list(
+      est = rbind(fit1_0$est, fit1_1$est),
+      ic = cbind(fit1_0$ic, fit1_1$ic)
+    )
+  }
+  print(fit1)
 }
 
 
