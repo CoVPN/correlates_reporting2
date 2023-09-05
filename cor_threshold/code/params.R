@@ -1,35 +1,35 @@
-
-#-----------------------------------------------
-# obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R"))
-#-----------------------------------------------
-print("ADE")
-TRIAL <- Sys.getenv("TRIAL") 
 
-### #####
-#### NOTE Currently only supports Day29 and Day57 markers
-#########
- 
+# path for figures and tables etc
+save.results.to = here::here("output", TRIAL, COR, 'figs', 'pointwise_CI'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
+save.results.to = here::here("output", TRIAL, COR, 'figs', 'simultaneous_CI'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
+save.results.to = here::here("output", TRIAL, COR, 'data_clean', 'Thresholds_by_marker'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
+
+
+
 
 # Reference time to perform analysis. Y = 1(T <= tf) where T is event time of Covid.
 # tf should be large enough that most events are observed but small enough so that not many people are right censored. For the practice dataset, tf = 170 works.
 # Right-censoring is taken into account for  this analysis.
-covariate_adjusted <- T #### Estimate threshold-response function with covariate adjustment
-fast_analysis <- F ### Perform a fast analysis using glmnet at cost of accuracy
-super_fast_analysis <- F
+covariate_adjusted <-
+  T #### Estimate threshold-response function with covariate adjustment
+fast_analysis <-
+  F ### Perform a fast analysis using glmnet at cost of accuracy
+super_fast_analysis <- T
+# hack
 threshold_grid_size <- 30 ### Number of thresholds to estimate (equally spaced in quantiles). Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
 plotting_assay_label_generator <- function(marker, above = T) {
-  if(above) {
+  if (above) {
     add <- " (>=s)"
   } else {
     add <- " (<=s)"
   }
   day <- ""
   
-  time <- paste0("Day", tpeak)
+  time <- paste0(DayPrefix, tpeak)
   assay <- marker_to_assay[[marker]]
- 
+  
   labx <- labels.axis[time, assay]
   labx <- paste0(labx, add)
   
@@ -38,54 +38,49 @@ plotting_assay_label_generator <- function(marker, above = T) {
 }
 
 plotting_assay_title_generator <- function(marker) {
-  day <- ""
-  time <- paste0("Day", tpeak)
   assay <- marker_to_assay[[marker]]
+  # time <- paste0(DayPrefix, tpeak)
+  time = sub(assay,"",marker)
   title <- labels.title[time, assay]
   
   return(title)
   
 }
 
-assays <- config$assays
-time <- paste0("Day", tpeak)
-key <- COR
-markers <- paste0("Day", tpeak, assays)
- 
- print("OK")
-markers <- intersect(markers, colnames(dat.mock) ) 
-print(markers)
-marker_to_assay <- sapply(markers, function(v) {
- unname(gsub(paste0("Day", tpeak),  "", v))
-})
- 
- 
- 
-
- # max_t <- max(dat.mock[dat.mock$EventIndPrimary==1 & dat.mock$Trt == 1 & dat.mock$ph2 == 1, "EventTimePrimary" ])
- max_t = tfinal.tpeak
-# Covariates to adjust for. SHOULD BE AT LEAST TWO VARIABLES OR GLMNET WILL ERROR
-data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
-if (file.exists(here::here("..", "data_clean", data_name_updated))) {
-  add_risk_score <- T
-  covariates <- c("MinorityInd", "HighRiskInd", "risk_score") # , "BRiskScore") # Add "age"?
-  
+if (TRIAL=='moderna_boost') {
+  assays=c("bindSpike_BA.1", "pseudoneutid50_BA.1", "bindSpike", "pseudoneutid50")
 } else {
-  add_risk_score <- F
-  covariates <- c("MinorityInd", "HighRiskInd") # , "BRiskScore") # Add "age"?
-  
+  assays <- config$assays
 }
-if(Sys.getenv("TRIAL") =="hvtn705") {
-  covariates <- c("Riskscore",  "BMI", "RSA")
-}
- 
-if("risk_score" %in% covariates) {
+
+
+time <- paste0(DayPrefix, tpeak)
+key <- COR
+markers <- paste0(DayPrefix, tpeak, assays)
+if (TRIAL=='moderna_boost') markers = c(markers, paste0("DeltaBD29overBD1", assays))
+
+markers <- intersect(markers, colnames(dat.mock))
+print(markers)
+marker_to_assay <- sapply(markers, function(v) marker.name.to.assay(v))
+
+
+
+# max_t <- max(dat.mock[dat.mock$EventIndPrimary==1 & dat.mock$Trt == 1 & dat.mock$ph2 == 1, "EventTimePrimary" ])
+max_t = tfinal.tpeak
+# Covariates to adjust for. SHOULD BE AT LEAST TWO VARIABLES OR GLMNET WILL ERROR
+
+data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
+
+covariates = strsplit(sub("~", "", config$covariates_riskscore), "\\+")[[1]][-1]
+covariates = kyotil::trim(covariates)
+
+if ("risk_score" %in% covariates) {
   append_data <- "_with_riskscore"
 } else {
   append_data <- ""
 }
 
- 
+
 ####################
 #### Internal variables
 ###################

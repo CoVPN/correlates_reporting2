@@ -4,72 +4,68 @@
 #' @param simultaneous_CI True if simultaneous CI should be plotted. Otherwise if False pointwise CI are plotted.
 #' @param monotone True if monotone correction should be done on estimates. Otherwise no monotone correction. This should be done if one expects monotonicity.
 #' Assume monotone nonincreasing
-get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
-    
-  library(survival)
-    print("PLOTS")
-    print(marker)
-#  dat.mock <- read.csv(here::here("..", "data_clean", paste0(stringr::str_match(data_name,"(.+).csv")[,2],append_data,".csv")))
-  data <- dat.mock
-   
-   
-   #keep <- data[[Earlyendpoint]] ==0 & data$Trt == 0 & data$Bserostatus == 0 & data$Perprotocol==1  & data[[Event_Time_variable[[time]]]] >=7 & !is.na(data$Wstratum)
-  keep <- data[["ph1"]]==1  & data$Trt == 0 
-  #keep <-   data$Trt == 0 & data$Bserostatus == 0   & !is.na(data[[weight_variable[[time]]]])
-  tmp <- dat.mock[keep,]
+get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   
-  tmp$time <-  as.numeric(tmp[["EventTimePrimary"]])
-  tmp$Delta <-  as.numeric(tmp[["EventIndPrimary"]])
-  data <- tmp
- 
-  form.s = as.formula(paste0("Surv( time, Delta) ~ 1"))
-  if (endsWith(data_name, "riskscore.csv")) {
-      form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + risk_score)
-  } else {
-      form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + Age)
-  }
-  if(TRIAL == "hvtn705") {
-    form.0 =            update (form.s, as.formula(config$covariates_riskscore))
-  }
- 
- 
-  fit.risk = coxph(form.0, data = tmp, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
-  tmp[["time"]] <-  as.numeric(max_t)
- 
+  # will get risk_plac from cor_coxph
+  # library(survival)
+  # data <- dat.mock
+  # 
+  # #keep <- data[[Earlyendpoint]] ==0 & data$Trt == 0 & data$Bserostatus == 0 & data$Perprotocol==1  & data[[Event_Time_variable[[time]]]] >=7 & !is.na(data$Wstratum)
+  # keep <- data[["ph1"]]==1  & data$Trt == 0 
+  # #keep <-   data$Trt == 0 & data$Bserostatus == 0   & !is.na(data[[weight_variable[[time]]]])
+  # tmp <- dat.mock[keep,]
+  # 
+  # tmp$time <-  as.numeric(tmp[["EventTimePrimary"]])
+  # tmp$Delta <-  as.numeric(tmp[["EventIndPrimary"]])
+  # data <- tmp
+  # 
+  # form.s = as.formula(paste0("Surv( time, Delta) ~ 1"))
+  # if (endsWith(data_name, "riskscore.csv")) {
+  #   form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + risk_score)
+  # } else {
+  #   form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + Age)
+  # }
+  # if(TRIAL == "hvtn705second") {
+  #   form.0 =            update (form.s, as.formula(config$covariates_riskscore))
+  # }
+  # 
+  # fit.risk = coxph(form.0, data = tmp, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
+  # tmp[["time"]] <-  as.numeric(max_t)
+  # 
+  # risks = 1 - exp(-predict(fit.risk, newdata=tmp, type="expected"))
+  # risk_plac <- round(mean(risks),3)
   
- 
-  risks = 1 - exp(-predict(fit.risk, newdata=tmp, type="expected"))
-  risk_plac <- round(mean(risks),3)
- 
+  is.delta=startsWith(marker,"Delta")
+  
   key <- marker
   if(above){
-      append <- ""
+    append <- ""
   } else {
-      append <- "_below"
+    append <- "_below"
   }
   if(monotone) {
-    load(file = here::here("output", paste0("tmleThresh_monotone_",  COR, "_", marker,append, ".RData")))
+    load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_monotone_", marker,append, ".RData")))
   } else {
-    load(file = here::here("output", paste0("tmleThresh_",  COR, "_", marker,append, ".RData")))
+    load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_",  marker,append, ".RData")))
   }
   time <- tpeak
   day <- ""
-  if(TRIAL == "hvtn705"){
+  if(TRIAL == "hvtn705second"){
     laby <- paste0("Probability of HIV by Day ",max_t)
   } else {
     laby <- paste0("Probability of COVID by Day ",max_t)
   }
-   
+  
   labx <- plotting_assay_label_generator(marker, above)
   # subtitle_main <- "Nonparametric estimate of Threshold-response function"
-  data <- read.csv(here::here("data_clean", paste0("data_secondstage_", COR, ".csv")))
+  data <- read.csv(here::here("output", TRIAL, COR, "data_clean", paste0("data_secondstage.csv")))
   main <- plotting_assay_title_generator(marker)
   if(length(grep("start", key)) > 0) {
     main <- paste0(main , " (1-day-post)")
   }
   print(main)
-    #paste0("Cumulative Risk of COVID by Day ", tf[time])
-
+  #paste0("Cumulative Risk of COVID by Day ", tf[time])
+  
   ident <- function(x) x
   col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
   col <- rgb(col[1], col[2], col[3], alpha = 255 * 0.4, maxColorValue = 255)
@@ -80,7 +76,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   max_thresh <- max(data_tmp[data_tmp[["Delta"]] == 1, marker])
   # out <- hist(na.omit(data_tmp[[marker]]), col=col,axes=F,labels=F,main="",xlab="",ylab="",breaks=10,border=0,freq=F)
   scale_coef <- max(v$data$upper, na.rm = T) * 1
-
+  
   # coef <- max(out$density)/scale_coef
   RCDF <- function(a) {
     sum(data_tmp$wt * (data_tmp[[marker]] >= a)) / sum(data_tmp$wt) * scale_coef
@@ -94,7 +90,8 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   a <- marker_to_assay[[marker]]
   print(marker)
   print(a)
-  xlim <- get.range.cor(data, a,   tpeak)
+  if (!is.delta) xlim=get.range.cor(data, a,   tpeak) else xlim=range(data[[marker]], na.rm=T)
+  
   print(quantile(data[[marker]]))
   print(xlim)
   llod <- lloxs[a]
@@ -106,7 +103,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
   xlimits <- xlim
   print(xlimits)
   
-
+  
   plot <- v + ggtitle(main) +
     stat_function(fun = RCDF, color = col, geom = "area", fill = col, alpha = 0.2) +
     scale_y_continuous(
@@ -114,29 +111,33 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
       sec.axis = sec_axis(~ . / scale_coef, name = "Reverse CDF"), n.breaks = 10
     )  +
     theme(plot.title = element_text(size = 25), axis.text.x = element_text(angle = 0, hjust = 1, size = 18), axis.text.y = element_text(angle = 0, hjust = 1, size = 18)) +
-   # geom_hline(aes(yintercept=risk_vac), alpha = 0.4) + geom_text(alpha = 0.75,aes(median(v$data$cutoffs),risk_vac,label = "vaccine overall risk"), vjust = -0.5, size = 5) +
- geom_text(alpha = 0.75, aes(quantile(v$data$cutoffs, 0.1),min(max(v$data$upper),risk_plac),label = paste0("placebo overall risk: ", risk_plac)), vjust = 0, size = 5)+ scale_x_continuous(
-  breaks = xx,#union(floor(esttmle[, 1]), ceiling(esttmle[, 1])),
-   labels = do.call(expression,labels),
-  name =labx,
-  limits = xlimits
-    #trans_format("ident", math_format(10^.x)),
-  #limits = c(min(esttmle[, 1]) - 0.1, max(esttmle[, 1]) + 0.1)
- )
+    # geom_hline(aes(yintercept=risk_vac), alpha = 0.4) + geom_text(alpha = 0.75,aes(median(v$data$cutoffs),risk_vac,label = "vaccine overall risk"), vjust = -0.5, size = 5) +
+    # hack: comment out till we get risk_plac
+    # geom_text(alpha = 0.75, aes(quantile(v$data$cutoffs, 0.1),min(max(v$data$upper),risk_plac),label = paste0("placebo overall risk: ", risk_plac)), vjust = 0, size = 5) + 
+    scale_x_continuous(
+      breaks = xx,#union(floor(esttmle[, 1]), ceiling(esttmle[, 1])),
+      labels = do.call(expression,labels),
+      name =labx,
+      limits = xlimits
+      #trans_format("ident", math_format(10^.x)),
+      #limits = c(min(esttmle[, 1]) - 0.1, max(esttmle[, 1]) + 0.1)
+    )
   
- if(above  && max_thresh < log10(uloqs[a]) - 0.05) {
-     plot <- plot + geom_vline(xintercept = max_thresh, colour = "red", linetype = "longdash")
- } else if(!above && risk_plac<= max(v$data$upper, na.rm = T)) {
-     plot <- plot + geom_hline(aes(yintercept=risk_plac), alpha = 0.4, linetype = "longdash", colour = "red")
- }
+  if(above  && max_thresh < log10(uloqs[a]) - 0.05) {
+    plot <- plot + geom_vline(xintercept = max_thresh, colour = "red", linetype = "longdash")
+  } 
+  # hack: comment out till we get risk_plac
+  # else if(!above && risk_plac<= max(v$data$upper, na.rm = T)) {
+  #   plot <- plot + geom_hline(aes(yintercept=risk_plac), alpha = 0.4, linetype = "longdash", colour = "red")
+  # }
   plot
-   
+  
   data_interp <- as.data.frame(approx(plot$data$cutoffs, plot$data$est, xout = data[data$Delta==1,marker], rule = 2  ))
-    
+  
   
   plot <- plot  +geom_point(data=data_interp,aes(x=x, y=y), colour = "blue")
-   
-    #+  geom_text(aes(x=max_thresh *(1.01), label="No observed events", y=0.002), colour="black", angle=90, text=element_text(size=11))
+  
+  #+  geom_text(aes(x=max_thresh *(1.01), label="No observed events", y=0.002), colour="black", angle=90, text=element_text(size=11))
   append_end <- ""
   append_start <- "PLOT"
   folder <- ""
@@ -152,17 +153,17 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
     append_end <- paste0(append_end, "_", "pointwiseCI",append)
     folder <- "pointwise_CI"
   }
-
+  
   print(folder)
-   
+  
   ggsave(
-    filename = here::here(
+    filename = here::here("output", TRIAL, COR,
       "figs", folder,
-      paste0(append_start,  COR, "_", marker, append_end, ".pdf")
+      paste0(append_start, marker, append_end, ".pdf")
     ),
     plot = plot, height = 7, width = 9
   )
-   
+  
   return(plot)
 }
 
@@ -170,20 +171,19 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = F, above = TRUE) {
 #' @param marker The marker variable to generate plots for.
 #' @param num_show The number of thresholds to include in table.
 generate_tables <- function(marker, num_show = 10, monotone = F, above = T) {
-    print("TABLES")
-   
-     
-    data_secondstage <- read.csv(here::here("data_clean", paste0("data_secondstage_", COR, ".csv")))
-     
-    if(above){
-        append <- ""
-    } else {
-        append <- "_below"
-    }
-  if(monotone) {
-    load(file = here::here("output", paste0("tmleThresh_monotone_",  COR, "_",marker,append, ".RData")))
+  print("TABLES")
+  
+  data_secondstage <- read.csv(here::here("output", TRIAL, COR, "data_clean", paste0("data_secondstage.csv")))
+  
+  if(above){
+    append <- ""
   } else {
-    load(file = here::here("output", paste0("tmleThresh_",  COR, "_",marker,append, ".RData")))
+    append <- "_below"
+  }
+  if(monotone) {
+    load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_monotone_",  marker,append, ".RData")))
+  } else {
+    load(file = here::here("output", TRIAL, COR,, paste0("tmleThresh_",  marker,append, ".RData")))
   }
   esttmle_table <- esttmle
   esttmle_table[, 1] <- round(esttmle_table[, 1], 3)
@@ -201,26 +201,26 @@ generate_tables <- function(marker, num_show = 10, monotone = F, above = T) {
   # Save nice latex table
   thresh_mand <- report.assay.values(data_secondstage[[marker]], marker)
   index_to_show <- sapply(thresh_mand, function(thresh) {
-      which.min(abs(thresh-esttmle_table[,1]))
+    which.min(abs(thresh-esttmle_table[,1]))
   })
   #index_to_show <- unique(round(seq.int(1, nrow(esttmle_table), length.out = num_show)))
   
   ptwise_tab_guts <- esttmle_table[index_to_show, c(1, 2, 3, 4, 5)]
-
+  
   if(monotone) {
     aadd1 <- paste0(append,"monotone_")
   } else {
     aadd1 <- append
   }
-  saveRDS(ptwise_tab_guts, file = here::here(
-      "figs", "pointwise_CI",
-      paste0("TABLE_",aadd1,  COR, "_",marker, "_pointwiseCI.rds")
-    ))
+  saveRDS(ptwise_tab_guts, file = here::here("output", TRIAL, COR,
+    "figs", "pointwise_CI",
+    paste0("TABLE_",aadd1,  marker, "_pointwiseCI.rds")
+  ))
   simul_tab_guts <- esttmle_table[index_to_show, c(1, 2, 3, 6, 7)]
-
-  saveRDS(simul_tab_guts, file = here::here(
-      "figs", "simultaneous_CI",
-      paste0("TABLE_", aadd1, COR, "_", marker, "_simultCI.rds")
-    ))
+  
+  saveRDS(simul_tab_guts, file = here::here("output", TRIAL, COR,
+    "figs", "simultaneous_CI",
+    paste0("TABLE_", aadd1, marker, "_simultCI.rds")
+  ))
   return(list(pointwise = esttmle_table[index_to_show, c(1, 2, 3, 4, 5)], simult = esttmle_table[index_to_show, c(1, 2, 3, 6, 7)]))
 } 

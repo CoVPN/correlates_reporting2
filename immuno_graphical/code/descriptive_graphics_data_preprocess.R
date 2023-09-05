@@ -1,3 +1,5 @@
+#Sys.setenv(TRIAL = "profiscov"); lloxs = lloqs
+#Sys.setenv(TRIAL = "profiscov_all"); lloxs = llods
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -46,6 +48,42 @@ if (F){
 
   # subsetting on vaccine recipients with ID50 value > LOD and with IgG spike > positivity cut-off at Day 57
   dat.mock <- subset(dat.mock, Day57bindSpike > log10(pos.cutoffs["bindSpike"]) & Day57pseudoneutid50 > log10(llods["pseudoneutid50"]))
+}
+
+if (F){
+  # adhoc for profiscov_lvmn, pair plot with bab and pseudovirus side by side
+  # 1. add profiscov_all with both assays in config.yml, Sys.setenv(TRIAL="profiscov_all")
+  # profiscov_all: &profiscov_all
+  # data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID127-Gast/correlates/adata/profiscov_lvmn_data_processed_with_riskscore.csv
+  # <<: *profiscov_base
+  # two_marker_timepoints: no
+  # timepoints: [43]
+  # times: [B, Day43, Delta43overB]
+  # time_labels: [Day 1, Day 43, D43 fold-rise over D1]
+  # assays: [liveneutmn50, bindSpike, bindSpike_B.1.1.7, bindSpike_B.1.351, bindSpike_P.1, bindRBD, bindRBD_B.1.1.7, bindRBD_B.1.351, bindRBD_P.1, bindN]
+  # assay_labels: [Live Virus Micro Neut 50% Titer, Binding Antibody to Spike, Binding Antibody to Spike B.1.1.7, Binding Antibody to Spike B.1.351, Binding Antibody to Spike P.1, Binding Antibody to RBD, Binding Antibody to RBD B.1.1.7, Binding Antibody to RBD B.1.351, Binding Antibody to RBD P.1, Binding Antibody to Nucleocapsid]
+  # assay_labels_short: [Live Virus-mnAb ID50 (IU50/ml), Anti Spike IgG (BAU/ml), Anti Spike B.1.1.7 IgG (BAU/ml), Anti Spike B.1.351 IgG (BAU/ml), Anti Spike P.1 IgG (BAU/ml), Anti RBD IgG (BAU/ml), Anti RBD B.1.1.7 IgG (BAU/ml), Anti RBD B.1.351 IgG (BAU/ml), Anti RBD P.1 IgG (BAU/ml), Anti N IgG (BAU/ml)]
+  # llox_label: [LOD,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ]
+  # 2. create profiscov_all_data_processed_with_riskscore 
+  # by combining profiscov_data_processed_with_riskscore.csv and profiscov_lvmn_data_processed_with_riskscore.csv and assign to dat.mock
+  profiscov <- read.csv(here("..", "data_clean", "profiscov_data_processed_with_riskscore.csv"), header = TRUE)
+  profiscov_lvmn <- read.csv(here("..", "data_clean", "profiscov_lvmn_data_processed_with_riskscore.csv"), header = TRUE)
+  profiscov$Bliveneutmn50=NULL
+  profiscov$Day43liveneutmn50=NULL
+  profiscov$wt.subcohort=NULL
+  dat.mock <- profiscov %>%
+    left_join(profiscov_lvmn[,c("Ptid","Bliveneutmn50","Day43liveneutmn50","Delta43overBliveneutmn50",
+                         "ph2.immuno","wt.subcohort","TwophasesampIndD43")], by="Ptid")
+  # wt.subcohort is from nAb dataset based on email discussion with Youyi on 7/22/2022:
+  # Youyi: one based on ID50 weights because we have less ID50 samples than bAb samples
+  table(dat.mock$ph2.immuno.x, dat.mock$ph2.immuno.y)
+  dat.mock$ph2.immuno = with(dat.mock, ph2.immuno.x==1 & ph2.immuno.y==1, 1, 0) # 240
+  dat.mock$TwophasesampIndD43 = with(dat.mock, TwophasesampIndD43.x==1 & TwophasesampIndD43.y==1, 1, 0) # 564
+  
+  dim(subset(dat.mock, EarlyendpointD43==0 & Perprotocol==1 & SubcohortInd==1 & 
+               !is.na(Bliveneutmn50) & !is.na(Day43liveneutmn50) & 
+               !is.na(BbindSpike) & !is.na(Day43bindSpike))) # 344
+  
 }
   
 dat.mock <- read.csv(data_name, header = TRUE)
