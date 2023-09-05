@@ -1,9 +1,10 @@
-# EventIndPrimary is EventIndPrimaryHasVLD29
-
-# Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29VL"; Sys.setenv(VERBOSE = 1) 
+Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
+
+# hack
+# source("~/copcor/R/utils.R")
 
 
 library(kyotil) # p.adj.perm, getFormattedSummary

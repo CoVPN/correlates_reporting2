@@ -495,6 +495,18 @@
       "Repository": "CRAN",
       "Hash": "a31720f692920e635ecef0481d478247"
     },
+    "copcor": {
+      "Package": "copcor",
+      "Version": "2023.8-31",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "CoVPN",
+      "RemoteRepo": "copcor",
+      "RemoteRef": "main",
+      "RemoteSha": "76dfe5a9599249416028f8a9f1aad7d4a70eacf3",
+      "Hash": "a73bb4578a4d52e390d24bb4d5fe7622"
+    },
     "corrplot": {
       "Package": "corrplot",
       "Version": "0.84",
@@ -937,7 +949,7 @@
       "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "16350cc39b68e61566f03a11f633e08073405355",
-      "Hash": "47c34f41535fb9c16bd44e760d61cb67"
+      "Hash": "1b5958df7bd05b48da50266f92a1d327"
     },
     "haven": {
       "Package": "haven",
@@ -1079,15 +1091,15 @@
     },
     "kyotil": {
       "Package": "kyotil",
-      "Version": "2023.7-31",
+      "Version": "2023.8-27",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "youyifong",
       "RemoteRepo": "kyotil",
       "RemoteRef": "master",
-      "RemoteSha": "425daff1e19acf2f25faf2bfd88f00b9824b878d",
-      "Hash": "4abf2203ab9507a0f5907d4387c3784a"
+      "RemoteSha": "c820a6cd5f20d51843881fb4a2bc51063f0056c0",
+      "Hash": "131175b3bb45873dc67815d5e3fc63b6"
     },
     "labeling": {
       "Package": "labeling",
@@ -1702,7 +1714,9 @@
     "renv": {
       "Package": "renv",
       "Version": "0.13.2",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "079cb1f03ff972b30401ed05623cbe92"
     },
     "repr": {
       "Package": "repr",
@@ -2109,7 +2123,7 @@
       "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "c0f572a638b019c057aee83c9f59f56acf1398db",
-      "Hash": "154f62a760f3f43838ea629efec3e5ae"
+      "Hash": "362ae555812ded051554a1136577d20f"
     },
     "usethis": {
       "Package": "usethis",
