@@ -185,7 +185,8 @@ if(!is.null(Args[4])){
 }
 
 quant_result <- day_col <- assay_col <- NULL
-for (marker in include_assays[include_assays %in% assay_for_this_run]) {
+this_run_assays <- include_assays[include_assays %in% assay_for_this_run]
+for (marker in this_run_assays) {
   print(marker)
 
   if(!run_survtmle){
@@ -303,23 +304,27 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
 	assay_col <- c(assay_col, gsub("\\%", "\\\\\\%", labels.assays[which_assay]))
 }
 
-full_result <- cbind(assay_col, quant_result)
-row.names(full_result) <- NULL
-colnames(full_result) <- c("Assay", "Direct VE", "Indirect VE", "Prop. mediated")
+if(length(this_run_assays) > 0){
 
-saveRDS(
-  full_result, 
-  file = here::here("output", 
-    paste0("full_result_",
-           attr(config,"config"), "_",
-           COR, "_", 
-           ifelse(run_survtmle, "survival_", "binary_"),
-           ifelse(impute_placebo_to_lod_over_2, "impute_", "noimpute_"),
-           paste0(include_assays[include_assays %in% assay_for_this_run], collapse = "_"),
-           ".rds")
+  full_result <- cbind(assay_col, quant_result)
+  row.names(full_result) <- NULL
+  colnames(full_result) <- c("Assay", "Direct VE", "Indirect VE", "Prop. mediated")
+
+  saveRDS(
+    full_result, 
+    file = here::here("output", 
+      paste0("full_result_",
+             attr(config,"config"), "_",
+             COR, "_", 
+             ifelse(run_survtmle, "survival_", "binary_"),
+             ifelse(impute_placebo_to_lod_over_2, "impute_", "noimpute_"),
+             paste0(include_assays[include_assays %in% assay_for_this_run], collapse = "_"),
+             ".rds")
+    )
   )
-)
-
+}else{
+  print("No assay requested meet positivity threshold.")
+}
 # # re-labeling
 # for(COR in c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")){
 #   bind_result <- readRDS(here::here("output",
