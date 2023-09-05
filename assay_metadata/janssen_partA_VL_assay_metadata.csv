@@ -1,7 +1,7 @@
 panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label
 bindSpike,1,bindSpike,1.683,238.1165,NA,10.8424,Binding Antibody to D614G Spike,Anti Spike IgG - D614G (IU/ml),loq
 bindRBD,1,bindRBD,5.0243,172.5755,NA,14.0858,Binding Antibody to D614G RBD,Anti RBD IgG - D614G (IU/ml),pos
-,,bindN,4.4897,574.6783,0.093744,23.4711,Binding Antibody to N,Anti N IgG (AU/ml),pos
+,,bindN,4.4897,574.6783,0.093744,23.4711,Binding Antibody to N,Anti N IgG (IU/ml),pos
 id50,1,pseudoneutid50,4.8975,844.7208,2.612,2.612,PsV Neutralization to Reference,Pseudovirus-nAb - Reference (AU50/ml),lod
 id50,2,pseudoneutid50_Beta,3.918,844.7208,2.612,2.612,PsV Neutralization to Beta,Pseudovirus-nAb - Beta (AU50/ml),lod
 id50,3,pseudoneutid50_Delta,3.265,844.7208,2.612,2.612,PsV Neutralization to Delta,Pseudovirus-nAb - Delta (AU50/ml),lod
