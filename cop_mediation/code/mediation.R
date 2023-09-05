@@ -163,6 +163,7 @@ if(run_survtmle){
       truncateH = 0.9
     )
   }else{
+    set.seed(404)
     fit1_1 <- survtmle::hazard_tmle(
       ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
       ftype = data_keep$EventIndPrimary,
@@ -186,6 +187,7 @@ if(run_survtmle){
       gtolCens = 0.05,
       truncateH = 0.9
     )
+    set.seed(404)
     fit1_0 <- survtmle::hazard_tmle(
       ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
       ftype = data_keep$EventIndPrimary,
@@ -256,6 +258,7 @@ for (marker in include_assays[include_assays %in% assay_for_this_run]) {
   	)
     print(fit)
   }else{
+    set.seed(404)
     fit2 <- survtmle::hazard_tmle(
       ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
       ftype = data_keep$EventIndPrimary,
