@@ -773,7 +773,7 @@ IgG3 V1V2 A244/1086/CaseA
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2GagIFNg_OR_IL2,
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2RNAseIntIFNg_OR_IL2
   ]
-  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v9.csv
+  data_cleaned: ~/hvtn705_data/HVTN705_secondcasecontrolprocesseddata_v9.csv
 
 hvtn705secondRSA: &hvtn705secondRSA
   inherits: hvtn705second
