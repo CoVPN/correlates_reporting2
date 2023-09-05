@@ -18,6 +18,7 @@ library(ggpubr)
 library(GGally)
 library(spatstat.geom)
 library(scales)
+library(grid) # textGrob
 #library(dummies) # this package got archived on 2022-04-29
 require(devtools)
 install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
@@ -45,6 +46,74 @@ tps_no_B_and_delta_over_tinterm <-  times[!times %in% c("B",paste0("Delta",timep
 tps_no_fold_change <- times[!grepl("Delta", times)]
 tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
 tps_delta_over_B <- times[grepl("overB",times)]
+
+# adhoc request for profiscov
+if (F){
+  limits = c(-1.5, 5)
+  breaks = seq(-1, 4)
+  
+  p1 <- ggplot(subset(dat.twophase.sample, Trt==1 & Bserostatus==0), aes(Day43bindSpike_P.1, Day91bindSpike_P.1)) +
+    geom_point(size = 0.5) +
+    geom_smooth(method = "loess", se=FALSE, color="red") +
+    scale_x_continuous(
+      limits = limits , breaks = breaks,
+      labels = label_math(10^.x)
+    ) +
+    scale_y_continuous(
+      limits = limits , breaks = breaks,
+      labels = label_math(10^.x)
+    ) +
+    xlab("Day 43\nAnti Spike P.1 IgG (BAU/ml)") + 
+    ylab("Day 91\nAnti Spike P.1 IgG (BAU/ml)") + 
+    theme_bw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()) +
+    coord_fixed(ratio = 1)
+  
+  p2 <- ggplot(subset(dat.twophase.sample, Trt==1 & Bserostatus==0), aes(Day43bindRBD_P.1, Day91bindRBD_P.1)) +
+    geom_point(size = 0.5) +
+    geom_smooth(method = "loess", se=FALSE, color="red") +
+    scale_x_continuous(
+      limits = limits , breaks = breaks,
+      labels = label_math(10^.x)
+    ) +
+    scale_y_continuous(
+      limits = limits , breaks = breaks,
+      labels = label_math(10^.x)
+    ) +
+    xlab("Day 43\nAnti RBD P.1 IgG (BAU/ml)") + 
+    ylab("Day 91\nAnti RBD P.1 IgG (BAU/ml)") + 
+    theme_bw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()) +
+    coord_fixed(ratio = 1)
+  
+  p3 <- ggplot(subset(dat.twophase.sample, Trt==1 & Bserostatus==0), aes(Day43bindN, Day91bindN)) +
+    geom_point(size = 0.5) +
+    geom_smooth(method = "loess", se=FALSE, color="red") +
+    scale_x_continuous(
+      limits = limits , breaks = breaks,
+      labels = label_math(10^.x)
+    ) +
+    scale_y_continuous(
+      limits = limits , breaks = breaks,
+      labels = label_math(10^.x)
+    ) +
+    xlab("Day 43\nAnti N IgG (BAU/ml)") + 
+    ylab("Day 91\nAnti N IgG (BAU/ml)") + 
+    theme_bw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()) +
+    coord_fixed(ratio = 1)
+  
+  scatters <- grid.arrange(p1, p2, p3, nrow = 1, widths = c(1, 1, 1),
+                           top = textGrob("D43 vs D91: baseline negative vaccine arm"))
+  ggsave(
+    filename = paste0(
+      save.results.to, "/scatterplot_D43vsD91_bAbSpikeP1_bAbRBDP1_N.pdf"), plot = scatters, width = 10, height = 3,
+    units = "in"
+  )
+}
 
 #-----------------------------------------------
 # PAIR PLOTS

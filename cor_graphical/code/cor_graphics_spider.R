@@ -47,10 +47,9 @@ assays_id50 <- c("pseudoneutid50",
 dat.cor.data.spider.id50 <- dat.cor.data.spider %>% 
     filter(time == "Day 29" & Region %in% c(1, 2) & Trt=="Vaccine") %>%
     ungroup() %>%
-    select(one_of(paste0("Day29", assays_id50), "Region", "assay", "wt.D29variant")) %>%
-    group_by(Region, assay) %>%
-    summarise(across(c(paste0("Day29",assays_id50)), ~ exp(mean(log(.x), na.rm = TRUE)))) %>%
-    select(-assay) %>%
+    select(one_of(paste0("Day29", assays_id50), "Region", "wt.D29variant")) %>%
+    group_by(Region) %>%
+    summarise(across(c(paste0("Day29",assays_id50)), ~ exp(sum(log(.x * wt.D29variant), na.rm=T) / sum(wt.D29variant)))) %>%
     unique() %>%
     as.data.frame()
 
@@ -60,8 +59,8 @@ colnames(dat.cor.data.spider.id50) <- c("Ancestral","Beta","Delta","Gamma","Lamb
 dat.cor.data.spider.id50 <- dat.cor.data.spider.id50[, c("Ancestral","Gamma","Lambda","Mu","Zeta","Beta","Delta")]
 
 # stack with max and min values
-dat.cor.data.spider.id50 <- rbind(rep(0.5,ncol(dat.cor.data.spider.id50)), 
-                                  rep(0,ncol(dat.cor.data.spider.id50)), 
+dat.cor.data.spider.id50 <- rbind(rep(1.1,ncol(dat.cor.data.spider.id50)), 
+                                  rep(1,ncol(dat.cor.data.spider.id50)), 
                                   dat.cor.data.spider.id50)
 
 # setup pdf file
@@ -79,7 +78,7 @@ for (outtype in c("PDF")) {
                axistype=1 , pcol="#1749FF",
                plwd=1.5, pty=c(15), plty=2,
                #custom the grid
-               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=seq(0,0.5,0.125), 
+               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=seq(1,1.1,0.025), 
                #label size
                vlcex=0.8,
                #title
@@ -107,7 +106,7 @@ for (outtype in c("PDF")) {
                axistype=1 , pcol="#D92321",
                plwd=1.5, pty=c(15, 17), plty=2,
                #custom the grid
-               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=seq(0,0.5,0.125), 
+               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=seq(1,1.1,0.025), 
                #label size
                vlcex=0.8,
                #title
