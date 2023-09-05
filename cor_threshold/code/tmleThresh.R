@@ -20,7 +20,8 @@ library(mvtnorm)
 #' In the case where both thresholds_above and thresholds_below are supplied, it is a list with two elements "above_estimates" and "lower_estimates" which contains the same information as above for the upper and lower thresholds parameters.
 #'
 #'
-thresholdTMLE <- function(data_full, node_list, thresholds = NULL, biased_sampling_strata = NULL, biased_sampling_indicator = NULL, lrnr_A = Lrnr_glmnet$new(), lrnr_Y = Lrnr_glmnet$new(), lrnr_Delta = Lrnr_glmnet$new(), monotone_decreasing = TRUE) {
+thresholdTMLE <- function(data_full, node_list, thresholds = NULL, biased_sampling_strata = NULL, biased_sampling_indicator = NULL, 
+                          lrnr_A = Lrnr_glmnet$new(), lrnr_Y = Lrnr_glmnet$new(), lrnr_Delta = Lrnr_glmnet$new(), monotone_decreasing = TRUE) {
   upper_list <- list()
   lower_list <- list()
   thresholds_above <- sort(thresholds)
@@ -144,22 +145,29 @@ thresholdTMLE <- function(data_full, node_list, thresholds = NULL, biased_sampli
       colnames(estimates_upper) <- c("thresholds", "EWE[Y|>=v,W]", "se", "CI_left", "CI_right", "CI_left_simultaneous", "CI_right_simultaneous")
       estimates_upper_monotone <- NULL
     }
-    Y <- data[[node_list$Y]]
-    A <- data[[node_list$A]]
-    no_event <- sapply(thresholds, function(v) {
-      all(Y[A >= v] == 0)
-    })
-    no_event <- as.vector(no_event)
-    attr(estimates_upper, "no_event") <- as.vector(no_event)
-    estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(3))] <- NA
-    estimates_upper[, intersect(1:ncol(estimates_upper), c(4, 6))] <- pmax(0, estimates_upper[, intersect(1:ncol(estimates_upper), c(4, 6))])
-    estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(5))] <- NA
-    if (ncol(estimates_upper) == 7) {
-      estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(7))] <- NA
-    }
-    setattr(estimates_upper, "IC", IC_IPCW)
+    
     
     ##############
+    # non-monotone
+    
+    # Y <- data[[node_list$Y]]
+    # A <- data[[node_list$A]]
+    # no_event <- sapply(thresholds, function(v) {
+    #   all(Y[A >= v] == 0)
+    # })
+    # no_event <- as.vector(no_event)
+    # attr(estimates_upper, "no_event") <- as.vector(no_event)
+    # estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(3))] <- NA
+    # estimates_upper[, intersect(1:ncol(estimates_upper), c(4, 6))] <- pmax(0, estimates_upper[, intersect(1:ncol(estimates_upper), c(4, 6))])
+    # estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(5))] <- NA
+    # if (ncol(estimates_upper) == 7) {
+    #   estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(7))] <- NA
+    # }
+    # setattr(estimates_upper, "IC", IC_IPCW)
+    estimates_upper=NULL
+    
+    ##############
+    # monotone
     
     Y <- data[[node_list$Y]]
     A <- data[[node_list$A]]

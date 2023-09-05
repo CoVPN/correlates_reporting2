@@ -34,7 +34,11 @@ getResponder <- function(data,
     for (j in assays){
       post <- paste0(i, j)
       bl <- paste0("B", j)
-      delta <- paste0("Delta", gsub("Day", "", i), "overB", j)
+      delta <- paste0("Delta", gsub("Day", "", i), "overB", j) 
+      
+      # add these two rows for assays only done at certain timepoints, but not baseline
+      if (!bl %in% colnames(data)) {data[, bl] <- 0}
+      if (!delta %in% colnames(data)) {data[, delta] <- data[, post] - data[, bl]}
       
       data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
       data[, post] <- pmin(data[, post], log10(uloqs[j]))

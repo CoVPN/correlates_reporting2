@@ -1,0 +1,13 @@
+run_survtmle=FALSE
+impute_placebo=TRUE
+truncate_tf_day=FALSE
+compatible_total_ve=FALSE
+outcome=D210
+TRIAL=hvtn705second
+
+for MARKER in ELCZ ELMo ADCPgp140C97ZAfib ADCPgp140Mos1fib IgG3gp140C97ZAfibritin40delta IgG3gp140Mos1fibritin40delta IgG340mdw_gp120 IgG340mdw_gp140 IgG340mdw_V1V2 IgG3gp4140delta IgG340mdw_multi IgG340mdw_gp120_gp140_vm IgG50mdw_V1V2 mdw_xassay ADCCCAP8_pk ADCCCH58_pk ADCCWITO_pk ADCCCAP8_pAUC ADCCCH58_pAUC ADCCWITO_pAUC ICS4AnyEnvIFNg_OR_IL2 ICS8AnyEnvIFNg_OR_IL2 IgG3AE.A244.V1V2.Tags_293F40delta IgG3C.1086C.V1.V2.Tags40delta IgG3gp70.001428.2.42.V1V240delta IgG3gp70.1012.11.TC21.3257.V1V240delta IgG3gp70.1394C9G1.V1V240delta IgG3gp70.BF1266.431a.V1V240delta IgG3gp70.Ce1086.B2.V1V240delta IgG3gp70.B.CaseA.V1.V240delta IgGAE.A244.V1V2.Tags_293F50delta IgGC.1086C.V1.V2.Tags50delta IgGgp70_001428.2.42.V1V250delta IgGgp70_1012.11.TC21.3257.V1V250delta IgGgp70_1394C9G1.V1V250delta IgGgp70_9004SS.A3.4.V1V250delta IgGgp70_BF1266.431a.V1V250delta IgGgp70_Ce1086.B2.V1V250delta IgGgp70.B.CaseA.V1.V250delta ICS4JMos1gp120IFNg_OR_IL2  ICS4JMos1gp41IFNg_OR_IL2  ICS4JMos2GagIFNg_OR_IL2  ICS4JMos2RNAseIntIFNg_OR_IL2  ICS4JMos2Sgp120IFNg_OR_IL2  ICS4JMos2Sgp41IFNg_OR_IL2  ICS8JMos1gp120IFNg_OR_IL2  ICS8JMos1gp41IFNg_OR_IL2  ICS8JMos2GagIFNg_OR_IL2  ICS8JMos2RNAseIntIFNg_OR_IL2  ICS8JMos2Sgp120IFNg_OR_IL2  ICS8JMos2Sgp41IFNg_OR_IL2 IgG340mdw_V2i  IgG340mdw_V2p  IgG31012.11.TC21D11gp120.avi40delta  IgG31086C.D7gp120.avi_293F40delta  IgG31394C9.G1.D11gp120.avi40delta IgG31428.D11gp120.avi_293F40delta IgG3Con.6.gp120_B40delta ADCPgp701428Alter IgG3.gp70V1V2.CaseA2Alter IgACon.6.gp120_B10delta IgA1394C9.G1.D11gp120.avi10delta IgA1428.D11gp120.avi_293F10delta           IgAgp70.1012.11.TC21.3257.V1V210delta IgA1086C.D7gp120.avi_293F10delta IgAgp140.Mos1.fibritin10delta IgAgp140.C97ZA.fibritin10delta IgACon.S.gp140.CFI10delta IgA1012.gp140C.avi_293F10delta IgA1394C9.gp140C.avi_293F10delta IgA1086C.gp140C.avi10delta IgABF1266.gp140C.avi_293F10delta           IgA9004S.gp140C.avi10delta IgA00MSA.4076.gp14010delta IgAA1.con.env03.140.CF10delta    IgA1012.11.TC21D11gp120.avi10delta IgAgp70.1394C9G1.V1V210delta   IgAgp70.BF1266.431a.V1V210delta            IgAgp70.001428.2.42.V1V210delta              IgAgp70.Ce1086.B2.V1V210delta IgA10mdw_gp120_gp140   ADCC_CAP8_CH58_WITO_peak_breadth ADCC_CAP8_CH58_WITO_pAUC_breadth ELISpotPTEEnv mdw_xassay_overall mdw_xassay_select_igg3v1v2
+do
+  sbatch --export=TRIAL=${TRIAL} \
+  --wrap="cd ~/correlates_reporting2/cop_mediation && /app/software/R/4.0.4-foss-2020b/bin/Rscript code/mediation.R ${outcome} ${run_survtmle} ${impute_placebo} ${MARKER} ${truncate_tf_day} ${compatible_total_ve}"
+done
+        

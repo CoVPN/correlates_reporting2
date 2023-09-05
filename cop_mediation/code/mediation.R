@@ -131,15 +131,27 @@ saveRDS(
   )
 )
 
-sl_library <- c(
-  "SL.mean",
-  "SL.glm",
-  # "SL.glmnet",
-  # "SL.xgboost",
-  # "SL.ranger",
-  "SL.gam",
-  "SL.earth"
-)
+if(run_survtmle){
+  sl_library <- c(
+    "SL.mean",
+    "SL.glm",
+    # "SL.glmnet",
+    # "SL.xgboost",
+    # "SL.ranger",
+    "SL.gam",
+    "SL.earth"
+  )
+}else{
+  sl_library <- c(
+    "SL.mean",
+    "SL.glm",
+    "SL.glmnet",
+    "SL.xgboost",
+    "SL.ranger",
+    "SL.gam",
+    "SL.earth"
+  )
+}
 
 
 # results without marker used to compute PM
