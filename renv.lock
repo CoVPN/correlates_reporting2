@@ -1709,7 +1709,9 @@
     "renv": {
       "Package": "renv",
       "Version": "0.13.2",
-      "Source": "Repository"
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "079cb1f03ff972b30401ed05623cbe92"
     },
     "repr": {
       "Package": "repr",
@@ -1972,6 +1974,13 @@
       "Repository": "CRAN",
       "Hash": "72200a58cae0d7046e416e6be6d9d322"
     },
+    "speedglm": {
+      "Package": "speedglm",
+      "Version": "0.3-3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5955a9bd4ed0275ad45596a49d75946f"
+    },
     "stringi": {
       "Package": "stringi",
       "Version": "1.7.4",
@@ -2009,8 +2018,8 @@
       "RemoteRepo": "survtmle",
       "RemoteUsername": "benkeser",
       "RemoteRef": "mediation",
-      "RemoteSha": "adb452eaedb8113c3675bf0cf5bc0c34dffb07ad",
-      "Hash": "1d1b799277df0e134fae0bd28c709364"
+      "RemoteSha": "833e2196f368eb490c092b74dc97013413059b8f",
+      "Hash": "852388380a76e488132048f82d23ba7a"
     },
     "svglite": {
       "Package": "svglite",
