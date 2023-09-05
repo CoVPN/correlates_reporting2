@@ -24,7 +24,7 @@
 fname=paste0(save.results.to, "marginalized.risk.no.marker.",fname.suffix,".Rdata")
 
 if(!file.exists(fname)) {    
-    cat("Bootstrap marginalized risks using models without markers")
+    cat("Bootstrap marginalized risks using models without markers ...\n")
 
     for (.trt in 0:1) {
         dat.tmp=if(.trt==1) dat.vac.seroneg else dat.pla.seroneg
@@ -44,12 +44,12 @@ if(!file.exists(fname)) {
         save.seed <- try(get(".Random.seed", .GlobalEnv), silent=TRUE) 
         if (class(save.seed)=="try-error") {set.seed(1); save.seed <- get(".Random.seed", .GlobalEnv) }   
         
-        if(config$case_cohort) ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (dat.tmp) 
+        if(config$sampling_scheme == 'case_cohort') ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (dat.tmp) 
     
         # if mc.cores is >1 here, the process will be stuck in coxph for some unknown reason
         out=mclapply(1:B, mc.cores = 1, FUN=function(seed) {  
             if (verbose>=2) myprint(seed) 
-            if(config$case_cohort) {
+            if(config$sampling_scheme == 'case_cohort') {
                 dat.b = get.bootstrap.data.cor (dat.tmp, ptids.by.stratum, seed) 
             } else {
                 dat.b = bootstrap.case.control.samples(dat.tmp, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=0) 

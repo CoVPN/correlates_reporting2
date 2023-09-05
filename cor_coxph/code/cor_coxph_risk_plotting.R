@@ -61,7 +61,7 @@ for (w.wo.plac in 1:2) { # 1 with placebo lines, 2 without placebo lines. Implem
     mypdf(oma=c(0,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks", ifelse(eq.geq==1,"_eq","_geq"), ifelse(w.wo.plac==1,"","_woplacebo"), "_"%.%fname.suffix), mfrow=.mfrow)
         par(las=1, cex.axis=0.9, cex.lab=1)# axis label orientation
         risks=risks.all[[a]]
-        assay=get.assay.from.name(a)
+        assay=marker.name.to.assay(a)
         is.delta=startsWith(a,"Delta")
         
         ncases=sapply(risks$marker, function(s) sum(dat.vac.seroneg$yy[dat.vac.seroneg[[a]]>=s], na.rm=T))
@@ -165,7 +165,7 @@ for (eq.geq in 1:5) {
     outs=lapply (all.markers, function(a) {        
         if (verbose>=2) myprint(a)
         is.delta=startsWith(a,"Delta")
-        assay=get.assay.from.name(a)
+        assay=marker.name.to.assay(a)
         
         tmp.1=ifelse(eq.geq==1,"_eq",ifelse(eq.geq==2,"_geq","_eq_manus")); if(eq.geq %in% c(4,5)) tmp.1=eq.geq; 
         
@@ -566,37 +566,46 @@ for (a in all.markers) {
         })
         if (is.list(out)) stop("cor_coxph_risk_plotting.R: data ribon issue - getting different length output for imputed data")
         data.ribbon = apply(out, 1:2, mean)
+        data.ribbon=as.data.frame(data.ribbon)
         
     } else {
         f1=update(form.s, as.formula(paste0("~.+",marker.name)))
         km <- survfit(f1, subset(dat.vac.seroneg, ph2==1), weights=wt)
         tmp=summary(km, times=x.time)            
         
-        #    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
-        #    stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
-        #    stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
+        # the use of cbinduneven helps to get around these exceptions if they do occur
+        # stopifnot(all(tmp$time[1:length(x.time)]==x.time))
+        # stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
+        # stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
         
         L.idx=which(tmp$time==0)[1]:(which(tmp$time==0)[2]-1)
-        M.idx=which(tmp$time==0)[2]:(which(tmp$time==0)[3]-1)
-        H.idx=which(tmp$time==0)[3]:length(tmp$time==0)
-        
         n.risk.L <- round(tmp$n.risk[L.idx])
-        n.risk.M <- round(tmp$n.risk[M.idx])
-        n.risk.H <- round(tmp$n.risk[H.idx])
-        
         cum.L <- round(cumsum(tmp$n.event[L.idx]))
+        tmp.L = cbind(n.risk.L, cum.L)
+        rownames(tmp.L)=tmp$time[L.idx]
+        
+        M.idx=which(tmp$time==0)[2]:(which(tmp$time==0)[3]-1)
+        n.risk.M <- round(tmp$n.risk[M.idx])
         cum.M <- round(cumsum(tmp$n.event[M.idx]))
+        tmp.M = cbind(n.risk.M, cum.M)
+        rownames(tmp.M)=tmp$time[M.idx]
+        
+        H.idx=which(tmp$time==0)[3]:length(tmp$time==0)
+        n.risk.H <- round(tmp$n.risk[H.idx])
         cum.H <- round(cumsum(tmp$n.event[H.idx]))
+        tmp.H = cbind(n.risk.H, cum.H)
+        rownames(tmp.H)=tmp$time[H.idx]
         
         # add placebo
-        tmp.P=summary(survfit(form.s, dat.pla.seroneg), times=x.time)            
-        n.risk.P <- round(tmp.P$n.risk)
-        cum.P <- round(cumsum(tmp.P$n.event))  
+        survfit.P=summary(survfit(form.s, dat.pla.seroneg), times=x.time)            
+        n.risk.P <- round(survfit.P$n.risk)
+        cum.P <- round(cumsum(survfit.P$n.event))  
+        tmp.P = cbind(n.risk.P, cum.P)
+        rownames(tmp.P)=survfit.P$time
         
-        data.ribbon = cbind(cum.L, cum.M, cum.H, cum.P, n.risk.L, n.risk.M, n.risk.H, n.risk.P)
+        data.ribbon = cbinduneven(list(tmp.L, tmp.M, tmp.H, tmp.P))
 
     }
-    data.ribbon=as.data.frame(data.ribbon)
     
     cex.text <- 0.7
     at.label=-tfinal.tpeak/6
@@ -680,12 +689,12 @@ if (!is.null(config$interaction)) {
                 # hard code ylim to make the plot look better
                 ylim=c(0,0.11)
                 #ylim=range(risks$lb[shown,], risks$ub[shown,], 0) # [shown] so that there is not too much empty space
-                xlim=get.range.cor(dat.vac.seroneg, get.assay.from.name(vx), tpeak) 
+                xlim=get.range.cor(dat.vac.seroneg, marker.name.to.assay(vx), tpeak) 
                 if(verbose>=2) myprint(xlim, ylim)
                     
                 # set up an empty plot
                 plot(risks$marker[shown], risks$prob[shown,1], 
-                    xlab=paste0(labels.assays.short[get.assay.from.name(vx)], " (=s)"), 
+                    xlab=paste0(labels.assays.short[marker.name.to.assay(vx)], " (=s)"), 
                     ylab=paste0("Probability* of ",config.cor$txt.endpoint," by Day ", tfinal.tpeak), 
                     lwd=lwd, xlim=xlim, ylim=ylim, type="n", main="", xaxt="n")    
                 title(main=for.title, line=.6, cex=.9)
@@ -704,7 +713,7 @@ if (!is.null(config$interaction)) {
 #                if (attr(config, "config")=="hvtn705second") {
 #                    if (inner.id==1) legend.txt=c("(min)","(median)","(90th percentile)")
 #                }
-                mylegend(x=3, legend=paste(signif(10**risks$marker.2, 3), legend.txt), col=1:3, lty=c(1,2,1), title=labels.assays.short[get.assay.from.name(vthree)], lwd=lwd)
+                mylegend(x=3, legend=paste(signif(10**risks$marker.2, 3), legend.txt), col=1:3, lty=c(1,2,1), title=labels.assays.short[marker.name.to.assay(vthree)], lwd=lwd)
                 
                 # placebo prevelance lines
                 abline(h=prev.plac[1], col="gray", lty=c(1,3,3), lwd=lwd)
