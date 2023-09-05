@@ -55,8 +55,8 @@ dat.cor.data.spider.id50 <- dat.cor.data.spider %>%
 
 rownames(dat.cor.data.spider.id50) <- dat.cor.data.spider.id50$Region
 dat.cor.data.spider.id50$Region <- NULL
-colnames(dat.cor.data.spider.id50) <- c("Ancestral","Beta","Delta","Gamma","Lambda","Mu","Zeta")
-dat.cor.data.spider.id50 <- dat.cor.data.spider.id50[, c("Ancestral","Gamma","Lambda","Mu","Zeta","Beta","Delta")]
+colnames(dat.cor.data.spider.id50) <- c("Reference","Beta","Delta","Gamma","Lambda","Mu","Zeta")
+dat.cor.data.spider.id50 <- dat.cor.data.spider.id50[, c("Reference","Gamma","Lambda","Mu","Zeta","Beta","Delta")]
 
 # stack with max and min values
 dat.cor.data.spider.id50 <- rbind(rep(1.1,ncol(dat.cor.data.spider.id50)), 
@@ -74,7 +74,7 @@ for (outtype in c("PDF")) {
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
     }
     
-    radarchart(dat.cor.data.spider.id50[c(1,2,3), c("Ancestral","Gamma","Lambda","Mu","Zeta")], 
+    radarchart(dat.cor.data.spider.id50[c(1,2,3), c("Reference","Zeta","Mu","Gamma","Lambda")], 
                axistype=1 , pcol="#1749FF",
                plwd=1.5, pty=c(15), plty=2,
                #custom the grid
@@ -82,7 +82,9 @@ for (outtype in c("PDF")) {
                #label size
                vlcex=0.8,
                #title
-               title=paste0("Geometric Mean of PsV-nAb ID50 at Day 29, in LA"))
+               title="Geometric Mean of PsV-nAb ID50 at Day 29, in Latin America",
+               #title size
+               cex.main=0.8)
     
     par(xpd=NA)
     
@@ -102,7 +104,7 @@ for (outtype in c("PDF")) {
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
     }
     
-    radarchart(dat.cor.data.spider.id50[c(1,2,4), c("Ancestral","Beta","Delta")], 
+    radarchart(dat.cor.data.spider.id50[c(1,2,4), c("Reference","Delta","Beta")], 
                axistype=1 , pcol="#D92321",
                plwd=1.5, pty=c(15, 17), plty=2,
                #custom the grid
@@ -110,7 +112,9 @@ for (outtype in c("PDF")) {
                #label size
                vlcex=0.8,
                #title
-               title=paste0("Geometric Mean of PsV-nAb ID50 at Day 29, in SA"))
+               title="Geometric Mean of PsV-nAb ID50 at Day 29, in Southern America",
+               #title size
+               cex.main=0.8)
     
     par(xpd=NA)
     

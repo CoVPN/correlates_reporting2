@@ -5,8 +5,8 @@ source(here::here("..", "_common.R"))
 #-----------------------------------------------
 source(here::here("code", "params.R"))
 source(here::here("code", "covid_corr_plot_functions.R"))
-library(ggpubr)
-library(scales)
+library(ggpubr) # for function theme_pubr()
+library(scales) # for label_math
 library(ggplot2)
 library(tidyr)
 

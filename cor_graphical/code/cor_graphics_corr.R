@@ -44,8 +44,6 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
       assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
                                                                 "pseudoneutid50_Beta"))
       dat.cor.data.pair.SA <- subset(dat.cor.data.pair, Region == 2 & Trt==1)
-      dat.cor.data.pair.SA$Day29pseudoneutid50_Delta = sample(dat.cor.data.pair.SA$Day29pseudoneutid50, dim(dat.cor.data.pair.SA)[1])
-      dat.cor.data.pair.SA$Day29pseudoneutid50_Beta = sample(dat.cor.data.pair.SA$Day29pseudoneutid50, dim(dat.cor.data.pair.SA)[1])
         
       covid_corr_pairplots(
         plot_dat = dat.cor.data.pair.SA,
