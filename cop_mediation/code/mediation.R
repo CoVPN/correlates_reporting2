@@ -184,12 +184,9 @@ if(!is.null(Args[4])){
   assay_for_this_run <- include_assays
 }
 
-print(assay_for_this_run)
-print(include_assays)
-
 quant_result <- day_col <- assay_col <- NULL
 this_run_assays <- include_assays[include_assays %in% assay_for_this_run]
-print(this_run_assays)
+
 
 for (marker in this_run_assays) {
   print(marker)
