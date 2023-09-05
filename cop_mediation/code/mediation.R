@@ -162,6 +162,44 @@ if(run_survtmle){
       gtolCens = 0.05,
       truncateH = 0.9
     )
+    print(fit1)
+  }
+}
+
+if(!is.null(Args[4])){
+  assay_for_this_run <- Args[4]
+}else{
+  assay_for_this_run <- include_assays
+}
+
+quant_result <- day_col <- assay_col <- NULL
+for (marker in include_assays[include_assays %in% assay_for_this_run]) {
+  print(marker)
+
+  if(!run_survtmle){
+    fit <- natmed2::natmed2(
+      W = W,
+      A = A,
+      R = R,
+      S = data_keep[, marker, drop = TRUE],
+      C = rep(1, nrow(data_keep)),
+      Y = Y,
+      gRn = 1 / data_keep$wt,
+      glm_gA = ".",
+      glm_gAS = NULL,
+      SL_gAS = sl_library,
+      glm_QY_WAS = NULL,
+      SL_QY_WAS = sl_library,
+      glm_QY_WACY = NULL,
+      SL_QY_WACY = sl_library,
+      glm_QD_WACY = NULL,
+      SL_QD_WACY = sl_library,
+      glm_QY_W = NULL,
+      SL_QY_W = sl_library,
+      glm_QY_WA = NULL,
+      SL_QY_WA = sl_library
+  	)
+    print(fit)
   }else{
     set.seed(404)
     fit1_1 <- survtmle::hazard_tmle(
@@ -218,46 +256,7 @@ if(run_survtmle){
       est = rbind(fit1_0$est, fit1_1$est),
       ic = cbind(fit1_0$ic, fit1_1$ic)
     )
-  }
-  print(fit1)
-}
 
-
-if(!is.null(Args[4])){
-  assay_for_this_run <- Args[4]
-}else{
-  assay_for_this_run <- include_assays
-}
-
-quant_result <- day_col <- assay_col <- NULL
-for (marker in include_assays[include_assays %in% assay_for_this_run]) {
-  print(marker)
-
-  if(!run_survtmle){
-    fit <- natmed2::natmed2(
-      W = W,
-      A = A,
-      R = R,
-      S = data_keep[, marker, drop = TRUE],
-      C = rep(1, nrow(data_keep)),
-      Y = Y,
-      gRn = 1 / data_keep$wt,
-      glm_gA = ".",
-      glm_gAS = NULL,
-      SL_gAS = sl_library,
-      glm_QY_WAS = NULL,
-      SL_QY_WAS = sl_library,
-      glm_QY_WACY = NULL,
-      SL_QY_WACY = sl_library,
-      glm_QD_WACY = NULL,
-      SL_QD_WACY = sl_library,
-      glm_QY_W = NULL,
-      SL_QY_W = sl_library,
-      glm_QY_WA = NULL,
-      SL_QY_WA = sl_library
-  	)
-    print(fit)
-  }else{
     set.seed(404)
     fit2 <- survtmle::hazard_tmle(
       ftime = floor(data_keep$EventTimePrimary / 7.00001) + 1,
