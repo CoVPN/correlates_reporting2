@@ -100,7 +100,7 @@ for(marker in all_MARKERS){
   this_file <- here::here("cop_mediation/output", 
       paste0(
         "full_result_", TRIAL, "_", COR, "_", 
-        "survival_impute_", marker, ".rds", collapse = ""
+        "binary_impute_", marker, ".rds", collapse = ""
       )
     )
   if(file.exists(this_file)){
