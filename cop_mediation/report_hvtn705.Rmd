@@ -103,7 +103,7 @@ for(marker in all_MARKERS){
         "survival_impute_", marker, ".rds", collapse = ""
       )
     )
-  if(file_exists){
+  if(file.exists(this_file)){
     this_result <- readRDS(this_file)
     full_result <- rbind(full_result, this_result)
   }
