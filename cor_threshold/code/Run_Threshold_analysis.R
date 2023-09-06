@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "moderna_boost"); COR="BD29"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "moderna_boost"); COR="BD29naive"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))
 
@@ -29,6 +29,8 @@ begin=Sys.time()
 
 
 ################################################################################
+# code from clean_data.R
+
 for (a in assays) {
   for (t in DayPrefix%.%tpeak ) {
     dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
@@ -76,7 +78,7 @@ if (TRIAL=="moderna_boost") {
   } else stop('wrong COR: '%.% COR)
   
 } else {
-  keep = data[["ph1"]]==1 & data$Trt == 1  
+  keep = data[["ph1"]]==1 & data$Trt == 1 
 }
 
 
@@ -95,8 +97,8 @@ write.csv(data_secondstage,
 )
 
 
-thresholds_list <- list()
 for (marker in markers) {
+  
   if (length(unique(data_secondstage[[marker]])) > threshold_grid_size) {
     # quantiles from cases
     thresh_grid <- report.assay.values(data_secondstage[[marker]][data_secondstage[["Delta"]]==1], marker, grid_size=threshold_grid_size)
@@ -108,6 +110,10 @@ for (marker in markers) {
   } else {
     thresh_grid <- sort(unique(data_secondstage[[marker]]))
   }
+  
+  # limit to ncases>=5
+  ncases=sapply(thresh_grid, function(s) sum(data_secondstage[[marker]]>s & data_secondstage[["Delta"]]==1, na.rm=T))
+  thresh_grid = thresh_grid[ncases>=5]
   
   write.csv(data.frame(thresh = thresh_grid), here::here('output', TRIAL, COR, "data_clean", "Thresholds_by_marker", paste0("thresholds_", marker, ".csv")), row.names = F)
 }
