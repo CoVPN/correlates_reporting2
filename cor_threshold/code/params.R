@@ -1,5 +1,3 @@
-renv::activate(project = here::here(".."))
-source(here::here("..", "_common.R"))
 
 # path for figures and tables etc
 save.results.to = here::here("output", TRIAL, COR, 'figs', 'pointwise_CI'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
@@ -7,18 +5,14 @@ save.results.to = here::here("output", TRIAL, COR, 'figs', 'simultaneous_CI'); i
 save.results.to = here::here("output", TRIAL, COR, 'data_clean', 'Thresholds_by_marker'); if (!dir.exists(save.results.to))  dir.create(save.results.to, recursive = TRUE)
 
 
-
-
 # Reference time to perform analysis. Y = 1(T <= tf) where T is event time of Covid.
 # tf should be large enough that most events are observed but small enough so that not many people are right censored. For the practice dataset, tf = 170 works.
 # Right-censoring is taken into account for  this analysis.
-covariate_adjusted <-
-  T #### Estimate threshold-response function with covariate adjustment
-fast_analysis <-
-  F ### Perform a fast analysis using glmnet at cost of accuracy
-super_fast_analysis <- T
-# hack
-threshold_grid_size <- 30 ### Number of thresholds to estimate (equally spaced in quantiles). Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
+covariate_adjusted <- T #### Estimate threshold-response function with covariate adjustment
+
+fast_analysis <- config$threshold_fast ### Perform a fast analysis using glmnet at cost of accuracy
+super_fast_analysis <- config$threshold_superfast 
+
 plotting_assay_label_generator <- function(marker, above = T) {
   if (above) {
     add <- " (>=s)"
@@ -60,7 +54,6 @@ markers <- paste0(DayPrefix, tpeak, assays)
 if (TRIAL=='moderna_boost') markers = c(markers, paste0("DeltaBD29overBD1", assays))
 
 markers <- intersect(markers, colnames(dat.mock))
-print(markers)
 marker_to_assay <- sapply(markers, function(v) marker.name.to.assay(v))
 
 
@@ -91,4 +84,3 @@ lower_quantile <- 0
 upper_quantile <- 1
 risks_to_estimate_thresh_of_protection <- NULL ### Risk values at which to estimate threshold of protection...
 ###                Leaving at NULL (default) is recommended to ensure risks fall in range of estimate. Example: c(0, 0.0005, 0.001, 0.002, 0.003)
-threshold_grid_size <- max(threshold_grid_size, 15)

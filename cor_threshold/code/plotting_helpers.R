@@ -6,34 +6,7 @@
 #' Assume monotone nonincreasing
 get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   
-  # will get risk_plac from cor_coxph
-  # library(survival)
-  # data <- dat.mock
-  # 
-  # #keep <- data[[Earlyendpoint]] ==0 & data$Trt == 0 & data$Bserostatus == 0 & data$Perprotocol==1  & data[[Event_Time_variable[[time]]]] >=7 & !is.na(data$Wstratum)
-  # keep <- data[["ph1"]]==1  & data$Trt == 0 
-  # #keep <-   data$Trt == 0 & data$Bserostatus == 0   & !is.na(data[[weight_variable[[time]]]])
-  # tmp <- dat.mock[keep,]
-  # 
-  # tmp$time <-  as.numeric(tmp[["EventTimePrimary"]])
-  # tmp$Delta <-  as.numeric(tmp[["EventIndPrimary"]])
-  # data <- tmp
-  # 
-  # form.s = as.formula(paste0("Surv( time, Delta) ~ 1"))
-  # if (endsWith(data_name, "riskscore.csv")) {
-  #   form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + risk_score)
-  # } else {
-  #   form.0 =            update (form.s, ~.+ MinorityInd + HighRiskInd + Age)
-  # }
-  # if(TRIAL == "hvtn705second") {
-  #   form.0 =            update (form.s, as.formula(config$covariates_riskscore))
-  # }
-  # 
-  # fit.risk = coxph(form.0, data = tmp, model=T) # model=T is required because the type of prediction requires it, see Note on ?predict.coxph
-  # tmp[["time"]] <-  as.numeric(max_t)
-  # 
-  # risks = 1 - exp(-predict(fit.risk, newdata=tmp, type="expected"))
-  # risk_plac <- round(mean(risks),3)
+  risk_plac = prev.plac # computed in _common.R
   
   is.delta=startsWith(marker,"Delta")
   
@@ -48,6 +21,9 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   } else {
     load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_",  marker,append, ".RData")))
   }
+  str(esttmle)
+  
+  
   time <- tpeak
   day <- ""
   if(TRIAL == "hvtn705second"){
@@ -103,6 +79,8 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   xlimits <- xlim
   print(xlimits)
   
+  print(main)
+  print(v) 
   
   plot <- v + ggtitle(main) +
     stat_function(fun = RCDF, color = col, geom = "area", fill = col, alpha = 0.2) +
@@ -112,8 +90,8 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
     )  +
     theme(plot.title = element_text(size = 25), axis.text.x = element_text(angle = 0, hjust = 1, size = 18), axis.text.y = element_text(angle = 0, hjust = 1, size = 18)) +
     # geom_hline(aes(yintercept=risk_vac), alpha = 0.4) + geom_text(alpha = 0.75,aes(median(v$data$cutoffs),risk_vac,label = "vaccine overall risk"), vjust = -0.5, size = 5) +
-    # hack: comment out till we get risk_plac
-    # geom_text(alpha = 0.75, aes(quantile(v$data$cutoffs, 0.1),min(max(v$data$upper),risk_plac),label = paste0("placebo overall risk: ", risk_plac)), vjust = 0, size = 5) + 
+    # comment out till we get risk_plac
+    # geom_text(alpha = 0.75, aes(quantile(v$data$cutoffs, 0.1),min(max(v$data$upper),risk_plac),label = paste0("placebo overall risk: ", risk_plac)), vjust = 0, size = 5) +
     scale_x_continuous(
       breaks = xx,#union(floor(esttmle[, 1]), ceiling(esttmle[, 1])),
       labels = do.call(expression,labels),
@@ -126,7 +104,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   if(above  && max_thresh < log10(uloqs[a]) - 0.05) {
     plot <- plot + geom_vline(xintercept = max_thresh, colour = "red", linetype = "longdash")
   } 
-  # hack: comment out till we get risk_plac
+  # comment out till we get risk_plac
   # else if(!above && risk_plac<= max(v$data$upper, na.rm = T)) {
   #   plot <- plot + geom_hline(aes(yintercept=risk_plac), alpha = 0.4, linetype = "longdash", colour = "red")
   # }
@@ -183,7 +161,7 @@ generate_tables <- function(marker, num_show = 10, monotone = F, above = T) {
   if(monotone) {
     load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_monotone_",  marker,append, ".RData")))
   } else {
-    load(file = here::here("output", TRIAL, COR,, paste0("tmleThresh_",  marker,append, ".RData")))
+    load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_",  marker,append, ".RData")))
   }
   esttmle_table <- esttmle
   esttmle_table[, 1] <- round(esttmle_table[, 1], 3)
