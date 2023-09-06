@@ -18,7 +18,6 @@ message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_threshold report ~~~~~~~~~~~
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 # hack
-folder_var <- paste0("cor_threshold/output/",TRIAL,"/BD29naive")
 library(here)
 library(dplyr)
 print(here::here())
@@ -123,54 +122,47 @@ for(COR in CORs){
   tpeak <- config.cor$tpeak
   countAfter1 <- COR == "D29start1"
   
+  folder_var <- paste0("cor_threshold/output/",TRIAL,"/", COR)
+  
   time <- paste0(DayPrefix, tpeak)
   markers <- paste0(DayPrefix, tpeak, assays)
   
   if (TRIAL=='moderna_boost') markers = c(markers, paste0("DeltaBD29overBD1", assays))
 
   
-  # ## non-monotone
-  # title0 <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
-  # if(monotone) {
-  #   title <- paste0(title0, " (monotone-corrected)")
-  # }
-  # if(countAfter1) {
-  #   title <- paste0(title0, " (events after 1 day post dose)")
-  # } else {
-  #   title = title0
-  # }
-  # cat("##", title, "\n")
-  # 
-  # for(marker in markers) {
-  #   key <- paste0(marker)
-  #   assay <- gsub(time, "" , marker)
-  #   if(!(assay %in% assays)) {
-  #     assay <- assays[stringr::str_detect(marker, assays)]
-  #   }
-  #   
-  #   message(key)
-  #   message(assay)
-  #   
-  #   res = knitr::knit_child(c(here::here(folder_var, 'sub_report.Rmd')), quiet = TRUE)
-  #   #res = knitr::knit_child(c(here::here( 'sub_report.Rmd')), quiet = TRUE)
-  #   
-  #   cat(res, sep = '\n')
-  #   cat("\\clearpage", sep = '\n')
-  # }
+  ## non-monotone
+  monotone <- FALSE
+  message("non-monotone")
+
+  if (!config$threshold_monotone_only) {
+    title <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+    if(countAfter1) title <- paste0(title, " (events after 1 day post dose)")
+    if(monotone) title <- paste0(title, " (monotone-corrected)")
+    cat("##", title, "\n")
+  
+    for(marker in markers) {
+      key <- paste0(marker)
+      assay <- gsub(time, "" , marker)
+      if(!(assay %in% assays)) {
+        assay <- assays[stringr::str_detect(marker, assays)]
+      }
+  
+      res = knitr::knit_child(c(here::here('cor_threshold', 'sub_report.Rmd')), quiet = TRUE)
+
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+    }
+  }
   
   
   # monotone
   monotone <- TRUE
+  message("monotone")
 
-  title0 <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
-  if(monotone) {
-    title <- paste0(title0, " (monotone-corrected)")
-  }
-  if(countAfter1) {
-    title <- paste0(title0, " (events after 1 day post dose)")
-  } else {
-    title = title0
-  }
+  title <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+  if(countAfter1) title <- paste0(title, " (events after 1 day post dose)")
+  if(monotone) title <- paste0(title, " (monotone-corrected)")
+  message(title)
   cat("##", title, "\n")
   
   for(marker in markers) {
@@ -178,7 +170,6 @@ for(COR in CORs){
     #assay <- assays[stringr::str_detect(marker, assays)]
     assay <- gsub(time, "" , marker)
     
-
     res = knitr::knit_child(c(here::here('cor_threshold', 'sub_report.Rmd')), quiet = TRUE)
     
     cat(res, sep = '\n')
@@ -204,41 +195,33 @@ for(COR in CORs){
   markers <- paste0(DayPrefix, tpeak, assays)
   
   
-  # ## non-monotone
-  # title0 <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
-  # if(monotone) {
-  #   title <- paste0(title0, " (monotone-corrected)")
-  # }
-  # if(countAfter1) {
-  #   title <- paste0(title0, " (events after 1 day post dose)")
-  # } else {
-  #   title = title0
-  # }
-  # cat("##", title, "\n")
-  # 
-  # for(marker in markers) {
-  #   key <- paste0(marker)
-  #   #assay <- assays[stringr::str_detect(marker, assays)]
-  #   assay <- gsub(time, "" , marker)
-  #   res = knitr::knit_child(c(here::here('sub_report.Rmd')), quiet = TRUE)
-  #   
-  #   cat(res, sep = '\n')
-  #   cat("\\clearpage", sep = '\n')
-  # }
+  ## non-monotone
+  monotone <- FALSE
+  
+  if (!config$threshold_monotone_only) {
+    title <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+    if(countAfter1) title <- paste0(title, " (events after 1 day post dose)")
+    if(monotone) title <- paste0(title, " (monotone-corrected)")
+    cat("##", title, "\n")
+    
+    for(marker in markers) {
+      key <- paste0(marker)
+      #assay <- assays[stringr::str_detect(marker, assays)]
+      assay <- gsub(time, "" , marker)
+      res = knitr::knit_child(c(here::here('cor_threshold', 'sub_report.Rmd')), quiet = TRUE)
+    
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+    }
+  }
   
   
-  # monotone
+  ## monotone
   monotone <- TRUE
 
-  title0 <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
-  if(monotone) {
-    title <- paste0(title0, " (monotone-corrected)")
-  }
-  if(countAfter1) {
-    title <- paste0(title0, " (events after 1 day post dose)")
-  } else {
-    title = title0
-  }
+  title <- paste0(COR, " Plots and Tables with estimates and ", ci, " confidence intervals"," for day ", day, " markers")
+  if(countAfter1) title <- paste0(title, " (events after 1 day post dose)")
+  if(monotone) title <- paste0(title, " (monotone-corrected)")
   cat("##", title, "\n")
   
   for(marker in markers) {

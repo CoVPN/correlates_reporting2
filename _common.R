@@ -48,6 +48,13 @@ TRIAL=attr(config, "config")
 
 DayPrefix = ifelse (TRIAL == 'moderna_boost', "BD", "Day")
 
+if (is.null(config$threshold_grid_size)) {
+  # Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
+  threshold_grid_size <- 30 
+} else {
+  threshold_grid_size = config$threshold_grid_size
+}
+
 
 if (!is.null(config$assay_metadata)) {
   
