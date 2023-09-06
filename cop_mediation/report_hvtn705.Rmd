@@ -1,0 +1,120 @@
+# Mediators of Vaccine Efficacy {#cop-mediators}
+
+```{r, results = "asis"}
+here::i_am("cop_mediation/report_hvtn705.Rmd")
+TRIAL <- 'hvtn705second'
+COR <- 'D210'
+
+all_MARKERS <- c(
+"Day210ELCZ",
+"Day210ELMo",
+"Day210ADCPgp140C97ZAfib",
+"Day210ADCPgp140Mos1fib",
+"Day210IgG3gp140C97ZAfibritin40delta",
+"Day210IgG3gp140Mos1fibritin40delta",
+"Day210IgG340mdw_gp120",
+"Day210IgG340mdw_gp140",
+"Day210IgG340mdw_V1V2",
+"Day210IgG3gp4140delta",
+"Day210IgG340mdw_multi",
+"Day210IgG340mdw_gp120_gp140_vm",
+"Day210IgG50mdw_V1V2",
+"Day210mdw_xassay",
+"Day210ADCCCAP8_pk",
+"Day210ADCCCH58_pk",
+"Day210ADCCWITO_pk",
+"Day210ADCCCAP8_pAUC",
+"Day210ADCCCH58_pAUC",
+"Day210ADCCWITO_pAUC",
+"Day210ICS4AnyEnvIFNg_OR_IL2",
+"Day210ICS8AnyEnvIFNg_OR_IL2",
+"Day210IgG3AE.A244.V1V2.Tags_293F40delta",
+"Day210IgG3C.1086C.V1.V2.Tags40delta",
+"Day210IgG3gp70.001428.2.42.V1V240delta",
+"Day210IgG3gp70.1012.11.TC21.3257.V1V240delta",
+"Day210IgG3gp70.1394C9G1.V1V240delta",
+"Day210IgG3gp70.BF1266.431a.V1V240delta",
+"Day210IgG3gp70.Ce1086.B2.V1V240delta",
+"Day210IgG3gp70.B.CaseA.V1.V240delta",
+"Day210IgGAE.A244.V1V2.Tags_293F50delta",
+"Day210IgGC.1086C.V1.V2.Tags50delta",
+"Day210IgGgp70_001428.2.42.V1V250delta",
+"Day210IgGgp70_1012.11.TC21.3257.V1V250delta",
+"Day210IgGgp70_1394C9G1.V1V250delta",
+"Day210IgGgp70_9004SS.A3.4.V1V250delta",
+"Day210IgGgp70_BF1266.431a.V1V250delta",
+"Day210IgGgp70_Ce1086.B2.V1V250delta",
+"Day210IgGgp70.B.CaseA.V1.V250delta",
+"Day210ICS4JMos1gp120IFNg_OR_IL2",
+"Day210ICS4JMos1gp41IFNg_OR_IL2",
+"Day210ICS4JMos2GagIFNg_OR_IL2",
+"Day210ICS4JMos2RNAseIntIFNg_OR_IL2",
+"Day210ICS4JMos2Sgp120IFNg_OR_IL2",
+"Day210ICS4JMos2Sgp41IFNg_OR_IL2",
+"Day210ICS8JMos1gp120IFNg_OR_IL2",
+"Day210ICS8JMos1gp41IFNg_OR_IL2",
+"Day210ICS8JMos2GagIFNg_OR_IL2",
+"Day210ICS8JMos2RNAseIntIFNg_OR_IL2",
+"Day210ICS8JMos2Sgp120IFNg_OR_IL2",
+"Day210ICS8JMos2Sgp41IFNg_OR_IL2",
+"Day210IgG340mdw_V2i",
+"Day210IgG340mdw_V2p",
+"Day210IgG31012.11.TC21D11gp120.avi40delta",
+"Day210IgG31086C.D7gp120.avi_293F40delta",
+"Day210IgG31394C9.G1.D11gp120.avi40delta",
+"Day210IgG31428.D11gp120.avi_293F40delta",
+"Day210IgG3Con.6.gp120_B40delta",
+"Day210ADCPgp701428Alter",
+"Day210IgG3.gp70V1V2.CaseA2Alter",
+"Day210IgACon.6.gp120_B10delta",
+"Day210IgA1394C9.G1.D11gp120.avi10delta",
+"Day210IgA1428.D11gp120.avi_293F10delta",
+"Day210IgAgp70.1012.11.TC21.3257.V1V210delta",
+"Day210IgA1086C.D7gp120.avi_293F10delta",
+"Day210IgAgp140.Mos1.fibritin10delta",
+"Day210IgAgp140.C97ZA.fibritin10delta",
+"Day210IgACon.S.gp140.CFI10delta",
+"Day210IgA1012.gp140C.avi_293F10delta",
+"Day210IgA1394C9.gp140C.avi_293F10delta",
+"Day210IgA1086C.gp140C.avi10delta",
+"Day210IgABF1266.gp140C.avi_293F10delta",
+"Day210IgA9004S.gp140C.avi10delta",
+"Day210IgA00MSA.4076.gp14010delta",
+"Day210IgAA1.con.env03.140.CF10delta",
+"Day210IgA1012.11.TC21D11gp120.avi10delta",
+"Day210IgAgp70.1394C9G1.V1V210delta",
+"Day210IgAgp70.BF1266.431a.V1V210delta", 
+"Day210IgAgp70.001428.2.42.V1V210delta", 
+"Day210IgAgp70.Ce1086.B2.V1V210delta",
+"Day210IgA10mdw_gp120_gp140",
+"Day210ADCC_CAP8_CH58_WITO_peak_breadth",
+"Day210ADCC_CAP8_CH58_WITO_pAUC_breadth",
+"Day210ELISpotPTEEnv",
+"Day210mdw_xassay_overall",
+"Day210mdw_xassay_select_igg3v1v2"
+)
+
+full_result <- NULL
+for(marker in all_MARKERS){
+  message(marker)
+  this_file <- here::here("cop_mediation/output", 
+      paste0(
+        "full_result_", TRIAL, "_", COR, "_", 
+        "survival_impute_", marker, ".rds", collapse = ""
+      )
+    )
+  if(file_exists){
+    this_result <- readRDS(this_file)
+    full_result <- rbind(full_result, this_result)
+  }
+
+  
+}
+
+init_kable <- knitr::kable(full_result, 
+            format = "latex", row.names = FALSE, booktabs = TRUE, escape = FALSE,
+            caption = paste0("Table of mediation effect estimates for quantitative markers with 95\\% confidence intervals. \\newline{} Direct VE = VE comparing vaccine vs. placebo with marker set to distribution in placebo. \\newline{} Indirect VE = VE in vaccinated comparing observed marker vs. hypothetical marker under placebo. \\newline{} Prop. mediated = fraction of total risk reduction from vaccine attributed to antibody response."),
+            linesep = '')
+
+kableExtra::kable_styling(init_kable, latex_options = c("scale_down", "HOLD_position"))
+```
