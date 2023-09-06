@@ -23,7 +23,7 @@ source(here::here("code", "covid_corr_plot_functions.R"))
 source(here::here("..", "_common.R"))
 
 ## load data 
-dat.cor.data.pair <- readRDS(here("data_clean", "cor_data_pair.rds")); dat.cor.data.pair$all_one <- 1 # as a placeholder for strata values
+dat.cor.data.pair <- readRDS(here::here("data_clean", "cor_data_pair.rds")); dat.cor.data.pair$all_one <- 1 # as a placeholder for strata values
 
 # path for figures and tables etc
 save.results.to = here::here("output")
@@ -37,7 +37,7 @@ print(paste0("save.results.to equals ", save.results.to))
 
 ###### Correlation plots across markers at a given time point
 # 3 markers (Anc, Delta, Beta), SA, Day 29
-if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
+if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
 
   for (t in "Day29"){
     for (trt in c(1)){
@@ -57,7 +57,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
         column_labels = paste(t, assay_metadata_sub_sa$assay_label_short),
         height = max(1.3 * length(assay_metadata_sub_sa$assay) + 0.1, 5.5),
         width = max(1.3 * length(assay_metadata_sub_sa$assay), 5.5),
-        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_sa$assay_label_short)))>40, 3.8, 4.3),
+        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_sa$assay_label_short)))>40, 4.2, 4.3),
         filename = paste0(
           save.results.to, "/pairs_by_time_", t,
           "_markers_",ifelse(trt==1, "vaccine", "placebo"), "_NAb_SA.pdf"
@@ -82,7 +82,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
         column_labels = paste(t, assay_metadata_sub_la$assay_label_short),
         height = max(1.3 * length(assay_metadata_sub_la$assay) + 0.1, 5.5),
         width = max(1.3 * length(assay_metadata_sub_la$assay), 5.5),
-        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_la$assay_label_short)))>40, 3.3, 4.3),
+        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_la$assay_label_short)))>40, 3.45, 4.3),
         filename = paste0(
           save.results.to, "/pairs_by_time_", t,
           "_markers_", ifelse(trt==1, "vaccine", "placebo"), "_NAb_LA.pdf"

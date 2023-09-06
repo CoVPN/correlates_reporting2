@@ -11,7 +11,7 @@ library(gridExtra)
 install.packages("wCorr", repos = "http://cran.us.r-project.org") # for the weightedCorr() in pairplot, weighted correlation
 library(wCorr)
 install.packages("fmsb", repos = "http://cran.us.r-project.org") # radar plot
-library(fmsb) 
+library(fmsb) # radarchart()
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
@@ -25,7 +25,7 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 source(here::here("..", "_common.R"))
 
 ## load data 
-dat.cor.data.spider <- readRDS(here("data_clean", "longer_cor_data_plot1.rds"))
+dat.cor.data.spider <- readRDS(here::here("data_clean", "longer_cor_data_plot1.rds"))
 
 # path for figures and tables etc
 save.results.to = here::here("output")
@@ -78,7 +78,7 @@ for (outtype in c("PDF")) {
                axistype=1 , pcol="#1749FF",
                plwd=1.5, pty=c(15), plty=2,
                #custom the grid
-               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=seq(1,1.1,0.025), 
+               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(1,1.1,0.025)), 
                #label size
                vlcex=0.8,
                #title
@@ -108,7 +108,7 @@ for (outtype in c("PDF")) {
                axistype=1 , pcol="#D92321",
                plwd=1.5, pty=c(15, 17), plty=2,
                #custom the grid
-               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=seq(1,1.1,0.025), 
+               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(1,1.1,0.025)), 
                #label size
                vlcex=0.8,
                #title

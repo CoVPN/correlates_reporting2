@@ -13,7 +13,6 @@ library(stringr)
 uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assays
 pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assays
 lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assays
-uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assays
 llods=assay_metadata$lod; names(llods)=assay_metadata$assays
 #dat.mock <- read.csv(here("..", "data_clean", data_name))# superceded by _common.R data read
 
