@@ -21,6 +21,9 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   } else {
     load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_",  marker,append, ".RData")))
   }
+  str(esttmle)
+  
+  
   time <- tpeak
   day <- ""
   if(TRIAL == "hvtn705second"){
@@ -76,6 +79,8 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   xlimits <- xlim
   print(xlimits)
   
+  print(main)
+  print(v) 
   
   plot <- v + ggtitle(main) +
     stat_function(fun = RCDF, color = col, geom = "area", fill = col, alpha = 0.2) +
@@ -86,7 +91,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
     theme(plot.title = element_text(size = 25), axis.text.x = element_text(angle = 0, hjust = 1, size = 18), axis.text.y = element_text(angle = 0, hjust = 1, size = 18)) +
     # geom_hline(aes(yintercept=risk_vac), alpha = 0.4) + geom_text(alpha = 0.75,aes(median(v$data$cutoffs),risk_vac,label = "vaccine overall risk"), vjust = -0.5, size = 5) +
     # comment out till we get risk_plac
-    # geom_text(alpha = 0.75, aes(quantile(v$data$cutoffs, 0.1),min(max(v$data$upper),risk_plac),label = paste0("placebo overall risk: ", risk_plac)), vjust = 0, size = 5) + 
+    # geom_text(alpha = 0.75, aes(quantile(v$data$cutoffs, 0.1),min(max(v$data$upper),risk_plac),label = paste0("placebo overall risk: ", risk_plac)), vjust = 0, size = 5) +
     scale_x_continuous(
       breaks = xx,#union(floor(esttmle[, 1]), ceiling(esttmle[, 1])),
       labels = do.call(expression,labels),
@@ -156,7 +161,7 @@ generate_tables <- function(marker, num_show = 10, monotone = F, above = T) {
   if(monotone) {
     load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_monotone_",  marker,append, ".RData")))
   } else {
-    load(file = here::here("output", TRIAL, COR,, paste0("tmleThresh_",  marker,append, ".RData")))
+    load(file = here::here("output", TRIAL, COR, paste0("tmleThresh_",  marker,append, ".RData")))
   }
   esttmle_table <- esttmle
   esttmle_table[, 1] <- round(esttmle_table[, 1], 3)

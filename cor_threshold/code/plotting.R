@@ -35,13 +35,15 @@ ident <- function(x) x
 
 
 for (marker in markers) {
+  message("monotone")
   get_plot(marker, simultaneous_CI = F, monotone = T, above=T)
   get_plot(marker, simultaneous_CI = T, monotone = T, above=T)
   generate_tables(marker, num_show = 10, monotone = T,above=T)
   
-  # get_plot(marker, simultaneous_CI = F, monotone = F, above=T)
-  # get_plot(marker, simultaneous_CI = T, monotone = F, above=T)
-  # generate_tables(marker, num_show = 10, monotone = F,above=T)
+  message("non-monotone")
+  get_plot(marker, simultaneous_CI = F, monotone = F, above=T)
+  get_plot(marker, simultaneous_CI = T, monotone = F, above=T)
+  generate_tables(marker, num_show = 10, monotone = F,above=T)
   
   #get_inverse_plot(marker, F)
   #get_inverse_plot(marker, T)

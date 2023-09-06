@@ -165,8 +165,9 @@ thresholdTMLE <- function(data_full, node_list, thresholds = NULL, biased_sampli
         estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(7))] <- NA
       }
       setattr(estimates_upper, "IC", IC_IPCW)
+    } else {
+      estimates_upper=NULL
     }
-    estimates_upper=NULL
     
     ##############
     # monotone
