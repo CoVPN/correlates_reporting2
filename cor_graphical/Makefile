@@ -84,6 +84,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
 	Rscript code/cor_data_preprocess.R D29variant
 	Rscript code/cor_graphics_spider.R D29variant # spider
 	
+	Rscript code/cor_data_preprocess.R D29variant
+	Rscript code/cor_graphics_violin_scatter.R D29variant # violin
+	
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/cor_data_preprocess.R D35 # Yiwen's
 	Rscript code/cor_graphics_violin_scatter.R D35

@@ -14,10 +14,10 @@ dat.long.cor.subset <- readRDS(here(
   "data_clean",
   "long_cor_data.rds"
 ))
-uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assays
-pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assays
-lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assays
-llods=assay_metadata$lod; names(llods)=assay_metadata$assays
+uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
+pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
+lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
+llods=assay_metadata$lod; names(llods)=assay_metadata$assay
 
 #dat.cor.subset <- readRDS(here(
 #  "data_clean",

@@ -16,7 +16,7 @@ source(here::here("..", "_common.R"))
 library(scales)
 library(tidyverse)
 library(here)
-library(cowplot)
+library(cowplot) # ggsave2()
 library(gridExtra)
 library(grid)
 
@@ -76,7 +76,7 @@ if (length(timepoints)==1){
     case_grp2,
     "Non-Cases")
   
-} else {
+} else if (COR != "D29variant") {
   x_lb <- c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), 
             paste0("D",tinterm, "\nfold-rise\nover D1"), paste0("D",tpeak, "\nfold-rise\nover D1"), 
             case_grp1_wrap, 
@@ -204,125 +204,46 @@ violin_box_plot <-
   return (p)
 }
 
-#### Figure 1. violin+box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists
-for (i in 1:length(plots)) {
-  for (j in 1:length(bstatus)) {
-    for (k in 1:length(trt)) {
-      for (t in 1:length(timesls)) { # v1 and v2
-        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
-          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
-          "Perprotocol")){
-        
-          y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-          y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 0.25 + ifelse(log10(uloqs[plots[i]])==maxs[plots[i]], 0.1, 0))
-          rate.y.pos <- max(y.lim)
+if (COR != "D29variant") {
+  #### Figure 1. violin+box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists
+  for (i in 1:length(plots)) {
+    for (j in 1:length(bstatus)) {
+      for (k in 1:length(trt)) {
+        for (t in 1:length(timesls)) { # v1 and v2
+          for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+            # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+            "Perprotocol")){
           
-          ll.cex <- 8.16
-          prop.cex <- 7
-          
-          p <- violin_box_plot(dat=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                dat.sample=subset(plot.25sample1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                ytitle=plots_ytitles[i],toptitle=plots_titles[i],
-                                facetby=vars(cohort_event),
-                                ylim=y.lim,
-                                ybreaks=y.breaks,
-                                prop.cex=prop.cex,
-                                ll.cex=ll.cex,
-                                group.num=length(levels(longer_cor_data_plot1$cohort_event)),
-                                rate.y.pos=rate.y.pos,
-                                n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
-                                )
-          g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
-          file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
-          suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
-          
-          p <- violin_box_plot(dat=       subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                dat.sample=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                ytitle=plots_ytitles[i],toptitle=plots_titles[i],
-                                x="cohort_event",
-                                xtitle="Cohort Event",
-                                facetby=vars(time),
-                                ylim=y.lim,
-                                type="noline",
-                                ybreaks=y.breaks,
-                                prop.cex=prop.cex,
-                                ll.cex=ll.cex,
-                                pt.size=1.5,
-                                group.num=length(timesls[[t]]),
-                                rate.y.pos=rate.y.pos,
-                                axis.text.x.cex=20,
-                                n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
-                                )
-          file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
-          suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
-        }
-      }
-    }
-  }
-}
-
-#### Figure 2. violin + box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists, by Age, HighRisk, Sex, Race and Ethnic group
-for (i in 1:length(plots)) {
-  for (j in 1:length(bstatus)) {
-    for (k in 1:length(trt)) {
-      for (t in 1:length(timesls)) {
-        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
-          "Perprotocol")){
-          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
-          for (s in c("age_geq_65_label","highrisk_label","sex_label","minority_label","Dich_RaceEthnic")) {
-            
-            groupby_vars2 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", s)
-            
-            # define response rate
-            longer_cor_data_plot2 <- get_resp_by_group(longer_cor_data, groupby_vars2)
-              
-            if(s=="Dich_RaceEthnic"){
-              longer_cor_data_plot2 <- subset(longer_cor_data_plot2, Dich_RaceEthnic %in% c("Hispanic or Latino","Not Hispanic or Latino"))
-            }
-            
-            longer_cor_data_plot2 <- longer_cor_data_plot2 %>%
-              mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
-                     lb = ifelse(grepl("Day", time), lb, ""),
-                     lbval = ifelse(grepl("Day", time), lbval, NA),
-                     lb2 = ifelse(grepl("Day", time), lb2, ""),
-                     lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
-  
-            # make subsample
-            plot.25sample2 <- get_sample_by_group(longer_cor_data_plot2, groupby_vars2)
-  
             y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-            y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 1)
+            y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 0.25 + ifelse(log10(uloqs[plots[i]])==maxs[plots[i]], 0.1, 0))
             rate.y.pos <- max(y.lim)
             
-            ll.cex <- 7.5
-            prop.cex <- 6.6
+            ll.cex <- 8.16
+            prop.cex <- 7
             
-            p <- violin_box_plot(dat=subset(longer_cor_data_plot2, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                  dat.sample=subset(plot.25sample2, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1),  
+            p <- violin_box_plot(dat=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                  dat.sample=subset(plot.25sample1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
                                   ytitle=plots_ytitles[i],toptitle=plots_titles[i],
-                                  facetby=as.formula(paste("~",s,"+cohort_event")),
+                                  facetby=vars(cohort_event),
                                   ylim=y.lim,
                                   ybreaks=y.breaks,
                                   prop.cex=prop.cex,
                                   ll.cex=ll.cex,
+                                  group.num=length(levels(longer_cor_data_plot1$cohort_event)),
                                   rate.y.pos=rate.y.pos,
-                                  group.num=length(levels(longer_cor_data_plot2$cohort_event)),
                                   n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
                                   xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
                                   )
             g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
-            s1 <- ifelse(s=="age_geq_65_label", "Age", ifelse(s=="highrisk_label", "Risk", ifelse(s=="sex_label","Sex", ifelse(s=="minority_label","RaceEthnic", ifelse(s=="Dich_RaceEthnic","Dich_RaceEthnic",NA)))))
-            file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", s1, "_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
+            file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
             suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
             
-            p <- violin_box_plot(dat=       subset(longer_cor_data_plot2, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                  dat.sample=subset(longer_cor_data_plot2, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+            p <- violin_box_plot(dat=       subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                  dat.sample=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
                                   ytitle=plots_ytitles[i],toptitle=plots_titles[i],
                                   x="cohort_event",
                                   xtitle="Cohort Event",
-                                  facetby=as.formula(paste("~",s,"+time")),
+                                  facetby=vars(time),
                                   ylim=y.lim,
                                   type="noline",
                                   ybreaks=y.breaks,
@@ -335,177 +256,360 @@ for (i in 1:length(plots)) {
                                   n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
                                   xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
                                   )
-            file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", s1, "_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
+            file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
             suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
-            
           }
         }
       }
     }
   }
-}
-
-
-#### Figure 3. violin + box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists, by if Age >=65 and if at risk
-for (i in 1:length(plots)) {
-  for (j in 1:length(bstatus)) {
-    for (k in 1:length(trt)) {
-      for (t in 1:length(timesls)) {
-        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
-          "Perprotocol")){
-          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
   
-          y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-          y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 1.5)
-          rate.y.pos <- max(y.lim)
-          
-          prop.cex <- 6.9
-          ll.cex <- 7.5
-          
-          p <- violin_box_plot(dat=subset(longer_cor_data_plot3, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                dat.sample=subset(plot.25sample3, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1),
-                                ytitle=plots_ytitles[i],toptitle=plots_titles[i],
-                                facetby=as.formula("age_risk_label~cohort_event"),
-                                ylim=y.lim,
-                                ybreaks=y.breaks,
-                                facetopt = "grid",
-                                prop.cex=prop.cex,
-                                ll.cex=ll.cex,
-                                rate.y.pos=rate.y.pos,
-                                group.num=length(levels(longer_cor_data_plot3$cohort_event)),
-                                n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
-                                )
-          g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
-          file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_Age_Risk_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
-          suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 13.5))
-          
-          p <- violin_box_plot(dat=       subset(longer_cor_data_plot3, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                dat.sample=subset(longer_cor_data_plot3, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                ytitle=plots_ytitles[i],toptitle=plots_titles[i],
-                                x="cohort_event",
-                                xtitle="Cohort Event",
-                                facetby=as.formula("age_risk_label~time"),
-                                ylim=y.lim,
-                                type="noline",
-                                ybreaks=y.breaks,
-                                facetopt = "grid",
-                                prop.cex=prop.cex,
-                                ll.cex=ll.cex,
-                                pt.size=1.5,
-                                rate.y.pos=rate.y.pos,
-                                group.num=length(timesls[[t]]),
-                                axis.text.x.cex=20,
-                                n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
-                                )
-          file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_Age_Risk_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
-          suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 13.5))
+  #### Figure 2. violin + box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists, by Age, HighRisk, Sex, Race and Ethnic group
+  for (i in 1:length(plots)) {
+    for (j in 1:length(bstatus)) {
+      for (k in 1:length(trt)) {
+        for (t in 1:length(timesls)) {
+          for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+            "Perprotocol")){
+            # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+            for (s in c("age_geq_65_label","highrisk_label","sex_label","minority_label","Dich_RaceEthnic")) {
+              
+              groupby_vars2 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", s)
+              
+              # define response rate
+              longer_cor_data_plot2 <- get_resp_by_group(longer_cor_data, groupby_vars2)
+                
+              if(s=="Dich_RaceEthnic"){
+                longer_cor_data_plot2 <- subset(longer_cor_data_plot2, Dich_RaceEthnic %in% c("Hispanic or Latino","Not Hispanic or Latino"))
+              }
+              
+              longer_cor_data_plot2 <- longer_cor_data_plot2 %>%
+                mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+                       lb = ifelse(grepl("Day", time), lb, ""),
+                       lbval = ifelse(grepl("Day", time), lbval, NA),
+                       lb2 = ifelse(grepl("Day", time), lb2, ""),
+                       lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
+    
+              # make subsample
+              plot.25sample2 <- get_sample_by_group(longer_cor_data_plot2, groupby_vars2)
+    
+              y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+              y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 1)
+              rate.y.pos <- max(y.lim)
+              
+              ll.cex <- 7.5
+              prop.cex <- 6.6
+              
+              p <- violin_box_plot(dat=subset(longer_cor_data_plot2, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                    dat.sample=subset(plot.25sample2, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1),  
+                                    ytitle=plots_ytitles[i],toptitle=plots_titles[i],
+                                    facetby=as.formula(paste("~",s,"+cohort_event")),
+                                    ylim=y.lim,
+                                    ybreaks=y.breaks,
+                                    prop.cex=prop.cex,
+                                    ll.cex=ll.cex,
+                                    rate.y.pos=rate.y.pos,
+                                    group.num=length(levels(longer_cor_data_plot2$cohort_event)),
+                                    n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
+                                    xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                    )
+              g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
+              s1 <- ifelse(s=="age_geq_65_label", "Age", ifelse(s=="highrisk_label", "Risk", ifelse(s=="sex_label","Sex", ifelse(s=="minority_label","RaceEthnic", ifelse(s=="Dich_RaceEthnic","Dich_RaceEthnic",NA)))))
+              file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", s1, "_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
+              suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+              
+              p <- violin_box_plot(dat=       subset(longer_cor_data_plot2, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                    dat.sample=subset(longer_cor_data_plot2, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                    ytitle=plots_ytitles[i],toptitle=plots_titles[i],
+                                    x="cohort_event",
+                                    xtitle="Cohort Event",
+                                    facetby=as.formula(paste("~",s,"+time")),
+                                    ylim=y.lim,
+                                    type="noline",
+                                    ybreaks=y.breaks,
+                                    prop.cex=prop.cex,
+                                    ll.cex=ll.cex,
+                                    pt.size=1.5,
+                                    group.num=length(timesls[[t]]),
+                                    rate.y.pos=rate.y.pos,
+                                    axis.text.x.cex=20,
+                                    n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
+                                    xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                    )
+              file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", s1, "_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
+              suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+              
+            }
+          }
         }
       }
     }
   }
-}
-
-
-#### Figure 4. Scatter plot, assay vs. age in years, case vs non-case, (Day 1), Day 29, and Day 57 if exists
-for (i in 1:length(plots)) {
-  for (d in 1:length(timesls[[2]])) { # Day 1, Day 29, Day 57
+  
+  
+  #### Figure 3. violin + box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists, by if Age >=65 and if at risk
+  for (i in 1:length(plots)) {
+    for (j in 1:length(bstatus)) {
+      for (k in 1:length(trt)) {
+        for (t in 1:length(timesls)) {
+          for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+            "Perprotocol")){
+            # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+    
+            y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+            y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 1.5)
+            rate.y.pos <- max(y.lim)
+            
+            prop.cex <- 6.9
+            ll.cex <- 7.5
+            
+            p <- violin_box_plot(dat=subset(longer_cor_data_plot3, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                  dat.sample=subset(plot.25sample3, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1),
+                                  ytitle=plots_ytitles[i],toptitle=plots_titles[i],
+                                  facetby=as.formula("age_risk_label~cohort_event"),
+                                  ylim=y.lim,
+                                  ybreaks=y.breaks,
+                                  facetopt = "grid",
+                                  prop.cex=prop.cex,
+                                  ll.cex=ll.cex,
+                                  rate.y.pos=rate.y.pos,
+                                  group.num=length(levels(longer_cor_data_plot3$cohort_event)),
+                                  n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
+                                  xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                  )
+            g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
+            file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_Age_Risk_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
+            suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 13.5))
+            
+            p <- violin_box_plot(dat=       subset(longer_cor_data_plot3, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                  dat.sample=subset(longer_cor_data_plot3, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                  ytitle=plots_ytitles[i],toptitle=plots_titles[i],
+                                  x="cohort_event",
+                                  xtitle="Cohort Event",
+                                  facetby=as.formula("age_risk_label~time"),
+                                  ylim=y.lim,
+                                  type="noline",
+                                  ybreaks=y.breaks,
+                                  facetopt = "grid",
+                                  prop.cex=prop.cex,
+                                  ll.cex=ll.cex,
+                                  pt.size=1.5,
+                                  rate.y.pos=rate.y.pos,
+                                  group.num=length(timesls[[t]]),
+                                  axis.text.x.cex=20,
+                                  n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
+                                  xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                  )
+            file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_Age_Risk_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
+            suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 13.5))
+          }
+        }
+      }
+    }
+  }
+  
+  
+  #### Figure 4. Scatter plot, assay vs. age in years, case vs non-case, (Day 1), Day 29, and Day 57 if exists
+  for (i in 1:length(plots)) {
+    for (d in 1:length(timesls[[2]])) { # Day 1, Day 29, Day 57
+      for (c in c("Vaccine","all")) {
+        for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
+          # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+          "Perprotocol")){
+          
+          ds.tmp <- subset(longer_cor_data, assay==plots[i] & time==timesls[[2]][d] & eval(as.name(case_set))==1)
+          ds.tmp$size <- with(ds.tmp, ifelse(cohort_event == "Non-Cases", 2.5, 4))
+          
+          if (timesls[[2]][d]==tail(timesls[[2]], n=1)) {ds.tmp <- ds.tmp %>% 
+            filter(!(time==tail(timesls[[2]], n=1) & cohort_event %in% c(case_grp1#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
+                                                                         ))) %>%
+            mutate(cohort_event = factor(cohort_event, levels = tail(levels(cohort_event), 2)))
+          }
+          
+          y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+          y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+          
+          # subset for vaccine arm
+          if (c=="Vaccine"){ds.tmp <- subset(ds.tmp, Trt=="Vaccine")}
+    
+          p <- ggplot(ds.tmp, aes(x = Age, y = value)) + 
+            facet_wrap(~Bserostatus+Trt, nrow = 1) + 
+            geom_point(alpha = 1, aes(color = cohort_event, shape = cohort_event, size = size)) + 
+            geom_smooth(aes(group = cohort_event, color = cohort_event), size=1.5, method = 'loess', se= F, span = 1.15) + 
+            scale_y_continuous(limits=y.lim, breaks=y.breaks, labels=math_format(10^.x)) +
+            scale_x_continuous(breaks = seq(from=18, to=86, by=17)) +
+            labs(title = paste0(plots_titles[i],": ",timesls[[2]][d]), x = 'Age (years)', y = plots_ytitles[i],
+                 color="Category", shape="Category") +
+            scale_color_manual(values = col_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
+            scale_shape_manual(values = shp_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
+            guides(size = "none") +
+            theme(plot.margin = unit(c(1, 1, 1, 1), "cm"), 
+                  panel.grid = element_blank(),
+                  legend.title = element_text(size=22),
+                  plot.title = element_text(hjust = 0.5),
+                  axis.text.x = element_text(size=ifelse(c=="Vaccine", 27, 19)))
+          
+          file_name <- paste0("scatter_",gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])),"_",c,"_",gsub(" ","",timesls[[2]][d]),"_", if(case_set=="severe") "severe_", study_name, ".pdf")
+          suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))
+        }
+      }
+    }
+  }
+  
+  #### Figure 5. Scatter plot, assay vs. days since Day 29/Day 1, cases only, 1 panel per assay
+  for (i in 1:length(plots)) {
     for (c in c("Vaccine","all")) {
       for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
-        # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
         "Perprotocol")){
+        # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
+        if(length(timepoints)==1) {
+          timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)] 
+        } else {timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1]}
         
-        ds.tmp <- subset(longer_cor_data, assay==plots[i] & time==timesls[[2]][d] & eval(as.name(case_set))==1)
-        ds.tmp$size <- with(ds.tmp, ifelse(cohort_event == "Non-Cases", 2.5, 4))
+        ds.tmp <- longer_cor_data %>%
+          filter(assay==plots[i]) %>%
+          filter(eval(as.name(case_set))==1) %>%
+          filter(!(time==timesince[2] & cohort_event %in% c(case_grp1#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
+                                                            ))) %>% 
+          # case only and remove "intercurrent" cases from the last timepoint
+          filter(time %in% timesince) %>%
+          filter(!cohort_event == "Non-Cases") %>% 
+          mutate(cohort_event = factor(cohort_event, levels = head(levels(cohort_event), -1)))
         
-        if (timesls[[2]][d]==tail(timesls[[2]], n=1)) {ds.tmp <- ds.tmp %>% 
-          filter(!(time==tail(timesls[[2]], n=1) & cohort_event %in% c(case_grp1#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
-                                                                       ))) %>%
-          mutate(cohort_event = factor(cohort_event, levels = tail(levels(cohort_event), 2)))
-        }
-        
+        xvar <- ifelse(length(timepoints)>1, paste0("EventTimePrimaryD", tinterm),
+                       ifelse(incNotMol=="IncludeNotMolecConfirmed", gsub(tpeak, "1", config.cor$EventTimePrimary), "EventTimePrimaryD1"))
+        xlb <- ifelse(length(timepoints)>1, paste0("Days Since the Day ", tinterm," Visit"), "Days Since the Day 1 Visit")
         y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
         y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
+        x.breaks <- seq(from=0, to=max(ds.tmp[, xvar], na.rm=T), by=floor(max(ds.tmp[, xvar], na.rm=T)/5))
+        x.lim <- c(min(ds.tmp[, xvar], na.rm=T), max(ds.tmp[, xvar], na.rm=T))
         
-        # subset for vaccine arm
+        # subset for vaccine baseline neg arm
         if (c=="Vaccine"){ds.tmp <- subset(ds.tmp, Trt=="Vaccine")}
-  
-        p <- ggplot(ds.tmp, aes(x = Age, y = value)) + 
+      
+        p <- ggplot(ds.tmp, aes(x = !!as.name(xvar), y = value, group = time)) + 
           facet_wrap(~Bserostatus+Trt, nrow = 1) + 
-          geom_point(alpha = 1, aes(color = cohort_event, shape = cohort_event, size = size)) + 
-          geom_smooth(aes(group = cohort_event, color = cohort_event), size=1.5, method = 'loess', se= F, span = 1.15) + 
+          geom_point(alpha = 1, aes(color = cohort_event, shape = cohort_event), size = 4) + 
+          geom_line(aes(group = Ptid)) + 
           scale_y_continuous(limits=y.lim, breaks=y.breaks, labels=math_format(10^.x)) +
-          scale_x_continuous(breaks = seq(from=18, to=86, by=17)) +
-          labs(title = paste0(plots_titles[i],": ",timesls[[2]][d]), x = 'Age (years)', y = plots_ytitles[i],
-               color="Category", shape="Category") +
+          scale_x_continuous(limits= x.lim, breaks = x.breaks) +
           scale_color_manual(values = col_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
           scale_shape_manual(values = shp_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
-          guides(size = "none") +
+          #guides(color = guide_legend(nrow=1)) +
+          labs(title = paste0(plots_titles[i], ": ", paste(timesince, collapse=" and ")), x = xlb, y = plots_ytitles[i],
+               color="Category", shape="Category") +
           theme(plot.margin = unit(c(1, 1, 1, 1), "cm"), 
                 panel.grid = element_blank(),
                 legend.title = element_text(size=22),
                 plot.title = element_text(hjust = 0.5),
                 axis.text.x = element_text(size=ifelse(c=="Vaccine", 27, 19)))
         
-        file_name <- paste0("scatter_",gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])),"_",c,"_",gsub(" ","",timesls[[2]][d]),"_", if(case_set=="severe") "severe_", study_name, ".pdf")
+        file_name <- paste0("scatter_daysince_",gsub("bind", "", gsub("pseudoneut","pnAb_",plots[i])), "_", c, "_", if(case_set=="severe") "severe_", study_name, ".pdf")
         suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))
       }
     }
   }
 }
 
-#### Figure 5. Scatter plot, assay vs. days since Day 29/Day 1, cases only, 1 panel per assay
-for (i in 1:length(plots)) {
-  for (c in c("Vaccine","all")) {
-    for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
-      "Perprotocol")){
-      # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
-      if(length(timepoints)==1) {
-        timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)] 
-      } else {timesince <- labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1]}
-      
-      ds.tmp <- longer_cor_data %>%
-        filter(assay==plots[i]) %>%
-        filter(eval(as.name(case_set))==1) %>%
-        filter(!(time==timesince[2] & cohort_event %in% c(case_grp1#,"Day 2-14 Cases", "Day 15-29 Cases", "Day 15-35 Cases"
-                                                          ))) %>% 
-        # case only and remove "intercurrent" cases from the last timepoint
-        filter(time %in% timesince) %>%
-        filter(!cohort_event == "Non-Cases") %>% 
-        mutate(cohort_event = factor(cohort_event, levels = head(levels(cohort_event), -1)))
-      
-      xvar <- ifelse(length(timepoints)>1, paste0("EventTimePrimaryD", tinterm),
-                     ifelse(incNotMol=="IncludeNotMolecConfirmed", gsub(tpeak, "1", config.cor$EventTimePrimary), "EventTimePrimaryD1"))
-      xlb <- ifelse(length(timepoints)>1, paste0("Days Since the Day ", tinterm," Visit"), "Days Since the Day 1 Visit")
-      y.breaks <- seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-      y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]))
-      x.breaks <- seq(from=0, to=max(ds.tmp[, xvar], na.rm=T), by=floor(max(ds.tmp[, xvar], na.rm=T)/5))
-      x.lim <- c(min(ds.tmp[, xvar], na.rm=T), max(ds.tmp[, xvar], na.rm=T))
-      
-      # subset for vaccine baseline neg arm
-      if (c=="Vaccine"){ds.tmp <- subset(ds.tmp, Trt=="Vaccine")}
-    
-      p <- ggplot(ds.tmp, aes(x = !!as.name(xvar), y = value, group = time)) + 
-        facet_wrap(~Bserostatus+Trt, nrow = 1) + 
-        geom_point(alpha = 1, aes(color = cohort_event, shape = cohort_event), size = 4) + 
-        geom_line(aes(group = Ptid)) + 
-        scale_y_continuous(limits=y.lim, breaks=y.breaks, labels=math_format(10^.x)) +
-        scale_x_continuous(limits= x.lim, breaks = x.breaks) +
-        scale_color_manual(values = col_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
-        scale_shape_manual(values = shp_val, labels = gsub(" Cases", ifelse(case_set=="severe", " Severe Cases", " Cases"), cohort_event_lb), drop=F) +
-        #guides(color = guide_legend(nrow=1)) +
-        labs(title = paste0(plots_titles[i], ": ", paste(timesince, collapse=" and ")), x = xlb, y = plots_ytitles[i],
-             color="Category", shape="Category") +
-        theme(plot.margin = unit(c(1, 1, 1, 1), "cm"), 
-              panel.grid = element_blank(),
-              legend.title = element_text(size=22),
-              plot.title = element_text(hjust = 0.5),
-              axis.text.x = element_text(size=ifelse(c=="Vaccine", 27, 19)))
-      
-      file_name <- paste0("scatter_daysince_",gsub("bind", "", gsub("pseudoneut","pnAb_",plots[i])), "_", c, "_", if(case_set=="severe") "severe_", study_name, ".pdf")
-      suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))
-    }
-  }
+if (COR == "D29variant") {
+ # Latin America, 5 PsV markers, baseline negative, vaccine
+  assay_la <- c("pseudoneutid50","pseudoneutid50_Zeta","pseudoneutid50_Mu","pseudoneutid50_Gamma","pseudoneutid50_Lambda")
+  longer_cor_data_plot1_la <- longer_cor_data_plot1 %>%
+    filter(assay %in% assay_la) %>%
+    mutate(assay = factor(assay, levels = assay_la))
+  
+  p <- violin_box_plot(dat=subset(longer_cor_data_plot1_la, Region==1 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"), 
+                       dat.sample=subset(longer_cor_data_plot1_la, Region==1 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"),
+                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in Latin America",
+                       x="assay",
+                       xtitle="Assay",
+                       facetby=as.formula(paste("~","cohort_event")),
+                       ylim=c(0, 3.1),
+                       type="noline",
+                       ybreaks=c(0, 1, 2, 3),
+                       prop.cex=5.4,
+                       ll.cex=5.4,
+                       pt.size=1.5,
+                       group.num=2,
+                       rate.y.pos=3,
+                       axis.text.x.cex=20,
+                       col=c("#1749FF","#FF6F1B","#810094","#378252","#FF5EBF"),
+                       shape=c(17, 17, 17, 17, 17),
+                       colby="assay", 
+                       shaby="assay",
+                       col_lb=c("Reference","Zeta","Mu","Gamma","Lambda"),
+                       shp_lb=c("Reference","Zeta","Mu","Gamma","Lambda"),
+                       n_rate="N_RespRate",
+                       xlabel=c("Reference","Zeta","Mu","Gamma","Lambda")
+  )
+  file_name <- "violinbox_pnAb_vaccine_bseroneg_Day29_NAb_LA.pdf"
+  suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+  
+  # Southern America, 3 PsV markers, baseline negative, vaccine
+  assay_sa <- c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta")
+  longer_cor_data_plot1_sa <- longer_cor_data_plot1 %>%
+    filter(assay %in% assay_sa) %>%
+    mutate(assay = factor(assay, levels = assay_sa))
+  
+  p <- violin_box_plot(dat=subset(longer_cor_data_plot1_sa, Region==2 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"), 
+                       dat.sample=subset(longer_cor_data_plot1_sa, Region==2 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"),
+                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in Southern America",
+                       x="assay",
+                       xtitle="Assay",
+                       facetby=as.formula(paste("~","cohort_event")),
+                       ylim=c(0, 3.1),
+                       type="noline",
+                       ybreaks=c(0, 1, 2, 3),
+                       prop.cex=5.4,
+                       ll.cex=5.4,
+                       pt.size=1.5,
+                       group.num=2,
+                       rate.y.pos=3,
+                       axis.text.x.cex=20,
+                       col=c("#1749FF","#D92321","#0AB7C9"),
+                       shape=c(17, 17, 17),
+                       colby="assay", 
+                       shaby="assay",
+                       col_lb=c("Reference","Delta","Beta"),
+                       shp_lb=c("Reference","Delta","Beta"),
+                       n_rate="N_RespRate",
+                       xlabel=c("Reference","Delta","Beta")
+  )
+  file_name <- "violinbox_pnAb_vaccine_bseroneg_Day29_NAb_SA.pdf"
+  suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+  
+  
+  # Northern America, 1 PsV marker, baseline negative, vaccine
+  assay_na <- c("pseudoneutid50")
+  longer_cor_data_plot1_na <- longer_cor_data_plot1 %>%
+    filter(assay %in% assay_na) %>%
+    mutate(assay = factor(assay, levels = assay_na))
+  
+  p <- violin_box_plot(dat=subset(longer_cor_data_plot1_na, Region==0 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"), 
+                       dat.sample=subset(longer_cor_data_plot1_na, Region==0 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"),
+                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in Northern America",
+                       x="assay",
+                       xtitle="Assay",
+                       facetby=as.formula(paste("~","cohort_event")),
+                       ylim=c(0, 3.1),
+                       type="noline",
+                       ybreaks=c(0, 1, 2, 3),
+                       prop.cex=5.4,
+                       ll.cex=5.4,
+                       pt.size=1.5,
+                       group.num=2,
+                       rate.y.pos=3,
+                       axis.text.x.cex=20,
+                       col=c("#1749FF"),
+                       shape=c(17),
+                       colby="assay", 
+                       shaby="assay",
+                       col_lb=c("Reference"),
+                       shp_lb=c("Reference"),
+                       n_rate="N_RespRate",
+                       xlabel=c("Reference")
+  )
+  file_name <- "violinbox_pnAb_vaccine_bseroneg_Day29_NAb_NA.pdf"
+  suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+  
 }
-

@@ -71,6 +71,15 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
       }
     }
     
+    for (region in c("LA", "SA", "NA")) {
+      for (marker in ("NAb" #,"Spike"
+                      )) {
+        		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_violin_variant.Rmd')), quiet = TRUE)
+        		      cat(res, sep = '\n')
+        		      cat("\\clearpage", sep = '\n')
+      }
+    }
+    
   } else {
     
     for (COR_postfix in COR_postfix_list){
