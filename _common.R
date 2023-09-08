@@ -736,7 +736,9 @@ if (!TRIAL %in% c("janssen_partA_VL", "moderna_boost")) {
 
 # create config$assay_metadata from llods etc if not existed
 if (is.null(config$assay_metadata)) {
-  assay_metadata = data.frame(assay=names(lloqs), lod=llods, lloq=lloqs, uloq=uloqs, llox_label=llox_labels)
+  assay_metadata = data.frame(assay=names(lloqs), lod=llods, lloq=lloqs, uloq=uloqs)
+  # llox_label is treated differently b/c it may not contain bindN
+  assay_metadata = cbinduneven(list(assay_metadata, llox_label=data.frame(llox_labels)))
 }
 
 
