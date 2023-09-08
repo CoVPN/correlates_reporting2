@@ -224,9 +224,12 @@ dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
 dat.long$LLoQ = with(dat.long, log10(lloqs[as.character(assay)]))
 dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
 
-if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE"){ # for ENSEMBLE, ID50 uses LLOQ, ADCP uses LLOD
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29variant"){ # for ENSEMBLE, ID50 uses LLOQ, ADCP uses LLOD
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", ifelse(assay=="ADCP", "LoD", "LoQ"))) 
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, ifelse(assay=="ADCP", LLoD, LLoQ))) 
+} else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant"){
+  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
+  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
 } else {
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))

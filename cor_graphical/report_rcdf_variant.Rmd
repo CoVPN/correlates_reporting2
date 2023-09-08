@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("Marker_RCDF_Day29_Vaccine_", marker, "_", region, ".png"))`}
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("Marker_RCDF_Day29_Vaccine_Bseroneg_", marker, "_", region, ".png"))`}
 
-\caption{`r paste0("Marker RCDF of Day 29 ", ifelse(marker=="NAb", "PsV-nAb ID50", "anti-Spike binding Ab"), " Markers in ", ifelse(region=="SA", "Southern America", ifelse(region=="LA", "Latin America", "")), ": Vaccine Arm.")`}
+\caption{`r paste0("Marker RCDF of Day 29 ", ifelse(marker=="NAb", "PsV-nAb ID50", "anti-Spike binding Ab"), " Markers in ", ifelse(region %in% c("SA", "SA_pooled), "South Africa", ifelse(region %in% c("LA", "LA_pooled), "Latin America", "")), ": Vaccine Arm.")`}
 \end{figure}
 
 \hphantom{Random text to appease the latex god}

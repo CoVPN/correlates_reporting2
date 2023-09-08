@@ -542,7 +542,7 @@ if (COR == "D29variant") {
                        n_rate="N_RespRate",
                        xlabel=c("Reference","Zeta","Mu","Gamma","Lambda")
   )
-  file_name <- "violinbox_pnAb_vaccine_bseroneg_Day29_NAb_LA.pdf"
+  file_name <- "violinbox_Day29_vaccine_bseroneg_NAb_LA.pdf"
   suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
   
   # Southern America, 3 PsV markers, baseline negative, vaccine
@@ -553,7 +553,7 @@ if (COR == "D29variant") {
   
   p <- violin_box_plot(dat=subset(longer_cor_data_plot1_sa, Region==2 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"), 
                        dat.sample=subset(longer_cor_data_plot1_sa, Region==2 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"),
-                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in Southern America",
+                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in South Africa",
                        x="assay",
                        xtitle="Assay",
                        facetby=as.formula(paste("~","cohort_event")),
@@ -575,7 +575,7 @@ if (COR == "D29variant") {
                        n_rate="N_RespRate",
                        xlabel=c("Reference","Delta","Beta")
   )
-  file_name <- "violinbox_pnAb_vaccine_bseroneg_Day29_NAb_SA.pdf"
+  file_name <- "violinbox_Day29_vaccine_bseroneg_NAb_SA.pdf"
   suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
   
   
@@ -587,7 +587,7 @@ if (COR == "D29variant") {
   
   p <- violin_box_plot(dat=subset(longer_cor_data_plot1_na, Region==0 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"), 
                        dat.sample=subset(longer_cor_data_plot1_na, Region==0 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"),
-                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in Northern America",
+                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in United States",
                        x="assay",
                        xtitle="Assay",
                        facetby=as.formula(paste("~","cohort_event")),
@@ -609,7 +609,7 @@ if (COR == "D29variant") {
                        n_rate="N_RespRate",
                        xlabel=c("Reference")
   )
-  file_name <- "violinbox_pnAb_vaccine_bseroneg_Day29_NAb_NA.pdf"
+  file_name <- "violinbox_Day29_vaccine_bseroneg_NAb_US.pdf"
   suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
   
 }

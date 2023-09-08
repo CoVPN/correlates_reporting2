@@ -47,20 +47,24 @@ assays_id50 <- c("pseudoneutid50",
 dat.cor.data.spider.id50 <- dat.cor.data.spider %>% 
     filter(time == "Day 29" & Region %in% c(1, 2) & Trt=="Vaccine") %>%
     ungroup() %>%
-    select(one_of(paste0("Day29", assays_id50), "Region", "wt.D29variant")) %>%
-    group_by(Region) %>%
+    select(one_of(paste0("Day29", assays_id50), "Region", "cohort_event", "wt.D29variant")) %>%
+    group_by(Region, cohort_event) %>%
     summarise(across(c(paste0("Day29",assays_id50)), ~ exp(sum(log(.x * wt.D29variant), na.rm=T) / sum(wt.D29variant)))) %>%
     unique() %>%
     as.data.frame()
 
-rownames(dat.cor.data.spider.id50) <- dat.cor.data.spider.id50$Region
+rownames(dat.cor.data.spider.id50) <- paste("Region",dat.cor.data.spider.id50$Region, dat.cor.data.spider.id50$cohort_event)
 dat.cor.data.spider.id50$Region <- NULL
+dat.cor.data.spider.id50$cohort_event <- NULL
 colnames(dat.cor.data.spider.id50) <- c("Reference","Beta","Delta","Gamma","Lambda","Mu","Zeta")
-dat.cor.data.spider.id50 <- dat.cor.data.spider.id50[, c("Reference","Gamma","Lambda","Mu","Zeta","Beta","Delta")]
 
 # stack with max and min values
-dat.cor.data.spider.id50 <- rbind(rep(1.1,ncol(dat.cor.data.spider.id50)), 
-                                  rep(1,ncol(dat.cor.data.spider.id50)), 
+max_min <- rbind(rep(1.1,ncol(dat.cor.data.spider.id50)), 
+                 rep(0.1,ncol(dat.cor.data.spider.id50)))
+colnames(max_min) <- c("Reference","Beta","Delta","Gamma","Lambda","Mu","Zeta")
+rownames(max_min) <- c("max", "min")
+
+dat.cor.data.spider.id50 <- rbind(max_min, 
                                   dat.cor.data.spider.id50)
 
 # setup pdf file
@@ -68,17 +72,17 @@ for (outtype in c("PDF")) {
     
     # Latin America
     if(outtype=="PDF"){
-        filename = paste0(save.results.to, "radar_plot_weighted_geomean_vaccine_NAb_LA.pdf")
+        filename = paste0(save.results.to, "radar_plot_weighted_geomean_Day29_vaccine_bseroneg_NAb_LA.pdf")
         #pdf(filename, width=9.1, height=8.5)
         pdf(filename, width=5.5, height=6)
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
     }
     
-    radarchart(dat.cor.data.spider.id50[c(1,2,3), c("Reference","Zeta","Mu","Gamma","Lambda")], 
-               axistype=1 , pcol="#1749FF",
+    radarchart(dat.cor.data.spider.id50[c(1,2,3,4), c("Reference","Zeta","Mu","Gamma","Lambda")], 
+               axistype=1 , pcol=c("#FF6F1B","#0AB7C9"),
                plwd=1.5, pty=c(15), plty=2,
                #custom the grid
-               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(1,1.1,0.025)), 
+               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(0.1,1.1,0.25)), 
                #label size
                vlcex=0.8,
                #title
@@ -89,8 +93,8 @@ for (outtype in c("PDF")) {
     par(xpd=NA)
     
     #legend
-    legend("bottom", legend=c("Latin America"), lty=5, pch=c(15),
-           col="#1749FF", bty="n", ncol=1, cex=0.7,
+    legend("bottom", legend=c("Peak-Peak Cases","Non-Cases"), lty=5, pch=c(15),
+           col=c("#FF6F1B","#0AB7C9"), bty="n", ncol=1, cex=0.7,
            inset=c(-0.25,0))
 
     if(outtype=="PDF") dev.off()
@@ -98,29 +102,29 @@ for (outtype in c("PDF")) {
     
     # Southern America
     if(outtype=="PDF"){
-        filename = paste0(save.results.to, "radar_plot_weighted_geomean_vaccine_NAb_SA.pdf")
+        filename = paste0(save.results.to, "radar_plot_weighted_geomean_Day29_vaccine_bseroneg_NAb_SA.pdf")
         #pdf(filename, width=9.1, height=8.5)
         pdf(filename, width=5.5, height=6)
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
     }
     
-    radarchart(dat.cor.data.spider.id50[c(1,2,4), c("Reference","Delta","Beta")], 
-               axistype=1 , pcol="#D92321",
+    radarchart(dat.cor.data.spider.id50[c(1,2,5,6), c("Reference","Delta","Beta")], 
+               axistype=1 , pcol=c("#FF6F1B","#0AB7C9"),
                plwd=1.5, pty=c(15, 17), plty=2,
                #custom the grid
-               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(1,1.1,0.025)), 
+               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(0.1,1.1,0.25)), 
                #label size
                vlcex=0.8,
                #title
-               title="Geometric Mean of PsV-nAb ID50 at Day 29, in Southern America",
+               title="Geometric Mean of PsV-nAb ID50 at Day 29, in South Africa",
                #title size
                cex.main=0.8)
     
     par(xpd=NA)
     
     #legend
-    legend("bottom", legend=c("Southern America"), lty=5, pch=c(17),
-           col="#D92321", bty="n", ncol=1, cex=0.7,
+    legend("bottom", legend=c("Peak-Peak Cases","Non-Cases"), lty=5, pch=c(17),
+           col=c("#FF6F1B","#0AB7C9"), bty="n", ncol=1, cex=0.7,
            inset=c(-0.25,0))
     
     if(outtype=="PDF") dev.off()

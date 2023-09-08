@@ -52,7 +52,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
         strata = "all_one",
         weight = "wt.D29",
         plot_title = paste0(
-          "Correlations of 3 ", t, " antibody markers in Southern Africa,\nCorr = Weighted Spearman Rank Correlation."
+          "Correlations of 3 ", t, " antibody markers in South Africa,\nCorr = Weighted Spearman Rank Correlation."
         ),
         column_labels = paste(t, assay_metadata_sub_sa$assay_label_short),
         height = max(1.3 * length(assay_metadata_sub_sa$assay) + 0.1, 5.5),
@@ -60,7 +60,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
         column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_sa$assay_label_short)))>40, 4.2, 4.3),
         filename = paste0(
           save.results.to, "/pairs_by_time_", t,
-          "_markers_",ifelse(trt==1, "vaccine", "placebo"), "_NAb_SA.pdf"
+          "_", ifelse(trt==1, "vaccine", "placebo"), "_bseroneg_NAb_SA.pdf"
         )
       )
       
@@ -85,7 +85,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
         column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_la$assay_label_short)))>40, 3.45, 4.3),
         filename = paste0(
           save.results.to, "/pairs_by_time_", t,
-          "_markers_", ifelse(trt==1, "vaccine", "placebo"), "_NAb_LA.pdf"
+          "_", ifelse(trt==1, "vaccine", "placebo"), "_bseroneg_NAb_LA.pdf"
         )
       )
     

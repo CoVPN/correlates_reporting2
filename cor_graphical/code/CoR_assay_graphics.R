@@ -379,7 +379,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                        common.legend = TRUE, legend = "bottom",
                        align = "h"),
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_NAb_SA.png"),
+                               "_", trt, "_Bseroneg_NAb_SA.png"),
              height = 7, width = 6.5)
       
     
@@ -416,7 +416,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                        common.legend = TRUE, legend = "bottom",
                        align = "h"),
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_NAb_LA.png"),
+                               "_", trt, "_Bseroneg_NAb_LA.png"),
              height = 7, width = 6.5)
       
       
@@ -451,7 +451,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
       if (length(assay_metadata_sub_sa$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
       ggsave(rcdf_list_sa_pooled,
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_NAb_SA_pooled.png"),
+                               "_", trt, "_Bseroneg_NAb_SA_pooled.png"),
              height = 7, width = 6.5)
       
       
@@ -488,7 +488,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
       if (length(assay_metadata_sub_la$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
       ggsave(rcdf_list_la_pooled,
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_NAb_LA_pooled.png"),
+                               "_", trt, "_Bseroneg_NAb_LA_pooled.png"),
              height = 7, width = 6.5)
       
     } # end of vaccine, placebo
