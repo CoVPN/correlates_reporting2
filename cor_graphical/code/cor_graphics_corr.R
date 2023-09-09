@@ -24,6 +24,7 @@ source(here::here("..", "_common.R"))
 
 ## load data 
 dat.cor.data.pair <- readRDS(here::here("data_clean", "cor_data_pair.rds")); dat.cor.data.pair$all_one <- 1 # as a placeholder for strata values
+config.cor <- config::get(config = COR)
 
 # path for figures and tables etc
 save.results.to = here::here("output")
@@ -43,14 +44,14 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
     for (trt in c(1)){
       assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
                                                                 "pseudoneutid50_Beta"))
-      dat.cor.data.pair.SA <- subset(dat.cor.data.pair, Region == 2 & Trt==1)
+      dat.cor.data.pair.SA <- subset(dat.cor.data.pair, Region == 2 & Trt==1) # 111, 13 Post-Peak Cases, 11 of 13 is Beta Cases, 2 no variant call
         
       covid_corr_pairplots(
         plot_dat = dat.cor.data.pair.SA,
         time = t,
         assays = assay_metadata_sub_sa$assay,
         strata = "all_one",
-        weight = "wt.D29",
+        weight = config.cor$wt,
         plot_title = paste0(
           "Correlations of 3 ", t, " antibody markers in South Africa,\nCorr = Weighted Spearman Rank Correlation."
         ),
@@ -68,14 +69,14 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                                                                 "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
                                                                 "pseudoneutid50_Lambda"))
       
-      dat.cor.data.pair.LA <- subset(dat.cor.data.pair, Region == 1 & Trt==1)
+      dat.cor.data.pair.LA <- subset(dat.cor.data.pair, Region == 1 & Trt==1) # 406, 260 Post-Peak Cases, 53 Reference, 71 Gamma, 43 Lambda, 37 Mu, 18 Zeta, 38 no variant call
         
       covid_corr_pairplots(
         plot_dat = dat.cor.data.pair.LA,
         time = t,
         assays = assay_metadata_sub_la$assay,
         strata = "all_one",
-        weight = "wt.D29",
+        weight = config.cor$wt,
         plot_title = paste0(
           "Correlations of 5 ", t, " antibody markers in Latin America,\nCorr = Weighted Spearman Rank Correlation."
         ),
