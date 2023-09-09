@@ -511,7 +511,7 @@ if (COR != "D29variant") {
   }
 }
 
-if (COR == "D29variant") {
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
  # Latin America, 5 PsV markers, baseline negative, vaccine
   assay_la <- c("pseudoneutid50","pseudoneutid50_Zeta","pseudoneutid50_Mu","pseudoneutid50_Gamma","pseudoneutid50_Lambda")
   longer_cor_data_plot1_la <- longer_cor_data_plot1 %>%
