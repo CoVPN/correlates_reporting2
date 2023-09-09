@@ -44,8 +44,10 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
     for (trt in c(1)){
       assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
                                                                 "pseudoneutid50_Beta"))
-      dat.cor.data.pair.SA <- subset(dat.cor.data.pair, Region == 2 & Trt==1) # 111, 13 Post-Peak Cases, 11 of 13 is Beta Cases, 2 no variant call
-        
+      dat.cor.data.pair.SA <- subset(dat.cor.data.pair, Region == 2 & Trt==1) 
+      # 111 rows, 13 Post-Peak Cases, 11 of 13 is Beta Cases, 2 no variant call
+      #           98 Non-Cases, all with pseudoneutid50, pseudoneutid50_Delta, pseudoneutid50_Beta
+      
       covid_corr_pairplots(
         plot_dat = dat.cor.data.pair.SA,
         time = t,
@@ -69,7 +71,9 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                                                                 "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
                                                                 "pseudoneutid50_Lambda"))
       
-      dat.cor.data.pair.LA <- subset(dat.cor.data.pair, Region == 1 & Trt==1) # 406, 260 Post-Peak Cases, 53 Reference, 71 Gamma, 43 Lambda, 37 Mu, 18 Zeta, 38 no variant call
+      dat.cor.data.pair.LA <- subset(dat.cor.data.pair, Region == 1 & Trt==1) 
+      # 406 rows, 260 Post-Peak Cases, 53 Reference, 71 Gamma, 43 Lambda, 37 Mu, 18 Zeta, 38 no variant call
+      #           146 Non-Cases, all with pseudoneutid50, pseudoneutid50_Gamma, pseudoneutid50_Zeta, pseudoneutid50_Mu, pseudoneutid50_Lambda
         
       covid_corr_pairplots(
         plot_dat = dat.cor.data.pair.LA,
