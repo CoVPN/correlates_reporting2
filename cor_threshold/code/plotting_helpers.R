@@ -71,7 +71,7 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   print(quantile(data[[marker]]))
   print(xlim)
   llod <- lloxs[a]
-  labels_info <- draw.x.axis.cor(xlim, lloxs[a], llox_labels[a], for.ggplot=T)
+  labels_info <- draw.x.axis.cor(xlim, lloxs[a], if(is.delta) "delta" else llox_labels[a], for.ggplot=T)
   print(labels_info)
   xx <- labels_info$ticks
   labels <- as.list(labels_info$labels)
