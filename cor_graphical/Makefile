@@ -76,16 +76,16 @@ else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_partA janssen_na_partA ja
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
 	Rscript code/cor_data_preprocess.R D29variant
-	Rscript code/cor_graphics_corr.R D29variant # pair
-    
-	Rscript code/cor_data_preprocess_2.R D29variant
-	Rscript code/CoR_assay_graphics.R D29variant # RCDF
+	Rscript code/cor_graphics_corr.R D29variant # pair, dat
     
 	Rscript code/cor_data_preprocess.R D29variant
-	Rscript code/cor_graphics_spider.R D29variant # spider
+	Rscript code/CoR_assay_graphics.R D29variant # RCDF, dat.long
+    
+	Rscript code/cor_data_preprocess.R D29variant
+	Rscript code/cor_graphics_spider.R D29variant # spider, dat.longer
 	
 	Rscript code/cor_data_preprocess.R D29variant
-	Rscript code/cor_graphics_violin_scatter.R D29variant # violin
+	Rscript code/cor_graphics_violin_scatter.R D29variant # violin, dat.longer
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/cor_data_preprocess.R D35 # Yiwen's
