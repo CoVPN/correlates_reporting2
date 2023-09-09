@@ -163,9 +163,26 @@ dat = dat %>%
   
 }
 
+if((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant"){
+  
+  # filter to baseline negative, vaccine ppt and
+  # split "peak-cases" by variant type
+  dat <- dat %>%
+    filter(Trt==1 & Bserostatus==0) %>%
+    mutate(cohort_event2 = case_when(as.character(cohort_event)=="Post-Peak Cases" & EventIndPrimaryIncludeNotMolecConfirmedD1_Anc==1 ~ "Post-Peak Cases-Reference",
+                                     as.character(cohort_event)=="Post-Peak Cases" & EventIndPrimaryIncludeNotMolecConfirmedD1_Delta==1 ~ "Post-Peak Cases-Delta",
+                                     as.character(cohort_event)=="Post-Peak Cases" & EventIndPrimaryIncludeNotMolecConfirmedD1_Beta==1 ~ "Post-Peak Cases-Beta",
+                                     as.character(cohort_event)=="Post-Peak Cases" & EventIndPrimaryIncludeNotMolecConfirmedD1_Zeta==1 ~ "Post-Peak Cases-Zeta",
+                                     as.character(cohort_event)=="Post-Peak Cases" & EventIndPrimaryIncludeNotMolecConfirmedD1_Mu==1 ~ "Post-Peak Cases-Mu",
+                                     as.character(cohort_event)=="Post-Peak Cases" & EventIndPrimaryIncludeNotMolecConfirmedD1_Gamma==1 ~ "Post-Peak Cases-Gamma",
+                                     as.character(cohort_event)=="Post-Peak Cases" & EventIndPrimaryIncludeNotMolecConfirmedD1_Lambda==1 ~ "Post-Peak Cases-Lambda",
+                                     TRUE ~ as.character(cohort_event)))
+  
+}
+
 dat <- dat[!is.na(dat$cohort_event),]
 dat.cor.subset <- dat %>%
-  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1", ifelse(grepl("variant", COR), "variant",""))))==1)
 
 write.csv(dat.cor.subset, file = here::here("data_clean", "cor_data_pair.csv"), row.names=F)
 saveRDS(dat.cor.subset, file = here::here("data_clean", "cor_data_pair.rds"))
@@ -328,9 +345,12 @@ if(length(timepoints)==1){ # one timepoint study: ph2.tpeak
     #dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 } else {# two timepoints study: ph2.tinterm
   dat.long.cor.subset <- dat.long %>%
-    dplyr::filter(!!as.name(paste0("ph2.D", tinterm, ifelse(grepl("start1", COR), "start1","")))==1)
+    dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1", ifelse(grepl("variant", COR), "variant",""))))==1)
+
 }
 
+write.csv(dat.long.cor.subset, file = here::here("data_clean", "long_cor_data.csv"), row.names=F)
+saveRDS(dat.long.cor.subset, file = here::here("data_clean", "long_cor_data.rds"))
 
 # long to longer format by time
 dat.longer.cor.subset <- dat.long.cor.subset %>%
@@ -342,8 +362,8 @@ dat.longer.cor.subset <- dat.long.cor.subset %>%
 #    non-cases is defined as +++ only for Moderna, but ++-/+++ at D29/57 for AZ and Sanofi
 #    for intercurrent cases at D57, Day 2-14 Cases & Day 15-35 Cases at D29, can't use ph2.D57/ph2.D29 because they are before D57/D29
 if(length(timepoints)>1) {
-dat.longer.cor.subset <- dat.longer.cor.subset %>% 
-  filter(!(time == paste0("Day", tpeak) & (!!as.name(paste0("ph2.D", tpeak)))==0))  # set "Day 57" in the ph2.D57 cohort  
+  dat.longer.cor.subset <- dat.longer.cor.subset %>% 
+    filter(!(time == paste0("Day", tpeak) & (!!as.name(paste0("ph2.D", tpeak)))==0))  # set "Day 57" in the ph2.D57 cohort  
 }
 
 if (study_name=="AZD1222") {
@@ -393,6 +413,41 @@ if (study_name=="PROFISCOV"){
                                                            TRUE ~ as.character(cohort_event))),
                                             levels = c(if(length(timepoints)!=1)"Early Post-Peak Cases", "Late Post-Peak Cases", "Non-Cases"))
 }
+
+
+
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant"){
+  # remove post case rows for variant strain assay but don't belong to a variant strain (e.g. EventIndPrimaryIncludeNotMolecConfirmedD1_Beta) 
+  # The only data points included in 'Zeta Cases' are from ptids with Zeta strain COVID-19
+  dat.longer.cor.subset$keep_day29 = 1
+  for (a in c("Anc","Delta","Beta","Zeta","Mu","Gamma","Lambda")){
+    dat.longer.cor.subset <- dat.longer.cor.subset %>%
+      mutate(assay = as.character(assay)) %>%
+      mutate(assay = ifelse(assay=="pseudoneutid50", "pseudoneutid50_Anc", assay)) %>%
+      mutate(keep_day29 = ifelse(assay==paste0("pseudoneutid50_", a) & cohort_event=="Post-Peak Cases" & 
+                                   time=="Day 29" & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", a)) == 0, 0, 
+                                 # flag the peak case rows for variant assay, but is not a corresponding variant case to 0
+                                 ifelse(assay==paste0("pseudoneutid50_", a) & cohort_event=="Non-Cases" & time=="Day 29" & is.na(value), 0, 
+                                        # flag all non-case rows without the data for the corresponding variant to 0
+                                        ifelse(time!="Day 29", 0,
+                                               # flag all non day 29 rows to 0
+                                               keep_day29)))) %>%
+      mutate(assay = factor(ifelse(assay=="pseudoneutid50_Anc", "pseudoneutid50", assay), levels = assays, labels = assays)) %>%
+      filter(keep_day29==1)
+    
+    table(dat.longer.cor.subset$keep_day29, dat.longer.cor.subset$assay, dat.longer.cor.subset$cohort_event)
+    dat.longer.cor.subset %>% 
+      group_by(Trt, Bserostatus, cohort_event, time, assay) %>%
+      summarise(n=n(), n_keep_day29 = sum(keep_day29, na.rm=T))
+  }
+  
+  # check if rows for cases not of the variant are not kept for that assay
+  for (a in c("Delta","Beta","Zeta","Mu","Gamma","Lambda")){
+    stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event=="Post-Peak Cases" & time=="Day29" & assay==paste0("pseudoneutid50_", a) & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", a)) == 0 & keep_day29 == 1)) == 0)
+  }
+  stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event=="Post-Peak Cases" & time=="Day29" & assay==paste0("pseudoneutid50") & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_Anc")) == 0 & keep_day29 == 1)) == 0)
+}
+
 # subsets for violin/line plots
 #### figure specific data prep
 # 1. define response rate:
