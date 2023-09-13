@@ -25,7 +25,7 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 source(here::here("..", "_common.R"))
 
 ## load data 
-dat.cor.data.spider <- readRDS(here::here("data_clean", "longer_cor_data_plot1.rds"))
+dat.cor.data.spider <- readRDS(here::here("data_clean", "cor_data.rds"))
 
 # path for figures and tables etc
 save.results.to = here::here("output")
@@ -44,8 +44,17 @@ assays_id50 <- c("pseudoneutid50",
                  "pseudoneutid50_Beta","pseudoneutid50_Delta",
                  "pseudoneutid50_Gamma","pseudoneutid50_Lambda","pseudoneutid50_Mu","pseudoneutid50_Zeta")
 
-dat.cor.data.spider.id50 <- dat.cor.data.spider %>% 
-    filter(time == "Day 29" & Region %in% c(1, 2) & Trt=="Vaccine") %>%
+dat.cor.data.spider.id50 <- dat.cor.data.spider %>%
+    filter(Region %in% c(1, 2) & Trt==1 & cohort_event2!="Post-Peak Cases") %>%
+    mutate(Day29pseudoneutid50 = ifelse(cohort_event2 %in% c("Post-Peak Cases-Reference", "Non-Cases"), Day29pseudoneutid50, NA),
+           Day29pseudoneutid50_Beta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Beta", "Non-Cases"), Day29pseudoneutid50_Beta, NA),
+           Day29pseudoneutid50_Delta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Delta", "Non-Cases"), Day29pseudoneutid50_Delta, NA),
+           Day29pseudoneutid50_Gamma = ifelse(cohort_event2 %in% c("Post-Peak Cases-Gamma", "Non-Cases"), Day29pseudoneutid50_Gamma, NA),
+           Day29pseudoneutid50_Lambda = ifelse(cohort_event2 %in% c("Post-Peak Cases-Lambda", "Non-Cases"), Day29pseudoneutid50_Lambda, NA),
+           Day29pseudoneutid50_Mu = ifelse(cohort_event2 %in% c("Post-Peak Cases-Mu", "Non-Cases"), Day29pseudoneutid50_Mu, NA),
+           Day29pseudoneutid50_Zeta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Zeta", "Non-Cases"), Day29pseudoneutid50_Zeta, NA)
+           ) %>%
+    # only keep variant data for the corresponding case strain, i.e, delete wild and delta values for beta cases
     ungroup() %>%
     select(one_of(paste0("Day29", assays_id50), "Region", "cohort_event", "wt.D29variant")) %>%
     group_by(Region, cohort_event) %>%
@@ -56,7 +65,8 @@ dat.cor.data.spider.id50 <- dat.cor.data.spider %>%
 rownames(dat.cor.data.spider.id50) <- paste("Region",dat.cor.data.spider.id50$Region, dat.cor.data.spider.id50$cohort_event)
 dat.cor.data.spider.id50$Region <- NULL
 dat.cor.data.spider.id50$cohort_event <- NULL
-colnames(dat.cor.data.spider.id50) <- c("Reference","Beta","Delta","Gamma","Lambda","Mu","Zeta")
+colnames(dat.cor.data.spider.id50) <- gsub("Day29pseudoneutid50", "Reference",
+                                           gsub("Day29pseudoneutid50_","",colnames(dat.cor.data.spider.id50)))
 
 # stack with max and min values
 max_min <- rbind(rep(1.1,ncol(dat.cor.data.spider.id50)), 

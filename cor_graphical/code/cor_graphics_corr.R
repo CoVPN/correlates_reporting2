@@ -23,7 +23,7 @@ source(here::here("code", "covid_corr_plot_functions.R"))
 source(here::here("..", "_common.R"))
 
 ## load data 
-dat.cor.data.pair <- readRDS(here::here("data_clean", "cor_data_pair.rds")); dat.cor.data.pair$all_one <- 1 # as a placeholder for strata values
+dat.cor.data.pair <- readRDS(here::here("data_clean", "cor_data.rds")); dat.cor.data.pair$all_one <- 1 # as a placeholder for strata values
 config.cor <- config::get(config = COR)
 
 # path for figures and tables etc

@@ -184,8 +184,8 @@ dat <- dat[!is.na(dat$cohort_event),]
 dat.cor.subset <- dat %>%
   dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1", ifelse(grepl("variant", COR), "variant",""))))==1)
 
-write.csv(dat.cor.subset, file = here::here("data_clean", "cor_data_pair.csv"), row.names=F)
-saveRDS(dat.cor.subset, file = here::here("data_clean", "cor_data_pair.rds"))
+write.csv(dat.cor.subset, file = here::here("data_clean", "cor_data.csv"), row.names=F)
+saveRDS(dat.cor.subset, file = here::here("data_clean", "cor_data.rds"))
 
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;
@@ -492,3 +492,20 @@ saveRDS(plot.25sample3, file = here("data_clean", "plot.25sample3.rds"))
 
 saveRDS(as.data.frame(dat.longer.cor.subset),
         file = here("data_clean", "longer_cor_data.rds"))
+
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
+  #### for Figure (variant). post peak case of specific strain vs non-case, (Day 1), Day 29 Day 57
+  groupby_vars4_variant=c("Trt", "Bserostatus", "cohort_event2", "time", "assay", "Region") # diff from figure 1, uses cohort_event2 instead of cohort_event, add region
+  
+  # define response rate
+  dat.longer.cor.subset.plot.variant <- get_resp_by_group(dat.longer.cor.subset, groupby_vars_variant)
+  dat.longer.cor.subset.plot.variant <- dat.longer.cor.subset.plot4 %>%
+    mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+           lb = ifelse(grepl("Day", time), lb, ""),
+           lbval = ifelse(grepl("Day", time), lbval, NA),
+           lb2 = ifelse(grepl("Day", time), lb2, ""),
+           lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
+  # unique(dat.longer.cor.subset.plot4[, c("N_RespRate","cohort_event2","assay","counts","Region")])
+  write.csv(dat.longer.cor.subset.plot.variant, file = here("data_clean", "longer_cor_data_plot_variant.csv"), row.names=F)
+  saveRDS(dat.longer.cor.subset.plot.variant, file = here("data_clean", "longer_cor_data_plot_variant.rds"))
+}

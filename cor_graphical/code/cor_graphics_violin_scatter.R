@@ -26,6 +26,9 @@ longer_cor_data_plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds")
 plot.25sample1 <- readRDS(here("data_clean", "plot.25sample1.rds"))
 longer_cor_data_plot3 <- readRDS(here("data_clean", "longer_cor_data_plot3.rds"))
 plot.25sample3 <- readRDS(here("data_clean", "plot.25sample3.rds"))
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
+  longer_cor_data_plot_variant <- readRDS(here("data_clean", "longer_cor_data_plot_variant.rds"))
+}
 
 ### variables for looping
 plots <- assays
@@ -514,16 +517,16 @@ if (COR != "D29variant") {
 if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
  # Latin America, 5 PsV markers, baseline negative, vaccine
   assay_la <- c("pseudoneutid50","pseudoneutid50_Zeta","pseudoneutid50_Mu","pseudoneutid50_Gamma","pseudoneutid50_Lambda")
-  longer_cor_data_plot1_la <- longer_cor_data_plot1 %>%
-    filter(assay %in% assay_la) %>%
-    mutate(assay = factor(assay, levels = assay_la))
+  longer_cor_data_plot_variant_la <- longer_cor_data_plot_variant %>%
+    filter(assay %in% assay_la & Region == 1 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29") %>%
+    mutate(assay = factor(assay, levels = assay_la, labels = subset(assay_metadata, assay %in% assay_la)$assay_label))
   
-  p <- violin_box_plot(dat=subset(longer_cor_data_plot1_la, Region==1 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"), 
-                       dat.sample=subset(longer_cor_data_plot1_la, Region==1 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"),
+  p <- violin_box_plot(dat=longer_cor_data_plot_variant_la, 
+                       dat.sample=longer_cor_data_plot_variant_la,
                        ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in Latin America",
-                       x="assay",
-                       xtitle="Assay",
-                       facetby=as.formula(paste("~","cohort_event")),
+                       x="cohort_event",
+                       xtitle="Cohort",
+                       facetby=as.formula(paste("~","assay")),
                        ylim=c(0, 3.1),
                        type="noline",
                        ybreaks=c(0, 1, 2, 3),
@@ -533,30 +536,30 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
                        group.num=2,
                        rate.y.pos=3,
                        axis.text.x.cex=20,
-                       col=c("#1749FF","#FF6F1B","#810094","#378252","#FF5EBF"),
-                       shape=c(17, 17, 17, 17, 17),
-                       colby="assay", 
-                       shaby="assay",
-                       col_lb=c("Reference","Zeta","Mu","Gamma","Lambda"),
-                       shp_lb=c("Reference","Zeta","Mu","Gamma","Lambda"),
+                       col=c("#FF6F1B","#0AB7C9"),
+                       shape=c(17, 17),
+                       colby="cohort_event",
+                       shaby="cohort_event",
+                       col_lb=c("Post-Peak Cases","Non-Cases"),
+                       shp_lb=c("Post-Peak Cases","Non-Cases"),
                        n_rate="N_RespRate",
-                       xlabel=c("Reference","Zeta","Mu","Gamma","Lambda")
+                       xlabel=c("Post-Peak Cases","Non-Cases")
   )
   file_name <- "violinbox_Day29_vaccine_bseroneg_NAb_LA.pdf"
   suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
   
   # Southern America, 3 PsV markers, baseline negative, vaccine
   assay_sa <- c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta")
-  longer_cor_data_plot1_sa <- longer_cor_data_plot1 %>%
-    filter(assay %in% assay_sa) %>%
-    mutate(assay = factor(assay, levels = assay_sa))
+  longer_cor_data_plot_variant_sa <- longer_cor_data_plot_variant %>%
+    filter(assay %in% assay_sa & Region == 2 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29") %>%
+    mutate(assay = factor(assay, levels = assay_sa, subset(assay_metadata, assay %in% assay_sa)$assay_label))
   
-  p <- violin_box_plot(dat=subset(longer_cor_data_plot1_sa, Region==2 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"), 
-                       dat.sample=subset(longer_cor_data_plot1_sa, Region==2 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"),
+  p <- violin_box_plot(dat=longer_cor_data_plot_variant_sa, 
+                       dat.sample=longer_cor_data_plot_variant_sa,
                        ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in South Africa",
-                       x="assay",
-                       xtitle="Assay",
-                       facetby=as.formula(paste("~","cohort_event")),
+                       x="cohort_event",
+                       xtitle="Cohort",
+                       facetby=as.formula(paste("~","assay")),
                        ylim=c(0, 3.1),
                        type="noline",
                        ybreaks=c(0, 1, 2, 3),
@@ -566,14 +569,14 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
                        group.num=2,
                        rate.y.pos=3,
                        axis.text.x.cex=20,
-                       col=c("#1749FF","#D92321","#0AB7C9"),
-                       shape=c(17, 17, 17),
-                       colby="assay", 
-                       shaby="assay",
-                       col_lb=c("Reference","Delta","Beta"),
-                       shp_lb=c("Reference","Delta","Beta"),
+                       col=c("#FF6F1B","#0AB7C9"),
+                       shape=c(17, 17),
+                       colby="cohort_event", 
+                       shaby="cohort_event",
+                       col_lb=c("Post-Peak Cases","Non-Cases"),
+                       shp_lb=c("Post-Peak Cases","Non-Cases"),
                        n_rate="N_RespRate",
-                       xlabel=c("Reference","Delta","Beta")
+                       xlabel=c("Post-Peak Cases","Non-Cases")
   )
   file_name <- "violinbox_Day29_vaccine_bseroneg_NAb_SA.pdf"
   suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
@@ -581,16 +584,16 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
   
   # Northern America, 1 PsV marker, baseline negative, vaccine
   assay_na <- c("pseudoneutid50")
-  longer_cor_data_plot1_na <- longer_cor_data_plot1 %>%
-    filter(assay %in% assay_na) %>%
-    mutate(assay = factor(assay, levels = assay_na))
+  longer_cor_data_plot_variant_na <- longer_cor_data_plot_variant %>%
+    filter(assay %in% assay_na & Region == 0 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29") %>%
+    mutate(assay = factor(assay, levels = assay_na, subset(assay_metadata, assay %in% assay_na)$assay_label))
   
-  p <- violin_box_plot(dat=subset(longer_cor_data_plot1_na, Region==0 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"), 
-                       dat.sample=subset(longer_cor_data_plot1_na, Region==0 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29"),
+  p <- violin_box_plot(dat=longer_cor_data_plot_variant_na, 
+                       dat.sample=longer_cor_data_plot_variant_na,
                        ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in United States",
-                       x="assay",
-                       xtitle="Assay",
-                       facetby=as.formula(paste("~","cohort_event")),
+                       x="cohort_event",
+                       xtitle="Cohort",
+                       facetby=as.formula(paste("~","assay")),
                        ylim=c(0, 3.1),
                        type="noline",
                        ybreaks=c(0, 1, 2, 3),
@@ -600,14 +603,14 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
                        group.num=2,
                        rate.y.pos=3,
                        axis.text.x.cex=20,
-                       col=c("#1749FF"),
-                       shape=c(17),
-                       colby="assay", 
-                       shaby="assay",
-                       col_lb=c("Reference"),
-                       shp_lb=c("Reference"),
+                       col=c("#FF6F1B","#0AB7C9"),
+                       shape=c(17, 17),
+                       colby="cohort_event", 
+                       shaby="cohort_event",
+                       col_lb=c("Post-Peak Cases","Non-Cases"),
+                       shp_lb=c("Post-Peak Cases","Non-Cases"),
                        n_rate="N_RespRate",
-                       xlabel=c("Reference")
+                       xlabel=c("Post-Peak Cases","Non-Cases")
   )
   file_name <- "violinbox_Day29_vaccine_bseroneg_NAb_US.pdf"
   suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))

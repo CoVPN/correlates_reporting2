@@ -427,6 +427,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                                     aes_string(
                                       x = tp, 
                                       colour = "assay",
+                                      group = "assay",
                                       weight = config.cor$wt
                                     )
       ) +
@@ -464,6 +465,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                                     aes_string(
                                       x = tp, 
                                       colour = "assay",
+                                      group = "assay",
                                       weight = config.cor$wt
                                     )
       ) +
