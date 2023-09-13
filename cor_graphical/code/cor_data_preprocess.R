@@ -495,11 +495,11 @@ saveRDS(as.data.frame(dat.longer.cor.subset),
 
 if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
   #### for Figure (variant). post peak case of specific strain vs non-case, (Day 1), Day 29 Day 57
-  groupby_vars4_variant=c("Trt", "Bserostatus", "cohort_event2", "time", "assay", "Region") # diff from figure 1, uses cohort_event2 instead of cohort_event, add region
+  groupby_vars_variant=c("Trt", "Bserostatus", "cohort_event2", "time", "assay", "Region") # diff from figure 1, uses cohort_event2 instead of cohort_event, add region
   
   # define response rate
   dat.longer.cor.subset.plot.variant <- get_resp_by_group(dat.longer.cor.subset, groupby_vars_variant)
-  dat.longer.cor.subset.plot.variant <- dat.longer.cor.subset.plot4 %>%
+  dat.longer.cor.subset.plot.variant <- dat.longer.cor.subset.plot.variant %>%
     mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
            lb = ifelse(grepl("Day", time), lb, ""),
            lbval = ifelse(grepl("Day", time), lbval, NA),
