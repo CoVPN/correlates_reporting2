@@ -401,7 +401,7 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
   breaks <- floor(rr[1]):ceiling(rr[2])
   
   # readjust limits to include all of the breaks
-  rr <- c(floor(rr[1]), ceiling(rr[2]))
+  rr <- c(floor(rr[1]), ceiling(rr[length(rr)]))
   
   if (max(breaks) - min(breaks) >= 6) {
     breaks <- breaks[breaks %% 2 == 0]
