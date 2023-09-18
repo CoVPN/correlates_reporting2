@@ -5,8 +5,8 @@ source(here::here("..", "_common.R"))
 #-----------------------------------------------
 source(here::here("code", "params.R"))
 source(here::here("code", "covid_corr_plot_functions.R"))
-library(ggpubr)
-library(scales)
+library(ggpubr) # for function theme_pubr()
+library(scales) # for label_math
 library(ggplot2)
 library(tidyr)
 
@@ -14,6 +14,10 @@ dat.long.cor.subset <- readRDS(here(
   "data_clean",
   "long_cor_data.rds"
 ))
+uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
+pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
+lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
+llods=assay_metadata$lod; names(llods)=assay_metadata$assay
 
 #dat.cor.subset <- readRDS(here(
 #  "data_clean",
@@ -33,7 +37,7 @@ print(paste0("save.results.to equals ", save.results.to))
 nums <- as.numeric(gsub("[^\\d]+", "", times, perl=TRUE))
 tps <- times[nums%in%tpeak]
 
-if (COR != "D29VLvariant") {
+if (COR != "D29variant") {
   #=========================================================================================================================
   # Reverse empirical cdf (rcdf) plots, 
   # stratified by treatment group and event status, in baseline negative or positive subjects
@@ -323,15 +327,9 @@ if (COR != "D29VLvariant") {
 
 # RCDF, SA, nab_reference, nab_Delta, nab_Beta, for vaccine and placebo, respectively
 # RCDF, LA, nab_reference, nab_Zeta, nab_Mu, nab_Gamma, nab_Lambda, for vaccine and placebo, respectively
-if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
+if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
   
   for (tp in c("Day29")){
-    #dat.long.cor.subset$TrtEvent <- 
-    #  factor(
-    #    paste(as.character(dat.long.cor.subset$Trt), 
-    #          as.character(dat.long.cor.subset$cohort_event),sep = ", "),
-    #    levels = c("Placebo, Non-Cases", "Placebo, Cases",
-    #               "Vaccine, Non-Cases", "Vaccine, Cases"))
     
     assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
                                                                  "pseudoneutid50_Beta"))
@@ -348,7 +346,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
     
     for (trt in c("Vaccine")) {
       
-      # SA, nab_reference, nab_Delta, nab_Beta, for vaccine and placebo, respectively
+      # SA, nab_reference, nab_Delta, nab_Beta, for vaccine
       for (aa in seq_along(assay_metadata_sub_sa$assay)) {
         rcdf_list_sa[[aa]] <- ggplot(subset(dat.long.cor.subset.SA, Trt == trt & assay == assay_metadata_sub_sa$assay[aa]), 
                                   aes_string(
@@ -383,8 +381,9 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
                                "_", trt, "_NAb_SA.png"),
              height = 7, width = 6.5)
+      
     
-      # LA, nab_reference, nab_Zeta, nab_Mu, nab_Gamma, nab_Lambda, for vaccine and placebo, respectively
+      # LA, nab_reference, nab_Zeta, nab_Mu, nab_Gamma, nab_Lambda, for vaccine
       for (aa in seq_along(assay_metadata_sub_la$assay)) {
         rcdf_list_la[[aa]] <- ggplot(subset(dat.long.cor.subset.LA, Trt == trt & assay == assay_metadata_sub_la$assay[aa]), 
                                   aes_string(
@@ -420,6 +419,81 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
                                "_", trt, "_NAb_LA.png"),
              height = 7, width = 6.5)
       
+      
+      ## SA, pooling all assays into one figure
+      rcdf_list_sa_pooled <- ggplot(subset(dat.long.cor.subset.SA %>%
+                                             mutate(assay = factor(assay, levels = c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta"))), 
+                                           Trt == trt & assay %in% assay_metadata_sub_sa$assay), 
+                                    aes_string(
+                                      x = tp, 
+                                      colour = "assay",
+                                      weight = config.cor$wt
+                                    )
+      ) +
+        geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
+        theme_pubr(legend = "none") +
+        ylab("Reverse ECDF") + xlab(paste0("Assay Level at Day ", gsub("[a-zA-Z]", "", tp))) +
+        scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
+        scale_color_manual(name = "", 
+                           values = c("#1749FF","#D92321","#0AB7C9"),
+                           labels = setNames(assay_metadata_sub_sa$assay_label_short, assay_metadata_sub_sa$assay)) +
+        guides(linetype = "none",
+               color = guide_legend(nrow = 3, byrow = TRUE)) +
+        ggtitle(paste0("RCDF at Day ", gsub("[a-zA-Z]", "", tp), ", in Southern America")) +
+        theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_sa$assay)>6, 6, 10)),
+              legend.text = element_text(size = 12),
+              legend.position = "bottom",
+              panel.grid.minor.y = element_line(),
+              panel.grid.major.y = element_line(),
+              axis.title = element_text(size = ifelse(length(assay_metadata_sub_sa$assay)>6, 8, 15)),
+              axis.text = element_text(size = 14))
+      
+      if (length(assay_metadata_sub_sa$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
+      ggsave(rcdf_list_sa_pooled,
+             filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
+                               "_", trt, "_NAb_SA_pooled.png"),
+             height = 7, width = 6.5)
+      
+      
+      ## LA, pooling all assays into one figure
+      rcdf_list_la_pooled <- ggplot(subset(dat.long.cor.subset.LA %>%
+                                             mutate(assay = factor(assay, levels = c("pseudoneutid50", "pseudoneutid50_Zeta",
+                                                                                     "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
+                                                                                     "pseudoneutid50_Lambda"))), 
+                                           Trt == trt & assay %in% assay_metadata_sub_la$assay), 
+                                    aes_string(
+                                      x = tp, 
+                                      colour = "assay",
+                                      weight = config.cor$wt
+                                    )
+      ) +
+        geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
+        theme_pubr(legend = "none") +
+        ylab("Reverse ECDF") + xlab(paste0("Assay Level at Day ", gsub("[a-zA-Z]", "", tp))) +
+        scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
+        scale_color_manual(name = "", 
+                           values = c("#1749FF","#FF6F1B","#810094","#378252","#FF5EBF"),
+                           labels = setNames(assay_metadata_sub_la$assay_label_short, assay_metadata_sub_la$assay)) +
+        guides(linetype = "none",
+               color = guide_legend(nrow = 3, byrow = TRUE)) +
+        ggtitle(paste0("RCDF at Day ", gsub("[a-zA-Z]", "", tp), ", in Latin America")) +
+        theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_la$assay)>6, 6, 10)),
+              legend.text = element_text(size = 10),
+              legend.position = "bottom",
+              panel.grid.minor.y = element_line(),
+              panel.grid.major.y = element_line(),
+              axis.title = element_text(size = ifelse(length(assay_metadata_sub_la$assay)>6, 8, 15)),
+              axis.text = element_text(size = 14))
+      
+      if (length(assay_metadata_sub_la$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
+      ggsave(rcdf_list_la_pooled,
+             filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
+                               "_", trt, "_NAb_LA_pooled.png"),
+             height = 7, width = 6.5)
+      
     } # end of vaccine, placebo
   } # end of tp
+  
+  
+  
 }

@@ -150,21 +150,24 @@ thresholdTMLE <- function(data_full, node_list, thresholds = NULL, biased_sampli
     ##############
     # non-monotone
     
-    # Y <- data[[node_list$Y]]
-    # A <- data[[node_list$A]]
-    # no_event <- sapply(thresholds, function(v) {
-    #   all(Y[A >= v] == 0)
-    # })
-    # no_event <- as.vector(no_event)
-    # attr(estimates_upper, "no_event") <- as.vector(no_event)
-    # estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(3))] <- NA
-    # estimates_upper[, intersect(1:ncol(estimates_upper), c(4, 6))] <- pmax(0, estimates_upper[, intersect(1:ncol(estimates_upper), c(4, 6))])
-    # estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(5))] <- NA
-    # if (ncol(estimates_upper) == 7) {
-    #   estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(7))] <- NA
-    # }
-    # setattr(estimates_upper, "IC", IC_IPCW)
-    estimates_upper=NULL
+    if (!config$threshold_monotone_only) {
+      Y <- data[[node_list$Y]]
+      A <- data[[node_list$A]]
+      no_event <- sapply(thresholds, function(v) {
+        all(Y[A >= v] == 0)
+      })
+      no_event <- as.vector(no_event)
+      attr(estimates_upper, "no_event") <- as.vector(no_event)
+      estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(3))] <- NA
+      estimates_upper[, intersect(1:ncol(estimates_upper), c(4, 6))] <- pmax(0, estimates_upper[, intersect(1:ncol(estimates_upper), c(4, 6))])
+      estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(5))] <- NA
+      if (ncol(estimates_upper) == 7) {
+        estimates_upper[no_event, intersect(1:ncol(estimates_upper), c(7))] <- NA
+      }
+      setattr(estimates_upper, "IC", IC_IPCW)
+    } else {
+      estimates_upper=NULL
+    }
     
     ##############
     # monotone
