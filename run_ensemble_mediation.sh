@@ -1,10 +1,10 @@
-for run_survtmle in TRUE
+for run_survtmle in TRUE FALSE
   do
   for impute_placebo in TRUE
     do
-    for truncate_tf_day in FALSE
+    for truncate_tf_day in TRUE
     do
-      for compatible_total_ve in TRUE
+      for compatible_total_ve in FALSE
       do
       for outcome in D29IncludeNotMolecConfirmed D29SevereIncludeNotMolecConfirmed D29ModerateIncludeNotMolecConfirmed
         do

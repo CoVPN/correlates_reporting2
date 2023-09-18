@@ -11,7 +11,10 @@ data <- dat.mock
 
 tf_Day <- tfinal.tpeak
 if(Args[5] == "TRUE"){
-  tf_Day <- round(tf_Day * 0.75)
+  TRIAL <- Sys.getenv("TRIAL")
+  if(TRIAL == "janssen_pooled_partA"){
+    tf_Day <- 101
+  }
 }
 
 compatible_total_ve <- (Args[6] == "TRUE")
@@ -172,7 +175,7 @@ if(run_survtmle){
       maxIter = 2, 
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0.9
+      truncateH = 0.99
     )
     print(fit1)
   }
@@ -238,7 +241,7 @@ for (marker in this_run_assays) {
       maxIter = 2,
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0.9
+      truncateH = 0.99
     )
     set.seed(404)
     fit1_0 <- survtmle::hazard_tmle(
@@ -262,7 +265,7 @@ for (marker in this_run_assays) {
       maxIter = 2,
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0.9
+      truncateH = 0.99
     )
     print(fit1_0)
     print(fit1_1)
@@ -294,7 +297,7 @@ for (marker in this_run_assays) {
       maxIter = 2,
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0.9
+      truncateH = 0.99
     )
     print(fit2)
     fit <- compute_mediation_params(fit1, fit2)
