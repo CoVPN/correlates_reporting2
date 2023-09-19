@@ -13,7 +13,7 @@ language:
 # abbreviated cor report
 rmd_files: [
   "index_cor.Rmd",
-  "cop_mediation/report.Rmd",
+  "cop_mediation/report_ensemble_severe.Rmd",
   "references.Rmd"
 ]
 
