@@ -5,8 +5,8 @@ library(here)
 
 all_COR <- c(
 	"D29IncludeNotMolecConfirmed", 
-	"D29SevereIncludeNotMolecConfirmed", 
-	"D29ModerateIncludeNotMolecConfirmed"
+	"D29SevereIncludeNotMolecConfirmed"#, 
+	#"D29ModerateIncludeNotMolecConfirmed"
 )
 
 all_TRIAL <- c(
