@@ -43,9 +43,9 @@ all_MARKERS <- c(
 full_result <- NULL
 for(marker in all_MARKERS){
   message(paste0("trial: ", TRIAL))
-  message(paste0("run_survtmle: ", run_survtmle)
+  message(paste0("run_survtmle: ", run_survtmle))
   message(paste0("marker: ", marker))
-  
+
   this_result <- readRDS(
     here::here("cop_mediation/output", 
       paste0(
