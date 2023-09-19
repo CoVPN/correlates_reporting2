@@ -14,7 +14,7 @@ all_TRIAL <- c(
   "janssen_la_partA"
 )
 
-for(run_survtmle in c(TRUE, FALSE)){
+for(run_survtmle in c(TRUE)){
 	cat(paste0("## ", ifelse(run_survtmle, "Survival endpoint", "Binary endpoint")))
 	for(COR in all_COR){
 		for(TRIAL in all_TRIAL){
