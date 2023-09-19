@@ -148,7 +148,7 @@ if(run_survtmle){
   sl_library <- c(
     "SL.mean",
     "SL.glm",
-    "SL.glmnet",
+    # "SL.glmnet",
     "SL.xgboost",
     "SL.ranger",
     "SL.gam",
