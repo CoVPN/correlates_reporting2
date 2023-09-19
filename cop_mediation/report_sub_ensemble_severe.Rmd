@@ -50,6 +50,7 @@ for(marker in all_MARKERS){
           ifelse(run_survtmle, "survival_", "binary_"),
         "impute_", marker, ".rds", collapse = ""
       )
+  message(file_name)
   this_result <- readRDS(
     here::here("cop_mediation/output", 
       file_name
