@@ -16,12 +16,15 @@ all_TRIAL <- c(
   "janssen_na_partA"
 )
 
-for(COR in all_COR){
-	for(TRIAL in all_TRIAL){
-		res = knitr::knit_child(
-	  	  here::here('cop_mediation', 'report_sub_ensemble_severe.Rmd')
-		)
-	  cat(res, sep = '\n')
+for(run_survtmle in c(TRUE, FALSE)){
+	cat(paste0("## ", ifelse(run_survtmle, "Survival endpoint", "Binary endpoint")))
+	for(COR in all_COR){
+		for(TRIAL in all_TRIAL){
+			res = knitr::knit_child(
+		  	  here::here('cop_mediation', 'report_sub_ensemble_severe.Rmd')
+			)
+		  cat(res, sep = '\n')
+		}
 	}
 }
 ```

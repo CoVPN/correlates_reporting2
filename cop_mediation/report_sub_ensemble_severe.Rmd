@@ -28,7 +28,7 @@ if(TRIAL == "janssen_pooled_partA"){
 
 ```
 
-## `r title`
+### `r title`
 
 This section contains results from the `r info`.
 
@@ -46,8 +46,9 @@ for(marker in all_MARKERS){
   this_result <- readRDS(
     here::here("cop_mediation/output", 
       paste0(
-        "full_result_", TRIAL, "_", COR, "_", 
-        "survival_impute_", marker, ".rds", collapse = ""
+        "full_result_", TRIAL, "_", COR, "_",
+          ifelse(run_survtmle, "survival_", "binary_"),
+        "impute_", marker, ".rds", collapse = ""
       )
     )
   )
