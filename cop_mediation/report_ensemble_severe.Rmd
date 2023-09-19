@@ -11,9 +11,7 @@ all_COR <- c(
 
 all_TRIAL <- c(
   "janssen_pooled_partA",
-  "janssen_la_partA",
-  "janssen_sa_partA",
-  "janssen_na_partA"
+  "janssen_la_partA"
 )
 
 for(run_survtmle in c(TRUE, FALSE)){

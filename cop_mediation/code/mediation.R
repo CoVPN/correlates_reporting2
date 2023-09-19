@@ -52,7 +52,7 @@ if(study_name == "ENSEMBLE"){
   cut_size <- 7
   # impute_placebo_to_lod_over_2 <- TRUE
 }
-
+  
 
 time_long <- paste0("Day", config.cor$tpeak)
 time_short <- paste0("D", config.cor$tpeak)
@@ -175,7 +175,7 @@ if(run_survtmle){
       maxIter = 2, 
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0.99
+      truncateH = 0.95
     )
     print(fit1)
   }
@@ -241,7 +241,7 @@ for (marker in this_run_assays) {
       maxIter = 2,
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0.99
+      truncateH = 0.95
     )
     set.seed(404)
     fit1_0 <- survtmle::hazard_tmle(
@@ -265,7 +265,7 @@ for (marker in this_run_assays) {
       maxIter = 2,
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0.99
+      truncateH = 0.95
     )
     print(fit1_0)
     print(fit1_1)
@@ -297,7 +297,7 @@ for (marker in this_run_assays) {
       maxIter = 2,
       gtol = 0.05,
       gtolCens = 0.05,
-      truncateH = 0.99
+      truncateH = 0.95
     )
     print(fit2)
     fit <- compute_mediation_params(fit1, fit2)
