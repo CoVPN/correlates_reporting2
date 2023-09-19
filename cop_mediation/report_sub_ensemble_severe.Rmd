@@ -45,14 +45,14 @@ for(marker in all_MARKERS){
   message(paste0("trial: ", TRIAL))
   message(paste0("run_survtmle: ", run_survtmle))
   message(paste0("marker: ", marker))
-
-  this_result <- readRDS(
-    here::here("cop_mediation/output", 
-      paste0(
+  file_name <- paste0(
         "full_result_", TRIAL, "_", COR, "_",
           ifelse(run_survtmle, "survival_", "binary_"),
         "impute_", marker, ".rds", collapse = ""
       )
+  this_result <- readRDS(
+    here::here("cop_mediation/output", 
+      file_name
     )
   )
 
