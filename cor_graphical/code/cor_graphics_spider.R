@@ -62,6 +62,9 @@ dat.cor.data.spider.id50 <- dat.cor.data.spider %>%
     unique() %>%
     as.data.frame()
 
+# those without any data will have a weighted geomean equal to 1, set these to NA
+dat.cor.data.spider.id50[dat.cor.data.spider.id50 == 1] <- NA
+
 rownames(dat.cor.data.spider.id50) <- paste("Region",dat.cor.data.spider.id50$Region, dat.cor.data.spider.id50$cohort_event)
 dat.cor.data.spider.id50$Region <- NULL
 dat.cor.data.spider.id50$cohort_event <- NULL

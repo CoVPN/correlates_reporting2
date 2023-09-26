@@ -10,10 +10,12 @@ library(here)
 library(dplyr)
 library(tidyverse)
 library(stringr)
-uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
-pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
-lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
-llods=assay_metadata$lod; names(llods)=assay_metadata$assay
+if (study_name %in% c("ENSEMBLE","VAT08m")){
+  uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
+  pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
+  lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
+  llods=assay_metadata$lod; names(llods)=assay_metadata$assay
+}
 #dat.mock <- read.csv(here("..", "data_clean", data_name))# superceded by _common.R data read
 
 ## moved to _common.R
