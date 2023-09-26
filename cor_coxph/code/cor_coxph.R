@@ -15,10 +15,16 @@
 #Sys.setenv(TRIAL = "hvtn705secondNonRSA"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_na_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 
 print(date())
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) # dat.mock is made
+
+# tmp, just so that we can add MIWilson to renv
+library(MIWilson)
+phats = c(0.2, 0.23, 0.25)
+mi_wilson_phat(phats, 100, 0.99, FALSE)
 
 # hack to bring in uncheck commited changes to copcor
 # source("~/copcor/R/plotting.R")

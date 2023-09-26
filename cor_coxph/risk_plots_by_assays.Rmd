@@ -2,7 +2,8 @@
 if (TRIAL=="janssen_partA_VL") {
     cat("\\subsubsection{",a,"}")
 } else {
-  cat  ("\\subsection{",a,"}")
+  message  ("\\subsection{",a,"}")
+  cat  ("### ",a)
 }
     
 ```  

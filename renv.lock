@@ -79,6 +79,18 @@
       "Repository": "CRAN",
       "Hash": "0e59129db205112e3963904db67fd0dc"
     },
+    "MIWilson": {
+      "Package": "MIWilson",
+      "Version": "1.0.1",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "hungf8342",
+      "RemoteRepo": "MIWilson",
+      "RemoteRef": "master",
+      "RemoteSha": "0d73f415bf39af7bc47a28438e636c2a5d6fb75e",
+      "Hash": "acd4ba33a2f43a56c02e4100fb290261"
+    },
     "Matrix": {
       "Package": "Matrix",
       "Version": "1.3-4",
@@ -497,15 +509,15 @@
     },
     "copcor": {
       "Package": "copcor",
-      "Version": "2023.8-31",
+      "Version": "2023.9-24",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "CoVPN",
       "RemoteRepo": "copcor",
       "RemoteRef": "main",
-      "RemoteSha": "5877379ee8f29520c4a0a8b2f0cfa6a7806c90ca",
-      "Hash": "fd1c759612a990529d6b1bba88d37978"
+      "RemoteSha": "bb1b6949ab5302cbf42b5009fc467ea38613f384",
+      "Hash": "9e85e3df53b26229d5c2520e28aa6d9b"
     },
     "corrplot": {
       "Package": "corrplot",
@@ -1091,15 +1103,15 @@
     },
     "kyotil": {
       "Package": "kyotil",
-      "Version": "2023.8-27",
+      "Version": "2023.9-20",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "youyifong",
       "RemoteRepo": "kyotil",
       "RemoteRef": "master",
-      "RemoteSha": "c820a6cd5f20d51843881fb4a2bc51063f0056c0",
-      "Hash": "131175b3bb45873dc67815d5e3fc63b6"
+      "RemoteSha": "f4c4e7fd4cdc2a35188d0b24113a4c187cc86299",
+      "Hash": "1d8a5d2aeacea66a9d8afa538eff4b4f"
     },
     "labeling": {
       "Package": "labeling",
