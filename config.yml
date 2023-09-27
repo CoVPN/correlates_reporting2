@@ -1068,6 +1068,7 @@ D29IncludeNotMolecConfirmedstart1:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
+# VL
 D29variant:
   ph1: ph1.D29
   ph2: ph2.D29variant
