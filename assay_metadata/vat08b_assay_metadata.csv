@@ -1,0 +1,16 @@
+panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates
+bindSpike,1,bindSpike,8,14400000,0.3076,10.8424,Binding Antibody to Spike D614,Anti Spike IgG D614 (AU/ml),lloq,1
+bindSpike,6,bindSpike_BA.1,8,14400000,0.3076,10.8424,Binding Antibody to Spike BA.1,Anti Spike IgG BA.1 (AU/ml),lloq,1
+bindSpike,2,bindSpike_Gamma,8,14400000,0.3076,10.8424,Binding Antibody to Spike Gamma,Anti Spike IgG Gamma (AU/ml),lloq,0
+bindSpike,3,bindSpike_Alpha,8,14400000,0.3076,10.8424,Binding Antibody to Spike Alpha,Anti Spike IgG Alpha (AU/ml),lloq,0
+bindSpike,4,bindSpike_Beta,8,14400000,0.3076,10.8424,Binding Antibody to Spike Beta,Anti Spike IgG Beta (AU/ml),lloq,0
+bindSpike,5,bindSpike_Delta,8,14400000,0.3076,10.8424,Binding Antibody to Spike Delta,Anti Spike IgG Delta (AU/ml),lloq,0
+bindRBD,1,bindRBD,5,5800000,0.3076,14.0858,Binding Antibody to RBD D614,Anti RBD IgG D614 (AU/ml),lloq,1
+bindRBD,6,bindRBD_BA.1,5,5800000,0.3076,14.0858,Binding Antibody to RBD BA.1,Anti RBD IgG BA.1 (AU/ml),lloq,1
+bindRBD,2,bindRBD_Gamma,5,5800000,0.3076,14.0858,Binding Antibody to RBD Gamma,Anti RBD IgG Gamma (AU/ml),lloq,0
+bindRBD,3,bindRBD_Alpha,5,5800000,0.3076,14.0858,Binding Antibody to RBD Alpha,Anti RBD IgG Alpha (AU/ml),lloq,0
+bindRBD,4,bindRBD_Beta,5,5800000,0.3076,14.0858,Binding Antibody to RBD Beta,Anti RBD IgG Beta (AU/ml),lloq,0
+bindRBD,5,bindRBD_Delta,5,5800000,0.3076,14.0858,Binding Antibody to RBD Delta,Anti RBD IgG Delta (AU/ml),lloq,0
+,,bindN,9,14000000,0.3076,23.4711,Binding Antibody to N,Anti N IgG (AU/ml),lloq,0
+id50,1,pseudoneutid50,7.843137255,220862.7451,2.42,2.42,PsV Neutralization to D614G,Pseudovirus-nAb D614G (IU50/ml),lloq,1
+id50,2,pseudoneutid50_BA.1,6.274509804,3281.568627,2.42,2.42,PsV Neutralization to BA.1,Pseudovirus-nAb BA.1 (IU50/ml),lloq,1
