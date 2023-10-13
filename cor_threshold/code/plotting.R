@@ -18,20 +18,10 @@ source(here::here("code", "tmleThresh.R"))
 source(here::here("code", "plotting_helpers.R"))
 ident <- function(x) x
 
-# Plotting arguments
 
-
-# for (key in keys) {
-#     above <- F
-#   get_plot(key, simultaneous_CI = F, monotone = F, above)
-#   get_plot(key, simultaneous_CI = T, monotone = F, above)
-#   get_plot(key, simultaneous_CI = F, monotone = T,above)
-#   get_plot(key, simultaneous_CI = T, monotone = T,above)
-#   generate_tables(key, num_show = 10, monotone = F,above)
-#   generate_tables(key, num_show = 10, monotone = T,above)
-#   #get_inverse_plot(marker, F)
-#   #get_inverse_plot(marker, T)
-# }
+# need to redefine markers since not all markers have thresholds
+files = dir(path=here::here('output', TRIAL, COR, "data_clean", "Thresholds_by_marker"), pattern="thresholds_.*\\.csv")
+markers = sub(".csv", "", sub("thresholds_","",files))
 
 
 for (marker in markers) {

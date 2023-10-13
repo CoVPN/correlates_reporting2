@@ -102,7 +102,8 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
     )
   
   if(above  && max_thresh < log10(uloqs[a]) - 0.05) {
-    plot <- plot + geom_vline(xintercept = max_thresh, colour = "red", linetype = "longdash")
+		  # comment out the following line to skip red lines since it shows up in some plots and not others and it is not clear what the x values are for the red lines
+#    plot <- plot + geom_vline(xintercept = max_thresh, colour = "red", linetype = "longdash")
   } 
   # comment out till we get risk_plac
   # else if(!above && risk_plac<= max(v$data$upper, na.rm = T)) {

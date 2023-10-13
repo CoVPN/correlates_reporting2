@@ -125,9 +125,13 @@ for(COR in CORs){
   folder_var <- paste0("cor_threshold/output/",TRIAL,"/", COR)
   
   time <- paste0(DayPrefix, tpeak)
-  markers <- paste0(DayPrefix, tpeak, assays)
   
-  if (TRIAL=='moderna_boost') markers = c(markers, paste0("DeltaBD29overBD1", assays))
+  # need to define markers this way since not all markers have thresholds
+  files = dir(path=here::here('cor_threshold', 'output', TRIAL, COR, "data_clean", "Thresholds_by_marker"), pattern="thresholds_.*\\.csv")
+  markers = sub(".csv", "", sub("thresholds_","",files))
+
+  # markers <- paste0(DayPrefix, tpeak, assays)
+  # if (TRIAL=='moderna_boost') markers = c(markers, paste0("DeltaBD29overBD1", assays))
 
   
   ## non-monotone
@@ -192,8 +196,14 @@ for(COR in CORs){
   countAfter1 <- COR == "D29start1"
   
   time <- paste0(DayPrefix, tpeak)
-  markers <- paste0(DayPrefix, tpeak, assays)
   
+  # need to define markers this way since not all markers have thresholds
+  files = dir(path=here::here('cor_threshold', 'output', TRIAL, COR, "data_clean", "Thresholds_by_marker"), pattern="thresholds_.*\\.csv")
+  markers = sub(".csv", "", sub("thresholds_","",files))
+
+  # markers <- paste0(DayPrefix, tpeak, assays)
+  # if (TRIAL=='moderna_boost') markers = c(markers, paste0("DeltaBD29overBD1", assays))
+
   
   ## non-monotone
   monotone <- FALSE
