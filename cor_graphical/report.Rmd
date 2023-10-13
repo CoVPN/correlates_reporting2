@@ -71,7 +71,7 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
       }
     }
     
-    for (region in c("LA", "SA", "NA")) {
+    for (region in c("LA", "SA", "US")) {
       for (marker in ("NAb" #,"Spike"
                       )) {
         		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_violin_variant.Rmd')), quiet = TRUE)

@@ -14,11 +14,12 @@ dat.long.cor.subset <- readRDS(here(
   "data_clean",
   "long_cor_data.rds"
 ))
-uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
-pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
-lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
-llods=assay_metadata$lod; names(llods)=assay_metadata$assay
-
+if (study_name %in% c("ENSEMBLE","VAT08m")){
+  uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
+  pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
+  lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
+  llods=assay_metadata$lod; names(llods)=assay_metadata$assay
+}
 #dat.cor.subset <- readRDS(here(
 #  "data_clean",
 #  "cor_data.rds"
@@ -379,7 +380,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                        common.legend = TRUE, legend = "bottom",
                        align = "h"),
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_NAb_SA.png"),
+                               "_", trt, "_Bseroneg_NAb_SA.png"),
              height = 7, width = 6.5)
       
     
@@ -416,7 +417,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                        common.legend = TRUE, legend = "bottom",
                        align = "h"),
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_NAb_LA.png"),
+                               "_", trt, "_Bseroneg_NAb_LA.png"),
              height = 7, width = 6.5)
       
       
@@ -427,6 +428,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                                     aes_string(
                                       x = tp, 
                                       colour = "assay",
+                                      group = "assay",
                                       weight = config.cor$wt
                                     )
       ) +
@@ -451,7 +453,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
       if (length(assay_metadata_sub_sa$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
       ggsave(rcdf_list_sa_pooled,
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_NAb_SA_pooled.png"),
+                               "_", trt, "_Bseroneg_NAb_SA_pooled.png"),
              height = 7, width = 6.5)
       
       
@@ -464,6 +466,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
                                     aes_string(
                                       x = tp, 
                                       colour = "assay",
+                                      group = "assay",
                                       weight = config.cor$wt
                                     )
       ) +
@@ -488,7 +491,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
       if (length(assay_metadata_sub_la$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
       ggsave(rcdf_list_la_pooled,
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_NAb_LA_pooled.png"),
+                               "_", trt, "_Bseroneg_NAb_LA_pooled.png"),
              height = 7, width = 6.5)
       
     } # end of vaccine, placebo
