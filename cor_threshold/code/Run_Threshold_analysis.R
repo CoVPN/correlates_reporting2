@@ -1,3 +1,4 @@
+#Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "moderna_boost"); COR="BD29naive"; Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))
@@ -96,8 +97,9 @@ write.csv(data_secondstage,
           row.names = F
 )
 
-
-for (marker in markers) {
+markers.cpy=markers
+markers=c()
+for (marker in markers.cpy) {
   
   if (length(unique(data_secondstage[[marker]])) > threshold_grid_size) {
     # quantiles from cases
@@ -115,7 +117,10 @@ for (marker in markers) {
   ncases=sapply(thresh_grid, function(s) sum(data_secondstage[[marker]]>s & data_secondstage[["Delta"]]==1, na.rm=T))
   thresh_grid = thresh_grid[ncases>=5]
   
-  write.csv(data.frame(thresh = thresh_grid), here::here('output', TRIAL, COR, "data_clean", "Thresholds_by_marker", paste0("thresholds_", marker, ".csv")), row.names = F)
+  if (length(thresh_grid)>1) {
+    markers=c(markers, marker)
+    write.csv(data.frame(thresh = thresh_grid), here::here('output', TRIAL, COR, "data_clean", "Thresholds_by_marker", paste0("thresholds_", marker, ".csv")), row.names = F)
+  }
 }
 
 

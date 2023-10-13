@@ -16,10 +16,10 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real))
 	Rscript code/plotting.R 							D57
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), moderna_boost))
-	Rscript code/Run_Threshold_analysis.R BD29naive
+	#Rscript code/Run_Threshold_analysis.R BD29naive
 	Rscript code/plotting.R               BD29naive
 	
-	Rscript code/Run_Threshold_analysis.R BD29nnaive
+	#Rscript code/Run_Threshold_analysis.R BD29nnaive
 	Rscript code/plotting.R               BD29nnaive
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_trial_EUA janssen_pooled_mock janssen_pooled_EUA janssen_na_mock janssen_na_EUA janssen_la_mock janssen_la_EUA janssen_sa_mock janssen_sa_EUA))
@@ -47,7 +47,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_na_partA janssen_sa_partA))
 	Rscript code/plotting.R 							D29ModerateIncludeNotMolecConfirmed
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705second))
-	Rscript code/Run_Threshold_analysis.R D210
+	#Rscript code/Run_Threshold_analysis.R D210
 	Rscript code/plotting.R 							D210
 
 endif
