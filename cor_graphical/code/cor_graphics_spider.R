@@ -11,7 +11,7 @@ library(gridExtra)
 install.packages("wCorr", repos = "http://cran.us.r-project.org") # for the weightedCorr() in pairplot, weighted correlation
 library(wCorr)
 install.packages("fmsb", repos = "http://cran.us.r-project.org") # radar plot
-library(fmsb) 
+library(fmsb) # radarchart()
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
@@ -25,7 +25,7 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 source(here::here("..", "_common.R"))
 
 ## load data 
-dat.cor.data.spider <- readRDS(here("data_clean", "longer_cor_data_plot1.rds"))
+dat.cor.data.spider <- readRDS(here::here("data_clean", "cor_data.rds"))
 
 # path for figures and tables etc
 save.results.to = here::here("output")
@@ -44,24 +44,40 @@ assays_id50 <- c("pseudoneutid50",
                  "pseudoneutid50_Beta","pseudoneutid50_Delta",
                  "pseudoneutid50_Gamma","pseudoneutid50_Lambda","pseudoneutid50_Mu","pseudoneutid50_Zeta")
 
-dat.cor.data.spider.id50 <- dat.cor.data.spider %>% 
-    filter(time == "Day 29" & Region %in% c(1, 2) & Trt=="Vaccine") %>%
+dat.cor.data.spider.id50 <- dat.cor.data.spider %>%
+    filter(Region %in% c(1, 2) & Trt==1 & cohort_event2!="Post-Peak Cases") %>%
+    mutate(Day29pseudoneutid50 = ifelse(cohort_event2 %in% c("Post-Peak Cases-Reference", "Non-Cases"), Day29pseudoneutid50, NA),
+           Day29pseudoneutid50_Beta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Beta", "Non-Cases"), Day29pseudoneutid50_Beta, NA),
+           Day29pseudoneutid50_Delta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Delta", "Non-Cases"), Day29pseudoneutid50_Delta, NA),
+           Day29pseudoneutid50_Gamma = ifelse(cohort_event2 %in% c("Post-Peak Cases-Gamma", "Non-Cases"), Day29pseudoneutid50_Gamma, NA),
+           Day29pseudoneutid50_Lambda = ifelse(cohort_event2 %in% c("Post-Peak Cases-Lambda", "Non-Cases"), Day29pseudoneutid50_Lambda, NA),
+           Day29pseudoneutid50_Mu = ifelse(cohort_event2 %in% c("Post-Peak Cases-Mu", "Non-Cases"), Day29pseudoneutid50_Mu, NA),
+           Day29pseudoneutid50_Zeta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Zeta", "Non-Cases"), Day29pseudoneutid50_Zeta, NA)
+           ) %>%
+    # only keep variant data for the corresponding case strain, i.e, delete wild and delta values for beta cases
     ungroup() %>%
-    select(one_of(paste0("Day29", assays_id50), "Region", "assay", "wt.D29variant")) %>%
-    group_by(Region, assay) %>%
-    summarise(across(c(paste0("Day29",assays_id50)), ~ exp(mean(log(.x), na.rm = TRUE)))) %>%
-    select(-assay) %>%
+    select(one_of(paste0("Day29", assays_id50), "Region", "cohort_event", "wt.D29variant")) %>%
+    group_by(Region, cohort_event) %>%
+    summarise(across(c(paste0("Day29",assays_id50)), ~ exp(sum(log(.x * wt.D29variant), na.rm=T) / sum(wt.D29variant)))) %>%
     unique() %>%
     as.data.frame()
 
-rownames(dat.cor.data.spider.id50) <- dat.cor.data.spider.id50$Region
+# those without any data will have a weighted geomean equal to 1, set these to NA
+dat.cor.data.spider.id50[dat.cor.data.spider.id50 == 1] <- NA
+
+rownames(dat.cor.data.spider.id50) <- paste("Region",dat.cor.data.spider.id50$Region, dat.cor.data.spider.id50$cohort_event)
 dat.cor.data.spider.id50$Region <- NULL
-colnames(dat.cor.data.spider.id50) <- c("Ancestral","Beta","Delta","Gamma","Lambda","Mu","Zeta")
-dat.cor.data.spider.id50 <- dat.cor.data.spider.id50[, c("Ancestral","Gamma","Lambda","Mu","Zeta","Beta","Delta")]
+dat.cor.data.spider.id50$cohort_event <- NULL
+colnames(dat.cor.data.spider.id50) <- gsub("Day29pseudoneutid50", "Reference",
+                                           gsub("Day29pseudoneutid50_","",colnames(dat.cor.data.spider.id50)))
 
 # stack with max and min values
-dat.cor.data.spider.id50 <- rbind(rep(0.5,ncol(dat.cor.data.spider.id50)), 
-                                  rep(0,ncol(dat.cor.data.spider.id50)), 
+max_min <- rbind(rep(1.1,ncol(dat.cor.data.spider.id50)), 
+                 rep(0.1,ncol(dat.cor.data.spider.id50)))
+colnames(max_min) <- c("Reference","Beta","Delta","Gamma","Lambda","Mu","Zeta")
+rownames(max_min) <- c("max", "min")
+
+dat.cor.data.spider.id50 <- rbind(max_min, 
                                   dat.cor.data.spider.id50)
 
 # setup pdf file
@@ -69,27 +85,29 @@ for (outtype in c("PDF")) {
     
     # Latin America
     if(outtype=="PDF"){
-        filename = paste0(save.results.to, "radar_plot_weighted_geomean_vaccine_NAb_LA.pdf")
+        filename = paste0(save.results.to, "radar_plot_weighted_geomean_Day29_vaccine_bseroneg_NAb_LA.pdf")
         #pdf(filename, width=9.1, height=8.5)
         pdf(filename, width=5.5, height=6)
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
     }
     
-    radarchart(dat.cor.data.spider.id50[c(1,2,3), c("Ancestral","Gamma","Lambda","Mu","Zeta")], 
-               axistype=1 , pcol="#1749FF",
+    radarchart(dat.cor.data.spider.id50[c(1,2,3,4), c("Reference","Zeta","Mu","Gamma","Lambda")], 
+               axistype=1 , pcol=c("#FF6F1B","#0AB7C9"),
                plwd=1.5, pty=c(15), plty=2,
                #custom the grid
-               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=seq(0,0.5,0.125), 
+               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(0.1,1.1,0.25)), 
                #label size
                vlcex=0.8,
                #title
-               title=paste0("Geometric Mean of PsV-nAb ID50 at Day 29, in LA"))
+               title="Geometric Mean of PsV-nAb ID50 at Day 29, in Latin America",
+               #title size
+               cex.main=0.8)
     
     par(xpd=NA)
     
     #legend
-    legend("bottom", legend=c("Latin America"), lty=5, pch=c(15),
-           col="#1749FF", bty="n", ncol=1, cex=0.7,
+    legend("bottom", legend=c("Peak-Peak Cases","Non-Cases"), lty=5, pch=c(15),
+           col=c("#FF6F1B","#0AB7C9"), bty="n", ncol=1, cex=0.7,
            inset=c(-0.25,0))
 
     if(outtype=="PDF") dev.off()
@@ -97,27 +115,29 @@ for (outtype in c("PDF")) {
     
     # Southern America
     if(outtype=="PDF"){
-        filename = paste0(save.results.to, "radar_plot_weighted_geomean_vaccine_NAb_SA.pdf")
+        filename = paste0(save.results.to, "radar_plot_weighted_geomean_Day29_vaccine_bseroneg_NAb_SA.pdf")
         #pdf(filename, width=9.1, height=8.5)
         pdf(filename, width=5.5, height=6)
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
     }
     
-    radarchart(dat.cor.data.spider.id50[c(1,2,4), c("Ancestral","Beta","Delta")], 
-               axistype=1 , pcol="#D92321",
+    radarchart(dat.cor.data.spider.id50[c(1,2,5,6), c("Reference","Delta","Beta")], 
+               axistype=1 , pcol=c("#FF6F1B","#0AB7C9"),
                plwd=1.5, pty=c(15, 17), plty=2,
                #custom the grid
-               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=seq(0,0.5,0.125), 
+               cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(0.1,1.1,0.25)), 
                #label size
                vlcex=0.8,
                #title
-               title=paste0("Geometric Mean of PsV-nAb ID50 at Day 29, in SA"))
+               title="Geometric Mean of PsV-nAb ID50 at Day 29, in South Africa",
+               #title size
+               cex.main=0.8)
     
     par(xpd=NA)
     
     #legend
-    legend("bottom", legend=c("Southern America"), lty=5, pch=c(17),
-           col="#D92321", bty="n", ncol=1, cex=0.7,
+    legend("bottom", legend=c("Peak-Peak Cases","Non-Cases"), lty=5, pch=c(17),
+           col=c("#FF6F1B","#0AB7C9"), bty="n", ncol=1, cex=0.7,
            inset=c(-0.25,0))
     
     if(outtype=="PDF") dev.off()

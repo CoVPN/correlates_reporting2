@@ -15,7 +15,7 @@ library(here)
 library(knitr)
 library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
-plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
+if (!(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & attr(config,"config") == "janssen_partA_VL")) plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 bsero <- ifelse(attr(config,"config")=="vat08m_nonnaive", "BaselinePos", "BaselineNeg")
 bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negative")
 
@@ -38,9 +38,9 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
   if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & attr(config,"config") == "janssen_partA_VL")) COR_postfix_list <- c("adhoc")
   if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
 
-  if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
+  if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29variant
     
-    COR = "D29VLvariant"
+    COR = "D29variant"
     
     for (region in c("LA", "SA")) {
       for (marker in ("NAb" #,"Spike", "NAb_Spike"
@@ -52,7 +52,7 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
       }
     }
     
-    for (region in c("LA", "SA")) {
+    for (region in c("LA", "LA_pooled", "SA", "SA_pooled")) {
       for (marker in ("NAb" #,"Spike"
                       )) {
         		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_rcdf_variant.Rmd')), quiet = TRUE)
@@ -66,6 +66,15 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", "baseline negati
       for (marker in ("NAb" #,"Spike"
                       )) {
         		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_spider_variant.Rmd')), quiet = TRUE)
+        		      cat(res, sep = '\n')
+        		      cat("\\clearpage", sep = '\n')
+      }
+    }
+    
+    for (region in c("LA", "SA", "US")) {
+      for (marker in ("NAb" #,"Spike"
+                      )) {
+        		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_violin_variant.Rmd')), quiet = TRUE)
         		      cat(res, sep = '\n')
         		      cat("\\clearpage", sep = '\n')
       }

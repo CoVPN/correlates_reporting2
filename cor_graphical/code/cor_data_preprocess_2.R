@@ -213,9 +213,9 @@ dat.long$demo_lab <-
 # immunogenicity analysis is always done in ppts that meet all of the criteria.
 
 dat.cor.subset <- dat %>%
-  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1", ifelse(grepl("variant", COR), "variant",""))))==1)
 dat.long.cor.subset <- dat.long %>%
-  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
+  dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1", ifelse(grepl("variant", COR), "variant",""))))==1)
 
 
 saveRDS(as.data.frame(dat.long.cor.subset),

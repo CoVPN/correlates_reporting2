@@ -23,7 +23,8 @@ source(here::here("code", "covid_corr_plot_functions.R"))
 source(here::here("..", "_common.R"))
 
 ## load data 
-dat.cor.data.pair <- readRDS(here("data_clean", "cor_data_pair.rds")); dat.cor.data.pair$all_one <- 1 # as a placeholder for strata values
+dat.cor.data.pair <- readRDS(here::here("data_clean", "cor_data.rds")); dat.cor.data.pair$all_one <- 1 # as a placeholder for strata values
+config.cor <- config::get(config = COR)
 
 # path for figures and tables etc
 save.results.to = here::here("output")
@@ -37,32 +38,32 @@ print(paste0("save.results.to equals ", save.results.to))
 
 ###### Correlation plots across markers at a given time point
 # 3 markers (Anc, Delta, Beta), SA, Day 29
-if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
+if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
 
   for (t in "Day29"){
     for (trt in c(1)){
       assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
                                                                 "pseudoneutid50_Beta"))
-      dat.cor.data.pair.SA <- subset(dat.cor.data.pair, Region == 2 & Trt==1)
-      dat.cor.data.pair.SA$Day29pseudoneutid50_Delta = sample(dat.cor.data.pair.SA$Day29pseudoneutid50, dim(dat.cor.data.pair.SA)[1])
-      dat.cor.data.pair.SA$Day29pseudoneutid50_Beta = sample(dat.cor.data.pair.SA$Day29pseudoneutid50, dim(dat.cor.data.pair.SA)[1])
-        
+      dat.cor.data.pair.SA <- subset(dat.cor.data.pair, Region == 2 & Trt==1) 
+      # 111 rows, 13 Post-Peak Cases, 11 of 13 is Beta Cases (Post-Peak Cases-Beta), 2 no variant call (Post-Peak Cases), these two doesn't have pseudoneutid50_Delta, pseudoneutid50_Beta values 
+      #           98 Non-Cases, all with pseudoneutid50, pseudoneutid50_Delta, pseudoneutid50_Beta
+      
       covid_corr_pairplots(
         plot_dat = dat.cor.data.pair.SA,
         time = t,
         assays = assay_metadata_sub_sa$assay,
         strata = "all_one",
-        weight = "wt.D29",
+        weight = config.cor$wt,
         plot_title = paste0(
-          "Correlations of 3 ", t, " antibody markers in Southern Africa,\nCorr = Weighted Spearman Rank Correlation."
+          "Correlations of 3 ", t, " antibody markers in South Africa,\nCorr = Weighted Spearman Rank Correlation."
         ),
         column_labels = paste(t, assay_metadata_sub_sa$assay_label_short),
         height = max(1.3 * length(assay_metadata_sub_sa$assay) + 0.1, 5.5),
         width = max(1.3 * length(assay_metadata_sub_sa$assay), 5.5),
-        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_sa$assay_label_short)))>40, 3.8, 4.3),
+        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_sa$assay_label_short)))>40, 4.2, 4.3),
         filename = paste0(
           save.results.to, "/pairs_by_time_", t,
-          "_markers_",ifelse(trt==1, "vaccine", "placebo"), "_NAb_SA.pdf"
+          "_", ifelse(trt==1, "vaccine", "placebo"), "_bseroneg_NAb_SA.pdf"
         )
       )
       
@@ -70,24 +71,27 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
                                                                 "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
                                                                 "pseudoneutid50_Lambda"))
       
-      dat.cor.data.pair.LA <- subset(dat.cor.data.pair, Region == 1 & Trt==1)
-        
+      dat.cor.data.pair.LA <- subset(dat.cor.data.pair, Region == 1 & Trt==1) 
+      # 406 rows, 260 Post-Peak Cases, 53 Reference, 71 Gamma, 43 Lambda, 37 Mu, 18 Zeta, 38 no variant call 
+      #           146 Non-Cases, all with pseudoneutid50, pseudoneutid50_Gamma, pseudoneutid50_Zeta, pseudoneutid50_Mu, pseudoneutid50_Lambda
+      # (just use 146 non-cases to draw the plot)
+      
       covid_corr_pairplots(
         plot_dat = dat.cor.data.pair.LA,
         time = t,
         assays = assay_metadata_sub_la$assay,
         strata = "all_one",
-        weight = "wt.D29",
+        weight = config.cor$wt,
         plot_title = paste0(
           "Correlations of 5 ", t, " antibody markers in Latin America,\nCorr = Weighted Spearman Rank Correlation."
         ),
         column_labels = paste(t, assay_metadata_sub_la$assay_label_short),
         height = max(1.3 * length(assay_metadata_sub_la$assay) + 0.1, 5.5),
         width = max(1.3 * length(assay_metadata_sub_la$assay), 5.5),
-        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_la$assay_label_short)))>40, 3.3, 4.3),
+        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub_la$assay_label_short)))>40, 3.45, 4.3),
         filename = paste0(
           save.results.to, "/pairs_by_time_", t,
-          "_markers_", ifelse(trt==1, "vaccine", "placebo"), "_NAb_LA.pdf"
+          "_", ifelse(trt==1, "vaccine", "placebo"), "_bseroneg_NAb_LA.pdf"
         )
       )
     
