@@ -4,8 +4,8 @@ bindSpike,2,bindSpike_beta,4.5333,6412.008,NA,4.5333,Binding Antibody to Spike B
 bindSpike,3,bindSpike_alpha,4.5333,6843.073,NA,4.5333,Binding Antibody to Spike Alpha,Anti Spike IgG Alpha (AU/ml),lloq,1
 bindSpike,4,bindSpike_gamma,4.5333,5433.409,NA,4.5333,Binding Antibody to Spike Gamma,Anti Spike IgG Gamma (AU/ml),lloq,1
 bindSpike,5,bindSpike_delta1,4.5333,6900.02,NA,4.5333,Binding Antibody to Spike Delta,Anti Spike IgG Delta (AU/ml),lloq,1
-bindSpike,6,bindSpike_delta3,4.5333,7925.164,NA,4.5333,Binding Antibody to Spike Delta Seq 1,Anti Spike IgG Delta Seq 1 (AU/ml),lloq,1
-bindSpike,7,bindSpike_delta2,4.5333,8985.413,NA,4.5333,Binding Antibody to Spike Delta Seq 2,Anti Spike IgG Delta Seq 2 (AU/ml),lloq,1
+bindSpike,6,bindSpike_delta3,4.5333,7925.164,NA,4.5333,Binding Antibody to Spike Delta Alt 1,Anti Spike IgG Delta Alt 1 (AU/ml),lloq,1
+bindSpike,7,bindSpike_delta2,4.5333,8985.413,NA,4.5333,Binding Antibody to Spike Delta Alt 2,Anti Spike IgG Delta Alt 2 (AU/ml),lloq,1
 bindSpike,8,bindSpike_omicron,4.5333,1884.779,NA,4.5333,Binding Antibody to Spike Omicron,Anti Spike IgG Omicron (AU/ml),lloq,1
 id50,1,pseudoneutid50,3.0691,12988.43,2.612,2.612,PsV Neutralization to D614G,Pseudovirus-nAb D614G (IU50/ml),llod,1
 id50,2,pseudoneutid50_B.1.351,2.8732,2342.899,2.612,2.612,PsV Neutralization to BA.1.351,Pseudovirus-nAb B.1.351 (IU50/ml),llod,1
