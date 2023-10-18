@@ -1,5 +1,6 @@
 #Sys.setenv(TRIAL = "profiscov"); lloxs = lloqs
 #Sys.setenv(TRIAL = "profiscov_all"); lloxs = llods
+#Sys.setenv(TRIAL = "vat08m_nonnaive"); assay_metadata = read.csv("../assay_metadata/vat08_assay_metadata.csv", stringsAsFactors=F); assays = assay_metadata$assay
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -11,7 +12,7 @@ library(here)
 library(dplyr)
 library(stringr)
 if (F){
-  # adhoc for AZ, pair plot with spike and pseudovirus side by side
+  # adhoc for AZ, pair plot with bab spike and pseudovirus-nab side by side
   # 1. add azd1222_all with both assays in config.yml, Sys.setenv(TRIAL="azd1222_all")
   # azd1222_all: &azd1222_all
   # <<: *azd1222_base
@@ -51,7 +52,7 @@ if (F){
 }
 
 if (F){
-  # adhoc for profiscov_lvmn, pair plot with bab and pseudovirus side by side
+  # adhoc for profiscov_lvmn, pair plot with bab and pseudovirus-nab side by side
   # 1. add profiscov_all with both assays in config.yml, Sys.setenv(TRIAL="profiscov_all")
   # profiscov_all: &profiscov_all
   # data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID127-Gast/correlates/adata/profiscov_lvmn_data_processed_with_riskscore.csv
@@ -88,7 +89,7 @@ if (F){
   
 dat.mock <- read.csv(data_name, header = TRUE)
 
-# for unknown reason, the Senior variable has no value in the PROFISCOV dataset
+# for unknown reason, the Senior variable has no value in the PROFISCOV (Butantan, Sinovac) dataset
 if (study_name=="PROFISCOV") {
   dat.mock$Senior <- as.numeric(with(dat.mock, Age >= age.cutoff, 1, 0))
   

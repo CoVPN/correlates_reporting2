@@ -9,6 +9,7 @@ library(stringr)
 save.results.to = paste0(here::here("output"), "/", attr(config,"config"));
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 if (!dir.exists(paste0(save.results.to, "/demographics")))  dir.create(paste0(save.results.to, "/demographics"))
+config <- config::get(config = Sys.getenv("TRIAL"))
 
 # Define age cutoff based on trial
 age.cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE"), 60, 65)
@@ -22,28 +23,16 @@ all_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpik
                 "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
                 "bindN",
                 "pseudoneutid50", "pseudoneutid80", "pseudoneutid50sa", "pseudoneutid50la",
-                "liveneutmn50")
-bAb_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
-                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
-                "bindN")
-nAb_assays <- c("pseudoneutid50", "pseudoneutid80", "pseudoneutid50sa", "pseudoneutid50la")
-live_assays <- c("liveneutmn50")
-times <- c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
-
-# Depends on the Incoming data
-if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config"))){
-  assay_immuno <- all_assays[all_assays %in% c(assays, "bindN")]
-  labels.assays.all <- c("Binding Antibody to N", labels.assays)
-  names(labels.assays.all)[1] <- "bindN"
-  labels.assays <- labels.assays.all[assay_immuno]
-} else {
-  assay_immuno <- assays
-}
-
+                "liveneutmn50",
+                "ADCP")
+if (!is.null(config$assay_metadata)) {all_assays = assay_metadata$assay}
+bAb_assays <- all_assays[grepl("bind", all_assays)]
+nAb_assays <- all_assays[grepl("pseudoneut", all_assays)]
+live_assays <- all_assays[grepl("liveneut", all_assays)]
 labels.assays.short <- c("Anti Spike IgG (BAU/ml)", 
                          "Anti Spike B.1.1.7 IgG (BAU/ml)", 
                          "Anti Spike B.1.351 IgG (BAU/ml)", 
-                         "Anti Spike P.1 IgG (BAU/ml)", 
+                         "Anti Spike P.1 IgG (BAU/ml)",
                          "Anti RBD IgG (BAU/ml)", 
                          "Anti RBD B.1.1.7 IgG (BAU/ml)", 
                          "Anti RBD B.1.351 IgG (BAU/ml)", 
@@ -55,14 +44,20 @@ labels.assays.short <- c("Anti Spike IgG (BAU/ml)",
                          "Pseudovirus-nAb ID50 (LA) (IU50/ml)", 
                          "Live Virus-mnAb ID50 (IU50/ml)",
                          "Phagocytic Score")
-names(labels.assays.short) <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
-                                "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 
-                                "bindN",
-                                "pseudoneutid50", "pseudoneutid80", 
-                                "pseudoneutid50sa", 
-                                "pseudoneutid50la", 
-                                "liveneutmn50",
-                                "ADCP")
+if (!is.null(config$assay_metadata)) {labels.assays.short = assay_metadata$assay_label_short}
+names(labels.assays.short) <- all_assays
+
+times <- c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
+
+# Depends on the Incoming data
+if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config"))){
+  assay_immuno <- all_assays[all_assays %in% c(assays, "bindN")]
+  labels.assays.all <- c("Binding Antibody to N", labels.assays)
+  names(labels.assays.all)[1] <- "bindN"
+  labels.assays <- labels.assays.all[assay_immuno]
+} else {
+  assay_immuno <- assays
+}
 
 
 
