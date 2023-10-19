@@ -185,8 +185,8 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
       subdat <- dat.twophase.sample %>%
         dplyr::filter(Bserostatus == bserostatus & Trt == trt)
       
-      times_selected <- if(study_name=="VAT08m") {tps_no_delta_over_tinterm 
-        # "B", "Day29", "Day57", "Day29overB", "Day57overB", only show fold_change for Sanofi study
+      times_selected <- if(study_name=="VAT08m") {tps_no_delta_over_tinterm[c(1,4,5)]
+        # "B", "Day29", "Day57", "Day29overB", "Day57overB", only show B and fold_change for Sanofi study
         } else {tps_no_fold_change} # "B", "Day29", "Day57"
       
       if(study_name=="PREVENT19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
@@ -217,6 +217,43 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
       }
     }
   }
+  
+  print("Pair plots 3:")
+  
+  if (study_name=="VAT08m") { # request only for this study, at day 1, pool over vaccine and placebo
+    tp = "B"
+    for (bserostatus in bstatus.range) {
+        if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
+        
+        tt=match(tp, times)
+        
+        subdat <- dat.twophase.sample %>%
+          dplyr::filter(Bserostatus == bserostatus)
+        
+        covid_corr_pairplots(
+          plot_dat = subdat,
+          time = tp,
+          assays = assay_immuno,
+          strata = "Bstratum",
+          weight = "wt.subcohort",
+          plot_title = paste0(
+            gsub("ay ","", labels.time)[tt],
+            " Ab markers: baseline ",
+            ifelse(bserostatus, "positive", "negative"), ", pooled arm"
+          ),
+          column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
+          height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
+          width = max(1.3 * length(assay_immuno), 5.5),
+          column_label_size = ifelse(max(str_length(assay_labels_short)) > 28, 5, 6.5),
+          filename = paste0(
+            save.results.to, "/pairs_", tp,
+            "_Markers_", bstatus.labels.2[bserostatus + 1],
+            "_pooled_arm_", ifelse(country=="Nvx_US", "US_only_",""),
+            study_name, ".pdf"
+          )
+        )
+      }
+  }
 }
   
 #-----------------------------------------------
@@ -225,7 +262,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
 # - We made multiple ggplot objects, each for one assay, and combine them with ggarrange()
 #-----------------------------------------------
 print("RCDF 1:")
-for (tp in tps_no_B_and_delta_over_tinterm) { # "Day29", "Day57", "Day29overB", "Day57overB"
+for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day1", "Day22", "Day43"
   covid_corr_rcdf_facets(
     plot_dat = dat.long.twophase.sample,
     x = tp,
@@ -268,44 +305,14 @@ for (Ab in c(1, 2, 3)) {
   
   if (length(rcdf_assays) > 0) {
     
-    for (tp in tps_no_B_and_delta_over_tinterm) { # "Day29", "Day57", "Day29overB", "Day57overB"
-      covid_corr_rcdf(
-        plot_dat = subset(dat.long.twophase.sample, Trt == "Vaccine" & assay %in% rcdf_assays),
-        x = tp,
-        color = "assay_labels",
-        lty = "Bserostatus",
-        weight = "wt.subcohort",
-        xlab = paste0(gsub("ay ", "", labels.time[tp]), " Ab Markers"
-        ),
-        xlim = c(min(assay_lim[rcdf_assays, tp, 1]), 
-                 max(assay_lim[rcdf_assays, tp, 2])),
-        xbreaks = seq(min(assay_lim[rcdf_assays, tp, 1]), 
-                      max(assay_lim[rcdf_assays, tp, 2]), 
-                      1),
-        plot_title = paste0(labels.time[tp], " Ab Markers"),
-        filename = paste0(
-          save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
-          "_trt_vaccine_bstatus_both_", study_name, ".pdf"
-        )
-      )
-    }
-    
-    #-----------------------------------------------
-    # RCDF plot 
-    # different baseline serostatus in different plot
-    #-----------------------------------------------
-    print("RCDF 3:")
-    for (bstatus in 1:2) {
-      if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next 
-      
-      for (tp in tps_no_B_and_delta_over_tinterm) { # "Day29", "Day57", "Delta29overB", "Delta57overB"
+    for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day22", "Day43"
+        
+      for (trt in c("Vaccine", if(study_name=="VAT08m") "Placebo")){
         covid_corr_rcdf(
-          plot_dat = filter(dat.long.twophase.sample, Trt == "Vaccine", 
-                            Bserostatus == bstatus.labels[bstatus],
-                            assay %in% rcdf_assays),
+          plot_dat = subset(dat.long.twophase.sample, Trt == trt & assay %in% rcdf_assays),
           x = tp,
           color = "assay_labels",
-          lty = NULL,
+          lty = "Bserostatus",
           weight = "wt.subcohort",
           xlab = paste0(gsub("ay ", "", labels.time[tp]), " Ab Markers"
           ),
@@ -314,13 +321,81 @@ for (Ab in c(1, 2, 3)) {
           xbreaks = seq(min(assay_lim[rcdf_assays, tp, 1]), 
                         max(assay_lim[rcdf_assays, tp, 2]), 
                         1),
-          plot_title = paste0(labels.time[tp], " Ab Markers"
-          ),
+          plot_title = paste0(labels.time[tp], " Ab Markers"),
           filename = paste0(
             save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
-            "_trt_vaccine_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, ".pdf"
+            "_trt_", tolower(trt), "_bstatus_both_", study_name, ".pdf"
           )
         )
+      }
+    }
+    
+    #-----------------------------------------------
+    # RCDF plot 
+    # different baseline serostatus in different plot, one treatment arm per plot
+    #-----------------------------------------------
+    if (study_name!="VAT08m"){# Sanofi doesn't need plots for one arm * baseline status
+      print("RCDF 3:")
+      for (bstatus in 1:2) {
+        if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next 
+        
+        for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day22", "Day43"
+          covid_corr_rcdf(
+            plot_dat = filter(dat.long.twophase.sample, Trt == "Vaccine", 
+                              Bserostatus == bstatus.labels[bstatus],
+                              assay %in% rcdf_assays),
+            x = tp,
+            color = "assay_labels",
+            lty = NULL,
+            weight = "wt.subcohort",
+            xlab = paste0(gsub("ay ", "", labels.time[tp]), " Ab Markers"
+            ),
+            xlim = c(min(assay_lim[rcdf_assays, tp, 1]), 
+                     max(assay_lim[rcdf_assays, tp, 2])),
+            xbreaks = seq(min(assay_lim[rcdf_assays, tp, 1]), 
+                          max(assay_lim[rcdf_assays, tp, 2]), 
+                          1),
+            plot_title = paste0(labels.time[tp], " Ab Markers"
+            ),
+            filename = paste0(
+              save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
+              "_trt_vaccine_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, ".pdf"
+            )
+          )
+        }
+      }
+    }
+    
+    #-----------------------------------------------
+    # RCDF plot 
+    # different treatment arm in different plot, one baseline status per plot
+    #-----------------------------------------------
+    if (study_name=="VAT08m"){
+      print("RCDF 4:")
+      for (bstatus in 1:2) {
+        if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next
+        
+        for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day22", "Day43"
+          covid_corr_rcdf(
+            plot_dat = subset(dat.long.twophase.sample, Bserostatus == bstatus.labels[bstatus] & assay %in% rcdf_assays),
+            x = tp,
+            color = "assay_labels",
+            lty = "Trt",
+            weight = "wt.subcohort",
+            xlab = paste0(gsub("ay ", "", labels.time[tp]), " Ab Markers"
+            ),
+            xlim = c(min(assay_lim[rcdf_assays, tp, 1]), 
+                     max(assay_lim[rcdf_assays, tp, 2])),
+            xbreaks = seq(min(assay_lim[rcdf_assays, tp, 1]), 
+                          max(assay_lim[rcdf_assays, tp, 2]), 
+                          1),
+            plot_title = paste0(labels.time[tp], " Ab Markers"),
+            filename = paste0(
+              save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
+              "_trt_both_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, ".pdf"
+            )
+          )
+        }
       }
     }
   }
@@ -338,8 +413,8 @@ print("Boxplots 1:")
 for (bstatus in 1:2) {
   if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next 
   
-  for (tp in tps_no_delta_over_tinterm) { # "B", "Day29", "Day57", "Delta57overB", "Delta29overB"
-
+  for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day1", "Day22", "Day43"
+    
     covid_corr_boxplot_facets(
       plot_dat = subset(
         dat.long.twophase.sample,
@@ -470,62 +545,64 @@ for (bstatus in 1:2) {
 # - Scatter plots assay vs. age in years, (Day 1) Day tinterm, Day tpeak
 #-----------------------------------------------
 print("Scatter plots:")
-for (tp in tps_no_fold_change) {
-  for (trt in 1:2) {
-    for (bstatus in 1:2) {
-      
-      subdat <- dat.long.twophase.sample %>%
-        filter(Bserostatus == bstatus.labels[bstatus], Trt == trt.labels[trt])
-      if(nrow(subdat)==0) next
-      
-      ## setting the range of the axes
-      xrange <- range(dat.long.twophase.sample$Age)
-      
-      
-      scatter_plot_list <- vector("list", length = length(assay_immuno))
-      
-      for (aa in 1:length(assay_immuno)) {
-        scatter_plot_list[[aa]] <- ggplot(data = subset(subdat, assay == assay_immuno[aa]),
-                                          mapping = aes_string("Age", tp)) +
-          geom_point() +
-          xlab("Age") +
-          ylab(labels.axis[tp, aa]) +
-          ggtitle(labels.title[tp, aa]) +
-          stat_smooth(method = "loess", color = "red", se = TRUE, lwd = 1) +
-          scale_x_continuous(limits = xrange) +
-          scale_y_continuous(
-            labels = label_math(10^.x), limits = assay_lim[aa, tp,],
-            breaks = seq(assay_lim[aa, tp, 1], assay_lim[aa, tp, 2], by = 1)
-          ) +
-          theme_pubr() +
-          theme(
-            plot.title = element_text(hjust = 0.5, size = ifelse(max(str_length(assays)) > 14, 9.5, 10)),
-            panel.border = element_rect(fill = NA),
-            panel.grid.minor.y = element_line(),
-            panel.grid.major.y = element_line(),
-            axis.title = element_text(size = 10),
-            axis.text = element_text(size = 10),
-            legend.title = element_blank()
-          )
+if(study_name!="VAT08m"){
+  for (tp in tps_no_fold_change) {
+    for (trt in 1:2) {
+      for (bstatus in 1:2) {
+        
+        subdat <- dat.long.twophase.sample %>%
+          filter(Bserostatus == bstatus.labels[bstatus], Trt == trt.labels[trt])
+        if(nrow(subdat)==0) next
+        
+        ## setting the range of the axes
+        xrange <- range(dat.long.twophase.sample$Age)
+        
+        
+        scatter_plot_list <- vector("list", length = length(assay_immuno))
+        
+        for (aa in 1:length(assay_immuno)) {
+          scatter_plot_list[[aa]] <- ggplot(data = subset(subdat, assay == assay_immuno[aa]),
+                                            mapping = aes_string("Age", tp)) +
+            geom_point() +
+            xlab("Age") +
+            ylab(labels.axis[tp, aa]) +
+            ggtitle(labels.title[tp, aa]) +
+            stat_smooth(method = "loess", color = "red", se = TRUE, lwd = 1) +
+            scale_x_continuous(limits = xrange) +
+            scale_y_continuous(
+              labels = label_math(10^.x), limits = assay_lim[aa, tp,],
+              breaks = seq(assay_lim[aa, tp, 1], assay_lim[aa, tp, 2], by = 1)
+            ) +
+            theme_pubr() +
+            theme(
+              plot.title = element_text(hjust = 0.5, size = ifelse(max(str_length(assays)) > 14, 9.5, 10)),
+              panel.border = element_rect(fill = NA),
+              panel.grid.minor.y = element_line(),
+              panel.grid.major.y = element_line(),
+              axis.title = element_text(size = 10),
+              axis.text = element_text(size = 10),
+              legend.title = element_blank()
+            )
+        }
+        
+        output_plot <- ggarrange(
+          plotlist = scatter_plot_list, ncol = 3,
+          nrow = ceiling(length(assay_immuno) / 3), legend = "none", align = "h"
+        )
+        
+        ggsave(
+          filename = paste0(
+            save.results.to, "/scatter_", tp, "_vs_age_",
+            "trt_", trt.labels[trt], "_", bstatus.labels.2[bstatus],
+            "_", study_name, ".pdf"
+          ), 
+          plot = output_plot, 
+          width = 9,
+          height = 0.5 + 3 * ceiling(length(assay_immuno) / 3), 
+          units = "in"
+        )
+        
       }
-      
-      output_plot <- ggarrange(
-        plotlist = scatter_plot_list, ncol = 3,
-        nrow = ceiling(length(assay_immuno) / 3), legend = "none", align = "h"
-      )
-      
-      ggsave(
-        filename = paste0(
-          save.results.to, "/scatter_", tp, "_vs_age_",
-          "trt_", trt.labels[trt], "_", bstatus.labels.2[bstatus],
-          "_", study_name, ".pdf"
-        ), 
-        plot = output_plot, 
-        width = 9,
-        height = 0.5 + 3 * ceiling(length(assay_immuno) / 3), 
-        units = "in"
-      )
-      
     }
   }
 }

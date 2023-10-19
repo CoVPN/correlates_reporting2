@@ -1,10 +1,11 @@
 #Sys.setenv(TRIAL = "profiscov"); lloxs = lloqs
 #Sys.setenv(TRIAL = "profiscov_all"); lloxs = llods
-#Sys.setenv(TRIAL = "vat08m_nonnaive"); assay_metadata = read.csv("../assay_metadata/vat08_assay_metadata.csv", stringsAsFactors=F); assays = assay_metadata$assay
+#Sys.setenv(TRIAL = "vat08m_nonnaive"); assay_metadata = read.csv("../assay_metadata/vat08_assay_metadata.csv", stringsAsFactors=F); assays = assay_metadata$assay; 
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
-source(here::here("..", "_common.R"))
+source(here::here("..", "_common.R")) #;dat.mock2 = read.csv("/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1&2_20231013.csv",stringsAsFactors = F) %>% filter(Stage==1); dat.mock = read.csv("/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08m_data_processed_with_riskscore.csv",stringsAsFactors = F); dat.mock = dat.mock2 %>% mutate(Ptid=Subjectid) %>% left_join(dat.mock %>% select(Ptid, pooled.age.grp:ph2.immuno), by="Ptid")
+#for (i in assays){dat.mock[paste0("Delta43overB",i)] = dat.mock[paste0("Day43",i)] - dat.mock[paste0("B",i)];dat.mock[paste0("Delta22overB",i)] = dat.mock[paste0("Day22",i)] - dat.mock[paste0("B",i)]}
 source(here::here("code", "params.R")) # load parameters
 #-----------------------------------------------
 
@@ -87,7 +88,7 @@ if (F){
   
 }
   
-dat.mock <- read.csv(data_name, header = TRUE)
+#dat.mock <- read.csv(data_name, header = TRUE)
 
 # for unknown reason, the Senior variable has no value in the PROFISCOV (Butantan, Sinovac) dataset
 if (study_name=="PROFISCOV") {

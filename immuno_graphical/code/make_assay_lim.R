@@ -2,6 +2,12 @@
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R"))
+if (study_name %in% c("VAT08m")){
+  uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
+  pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
+  lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
+  llods=assay_metadata$lod; names(llods)=assay_metadata$assay
+}
 #-----------------------------------------------
 
 library(here)
@@ -71,6 +77,11 @@ if (study_name=="PREVENT19") {
   assay_lim["bindSpike", !grepl("Delta", times), "lb"] <- floor(log10(lloqs["bindSpike"] / 2))
   assay_lim["bindRBD", !grepl("Delta", times), "lb"] <- floor(log10(lloqs["bindSpike"] / 2))
 }
+if (study_name=="VAT08m") {
+  for (aa in assays[grepl("bind", assays)]){
+    assay_lim[aa, !grepl("Delta", times), "lb"] <- floor(log10(lloqs[aa] / 2))
+  }
+}
 assay_lim[assay_immuno %in% bAb_assays, !grepl("Delta", times), "ub"] <- 
   max(ceiling(MaxbAb) + ceiling(MaxbAb) %% 2, ceiling(log10(uloqs[assay_immuno])))
 assay_lim[assay_immuno %in% nAb_assays, !grepl("Delta", times), "ub"] <-
@@ -99,7 +110,10 @@ assay_lim[assay_immuno %in% nAb_assays, grepl("Delta", times), "ub"] <-
   ceiling(MaxID50ID80 - min(log10(llods[nAb_assays] / 2), na.rm=T)) + ceiling(MaxID50ID80 - min(log10(llods[nAb_assays] / 2), na.rm=T)) %% 2
 assay_lim[assay_immuno %in% live_assays, grepl("Delta", times), "ub"] <- 
   ceiling(Maxlive50 - min(log10(llods[live_assays] / 2))) + ceiling(Maxlive50 - min(log10(llods[live_assays] / 2))) %% 2
-
+if (study_name=="VAT08m") {
+  assay_lim[assay_immuno %in% bAb_assays, grepl("Delta", times), "ub"] <- 
+    ceiling(MaxID50ID80 - min(log10(lloqs[bAb_assays] / 2), na.rm=T)) + ceiling(MaxID50ID80 - min(log10(lloqs[bAb_assays] / 2), na.rm=T)) %% 2
+}
 
 
 # Quick workaround for janssen presentation report
