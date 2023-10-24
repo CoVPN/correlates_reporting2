@@ -3,12 +3,12 @@ bindSpike,1,bindSpike,4.5333,9370.615,NA,4.5333,Binding Antibody to Spike D614,A
 bindSpike,2,bindSpike_beta,4.5333,6412.008,NA,4.5333,Binding Antibody to Spike Beta,Anti Spike IgG Beta (AU/ml),lloq,1
 bindSpike,3,bindSpike_alpha,4.5333,6843.073,NA,4.5333,Binding Antibody to Spike Alpha,Anti Spike IgG Alpha (AU/ml),lloq,1
 bindSpike,4,bindSpike_gamma,4.5333,5433.409,NA,4.5333,Binding Antibody to Spike Gamma,Anti Spike IgG Gamma (AU/ml),lloq,1
-bindSpike,5,bindSpike_delta1,4.5333,6900.02,NA,4.5333,Binding Antibody to Spike Delta,Anti Spike IgG Delta (AU/ml),lloq,1
-bindSpike,6,bindSpike_delta3,4.5333,7925.164,NA,4.5333,Binding Antibody to Spike Delta Alt 1,Anti Spike IgG Delta Alt 1 (AU/ml),lloq,1
-bindSpike,7,bindSpike_delta2,4.5333,8985.413,NA,4.5333,Binding Antibody to Spike Delta Alt 2,Anti Spike IgG Delta Alt 2 (AU/ml),lloq,1
-bindSpike,8,bindSpike_omicron,4.5333,1884.779,NA,4.5333,Binding Antibody to Spike Omicron,Anti Spike IgG Omicron (AU/ml),lloq,1
+bindSpike,5,bindSpike_delta1,4.5333,6900.02,NA,4.5333,Binding Antibody to Spike Delta-AY.4.2,Anti Spike IgG Delta-AY.4.2 (AU/ml),lloq,1
+bindSpike,6,bindSpike_delta3,4.5333,7925.164,NA,4.5333,Binding Antibody to Spike Delta-B.1.617.2,Anti Spike IgG Delta-B.1.617.2 (AU/ml),lloq,1
+bindSpike,7,bindSpike_delta2,4.5333,8985.413,NA,4.5333,Binding Antibody to Spike Delta-B.1.617.2/AY.4,Anti Spike IgG Delta-B.1.617.2/AY.4 (AU/ml),lloq,1
+bindSpike,8,bindSpike_omicron,4.5333,1884.779,NA,4.5333,Binding Antibody to Spike BA.1,Anti Spike IgG BA.1 (AU/ml),lloq,1
 id50,1,pseudoneutid50,3.0691,12988.43,2.612,2.612,PsV Neutralization to D614G,Pseudovirus-nAb D614G (IU50/ml),lod,1
-id50,2,pseudoneutid50_B.1.351,2.8732,2342.899,2.612,2.612,PsV Neutralization to BA.1.351,Pseudovirus-nAb B.1.351 (IU50/ml),lod,1
+id50,2,pseudoneutid50_B.1.351,2.8732,2342.899,2.612,2.612,PsV Neutralization to Beta,Pseudovirus-nAb Beta (IU50/ml),lod,1
 id50,3,pseudoneutid50_BA.1,4.3098,1769.891,2.612,2.612,PsV Neutralization to BA.1,Pseudovirus-nAb BA.1 (IU50/ml),lod,1
 id50,4,pseudoneutid50_BA.2,3.7874,2960.245,2.612,2.612,PsV Neutralization to BA.2,Pseudovirus-nAb BA.2 (IU50/ml),lod,1
-id50,5,pseudoneutid50_BA.4.5,3.7221,3806.533,2.612,2.612,PsV Neutralization to BA.4.5,Pseudovirus-nAb BA.4 BA.5 (IU50/ml),lod,1
+id50,5,pseudoneutid50_BA.4.5,3.7221,3806.533,2.612,2.612,PsV Neutralization to BA.4/BA.5,Pseudovirus-nAb BA.4/BA.5 (IU50/ml),lod,1
