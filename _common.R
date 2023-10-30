@@ -196,9 +196,8 @@ has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
 ###################################################################################################
 # read data
 
-data_name = paste0(TRIAL, "_data_processed.csv")
 if (startsWith(tolower(study_name), "mock")) {
-    data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
+    data_name_updated <- paste0(TRIAL, "_data_processed_with_riskscore.csv")
     # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
     path_to_data = ifelse (endsWith(here::here(), "correlates_reporting2"), here::here("data_clean", data_name_updated), here::here("..", "data_clean", data_name_updated))
     data_name = data_name_updated    
@@ -302,6 +301,7 @@ if (exists("COR")) {
             tfinal.tpeak = 92 # as computed in reporting3 repo
         } else if (TRIAL == "moderna_real") {
             if (COR == "D57a") tfinal.tpeak = 92 # for comparing with stage 2 
+            
         } else if (TRIAL == "janssen_na_EUA") {
             tfinal.tpeak=53
         } else if (TRIAL == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
@@ -371,11 +371,19 @@ if (exists("COR")) {
             if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
             
         } else if (study_name=="HVTN705") {
-            tfinal.tpeak=550
-
+          tfinal.tpeak=550
+          
+        } else if (study_name=="VAT08") {
+          # hardcode 180 days post dose 2
+          if (COR=="D22omi") {
+            tfinal.tpeak=180 # tpeak is dose 2
+          } else if (COR=="D43omi") {
+            tfinal.tpeak=180-21 # tpeak is 21 days post dose 2
+          } else stop("COR not supported: "%.%COR)
+          
         }
         
-        if (!TRIAL %in% c("janssen_partA_VL")) {
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined")) {
           # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
@@ -458,7 +466,7 @@ if(config$is_ows_trial) {
 
 ###################################################################################################
 
-if (!TRIAL %in% c("janssen_partA_VL", "moderna_boost")) {
+if (is.null(config$assay_metadata)) {
     
   names(assays)=assays # add names so that lapply results will have names
   
@@ -747,7 +755,7 @@ if (is.null(config$assay_metadata)) {
 # figure labels and titles for markers
 ###############################################################################
 
-markers <- c(outer(times[which(times %in% c("B", "Day29", "Day57"))], assays, "%.%"))
+# markers <- c(outer(times[which(times %in% c("B", "Day29", "Day57"))], assays, "%.%"))
 
 # race labeling
 labels.race <- c(
@@ -834,7 +842,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
       "Age < 65"
     )
 
-} else if (study_name %in% c("VAT08m")) {
+} else if (study_name %in% c("VAT08")) {
     Bstratum.labels <- c(
       "Age >= 60",
       "Age < 60"
@@ -905,27 +913,21 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
       "Non-US, Age >= 65"
     )
 
-} else if (study_name=="VAT08m") {
-#    demo.stratum.labels <- c(
-#      "Not HND, Age 18-59",
-#      "Not HND, Age >= 60",
-#      "HND, Age 18-59",
-#      "HND, Age >= 60",
-#      "USA, Age 18-59",
-#      "USA, Age >= 60",
-#      "JPN, Age 18-59",
-#      "JPN, Age >= 60"
-#    )
-
-    # in this partial dataset, we need to collapse "Not HND, US or JPN, senior" and "HND, senior" due to sparsity
+} else if (study_name=="VAT08") {
+  #    Stage 1, Not HND, Not senior
+  #    Stage 1, Not HND, senior
+  #    Stage 1, HND, Not senior
+  #    Stage 1, HND, senior
+  #    Stage 2, Not senior
+  #    Stage 2, senior
+  
     demo.stratum.labels <- c(
-      "Not HND, Age 18-59",
-      "Not USA or JPN, Age >= 60",
-      "HND, Age 18-59",
-      "USA, Age 18-59",
-      "USA, Age >= 60",
-      "JPN, Age 18-59",
-      "JPN, Age >= 60"
+      "Stage 1 Not HND, Age 18-59",
+      "Stage 1 Not HND, Age >= 60",
+      "Stage 1 HND, Age 18-59",
+      "Stage 1 HND, Age >= 60",
+      "Stage 2, Age 18-59",
+      "Stage 2, Age >= 60"
     )
 
 } else if (study_name=="HVTN705") {
