@@ -341,11 +341,11 @@ vat08_combined: &vat08_combined
   time_labels: [Day 1, Day 22, Day 43, D22 fold-rise over D1, D43 fold-rise over D1, D43 fold-rise over D22]
   study_name: VAT08
   assay_metadata: assay_metadata/vat08_combined_assay_metadata.csv
-  covariates_riskscore: ~.+ risk_score + as.factor(Region)
+  covariates_riskscore: ~.+ FOI + risk_score + as.factor(Region)
   low_efficacy: no
   num_boot_replicates: 10
   num_perm_replicates: 10
-  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231028.csv
+  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231101.csv
   
 # vat08m_nonnaive: &vat08m_nonnaive
 #   inherits: vat08m_base
@@ -498,6 +498,7 @@ hvtn705V1V2: &hvtn705V1V2
 # in labels, % is allowed in the middle, but not in the beginning
 hvtn705second: &hvtn705second
   <<: *hvtn705base
+  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v11.csv
   assays: [
          ELCZ,ELMo,ADCPgp140C97ZAfib,ADCPgp140Mos1fib,
          IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_V1V2,
@@ -742,7 +743,7 @@ IgG3 V2p breadth score trunc1
   uloqs: [1884160,1869824,NA,NA,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA]
   primary_assays: [ELCZ,ADCPgp140C97ZAfib,ELISpotPTEEnv,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay_overall]
   multivariate_assays: [
-           ELCZ+ADCPgp140C97ZAfib+ELISpotPTEEnv+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall 
+           ELCZ+ADCPgp140C97ZAfib+ICS4AnyEnvIFNg_OR_IL2+ICS8AnyEnvIFNg_OR_IL2+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall 
             #ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm,
             #ELCZ+ADCPgp140C97ZAfib+IgG50mdw_V1V2+IgG340mdw_gp120_gp140_vm,
             #IgG340mdw_V1V2+IgG50mdw_V1V2    
@@ -791,7 +792,6 @@ IgG3 V2p breadth score trunc1
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2GagIFNg_OR_IL2,
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2RNAseIntIFNg_OR_IL2
   ]
-  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v11.csv
 
 hvtn705secondRSA: &hvtn705secondRSA
   inherits: hvtn705second

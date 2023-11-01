@@ -53,12 +53,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_bAb)) ## for some reason if this 
 	Rscript code/cor_coxph.R D57over29
 	Rscript code/cor_coxph.R D29start28
 	Rscript code/cor_graphical_time_to_event.R D29D57
-else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
-	Rscript code/cor_coxph.R D22
-	Rscript code/cor_coxph.R D43
-	Rscript code/cor_coxph.R D22omi
-	Rscript code/cor_coxph.R D43omi
-	Rscript code/cor_graphical_time_to_event.R D22D43
+else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
+	Rscript code/cor_coxph_vat08_combined.R D22omi
+	Rscript code/cor_coxph_vat08_combined.R D43omi
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D43
 	Rscript code/cor_coxph.R D43start48
