@@ -7,7 +7,7 @@ if(verbose) print("Regression for continuous markers")
 
 fits=list()
 fits.scaled=list()
-for (i in 1:2) {
+for (i in 1:2) { # 1: not scaled, 2: scaled
   for (a in all.markers) {
     if(i==1) {
       f= update(form.0, as.formula(paste0("~.+", a)))
@@ -16,9 +16,16 @@ for (i in 1:2) {
     }
     
     models = lapply(1:10, function (imp) {
-      dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
-      svycoxph(f, design=design.vacc.seroneg) 
+      # imp=1
+      if (TRIAL=="janssen_partA_VL") {
+        dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      } else if (TRIAL=="vat08_combined") {
+        dat.vac$EventIndOfInterest  = dat.vac[[paste0("EventIndOmicronD",tpeak,"hotdeck",imp)]]
+        dat.vac$EventTimeOfInterest = dat.vac[[paste0("EventTimeOmicronD",tpeak,"hotdeck",imp)]]
+      } else stop('wrong TRIAL: '%.%TRIAL)
+      
+      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
+      svycoxph(f, design=design.vac) 
     })
     betas<-MIextract(models, fun=coef)
     vars<-MIextract(models, fun=vcov)
@@ -28,14 +35,16 @@ for (i in 1:2) {
       fits[[a]]=res
       
       # save for forest plots
-      cox.df=rbind(cox.df, list(
-        region = region, 
-        variant = variant, 
-        assay = a, 
-        est = exp(res[nrow(res),"results"]),
-        lb =exp(res[nrow(res),"(lower"]),
-        ub = exp(res[nrow(res),"upper)"])
-      ))
+      if (TRIAL=='janssen_partA_VL') {
+        cox.df=rbind(cox.df, list(
+          region = region, 
+          variant = variant, 
+          assay = a, 
+          est = exp(res[nrow(res),"results"]),
+          lb =exp(res[nrow(res),"(lower"]),
+          ub = exp(res[nrow(res),"upper)"])
+        ))
+      }
 
     } else {
       fits.scaled[[a]]=res
@@ -47,19 +56,16 @@ for (i in 1:2) {
 # i=1
 # a="Day29pseudoneutid50"
 # # remove cases with missing variants info and cases with competing types
-# dat.tmp=dat.vac.seroneg
+# dat.tmp=dat.vac
 # dat.tmp=subset(dat.tmp, !(EventIndPrimary==1 & (is.na(seq1.variant) | seq1.variant!=variant)))
-# design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.tmp)
-# svycoxph(Surv(EventTimePrimaryD29, EventIndPrimary) ~ risk_score + Day29pseudoneutid50, design=design.vacc.seroneg) 
+# design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.tmp)
+# svycoxph(Surv(EventTimePrimaryD29, EventIndPrimary) ~ risk_score + Day29pseudoneutid50, design=design.vac) 
 
 
-
-
-###################################################################################################
 # make continuous markers tables
 # one for per 10 fold inc and one for per SD increase
 
-for (i in 1:2) {
+for (i in 1:2) { # 1: not scaled, 2: scaled
   # remove missInfo and cast as matrix to get a numeric matrix
   res=as.matrix(mysapply(if(i==1) fits else fits.scaled, function (fit) as.matrix(subset(fit, select=-missInfo))[nrow(fit),]))
   # exp HR
@@ -84,7 +90,7 @@ for (i in 1:2) {
         label=paste0("tab:CoR_univariable_svycoxph_pretty",ifelse(i==1,"","_scaled")), 
         caption.placement = "top", 
         caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", 
-                       variant, "-", config.cor$txt.endpoint, " in ", region,
+                       config.cor$txt.endpoint, 
                        " in the vaccine group: Hazard ratios per ",ifelse(i==1,"10-fold","SD")," increment in the marker*")
   )
 }
@@ -94,24 +100,40 @@ for (i in 1:2) {
 ###################################################################################################
 if(verbose) print("regression for trichotomized markers")
 
+marker.levels = sapply(all.markers, function(a) length(table(dat.vac[[a%.%"cat"]])))
+
 fits.tri=list()
 overall.p.tri=c()
 for (a in all.markers) {
   if(verbose) myprint(a)
   f= update(form.0, as.formula(paste0("~.+", a, "cat")))
+  
   models = lapply(1:10, function (imp) {
-    dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-    design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
-    svycoxph(f, design=design.vacc.seroneg) 
+    # imp=1
+    if (TRIAL=="janssen_partA_VL") {
+      dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+    } else if (TRIAL=="vat08_combined") {
+      dat.vac$EventIndOfInterest  = dat.vac[[paste0("EventIndOmicronD",tpeak,"hotdeck",imp)]]
+      dat.vac$EventTimeOfInterest = dat.vac[[paste0("EventTimeOmicronD",tpeak,"hotdeck",imp)]]
+    } else stop('wrong TRIAL: '%.%TRIAL)
+    
+    design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
+    svycoxph(f, design=design.vac) 
   })
+  
   betas<-MIextract(models, fun=coef)
   vars<-MIextract(models, fun=vcov)
   combined.model = MIcombine(betas,vars)
   fits.tri[[a]]=summary(combined.model)
   
   # get generalized Wald p values
-  rows=nrow(fits.tri[[1]])-1:0
-  stat=coef(combined.model)[rows] %*% solve(vcov(combined.model)[rows,rows]) %*% coef(combined.model)[rows]
+  
+  rows=nrow(fits.tri[[a]])- (marker.levels[a]-2):0
+  if (length(rows)>1) {
+    stat=coef(combined.model)[rows] %*% solve(vcov(combined.model)[rows,rows]) %*% coef(combined.model)[rows]
+  } else {
+    stat=coef(combined.model)[rows] * 1/(vcov(combined.model)[rows,rows]) * coef(combined.model)[rows]
+  }
   overall.p.tri=c(overall.p.tri, pchisq(stat, length(rows), lower.tail = FALSE))
 }
 names(overall.p.tri) = all.markers
@@ -124,24 +146,33 @@ overall.p.0=sub("0.000","<0.001",overall.p.0)
 ###################################################################################################
 # make trichotomized markers table
 
-get.est=function(fit) {
-  res=subset(fit, select=-missInfo)[nrow(fit)-1:0,1]
-  formatDouble(exp(res), 2, remove.leading0=F)
+get.est=function(a) {
+  fit=fits.tri[[a]]
+  if (length(fit)==1) return (rep(NA,2))
+  res=subset(fit, select=-missInfo)[nrow(fit)-(marker.levels[a]-2):0,1]
+  out=formatDouble(exp(res), 2, remove.leading0=F)
+  if (length(out)==1) c(NA,out) else out
 }
-get.ci =function(fit) {
-  res=subset(fit, select=-missInfo)[nrow(fit)-1:0,] 
-  glue("({formatDouble(exp(res[,'(lower']), 2, remove.leading0=F)}-{formatDouble(exp(res[,'upper)']), 2, remove.leading0=F)})")
+get.ci =function(a) {
+  fit=fits.tri[[a]]
+  if (length(fit)==1) return (rep(NA,2))
+  res=subset(fit, select=-missInfo)[nrow(fit)-(marker.levels[a]-2):0,,drop=F] 
+  out=glue("({formatDouble(exp(res[,'(lower']), 2, remove.leading0=F)}-{formatDouble(exp(res[,'upper)']), 2, remove.leading0=F)})")
+  if (length(out)==1) c(NA,out) else out
 }
-get.p  =function(fit) {
-  res=subset(fit, select=-missInfo)[nrow(fit)-1:0,] 
-  formatDouble(2*pnorm(abs(res[,1])/res[,"se"], lower.tail=F), 3, remove.leading0=F)
+get.p  =function(a) {
+  fit=fits.tri[[a]]
+  if (length(fit)==1) return (rep(NA,2))
+  res=subset(fit, select=-missInfo)[nrow(fit)-(marker.levels[a]-2):0,,drop=F] 
+  out=formatDouble(2*pnorm(abs(res[,1])/res[,"se"], lower.tail=F), 3, remove.leading0=F)
+  if (length(out)==1) c(NA,out) else out
 }
-get.p(fits.tri[[1]])
+get.est(all.markers[1])
 
 # regression parameters
-est=c(rbind(1.00,  sapply(fits.tri, function (fit) if(length(fit)==1) rep(NA,2) else get.est(fit))))
-ci= c(rbind("N/A", sapply(fits.tri, function (fit) if(length(fit)==1) rep(NA,2) else get.ci (fit))))
-p=  c(rbind("N/A", sapply(fits.tri, function (fit) if(length(fit)==1) rep(NA,2) else get.p  (fit))))
+est=c(rbind(1.00,  sapply(all.markers, function (a) get.est(a))))
+ci= c(rbind("N/A", sapply(all.markers, function (a) get.ci (a))))
+p=  c(rbind("N/A", sapply(all.markers, function (a) get.p  (a))))
 
 tab=cbind(
   rep(c("Lower","Middle","Upper"), length(p)/3), 
@@ -162,7 +193,7 @@ mytex(tab[1:(nrow(tab)),], file.name=paste0("CoR_univariable_svycoxph_cat_pretty
       label=paste0("tab:CoR_univariable_svycoxph_cat_pretty_", study_name), 
       caption.placement = "top", 
       caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", 
-                     variant, "-", config.cor$txt.endpoint, " in ", region,
+                     config.cor$txt.endpoint, 
                      " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*")
 )
 
@@ -188,9 +219,9 @@ if (!is.null(config$multivariate_assays)) {
       
       ## todo
       models = lapply(1:10, function (imp) {
-        dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-        design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
-        svycoxph(f, design=design.vacc.seroneg) 
+        dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
+        svycoxph(f, design=design.vac) 
       })
       betas<-MIextract(models, fun=coef)
       vars<-MIextract(models, fun=vcov)
@@ -221,3 +252,7 @@ if (!is.null(config$multivariate_assays)) {
   }
   
 }
+
+
+
+write(NA, file=paste0(save.results.to, "permutation_replicates_"%.%study_name))     # so the rmd file can compile

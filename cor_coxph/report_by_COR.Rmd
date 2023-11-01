@@ -3,7 +3,7 @@ fname.suffix = study_name
 ```
 
 
-# `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
+# `r COR` Univariate CoR: Cox Models of Risk 
 
 The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise. One model per row.
 
@@ -40,6 +40,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \vspace{30pt}
 
 
+<!-- only for two TRIALs -->
 `r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA")) '<!--'`
 \begin{table}[H]
 \caption{The ratio of sample sizes required to power a future trial for the column marker compared to the row marker (Follmann 2018). Confidence intervals are based on $10^3$ bootstrap replicates. }
@@ -53,6 +54,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \end{table}
 \vspace{10pt}
 `r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA"))'-->'`
+
 
 
 \begin{table}[H]
@@ -83,36 +85,35 @@ if(!contain(attr(config,"config"),"senior") & file.exists(here::here('cor_coxph'
 ## Marginalized risk and controlled vaccine efficacy plots
 
 
-\begin{table}[H] 
-\caption{Analysis of Day `r tpeak` markers (upper vs. lower tertile) as a CoR and a controlled risk CoP.}
-\begin{center}
-\setlength{\tabcolsep}{.5ex}
-\begin{tabular}{lcccccc} \hline 
- & \multicolumn{2}{c}{marginalized risk} & \multicolumn{2}{c}{controlled risk} & & \\ 
- & \multicolumn{2}{c}{ratio $RR_M(0,1)$} & \multicolumn{2}{c}{ratio $RR_C(0,1)^1$} & \multicolumn{2}{c}{e(0,1)$^2$} \\ 
-  & Point Est. & 95\% CI  &    Point Est. & 95\% CI  &   Point Est.  & 95\% CI UL \\ \hline
-\input{`r pathCoRoutput`/marginalized_risks_cat_`r fname.suffix`}  \\ \hline 
-\end{tabular}
-\end{center}
-$^1$Conservative (upper bound) estimate assuming unmeasured confounding at level $RR_{UD}(0,1)=RR_{EU}(0,1) = 2$ and thus $B(0,1)=4/3$. \\
-$^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) biomarker subgroups after controlling for `r covariates_adjusted`; UL = upper limit.\\
-`r special.note`
-\end{table}
+<!-- \begin{table}[H]  -->
+<!-- \caption{Analysis of Day `r tpeak` markers (upper vs. lower tertile) as a CoR and a controlled risk CoP.} -->
+<!-- \begin{center} -->
+<!-- \setlength{\tabcolsep}{.5ex} -->
+<!-- \begin{tabular}{lcccccc} \hline  -->
+<!--  & \multicolumn{2}{c}{marginalized risk} & \multicolumn{2}{c}{controlled risk} & & \\  -->
+<!--  & \multicolumn{2}{c}{ratio $RR_M(0,1)$} & \multicolumn{2}{c}{ratio $RR_C(0,1)^1$} & \multicolumn{2}{c}{e(0,1)$^2$} \\  -->
+<!--   & Point Est. & 95\% CI  &    Point Est. & 95\% CI  &   Point Est.  & 95\% CI UL \\ \hline -->
+<!-- \input{`r pathCoRoutput`/marginalized_risks_cat_`r fname.suffix`}  \\ \hline  -->
+<!-- \end{tabular} -->
+<!-- \end{center} -->
+<!-- $^1$Conservative (upper bound) estimate assuming unmeasured confounding at level $RR_{UD}(0,1)=RR_{EU}(0,1) = 2$ and thus $B(0,1)=4/3$. \\ -->
+<!-- $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) biomarker subgroups after controlling for `r covariates_adjusted`; UL = upper limit.\\ -->
+<!-- `r special.note` -->
+<!-- \end{table} -->
 
-\clearpage
-
-
-```{r, echo=FALSE, results='asis'}
-
-  for (a in all.markers) {
-    assay=marker.name.to.assay(a)
-    res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
-  }
-```
+<!-- \clearpage -->
 
 
-## Multivariate Cox Models of Risk {#cor-multicoxph-Day`r COR`}
+<!-- ```{r, echo=FALSE, results='asis'} -->
+<!--   for (a in all.markers) { -->
+<!--     assay=marker.name.to.assay(a) -->
+<!--     res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE) -->
+<!--     cat(res, sep = '\n') -->
+<!--   } -->
+<!-- ``` -->
+
+
+## Multivariate Cox Models of Risk 
 
 ```{r, echo=FALSE, results='asis'}
   if (!is.null(config$multivariate_assays)) {
