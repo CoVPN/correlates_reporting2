@@ -199,7 +199,6 @@ if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m"
 source(here::here("code", "cor_coxph_risk_bootstrap.R"))
 
 for.title="" # need to be defined even if it is empty
-
 source(here::here("code", "cor_coxph_risk_plotting.R"))
 
 if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_EUA")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
