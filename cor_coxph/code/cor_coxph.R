@@ -61,14 +61,6 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B)
 myprint(numPerm)
 
-# uloq censoring, done here b/c should not be done for immunogenicity reports
-# note that if delta are used, delta needs to be recomputed
-for (a in assays) {
-  for (t in "Day"%.%tpeak ) {
-    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
-  }
-}    
-
 # define an alias for EventIndPrimaryDxx
 dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
 

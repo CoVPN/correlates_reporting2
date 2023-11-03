@@ -22,9 +22,7 @@ if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("
     
 # COR defines the analysis to be done, e.g. D14
 if(!exists("COR")) {
-    if(!exists("Args")) {
-      Args <- commandArgs(trailingOnly=TRUE)
-    }
+    if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
     if (length(Args)>0) {
         COR=Args[1]
         myprint(COR)
@@ -32,6 +30,9 @@ if(!exists("COR")) {
         warning("No COR. This is okay if _common.R is sourced just to load common functions. If needed, COR can be defined through command line argument or in R script before _common.R is sourced.")
     }
 }
+
+# if DESCRIPTIVE env variable is set, then we are doing descriptive analyses, e.g. immuno_tabular, or cor_graphical
+DESCRIPTIVE = Sys.getenv("DESCRIPTIVE") %in% c("1", "T", "TRUE")
 
 
 ###################################################################################################
@@ -63,6 +64,12 @@ if (!is.null(config$assay_metadata)) {
   
   # remove bindN
   assay_metadata=subset(assay_metadata, assay!="bindN")
+  
+  # change lloq for bAb to min(...) when TRIAL is vat08_combined and the DESCRIPTIVE flag is NOT set
+  if (TRIAL=='vat08_combined' & !DESCRIPTIVE) {
+    lloq_min = min (subset(assay_metadata, panel=='bindSpike' & assay!="bindSpike_mdw", lloq))
+    assay_metadata[assay_metadata$panel=='bindSpike' & assay_metadata$assay!="bindSpike_mdw",'lloq'] = lloq_min
+  }
   
   assays=assay_metadata$assay
   
@@ -214,15 +221,57 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 
 dat.mock <- read.csv(path_to_data)
 
-# some special treatment
-if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA",
-                                 "janssen_partA_VL")) {
+
+###################################
+# some further data processing
+
+# uloq censoring when it is for correlates analyses, not for descriptive analyses
+if (!DESCRIPTIVE) {
+  for (a in assays) {
+    uloq=assay_metadata$uloq[assay_metadata$assay==a]
+    if (!is.na(uloq)) { # uloq is NA for mdw
+      for (t in c("B","Day"%.%tpeak)  ) {
+        dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloq), log10(uloq), dat.mock[[t %.% a]])
+      }
+    }
+  }    
+}
+
+
+if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA", "janssen_partA_VL")) {
   # make endpointDate.Bin a factor variable
   dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
 
 } else if (TRIAL %in% c("hvtn705secondRSA", "hvtn705secondNonRSA")) {
   # subset to RSA or non-RSA
   dat.mock = subset(dat.mock, RSA==ifelse(TRIAL=="hvtn705secondRSA", 1, 0))
+  
+} else if (TRIAL=='vat08_combined') {
+  if (DESCRIPTIVE) {
+    # censor bAb markers by lloq when the DESCRIPTIVE flag is set (data in analysis ready dataset is censored by lloq_min)
+    bAb_markers = subset(assay_metadata, panel=='bindSpike' & assay!='bindSpike_mdw', assay, drop=T)
+    for (a in bAb_markers) {
+      for (t in c("B", paste0("Day", timepoints)) ) {
+        dat.mock[[t%.%a]] = ifelse(dat.mock[[t%.%a]] < log10(lloqs[a]), log10(lloqs[a]/2), dat.mock[[t%.%a]])
+      }
+    }
+    
+    # recompute delta using censored markers
+    # need to censor by uloq first as in data processing
+    tmp=list()
+    for (a in bAb_markers) {
+      for (t in c("B", paste0("Day", timepoints)) ) {
+        tmp[[t %.% a]] <- ifelse(dat_proc[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat_proc[[t %.% a]])
+      }
+    }
+    tmp=as.data.frame(tmp) # cannot subtract list from list, but can subtract data frame from data frame
+    
+    for (tp in rev(timepoints)) {
+      dat_proc["Delta"%.%tp%.%"overB" %.% bAb_markers] <- tmp["Day"%.%tp %.% bAb_markers] - tmp["B" %.% bAb_markers]
+    }   
+    dat_proc["Delta"%.%timepoints[2]%.%"over"%.%timepoints[1] %.% bAb_markers] <- tmp["Day"%.% timepoints[2]%.% bAb_markers] - tmp["Day"%.%timepoints[1] %.% bAb_markers]
+  }
+  
 }
 
 
