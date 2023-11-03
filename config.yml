@@ -332,38 +332,35 @@ janssen_sa_mock:
   covariates_riskscore: ~.+ risk_score
   covariates_norisksco: ~.+ Age
 
-
-vat08m_base: &vat08m_base
-  <<: *ows_trial
+# not extending ows trial b/c don't want Bserostatus defined, which affects subset in _common.R
+vat08_combined: &vat08_combined
+  sampling_scheme: case_cohort
   two_marker_timepoints: yes
   timepoints: [22, 43]
   times: [B, Day22, Day43, Delta22overB, Delta43overB, Delta43over22]
   time_labels: [Day 1, Day 22, Day 43, D22 fold-rise over D1, D43 fold-rise over D1, D43 fold-rise over D22]
-  assays: [pseudoneutid50] # pseudoneutid50deltaB
-  llox_label: [LOD]
-  assay_labels: [PsV Neutralization 50% Titer]
-  assay_labels_short: [Pseudovirus-nAb ID50 (IU50/ml)]
-  study_name: VAT08m
-  covariates_riskscore: ~.+ risk_score
+  study_name: VAT08
+  assay_metadata: assay_metadata/vat08_combined_assay_metadata.csv
+  covariates_riskscore: ~.+ FOI + risk_score + as.factor(Region)
   low_efficacy: no
-  num_boot_replicates: 1000
-  num_perm_replicates: 10000
-  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08m_data_processed_with_riskscore.csv
+  num_boot_replicates: 10
+  num_perm_replicates: 10
+  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231101.csv
   
-vat08m_nonnaive: &vat08m_nonnaive
-  inherits: vat08m_base
-  Bserostatus: 1
-  ve_ylim: [0,1]
-  ve_ylim_log: [0.0,0.98]
-  additional_models: [
-    risk_score + Bpseudoneutid50 + DeltatpeakoverBpseudoneutid50, # study baseline and fold change, also see _common.R do.fold.change
-    Age + I(Country==3)+ Daytpeakpseudoneutid50cat
-  ]
-  
-vat08m_naive: &vat08m_naive
-  <<: *vat08m_base
-  ve_ylim: [-1,1]
-  ve_ylim_log: [-2.0,0.98]
+# vat08m_nonnaive: &vat08m_nonnaive
+#   inherits: vat08m_base
+#   Bserostatus: 1
+#   ve_ylim: [0,1]
+#   ve_ylim_log: [0.0,0.98]
+#   additional_models: [
+#     risk_score + Bpseudoneutid50 + DeltatpeakoverBpseudoneutid50, # study baseline and fold change, also see _common.R do.fold.change
+#     Age + I(Country==3)+ Daytpeakpseudoneutid50cat
+#   ]
+#   
+# vat08m_naive: &vat08m_naive
+#   <<: *vat08m_base
+#   ve_ylim: [-1,1]
+#   ve_ylim_log: [-2.0,0.98]
   
 
 prevent19: &prevent19
@@ -501,6 +498,7 @@ hvtn705V1V2: &hvtn705V1V2
 # in labels, % is allowed in the middle, but not in the beginning
 hvtn705second: &hvtn705second
   <<: *hvtn705base
+  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v12.csv
   assays: [
          ELCZ,ELMo,ADCPgp140C97ZAfib,ADCPgp140Mos1fib,
          IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_V1V2,
@@ -545,6 +543,7 @@ ADCC_CAP8_CH58_WITO_peak_breadth,
 ADCC_CAP8_CH58_WITO_pAUC_breadth,
 ELISpotPTEEnv,
 mdw_xassay_overall,
+mdw_xassay_overall_noelispot,
 mdw_xassay_select_igg3v1v2,
 IgG340mdw_V1V2_trunc1, 
 mdw_xassay_select_igg3v1v2_trunc1,
@@ -640,6 +639,7 @@ ADCC peak breadth score,
 ADCC pAUC breadth score,
 ELISPot PTE Env,
 Multi-epitope functions,
+Overall maximal diversity score (no ELISPot),
 IgG3 V1V2 breadth (AE.A244/C.1086/B.CaseA),
 IgG3 V1V2 breadth score trunc1,
 IgG3 V1V2 breadth score selected trunc1,
@@ -733,6 +733,7 @@ ADCC peak breadth score,
 ADCC pAUC breadth score,
 ELISPot PTE Env,
 Multi-epitope functions,
+Overall maximal diversity score (no ELISPot),
 IgG3 V1V2 A244/1086/CaseA,
 IgG3 V1V2 breadth score trunc1,
 IgG3 V1V2 breadth score selected trunc1,
@@ -740,12 +741,12 @@ IgG3 V2i breadth score trunc1,
 IgG3 V2p breadth score trunc1
 
   ]
-  llox_label: [LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ]
-  lloxs:      [80,  100,   NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,   NA,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA  ,NA,NA,1,1,1,1,1,NA,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,NA,NA,NA,1,NA,NA,NA,NA,NA,NA]
-  uloqs: [1884160,1869824,NA,NA,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA]
-  primary_assays: [ELCZ,ADCPgp140C97ZAfib,ELISpotPTEEnv,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay_overall]
+  llox_label: [LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ]
+  lloxs:      [80,  100,   NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,   NA,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA  ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA   ,NA  ,NA,NA,1,1,1,1,1,NA,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,NA,NA,NA,1,NA,NA,NA,NA,NA,NA,NA]
+  uloqs: [1884160,1869824,NA,NA,22000,22000,NA,NA,NA,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,22000,22000,22000,22000,22000,NA,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,22000,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA]
+  primary_assays: [ELCZ,ADCPgp140C97ZAfib,ELISpotPTEEnv,IgG340mdw_V1V2,IgG340mdw_gp120_gp140_vm,mdw_xassay_overall_noelispot]
   multivariate_assays: [
-           ELCZ+ADCPgp140C97ZAfib+ELISpotPTEEnv+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall 
+           ELCZ+ADCPgp140C97ZAfib+ICS4AnyEnvIFNg_OR_IL2+ICS8AnyEnvIFNg_OR_IL2+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm+mdw_xassay_overall_noelispot 
             #ADCPgp140C97ZAfib+IgG340mdw_V1V2+IgG340mdw_gp120_gp140_vm,
             #ELCZ+ADCPgp140C97ZAfib+IgG50mdw_V1V2+IgG340mdw_gp120_gp140_vm,
             #IgG340mdw_V1V2+IgG50mdw_V1V2    
@@ -794,7 +795,6 @@ IgG3 V2p breadth score trunc1
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2GagIFNg_OR_IL2,
             IgG3AE.A244.V1V2.Tags_293F40delta*ICS8JMos2RNAseIntIFNg_OR_IL2
   ]
-  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v11.csv
 
 hvtn705secondRSA: &hvtn705secondRSA
   inherits: hvtn705second
@@ -873,20 +873,34 @@ D29:
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 # Sanofi
-D22:
+D22omi:
   ph1: ph1.D22
   ph2: ph2.D22
   wt: wt.D22
   WtStratum: Wstratum
-  EventIndPrimary: EventIndPrimaryD22
-  EventTimePrimary: EventTimePrimaryD22
+  EventIndPrimary:  EventIndOmicronD22hotdeck1
+  EventTimePrimary: EventTimeOmicronD22hotdeck1
   Earlyendpoint: EarlyendpointD22
   tpeak: 22
   tpeaklag: 7
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
-# Sanofi & PROFISCOV
+# Sanofi
+D43omi:
+  ph1: ph1.D43
+  ph2: ph2.D43
+  wt: wt.D43
+  WtStratum: Wstratum
+  EventIndPrimary:  EventIndOmicronD43hotdeck1
+  EventTimePrimary: EventTimeOmicronD43hotdeck1
+  Earlyendpoint: EarlyendpointD43
+  tpeak: 43
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+# PROFISCOV
 D43:
   ph1: ph1.D43
   ph2: ph2.D43
@@ -940,35 +954,6 @@ D91over43:
   tpeaklag: 7
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 57 visit; no. cases = number of this cohort with an observed COVID endpoint.
-
-
-# Sanofi
-D22omi:
-  ph1: ph1.D22
-  ph2: ph2.D22
-  wt: wt.D22
-  WtStratum: Wstratum
-  EventIndPrimary: EventIndOmicronD22
-  EventTimePrimary: EventTimeOmicronD22
-  Earlyendpoint: EarlyendpointD22
-  tpeak: 22
-  tpeaklag: 7
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
-
-# Sanofi
-D43omi:
-  ph1: ph1.D43
-  ph2: ph2.D43
-  wt: wt.D43
-  WtStratum: Wstratum
-  EventIndPrimary: EventIndOmicronD43
-  EventTimePrimary: EventTimeOmicronD43
-  Earlyendpoint: EarlyendpointD43
-  tpeak: 43
-  tpeaklag: 7
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 
 # primary endpoint D29 markers, but the analysis population is D57. For AZ and COVE

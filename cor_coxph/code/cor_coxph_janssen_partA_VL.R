@@ -101,8 +101,8 @@ for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are few
   region=regions[iRegion]
   
   # subset dataset to region
-  dat.vac.seroneg=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
-  dat.pla.seroneg=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
+  dat.vac=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
+  dat.pla=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
   
   
   # loop through variants within this region
@@ -110,11 +110,8 @@ for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are few
     cat("==============================  "); myprint(region, variant, newline=F); cat("  ==============================\n")
     
     # append to file names for figures and tables
-    if (TRIAL=="janssen_partA_VL") {
-      fname.suffix = paste0(region, "_", variant)
-    } else {
-      fname.suffix = study_name
-    }
+    fname.suffix = paste0(region, "_", variant)
+    #fname.suffix = study_name
     
     for.title = paste0(variant, " COVID, ", region)
     
@@ -124,8 +121,8 @@ for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are few
     
     # imputed events of interest
     tabs=sapply(1:10, simplify="array", function (imp) {
-      dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      with(dat.vac.seroneg, table(ph2, EventIndOfInterest))
+      dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      with(dat.vac, table(ph2, EventIndOfInterest))
     })
     tab =apply(tabs, c(1,2), mean)
     names(dimnames(tab))[2]="Event Indicator"
@@ -137,8 +134,8 @@ for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are few
                                       
     # imputed competing events
     tabs=sapply(1:10, simplify="array", function (imp) {
-      dat.vac.seroneg$EventIndCompeting = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-      with(dat.vac.seroneg, table(ph2, EventIndCompeting))
+      dat.vac$EventIndCompeting = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+      with(dat.vac, table(ph2, EventIndCompeting))
     })
     tab =apply(tabs, c(1,2), mean)
     names(dimnames(tab))[2]="Event Indicator"
@@ -146,8 +143,8 @@ for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are few
     mytex(tab[,1,drop=F], file.name=paste0("tab1_competing_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=1)
     
     # non-imputed events of interest
-    dat.vac.seroneg$EventIndOfInterest = ifelse(dat.vac.seroneg$EventIndPrimary==1 & dat.vac.seroneg[["seq1.variant"]]==variant, 1, 0)
-    tab = with(dat.vac.seroneg, table(ph2, EventIndOfInterest)) # NA not counted, which is what we want
+    dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant"]]==variant, 1, 0)
+    tab = with(dat.vac, table(ph2, EventIndOfInterest)) # NA not counted, which is what we want
     names(dimnames(tab))[2]="Event Indicator"
     mytex(tab, file.name=paste0("tab1_nonimputed_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=0)
     
@@ -195,11 +192,11 @@ for (iRegion in c(1,2,3)) {
   region=regions[iRegion]
   
   # subset dataset to region
-  dat.vac.seroneg=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
-  dat.pla.seroneg=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
+  dat.vac=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
+  dat.pla=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
   
   # ph1 case count
-  nevents.df=rbind(nevents.df, list(region = region, variant = "All", nevents=sum(dat.vac.seroneg$EventIndPrimaryIncludeNotMolecConfirmedD29) ))
+  nevents.df=rbind(nevents.df, list(region = region, variant = "All", nevents=sum(dat.vac$EventIndPrimaryIncludeNotMolecConfirmedD29) ))
   
   # load coxph results from regional analyses
   # the coxph results from analysis ready dataset for janssen_partA_VL are different
