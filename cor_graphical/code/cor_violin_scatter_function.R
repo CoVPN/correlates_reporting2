@@ -136,8 +136,6 @@ scatter_plot <-
              y.breaks=seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]])),
              x.breaks=seq(from=18, to=86, by=17)){
         
-        if (!"size" %in% colnames(dat)) {size = 3}
-        
         p <- ggplot(dat, aes_string(x = x, y = y)) + 
             facet_wrap(facetby, nrow = 1) + 
             geom_point(alpha = 1, aes_string(color = colby, shape = shaby, size = size)) + 
