@@ -1,4 +1,4 @@
-#Sys.setenv(TRIAL = "vat08m")
+#Sys.setenv(TRIAL = "vat08_combined")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -24,6 +24,8 @@ require(devtools)
 install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
 library(gridExtra)
 library(PResiduals)
+install.packages("fmsb", repos = "http://cran.us.r-project.org") # radar plot
+library(fmsb) # radarchart()
 
 # produce geom_statistics w/ resampling-based covariate-adjusted Spearman
 source(here("code", "params.R"))
@@ -128,10 +130,10 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
     
     print("Pair plots 1:")
     
-    for (tp in tps_no_delta_over_tinterm) { # "B", "Day29", "Day57", "Day29overB", "Day57overB"
+    for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "B", "Day29", "Day57", "Day29overB", "Day57overB"
       for (trt in 0:1) {
         # Don't produce figures for placebo baseline negative to improve build time
-        if(trt==0) {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
+        if(trt==0 & study_name!="VAT08") {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
     
         for (bserostatus in bstatus.range) {
           if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
@@ -159,7 +161,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
             height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
             width = max(1.3 * length(assay_immuno), 5.5),
-            column_label_size = ifelse(max(str_length(assay_labels_short)) > 28, 5, 6.5),
+            column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4.5, 6.5),
             filename = paste0(
               save.results.to, "/pairs_", tp,
               "_Markers_", bstatus.labels.2[bserostatus + 1],
@@ -177,7 +179,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
   print("Pair plots 2:")
   for (trt in 0:1) {
     # Don't produce figures for placebo baseline negative to improve build time
-    if(trt==0) {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
+    if(trt==0 & study_name!="VAT08") {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
   
     for (bserostatus in bstatus.range) {
       if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
@@ -185,7 +187,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
       subdat <- dat.twophase.sample %>%
         dplyr::filter(Bserostatus == bserostatus & Trt == trt)
       
-      times_selected <- if(study_name=="VAT08m") {tps_no_delta_over_tinterm[c(1,4,5)]
+      times_selected <- if(study_name=="VAT08") {tps_no_delta_over_tinterm[c(1,4,5)]
         # "B", "Day29", "Day57", "Day29overB", "Day57overB", only show B and fold_change for Sanofi study
         } else {tps_no_fold_change} # "B", "Day29", "Day57"
       
@@ -205,9 +207,9 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           ),
           column_labels = paste(gsub("ay ","", labels.time[times_selected]),
                                 "\n", labels.axis[, aa][1]),
-          column_label_size = ifelse(study_name=="VAT08m", 4.5, 
-                                     ifelse(max(str_length(assay_labels_short)) > 28, 5, 6.5)),
-          axis_label_size = ifelse(study_name=="VAT08m", 7, 9),
+          column_label_size = ifelse(study_name=="VAT08", 4.5, 
+                                     ifelse(max(str_length(labels.axis[1,])) > 28, 4.5, 6.5)),
+          axis_label_size = ifelse(study_name=="VAT08", 7, 9),
           filename = paste0(
             save.results.to, "/pairs_", aa, "_by_times_",
             bstatus.labels.2[bserostatus + 1], "_", c("placebo_", "vaccine_")[trt + 1], ifelse(country=="Nvx_US", "US_only_",""),
@@ -220,7 +222,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
   
   print("Pair plots 3:")
   
-  if (study_name=="VAT08m") { # request only for this study, at day 1, pool over vaccine and placebo
+  if (study_name=="VAT08") { # request only for this study, at day 1, pool over vaccine and placebo
     tp = "B"
     for (bserostatus in bstatus.range) {
         if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
@@ -244,7 +246,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
           height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
           width = max(1.3 * length(assay_immuno), 5.5),
-          column_label_size = ifelse(max(str_length(assay_labels_short)) > 28, 5, 6.5),
+          column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4.5, 6.5),
           filename = paste0(
             save.results.to, "/pairs_", tp,
             "_Markers_", bstatus.labels.2[bserostatus + 1],
@@ -262,7 +264,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
 # - We made multiple ggplot objects, each for one assay, and combine them with ggarrange()
 #-----------------------------------------------
 print("RCDF 1:")
-for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day1", "Day22", "Day43"
+for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
   covid_corr_rcdf_facets(
     plot_dat = dat.long.twophase.sample,
     x = tp,
@@ -274,6 +276,9 @@ for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_
     arrange_nrow = ceiling(length(assay_immuno) / 3),
     panel_titles = labels.title2[tp, ] %>% unlist(),
     axis_titles = labels.axis[tp, ] %>% unlist(),
+    xbreaks = ifelse(study_name=="VAT08", 2, 1),
+    axis_title_size = 10,
+    axis_size = 10,
     filename = paste0(
       save.results.to, "/Marker_Rcdf_", tp,
       "_trt_both_bstatus_both_", study_name, ".pdf"
@@ -305,9 +310,9 @@ for (Ab in c(1, 2, 3)) {
   
   if (length(rcdf_assays) > 0) {
     
-    for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day22", "Day43"
+    for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
         
-      for (trt in c("Vaccine", if(study_name=="VAT08m") "Placebo")){
+      for (trt in c("Vaccine", if(study_name=="VAT08") "Placebo")){
         covid_corr_rcdf(
           plot_dat = subset(dat.long.twophase.sample, Trt == trt & assay %in% rcdf_assays),
           x = tp,
@@ -320,7 +325,7 @@ for (Ab in c(1, 2, 3)) {
                    max(assay_lim[rcdf_assays, tp, 2])),
           xbreaks = seq(min(assay_lim[rcdf_assays, tp, 1]), 
                         max(assay_lim[rcdf_assays, tp, 2]), 
-                        1),
+                        ifelse(study_name=="VAT08", 3, 1)),
           plot_title = paste0(labels.time[tp], " Ab Markers"),
           filename = paste0(
             save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
@@ -334,12 +339,12 @@ for (Ab in c(1, 2, 3)) {
     # RCDF plot 
     # different baseline serostatus in different plot, one treatment arm per plot
     #-----------------------------------------------
-    if (study_name!="VAT08m"){# Sanofi doesn't need plots for one arm * baseline status
+    if (study_name!="VAT08"){# Sanofi doesn't need plots for one arm * baseline status
       print("RCDF 3:")
       for (bstatus in 1:2) {
         if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next 
         
-        for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day22", "Day43"
+        for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
           covid_corr_rcdf(
             plot_dat = filter(dat.long.twophase.sample, Trt == "Vaccine", 
                               Bserostatus == bstatus.labels[bstatus],
@@ -370,12 +375,12 @@ for (Ab in c(1, 2, 3)) {
     # RCDF plot 
     # different treatment arm in different plot, one baseline status per plot
     #-----------------------------------------------
-    if (study_name=="VAT08m"){
+    if (study_name=="VAT08"){
       print("RCDF 4:")
       for (bstatus in 1:2) {
         if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next
         
-        for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day22", "Day43"
+        for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
           covid_corr_rcdf(
             plot_dat = subset(dat.long.twophase.sample, Bserostatus == bstatus.labels[bstatus] & assay %in% rcdf_assays),
             x = tp,
@@ -388,7 +393,7 @@ for (Ab in c(1, 2, 3)) {
                      max(assay_lim[rcdf_assays, tp, 2])),
             xbreaks = seq(min(assay_lim[rcdf_assays, tp, 1]), 
                           max(assay_lim[rcdf_assays, tp, 2]), 
-                          1),
+                          ifelse(study_name=="VAT08", 3, 1)),
             plot_title = paste0(labels.time[tp], " Ab Markers"),
             filename = paste0(
               save.results.to, "/Marker_Rcdf_", c("bAb", "nAb", "other")[Ab], "_", tp,
@@ -413,7 +418,7 @@ print("Boxplots 1:")
 for (bstatus in 1:2) {
   if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next 
   
-  for (tp in if(study_name!="VAT08m") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08m, "Day1", "Day22", "Day43"
+  for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
     
     covid_corr_boxplot_facets(
       plot_dat = subset(
@@ -545,7 +550,7 @@ for (bstatus in 1:2) {
 # - Scatter plots assay vs. age in years, (Day 1) Day tinterm, Day tpeak
 #-----------------------------------------------
 print("Scatter plots:")
-if(study_name!="VAT08m"){
+if(study_name!="VAT08"){
   for (tp in tps_no_fold_change) {
     for (trt in 1:2) {
       for (bstatus in 1:2) {
@@ -606,3 +611,131 @@ if(study_name!="VAT08m"){
     }
   }
 }
+
+
+print("Spider plots:")
+if(study_name=="VAT08"){
+  
+  ## load data 
+  dat.spider <- readRDS(here::here("data_clean", "twophase_data.rds"))
+  
+  # spider plot showing geometric means calculated using IPS weighting, by trt and baseline status
+  
+  # calculate geometric mean of IPS weighted readouts
+  dat.spider.by.time <- dat.spider %>%
+    select(one_of(paste0("B", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
+    rename_with(~str_remove(., "^B")) %>%
+    mutate(time="B") %>%
+    rename(Bserostatus=serostatus) %>%
+    bind_rows(
+      dat.spider %>%
+        select(one_of(paste0("Day22", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
+        rename_with(~str_remove(., "^Day22")) %>%
+        mutate(time="Day22")
+    ) %>%
+    bind_rows(
+      dat.spider %>%
+        select(one_of(paste0("Day43", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
+        rename_with(~str_remove(., "^Day43")) %>%
+        mutate(time="Day43")
+    ) %>%
+    bind_rows(
+      dat.spider %>%
+        select(one_of(paste0("Delta22overB", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
+        rename_with(~str_remove(., "^Delta22overB")) %>%
+        mutate(time="Delta22overB")
+    ) %>%
+    bind_rows(
+      dat.spider %>%
+        select(one_of(paste0("Delta43overB", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
+        rename_with(~str_remove(., "^Delta43overB")) %>%
+        mutate(time="Delta43overB")
+    ) %>%
+    mutate(Bserostatus = ifelse(Bserostatus == 1, "Pos", "Neg"),
+           Trt = ifelse(Trt == 1, "vaccine", "placebo")) %>%
+    group_by(time, Bserostatus, Trt) %>%
+    summarise(across(assays, ~ exp(sum(log(.x * wt.subcohort), na.rm=T) / sum(wt.subcohort)))) %>%
+    unique() %>%
+    as.data.frame()
+  
+  # those without any data will have a weighted geomean equal to 1, set these to NA
+  dat.spider.by.time[dat.spider.by.time == 1] <- NA
+  
+  rownames(dat.spider.by.time) <- paste0(dat.spider.by.time$time, dat.spider.by.time$Bserostatus, dat.spider.by.time$Trt)
+  dat.spider.by.time$time <- NULL
+  dat.spider.by.time$Bserostatus <- NULL
+  dat.spider.by.time$Trt <- NULL
+  
+  # stack with max and min values
+  max_min <- rbind(rep(1.8,ncol(dat.spider.by.time)), 
+                   rep(0,ncol(dat.spider.by.time)))
+  colnames(max_min) <- colnames(dat.spider.by.time)
+  rownames(max_min) <- c("max", "min")
+  
+  dat.spider.by.time <- rbind(max_min, 
+                              dat.spider.by.time)
+  
+  # setup pdf file
+  for (ab in c("bAb", "nAb")) {
+    
+    for (time in c("day1day22day43", "delta")) {
+      
+      filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", time, "_", ab, ".pdf")
+      pdf(filename, width=5.5, height=6.5)
+      par(mfrow=c(2,2), mar=c(0.1,0.1,1,0.1))
+      
+      for (bsero in c("Neg", "Pos")){
+        for(trt in c("placebo", "vaccine")){
+          
+          #filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", ab, "_trt_", trt, "_bstatus_", bsero, ".pdf")
+          #pdf(filename, width=5.5, height=6)
+          
+          dat.plot <- dat.spider.by.time[c(1,2),] %>%
+            bind_rows(dat.spider.by.time[grepl(paste0(bsero, trt), rownames(dat.spider.by.time)),]) %>%
+            select(starts_with(ifelse(ab=="bAb", "bindSpike", "pseudoneutid50")))
+          
+          colnames(dat.plot) <- assay_metadata$assay_label[match( colnames(dat.plot) , assay_metadata$assay)]
+          
+          colnames(dat.plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", colnames(dat.plot))
+          
+          if (time == "day1day22day43") {
+            dat.plot.sub = dat.plot[1:5, ]
+            color = c("#0AB7C9","#FF6F1B","#FF5EBF")
+            legend_lb = c("B","Day22","Day43")
+          } else {
+            dat.plot.sub = dat.plot[c(1,2,6,7), ]
+            color = c("dodgerblue","chartreuse3")
+            legend_lb = c("Delta22overB","Delta43overB")}
+          
+          radarchart(dat.plot.sub, 
+                     axistype=1 , 
+                     # Customize the polygon
+                     pcol = scales::alpha(color, 0.7), plwd=1.5, pty=c(15), plty=1,
+                     pfcol = scales::alpha(color, 0.2),
+                     #custom the grid
+                     cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(0.1,1.7,0.4)), 
+                     #label size
+                     vlcex=0.7,
+                     #title
+                     title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", "of nAb Markers, "), 
+                                  ifelse(bsero=="Neg", "baseline naive ", "baseline non-naive "),
+                                  trt),
+                     #title size
+                     cex.main=0.7)
+          
+          #par(xpd=NA)
+          
+          #legend
+          legend("bottom", legend=legend_lb, lty=5, pch=c(15),
+                 col=color, bty="n", ncol=3, cex=0.7,
+                 inset=c(-0.25,0))
+          
+          #dev.off()
+        }
+      }
+      par(xpd=NA)
+      dev.off()
+    }
+  }
+  
+}  
