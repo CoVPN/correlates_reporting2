@@ -458,6 +458,19 @@ profiscov_lvmn: &profiscov_lvmn
 ####################################################################
 # Non-COVID trials
 
+
+id27hpv:
+  sampling_scheme: case_control
+  two_marker_timepoints: no
+  timepoints: [18]
+  times: [M18]
+  time_labels: [Month 18]
+  study_name: IARC HPV
+  covariates_riskscore: ~.+ age
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  
+
 hvtn705base: &hvtn705base
   sampling_scheme: case_control
   two_marker_timepoints: no
