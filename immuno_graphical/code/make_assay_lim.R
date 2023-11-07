@@ -1,6 +1,7 @@
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
+Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 if (study_name %in% c("VAT08")){
   uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay

@@ -2,6 +2,7 @@
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
+Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 

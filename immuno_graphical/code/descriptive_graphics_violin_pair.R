@@ -15,6 +15,7 @@ library(ggnewscale) # for new_scale_color()
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 #if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
 source(here::here("code", "process_violin_pair_functions.R"))
+Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 
 # for the order of figure panels
