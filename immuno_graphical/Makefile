@@ -1,15 +1,22 @@
 ## all              : twophase_plots + demog_plots
 all: clean twophase_plots demog_plots
 
-## twophase_plots   : rcdfs, boxplots, scatter plots of assays saved in figs/
+## twophase_plots   : rcdfs, boxplots, scatter plots of assays saved in output/
 twophase_plots: code/descriptive_graphics_two_phase_plots.R \
   params plot_data make_assay_lim
 	Rscript code/descriptive_graphics_two_phase_plots.R
 
-## demog_plots      : rcdfs, boxplots by demographics saved in figs/demographics
+## demog_plots      : rcdfs, boxplots by demographics saved in output/demographics
 demog_plots: code/descriptive_graphics_demographic_strata.R \
+ifneq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
   params plot_data make_assay_lim
 	Rscript code/descriptive_graphics_demographic_strata.R
+	
+## violin_pair_plots      : violin, pair plots saved in output/
+demog_plots: code/descriptive_graphics_violin_pair.R \
+ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
+  params plot_data make_assay_lim
+	Rscript code/descriptive_graphics_violin_pair.R
 
 ## plot_data        : relabel and clean data sets for plotting
 # creates clean_data/long_twophase_data.rds and clean_data/twophase_data.rds

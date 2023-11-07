@@ -6,6 +6,11 @@
 renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
+source(here::here("code", "process_violin_pair_functions.R"))
+uloqs=assay_metadata$uloq; names(uloqs)=assays
+pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assays
+loqs=assay_metadata$lloq; names(loqs)=assays
+lods=assay_metadata$lod; names(lods)=assays
 #-----------------------------------------------
 
 library(here)
@@ -363,9 +368,59 @@ dat.twophase.sample$Ptid <- as.character(dat.twophase.sample$Ptid)
 dat.long.twophase.sample <- filter(dat.long.twophase.sample, assay %in% assay_immuno)
 
 
+
+
 saveRDS(as.data.frame(dat.long.twophase.sample),
   file = here("data_clean", "long_twophase_data.rds")
 )
 saveRDS(as.data.frame(dat.twophase.sample),
   file = here("data_clean", "twophase_data.rds")
 )
+
+###################################################################### 
+# prepare datasets for violin plots
+
+# longer format by assay and time
+dat.longer.immuno.subset <- dat.twophase.sample %>%
+  tidyr::pivot_longer(cols = all_of(c(outer(times, assays, "%.%"))), names_to = "time_assay", values_to = "value") %>%
+  mutate(time = gsub(paste0(assays, collapse = "|"), "", time_assay),
+         assay = gsub(paste0("^", times, collapse = "|"), "", time_assay))
+
+# define response rates
+resp <- getResponder(dat.mock, post_times = timepoints, 
+                     assays=assays, pos.cutoffs = pos.cutoffs)
+
+resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
+  tidyr::pivot_longer(!Ptid, names_to = "category", values_to = "response")
+
+# add label = LLoQ, uloq values to show in the plot
+dat.longer.immuno.subset$LLoD = with(dat.longer.immuno.subset, log10(lods[as.character(assay)]))
+dat.longer.immuno.subset$pos.cutoffs = with(dat.longer.immuno.subset, log10(pos.cutoffs[as.character(assay)]))
+dat.longer.immuno.subset$LLoQ = with(dat.longer.immuno.subset, log10(loqs[as.character(assay)]))
+dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "LoQ", "LoD"))
+dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), LLoQ, LLoD))
+
+dat.longer.immuno.subset$ULoQ = with(dat.longer.immuno.subset, log10(uloqs[as.character(assay)]))
+dat.longer.immuno.subset$lb2 = "ULoQ"
+dat.longer.immuno.subset$lbval2 =  dat.longer.immuno.subset$ULoQ
+
+# 759 unique ids, 6 timepoints, 15 assays
+dat.longer.immuno.subset <- dat.longer.immuno.subset %>%
+  mutate(category=paste0(time, assay, "Resp")) %>%
+  select(Ptid, time, assay, category, Trt, Bserostatus, value, wt.subcohort, pos.cutoffs,
+         lbval,lbval2,
+         lb,lb2) %>%
+  left_join(resp_by_time_assay, by=c("Ptid", "category"))
+
+# subsets for violin/line plots
+#### figure specific data prep
+# 1. define response rate:
+# 2. make subsample datasets such that the violin plot only shows <= 100 non-case data points
+
+#### for figures 1, 2, 3, 4: by naive/non-naive, vaccine/placebo, (Day 1), Day 22 Day 43, Day 22 - 1, Day 43 - 1
+groupby_vars1=c("Trt", "Bserostatus", "time", "assay")
+
+# define response rate
+dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1)
+write.csv(dat.longer.immuno.subset.plot1, file = here::here("data_clean", "longer_immuno_data_plot1.csv"), row.names=F)
+saveRDS(dat.longer.immuno.subset.plot1, file = here::here("data_clean", "longer_immuno_data_plot1.rds"))
