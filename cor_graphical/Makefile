@@ -15,7 +15,7 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real azd1222 azd1222_bAb)
 	Rscript code/CoR_assay_graphics.R D57
 	Rscript code/CoR_wrcdf_with_VE_lines.R D57
 
-else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
+else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 	Rscript code/cor_data_preprocess.R D22D43 # Yiwen's
 	Rscript code/cor_graphics_violin_scatter.R D22D43
 	Rscript code/cor_data_preprocess.R D22D43omi # Yiwen's
