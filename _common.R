@@ -530,15 +530,15 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
     tmp=list()
     for (a in bAb_markers) {
       for (t in c("B", paste0(DayPrefix, timepoints)) ) {
-        tmp[[t %.% a]] <- ifelse(dat_proc[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat_proc[[t %.% a]])
+        tmp[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
       }
     }
     tmp=as.data.frame(tmp) # cannot subtract list from list, but can subtract data frame from data frame
     
     for (tp in rev(timepoints)) {
-      dat_proc["Delta"%.%tp%.%"overB" %.% bAb_markers] <- tmp[DayPrefix%.%tp %.% bAb_markers] - tmp["B" %.% bAb_markers]
+      dat.mock["Delta"%.%tp%.%"overB" %.% bAb_markers] <- tmp[DayPrefix%.%tp %.% bAb_markers] - tmp["B" %.% bAb_markers]
     }   
-    dat_proc["Delta"%.%timepoints[2]%.%"over"%.%timepoints[1] %.% bAb_markers] <- tmp[DayPrefix%.% timepoints[2]%.% bAb_markers] - tmp[DayPrefix%.%timepoints[1] %.% bAb_markers]
+    dat.mock["Delta"%.%timepoints[2]%.%"over"%.%timepoints[1] %.% bAb_markers] <- tmp[DayPrefix%.% timepoints[2]%.% bAb_markers] - tmp[DayPrefix%.%timepoints[1] %.% bAb_markers]
   }
   
 }
