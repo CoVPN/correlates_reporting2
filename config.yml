@@ -345,7 +345,7 @@ vat08_combined: &vat08_combined
   low_efficacy: no
   num_boot_replicates: 10
   num_perm_replicates: 10
-  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231101.csv
+  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231107.csv
   
 # vat08m_nonnaive: &vat08m_nonnaive
 #   inherits: vat08m_base
