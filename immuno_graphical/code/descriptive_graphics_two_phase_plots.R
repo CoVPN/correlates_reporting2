@@ -162,7 +162,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
             height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
             width = max(1.3 * length(assay_immuno), 5.5),
-            column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4.5, 6.5),
+            column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5),
             filename = paste0(
               save.results.to, "/pairs_", tp,
               "_Markers_", bstatus.labels.2[bserostatus + 1],
@@ -247,7 +247,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
           height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
           width = max(1.3 * length(assay_immuno), 5.5),
-          column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4.5, 6.5),
+          column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5),
           filename = paste0(
             save.results.to, "/pairs_", tp,
             "_Markers_", bstatus.labels.2[bserostatus + 1],
@@ -280,6 +280,7 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
     xbreaks = ifelse(study_name=="VAT08", 2, 1),
     axis_title_size = 10,
     axis_size = 10,
+    panel_title_size = ifelse(study_name=="VAT08", 8, 10),
     filename = paste0(
       save.results.to, "/Marker_Rcdf_", tp,
       "_trt_both_bstatus_both_", study_name, ".pdf"
@@ -760,7 +761,7 @@ if(study_name=="VAT08"){
                      #custom the grid
                      cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(0.1,1.7,0.4)), 
                      #label size
-                     vlcex=0.7,
+                     vlcex=0.4,
                      #title
                      title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", "of nAb Markers, "), 
                                   ifelse(bsero=="Neg", "baseline naive ", "baseline non-naive "),
