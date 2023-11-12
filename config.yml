@@ -345,7 +345,7 @@ vat08_combined: &vat08_combined
   low_efficacy: no
   num_boot_replicates: 10
   num_perm_replicates: 10
-  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231101.csv
+  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231107.csv
   
 # vat08m_nonnaive: &vat08m_nonnaive
 #   inherits: vat08m_base
@@ -457,6 +457,19 @@ profiscov_lvmn: &profiscov_lvmn
 
 ####################################################################
 # Non-COVID trials
+
+
+id27hpv:
+  sampling_scheme: case_control
+  two_marker_timepoints: no
+  timepoints: [18]
+  times: [M18]
+  time_labels: [Month 18]
+  study_name: IARC HPV
+  covariates_riskscore: ~.+ age
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  
 
 hvtn705base: &hvtn705base
   sampling_scheme: case_control
