@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_by_time_", tp, "_", bsero, "_", trt, ".pdf"))`}
+
+\caption{`r paste0("Correlation plots across the markers at ", tp, " in ", gsub("_", " ", bsero), ifelse(trt=="vac", " vaccine group participants", " participants"))`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}

@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0(a, "at_", tp, ".pdf"))`}
+
+\caption{`r paste0("Distribution of ", a, " at ", tp)`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}
