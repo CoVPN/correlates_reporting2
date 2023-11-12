@@ -13,7 +13,7 @@ ifneq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 	Rscript code/descriptive_graphics_demographic_strata.R
 	
 ## violin_pair_plots      : violin, pair plots saved in output/
-demog_plots: code/descriptive_graphics_violin_pair.R \
+violin_pair_plots: code/descriptive_graphics_violin_pair.R \
 ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
   params plot_data make_assay_lim
 	Rscript code/descriptive_graphics_violin_pair.R
