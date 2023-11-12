@@ -299,7 +299,7 @@ dat.long.twophase.sample$assay_labels <-
          labels = labels.assays.short)
 print("RCDF 2:")
 # plot bAb, PsV and ADCP assays separately
-for (Ab in c(1, 2, 3)) {
+for (Ab in c(1, 2, if(study_name!="VAT08") 3)) {
   
   if (Ab == 1) {
     rcdf_assays <- assay_immuno[grepl("bind", assay_immuno)]
@@ -340,7 +340,7 @@ for (Ab in c(1, 2, 3)) {
     # RCDF plot 
     # different baseline serostatus in different plot, one treatment arm per plot
     #-----------------------------------------------
-    if (study_name!="VAT08"){# Sanofi doesn't need plots for one arm * baseline status
+    if (study_name!="VAT08"){# VAT08 doesn't need plots for one arm * one baseline status
       print("RCDF 3:")
       for (bstatus in 1:2) {
         if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next 
@@ -440,6 +440,7 @@ for (bstatus in 1:2) {
       legend = c("Placebo", "Vaccine"),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
+      panel_title_size = ifelse(study_name=="VAT08", 8, 10),
       filename = paste0(
         save.results.to, "/boxplots_", tp, "_x_trt_", bstatus.labels.2[bstatus],
         "_", study_name, ".pdf"
@@ -450,10 +451,10 @@ for (bstatus in 1:2) {
 
 #-----------------------------------------------
 # - Box plots of the assay readouts versus baseline sero-status, stratified by treatment groups
-# - Make seperate plots for Placebo and Vaccine arms
+# - Make separate plots for Placebo and Vaccine arms
 #-----------------------------------------------
 for (trt in 1:2) {
-  for (tp in tps_no_delta_over_tinterm) {
+  for (tp in if (study_name=="VAT08") {tps_no_fold_change} else {tps_no_delta_over_tinterm}) {
     
     covid_corr_boxplot_facets(
       plot_dat = subset(dat.long.twophase.sample, as.numeric(Trt) == trt),
@@ -471,6 +472,7 @@ for (trt in 1:2) {
       legend = c("Baseline Negative", "Baseline Positive"),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
+      panel_title_size = ifelse(study_name=="VAT08", 8, 10),
       filename = paste0(
         save.results.to, "/boxplots_", tp,
         "_x_bstatus_", c("placebo_arm_", "vaccine_arm_")[trt],
@@ -480,134 +482,176 @@ for (trt in 1:2) {
   }
 }
 
+
+#-----------------------------------------------
+# - Box plots of the assay readouts, stratified by baseline sero-status and treatment groups
+# - One plot for Placebo and Vaccine arms, Baseline Neg and Pos
+#-----------------------------------------------
+if (study_name=="VAT08") {# this is only reported for VAT08
+  for (tp in tps_no_fold_change) {
+    
+    covid_corr_boxplot_facets(
+      plot_dat = dat.long.twophase.sample %>% mutate(BseroTrt = factor(paste0(Bserostatus,"\n",Trt),
+                                                     levels = c("Baseline Neg\nVaccine",
+                                                                "Baseline Pos\nVaccine",
+                                                                "Baseline Neg\nPlacebo",
+                                                                "Baseline Pos\nPlacebo"))),
+      x = "BseroTrt",
+      y = tp,
+      color = "BseroTrt",
+      facet_by = "assay",
+      ylim = assay_lim[, tp,],
+      plot_LLOX = !grepl("Delta", tp), # "B", "Day29", "Day57"
+      POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
+      LLOX = log10(lloxs[assay_immuno]),
+      ULOQ = log10(uloqs[assay_immuno]),
+      arrange_ncol = 3,
+      arrange_nrow = ceiling(length(assay_immuno) / 3),
+      legend = c("Baseline Negative, Vaccine", "Baseline Positive, Vaccine", "Baseline Negative, Placebo", "Baseline Positive, Placebo"),
+      axis_titles_y = labels.axis[tp, ] %>% unlist(),
+      panel_titles = labels.title2[tp, ] %>% unlist(),
+      panel_title_size = ifelse(study_name=="VAT08", 8, 10),
+      filename = paste0(
+        save.results.to, "/boxplots_", tp,
+        "_x_trt_bstatus_",
+        study_name, ".pdf"
+      )
+    )
+  }
+}
+
+
 #-----------------------------------------------
 # Spaghetti PLOTS
 #-----------------------------------------------
 # - Spaghetti plots of antibody marker change over time
 #-----------------------------------------------
-print("Spaghetti plots:")
-## in each baseline serostatus group, randomly select 10 placebo recipients and 20 vaccine recipients
-set.seed(12345)
-var_names <- expand.grid(times = times[!grepl("Delta",times)], # "B", "Day29", "Day57" 
-                         assays = assay_immuno) %>%
-  mutate(var_names = paste0(times, assay_immuno)) %>%
-  .[, "var_names"]
+if (study_name!="VAT08"){ # no spaghetti plots for VAT08
 
-spaghetti_ptid <- dat.twophase.sample[, c("Ptid", "Bserostatus", "Trt", var_names)] %>%
-  filter(., complete.cases(.)) %>%
-  transmute(BT = paste0(as.character(Bserostatus), as.character(Trt)),
-            Ptid = Ptid) %>%
-  split(., .$BT) %>%
-  lapply(function(xx) {
-    if (xx$BT[1] %in% c("10", "00")) {
-      sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 10 placebo recipients
-      # add ifelse(length(xx$Ptid)<20, F, T) because some subset has small sample e.g. janssen_sa_partA
-    } else {
-      sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 20 vaccine recipients
-    }
-  }) %>% unlist %>% as.character
-
-spaghetti_dat <- dat.long.twophase.sample[, c("Ptid", "Bserostatus", "Trt", "assay",
-                                              times[!grepl("Delta",times)] # "B", "Day29", "Day57"
-                                              )] %>%
-  filter(Ptid %in% spaghetti_ptid) %>%
-  pivot_longer(cols = times[!grepl("Delta",times)], # "B", "Day29", "Day57"
-               names_to = "time") %>%
-  mutate(assay = factor(assay, levels = assay_immuno, labels = assay_immuno),
-         time_label = factor(time, levels = times[!grepl("Delta",times)], # "B", "Day29", "Day57"
-                             labels = gsub("B","D1",gsub("ay","", times[!grepl("Delta",times)]))# "D1", "D29", "D57"
-                             )) %>%
-  as.data.frame
-
-for (bstatus in 1:2) {
-  subdat <- subset(spaghetti_dat, Bserostatus == bstatus.labels[bstatus])
-  if(nrow(subdat)==0) next
-  covid_corr_spaghetti_facets(plot_dat = subdat,
-                              x = "time_label",
-                              y = "value",
-                              id = "Ptid",
-                              color = "Trt",
-                              facet_by = "assay",
-                              ylim = assay_lim[, times[!grepl("B|Delta",times)][1] # "Day29", "Day57"
-                                               ,],
-                              panel_titles = labels.assays.short,
-                              plot_title = paste0(
-                                "Baseline ",
-                                c("Negative", "Positive")[bstatus],
-                                " PP Placebo + Vaccine group"
-                              ),
-                              arrange_ncol = 3,
-                              arrange_nrow = ceiling(length(assay_immuno) / 3),
-                              filename = paste0(
-                                save.results.to, "/spaghetti_plot_",
-                                bstatus.labels.2[bstatus], "_",
-                                study_name, ".pdf"
-                              ))
-}
-
-#-----------------------------------------------
-# Scatter PLOTS
-#-----------------------------------------------
-# - Scatter plots assay vs. age in years, (Day 1) Day tinterm, Day tpeak
-#-----------------------------------------------
-print("Scatter plots:")
-if(study_name!="VAT08"){
-  for (tp in tps_no_fold_change) {
-    for (trt in 1:2) {
-      for (bstatus in 1:2) {
-        
-        subdat <- dat.long.twophase.sample %>%
-          filter(Bserostatus == bstatus.labels[bstatus], Trt == trt.labels[trt])
-        if(nrow(subdat)==0) next
-        
-        ## setting the range of the axes
-        xrange <- range(dat.long.twophase.sample$Age)
-        
-        
-        scatter_plot_list <- vector("list", length = length(assay_immuno))
-        
-        for (aa in 1:length(assay_immuno)) {
-          scatter_plot_list[[aa]] <- ggplot(data = subset(subdat, assay == assay_immuno[aa]),
-                                            mapping = aes_string("Age", tp)) +
-            geom_point() +
-            xlab("Age") +
-            ylab(labels.axis[tp, aa]) +
-            ggtitle(labels.title[tp, aa]) +
-            stat_smooth(method = "loess", color = "red", se = TRUE, lwd = 1) +
-            scale_x_continuous(limits = xrange) +
-            scale_y_continuous(
-              labels = label_math(10^.x), limits = assay_lim[aa, tp,],
-              breaks = seq(assay_lim[aa, tp, 1], assay_lim[aa, tp, 2], by = 1)
-            ) +
-            theme_pubr() +
-            theme(
-              plot.title = element_text(hjust = 0.5, size = ifelse(max(str_length(assays)) > 14, 9.5, 10)),
-              panel.border = element_rect(fill = NA),
-              panel.grid.minor.y = element_line(),
-              panel.grid.major.y = element_line(),
-              axis.title = element_text(size = 10),
-              axis.text = element_text(size = 10),
-              legend.title = element_blank()
-            )
+  print("Spaghetti plots:")
+  ## in each baseline serostatus group, randomly select 10 placebo recipients and 20 vaccine recipients
+  set.seed(12345)
+  var_names <- expand.grid(times = times[!grepl("Delta",times)], # "B", "Day29", "Day57" 
+                           assays = assay_immuno) %>%
+    mutate(var_names = paste0(times, assay_immuno)) %>%
+    .[, "var_names"]
+  
+  spaghetti_ptid <- dat.twophase.sample[, c("Ptid", "Bserostatus", "Trt", var_names)] %>%
+    filter(., complete.cases(.)) %>%
+    transmute(BT = paste0(as.character(Bserostatus), as.character(Trt)),
+              Ptid = Ptid) %>%
+    split(., .$BT) %>%
+    lapply(function(xx) {
+      if (xx$BT[1] %in% c("10", "00")) {
+        sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 10 placebo recipients
+        # add ifelse(length(xx$Ptid)<20, F, T) because some subset has small sample e.g. janssen_sa_partA
+      } else {
+        sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 20 vaccine recipients
+      }
+    }) %>% unlist %>% as.character
+  
+  spaghetti_dat <- dat.long.twophase.sample[, c("Ptid", "Bserostatus", "Trt", "assay",
+                                                times[!grepl("Delta",times)] # "B", "Day29", "Day57"
+                                                )] %>%
+    filter(Ptid %in% spaghetti_ptid) %>%
+    pivot_longer(cols = times[!grepl("Delta",times)], # "B", "Day29", "Day57"
+                 names_to = "time") %>%
+    mutate(assay = factor(assay, levels = assay_immuno, labels = assay_immuno),
+           time_label = factor(time, levels = times[!grepl("Delta",times)], # "B", "Day29", "Day57"
+                               labels = gsub("B","D1",gsub("ay","", times[!grepl("Delta",times)]))# "D1", "D29", "D57"
+                               )) %>%
+    as.data.frame
+  
+  for (bstatus in 1:2) {
+    subdat <- subset(spaghetti_dat, Bserostatus == bstatus.labels[bstatus])
+    if(nrow(subdat)==0) next
+    covid_corr_spaghetti_facets(plot_dat = subdat,
+                                x = "time_label",
+                                y = "value",
+                                id = "Ptid",
+                                color = "Trt",
+                                facet_by = "assay",
+                                ylim = assay_lim[, times[!grepl("B|Delta",times)][1] # "Day29", "Day57"
+                                                 ,],
+                                panel_titles = labels.assays.short,
+                                plot_title = paste0(
+                                  "Baseline ",
+                                  c("Negative", "Positive")[bstatus],
+                                  " PP Placebo + Vaccine group"
+                                ),
+                                arrange_ncol = 3,
+                                arrange_nrow = ceiling(length(assay_immuno) / 3),
+                                filename = paste0(
+                                  save.results.to, "/spaghetti_plot_",
+                                  bstatus.labels.2[bstatus], "_",
+                                  study_name, ".pdf"
+                                ))
+  }
+  
+  #-----------------------------------------------
+  # Scatter PLOTS
+  #-----------------------------------------------
+  # - Scatter plots assay vs. age in years, (Day 1) Day tinterm, Day tpeak
+  #-----------------------------------------------
+  print("Scatter plots:")
+  if(study_name!="VAT08"){
+    for (tp in tps_no_fold_change) {
+      for (trt in 1:2) {
+        for (bstatus in 1:2) {
+          
+          subdat <- dat.long.twophase.sample %>%
+            filter(Bserostatus == bstatus.labels[bstatus], Trt == trt.labels[trt])
+          if(nrow(subdat)==0) next
+          
+          ## setting the range of the axes
+          xrange <- range(dat.long.twophase.sample$Age)
+          
+          
+          scatter_plot_list <- vector("list", length = length(assay_immuno))
+          
+          for (aa in 1:length(assay_immuno)) {
+            scatter_plot_list[[aa]] <- ggplot(data = subset(subdat, assay == assay_immuno[aa]),
+                                              mapping = aes_string("Age", tp)) +
+              geom_point() +
+              xlab("Age") +
+              ylab(labels.axis[tp, aa]) +
+              ggtitle(labels.title[tp, aa]) +
+              stat_smooth(method = "loess", color = "red", se = TRUE, lwd = 1) +
+              scale_x_continuous(limits = xrange) +
+              scale_y_continuous(
+                labels = label_math(10^.x), limits = assay_lim[aa, tp,],
+                breaks = seq(assay_lim[aa, tp, 1], assay_lim[aa, tp, 2], by = 1)
+              ) +
+              theme_pubr() +
+              theme(
+                plot.title = element_text(hjust = 0.5, size = ifelse(max(str_length(assays)) > 14, 9.5, 10)),
+                panel.border = element_rect(fill = NA),
+                panel.grid.minor.y = element_line(),
+                panel.grid.major.y = element_line(),
+                axis.title = element_text(size = 10),
+                axis.text = element_text(size = 10),
+                legend.title = element_blank()
+              )
+          }
+          
+          output_plot <- ggarrange(
+            plotlist = scatter_plot_list, ncol = 3,
+            nrow = ceiling(length(assay_immuno) / 3), legend = "none", align = "h"
+          )
+          
+          ggsave(
+            filename = paste0(
+              save.results.to, "/scatter_", tp, "_vs_age_",
+              "trt_", trt.labels[trt], "_", bstatus.labels.2[bstatus],
+              "_", study_name, ".pdf"
+            ), 
+            plot = output_plot, 
+            width = 9,
+            height = 0.5 + 3 * ceiling(length(assay_immuno) / 3), 
+            units = "in"
+          )
+          
         }
-        
-        output_plot <- ggarrange(
-          plotlist = scatter_plot_list, ncol = 3,
-          nrow = ceiling(length(assay_immuno) / 3), legend = "none", align = "h"
-        )
-        
-        ggsave(
-          filename = paste0(
-            save.results.to, "/scatter_", tp, "_vs_age_",
-            "trt_", trt.labels[trt], "_", bstatus.labels.2[bstatus],
-            "_", study_name, ".pdf"
-          ), 
-          plot = output_plot, 
-          width = 9,
-          height = 0.5 + 3 * ceiling(length(assay_immuno) / 3), 
-          units = "in"
-        )
-        
       }
     }
   }
