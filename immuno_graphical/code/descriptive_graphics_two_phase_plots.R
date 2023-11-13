@@ -6,6 +6,9 @@ renv::activate(project = here::here(".."))
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
+uloqs=assay_metadata$uloq; names(uloqs)=assays
+pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assays
+lloxs=ifelse(assay_metadata$llox_label=="lloq", assay_metadata$lloq, assay_metadata$lod); names(lloxs)=assays
 #-----------------------------------------------
 
 # install.packages(c("ggpubr", "GGally", "SWIM", "scales", "dummies",
@@ -31,7 +34,9 @@ library(fmsb) # radarchart()
 # produce geom_statistics w/ resampling-based covariate-adjusted Spearman
 source(here("code", "params.R"))
 if (study_name=="VAT08"){
-  source(here::here("code", "process_violin_pair_functions.R")) # for VAT08, pairplots are non-bstratum-adjusted, no resampling, IPS-weighted spearman correlation
+  source(here("code", "covid_corr_plot_functions.R"))
+  source(here::here("code", "process_violin_pair_functions.R")) # pair functions in the first program are overwritten by those in the second program
+  # for VAT08, pairplots are non-bstratum-adjusted, no resampling, IPS-weighted spearman correlation
 } else {
   source(here("code", "ggally_cor_resample.R"))
   source(here("code", "covid_corr_plot_functions.R"))

@@ -13,6 +13,23 @@ library(knitr)
 
 here::i_am("immuno_graphical/report.Rmd")
 
+if (study_name !="VAT08"){
+  bstatus.labels <- c("Baseline Neg", "Baseline Pos")
+  bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
+  bstatus.labels.3 <- c("baseline negative", "baseline positive")
+} else {
+  bstatus.labels <-  c("Naive", "Non-naive")
+  bstatus.labels.2 <- bstatus.labels.3 <- c("naive", "non-naive")
+}
+
+tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
+tps_no_B_and_delta_over_tinterm <-  times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("Day29", "Delta29overB", "Day57", "Delta57overB")
+tps_no_fold_change <- times[!grepl("Delta", times)]
+tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
+tps_delta_over_B <- times[grepl("overB",times)]
+
+
+
 if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config")) && !grepl("vat08", attr(config,"config"))){
   assay_immuno <- c(assays, "bindN")
   labels.assays.all <- c("Binding Antibody to N", labels.assays)
@@ -62,13 +79,13 @@ neut.marker.captions <- switch(study_name,
 
 ```{r, echo=FALSE, results='asis'}
 
-for (bsero in c("BaselineNeg", "BaselinePos")) {
+for (bsero in bstatus.labels.2) {
   
-  bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+  bseroLabel <- gsub("baseline ", "", bstatus.labels.3[match(bsero, bstatus.labels.2)])
   
   for (trt in c("vaccine","placebo", if(study_name=="VAT08") "pooled")) {  
     
-    if (study_name!="VAT08" && trt=="placebo" && bsero=="BaselineNeg") next # only report for placebo baseline neg for VAT08
+    if (study_name!="VAT08" && trt=="placebo" && bsero==bstatus.labels.2[1]) next # only report for placebo baseline neg for VAT08
     
     for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")){
       # only doable when there are >1 assays
@@ -77,6 +94,7 @@ for (bsero in c("BaselineNeg", "BaselinePos")) {
         for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
           
           if (study_name=="VAT08" && grepl("Delta", tp)) next # do not report delta timepoints for VAT08
+          if (study_name=="VAT08" && trt=="pooled" && tp!="B") next # only report pooled at baseline for VAT08
           
           tpLabel <- gsub("ay ", "", labels.time[tp])
           
@@ -88,6 +106,8 @@ for (bsero in c("BaselineNeg", "BaselinePos")) {
           
       for (asy in assay_immuno){
         
+        if (study_name=="VAT08" && trt=="pooled") next # do not report "pooled" for across timepoint plots
+            
         asyLabel <- gsub("%","\\\\%", labels.assays[asy])
         
         res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
@@ -112,18 +132,19 @@ for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo"))
     if (bsero=="bstatus_Pos" && if.pos.exist==0) next
     if (trt=="trt_both" && bsero!="bstatus_both" && study_name!="VAT08") next # trt_both is only for bstatus both if the study is not VAT08
     
-    bseroLabel <- ifelse(bsero=="bstatus_both", "by baseline status", ifelse(bsero=="bstatus_Neg", "baseline negative", "baseline positive"))
+    bseroLabel <- ifelse(bsero=="bstatus_both", "by serostatus", ifelse(bsero=="bstatus_Neg", bstatus.labels.3[1], bstatus.labels.3[2]))
     
     for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
             
-      if (study_name=="VAT08" && grepl("Detla", tp)) next # only report main timepoints for VAT08
+      if (study_name=="VAT08" && grepl("Delta", tp)) next # only report main timepoints for VAT08
       
       tpLabel <- gsub("ay ", "", labels.time[tp])
       
       for (asy in c(if(study_name!="VAT08") "","bAb","nAb", if(study_name!="VAT08") "other")){ # for VAT08, only report for bAb and nAb
         if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
         if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
-        if (asy!="" & trt=="trt_both" & bsero=="bstatus_both") next  # trt_both & bstatus_both are only for all assays
+        if (asy!="" & trt=="trt_both" & bsero=="bstatus_both") next  # assay subset do not report for trt_both & bstatus_both
+        if (study_name=="VAT08" && trt!="trt_both" && bsero!="bstatus_both") next # for VAT08, only report plots with one "both"
         
         res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
         cat(res, sep = '\n')
@@ -140,9 +161,9 @@ for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo"))
 ```{r, echo=FALSE, results='asis'}
 
 if (study_name != "VAT08") { # VAT08 doesn't repor this
-  for (bsero in c("BaselineNeg", "BaselinePos")){
+  for (bsero in bstatus.labels.2){
   
-    bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+    bseroLabel <- gsub("baseline ", "", bstatus.labels.3[match(bsero, bstatus.labels.2)])
     
     for (trt in c("Vaccine", "Placebo")){
         
@@ -170,10 +191,12 @@ if (study_name != "VAT08") { # VAT08 doesn't repor this
 ### (VAT08) Baseline neg/pos vs. vaccine/placebo
 ### Vaccine vs. Placebo
 
-for (bsero in c("BaselineNeg", "BaselinePos", if(study_name=="VAT08") "bstatus")) { #only VAT08 report Baseline neg/pos vs. vaccine/placebo
+for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") "bstatus")) { #only VAT08 report Baseline neg/pos vs. vaccine/placebo
   
-  bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+  bseroLabel <- gsub("baseline ", "", bstatus.labels.3[match(bsero, bstatus.labels.2)])
   for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    
+    if (study_name=="VAT08" && grepl("Delta", tp)) next # only report main timepoints for VAT08
     
     tpLabel <- gsub("ay ", "", labels.time[tp])
     
@@ -187,6 +210,8 @@ for (bsero in c("BaselineNeg", "BaselinePos", if(study_name=="VAT08") "bstatus")
 
 for (trt in c("vaccine_arm","placebo_arm")) {
   for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    
+    if (study_name=="VAT08" && grepl("Delta", tp)) next # only report main timepoints for VAT08
     
     tpLabel <- gsub("ay ", "", labels.time[tp])
     
@@ -234,23 +259,25 @@ race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(stu
 positivity")
 names(demoLabels) <- demos
 
-for (bsero in c("BaselineNeg", if (if.pos.exist==1) "BaselinePos")){
-  
-  for (trt in c("Vaccine", "Placebo")){
-    bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
-    trtLabel=tolower(trt)
+if (study_name!="VAT08") {
+  for (bsero in c("BaselineNeg", if (if.pos.exist==1) "BaselinePos")){
     
-    if (trt=="Placebo" && bsero=="BaselineNeg") next # do not report Negative Placebo Arm
-    
-    for (dm in demos){
-      for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
-        
-        tpLabel <- gsub("ay ", "", labels.time[tp])
-        dmLabel <- demoLabels[dm]
-        
-        res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_demographic.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
+    for (trt in c("Vaccine", "Placebo")){
+      bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+      trtLabel=tolower(trt)
+      
+      if (trt=="Placebo" && bsero=="BaselineNeg") next # do not report Negative Placebo Arm
+      
+      for (dm in demos){
+        for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+          
+          tpLabel <- gsub("ay ", "", labels.time[tp])
+          dmLabel <- demoLabels[dm]
+          
+          res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_demographic.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+        }
       }
     }
   }
@@ -263,12 +290,6 @@ for (bsero in c("BaselineNeg", if (if.pos.exist==1) "BaselinePos")){
 
 ```{r, echo=FALSE, results='asis'}
 
-bsero="BaselineNeg" # bsero in c("BaselineNeg","BaselinePos")[1:(if.pos.exist+1)]
-bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
-
-trt="Vaccine"
-trtLabel="vaccine"
-
 if_no_minority = attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
                                        "janssen_la_partAsenior","janssen_la_partAnonsenior",
                                        "janssen_sa_partAnonsenior")
@@ -280,27 +301,30 @@ race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(stu
 positivity")
 names(demoLabels) <- demos
 
-for (bsero in c("BaselineNeg", if (if.pos.exist==1) "BaselinePos")){
-  
-  for (trt in c("Vaccine", "Placebo")){
-    bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
-    trtLabel=tolower(trt)
+if (study_name!="VAT08") {
+  for (bsero in c("BaselineNeg", if (if.pos.exist==1) "BaselinePos")){
     
-    if (trt=="Placebo" && bsero=="BaselineNeg") next # do not report Negative Placebo Arm
-  
-    for (dm in demos){
-      for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
-        
-        tpLabel <- gsub("ay ", "", labels.time[tp])
-        dmLabel <- demoLabels[dm]
-        
-        res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box_demographic.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
+    for (trt in c("Vaccine", "Placebo")){
+      bseroLabel <- ifelse(bsero=="BaselineNeg", "negative", "positive")
+      trtLabel=tolower(trt)
+      
+      if (trt=="Placebo" && bsero=="BaselineNeg") next # do not report Negative Placebo Arm
+    
+      for (dm in demos){
+        for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+          
+          tpLabel <- gsub("ay ", "", labels.time[tp])
+          dmLabel <- demoLabels[dm]
+          
+          res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box_demographic.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+        }
       }
     }
   }
 }
+
     
 ```
 
@@ -323,7 +347,7 @@ for (tp in c("day1day22day43", "delta")) {
 ## Set 1 plots: D01, D22, D43 Ab distributions
 ```{r, echo=FALSE, results='asis', eval=study_name=="VAT08"}
 
-for (a in assays){
+for (a in c("bindSpike","pseudoneutid50")){
   
   for (tp in tps_no_fold_change)
     

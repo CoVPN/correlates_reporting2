@@ -1,7 +1,7 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0(a, "at_", tp, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0(a, "_at_", tp, ".pdf"))`}
 
 \caption{`r paste0("Distribution of ", a, " at ", tp)`}
 

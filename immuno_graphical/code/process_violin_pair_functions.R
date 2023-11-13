@@ -719,3 +719,127 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
         pairplots
     }
 }
+
+
+#' Pairplots of assay readout over time
+#'
+#' Produce the pairplots of assay readouts. The correlation is calculated by
+#' the resampling-based strata adjusted Spearman rank correlation
+#'
+#' @param plot_dat: data frame: data for plotting.
+#' @param assay: vector of strings: the assay name for plotting.
+#' @param times: vector of strings: the time points for plotting.
+#' @param strata: string: the column name in plot_dat that indicates the
+#'  strata.
+#' @param weight: string: the column name in plot_dat that indicates the
+#'  individual sampling weights.
+#' @param plot_title: string: title of the plot.
+#' @param column_labels: vector of strings: titles of each column.
+#' @param height: scalar: plot height.
+#' @param width: scalar: plot width.
+#' @param units: string: the unit of plot height and width.
+#' @param corr_size: scalar: font size of the correlation labels.
+#' @param point_size: scalar: point size in the scatter plots.
+#' @param loess_lwd: scalar: loess line width in the scatter plots.
+#' @param plot_title_size: scalar: font size of the plot title.
+#' @param column_label_size: scalar: font size of the column labels.
+#' @param axis_label_size: scalar: font size of the axis labels.
+#' @param filename: string: output file name.
+#'
+#' @return pairplots: a ggplot object of the pairplot
+covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
+                                         assay,
+                                         times,
+                                         strata,
+                                         weight,
+                                         plot_title,
+                                         column_labels,
+                                         height = 5.1,
+                                         width = 5.05,
+                                         units = "in",
+                                         corr_size = 5,
+                                         point_size = 0.5,
+                                         loess_lwd = 1,
+                                         plot_title_size = 10,
+                                         column_label_size = 6.5,
+                                         axis_label_size = 9,
+                                         filename) {
+    dat.tmp <- plot_dat[, paste0(times, assay)]
+    rr <- range(dat.tmp, na.rm = TRUE)
+    
+    if (rr[1] == rr[2]) {
+        rr <- c(rr[1] - 1, rr[2] + 1)
+    }
+    
+    if (rr[2] - rr[1] < 2) {
+        rr <- c(floor(rr[1]), ceiling(rr[2]))
+    }
+    
+    breaks <- floor(rr[1]):ceiling(rr[2])
+    
+    if (rr[2] > ceiling(rr[1])) {
+        breaks <- ceiling(rr[1]):floor(rr[2])
+    } else {
+        breaks <- floor(rr[1]):ceiling(rr[2]) ## breaks on the axis
+    }
+    
+    if (max(breaks) - min(breaks) >= 6) {
+        breaks <- breaks[breaks %% 2 == 0]
+    }
+    
+    pairplots <- ggpairs(
+        data = dat.tmp, title = plot_title,
+        columnLabels = column_labels,
+        upper = list(
+            continuous =
+                wrap(ggally_cor_resample,
+                     stars = FALSE,
+                     size = corr_size,
+                     strata = subdat[, strata],
+                     weight = subdat[, weight]
+                )
+        ),
+        lower = list(
+            continuous =
+                wrap("points", size = point_size)
+        )
+    ) +
+        theme_bw() +
+        theme(
+            plot.title = element_text(hjust = 0.5, size = plot_title_size),
+            strip.text = element_text(size = column_label_size, face = "bold"),
+            strip.background = element_rect(fill=NA,colour=NA),
+            axis.text = element_text(size = axis_label_size),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank()
+        )
+    pairplots[1, 1] <- pairplots[1, 1] +
+        scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.2)
+    for (j in 2:pairplots$nrow) {
+        for (k in 1:(j - 1)) {
+            pairplots[j, k] <- pairplots[j, k] +
+                stat_smooth(
+                    method = "loess", color = "red", se = FALSE,
+                    lwd = loess_lwd
+                ) +
+                scale_x_continuous(
+                    limits = rr, breaks = breaks,
+                    labels = label_math(10^.x)
+                ) +
+                scale_y_continuous(
+                    limits = rr, breaks = breaks,
+                    labels = label_math(10^.x)
+                )
+        }
+        pairplots[j, j] <- pairplots[j, j] +
+            scale_x_continuous(
+                limits = rr, breaks = breaks,
+                labels = label_math(10^.x)
+            ) + ylim(0, 1.2)
+    }
+    
+    ggsave(
+        filename = filename, plot = pairplots, width = width, height = height,
+        units = units
+    )
+}

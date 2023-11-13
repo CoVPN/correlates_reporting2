@@ -10,13 +10,14 @@ library(grid)
 library(gridExtra)
 install.packages("wCorr", repos = "http://cran.us.r-project.org") # weighted correlation
 library(wCorr)
-library(ggnewscale) # for new_scale_color() 
+#library(ggnewscale) # for new_scale_color() 
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 #if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
 source(here::here("code", "process_violin_pair_functions.R"))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
+source(here::here("code", "params.R")) # load parameters
 
 # for the order of figure panels
 assay_order = assay_metadata %>% dplyr::arrange(panel, order_in_panel) %>% select(assay_label_short) %>% pull()

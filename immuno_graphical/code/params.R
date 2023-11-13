@@ -21,8 +21,8 @@ if (study_name !="VAT08"){
   bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
   bstatus.labels.3 <- c("baseline negative", "baseline positive")
 } else {
-  bstatus.labels <- bstatus.labels.2 <- c("Naive", "Non-naive")
-  bstatus.labels.3 <- c("naive", "non-naive")
+  bstatus.labels <-  c("Naive", "Non-naive")
+  bstatus.labels.2 <- bstatus.labels.3 <- c("naive", "non-naive")
 }
 
 all_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 

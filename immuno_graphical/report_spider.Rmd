@@ -1,7 +1,7 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("radar_plot_weighted_geomean_", tp, "_", asy, "_", study_name, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("radar_plot_weighted_geomean_", tp, "_", asy, ".pdf"))`}
 
 \caption{`r paste0("Spider plots for ", tpLabel, " ", asy, " markers")`}
 
