@@ -228,7 +228,7 @@ f_longitude_by_assay <- function(
                 geom_point(size = 3, alpha = 0.6, show.legend = TRUE, color = "#FF6F1B") +
                 
                 #geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = 5), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes_string(x = x.var, label = "RespRate", y = 4.4), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes_string(x = x.var, label = "RespRate", y = 5), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -569,7 +569,7 @@ ggally_cor_resample <- function(
                                      corObj
                 )
             } else if (B == 0){ # resampling will not be done, weighted spearman correlation will be done
-                
+                #write.csv(data.frame(x = x, y = y, strata = st, weight = wt), "input_columns.csv", row.names = FALSE)
                 corObj <- try(weightedCorr(x, y, method = "Spearman", weights = wt),
                               silent = TRUE
                 )

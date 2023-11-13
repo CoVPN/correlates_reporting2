@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0(a, "_longitudinal.pdf"))`}
 
-\caption{`r paste0("Longitudinal plots for ", a, " at D1, D22 and D43")`}
+\caption{`r paste0("Longitudinal plots for ", gsub("_", " ", a), " at D1 D22 and D43")`}
 
 \end{figure}
 

@@ -67,7 +67,7 @@ neut.marker.captions <- switch(study_name,
                                
                                "AZD1222"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
                                
-                               "VAT08"="The dashed lines in each figure is LLOD for neutralizing antibody assays.",
+                               "VAT08"="The dashed lines in each figure are ULOQ and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
                                "PROFISCOV"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOD for binding antibody assays, or LLOD/positivity cut-off for neutralizing antibody assays, from top to bottom respectively."
                                # PROFISCOV nAb has a ULOQ value out of figure limit
                                )
@@ -81,7 +81,7 @@ neut.marker.captions <- switch(study_name,
 
 for (bsero in bstatus.labels.2) {
   
-  bseroLabel <- gsub("baseline ", "", bstatus.labels.3[match(bsero, bstatus.labels.2)])
+  bseroLabel <- bstatus.labels.3[match(bsero, bstatus.labels.2)]
   
   for (trt in c("vaccine","placebo", if(study_name=="VAT08") "pooled")) {  
     
@@ -107,7 +107,8 @@ for (bsero in bstatus.labels.2) {
       for (asy in assay_immuno){
         
         if (study_name=="VAT08" && trt=="pooled") next # do not report "pooled" for across timepoint plots
-            
+        if (study_name=="VAT08" && asy=="pseudoneutid50_mdw" && bsero=="naive") next # psv_mdw doesn't have any value for naive at baseline
+        
         asyLabel <- gsub("%","\\\\%", labels.assays[asy])
         
         res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
@@ -156,7 +157,7 @@ for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo"))
 ```
 
 \clearpage
-## Scatter plots of antibody markers versus age for overall per-protocol cohort
+<!-- ## Scatter plots of antibody markers versus age for overall per-protocol cohort
 
 ```{r, echo=FALSE, results='asis'}
 
@@ -182,8 +183,7 @@ if (study_name != "VAT08") { # VAT08 doesn't repor this
 }
     
 ```
-
-\clearpage
+-->
 ## Box plots of antibody markers for overall per-protocol cohort
 
 ```{r, echo=FALSE, results='asis'}
@@ -225,7 +225,7 @@ for (trt in c("vaccine_arm","placebo_arm")) {
 
 
 \clearpage
-## Spaghetti plots of antibody markers over time for overall per-protocol cohort
+<!-- ## Spaghetti plots of antibody markers over time for overall per-protocol cohort
 
 ```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline negative vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & study_name!="VAT08")}
 include_graphics(here(
@@ -234,7 +234,6 @@ include_graphics(here(
 ))
 ```
 
-\clearpage
 
 ```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline positive vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & if.pos.exist==1 & study_name!="VAT08")}
 include_graphics(here(
@@ -243,7 +242,6 @@ include_graphics(here(
 ))
 ```
 
-\clearpage
 ## RCDF plots of antibody markers by demographics for per-protocol cohort
 
 ```{r, echo=FALSE, results='asis'}
@@ -285,7 +283,6 @@ if (study_name!="VAT08") {
     
 ```
 
-\clearpage
 ## Boxplots of antibody markers by demographics for per-protocol cohort
 
 ```{r, echo=FALSE, results='asis'}
@@ -327,8 +324,8 @@ if (study_name!="VAT08") {
 
     
 ```
+-->
 
-\clearpage
 ## Spider plot
 ```{r, echo=FALSE, results='asis', eval=study_name=="VAT08"}
 
@@ -349,12 +346,12 @@ for (tp in c("day1day22day43", "delta")) {
 
 for (a in c("bindSpike","pseudoneutid50")){
   
-  for (tp in tps_no_fold_change)
+  for (tp in tps_no_delta_over_tinterm){
     
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set1.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
-  
+  }
 }
 
 ```

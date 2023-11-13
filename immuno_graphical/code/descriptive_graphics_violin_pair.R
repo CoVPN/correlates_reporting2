@@ -48,7 +48,7 @@ for (panel in c("pseudoneutid50", "bindSpike")){
         dat = dat.longer.immuno.subset.plot1 %>% mutate(x="1"),
         assays = assays[grepl(panel, assays)],
         times = set1_times,
-        ylim = c(ifelse(panel=="pseudoneutid50", -5, -6), ifelse(panel=="pseudoneutid50", 5, 11)),
+        ylim = c(ifelse(panel=="pseudoneutid50", -5, -6), ifelse(panel=="pseudoneutid50", 6, 11)),
         axis.x.text.size = 20,
         strip.x.text.size = ifelse(panel=="pseudoneutid50", 25, 10),
         panel.text.size = ifelse(panel=="pseudoneutid50", 7, 4.5),
@@ -75,7 +75,7 @@ for (panel in c("pseudoneutid50", "bindSpike")){
         x.var = "time",
         x.lb = c("D1","D22","D43"),
         assays = set2_assays[grepl(panel, set2_assays) & !grepl("mdw", set2_assays)],
-        ylim = c(0, 4.5),
+        ylim = c(0, 5.2),
         times = c("B","Day22","Day43"),
         strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, 12),
         panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
@@ -153,12 +153,16 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
 # 15 markers, by naive/non-naive, vaccine/placebo
 for (a in assays){
     
+    if (a == "bindSpike_mdw") {y_lim = c(-6, 11)
+    } else if (a == "pseudoneutid50_mdw") {y_lim = c(-4, 6)
+    } else {y_lim = c(0, 5.2)}
+        
     f_4 <- f_longitude_by_assay(
         dat = dat.longer.immuno.subset.plot1,
         x.var = "time",
         x.lb = c("D1","D22","D43"),
         assays = a,
-        ylim = c(-6, 11),
+        ylim = y_lim,
         times = c("B","Day22","Day43"),
         strip.text.x.size = 25,
         strip.text.y.size = 22,
@@ -168,5 +172,5 @@ for (a in assays){
     )
     
     file_name <- paste0("/", a, "_longitudinal.pdf")
-    ggsave(plot = f_4, filename = paste0(save.results.to, file_name), width = 6, height = 11)
+    ggsave(plot = f_4, filename = paste0(save.results.to, file_name), width = 9, height = 9)
 }

@@ -30,12 +30,14 @@ library(gridExtra)
 library(PResiduals)
 install.packages("fmsb", repos = "http://cran.us.r-project.org") # radar plot
 library(fmsb) # radarchart()
+install.packages("wCorr", repos = "http://cran.us.r-project.org") # weighted correlation
+library(wCorr)
 
 # produce geom_statistics w/ resampling-based covariate-adjusted Spearman
 source(here("code", "params.R"))
 if (study_name=="VAT08"){
   source(here("code", "covid_corr_plot_functions.R"))
-  source(here::here("code", "process_violin_pair_functions.R")) # pair functions in the first program are overwritten by those in the second program
+  source(here("code", "process_violin_pair_functions.R")) # pair functions in the first program are overwritten by those in the second program
   # for VAT08, pairplots are non-bstratum-adjusted, no resampling, IPS-weighted spearman correlation
 } else {
   source(here("code", "ggally_cor_resample.R"))
@@ -155,10 +157,14 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           
           if(study_name=="PREVENT19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
           
+          if (study_name=="VAT08" && bserostatus==0 && tp=="B") { # psv_mdw doesn't have any value for naive at baseline
+            assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
+          } else {assay_immuno_ = assay_immuno}
+          
           covid_corr_pairplots(
             plot_dat = subdat,
             time = tp,
-            assays = assay_immuno, # adhoc request by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
+            assays = assay_immuno_, # adhoc request by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
                                    # adhoc request 2 by David: assay_immuno = c("liveneutmn50", "bindSpike_P.1", "bindRBD_P.1", "bindN")
             strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
             weight = "wt.subcohort",
@@ -168,9 +174,9 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
               bstatus.labels.3[bserostatus + 1], ", ",
               c("placebo", "vaccine")[trt + 1], " arm"
             ),
-            column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
-            height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
-            width = max(1.3 * length(assay_immuno), 5.5),
+            column_labels = labels.axis[tp, seq_along(assay_immuno_)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
+            height = max(1.3 * length(assay_immuno_) + 0.1, 5.5),
+            width = max(1.3 * length(assay_immuno_), 5.5),
             column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5),
             filename = paste0(
               save.results.to, "/pairs_", tp,
@@ -204,6 +210,8 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
       if(study_name=="PREVENT19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
       
       for (aa in assay_immuno) {
+        if (study_name=="VAT08" && aa=="pseudoneutid50_mdw" && bserostatus==0) next # psv_mdw doesn't have any value for naive at baseline
+        
         covid_corr_pairplots_by_time(
           plot_dat = subdat,
           times = times_selected,
@@ -212,13 +220,13 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           weight = "wt.subcohort",
           plot_title = paste0(
             labels.assays[aa], ": ",
-            bstatus.labels.3[bserostatus + 1],
+            bstatus.labels.3[bserostatus + 1], " ",
             c("placebo", "vaccine")[trt + 1], " arm"
-          ),
+          ), 
           column_labels = paste(gsub("ay ","", labels.time[times_selected]),
                                 "\n", labels.axis[, aa][1]),
           column_label_size = ifelse(study_name=="VAT08", 4.5, 
-                                     ifelse(max(str_length(labels.axis[1,])) > 28, 4.5, 6.5)),
+                                     ifelse(max(str_length(labels.axis[1,])) > 28, 4.3, 6.5)),
           axis_label_size = ifelse(study_name=="VAT08", 7, 9),
           filename = paste0(
             save.results.to, "/pairs_", aa, "_by_times_",
@@ -235,6 +243,11 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
   if (study_name=="VAT08") { # request only for this study, at day 1, pool over vaccine and placebo
     tp = "B"
     for (bserostatus in bstatus.range) {
+      
+        if (bserostatus==0) { # VAT08 psv_mdw doesn't have any value for naive at baseline
+          assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
+        } else {assay_immuno_ = assay_immuno}
+      
         if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
         
         tt=match(tp, times)
@@ -245,7 +258,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
         covid_corr_pairplots(
           plot_dat = subdat,
           time = tp,
-          assays = assay_immuno,
+          assays = assay_immuno_,
           strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
           weight = "wt.subcohort",
           plot_title = paste0(
@@ -253,9 +266,9 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             " Ab markers: ",
             bstatus.labels.3[bserostatus + 1], ", pooled arm"
           ),
-          column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
-          height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
-          width = max(1.3 * length(assay_immuno), 5.5),
+          column_labels = labels.axis[tp, seq_along(assay_immuno_)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
+          height = max(1.3 * length(assay_immuno_) + 0.1, 5.5),
+          width = max(1.3 * length(assay_immuno_), 5.5),
           column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5),
           filename = paste0(
             save.results.to, "/pairs_", tp,
@@ -451,6 +464,7 @@ for (bstatus in 1:2) {
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
+      height = ifelse(study_name=="VAT08", 11, 3 * arrange_nrow + 0.5),
       filename = paste0(
         save.results.to, "/boxplots_", tp, "_x_trt_", bstatus.labels.2[bstatus],
         "_", study_name, ".pdf"
@@ -483,6 +497,7 @@ for (trt in 1:2) {
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
+      height = ifelse(study_name=="VAT08", 11, 3 * arrange_nrow + 0.5),
       filename = paste0(
         save.results.to, "/boxplots_", tp,
         "_x_bstatus_", c("placebo_arm_", "vaccine_arm_")[trt],
@@ -519,6 +534,7 @@ if (study_name=="VAT08") {# this is only reported for VAT08
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
+      height = ifelse(study_name=="VAT08", 11, 3 * arrange_nrow + 0.5),
       filename = paste0(
         save.results.to, "/boxplots_", tp,
         "_x_trt_bstatus_",
