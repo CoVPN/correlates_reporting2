@@ -29,13 +29,13 @@ dat.longer.immuno.subset.plot1 <- readRDS(here::here("data_clean", "longer_immun
     mutate(Trt = factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")),
            nnaive = factor(Bserostatus,
                             levels = c(0, 1),
-                            labels = c("Naive", "Non-naive")))
+                            labels = bstatus.labels))
 dat.immuno.subset.plot3 <- readRDS(here::here("data_clean", "twophase_data.rds")); dat.immuno.subset.plot3$all_one <- 1 # as a placeholder for strata values
 dat.immuno.subset.plot3 <- dat.immuno.subset.plot3 %>%
     mutate(Trt = factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")),
            nnaive = factor(Bserostatus,
                             levels = c(0, 1),
-                            labels = c("Naive", "Non-naive")))
+                            labels = bstatus.labels))
 
 ###### Set 1 plots: Ab distributions at main timepoints and delta by vaccine/placebo, naive/nnaive
 set1_times <- times[1:5]
@@ -112,15 +112,15 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
         
         if (grp == "non_naive_vac_pla") {
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==1)
-            grp_lb = "non naive vaccine group participants"
+            grp_lb = paste0(gsub("-","",bstatus.labels.3[2]), " vaccine group participants")
             assays_sub = assays
         } else if (grp == "naive_vac" && t!="B"){
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)=="Vaccine")
-            grp_lb = "naive participants"
+            grp_lb = paste0(bstatus.labels.3[1], " participants")
             assays_sub = assays
         } else if (grp == "naive_vac" && t=="B") {
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)=="Vaccine")
-            grp_lb = "naive participants"
+            grp_lb = paste0(bstatus.labels.3[1], " participants")
             assays_sub = assays[assays!="pseudoneutid50_mdw"]
         }
         

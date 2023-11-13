@@ -133,6 +133,33 @@ if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
   assay_lim[, grepl("Delta", times),'ub'] <- 2
 }
 
+if(study_name=="VAT08") {# hard code for VAT08
+  assay_lim["bindSpike_mdw", "B","lb"] <- -2
+  assay_lim["pseudoneutid50_mdw", "B","lb"] <- -1
+  assay_lim["bindSpike_mdw", "Day22","lb"] <- -5
+  assay_lim["pseudoneutid50_mdw", "Day22","lb"] <- -3
+  assay_lim["bindSpike_mdw", "Day43","lb"] <- -6
+  assay_lim["pseudoneutid50_mdw", "Day43","lb"] <- -4
+  
+  assay_lim[, "Delta22overB","lb"] <- rep(-3, 15)
+  assay_lim["bindSpike_mdw", "Delta22overB","lb"] <- -5
+  assay_lim["pseudoneutid50_mdw", "Delta22overB","lb"] <- -4
+  
+  assay_lim[, "Delta43overB","lb"] <- rep(-3, 15)
+  assay_lim["bindSpike_mdw", "Delta43overB","lb"] <- -5
+  assay_lim["pseudoneutid50_mdw", "Delta43overB","lb"] <- -5
+  
+  
+  assay_lim[, "B","ub"] <- 5
+  assay_lim["bindSpike_mdw", "B","ub"] <- 11
+  
+  assay_lim[, "Day22","ub"] <- 6
+  assay_lim[, "Day43","ub"] <- 5
+  
+  assay_lim[, "Delta22overB","ub"] <- 6
+  assay_lim[, "Delta43overB","ub"] <- 4
+} 
+
 # dup assay_lim to avoid dimention got dropped for the dataset with only one marker
 if (length(assay_immuno)==1){ # i.e., AZ study
   assay_lim=abind(assay_lim, assay_lim, along=1)

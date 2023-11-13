@@ -159,8 +159,8 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             weight = "wt.subcohort",
             plot_title = paste0(
               gsub("ay ","", labels.time)[tt],
-              " Ab markers: baseline ",
-              ifelse(bserostatus, "positive", "negative"), ", ",
+              " Ab markers: ",
+              bstatus.labels.3[bserostatus + 1], ", ",
               c("placebo", "vaccine")[trt + 1], " arm"
             ),
             column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
@@ -206,8 +206,8 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
           weight = "wt.subcohort",
           plot_title = paste0(
-            labels.assays[aa], ": baseline ",
-            ifelse(bserostatus, "positive ", "negative "),
+            labels.assays[aa], ": ",
+            bstatus.labels.3[bserostatus + 1],
             c("placebo", "vaccine")[trt + 1], " arm"
           ),
           column_labels = paste(gsub("ay ","", labels.time[times_selected]),
@@ -245,8 +245,8 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           weight = "wt.subcohort",
           plot_title = paste0(
             gsub("ay ","", labels.time)[tt],
-            " Ab markers: baseline ",
-            ifelse(bserostatus, "positive", "negative"), ", pooled arm"
+            " Ab markers: ",
+            bstatus.labels.3[bserostatus + 1], ", pooled arm"
           ),
           column_labels = labels.axis[tp, seq_along(assay_immuno)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
           height = max(1.3 * length(assay_immuno) + 0.1, 5.5),
@@ -474,7 +474,7 @@ for (trt in 1:2) {
       ULOQ = log10(uloqs[assay_immuno]),
       arrange_ncol = 3,
       arrange_nrow = ceiling(length(assay_immuno) / 3),
-      legend = c("Baseline Negative", "Baseline Positive"),
+      legend = stringr::str_to_title(bstatus.labels.3),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
@@ -497,10 +497,8 @@ if (study_name=="VAT08") {# this is only reported for VAT08
     
     covid_corr_boxplot_facets(
       plot_dat = dat.long.twophase.sample %>% mutate(BseroTrt = factor(paste0(Bserostatus,"\n",Trt),
-                                                     levels = c("Baseline Neg\nVaccine",
-                                                                "Baseline Pos\nVaccine",
-                                                                "Baseline Neg\nPlacebo",
-                                                                "Baseline Pos\nPlacebo"))),
+                                                     levels = paste0(rep(bstatus.labels, 2), "\n", rep(c("Vaccine", "Placebo"), each=2))
+                                                     )),
       x = "BseroTrt",
       y = tp,
       color = "BseroTrt",
@@ -512,7 +510,7 @@ if (study_name=="VAT08") {# this is only reported for VAT08
       ULOQ = log10(uloqs[assay_immuno]),
       arrange_ncol = 3,
       arrange_nrow = ceiling(length(assay_immuno) / 3),
-      legend = c("Baseline Negative, Vaccine", "Baseline Positive, Vaccine", "Baseline Negative, Placebo", "Baseline Positive, Placebo"),
+      legend = paste0(rep(stringr::str_to_title(bstatus.labels.3), 2), ", ", rep(c("Vaccine", "Placebo"), each=2)),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
@@ -768,7 +766,7 @@ if(study_name=="VAT08"){
                      vlcex=0.4,
                      #title
                      title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", "of nAb Markers, "), 
-                                  ifelse(bsero=="Neg", "baseline naive ", "baseline non-naive "),
+                                  ifelse(bsero=="Neg", "naive ", "non-naive "),
                                   trt),
                      #title size
                      cex.main=0.7)

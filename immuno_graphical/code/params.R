@@ -13,12 +13,17 @@ if (!dir.exists(paste0(save.results.to, "/demographics")))  dir.create(paste0(sa
 config <- config::get(config = Sys.getenv("TRIAL"))
 
 # Define age cutoff based on trial
-age.cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE"), 60, 65)
+age.cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "VAT08"), 60, 65)
 
 trt.labels <- c("Placebo", "Vaccine")
-bstatus.labels <- c("Baseline Neg", "Baseline Pos")
-bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
-
+if (study_name !="VAT08"){
+  bstatus.labels <- c("Baseline Neg", "Baseline Pos")
+  bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
+  bstatus.labels.3 <- c("baseline negative", "baseline positive")
+} else {
+  bstatus.labels <- bstatus.labels.2 <- c("Naive", "Non-naive")
+  bstatus.labels.3 <- c("naive", "non-naive")
+}
 
 all_assays <- c("bindSpike", "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", 
                 "bindRBD", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1", 

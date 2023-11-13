@@ -198,14 +198,16 @@ dat.long.twophase.sample$trt_bstatus_label <-
     dat.long.twophase.sample,
     factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
       levels = c("11", "12", "21", "22"),
-      labels = c(
-        "Placebo, Baseline Neg",
-        "Placebo, Baseline Pos",
-        "Vaccine, Baseline Neg",
-        "Vaccine, Baseline Pos"
-      )
+      labels = paste0(rep(c("Placebo","Vaccine"), each=2), ", ", rep(bstatus.labels))
+      #c(
+        #"Placebo, Baseline Neg",
+        #"Placebo, Baseline Pos",
+        #"Vaccine, Baseline Neg",
+        #"Vaccine, Baseline Pos"
+      #)
     )
   )
+
 
 dat.long.twophase.sample$age_geq_65_label <-
   with(
