@@ -110,24 +110,35 @@ for (panel in c("pseudoneutid50", "bindSpike")){
 for (grp in c("non_naive_vac_pla", "naive_vac")){
     for (t in c("B","Day22","Day43")) {
         
-        if (grp == "non_naive_vac_pla") {dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==1)
-        } else {dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & Trt=="Vaccine")}
+        if (grp == "non_naive_vac_pla") {
+            dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==1)
+            grp_lb = "non naive vaccine group participants"
+            assays_sub = assays
+        } else if (grp == "naive_vac" && t!="B"){
+            dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)=="Vaccine")
+            grp_lb = "naive participants"
+            assays_sub = assays
+        } else if (grp == "naive_vac" && t=="B") {
+            dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)=="Vaccine")
+            grp_lb = "naive participants"
+            assays_sub = assays[assays!="pseudoneutid50_mdw"]
+        }
         
         if (grp == "naive_vac" && t=="B") next
         
         covid_corr_pairplots(
             plot_dat = dat.plot,
             time = t,
-            assays = assays,
+            assays = assays_sub,
             strata = "all_one",
             weight = "wt.subcohort",
             plot_title = paste0(
-                "Correlations of 15 ", ifelse(t=="B", "D1", t), " antibody markers in ", grp, " grp, Corr = Weighted Spearman Rank Correlation."
+                "Correlations of 15 ", ifelse(t=="B", "D1", t), " antibody markers in ", grp_lb, ", Corr = Weighted Spearman Rank Correlation."
             ),
-            column_labels = paste(t, assay_metadata$assay_label_short),
-            height = max(1.3 * length(assays) + 0.1, 5.5),
-            width = max(1.3 * length(assays), 5.5),
-            column_label_size = ifelse(max(nchar(paste(t, assay_metadata$assay_label_short)))>40, 3.3, 3.8),
+            column_labels = assay_metadata$assay_label_short[match(assays_sub, assay_metadata$assay)],
+            height = max(1.3 * length(assays_sub) + 0.1, 5.5),
+            width = max(1.3 * length(assays_sub), 5.5),
+            column_label_size = ifelse(max(nchar(paste(assay_metadata$assay_label_short)))>28, 4, 6.5),
             filename = paste0(
                 save.results.to, "/pairs_by_time_", t,
                 "_15_markers_", grp, ".pdf"

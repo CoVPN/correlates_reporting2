@@ -517,7 +517,7 @@ ggally_cor_resample <- function(
             corvec <- rep(NA, B)
             set.seed(seed)
             resamp_mat <- sapply(1:B, function(ii) sample.int(n = nn, replace = TRUE, prob = wt))
-            # write.csv(data.frame(x = x, y = y, strata = st), "input_columns.csv", row.names = FALSE)
+            # write.csv(data.frame(x = x, y = y, strata = st, weight = wt), "input_columns.csv", row.names = FALSE)
             
             # write.csv(resamp_mat, "output_row_number.csv", row.names = FALSE)
             if (B > 1) { # if B > 1, resampling will be done
