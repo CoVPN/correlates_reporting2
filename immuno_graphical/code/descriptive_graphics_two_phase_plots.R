@@ -30,8 +30,12 @@ library(fmsb) # radarchart()
 
 # produce geom_statistics w/ resampling-based covariate-adjusted Spearman
 source(here("code", "params.R"))
-source(here("code", "ggally_cor_resample.R"))
-source(here("code", "covid_corr_plot_functions.R"))
+if (study_name=="VAT08"){
+  source(here::here("code", "process_violin_pair_functions.R")) # for VAT08, pairplots are non-bstratum-adjusted, no resampling, IPS-weighted spearman correlation
+} else {
+  source(here("code", "ggally_cor_resample.R"))
+  source(here("code", "covid_corr_plot_functions.R"))
+}
 
 set.seed(12345)
 # load cleaned data
@@ -40,7 +44,7 @@ dat.long.twophase.sample <- readRDS(here(
   "long_twophase_data.rds"
 ))
 
-dat.twophase.sample <- readRDS(here("data_clean", "twophase_data.rds"))
+dat.twophase.sample <- readRDS(here("data_clean", "twophase_data.rds")); dat.twophase.sample$all_one <- 1 # as a placeholder for strata values
 
 assay_lim <- readRDS(here("data_clean", "assay_lim.rds"))
 
@@ -151,7 +155,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             time = tp,
             assays = assay_immuno, # adhoc request by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
                                    # adhoc request 2 by David: assay_immuno = c("liveneutmn50", "bindSpike_P.1", "bindRBD_P.1", "bindN")
-            strata = "Bstratum",
+            strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
             weight = "wt.subcohort",
             plot_title = paste0(
               gsub("ay ","", labels.time)[tt],
@@ -199,7 +203,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           plot_dat = subdat,
           times = times_selected,
           assay = aa,
-          strata = "Bstratum",
+          strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
           weight = "wt.subcohort",
           plot_title = paste0(
             labels.assays[aa], ": baseline ",
@@ -237,7 +241,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           plot_dat = subdat,
           time = tp,
           assays = assay_immuno,
-          strata = "Bstratum",
+          strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
           weight = "wt.subcohort",
           plot_title = paste0(
             gsub("ay ","", labels.time)[tt],
