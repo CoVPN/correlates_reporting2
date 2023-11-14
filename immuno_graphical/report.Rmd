@@ -125,6 +125,16 @@ for (bsero in bstatus.labels.2) {
 \clearpage
 ## RCDF plots of antibody markers for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
+
+if (study_name=="VAT08"){
+  for (tp in tps_no_fold_change){
+    
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_all.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+  }
+}
+
   
 for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo")){
   trtLabel <- ifelse(trt=="trt_both", "x randomization arm", "vaccine arm")
