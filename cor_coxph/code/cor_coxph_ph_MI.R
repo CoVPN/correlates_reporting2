@@ -15,13 +15,13 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
       f= update(form.0, as.formula(paste0("~.+scale(", a, ")")))
     }
     
-    models = lapply(1:10, function (imp) {
+    models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
       # imp=1
       if (TRIAL=="janssen_partA_VL") {
         dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      } else if (TRIAL=="vat08_combined") {
-        dat.vac$EventIndOfInterest  = dat.vac[[paste0("EventIndOmicronD",tpeak,"hotdeck",imp)]]
-        dat.vac$EventTimeOfInterest = dat.vac[[paste0("EventTimeOmicronD",tpeak,"hotdeck",imp)]]
+      } else if (study_name=="VAT08") {
+        dat.vac$EventIndOfInterest  = dat.vac[[config.cor$EventIndPrimary  %.% imp]]
+        dat.vac$EventTimeOfInterest = dat.vac[[config.cor$EventTimePrimary %.% imp]]
       } else stop('wrong TRIAL: '%.%TRIAL)
       
       design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
@@ -106,15 +106,15 @@ fits.tri=list()
 overall.p.tri=c()
 for (a in all.markers) {
   if(verbose) myprint(a)
-  f= update(form.0, as.formula(paste0("~.+", a, "cat")))
+  f = update(form.0, as.formula(paste0("~.+", a, "cat")))
   
-  models = lapply(1:10, function (imp) {
+  models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
     # imp=1
     if (TRIAL=="janssen_partA_VL") {
       dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
     } else if (TRIAL=="vat08_combined") {
-      dat.vac$EventIndOfInterest  = dat.vac[[paste0("EventIndOmicronD",tpeak,"hotdeck",imp)]]
-      dat.vac$EventTimeOfInterest = dat.vac[[paste0("EventTimeOmicronD",tpeak,"hotdeck",imp)]]
+      dat.vac$EventIndOfInterest  = dat.vac[[config.cor$EventIndPrimary %.% imp]]
+      dat.vac$EventTimeOfInterest = dat.vac[[config.cor$EventTimePrimary %.% imp]]
     } else stop('wrong TRIAL: '%.%TRIAL)
     
     design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
