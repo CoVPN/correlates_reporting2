@@ -72,7 +72,7 @@ if (!is.null(config$assay_metadata)) {
         # only keeps ID50 markers
         assay_metadata = subset(assay_metadata, panel=='id50')
       } else {
-        assay_metadata = subset(assay_metadata, panel=='bindSpike')
+        # assay_metadata = subset(assay_metadata, panel=='bindSpike')
         if (!DESCRIPTIVE) {
           # change lloq for bAb to min(...) 
           lloq_min = min (subset(assay_metadata, panel=='bindSpike' & assay!="bindSpike_mdw", lloq))
@@ -431,6 +431,7 @@ if (exists("COR")) {
     } 
     
     config.cor <- config::get(config = COR)
+    stopifnot(!is.null(config.cor))
     
     if (startsWith(config.cor$tpeak%.%"","Delta")) { 
         tpeak = as.integer(strsplit(sub("Delta","",config.cor$tpeak), "over")[[1]][1])    
