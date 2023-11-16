@@ -1,7 +1,6 @@
 # COR="D22M6ominAb"
-# COR="D43M12ominAb"
+# COR="D43M12omi"
 Sys.setenv(TRIAL = "vat08_combined")
-
 Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) 

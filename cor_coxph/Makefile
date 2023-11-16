@@ -56,10 +56,10 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_bAb)) ## for some reason if this 
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined ))
 	Rscript code/cor_coxph_vat08_combined.R D22M6omi
 	Rscript code/cor_coxph_vat08_combined.R D43M6omi
-	Rscript code/cor_coxph_vat08_combined.R D22M6ominAb
-	Rscript code/cor_coxph_vat08_combined.R D43M6ominAb
 	Rscript code/cor_coxph_vat08_combined.R D22M12omi
 	Rscript code/cor_coxph_vat08_combined.R D43M12omi
+	Rscript code/cor_coxph_vat08_combined.R D22M6ominAb
+	Rscript code/cor_coxph_vat08_combined.R D43M6ominAb
 	Rscript code/cor_coxph_vat08_combined.R D22M12ominAb
 	Rscript code/cor_coxph_vat08_combined.R D43M12ominAb
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
