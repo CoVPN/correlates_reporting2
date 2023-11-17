@@ -79,6 +79,7 @@ for (a in all.markers) {
   marker.cutpoints=attr(dat.vac.seropos, "marker.cutpoints")[[a]]
   write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints, 2), ", "), ")%"), 
         file=paste0(save.results.to.0%.%"/stage1nnaive/", "cutpoints_", a, "_"%.%study_name))
+  
   write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints, 2), ", "), ")%"), 
         file=paste0(save.results.to.0%.%"/stage2nnaive/", "cutpoints_", a, "_"%.%study_name))
   

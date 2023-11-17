@@ -44,7 +44,10 @@ for(opt in names(config)) eval(parse(text = paste0(names(config[opt])," <- confi
 TRIAL=attr(config, "config")
 
 
-DayPrefix = ifelse (TRIAL == 'moderna_boost', "BD", "Day")
+DayPrefix = switch (TRIAL, 
+                    'moderna_boost' = "BD", 
+                    'id27hpv' = "M",
+                    "Day")
 
 if (is.null(config$threshold_grid_size)) {
   # Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
@@ -62,6 +65,8 @@ if (!is.null(config$assay_metadata)) {
   
   # created named lists for assay metadata to easier access, e.g. assay_labels_short["bindSpike"]
   assay_metadata = read.csv(paste0(dirname(attr(config,"file")),"/",config$assay_metadata))
+  
+  if(any(is.na(assay_metadata$uloq))) stop('uloq cannot be NA, set it to Inf if not needed')
   
   # remove bindN
   assay_metadata=subset(assay_metadata, assay!="bindN")
@@ -592,7 +597,8 @@ if (exists("COR")) {
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
         dat.mock$ph2=dat.mock[[config.cor$ph2]]
         dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
-        dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
+        # some may not have config.cor$EventTimePrimary
+        if (!is.null(config.cor$EventTimePrimary)) dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
         dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
         dat.mock$wt=dat.mock[[config.cor$wt]]
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
@@ -710,13 +716,16 @@ if (exists("COR")) {
             tfinal.tpeak=180-21 # tpeak is 21 days post dose 2
           } # else is M12
           
+        } else if (study_name=="IARC HPV") {
+          tfinal.tpeak=NULL
+          
         } else {
           # default rule for followup time is the last case in ph2 in vaccine arm
           tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
         }
 
                 
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined")) {
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv")) {
           # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
@@ -899,6 +908,12 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name %in% c("PROFISCOV")) {
     Bstratum.labels <- c("All")
 
+} else if (study_name == 'IARC HPV') {
+  Bstratum.labels <- c(
+    "Age > 14",
+    "Age <= 14"
+  )
+  
 } else stop("unknown study_name 2")
 
 
@@ -981,6 +996,12 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name=="PROFISCOV") {
     demo.stratum.labels <- c("All")
 
+} else if (study_name == 'IARC HPV') {
+  demo.stratum.labels <- c(
+    "Age > 14",
+    "Age <= 14"
+  )
+  
 } else stop("unknown study_name 3")
 
 labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
