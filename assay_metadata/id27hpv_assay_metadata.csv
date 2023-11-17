@@ -1,10 +1,10 @@
 panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates
-bindL1L2,1,bindL1L2_HPV6,0.2,NA,NA,0.7,"Binding Antibody to L1, L2 HPV6","Anti L1, L2 IgG HPV6 (AU/ml)",lloq,1
-bindL1L2,2,bindL1L2_HPV11,0.4,NA,NA,0.8,"Binding Antibody to L1, L2 HPV11","Anti L1, L2 IgG HPV11 (AU/ml)",lloq,1
-bindL1L2,3,bindL1L2_HPV16,1,NA,NA,1.3,"Binding Antibody to L1, L2 HPV16","Anti L1, L2 IgG HPV16 (IU/ml)",lloq,1
-bindL1L2,4,bindL1L2_HPV18,0.3,NA,NA,2.9,"Binding Antibody to L1, L2 HPV18","Anti L1, L2 IgG HPV18 (IU/ml)",lloq,1
-bindL1L2,5,bindL1L2_HPV31,1.6,NA,NA,3.9,"Binding Antibody to L1, L2 HPV31","Anti L1, L2 IgG HPV31 (AU/ml)",lloq,1
-bindL1L2,6,bindL1L2_HPV33,3,NA,NA,5.7,"Binding Antibody to L1, L2 HPV33","Anti L1, L2 IgG HPV33 (AU/ml)",lloq,1
-bindL1L2,7,bindL1L2_HPV45,2.3,NA,NA,8.3,"Binding Antibody to L1, L2 HPV45","Anti L1, L2 IgG HPV45 (AU/ml)",lloq,1
-bindL1L2,8,bindL1L2_HPV52,1.6,NA,NA,2.3,"Binding Antibody to L1, L2 HPV52","Anti L1, L2 IgG HPV52 (AU/ml)",lloq,1
-bindL1L2,9,bindL1L2_HPV58,2.2,NA,NA,7.1,"Binding Antibody to L1, L2 HPV58","Anti L1, L2 IgG HPV58 (AU/ml)",lloq,1
+bindL1L2,1,bindL1L2_HPV6,0.2,Inf,NA,0.7,"Binding Antibody to L1, L2 HPV6","Anti L1, L2 IgG HPV6 (AU/ml)",lloq,1
+bindL1L2,2,bindL1L2_HPV11,0.4,Inf,NA,0.8,"Binding Antibody to L1, L2 HPV11","Anti L1, L2 IgG HPV11 (AU/ml)",lloq,1
+bindL1L2,3,bindL1L2_HPV16,1,Inf,NA,1.3,"Binding Antibody to L1, L2 HPV16","Anti L1, L2 IgG HPV16 (IU/ml)",lloq,1
+bindL1L2,4,bindL1L2_HPV18,0.3,Inf,NA,2.9,"Binding Antibody to L1, L2 HPV18","Anti L1, L2 IgG HPV18 (IU/ml)",lloq,1
+bindL1L2,5,bindL1L2_HPV31,1.6,Inf,NA,3.9,"Binding Antibody to L1, L2 HPV31","Anti L1, L2 IgG HPV31 (AU/ml)",lloq,1
+bindL1L2,6,bindL1L2_HPV33,3,Inf,NA,5.7,"Binding Antibody to L1, L2 HPV33","Anti L1, L2 IgG HPV33 (AU/ml)",lloq,1
+bindL1L2,7,bindL1L2_HPV45,2.3,Inf,NA,8.3,"Binding Antibody to L1, L2 HPV45","Anti L1, L2 IgG HPV45 (AU/ml)",lloq,1
+bindL1L2,8,bindL1L2_HPV52,1.6,Inf,NA,2.3,"Binding Antibody to L1, L2 HPV52","Anti L1, L2 IgG HPV52 (AU/ml)",lloq,1
+bindL1L2,9,bindL1L2_HPV58,2.2,Inf,NA,7.1,"Binding Antibody to L1, L2 HPV58","Anti L1, L2 IgG HPV58 (AU/ml)",lloq,1
