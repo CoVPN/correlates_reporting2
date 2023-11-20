@@ -1,0 +1,49 @@
+<!-- ```{r, echo=FALSE} -->
+<!-- here::i_am("cor_logistic/report.Rmd") -->
+<!-- ``` -->
+
+
+
+```{r, echo=FALSE, message=FALSE}
+message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_logistic report ~~~~~~~~~~~~~~~~~~~~~~~~~")
+```
+
+
+
+```{r, echo=FALSE, results='asis'}
+
+tt=timepoints
+
+covariates_adjusted = covariates_riskscore
+covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
+covariates_adjusted = sub("_","",covariates_adjusted)
+
+if(file.exists(here::here('cor_logistic', paste0('report_', tolower(study_name), '.Rmd')))
+   & attr(config,"config")!="profiscov_lvmn" # profiscov uses special template but lvmn does not because it does not have D43start48
+) {
+  # trial-specific report, which also calls report_by_COR.Rmd
+  
+  message ("trial-specific report rmd found")
+  res = knitr::knit_child(c(here::here('cor_logistic', paste0('report_', tolower(study_name), '.Rmd'))), quiet = TRUE)
+  cat(res, sep = '\n')
+
+} else {
+  # generic report
+  
+  for (tpeak in tt) {
+    COR <- paste0(DayPrefix, tpeak)
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = ""
+    pathCoRoutput <- paste0("cor_logistic/output/", attr(config,"config"), "/", COR)
+    
+    all.markers=paste0(DayPrefix, tpeak, assays)
+    if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+
+    res = knitr::knit_child(c(here::here('cor_logistic', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+
+}
+```
