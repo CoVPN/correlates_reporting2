@@ -716,7 +716,7 @@ if (exists("COR")) {
             tfinal.tpeak=180-21 # tpeak is 21 days post dose 2
           } # else is M12
           
-        } else if (study_name=="IARC HPV") {
+        } else if (study_name=="IARCHPV") {
           tfinal.tpeak=NULL
           
         } else {
@@ -908,7 +908,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name %in% c("PROFISCOV")) {
     Bstratum.labels <- c("All")
 
-} else if (study_name == 'IARC HPV') {
+} else if (study_name == 'IARCHPV') {
   Bstratum.labels <- c(
     "Age > 14",
     "Age <= 14"
@@ -996,7 +996,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name=="PROFISCOV") {
     demo.stratum.labels <- c("All")
 
-} else if (study_name == 'IARC HPV') {
+} else if (study_name == 'IARCHPV') {
   demo.stratum.labels <- c(
     "Age > 14",
     "Age <= 14"

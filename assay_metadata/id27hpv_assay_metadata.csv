@@ -8,3 +8,4 @@ bindL1L2,6,bindL1L2_HPV33,3,Inf,NA,5.7,"Binding Antibody to L1, L2 HPV33","Anti 
 bindL1L2,7,bindL1L2_HPV45,2.3,Inf,NA,8.3,"Binding Antibody to L1, L2 HPV45","Anti L1, L2 IgG HPV45 (AU/ml)",lloq,1
 bindL1L2,8,bindL1L2_HPV52,1.6,Inf,NA,2.3,"Binding Antibody to L1, L2 HPV52","Anti L1, L2 IgG HPV52 (AU/ml)",lloq,1
 bindL1L2,9,bindL1L2_HPV58,2.2,Inf,NA,7.1,"Binding Antibody to L1, L2 HPV58","Anti L1, L2 IgG HPV58 (AU/ml)",lloq,1
+bindL1L2,10,bindL1L2_mdw,#NAME?,Inf,NA,NA,Binding Antibody Cross Reactivity,"Anti L1, L2 IgG Score",lloq,1

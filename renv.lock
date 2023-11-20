@@ -509,15 +509,15 @@
     },
     "copcor": {
       "Package": "copcor",
-      "Version": "2023.9-24",
+      "Version": "2023.11-17",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "CoVPN",
       "RemoteRepo": "copcor",
       "RemoteRef": "main",
-      "RemoteSha": "bb1b6949ab5302cbf42b5009fc467ea38613f384",
-      "Hash": "9e85e3df53b26229d5c2520e28aa6d9b"
+      "RemoteSha": "1f7364f7bfb17b08a6432ec5c7fc2026d70b2736",
+      "Hash": "5b79b37affed328d1b91cf019e67665d"
     },
     "corrplot": {
       "Package": "corrplot",
@@ -1437,6 +1437,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "658104b545c7d7634bae87d5c304628b"
+    },
+    "osDesign": {
+      "Package": "osDesign",
+      "Version": "1.8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "373ae10f0b7f570905bade23ddd13695"
     },
     "pROC": {
       "Package": "pROC",
