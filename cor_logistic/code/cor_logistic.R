@@ -111,17 +111,18 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
                   group = dat.vac.seroneg.ph2$tps.stratum) 
             # method = "WL"# to be more robust
         
-        res = summary(fit)$coef
-        robust = FALSE # better for small samples
-        idx = ifelse(robust, "Emp ", "Mod ")
-        out = cbind(res[, c("Value", idx %.% "p")], 
-                    `lower bound` = res[, "Value"] - 1.96 * res[, idx %.% "SE"], 
-                    `upper bound` = res[, "Value"] + 1.96 * res[, idx %.% "SE"])
+        ## getFormattedSummary() has this logic, so no necessary
+        # res = summary(fit)$coef
+        # robust = T # better for small samples
+        # idx = ifelse(robust, "Emp ", "Mod ")
+        # out = cbind(res[, c("Value", idx %.% "p")],
+        #             `lower bound` = res[, "Value"] - 1.96 * res[, idx %.% "SE"],
+        #             `upper bound` = res[, "Value"] + 1.96 * res[, idx %.% "SE"])
+        # 
+        # out[, c(1, 3, 4)] = exp(out[, c(1, 3, 4)])
+        # colnames(out) = c("OR", "p.value", "(lower", "upper)")
+        # fit$coefficients = out
         
-        out[, c(1, 3, 4)] = exp(out[, c(1, 3, 4)])
-        colnames(out) = c("OR", "p.value", "(lower", "upper)")
-        
-        fit$coefficients = out
         if (i==1) fits[[a]]=fit else fits.scaled[[a]]=fit
     }
 }
@@ -158,22 +159,21 @@ for (a in all.markers) {
     if(verbose) myprint(a)
     f= update(form.0, as.formula(paste0("~.+", a, "cat")))
     
-    fit = tps(f, 
-              dat.vac.seroneg.ph2, nn0 = nn0, nn1 = nn1, 
+    fit = tps(f, dat.vac.seroneg.ph2, nn0 = nn0, nn1 = nn1, 
               group = dat.vac.seroneg.ph2$tps.stratum) 
     # method = "WL"# to be more robust
     
-    res = summary(fit)$coef
-    robust = FALSE # better for small samples
-    idx = ifelse(robust, "Emp ", "Mod ")
-    out = cbind(res[, c("Value", idx %.% "p")], 
-                `lower bound` = res[, "Value"] - 1.96 * res[, idx %.% "SE"], 
-                `upper bound` = res[, "Value"] + 1.96 * res[, idx %.% "SE"])
+    # res = summary(fit)$coef
+    # robust = FALSE # better for small samples
+    # idx = ifelse(robust, "Emp ", "Mod ")
+    # out = cbind(res[, c("Value", idx %.% "p")], 
+    #             `lower bound` = res[, "Value"] - 1.96 * res[, idx %.% "SE"], 
+    #             `upper bound` = res[, "Value"] + 1.96 * res[, idx %.% "SE"])
+    # 
+    # out[, c(1, 3, 4)] = exp(out[, c(1, 3, 4)])
+    # colnames(out) = c("OR", "p.value", "(lower", "upper)")
+    # fit$coefficients = out
     
-    out[, c(1, 3, 4)] = exp(out[, c(1, 3, 4)])
-    colnames(out) = c("OR", "p.value", "(lower", "upper)")
-    
-    fit$coefficients = out
     fits.tri[[a]]=fit
 }
 

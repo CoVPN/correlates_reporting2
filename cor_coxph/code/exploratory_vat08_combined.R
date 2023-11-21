@@ -1,19 +1,26 @@
-COR="D43M12omi"
-Sys.setenv(TRIAL = "vat08_combined")
-Sys.setenv(VERBOSE = 1) 
-renv::activate(project = here::here(".."))     
-source(here::here("..", "_common.R")) 
-source(here::here("code", "params.R"))
 library(survey)
+
+dat.mock = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231118.csv')
+
+dat.mock$ph1=dat.mock$ph1.D43
+dat.mock$ph2=dat.mock$ph2.D43
 
 dat.mock$ph2.all.nAb = !is.na(dat.mock$Day43pseudoneutid50)
 dat.mock$batch2 = dat.mock$ph2.all.nAb & !dat.mock$ph2
+
+
+with(subset(dat.mock,ph1),  table(EventIndFirstInfectionD1, batch2, Bserostatus, Trt, Trialstage))
+with(subset(dat.mock,!ph1), table(EventIndFirstInfectionD1, batch2, Bserostatus, Trt, Trialstage))
+
+with(subset(dat.mock,EventIndFirstInfectionD1==1), table(ph1.D43, batch2))
+with(subset(dat.mock,EventIndFirstInfectionD1==1), table(ph1.D22, batch2))
 
 
 with(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1), table(ph2, ph2.D43.nAb, is.na(Bpseudoneutid50), SubcohortInd))
 
 # subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1 & !ph2 & !ph2.D43.nAb & !is.na(Day43pseudoneutid50))[1:2,]
 
+library(kyotil)
 
 par(mfrow=c(1,9), mar=c(4,1,3,1), oma=c(0,0,0,0))
 
