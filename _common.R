@@ -536,9 +536,8 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
   
 } else if (study_name=='VAT08') {
   if (DESCRIPTIVE) {
-    bAb_markers = subset(assay_metadata, panel=='bindSpike' & assay!='bindSpike_mdw', assay, drop=T)
-    
     # censor bAb markers by lloq when the DESCRIPTIVE flag is set (data in analysis ready dataset is censored by lloq_min)
+    bAb_markers = subset(assay_metadata, panel=='bindSpike' & assay!='bindSpike_mdw', assay, drop=T)
     for (a in bAb_markers) {
       for (t in c("B", paste0(DayPrefix, timepoints)) ) {
         dat.mock[[t%.%a]] = ifelse(dat.mock[[t%.%a]] < log10(lloqs[a]), log10(lloqs[a]/2), dat.mock[[t%.%a]])
