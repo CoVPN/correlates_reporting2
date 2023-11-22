@@ -1103,15 +1103,15 @@
     },
     "kyotil": {
       "Package": "kyotil",
-      "Version": "2023.9-20",
+      "Version": "2023.11-22",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "youyifong",
       "RemoteRepo": "kyotil",
       "RemoteRef": "master",
-      "RemoteSha": "f4c4e7fd4cdc2a35188d0b24113a4c187cc86299",
-      "Hash": "1d8a5d2aeacea66a9d8afa538eff4b4f"
+      "RemoteSha": "182545025e0d430cfe6784b12020f11d1632742c",
+      "Hash": "585d94533bf62fc8548d0ea33d1caa64"
     },
     "labeling": {
       "Package": "labeling",

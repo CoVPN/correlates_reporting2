@@ -13,7 +13,7 @@ clean:
 cor_logistic:
 ifeq ($(TRIAL),$(filter $(TRIAL), id27hpv))
 	Rscript code/cor_logistic.R M18
-#	Rscript code/cor_logistic.R M18sus
+	Rscript code/cor_logistic.R M18sus
 endif
 
 

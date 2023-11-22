@@ -43,21 +43,21 @@ myprint(numPerm)
 dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
 
 # there is only one analysis population
-dat.vac.seroneg=subset(dat.mock, ph1)
+dat.ph1=subset(dat.mock, ph1)
 
 
 # define trichotomized markers
-dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
+dat.ph1 = add.trichotomized.markers (dat.ph1, all.markers, wt.col.name="wt")
 
 # for hpv33 and above, too few positive responses, change to cut into to low and high
 for (a in c("M18bindL1L2_HPV33", "M18bindL1L2_HPV45", "M18bindL1L2_HPV52", "M18bindL1L2_HPV58")) {        
-    cutpoint=min(dat.vac.seroneg[[a]], na.rm = T)
-    dat.vac.seroneg[[a%.%'cat']] = cut(dat.vac.seroneg[[a]], breaks = c(-Inf, cutpoint, Inf))
-    attr(dat.vac.seroneg, "marker.cutpoints")[[a]] = cutpoint
+    cutpoint=min(dat.ph1[[a]], na.rm = T)
+    dat.ph1[[a%.%'cat']] = cut(dat.ph1[[a]], breaks = c(-Inf, cutpoint, Inf))
+    attr(dat.ph1, "marker.cutpoints")[[a]] = cutpoint
 }
 
 
-marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
+marker.cutpoints=attr(dat.ph1, "marker.cutpoints")
 for (a in all.markers) {        
     q.a=marker.cutpoints[[a]]
     if (startsWith(a, "Day")) {
@@ -71,34 +71,43 @@ for (a in all.markers) {
 }
 
 #create twophase design object
-design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac.seroneg)
-with(dat.vac.seroneg, table(Wstratum, ph2))
+design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.ph1)
+with(dat.ph1, table(Wstratum, ph2))
     
 # create verification object to be populated by the following scripts
 rv=list() 
 rv$marker.cutpoints=marker.cutpoints
 
 # getting some quantiles
-#10**wtd.quantile(dat.vac.seroneg$Day57pseudoneutid50, dat.vac.seroneg$wt, c(0.025, 0.05, seq(.2,.9,by=0.01),seq(.9,.99,by=0.005)))
+#10**wtd.quantile(dat.ph1$Day57pseudoneutid50, dat.ph1$wt, c(0.025, 0.05, seq(.2,.9,by=0.01),seq(.9,.99,by=0.005)))
 
 # table of ph1 and ph2 cases
-tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
+tab=with(dat.ph1, table(ph2, EventIndPrimary))
 names(dimnames(tab))[2]="Event Indicator"
 print(tab)
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
 
 # for use in competing risk estimation
-dat.vac.seroneg.ph2=subset(dat.vac.seroneg, ph2)
+dat.ph2=subset(dat.ph1, ph2)
 
 begin=Sys.time()
 
 
+################################################################################
+# to decide adjustment variables
 
-###################################################################################################
+if (TRIAL=='id27hpv') {
+  fit=glm(EventIndPrimary~AgeGroup + daysbtwnenrollment_and_susceptibility, dat.ph1, family="binomial")
+  summary(fit)
+  # daysbtwnenrollment_and_susceptibility not significant, and hence not adjusted in the following
+}
+  
+
+################################################################################
 # get OR on continuous markers
-###################################################################################################
+################################################################################
     
-tab=with(dat.vac.seroneg, table(tps.stratum, EventIndPrimary))
+tab=with(dat.ph1, table(tps.stratum, EventIndPrimary))
 nn0=tab[,1]
 nn1=tab[,2]
 
@@ -107,8 +116,8 @@ fits.scaled=list()
 for (i in 1:2) { # 1: not scaled, 2: scaled
     for (a in all.markers) {
         fit = tps(update (form.0,  as.formula('~. + '%.%ifelse(i==2,"scale("%.%a%.%")", a))), 
-                  dat.vac.seroneg.ph2, nn0 = nn0, nn1 = nn1, 
-                  group = dat.vac.seroneg.ph2$tps.stratum) 
+                  dat.ph2, nn0 = nn0, nn1 = nn1, 
+                  group = dat.ph2$tps.stratum) 
             # method = "WL"# to be more robust
         
         ## getFormattedSummary() has this logic, so no necessary
@@ -127,10 +136,12 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
     }
 }
 
-assertthat::assert_that(all(abs(fits$M18bindL1L2_mdw$coef-c(-4.3268181,-0.0285102,-0.1003947))<1e-6), msg = "failed cor_logistic unit testing")    
+if(TRIAL=='id27hpv' & COR=='M18') {
+  assertthat::assert_that(all(abs(fits$M18bindL1L2_mdw$coef-c(-4.3268181,-0.0285102,-0.1003947))<1e-6), msg = "failed cor_logistic unit testing")    
+}
     
-natrisk=nrow(dat.vac.seroneg)
-nevents=sum(dat.vac.seroneg$yy==1)
+natrisk=nrow(dat.ph1)
+nevents=sum(dat.ph1$yy==1)
 
 # make pretty table
 rows=length(coef(fits[[1]]))
@@ -152,15 +163,15 @@ pvals.cont = sapply(fits, function(x) {
 ###################################################################################################
 if(verbose) print("regression for trichotomized markers")
 
-marker.levels = sapply(all.markers, function(a) length(table(dat.vac.seroneg[[a%.%"cat"]])))
+marker.levels = sapply(all.markers, function(a) length(table(dat.ph1[[a%.%"cat"]])))
 
 fits.tri=list()
 for (a in all.markers) {
     if(verbose) myprint(a)
     f= update(form.0, as.formula(paste0("~.+", a, "cat")))
     
-    fit = tps(f, dat.vac.seroneg.ph2, nn0 = nn0, nn1 = nn1, 
-              group = dat.vac.seroneg.ph2$tps.stratum) 
+    fit = tps(f, dat.ph2, nn0 = nn0, nn1 = nn1, 
+              group = dat.ph2$tps.stratum) 
     # method = "WL"# to be more robust
     
     # res = summary(fit)$coef
@@ -310,11 +321,11 @@ overall.p.2=c(rbind(overall.p.2, NA,NA))
 
 # n cases and n at risk
 natrisk = round(c(sapply (all.markers%.%"cat", function(a) {
-  out = aggregate(subset(dat.vac.seroneg,ph2==1)        [["wt"]], subset(dat.vac.seroneg,ph2==1        )[a], sum, na.rm=T, drop=F)[,2]
+  out = aggregate(subset(dat.ph1,ph2==1)        [["wt"]], subset(dat.ph1,ph2==1        )[a], sum, na.rm=T, drop=F)[,2]
   if (length(out)==3) out else c(out,NA)
 } )))
 nevents = round(c(sapply (all.markers%.%"cat", function(a) {
-  out = aggregate(subset(dat.vac.seroneg,yy==1 & ph2==1)[["wt"]], subset(dat.vac.seroneg,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2]
+  out = aggregate(subset(dat.ph1,yy==1 & ph2==1)[["wt"]], subset(dat.ph1,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2]
   if (length(out)==3) out else c(out,NA)
 } )))
 
