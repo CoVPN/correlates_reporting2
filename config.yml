@@ -461,7 +461,7 @@ profiscov_lvmn: &profiscov_lvmn
 
 
 id27hpv:
-  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20231120.csv
+  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20231122.csv
   assay_metadata: assay_metadata/id27hpv_assay_metadata.csv
   sampling_scheme: case_control
   two_marker_timepoints: no
@@ -469,7 +469,7 @@ id27hpv:
   times: [M18]
   time_labels: [Month 18]
   study_name: IARCHPV
-  covariates_riskscore: ~.+ Age
+  covariates_riskscore: ~.+ AgeGroup
   num_boot_replicates: 1000
   num_perm_replicates: 10000
   primary_assays: [bindL1L2_HPV6,bindL1L2_HPV11,bindL1L2_HPV16,bindL1L2_HPV18,bindL1L2_HPV31]
