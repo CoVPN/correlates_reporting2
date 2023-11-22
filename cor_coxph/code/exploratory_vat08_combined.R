@@ -1,4 +1,5 @@
 library(survey)
+library(kyotil)
 
 dat.mock = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231118.csv')
 
@@ -9,11 +10,34 @@ dat.mock$ph2.all.nAb = !is.na(dat.mock$Day43pseudoneutid50)
 dat.mock$batch2 = dat.mock$ph2.all.nAb & !dat.mock$ph2
 
 
+## do Sex improve prediction?
+## not in placeo
+
+with(subset(dat.mock, Trt==0 & Bserostatus==1), fast.auc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
+glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+risk_score, subset(dat.mock, Trt==0 & Bserostatus==1), family=binomial())
+trainauc.glm(glm.fit)
+
+with(subset(dat.mock, Trt==0 & Bserostatus==1 & Trialstage==2), fast.auc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
+glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+risk_score, subset(dat.mock, Trt==0 & Bserostatus==1 & Trialstage==2), family=binomial())
+trainauc.glm(glm.fit)
+
+with(subset(dat.mock, Trt==1 & Bserostatus==1 & Trialstage==2), fast.auc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
+glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+risk_score, subset(dat.mock, Trt==1 & Bserostatus==1 & Trialstage==2), family=binomial())
+trainauc.glm(glm.fit)
+
+with(subset(dat.mock, Trt==0 & Bserostatus==1 & Trialstage==2), table(Sex, EventIndOmicronD22M12hotdeck1))
+with(subset(dat.mock, Trt==1 & Bserostatus==1 & Trialstage==2), table(Sex, EventIndOmicronD22M12hotdeck1))
+
+##
+
 with(subset(dat.mock,ph1),  table(EventIndFirstInfectionD1, batch2, Bserostatus, Trt, Trialstage))
 with(subset(dat.mock,!ph1), table(EventIndFirstInfectionD1, batch2, Bserostatus, Trt, Trialstage))
 
 with(subset(dat.mock,EventIndFirstInfectionD1==1), table(ph1.D43, batch2))
 with(subset(dat.mock,EventIndFirstInfectionD1==1), table(ph1.D22, batch2))
+
+with(subset(dat.mock,EventIndOmicronD1M12hotdeck1==1), table(ph1.D43, batch2))
+with(subset(dat.mock,EventIndOmicronD1M12hotdeck1==1), table(ph1.D22, batch2))
 
 
 with(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1), table(ph2, ph2.D43.nAb, is.na(Bpseudoneutid50), SubcohortInd))
