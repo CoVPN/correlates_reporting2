@@ -49,8 +49,11 @@ for (i in 1:length(tlf)){
       }
     } else NA
   
-  tab <- data.frame(sapply(tab,function(x)gsub("%", "\\\\%", x)),
-                    check.names = FALSE)
+  tab <- data.frame(tab, check.names = F)
+  for (i_colname in names(tab)){
+    tab[,i_colname] <- gsub("%", "\\\\%", as.vector(tab[,i_colname]))
+  }
+  
   rownames(tab) <- NULL
   colnames(tab) <- gsub("%", "\\\\%", colnames(tab))
   colnames(tab) <- gsub("Baseline SARS-CoV-2", "Baseline\nSARS\\-CoV\\-2", colnames(tab))

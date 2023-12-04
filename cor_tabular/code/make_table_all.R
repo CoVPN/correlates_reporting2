@@ -83,13 +83,15 @@ tlf <-
     tab_strtm1 = list(
       table_header = "",
       deselect = "Arm",
-      pack_row = "Arm"
+      pack_row = "Arm",
+      col1="7cm"
     ),
     
     tab_strtm2 = list(
       table_header = "",
       deselect = "Arm",
-      pack_row = "Arm"
+      pack_row = "Arm",
+      col1="7cm"
     ),
     
     tab_case_cnt = list(
@@ -191,7 +193,11 @@ tlf <-
                         "Baseline SARS-CoV-2 Positive Placebo Recipients" = 8),
       col1="1cm"))
 
-
+if (grepl("severe", tolower(config.cor$EventIndPrimary))) {
+  for (i in c("case_vacc_neg", "case_plcb_neg", "case_vacc_pos", "case_plcb_pos" )){
+    names(tlf[[i]]$header_above1) <- gsub("Cases*", "Severe Cases*", names(tlf[[i]]$header_above1), fixed=T)
+  }
+}
     
 # cutoff.name <- config$llox_label
 
@@ -567,10 +573,20 @@ print("Done with table 1")
 
 
 # Cases & Non-cases
-if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE", "PREVENT19", "VAT08m")){
-  nonCaseD <- timepoints[length(timepoints)]
-} else {
+# 1. Moderna 
+# !!as.name(paste0("EarlyendpointD",nonCaseD))==0
+# nonCaseD always 57
+# 2. AZ
+# !!as.name(paste0("EarlyendpointD",nonCaseD))==0
+# nonCaseD depends on timepoint, 29 or 57 
+# 3. All other
+# AnyinfectionD1==0
+# if (study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE", "ENSEMBLE", "PREVENT19", "VAT08m")){
+
+if (study_name=="AZD1222"){
   nonCaseD <- tpeak
+} else{ #study_name %in% c("COVE", "MockCOVE", "MockENSEMBLE", "ENSEMBLE", "PREVENT19", "VAT08m")
+  nonCaseD <- timepoints[length(timepoints)]
 }
 
 ds <- ds %>% 
@@ -580,13 +596,21 @@ ds <- ds %>%
                             !!as.name(config.cor$Earlyendpoint)==0 & 
                             !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
                             !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
-                          Perprotocol==1 & 
-                            # !!as.name(ifelse(length(timepoints)>1, paste0("EarlyendpointD",timepoints[length(timepoints)]), config.cor$Earlyendpoint))==0 &
-                            # AnyinfectionD1==0 & 
-                            !!as.name(paste0("EarlyendpointD",nonCaseD))==0 &
+                    Perprotocol==1 & 
+                            AnyinfectionD1==0 &
                             !!as.name(paste0("TwophasesampIndD", nonCaseD))==1 & 
-                            EventIndPrimaryD1==0 ~ "Non-Cases"))
-
+                            EventIndPrimaryD1==0 ~ "Non-Cases"),
+    Case = case_when(study_name %in% c("AZD1222", "COVE", "MockCOVE") &
+                       Perprotocol==1 & 
+                       !!as.name(config.cor$Earlyendpoint)==0 & 
+                       !!as.name(paste0("TwophasesampIndD", config.cor$tpeak))==1 & 
+                       !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+                     study_name %in% c("AZD1222", "COVE", "MockCOVE") &
+                       Perprotocol==1 & 
+                       !!as.name(paste0("EarlyendpointD",nonCaseD))==0 & 
+                       !!as.name(paste0("TwophasesampIndD", nonCaseD))==1 & 
+                       EventIndPrimaryD1==0 ~ "Non-Cases",
+                       TRUE ~ Case))
 
 # Added table: 
 demo.stratum.ordered <- gsub(">=", "$\\\\geq$", demo.stratum.labels, fixed=T)
