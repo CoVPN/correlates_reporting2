@@ -1,5 +1,7 @@
-#COR="D22omi"
-Sys.setenv(TRIAL = "vat08_combined"); Sys.setenv(VERBOSE = 1) 
+# COR="D22M6ominAb"
+# COR="D43M12omi"
+Sys.setenv(TRIAL = "vat08_combined")
+Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
@@ -42,7 +44,6 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-
 ## add trichotomized markers 
 
 summary(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==0, Day22pseudoneutid50_BA.1, drop=T))
@@ -64,7 +65,7 @@ dat.vac.seropos = add.trichotomized.markers (dat.vac.seropos, all.markers, wt.co
 dat.vac.seroneg.2 = subset(dat.mock, Trt==1 & ph1 & Trialstage==2 & Bserostatus==0)
 dat.vac.seroneg.2 = add.trichotomized.markers (dat.vac.seroneg.2, all.markers, wt.col.name="wt")
 
-if (COR=="D22omi") {
+if (COR=="D22M6omi" | COR=="D22M6ominAb") {
   # stage 2, naive, Omicron ID50 markers are 90% below limit, change to cut into to low and high
   for (a in all.markers[startsWith(all.markers, 'Day22pseudoneutid50')]) {        
     cutpoint=min(dat.vac.seroneg.2[[a]], na.rm = T)
@@ -75,18 +76,16 @@ if (COR=="D22omi") {
 
 # save cut points to files
 for (a in all.markers) {        
-  if (startsWith(a, "Day")) {
-    marker.cutpoints=attr(dat.vac.seropos, "marker.cutpoints")[[a]]
-    write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints, 2), ", "), ")%"), 
-          file=paste0(save.results.to.0%.%"/stage1nnaive/", "cutpoints_", a, "_"%.%study_name))
-    write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints, 2), ", "), ")%"), 
-          file=paste0(save.results.to.0%.%"/stage2nnaive/", "cutpoints_", a, "_"%.%study_name))
-    
-    marker.cutpoints=attr(dat.vac.seroneg.2, "marker.cutpoints")[[a]]
-    write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints, 2), ", "), ")%"), 
-          file=paste0(save.results.to.0%.%"/stage2naive/", "cutpoints_", a, "_"%.%study_name))
-    
-  }
+  marker.cutpoints=attr(dat.vac.seropos, "marker.cutpoints")[[a]]
+  write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints, 2), ", "), ")%"), 
+        file=paste0(save.results.to.0%.%"/stage1nnaive/", "cutpoints_", a, "_"%.%study_name))
+  
+  write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints, 2), ", "), ")%"), 
+        file=paste0(save.results.to.0%.%"/stage2nnaive/", "cutpoints_", a, "_"%.%study_name))
+  
+  marker.cutpoints=attr(dat.vac.seroneg.2, "marker.cutpoints")[[a]]
+  write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints, 2), ", "), ")%"), 
+        file=paste0(save.results.to.0%.%"/stage2naive/", "cutpoints_", a, "_"%.%study_name))
 }
 
 # separate nnaive by trial stage
@@ -122,7 +121,7 @@ for (iAna in 1:3) {
   
   # imputed events of interest
   tabs=sapply(1:10, simplify="array", function (imp) {
-    dat.vac$EventIndOfInterest = dat.vac[["EventIndOmicronD22hotdeck"%.%imp]]
+    dat.vac$EventIndOfInterest = dat.vac[[config.cor$EventIndPrimary%.%imp]]
     with(dat.vac, table(ph2, EventIndOfInterest))
   })
   tab =apply(tabs, c(1,2), mean)
@@ -138,7 +137,8 @@ for (iAna in 1:3) {
 
   source(here::here("code", "cor_coxph_ph_MI.R"))
   
-  # 
+  
+  
   # #####################################
   # # formula for competing risk analysis
   # 

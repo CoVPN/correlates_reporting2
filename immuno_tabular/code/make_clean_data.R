@@ -38,7 +38,7 @@ ds_s <- dat %>%
       MinorityInd == 0 ~ "White Non-Hispanic"
     ),
     HighRiskC = ifelse(HighRiskInd == 1, "At-risk", "Not at-risk"),
-    AgeC = ifelse(Senior == 1, labels.age[2], labels.age[1]),
+    AgeC = ifelse(is.na(Senior), ifelse(age.geq.65 == 1, labels.age[2], labels.age[1]), ifelse(Senior == 1, labels.age[2], labels.age[1])),
     SexC = ifelse(Sex == 1, "Female", "Male"),
     AgeRiskC = paste(AgeC, HighRiskC),
     AgeSexC = paste(AgeC, SexC),
@@ -76,6 +76,23 @@ if(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "PREVENT19")){
            )
 }
 
+
+if(study_name %in% c("PROFISCOV")){
+  ds_s <- ds_s %>% 
+    mutate(URMC = case_when(URMforsubcohortsampling == 1 ~ "Communities of Color",
+                            URMforsubcohortsampling == 0 ~ "White Non-Hispanic", 
+                            TRUE ~ as.character(NA)),
+           AgeURM = case_when(is.na(URMC) ~ as.character(NA), 
+                              TRUE ~ paste(AgeC, URMC)),
+           demo.stratum.ordered=demo.stratum,
+           HIVC = c("Positive", "Negative")[2-HIVinfection],
+           BMI = case_when(max(BMI, na.rm=T) < 5 ~ labels.BMI[BMI],
+                           BMI>=30 ~ "Obese BMI $\\geq$ 30", 
+                           BMI>=25 ~ "Overweight 25 $\\leq$ BMI < 30",
+                           BMI>=18.5 ~ "Normal 18.5 $\\leq$ BMI < 25",
+                           BMI<18.5 ~ "Underweight BMI < 18.5")
+    )
+}
 # Step2: Responders, % >=2FR, % >=4FR, % >=2lloq, % >=4lloq
 # Post baseline visits
 ds <- getResponder(ds_s, times=grep("Day", times, value=T), lloqs=lloqs,

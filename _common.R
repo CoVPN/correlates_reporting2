@@ -32,6 +32,7 @@ if(!exists("COR")) {
 
 # if DESCRIPTIVE env variable is set, then we are doing descriptive analyses, e.g. immuno_tabular, or cor_graphical
 DESCRIPTIVE = Sys.getenv("DESCRIPTIVE") %in% c("1", "T", "TRUE")
+myprint(DESCRIPTIVE)
 
 
 if(Sys.getenv("TRIAL")=="") {
@@ -43,7 +44,10 @@ for(opt in names(config)) eval(parse(text = paste0(names(config[opt])," <- confi
 TRIAL=attr(config, "config")
 
 
-DayPrefix = ifelse (TRIAL == 'moderna_boost', "BD", "Day")
+DayPrefix = switch (TRIAL, 
+                    'moderna_boost' = "BD", 
+                    'id27hpv' = "M",
+                    "Day")
 
 if (is.null(config$threshold_grid_size)) {
   # Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
@@ -62,15 +66,28 @@ if (!is.null(config$assay_metadata)) {
   # created named lists for assay metadata to easier access, e.g. assay_labels_short["bindSpike"]
   assay_metadata = read.csv(paste0(dirname(attr(config,"file")),"/",config$assay_metadata))
   
+  if(any(is.na(assay_metadata$uloq))) stop('uloq cannot be NA, set it to Inf if not needed')
+  
   # remove bindN
   assay_metadata=subset(assay_metadata, assay!="bindN")
   
-  # change lloq for bAb to min(...) when TRIAL is vat08_combined and the DESCRIPTIVE flag is NOT set
-  if (TRIAL=='vat08_combined' & !DESCRIPTIVE) {
-    lloq_min = min (subset(assay_metadata, panel=='bindSpike' & assay!="bindSpike_mdw", lloq))
-    assay_metadata[assay_metadata$panel=='bindSpike' & assay_metadata$assay!="bindSpike_mdw",'lloq'] = lloq_min
+  if (TRIAL=='vat08_combined') {
+    if (exists('COR')) {
+      if (contain(COR, "nAb")) {
+        # only keeps ID50 markers
+        assay_metadata = subset(assay_metadata, panel=='id50')
+      } else {
+        # assay_metadata = subset(assay_metadata, panel=='bindSpike')
+        if (!DESCRIPTIVE) {
+          # change lloq for bAb to min(...) 
+          lloq_min = min (subset(assay_metadata, panel=='bindSpike' & assay!="bindSpike_mdw", lloq))
+          assay_metadata[assay_metadata$panel=='bindSpike' & assay_metadata$assay!="bindSpike_mdw",'lloq'] = lloq_min
+        }
+      }
+    }
   }
   
+
   assays=assay_metadata$assay
   
   labels.assays=assay_metadata$assay_label; names(labels.assays)=assays
@@ -397,8 +414,9 @@ rownames(labels.title)[seq_along(assays)] <- assays
 labels.title <- as.data.frame(t(labels.title))
 
 
-do.fold.change.overB=TRIAL %in% c("vat08m_nonnaive")
 do.fold.change=F
+do.fold.change.overB=F #TRIAL %in% c("vat08_combined")
+
 
 # if this flag is true, then the N IgG binding antibody is reported 
 # in the immuno report (but is not analyzed in the cor or cop reports).
@@ -418,6 +436,7 @@ if (exists("COR")) {
     } 
     
     config.cor <- config::get(config = COR)
+    stopifnot(!is.null(config.cor))
     
     if (startsWith(config.cor$tpeak%.%"","Delta")) { 
         tpeak = as.integer(strsplit(sub("Delta","",config.cor$tpeak), "over")[[1]][1])    
@@ -455,7 +474,7 @@ if (exists("COR")) {
         
         all.markers.names.long=c(
           as.matrix(labels.title)[DayPrefix%.%tpeak, assays],
-          if (do.fold.change.overB) as.matrix(labels.assays.long)["Delta"%.%tpeak%.%"overB", assays]
+          if (do.fold.change.overB) as.matrix(labels.title)["Delta"%.%tpeak%.%"overB", assays]
         )
         names(all.markers.names.long)=all.markers
     }
@@ -515,7 +534,7 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
   # subset to RSA or non-RSA
   dat.mock = subset(dat.mock, RSA==ifelse(TRIAL=="hvtn705secondRSA", 1, 0))
   
-} else if (TRIAL=='vat08_combined') {
+} else if (study_name=='VAT08') {
   if (DESCRIPTIVE) {
     # censor bAb markers by lloq when the DESCRIPTIVE flag is set (data in analysis ready dataset is censored by lloq_min)
     bAb_markers = subset(assay_metadata, panel=='bindSpike' & assay!='bindSpike_mdw', assay, drop=T)
@@ -534,7 +553,6 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
       }
     }
     tmp=as.data.frame(tmp) # cannot subtract list from list, but can subtract data frame from data frame
-    
     for (tp in rev(timepoints)) {
       dat.mock["Delta"%.%tp%.%"overB" %.% bAb_markers] <- tmp[DayPrefix%.%tp %.% bAb_markers] - tmp["B" %.% bAb_markers]
     }   
@@ -578,7 +596,8 @@ if (exists("COR")) {
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
         dat.mock$ph2=dat.mock[[config.cor$ph2]]
         dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
-        dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
+        # some may not have config.cor$EventTimePrimary
+        if (!is.null(config.cor$EventTimePrimary)) dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
         dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
         dat.mock$wt=dat.mock[[config.cor$wt]]
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
@@ -611,15 +630,12 @@ if (exists("COR")) {
             # may not be defined if COR is not provided in command line and used the default value
         }
         
-        # default rule for followup time is the last case in ph2 in vaccine arm
-        tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
         
-        # exceptions
+        # define tfinal.tpeak
         if (TRIAL == "moderna_boost") {
             tfinal.tpeak = 92 # as computed in reporting3 repo
-        } else if (TRIAL == "moderna_real") {
-            if (COR == "D57a") tfinal.tpeak = 92 # for comparing with stage 2 
-            
+        } else if (TRIAL == "moderna_real" & COR == "D57a") {
+          tfinal.tpeak = 92 # for comparing with stage 2 
         } else if (TRIAL == "janssen_na_EUA") {
             tfinal.tpeak=53
         } else if (TRIAL == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
@@ -686,22 +702,29 @@ if (exists("COR")) {
           )
           
         } else if (TRIAL %in% c("profiscov", "profiscov_lvmn")) {
-            if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43
+            if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43 else stop("no tfinal.tpeak")
             
         } else if (study_name=="HVTN705") {
           tfinal.tpeak=550
           
         } else if (study_name=="VAT08") {
           # hardcode 180 days post dose 2
-          if (COR=="D22omi") {
+          if (COR=="D22M6omi" | COR=="D22M6ominAb") {
             tfinal.tpeak=180 # tpeak is dose 2
-          } else if (COR=="D43omi") {
+          } else if (COR=="D43M6omi" | COR=="D43M6ominAb") {
             tfinal.tpeak=180-21 # tpeak is 21 days post dose 2
-          } else stop("COR not supported: "%.%COR)
+          } # else is M12
           
+        } else if (study_name=="IARCHPV") {
+          tfinal.tpeak=NULL
+          
+        } else {
+          # default rule for followup time is the last case in ph2 in vaccine arm
+          tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
         }
-        
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined")) {
+
+                
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv")) {
           # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
@@ -884,6 +907,12 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name %in% c("PROFISCOV")) {
     Bstratum.labels <- c("All")
 
+} else if (study_name == 'IARCHPV') {
+  Bstratum.labels <- c(
+    "Age > 14",
+    "Age <= 14"
+  )
+  
 } else stop("unknown study_name 2")
 
 
@@ -966,6 +995,12 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name=="PROFISCOV") {
     demo.stratum.labels <- c("All")
 
+} else if (study_name == 'IARCHPV') {
+  demo.stratum.labels <- c(
+    "Age > 14",
+    "Age <= 14"
+  )
+  
 } else stop("unknown study_name 3")
 
 labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
