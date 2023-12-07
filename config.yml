@@ -472,7 +472,7 @@ id27hpv:
   covariates_riskscore: ~.+ AgeGroup
   num_boot_replicates: 1000
   num_perm_replicates: 10000
-  primary_assays: [bindL1L2_HPV6,bindL1L2_HPV11,bindL1L2_HPV16,bindL1L2_HPV18,bindL1L2_HPV31]
+  primary_assays: [bindL1L2_mdw]
   
 
 hvtn705base: &hvtn705base

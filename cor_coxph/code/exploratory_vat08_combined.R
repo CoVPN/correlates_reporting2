@@ -3,30 +3,96 @@ library(kyotil)
 
 dat.mock = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231118.csv')
 
+# # verified: no new nAb or bAb data from 1 to 2
+# dat1=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20231030.csv')
+# dat2=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20231107.csv')
+
+
+with(subset(dat.mock, Trialstage==2), table(!is.na(Day43pseudoneutid50), SubcohortInd))
+
+with(subset(dat.mock, Trialstage==2), table(!is.na(Day43bindSpike), SubcohortInd))
+
+
 dat.mock$ph1=dat.mock$ph1.D43
 dat.mock$ph2=dat.mock$ph2.D43
 
 dat.mock$ph2.all.nAb = !is.na(dat.mock$Day43pseudoneutid50)
 dat.mock$batch2 = dat.mock$ph2.all.nAb & !dat.mock$ph2
 
+with(subset(dat.mock, Trialstage==2), table(!is.na(Day43pseudoneutid50)))
+with(subset(dat.mock, Trialstage==2), table(!is.na(Day43pseudoneutid50), SubcohortInd))
+
+with(subset(dat.mock, Trialstage==2), table(!is.na(Day43bindSpike)))
+with(subset(dat.mock, Trialstage==2), table(!is.na(Day43bindSpike), SubcohortInd))
+
+with(subset(dat.mock, Trialstage==2 & ph1.D43 & Trt==1), table(EventIndOmicronD43M12hotdeck1, EventIndFirstInfectionD43))
+
+with(subset(dat.mock, Trialstage==2 & ph1.D43 & Trt==1 & Bserostatus==1 & !is.na(Day43pseudoneutid50)), table(SubcohortInd, EventIndFirstInfectionD43))
+with(subset(dat.mock, Trialstage==2 & ph1.D43 & Trt==1 & Bserostatus==0 & !is.na(Day43pseudoneutid50)), table(SubcohortInd, EventIndFirstInfectionD43))
+with(subset(dat.mock, Trialstage==2 & ph1.D43 & Trt==0 & Bserostatus==1 & !is.na(Day43pseudoneutid50)), table(SubcohortInd, EventIndFirstInfectionD43))
+with(subset(dat.mock, Trialstage==2 & ph1.D43 & Trt==0 & Bserostatus==0 & !is.na(Day43pseudoneutid50)), table(SubcohortInd, EventIndFirstInfectionD43))
+
+
+# explore data
+
+# SubcohortInd 
+# in stage 1 data,
+# 1 if IMMSUB1=="Y" or Subjectid in the list of p3005_stage1_step2_sampling_list_28MAR2022 or ADSL.COUNTRY %in% c("JPN","USA"), else 0 
+# in stage 2 data, 
+# 1 if Subjectid in immunosubset$USUBJID, else 0 
+
+
+# country code
+# "Colombia" = 1,
+# "Ghana" = 2,
+# "Honduras" = 3,
+# "India" = 4,
+# "Japan" = 5,
+# "Kenya" = 6,
+# "Nepal" = 7,
+# "United States" = 8,
+# "Mexico" = 9,
+# "Uganda" = 10,
+# "Ukraine" = 11,
+# no missing values allowed                                   
+
+
+# country 4 (India) and 11 (Ukraine) have no cases
+with(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43), table(EventIndOmicronD43M12hotdeck1, Country))
+with(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D22), table(EventIndOmicronD22M12hotdeck1, Country))
+
+with(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0 & ph1.D43), table(EventIndOmicronD43M12hotdeck1, Country))
+with(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0 & ph1.D22), table(EventIndOmicronD22M12hotdeck1, Country))
+
+with(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1 & ph1.D43), table(EventIndOmicronD43M12hotdeck1, Country))
+with(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1 & ph1.D22), table(EventIndOmicronD22M12hotdeck1, Country))
+
+
+
 
 ## do Sex improve prediction?
 ## not in placeo
 
-with(subset(dat.mock, Trt==0 & Bserostatus==1), fast.auc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
+with(subset(dat.mock, Trt==0 & Bserostatus==1), fastauc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
 glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+risk_score, subset(dat.mock, Trt==0 & Bserostatus==1), family=binomial())
 trainauc.glm(glm.fit)
 
-with(subset(dat.mock, Trt==0 & Bserostatus==1 & Trialstage==2), fast.auc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
+with(subset(dat.mock, Trt==0 & Bserostatus==1 & Trialstage==2), fastauc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
 glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+risk_score, subset(dat.mock, Trt==0 & Bserostatus==1 & Trialstage==2), family=binomial())
 trainauc.glm(glm.fit)
 
-with(subset(dat.mock, Trt==1 & Bserostatus==1 & Trialstage==2), fast.auc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
+with(subset(dat.mock, Trt==1 & Bserostatus==1 & Trialstage==2), fastauc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
 glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+risk_score, subset(dat.mock, Trt==1 & Bserostatus==1 & Trialstage==2), family=binomial())
 trainauc.glm(glm.fit)
 
 with(subset(dat.mock, Trt==0 & Bserostatus==1 & Trialstage==2), table(Sex, EventIndOmicronD22M12hotdeck1))
 with(subset(dat.mock, Trt==1 & Bserostatus==1 & Trialstage==2), table(Sex, EventIndOmicronD22M12hotdeck1))
+
+with(subset(dat.mock, Bserostatus==1 & Trialstage==2 & ph1.D22), table(Trt, EventIndOmicronD22M12hotdeck1, Sex))
+
+with(subset(dat.mock, Bserostatus==1 & Trialstage==1 & ph1.D22), table(Trt, EventIndOmicronD22M12hotdeck1, Sex))
+
+
 
 ##
 
@@ -197,13 +263,15 @@ myboxplot(Day43bindSpike~EventIndOmicronD43M12hotdeck1,
 
 
 
+# number of countries
+with(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1 & Region!='IND_Stage2' & ph1), table(Country) )
 
 
 # Cox models
 
 # using batch 1 data and pre-specified model
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ 
-           FOI + risk_score + Day43pseudoneutid50 + strata(Region), 
+           FOI + risk_score + Day43pseudoneutid50 + strata(Country), 
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1 & Region!='IND_Stage2' & ph1) ))
 
 # sex is a precision variable
@@ -234,3 +302,5 @@ with(subset(dat.mock, Trialstage==2 & Bserostatus==1 & Region=='IND_Stage2' ), t
 
 
 with(subset(dat.mock, Trialstage==2 & Bserostatus==1), table(ph2, ph2.D43.nAb, EventIndFirstInfectionD43, Trt))
+
+

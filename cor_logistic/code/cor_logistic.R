@@ -1,6 +1,6 @@
-#Sys.setenv(TRIAL = "id27hpv"); COR="M18"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "id27hpv"); COR="M18sus"; Sys.setenv(VERBOSE = 1) 
 
-print(date())
+print(paste0("starting time: ", date()))
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) # dat.mock is made
 
@@ -103,14 +103,15 @@ if (TRIAL=='id27hpv') {
 }
   
 
-################################################################################
-# get OR on continuous markers
-################################################################################
-    
 tab=with(dat.ph1, table(tps.stratum, EventIndPrimary))
 nn0=tab[,1]
 nn1=tab[,2]
 
+
+################################################################################
+# get OR on continuous markers
+################################################################################
+    
 fits=list()
 fits.scaled=list()
 for (i in 1:2) { # 1: not scaled, 2: scaled
@@ -137,7 +138,7 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
 }
 
 if(TRIAL=='id27hpv' & COR=='M18') {
-  assertthat::assert_that(all(abs(fits$M18bindL1L2_mdw$coef-c(-4.3268181,-0.0285102,-0.1003947))<1e-6), msg = "failed cor_logistic unit testing")    
+  assertthat::assert_that(all(abs(fits$M18bindL1L2_mdw$coef-c(-4.68354733703185,-0.102079236701852,-0.0989783451284477))<1e-6), msg = "failed cor_logistic unit testing: "%.%concatList(fits$M18bindL1L2_mdw$coef))    
 }
     
 natrisk=nrow(dat.ph1)
@@ -156,8 +157,6 @@ pvals.cont = sapply(fits, function(x) {
     p.val.col=which(startsWith(tolower(colnames(tmp)),"p"))
     tmp[nrow(tmp),p.val.col]
 })
-
-
 
 
 ###################################################################################################
@@ -257,7 +256,7 @@ mytex(tab.1, file.name="CoR_univariable_logistic_pretty_"%.%study_name, align="c
       longtable=T, 
       label=paste0("tab:CoR_univariable_logistic_pretty"), 
       caption.placement = "top", 
-      caption=paste0("Inference for M ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " pooled over treatment arms: Odds ratios per 10-fold increment in the marker*")
+      caption=paste0("Inference for ", DayPrefix, tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " pooled over treatment arms: Odds ratios per 10-fold increment in the marker*")
 )
 tab.cont=tab.1
 
@@ -278,7 +277,7 @@ mytex(tab.1.scaled, file.name="CoR_univariable_logistic_pretty_scaled_"%.%study_
       longtable=T, 
       label=paste0("tab:CoR_univariable_logistic_pretty_scaled"), 
       caption.placement = "top", 
-      caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " pooled over treatment groups: Odds ratios per SD increment in the marker*")
+      caption=paste0("Inference for ", DayPrefix, tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " pooled over treatment groups: Odds ratios per SD increment in the marker*")
 )
 tab.cont.scaled=tab.1.scaled
 
@@ -290,16 +289,19 @@ tab.cont.scaled=tab.1.scaled
 
 get.est=function(a) {
   fit=fits.tri[[a]]
+  rows=length(fit$coef) - (marker.levels[a]-2):0
   out = getFormattedSummary(list(fit), exp=T, robust=T, rows=rows, type=1)
   if (length(out)==1) c(NA,out) else out
 }
 get.ci =function(a) {
   fit=fits.tri[[a]]
+  rows=length(fit$coef) - (marker.levels[a]-2):0
   out = getFormattedSummary(list(fit), exp=T, robust=T, rows=rows, type=13)
   if (length(out)==1) c(NA,out) else out
 }
 get.p  =function(a) {
   fit=fits.tri[[a]]
+  rows=length(fit$coef) - (marker.levels[a]-2):0
   out = getFormattedSummary(list(fit), exp=T, robust=T, rows=rows, type=10)
   if (length(out)==1) c(NA,out) else out
 }
@@ -308,8 +310,8 @@ get.est(all.markers[6]); get.ci (all.markers[6]); get.p  (all.markers[6])
 
 # regression parameters
 est=c(rbind(1.00,  sapply(all.markers, function (a) get.est(a))))
-ci= c(rbind("N/A", sapply(all.markers, function (a) get.ci (a))))
-p=  c(rbind("N/A", sapply(all.markers, function (a) get.p  (a))))
+ci= c(rbind(NA, sapply(all.markers, function (a) get.ci (a))))
+p=  c(rbind(NA, sapply(all.markers, function (a) get.p  (a))))
 
 overall.p.1=formatDouble(pvals.adj["tri."%.%names(pvals.cont),"p.FWER"], 3, remove.leading0=F);   overall.p.1=sub("0.000","<0.001",overall.p.1)
 overall.p.2=formatDouble(pvals.adj["tri."%.%names(pvals.cont),"p.FDR" ], 3, remove.leading0=F);   overall.p.2=sub("0.000","<0.001",overall.p.2)
@@ -322,11 +324,12 @@ overall.p.2=c(rbind(overall.p.2, NA,NA))
 # n cases and n at risk
 natrisk = round(c(sapply (all.markers%.%"cat", function(a) {
   out = aggregate(subset(dat.ph1,ph2==1)        [["wt"]], subset(dat.ph1,ph2==1        )[a], sum, na.rm=T, drop=F)[,2]
-  if (length(out)==3) out else c(out,NA)
+  if (length(out)==3) out else c(out[1],NA,out[2])
 } )))
 nevents = round(c(sapply (all.markers%.%"cat", function(a) {
   out = aggregate(subset(dat.ph1,yy==1 & ph2==1)[["wt"]], subset(dat.ph1,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2]
-  if (length(out)==3) out else c(out,NA)
+  out[is.na(out)]=0
+  if (length(out)==3) out else c(out[1],NA,out[2])
 } )))
 
 tab=cbind(
@@ -343,14 +346,14 @@ tab
 # use longtable because this table could be long, e.g. in hvtn705second
 mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_logistic_cat_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
-         \\multicolumn{1}{l}{", (study_name), "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
+         \\multicolumn{1}{l}{", (study_name), "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Odds Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***} & \\multicolumn{1}{c}{value $\\dagger$} & \\multicolumn{1}{c}{FWER} \\\\ 
          \\hline\n 
       "),        
       longtable=T, 
       label=paste0("tab:CoR_univariable_logistic_cat_pretty_", study_name), 
       caption.placement = "top", 
-      caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*")
+      caption=paste0("Inference for ", DayPrefix, tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*")
 )
 
 
