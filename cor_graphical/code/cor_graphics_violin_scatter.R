@@ -28,6 +28,7 @@ library(grid)
 longer_cor_data <- readRDS(here("data_clean", "longer_cor_data.rds"))
 longer_cor_data_plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds"))
 plot.25sample1 <- readRDS(here("data_clean", "plot.25sample1.rds"))
+if (study_name=="IARCHPV") {longer_cor_data_plot1$Perprotocol=1; plot.25sample1$Perprotocol=1}
 if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
   longer_cor_data_plot3 <- readRDS(here("data_clean", "longer_cor_data_plot3.rds"))
   plot.25sample3 <- readRDS(here("data_clean", "plot.25sample3.rds"))
@@ -51,11 +52,14 @@ if (study_name=="IARCHPV") {timesls[[1]]<-NULL}# single timepoint without baseli
 # x-axis need a wrapped verion of label
 case_grp1 = ifelse(study_name=="PROFISCOV", "Early Post-Peak Cases", "Intercurrent Cases")
 case_grp1_wrap = ifelse(study_name=="PROFISCOV", "Early\nPost-Peak\nCases", "Intercurrent\nCases")
-case_grp2 = ifelse(study_name=="PROFISCOV", "Late Post-Peak Cases", "Post-Peak Cases")
-case_grp2_wrap = ifelse(study_name=="PROFISCOV", "Late\nPost-Peak\nCases", "Post-Peak\nCases")
+case_grp2 = ifelse(study_name=="PROFISCOV", "Late Post-Peak Cases", 
+                   ifelse(study_name=="IARCHPV", "Case", "Post-Peak Cases"))
+case_grp2_wrap = ifelse(study_name=="PROFISCOV", "Late\nPost-Peak\nCases", 
+                        ifelse(study_name=="IARCHPV", "Case", "Post-Peak\nCases"))
+ctrl <- ifelse(study_name=="IARCHPV", "Control", "Non-Cases")
 
-cohort_event_lb = c(case_grp1, case_grp2, "Non-Cases")
-names(cohort_event_lb) = c(case_grp1, case_grp2, "Non-Cases")
+cohort_event_lb = c(case_grp1, case_grp2, ctrl)
+names(cohort_event_lb) = c(case_grp1, case_grp2, ctrl)
 
 ## common variables with in loop
 min_max_plot <- longer_cor_data %>% group_by(assay) %>% summarise(min=min(value, na.rm=T), max=max(value, na.rm=T))
@@ -71,46 +75,46 @@ if (length(timepoints)==1){
   x_lb <- c(if (study_name!="IARCHPV") "Day 1", if (study_name!="IARCHPV") paste0("Day ", tpeak), #"Day 2-14\nCases", paste0("Day 15-", 28+tpeaklag, "\nCases"), 
             if (study_name=="IARCHPV") times, 
             case_grp2_wrap,
-            "Non-Cases")
+            ctrl)
   names(x_lb) <- c(if (study_name!="IARCHPV") "Day 1", if (study_name!="IARCHPV") paste0("Day ", tpeak), #"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
                    if (study_name=="IARCHPV") times, 
                    case_grp2,
-                   "Non-Cases")
+                   ctrl)
   
   col_val <- c(#"#FF5EBF", "#0AB7C9", 
     "#FF6F1B", "#810094")
   names(col_val) <- c(#"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
     case_grp2,
-    "Non-Cases")
+    ctrl)
   
   shp_val <- c(#18, 16, 
     17, 15)
   names(shp_val) <- c(#"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
     case_grp2,
-    "Non-Cases")
+    ctrl)
   
 } else if (COR != "D29variant") {
   x_lb <- c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), 
             paste0("D",tinterm, "\nfold-rise\nover D1"), paste0("D",tpeak, "\nfold-rise\nover D1"), 
             case_grp1_wrap, 
             case_grp2_wrap,
-              "Non-Cases")
+            ctrl)
   
   names(x_lb) <- c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), 
                    paste0("D",tinterm, " fold-rise over D1"), paste0("D",tpeak, " fold-rise over D1"), 
                    case_grp1, 
                    case_grp2,
-                   "Non-Cases")
+                   ctrl)
   
   col_val <- c("#0AB7C9","#FF6F1B","#810094")
   names(col_val) <- c(case_grp1, 
                       case_grp2,
-                      "Non-Cases")
+                      ctrl)
   
   shp_val <- c(16, 17, 15)
   names(shp_val) <- c(case_grp1, 
                       case_grp2,
-                      "Non-Cases")
+                      ctrl)
 }
 
 # path for figures and tables etc
@@ -178,7 +182,7 @@ if (COR != "D29variant") {
                                   n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
                                   xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
                                   )
-            file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
+            file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), if(bstatus[j]!="") "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
             suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
           }
         }

@@ -101,7 +101,7 @@ if (study_name == "janssen_partA_VL" & COR == "D29variant") {
   }
 } else if (study_name=="IARCHPV"){
   
-  for (t in times){
+  for (t in times){ 
     for (trt in unique(dat.cor.data.pair$Trt)){
       
       covid_corr_pairplots(
@@ -111,14 +111,14 @@ if (study_name == "janssen_partA_VL" & COR == "D29variant") {
         strata = "all_one",
         weight = config.cor$wt,
         plot_title = paste0(
-          "Correlations of ", t, " antibody markers,\nCorr = Weighted Spearman Rank Correlation."
+          "Correlations of ", paste0(t, if(COR=="M18sus") "sus"), " antibody markers,\nCorr = Weighted Spearman Rank Correlation."
         ),
         column_labels = paste(t, assay_metadata$assay_label_short),
         height = max(1.3 * length(assay_metadata$assay) + 0.1, 5.5),
         width = max(1.3 * length(assay_metadata$assay), 5.5),
         column_label_size = ifelse(max(nchar(paste(t, assay_metadata$assay_label_short)))>40, 4.2, 4.3),
         filename = paste0(
-          save.results.to, "/pairs_by_time_", t,
+          save.results.to, "/pairs_by_time_", paste0(t, if(COR=="M18sus") "sus"), # COR: M18, M18sus
           "_", gsub("-","_", trt.labels[trt]), ".pdf"
         )
       )

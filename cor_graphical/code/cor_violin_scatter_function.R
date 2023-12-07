@@ -66,18 +66,18 @@ violin_box_plot <-
       if (length(unique(dat.sample$time))!=1) p <- p + geom_line(data = dat.sample, aes(group = Ptid))
       # only draw line if there are multiple time points
       p <- p + geom_point(data = dat.sample, size = pt.size, show.legend = TRUE) +
-      geom_boxplot(width=0.25, lwd=1.5, alpha = 0.3, outlier.shape=NA, show.legend = FALSE)
+      geom_boxplot(data = dat, width=0.25, lwd=1.5, alpha = 0.3, outlier.shape=NA, show.legend = FALSE)
   } else if (type=="noline") {
     p <- p + geom_violin(scale="width", na.rm = TRUE) +
-      geom_jitter(data = dat.sample,  width = 0.1, height = 0, size = pt.size, show.legend = TRUE) +
-      geom_boxplot(width=0.25, lwd=1.5, alpha = 0.3, outlier.shape=NA, show.legend = FALSE)
+      geom_jitter(data = dat.sample, width = 0.1, height = 0, size = pt.size, show.legend = TRUE) +
+      geom_boxplot(data = dat, width=0.25, lwd=1.5, alpha = 0.3, outlier.shape=NA, show.legend = FALSE)
     }
   
   if (facetopt=="wrap") {p <- p + facet_wrap(facetby, ncol=group.num, drop=FALSE)
   } else if (facetopt=="grid") {p <- p + facet_grid(facetby, drop=FALSE)}
   
   p <- p + 
-    geom_text(aes(label=.data[[n_rate]], x=.data[[x]], y=as.numeric(rate.y.pos)), vjust = 1, color="black", size=prop.cex, check_overlap = TRUE) +
+    geom_text(data = dat, aes(label=.data[[n_rate]], x=.data[[x]], y=as.numeric(rate.y.pos)), vjust = 1, color="black", size=prop.cex, check_overlap = TRUE) +
     geom_text(aes(label="n\nRate", x=0.4, y=rate.y.pos), vjust = 1, hjust = 0, color="black", size=prop.cex, check_overlap = TRUE) +
     geom_hline(aes(yintercept=lbval), linetype="dashed", color="gray", na.rm = TRUE) +
     geom_text(aes(label=lb, x=0.4, y=lbval), hjust = 0, color="black", size=ll.cex, check_overlap = TRUE, na.rm = TRUE) + 

@@ -93,12 +93,17 @@ if (study_name=="VAT08m" & grepl("omi", COR)){
 
 # create AnyinfectionD1 and assign to 0 if study_name=="IARCHPV" to pass the non-case definition for single-timepoint study below
 # tpeak for this study is not set upstream for some reason, so set it here
-if (study_name=="IARCHPV") {dat$AnyinfectionD1=0; tpeak=18}
+if (study_name=="IARCHPV") {tpeak=18}
 
 ## label the subjects according to their case-control status
 ## add case vs non-case indicators
-if(#study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19"
-  length(timepoints)==1)  {
+if (study_name=="IARCHPV"){
+  dat = dat %>%
+    filter(enrolltype!="Cohort") %>%
+    mutate(cohort_event = factor(enrolltype,
+      levels = c("Case", "Control")))
+} else if(#study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19"
+  length(timepoints)==1 & study_name!="IARCHPV")  {
   
   #intcur2 <- paste0("Day 15-", 28+tpeaklag, " Cases")
 dat = dat %>%
