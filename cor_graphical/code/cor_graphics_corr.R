@@ -21,6 +21,8 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 
 source(here::here("code", "covid_corr_plot_functions.R"))
 source(here::here("..", "_common.R"))
+# load parameters
+source(here::here("code", "params.R"))
 
 ## load data 
 dat.cor.data.pair <- readRDS(here::here("data_clean", "cor_data.rds")); dat.cor.data.pair$all_one <- 1 # as a placeholder for strata values
@@ -38,7 +40,7 @@ print(paste0("save.results.to equals ", save.results.to))
 
 ###### Correlation plots across markers at a given time point
 # 3 markers (Anc, Delta, Beta), SA, Day 29
-if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
+if (study_name == "janssen_partA_VL" & COR == "D29variant") {
 
   for (t in "Day29"){
     for (trt in c(1)){
@@ -97,4 +99,31 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
     
       }
   }
+} else if (study_name=="IARCHPV"){
+  
+  for (t in times){
+    for (trt in unique(dat.cor.data.pair$Trt)){
+      
+      covid_corr_pairplots(
+        plot_dat = dat.cor.data.pair,
+        time = t,
+        assays = assay_metadata$assay,
+        strata = "all_one",
+        weight = config.cor$wt,
+        plot_title = paste0(
+          "Correlations of ", t, " antibody markers,\nCorr = Weighted Spearman Rank Correlation."
+        ),
+        column_labels = paste(t, assay_metadata$assay_label_short),
+        height = max(1.3 * length(assay_metadata$assay) + 0.1, 5.5),
+        width = max(1.3 * length(assay_metadata$assay), 5.5),
+        column_label_size = ifelse(max(nchar(paste(t, assay_metadata$assay_label_short)))>40, 4.2, 4.3),
+        filename = paste0(
+          save.results.to, "/pairs_by_time_", t,
+          "_", gsub("-","_", trt.labels[trt]), ".pdf"
+        )
+      )
+      
+    }
+  }
+  
 }

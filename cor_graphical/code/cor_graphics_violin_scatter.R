@@ -14,6 +14,9 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 source(here::here("code", "cor_process_function.R"))
 source(here::here("code", "cor_violin_scatter_function.R"))
 source(here::here("..", "_common.R"))
+# load parameters
+source(here::here("code", "params.R"))
+
 library(scales)
 library(tidyverse)
 library(here)
@@ -25,8 +28,10 @@ library(grid)
 longer_cor_data <- readRDS(here("data_clean", "longer_cor_data.rds"))
 longer_cor_data_plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds"))
 plot.25sample1 <- readRDS(here("data_clean", "plot.25sample1.rds"))
-longer_cor_data_plot3 <- readRDS(here("data_clean", "longer_cor_data_plot3.rds"))
-plot.25sample3 <- readRDS(here("data_clean", "plot.25sample3.rds"))
+if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
+  longer_cor_data_plot3 <- readRDS(here("data_clean", "longer_cor_data_plot3.rds"))
+  plot.25sample3 <- readRDS(here("data_clean", "plot.25sample3.rds"))
+}
 if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
   longer_cor_data_plot_variant <- readRDS(here("data_clean", "longer_cor_data_plot_variant.rds"))
 }
@@ -34,13 +39,14 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
 ### variables for looping
 plots <- assays
 bstatus <- as.character(unique(longer_cor_data$Bserostatus))
-trt <- c("Placebo","Vaccine")
+trt <- trt.labels
 plots_ytitles <- labels.assays.short
 plots_titles <- labels.assays[names(labels.assays) %in% names(labels.assays.short)]
 timesls <- list(labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1], 
                 labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)],
                 labels.time[(names(labels.time) %in% times) & grepl("fold-rise over D1", labels.time)])
 if (do.fold.change.overB==0) {timesls[[3]]<-NULL}
+if (study_name=="IARCHPV") {timesls[[1]]<-NULL}# single timepoint without baseline
 
 # x-axis need a wrapped verion of label
 case_grp1 = ifelse(study_name=="PROFISCOV", "Early Post-Peak Cases", "Intercurrent Cases")
@@ -61,10 +67,13 @@ names(maxs) <- min_max_plot$assay
 
 # labels
 if (length(timepoints)==1){
-  x_lb <- c("Day 1", paste0("Day ", tpeak), #"Day 2-14\nCases", paste0("Day 15-", 28+tpeaklag, "\nCases"), 
+
+  x_lb <- c(if (study_name!="IARCHPV") "Day 1", if (study_name!="IARCHPV") paste0("Day ", tpeak), #"Day 2-14\nCases", paste0("Day 15-", 28+tpeaklag, "\nCases"), 
+            if (study_name=="IARCHPV") times, 
             case_grp2_wrap,
             "Non-Cases")
-  names(x_lb) <- c("Day 1", paste0("Day ", tpeak), #"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
+  names(x_lb) <- c(if (study_name!="IARCHPV") "Day 1", if (study_name!="IARCHPV") paste0("Day ", tpeak), #"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
+                   if (study_name=="IARCHPV") times, 
                    case_grp2,
                    "Non-Cases")
   
@@ -118,6 +127,7 @@ if (COR != "D29variant") {
   #### Figure 1. violin+box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists
   for (i in 1:length(plots)) {
     for (j in 1:length(bstatus)) {
+      if (nrow(subset(longer_cor_data_plot1, Bserostatus == bstatus[j])) == 0 ) next
       for (k in 1:length(trt)) {
         for (t in 1:length(timesls)) { # v1 and v2
           for (case_set in c(#if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") "severe", 
@@ -131,22 +141,24 @@ if (COR != "D29variant") {
             ll.cex <- 8.16
             prop.cex <- 7
             
-            p <- violin_box_plot(dat=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                  dat.sample=subset(plot.25sample1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                  ytitle=plots_ytitles[i],toptitle=plots_titles[i],
-                                  facetby=vars(cohort_event),
-                                  ylim=y.lim,
-                                  ybreaks=y.breaks,
-                                  prop.cex=prop.cex,
-                                  ll.cex=ll.cex,
-                                  group.num=length(levels(longer_cor_data_plot1$cohort_event)),
-                                  rate.y.pos=rate.y.pos,
-                                  n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                  xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
-                                  )
-            g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
-            file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
-            suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+            if (study_name!="IARCHPV"){
+              p <- violin_box_plot(dat=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                    dat.sample=subset(plot.25sample1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                    ytitle=plots_ytitles[i],toptitle=plots_titles[i],
+                                    facetby=vars(cohort_event),
+                                    ylim=y.lim,
+                                    ybreaks=y.breaks,
+                                    prop.cex=prop.cex,
+                                    ll.cex=ll.cex,
+                                    group.num=length(levels(longer_cor_data_plot1$cohort_event)),
+                                    rate.y.pos=rate.y.pos,
+                                    n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
+                                    xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                    )
+              g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
+              file_name <- paste0("linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
+              suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+            }
             
             p <- violin_box_plot(dat=       subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
                                   dat.sample=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
@@ -166,7 +178,7 @@ if (COR != "D29variant") {
                                   n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
                                   xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
                                   )
-            file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
+            file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
             suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
           }
         }
@@ -174,6 +186,7 @@ if (COR != "D29variant") {
     }
   }
   
+  if (study_name!="IARCHPV"){
   #### Figure 2. violin + box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists, by Age, HighRisk, Sex, Race and Ethnic group
   for (i in 1:length(plots)) {
     for (j in 1:length(bstatus)) {
@@ -420,6 +433,7 @@ if (COR != "D29variant") {
         suppressMessages(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 12.5, height = 11))
       }
     }
+  }
   }
 }
 

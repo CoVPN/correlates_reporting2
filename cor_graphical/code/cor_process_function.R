@@ -70,7 +70,7 @@ getResponder <- function(data,
 # a function to define response rate by group
 get_resp_by_group <- function(dat=dat, group=group){
   
-  if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19") {
+  if(length(timepoints)==1) {
     dat[which(dat$time=="Day 1"), "wt"]=1
     dat[which(dat$time!="Day 1"), "wt"]=dat[which(dat$time!="Day 1"), config.cor$wt] # wt.D29 or wt.D29start1
   } else {
