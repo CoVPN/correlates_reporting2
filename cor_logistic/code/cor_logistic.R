@@ -343,6 +343,25 @@ tmp=rbind(all.markers.names.short, "", "")
 rownames(tab)=c(tmp)
 tab
 
+
+# zero cases in Anti L1, L2 IgG HPV18 (IU/ml) medium, use a different test and CI without covariates adjustment
+if (COR=='M18sus') {
+  a='M18bindL1L2_HPV18cat'
+  tab.2x2 = cbind(as.integer(aggregate(subset(dat.ph1,ph2==1)        [["wt"]], subset(dat.ph1,ph2==1        )[a], sum, na.rm=T, drop=F)[,2]), 
+                  as.integer(aggregate(subset(dat.ph1,yy==1 & ph2==1)[["wt"]], subset(dat.ph1,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2])) [1:2,] # take low/med
+  tab.2x2[is.na(tab.2x2)]=0 # change NA to 0
+  
+  # Perform Fisher's Exact Test
+  test_result <- fisher.test(tab.2x2)
+  
+  # hard code replacing CI and p value in tab
+  conf.int = test_result$conf.int
+  tab[11,'ci'] = paste0("(", concatList(formatDouble(conf.int, 2, re=F),'-'),")")
+  p.val = formatDouble(test_result$p.value, 3, remove.leading0=F)
+  tab[11,'p'] = ifelse(p.val=='0.000', '<0.001', p.val)
+}
+
+
 # use longtable because this table could be long, e.g. in hvtn705second
 mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_logistic_cat_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
