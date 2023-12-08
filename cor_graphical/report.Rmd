@@ -15,6 +15,7 @@ library(here)
 library(knitr)
 library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
+
 if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
@@ -110,7 +111,10 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
       if (study_name=="IARCHPV"){
         
         COR=ifelse(COR_postfix=="", "M18", "M18sus")
-        
+        trt.labels <- c("Single-dose","Two-dose","Two doses default","Three-dose")
+        trt.labels2 <- c("Single-dose","Two-dose (Days 1 and =180)","Two doses default (Days 1 and 60)","Three-dose (Days 1, 60 and =180)")
+    
+    
         ########################################### Pair plots ###########################################
         region=""
         marker=""
@@ -118,28 +122,36 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
         tp_lb=COR
         details=""
         marker=""
-        trt_lb=""
 
-        for (trt in c("Single_dose", "Two doses default", "Two_dose", "Three_dose")) {
-  	      res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant.Rmd')), quiet = TRUE)
-  	      cat(res, sep = '\n')
-  	      cat("\\clearpage", sep = '\n')
-        }
+        trt = "pooled"
+        trt_lb = ""  
+        
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+        
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant_adhoc.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
 	      
-	      ############################################# Violin plots ###########################################
+        ############################################# Violin plots ###########################################
         
         facet=""
-	      ver="v1"
-	      type="violinbox"
+        ver="v1"
+        type="Violinbox"
+        for (trt_order in c(1,2,4,3,5)) {
   		  for (assay_long in assays) {
   		    assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
-  		    for (trt in c("Single_dose", "Two doses default", "Two_dose", "Three_dose")) {
-            
-  		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
-  		      cat(res, sep = '\n')
-  		      cat("\\clearpage", sep = '\n')
-  		    }
-  		  }
+  	    
+  	        
+  	        trt = c("pooled", trt.labels)[trt_order]
+            trt_lb = c("pooled", trt.labels2)[trt_order]
+  	      
+  	        res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
+  	        cat(res, sep = '\n')
+  	        cat("\\clearpage", sep = '\n')
+  	      }
+  	    }
 	      
         		      
       } else {
@@ -225,11 +237,13 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
         # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
           for (facet in facets) {
           	for (ver in c("v1", "v2", if(do.fold.change==1)"v3")) {
-          		for (type in c("linebox", "violinbox")) {
+          		for (type in c("Linebox", "Violinbox")) {
           		  for (assay_long in assays) {
           		    assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
           		    for (trt in c("Placebo", "Vaccine")) {
                     if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
+          		        
+          		      trt_lb = trt
           		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
           		      cat(res, sep = '\n')
           		      cat("\\clearpage", sep = '\n')

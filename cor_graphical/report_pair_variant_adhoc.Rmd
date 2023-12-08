@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("pairs_by_time_", tp, "_pooled_some_markers.pdf"))`}
+
+\caption{`r paste0("Pairwise Correlations of M18 Antibody Markers to HPV strains 6, 11, 16, 18, 31 and IgG score")`}
+\end{figure}
+
+\hphantom{Random text to appease the latex god}
+

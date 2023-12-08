@@ -57,7 +57,7 @@ if (study_name == "janssen_partA_VL" & COR == "D29variant") {
         strata = "all_one",
         weight = config.cor$wt,
         plot_title = paste0(
-          "Correlations of 3 ", t, " antibody markers in South Africa,\nCorr = Weighted Spearman Rank Correlation."
+          "Correlations of 3 ", t, " Antibody Markers in South Africa,\nCorr = Weighted Spearman Rank Correlation."
         ),
         column_labels = paste(t, assay_metadata_sub_sa$assay_label_short),
         height = max(1.3 * length(assay_metadata_sub_sa$assay) + 0.1, 5.5),
@@ -85,7 +85,7 @@ if (study_name == "janssen_partA_VL" & COR == "D29variant") {
         strata = "all_one",
         weight = config.cor$wt,
         plot_title = paste0(
-          "Correlations of 5 ", t, " antibody markers in Latin America,\nCorr = Weighted Spearman Rank Correlation."
+          "Correlations of 5 ", t, " Antibody Markers in Latin America,\nCorr = Weighted Spearman Rank Correlation."
         ),
         column_labels = paste(t, assay_metadata_sub_la$assay_label_short),
         height = max(1.3 * length(assay_metadata_sub_la$assay) + 0.1, 5.5),
@@ -101,28 +101,37 @@ if (study_name == "janssen_partA_VL" & COR == "D29variant") {
   }
 } else if (study_name=="IARCHPV"){
   
-  for (t in times){ 
-    for (trt in unique(dat.cor.data.pair$Trt)){
+  for (t in "M18"){
+    
+    for (asy in c("allbutIgG","some")) {
+      
+      # all markers but the marker score
+      if(asy == "allbutIgG") {
+        assay_metadata_sub = subset(assay_metadata, assay != "bindL1L2_mdw")
+      } else if (asy=="some") {
+        assay_metadata_sub = subset(assay_metadata, assay %in% c("bindL1L2_HPV6","bindL1L2_HPV11","bindL1L2_HPV16","bindL1L2_HPV18","bindL1L2_HPV31","bindL1L2_mdw"))
+      } 
+      
+      trt_lb = ""
       
       covid_corr_pairplots(
         plot_dat = dat.cor.data.pair,
         time = t,
-        assays = assay_metadata$assay,
+        assays = assay_metadata_sub$assay,
         strata = "all_one",
         weight = config.cor$wt,
         plot_title = paste0(
-          "Correlations of ", paste0(t, if(COR=="M18sus") "sus"), " antibody markers,\nCorr = Weighted Spearman Rank Correlation."
+          "Pairwise Correlations of ", paste0(t, if(COR=="M18sus") "sus"), " Antibody Markers\nCorr = Weighted Spearman Rank Correlation."
         ),
-        column_labels = paste(t, assay_metadata$assay_label_short),
-        height = max(1.3 * length(assay_metadata$assay) + 0.1, 5.5),
-        width = max(1.3 * length(assay_metadata$assay), 5.5),
-        column_label_size = ifelse(max(nchar(paste(t, assay_metadata$assay_label_short)))>40, 4.2, 4.3),
+        column_labels = paste(t, assay_metadata_sub$assay_label_short),
+        height = max(1.3 * length(assay_metadata_sub$assay) + 0.1, 5.5),
+        width = max(1.3 * length(assay_metadata_sub$assay), 5.5),
+        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub$assay_label_short)))>40, 4.2, 4.3),
         filename = paste0(
           save.results.to, "/pairs_by_time_", paste0(t, if(COR=="M18sus") "sus"), # COR: M18, M18sus
-          "_", gsub("-","_", trt.labels[trt]), ".pdf"
+          "_pooled", ifelse(asy=="some", "_some_markers", ""), ".pdf"
         )
       )
-      
     }
   }
   

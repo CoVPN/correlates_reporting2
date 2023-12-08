@@ -13,6 +13,7 @@ if (study_name!="IARCHPV") {
     bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
 } else {
     trt.labels <- c("Single-dose","Two-dose","Two doses default","Three-dose")
+    trt.labels2 <- c("Single-dose","Two-dose (Days 1 and =180)","Two doses default (Days 1 and 60)","Three-dose Three_dose (Days 1, 60 and =180)")
     bstatus.labels <- "" # no baseline serostatus for the IARCHPV study
     bstatus.labels.2 <- ""
     }

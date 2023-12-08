@@ -198,7 +198,7 @@ if (length(timepoints)==1) {
 } else {
   ph2.indicator = paste0("ph2.D", tpeak) # for example: no config.cor$ph2 when COR=D29D57
 }
-dat.cor.subset <- dat %>%
+dat.cor.subset <- dat <- dat %>%
   dplyr::filter(!!as.name(ph2.indicator)==1)
 
 write.csv(dat.cor.subset, file = here::here("data_clean", "cor_data.csv"), row.names=F)
@@ -508,6 +508,12 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant"){
 groupby_vars1=c("Trt", "Bserostatus", "cohort_event", "time", "assay")
 
 # define response rate
+# for studies like IARCHPV, pooled violin plots are requested, so stack the dataset by pooling all arms thus the statistics are calculated based on the pooled arm as well
+if (study_name=="IARCHPV") {
+  dat.longer.cor.subset = dat.longer.cor.subset %>% 
+    mutate(Trt="pooled") %>%
+    bind_rows(dat.longer.cor.subset)}
+
 dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars1)
 dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>%
   mutate(N_RespRate = ifelse(grepl("Day|M", time), N_RespRate, ""),
