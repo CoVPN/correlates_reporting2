@@ -140,16 +140,22 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
         ver="v1"
         type="Violinbox"
         for (trt_order in c(1,2,4,3,5)) {
-  		  for (assay_long in assays) {
-  		    assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
-  	    
-  	        
-  	        trt = c("pooled", trt.labels)[trt_order]
-            trt_lb = c("pooled", trt.labels2)[trt_order]
-  	      
-  	        res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
-  	        cat(res, sep = '\n')
-  	        cat("\\clearpage", sep = '\n')
+  		    for (assay_long in assays) {
+  		      for (casetype in c("AnyHPV", "HPV11", "HPV18", "HPV31", "HPV6", "HPV16")){
+  		        
+  		        # skip if specific case type doesn't match with plot type
+              if (casetype!="AnyHPV" & !grepl(casetype, assay_long)) next
+  		        
+    		      assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
+    	    
+    	        
+    	        trt = c("pooled", trt.labels)[trt_order]
+              trt_lb = c("pooled", trt.labels2)[trt_order]
+    	      
+    	        res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
+    	        cat(res, sep = '\n')
+    	        cat("\\clearpage", sep = '\n')
+  		      }
   	      }
   	    }
 	      
@@ -244,6 +250,7 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
                     if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
           		        
           		      trt_lb = trt
+          		      casetype = ""
           		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
           		      cat(res, sep = '\n')
           		      cat("\\clearpage", sep = '\n')

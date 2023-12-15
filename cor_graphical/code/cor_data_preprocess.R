@@ -75,6 +75,7 @@ source(here("code", "params.R"))
 
 ################################################
 dat <- as.data.frame(dat.mock)
+if (study_name=="IARCHPV") {dat$Perprotocol=1}
 
 Args <- commandArgs(trailingOnly=TRUE)
 COR=Args[1]
@@ -528,6 +529,36 @@ saveRDS(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_
 plot.25sample1 <- get_sample_by_group(dat.longer.cor.subset.plot1, groupby_vars1)
 write.csv(plot.25sample1, file = here("data_clean", "plot.25sample1.csv"), row.names=F)
 saveRDS(plot.25sample1, file = here("data_clean", "plot.25sample1.rds"))
+
+if (study_name == "IARCHPV") {
+  #### for Figure 1.2. breakthrough case vs non-case, (Day 1), Day 29 Day 57 (only for IARCHPV)
+  groupby_vars1.2=c("Trt", "Bserostatus", "cohort_event", "time", "assay") # this cohort_event has many case types
+  
+  # define response rate
+  # for studies like IARCHPV, pooled violin plots are requested, so stack the dataset by pooling all arms thus the statistics are calculated based on the pooled arm as well
+  if (study_name=="IARCHPV") {
+    dat.longer.cor.subset = dat.longer.cor.subset %>% 
+      mutate(Trt="pooled") %>%
+      bind_rows(dat.longer.cor.subset)}
+  
+  dat.longer.cor.subset.plot1.2 <- get_resp_by_group(dat.longer.cor.subset %>%
+                                                       mutate(cohort_event = factor(case_when(enrolltype=="Case" ~ persistentindicator,
+                                                                                               enrolltype=="Control" ~ "Controls"))), 
+                                                     groupby_vars1.2)
+  dat.longer.cor.subset.plot1.2 <- dat.longer.cor.subset.plot1.2 %>%
+    mutate(N_RespRate = ifelse(grepl("Day|M", time), N_RespRate, ""),
+           lb = ifelse(grepl("Day|M", time), lb, ""),
+           lbval = ifelse(grepl("Day|M", time), lbval, NA),
+           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  write.csv(dat.longer.cor.subset.plot1.2, file = here("data_clean", "longer_cor_data_plot1.2.csv"), row.names=F)
+  saveRDS(dat.longer.cor.subset.plot1.2, file = here("data_clean", "longer_cor_data_plot1.2.rds"))
+  
+  # make subsample
+  plot.25sample1.2 <- get_sample_by_group(dat.longer.cor.subset.plot1.2, groupby_vars1.2)
+  write.csv(plot.25sample1.2, file = here("data_clean", "plot.25sample1.2.csv"), row.names=F)
+  saveRDS(plot.25sample1.2, file = here("data_clean", "plot.25sample1.2.rds"))
+}
 
 #### for Figure 3. intercurrent vs pp, case vs non-case, (Day 1) Day 29 Day 57, by if Age >=65 and if at risk
 if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable

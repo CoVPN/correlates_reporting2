@@ -28,7 +28,10 @@ library(grid)
 longer_cor_data <- readRDS(here("data_clean", "longer_cor_data.rds"))
 longer_cor_data_plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds"))
 plot.25sample1 <- readRDS(here("data_clean", "plot.25sample1.rds"))
-if (study_name=="IARCHPV") {longer_cor_data_plot1$Perprotocol=1; plot.25sample1$Perprotocol=1}
+if (study_name=="IARCHPV") {
+  longer_cor_data_plot1.2 <- readRDS(here("data_clean", "longer_cor_data_plot1.2.rds"))
+  plot.25sample1.2 <- readRDS(here("data_clean", "plot.25sample1.2.rds"))
+}
 if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
   longer_cor_data_plot3 <- readRDS(here("data_clean", "longer_cor_data_plot3.rds"))
   plot.25sample3 <- readRDS(here("data_clean", "plot.25sample3.rds"))
@@ -44,7 +47,7 @@ bstatus <- as.character(unique(longer_cor_data$Bserostatus))
 if (study_name=="IARCHPV") { trt = c("pooled", trt.labels)
 } else { trt = trt.labels } # add pooled arm as the first arm for IARCHPV
 if (study_name=="IARCHPV") {
-  labels.assays.short.clean_ = str_extract_all(labels.assays.short, "\\([^()]+\\)")[[1]] # Get the parenthesis and what is inside
+  labels.assays.short.clean_ = unlist(str_extract_all(labels.assays.short, "\\([^()]+\\)")) # Get the parenthesis and what is inside
   labels.assays.short.clean = substring(labels.assays.short.clean_, 2, nchar(labels.assays.short.clean_)-1) # Remove parenthesis
   labels.assays.names = names(labels.assays)
   labels.assays = paste(gsub("HPV", "HPV ", gsub("Binding Antibody |to L1, L2 " , "", labels.assays)), "titers")
@@ -174,30 +177,60 @@ if (COR != "D29variant") {
               suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
             }
             
-            # when k=1 (trt=="pooled") so all trt arms are selected
-            p <- violin_box_plot(dat=       subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                  dat.sample=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
-                                  ytitle=plots_ytitles[i],toptitle=plots_titles[i],
-                                  x="cohort_event",
-                                  xtitle="Cohort Event",
-                                  facetby=vars(time),
-                                  ylim=y.lim,
-                                  type="noline",
-                                  ybreaks=y.breaks,
-                                  prop.cex=prop.cex,
-                                  ll.cex=ll.cex,
-                                  pt.size=1.5,
-                                  group.num=length(timesls[[t]]),
-                                  rate.y.pos=rate.y.pos,
-                                  axis.text.x.cex=25 * font_index * 1.6,
-                                  axis.text.y.cex=25 * font_index,
-                                  n_rate="N_RespRate",
-                                  xlabel=x_lb,
-                                  global.size=25 * 1.6
-                                  )
-            
-            file_name <- paste0("Violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), if(bstatus[j]!="") "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
-            suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+            for (casetype in c("Any HPV", unique(longer_cor_data_plot1$persistentindicator[!is.na(longer_cor_data_plot1$persistentindicator)]))) {# loop through any cases and specific breakthrough cases
+              
+              # skip if specific case type doesn't match with plot type
+              if (casetype!="Any HPV" & !grepl(gsub(" ","", casetype),  plots[i])) next
+              
+              # change label for case type
+              if (casetype=="Any HPV") {longer_cor_data_plot1_ = longer_cor_data_plot1
+              } else {
+                longer_cor_data_plot1_ = longer_cor_data_plot1.2 %>% 
+                  filter(as.character(cohort_event) %in% c("Controls", casetype)) %>%
+                  mutate(cohort_event = factor(cohort_event,
+                                               levels = c(casetype, "Controls")))
+                }
+              x_lb_ = gsub("Any HPV", casetype, x_lb)
+              names(x_lb_) = gsub("Any HPV", casetype, names(x_lb_))
+              col_val_ = col_val
+              names(col_val_) = NULL #gsub("Any HPV", casetype, names(col_val_))
+              shp_val_ = shp_val
+              names(shp_val_) = NULL #gsub("Any HPV", casetype, names(shp_val_))
+              cohort_event_lb_ = gsub("Any HPV", casetype, cohort_event_lb)
+              names(cohort_event_lb_) = gsub("Any HPV", casetype, cohort_event_lb_)
+              
+              casetype = gsub(" ", "", casetype)
+              
+              # when k=1 (trt=="pooled") so all trt arms are selected
+              p <- violin_box_plot(dat=       subset(longer_cor_data_plot1_, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                    dat.sample=subset(longer_cor_data_plot1_, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                    ytitle=plots_ytitles[i],toptitle=plots_titles[i],
+                                    x="cohort_event",
+                                    xtitle="Cohort Event",
+                                    facetby=vars(time),
+                                    ylim=y.lim,
+                                    type="noline",
+                                    ybreaks=y.breaks,
+                                    prop.cex=prop.cex,
+                                    ll.cex=ll.cex,
+                                    pt.size=1.5,
+                                    group.num=length(timesls[[t]]),
+                                    rate.y.pos=rate.y.pos,
+                                    axis.text.x.cex=25 * font_index * 1.6,
+                                    axis.text.y.cex=25 * font_index,
+                                    n_rate="N_RespRate",
+                                    xlabel=x_lb_,
+                                    col=col_val_,
+                                    shape=shp_val_,
+                                    col_lb=cohort_event_lb_,
+                                    shp_lb=cohort_event_lb_,
+                                    global.size=25 * 1.6
+                                    )
+              
+              file_name <- paste0("Violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), if(bstatus[j]!="") "_", gsub(" ","",bstatus[j]), 
+                                  if(casetype!="") "_", casetype, "_", if(case_set=="severe") "severe_", "v",t, "_", study_name, ".pdf")
+              suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+            }
           }
         }
       }
