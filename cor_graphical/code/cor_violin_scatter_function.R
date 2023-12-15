@@ -27,6 +27,7 @@
 #' @param pt.size point size
 #' @param axis.text.x.cex font size for x axis text
 #' @param axis.text.y.cex font size for y axis text
+#' @param global.size global font size
 #' @param n_rate variable for counts and response rate: "N_RespRate" or "N_RespRate_severe"
 #' @return A ggplot object for violin + box plot with or without lines
 
@@ -57,7 +58,8 @@ violin_box_plot <-
            n_rate,
            pt.size=5,
            axis.text.x.cex=25,
-           axis.text.y.cex=25){
+           axis.text.y.cex=25,
+           global.size=11){
   
   p <- ggplot(data=dat, aes(x=.data[[x]], y=.data[[y]], color=.data[[colby]], shape=.data[[shaby]]))
   
@@ -89,6 +91,7 @@ violin_box_plot <-
     scale_color_manual(values=col, labels=col_lb, drop=FALSE) +
     scale_shape_manual(values=shape, labels=shp_lb, drop=FALSE) +
     theme(plot.margin = unit(c(0.25,0.25,0.25,0.25), "in"),
+          text = element_text(size=global.size),
           plot.title = element_text(hjust = 0.5),
           axis.text.x = element_text(size=axis.text.x.cex),
           axis.text.y = element_text(size=axis.text.y.cex))

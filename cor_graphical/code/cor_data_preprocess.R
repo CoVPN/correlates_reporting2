@@ -100,8 +100,8 @@ if (study_name=="IARCHPV") {tpeak=18}
 if (study_name=="IARCHPV"){
   dat = dat %>%
     filter(enrolltype!="Cohort") %>%
-    mutate(cohort_event = factor(enrolltype,
-      levels = c("Case", "Control")))
+    mutate(cohort_event = factor(ifelse(enrolltype=="Case", "Any HPV Cases", ifelse(enrolltype=="Control", "Controls", NA)),
+      levels = c("Any HPV Cases", "Controls")))
 } else if(#study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19"
   length(timepoints)==1 & study_name!="IARCHPV")  {
   

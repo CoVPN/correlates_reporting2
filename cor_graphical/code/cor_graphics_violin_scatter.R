@@ -43,7 +43,14 @@ bstatus <- as.character(unique(longer_cor_data$Bserostatus))
 
 if (study_name=="IARCHPV") { trt = c("pooled", trt.labels)
 } else { trt = trt.labels } # add pooled arm as the first arm for IARCHPV
-plots_ytitles <- labels.assays.short
+if (study_name=="IARCHPV") {
+  labels.assays.short.clean_ = str_extract_all(labels.assays.short, "\\([^()]+\\)")[[1]] # Get the parenthesis and what is inside
+  labels.assays.short.clean = substring(labels.assays.short.clean_, 2, nchar(labels.assays.short.clean_)-1) # Remove parenthesis
+  labels.assays.names = names(labels.assays)
+  labels.assays = paste(gsub("HPV", "HPV ", gsub("Binding Antibody |to L1, L2 " , "", labels.assays)), "titers")
+  names(labels.assays) = labels.assays.names
+} else {labels.assays.short.clean = labels.assays.short}
+plots_ytitles <- labels.assays.short.clean
 plots_titles <- labels.assays[names(labels.assays) %in% names(labels.assays.short)]
 timesls <- list(labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)][-1], 
                 labels.time[(names(labels.time) %in% times) & !grepl("fold-rise", labels.time)],
@@ -51,14 +58,14 @@ timesls <- list(labels.time[(names(labels.time) %in% times) & !grepl("fold-rise"
 if (do.fold.change.overB==0) {timesls[[3]]<-NULL}
 if (study_name=="IARCHPV") {timesls[[1]]<-NULL}# single timepoint without baseline
 
-# x-axis need a wrapped verion of label
+# x-axis need a wrapped version of label
 case_grp1 = ifelse(study_name=="PROFISCOV", "Early Post-Peak Cases", "Intercurrent Cases")
 case_grp1_wrap = ifelse(study_name=="PROFISCOV", "Early\nPost-Peak\nCases", "Intercurrent\nCases")
 case_grp2 = ifelse(study_name=="PROFISCOV", "Late Post-Peak Cases", 
-                   ifelse(study_name=="IARCHPV", "Case", "Post-Peak Cases"))
+                   ifelse(study_name=="IARCHPV", "Any HPV Cases", "Post-Peak Cases"))
 case_grp2_wrap = ifelse(study_name=="PROFISCOV", "Late\nPost-Peak\nCases", 
-                        ifelse(study_name=="IARCHPV", "Case", "Post-Peak\nCases"))
-ctrl <- ifelse(study_name=="IARCHPV", "Control", "Non-Cases")
+                        ifelse(study_name=="IARCHPV", "Any HPV Cases", "Post-Peak\nCases"))
+ctrl <- ifelse(study_name=="IARCHPV", "Controls", "Non-Cases")
 
 cohort_event_lb = c(case_grp1, case_grp2, ctrl)
 names(cohort_event_lb) = c(case_grp1, case_grp2, ctrl)
@@ -144,8 +151,9 @@ if (COR != "D29variant") {
             y.lim <- c(floor(mins[plots[i]]), ceiling(maxs[plots[i]]) + 0.25 + ifelse(log10(uloqs[plots[i]])==maxs[plots[i]], 0.1, 0))
             rate.y.pos <- max(y.lim)
             
-            ll.cex <- 8.16
-            prop.cex <- 7
+            font_index <- ifelse(study_name=="IARCHPV", 1.2, 1)
+            ll.cex <- 8.16 * font_index
+            prop.cex <- 7 * font_index
             
             if (study_name!="IARCHPV"){
               p <- violin_box_plot(dat=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
@@ -181,9 +189,11 @@ if (COR != "D29variant") {
                                   pt.size=1.5,
                                   group.num=length(timesls[[t]]),
                                   rate.y.pos=rate.y.pos,
-                                  axis.text.x.cex=20,
-                                  n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                  xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                  axis.text.x.cex=25 * font_index * 1.6,
+                                  axis.text.y.cex=25 * font_index,
+                                  n_rate="N_RespRate",
+                                  xlabel=x_lb,
+                                  global.size=25 * 1.6
                                   )
             
             file_name <- paste0("Violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), if(bstatus[j]!="") "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
