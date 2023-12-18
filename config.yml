@@ -341,7 +341,7 @@ vat08_combined: &vat08_combined
   time_labels: [Day 1, Day 22, Day 43, D22 fold-rise over D1, D43 fold-rise over D1, D43 fold-rise over D22]
   study_name: VAT08
   assay_metadata: assay_metadata/vat08_combined_assay_metadata.csv
-  covariates_riskscore: ~.+ FOI + risk_score + strata(Region)
+  covariates_riskscore: ~.+ FOI + risk_score + Sex + strata(Country)
   low_efficacy: no
   num_boot_replicates: 10
   num_perm_replicates: 10
@@ -370,11 +370,27 @@ prevent19: &prevent19
   timepoints: [35]
   times: [B, Day35, Delta35overB]
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20230928.csv
   assays: [bindSpike, bindRBD, pseudoneutid50]
   llox_label: [LLOQ, LLOQ, LOD]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
+  study_name: PREVENT19
+  covariates_riskscore: ~.+ risk_score
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
+  low_efficacy: no
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  
+
+prevent19_stage2: &prevent19_stage2
+  <<: *ows_trial
+  timepoints: [35]
+  times: [Day35]
+  time_labels: [Day 35]
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20230928.csv
+  assay_metadata: assay_metadata/prevent19_stage2_assay_metadata.csv
   study_name: PREVENT19
   covariates_riskscore: ~.+ risk_score
   ve_ylim: [0,1]
