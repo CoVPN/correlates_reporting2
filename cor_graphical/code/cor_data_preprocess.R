@@ -511,11 +511,11 @@ groupby_vars1=c("Trt", "Bserostatus", "cohort_event", "time", "assay")
 # define response rate
 # for studies like IARCHPV, pooled violin plots are requested, so stack the dataset by pooling all arms thus the statistics are calculated based on the pooled arm as well
 if (study_name=="IARCHPV") {
-  dat.longer.cor.subset = dat.longer.cor.subset %>% 
+  dat.longer.cor.subset_ = dat.longer.cor.subset %>% 
     mutate(Trt="pooled") %>%
     bind_rows(dat.longer.cor.subset)}
 
-dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars1)
+dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset_, groupby_vars1)
 dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>%
   mutate(N_RespRate = ifelse(grepl("Day|M", time), N_RespRate, ""),
          lb = ifelse(grepl("Day|M", time), lb, ""),
@@ -537,11 +537,11 @@ if (study_name == "IARCHPV") {
   # define response rate
   # for studies like IARCHPV, pooled violin plots are requested, so stack the dataset by pooling all arms thus the statistics are calculated based on the pooled arm as well
   if (study_name=="IARCHPV") {
-    dat.longer.cor.subset = dat.longer.cor.subset %>% 
+    dat.longer.cor.subset_ = dat.longer.cor.subset %>% 
       mutate(Trt="pooled") %>%
       bind_rows(dat.longer.cor.subset)}
   
-  dat.longer.cor.subset.plot1.2 <- get_resp_by_group(dat.longer.cor.subset %>%
+  dat.longer.cor.subset.plot1.2 <- get_resp_by_group(dat.longer.cor.subset_ %>%
                                                        mutate(cohort_event = factor(case_when(enrolltype=="Case" ~ persistentindicator,
                                                                                                enrolltype=="Control" ~ "Controls"))), 
                                                      groupby_vars1.2)

@@ -26,10 +26,10 @@ library(grid)
 
 ## load data 
 longer_cor_data <- readRDS(here("data_clean", "longer_cor_data.rds"))
-longer_cor_data_plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds"))
+longer_cor_data_plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds")) # at level of trt and assay
 plot.25sample1 <- readRDS(here("data_clean", "plot.25sample1.rds"))
 if (study_name=="IARCHPV") {
-  longer_cor_data_plot1.2 <- readRDS(here("data_clean", "longer_cor_data_plot1.2.rds"))
+  longer_cor_data_plot1.2 <- readRDS(here("data_clean", "longer_cor_data_plot1.2.rds")) # at level of trt, assay and 
   plot.25sample1.2 <- readRDS(here("data_clean", "plot.25sample1.2.rds"))
 }
 if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
@@ -47,7 +47,7 @@ bstatus <- as.character(unique(longer_cor_data$Bserostatus))
 if (study_name=="IARCHPV") { trt = c("pooled", trt.labels)
 } else { trt = trt.labels } # add pooled arm as the first arm for IARCHPV
 if (study_name=="IARCHPV") {
-  labels.assays.short.clean_ = unlist(str_extract_all(labels.assays.short, "\\([^()]+\\)")) # Get the parenthesis and what is inside
+  labels.assays.short.clean_ = unlist(str_extract_all(gsub("Score", "(Score)", labels.assays.short), "\\([^()]+\\)")) # Get the parenthesis and what is inside
   labels.assays.short.clean = substring(labels.assays.short.clean_, 2, nchar(labels.assays.short.clean_)-1) # Remove parenthesis
   labels.assays.names = names(labels.assays)
   labels.assays = paste(gsub("HPV", "HPV ", gsub("Binding Antibody |to L1, L2 " , "", labels.assays)), "titers")
