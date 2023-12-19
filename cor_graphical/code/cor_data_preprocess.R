@@ -542,7 +542,7 @@ if (study_name == "IARCHPV") {
       bind_rows(dat.longer.cor.subset)}
   
   dat.longer.cor.subset.plot1.2 <- get_resp_by_group(dat.longer.cor.subset_ %>%
-                                                       mutate(cohort_event = factor(case_when(enrolltype=="Case" ~ persistentindicator,
+                                                       mutate(cohort_event = factor(case_when(enrolltype=="Case" ~ paste(persistentindicator, "Cases"),
                                                                                                enrolltype=="Control" ~ "Controls"))), 
                                                      groupby_vars1.2)
   dat.longer.cor.subset.plot1.2 <- dat.longer.cor.subset.plot1.2 %>%

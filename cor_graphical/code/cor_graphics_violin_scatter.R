@@ -177,10 +177,10 @@ if (COR != "D29variant") {
               suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
             }
             
-            for (casetype in c("Any HPV", unique(longer_cor_data_plot1$persistentindicator[!is.na(longer_cor_data_plot1$persistentindicator)]))) {# loop through any cases and specific breakthrough cases
+            for (casetype in c("Any HPV", unique(paste(longer_cor_data_plot1$persistentindicator[!is.na(longer_cor_data_plot1$persistentindicator)], "Cases")))) {# loop through any cases and specific breakthrough cases
               
               # skip if specific case type doesn't match with plot type
-              if (casetype!="Any HPV" & !grepl(gsub(" ","", casetype),  plots[i])) next
+              if (casetype!="Any HPV" & !grepl(gsub(" |Cases","", casetype),  plots[i])) next
               
               # change label for case type
               if (casetype=="Any HPV") {longer_cor_data_plot1_ = longer_cor_data_plot1
@@ -199,7 +199,7 @@ if (COR != "D29variant") {
               cohort_event_lb_ = gsub("Any HPV", casetype, cohort_event_lb)
               names(cohort_event_lb_) = gsub("Any HPV", casetype, cohort_event_lb_)
               
-              casetype = gsub(" ", "", casetype)
+              casetype = gsub(" |Cases", "", casetype)
               
               # when k=1 (trt=="pooled") so all trt arms are selected
               p <- violin_box_plot(dat=       subset(longer_cor_data_plot1_, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
