@@ -3,6 +3,6 @@ id50,1,pseudoneutid50_D614G,47,198904,40,40,PsV Neutralization to D614G,Pseudovi
 id50,2,pseudoneutid50_Beta,44,35879,40,40,PsV Neutralization to Beta,Pseudovirus-nAb Beta (AU/ml),lod,1
 id50,3,pseudoneutid50_Delta,50,145858,40,40,PsV Neutralization to Delta,Pseudovirus-nAb Delta (AU/ml),lod,1
 id50,4,pseudoneutid50_BA.1,66,27104,40,40,PsV Neutralization to BA.1,Pseudovirus-nAb BA.1 (AU/ml),lod,1
-id50,5,pseudoneutid50_BA.4.5,57,58293,40,40,PsV Neutralization to BA.4/BA.5,Pseudovirus-nAb BA.4/BA.5 (AU/ml),lod,1
+id50,5,pseudoneutid50_BA.4.BA.5,57,58293,40,40,PsV Neutralization to BA.4/BA.5,Pseudovirus-nAb BA.4/BA.5 (AU/ml),lod,1
 id50,6,pseudoneutid50_MDW,-1000000,Inf,-1000000,NA,PsV Neutralization breadth score,Pseudovirus-nAb ID50 breadth score,lod,1
 id50Duke,4,pseudoneutid50Duke_BA.2.12.1,66,27104,40,40,Duke PsV Neutralization to BA.2.12.1,Duke Pseudovirus-nAb BA.2.12.1 (AU/ml),lod,0
