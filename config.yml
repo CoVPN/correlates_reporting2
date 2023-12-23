@@ -348,6 +348,21 @@ vat08_combined: &vat08_combined
   num_perm_replicates: 10
 
 
+covail: &covail
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20231222.csv
+  sampling_scheme: cohort
+  two_marker_timepoints: no
+  timepoints: [15]
+  times: [B, Day15, Delta15overB]
+  time_labels: [Day 1, Day 22, D15 fold-rise over D1]
+  study_name: COVAIL
+  assay_metadata: assay_metadata/covail_assay_metadata.csv
+  covariates_riskscore: ~.+ FOI + risk_score + naive
+  low_efficacy: no
+  num_boot_replicates: 10
+  num_perm_replicates: 10
+
+
 # vat08m_nonnaive: &vat08m_nonnaive
 #   inherits: vat08m_base
 #   Bserostatus: 1
