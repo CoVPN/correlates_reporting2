@@ -1,7 +1,15 @@
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_12212023.csv')
+dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_12222023.csv')
+
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
+assays=assay_metadata$assay
+assays
+
+myboxplot(dat_mapped[, c("B"%.%assays[1:5], "Day15"%.%assays[1:5])], names=sub("pseudoneutid50_", "", rep(assays[1:5],2)))
+
+
 
 summary(dat_mapped)
 sort(names(dat_mapped))

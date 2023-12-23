@@ -13,14 +13,25 @@ dat_mapped$EarlyendpointD43 <- with(dat_mapped, EarlyinfectionD43==1 | (EventInd
 dat_mapped$ph1.D43= with(dat_mapped, EarlyendpointD43==0 & Perprotocol==1 & EventTimePrimaryD43 >= 7)
 
 
-################################################################################
 
-# some numbers for Peter's slide
-with(subset(dat_proc, ph2.D22.nAb==1), table(1-Trt, EventIndOmicronD43M6hotdeck1, Bserostatus, Trialstage))
+# Senior and nAbBatch
+# suggests that batch 2 is complementary, almost no senior in batch 2
+dat=subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1)  
+dat$ph2=with(dat, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50))
+with(dat[dat$ph2,], table(Age>=60, nAbBatch, EventIndPrimaryD1))
 
-with(subset(dat_proc, ph2.D22.bAb==1), table(1-Trt, EventIndOmicronD43M6hotdeck1, Bserostatus, Trialstage))
+# using bAb gives same conclusion
+dat$ph2=with(dat, !is.na(BbindSpike) & !is.na(Day43bindSpike))
+with(dat[dat$ph2,], table(Age>=60, nAbBatch, EventIndPrimaryD1))
 
-with(subset(dat_proc, ph2.D22.nAb==1 & (EventIndOmicronD43M6hotdeck1 | nAbBatch==1)), table(Trt, EventIndOmicronD43M6hotdeck1, Bserostatus, Trialstage))
+
+with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1), 
+                 table(!is.na(Day43pseudoneutid50),
+                       !is.na(Day43bindSpike),
+                       nAbBatch))
+
+with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1), table(!is.na(Day43pseudoneutid50)))
+with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1), table(!is.na(Day43bindSpike)))
 
 
 ################################################################################
@@ -50,10 +61,11 @@ par(mfrow=c(2,2))
 
 # the conclusion from the above is that we need to restrict to samples with both B and D43 markers
   
-
+  
 dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50))
 dat_proc$Wstratum=dat_proc$Wstratum.nAb
 dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
+with(dat, table(ph2, Wstratum))
 
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
@@ -72,6 +84,7 @@ svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ S
 dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) & !is.na(BbindSpike) & !is.na(Day43bindSpike))
 dat_proc$Wstratum=dat_proc$Wstratum.nAb
 dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
+with(dat, table(ph2, Wstratum))
 
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
@@ -87,8 +100,48 @@ svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ S
 
 
 dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) & nAbBatch==2)
+dat_proc$Wstratum=dat_proc$Wstratum.original # Wstratum.nAb is too fine
+dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
+with(dat, table(ph2, Wstratum))
+
+svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + strata(Country),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + Delta43overBpseudoneutid50 + strata(Country),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50*Delta43overBpseudoneutid50 + strata(Country),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+
+
+dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) & (nAbBatch==1 | EventIndOmicronD43M12hotdeck1==1))
+dat_proc$Wstratum=dat_proc$Wstratum.original # Wstratum.nAb is too fine
+dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
+with(dat, table(ph2, Wstratum))
+
+svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + strata(Country),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + Delta43overBpseudoneutid50 + strata(Country),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50*Delta43overBpseudoneutid50 + strata(Country),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+
+
+dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) & !is.na(BbindSpike) & !is.na(Day43bindSpike) & (nAbBatch==1 | EventIndOmicronD43M12hotdeck1==1))
 dat_proc$Wstratum=dat_proc$Wstratum.original
 dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
+with(dat, table(ph2, Wstratum))
+with(dat[dat$ph2,], table(Senior, EventIndOmicronD43M12hotdeck1))
 
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
@@ -167,6 +220,18 @@ with(subset(dat_mapped, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & Even
 
 with(subset(dat_mapped, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & EventIndOmicronD43M12hotdeck1), 
      table(ph2.D43.nAb, !is.na(Day43pseudoneutid50)))
+
+
+
+################################################################################
+
+# some numbers for Peter's slide
+with(subset(dat_proc, ph2.D22.nAb==1), table(1-Trt, EventIndOmicronD43M6hotdeck1, Bserostatus, Trialstage))
+
+with(subset(dat_proc, ph2.D22.bAb==1), table(1-Trt, EventIndOmicronD43M6hotdeck1, Bserostatus, Trialstage))
+
+with(subset(dat_proc, ph2.D22.nAb==1 & (EventIndOmicronD43M6hotdeck1 | nAbBatch==1)), table(Trt, EventIndOmicronD43M6hotdeck1, Bserostatus, Trialstage))
+
 
 
 
