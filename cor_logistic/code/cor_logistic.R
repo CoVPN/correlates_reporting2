@@ -1,3 +1,10 @@
+# restrict to <=14 year olds
+# Consider hpv31 infections, it seems that we only need to consider hpv18 and 31 ab. 
+# drop age group and add region in regression models. 
+# different weights
+
+
+
 #Sys.setenv(TRIAL = "id27hpv"); COR="M18sus"; Sys.setenv(VERBOSE = 1) 
 
 print(paste0("starting time: ", date()))
