@@ -1,3 +1,4 @@
+#Sys.setenv(TRIAL = "vat08_combined")
 #Sys.setenv(TRIAL = "id27hpv")
 #-----------------------------------------------
 # obligatory to append to the top of each script
@@ -11,7 +12,7 @@ library(here)
 library(dplyr)
 library(tidyverse)
 library(stringr)
-if (study_name %in% c("ENSEMBLE","VAT08m","IARCHPV")){
+if (study_name %in% c("ENSEMBLE","VAT08","IARCHPV")){
   uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
   pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
   lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
@@ -83,13 +84,14 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 } else {incNotMol <- ""}
 
 # set EventIndTimePrimary to EventIndTimeOmicron if study_name=="VAT08m" & COR=="D22D43omi"
-if (study_name=="VAT08m" & grepl("omi", COR)){
-  dat$EventIndPrimaryD1 = dat$EventIndOmicronD1 # used by cohort_event def
-  dat$EventIndPrimaryD22 = dat$EventIndOmicronD22
-  dat$EventIndPrimaryD43 = dat$EventIndOmicronD43 # used by cohort_event def
-  dat$EventTimePrimaryD1 = dat$EventTimeOmicronD1
-  dat$EventTimePrimaryD22 = dat$EventTimeOmicronD22 # used by scatter plot
-  dat$EventTimePrimaryD43 = dat$EventTimeOmicronD43
+if (study_name=="VAT08_combined" & grepl("omi", COR)){
+  # All COVID endpoint cases of observed non-Omicron lineages, or with unknown lineage before January 17, 2022, are excluded
+  dat$EventIndPrimaryD1 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD1 & dat$Omi_or_NA_after_cutoff==1) # used by cohort_event def
+  dat$EventIndPrimaryD22 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD22 & dat$Omi_or_NA_after_cutoff==1) 
+  dat$EventIndPrimaryD43 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD43 & dat$Omi_or_NA_after_cutoff==1) # used by cohort_event def
+  dat$EventTimePrimaryD1 = dat$EventTimeKnownLineageOmicronOrMissingLineageD1
+  dat$EventTimePrimaryD22 = dat$EventTimeKnownLineageOmicronOrMissingLineageD22 # used by scatter plot
+  dat$EventTimePrimaryD43 = dat$EventTimeKnownLineageOmicronOrMissingLineageD43
 }
 
 # create AnyinfectionD1 and assign to 0 if study_name=="IARCHPV" to pass the non-case definition for single-timepoint study below
@@ -157,7 +159,24 @@ dat = dat %>%
                   EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
     )
-} else {# keep Sanofi and other two timepoint studies except for AZ and Moderna here
+} else if (study_name=="VAT08"){
+  
+  dat <- dat %>%
+    mutate(cohort_event = factor(
+      case_when(ph2.intercurrent.cases==1 ~ "7-27 days PD2 cases",
+                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
+                  (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
+                  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "28-180 days PD2 cases", 
+                # definition for post-peak cases include people with and without D57 marker data for downstream plotting
+                # will filter out those without D57 marker data in the D57 panels
+                Perprotocol==1 & 
+                  (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
+                  (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & 
+                  EventIndPrimaryD1==0 ~ "Non-Cases"),
+      levels = c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases"))
+    )
+  
+  } else {# keep other two timepoint studies except for AZ and Moderna and Sanofi here
   
   dat <- dat %>%
     mutate(cohort_event = factor(
@@ -513,7 +532,10 @@ groupby_vars1=c("Trt", "Bserostatus", "cohort_event", "time", "assay")
 if (study_name=="IARCHPV") {
   dat.longer.cor.subset_ = dat.longer.cor.subset %>% 
     mutate(Trt="pooled") %>%
-    bind_rows(dat.longer.cor.subset)}
+    bind_rows(dat.longer.cor.subset)
+} else {
+  dat.longer.cor.subset_ = dat.longer.cor.subset
+  }
 
 dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset_, groupby_vars1)
 dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>%

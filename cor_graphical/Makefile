@@ -15,7 +15,7 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real azd1222 azd1222_bAb)
 	Rscript code/CoR_assay_graphics.R D57
 	Rscript code/CoR_wrcdf_with_VE_lines.R D57
 
-else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
+else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
 	Rscript code/cor_data_preprocess.R D22D43 # Yiwen's
 	Rscript code/cor_graphics_violin_scatter.R D22D43
 	Rscript code/cor_data_preprocess.R D22D43omi # Yiwen's
@@ -34,6 +34,10 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 	Rscript code/cor_data_preprocess_2.R D43omi # Brian's
 	Rscript code/CoR_assay_graphics.R D43omi
 	Rscript code/CoR_wrcdf_with_VE_lines.R D43omi
+	
+else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_combined))
+	Rscript code/cor_data_preprocess.R D22D43omi # Yiwen's
+	Rscript code/cor_graphics_all.R D22D43omi
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janssen_la_mock janssen_sa_mock))
 	Rscript code/cor_data_preprocess.R D29 # Yiwen's

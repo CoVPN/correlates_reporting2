@@ -74,9 +74,9 @@ get_resp_by_group <- function(dat=dat, group=group){
     dat[which(dat$time=="Day 1"), "wt"]=1
     dat[which(dat$time!="Day 1"), "wt"]=dat[which(dat$time!="Day 1"), config.cor$wt] # wt.D29 or wt.D29start1
   } else {
-    dat[which(dat$time=="Day 1" | !dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), "wt"]=1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
-    dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[1])]
-    dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[length(timepoints)])]
+    dat[which(dat$time=="Day 1" | !dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), "wt"]=1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
+    dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[1])]
+    dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[length(timepoints)])]
     }
   
   complete <- complete.cases(dat[, group])
