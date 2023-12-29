@@ -492,7 +492,7 @@ profiscov_lvmn: &profiscov_lvmn
 
 
 id27hpv:
-  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20231209.csv
+  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20231228.csv
   assay_metadata: assay_metadata/id27hpv_assay_metadata.csv
   sampling_scheme: case_control
   two_marker_timepoints: no
@@ -503,7 +503,7 @@ id27hpv:
   covariates_riskscore: ~.+ AgeGroup
   num_boot_replicates: 1000
   num_perm_replicates: 10000
-  primary_assays: [bindL1L2_mdw]
+  primary_assays: [bind_mdw]
   
 
 hvtn705base: &hvtn705base
@@ -1311,6 +1311,34 @@ M18sus:
   ph1: ph1.M18.sus
   ph2: ph2.M18.sus
   wt: wt.M18.sus
+  WtStratum: Wstratum
+  EventIndPrimary:  EventIndPrimaryAnyHPV
+  EventTimePrimary: 
+  Earlyendpoint: 
+  tpeak: 18
+  tpeaklag: 0
+  txt.endpoint: HPV
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. trial participants becoming susceptible to HPV infection post the M18 visit; no. cases = number of this cohort with an observed HPV endpoint.
+
+# hpv
+M18nAb:
+  ph1: ph1.M18
+  ph2: ph2.M18.nAb
+  wt: wt.M18.nAb
+  WtStratum: Wstratum
+  EventIndPrimary:  EventIndPrimaryAnyHPV
+  EventTimePrimary: 
+  Earlyendpoint: 
+  tpeak: 18
+  tpeaklag: 0
+  txt.endpoint: HPV
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. trial participants entering or eligible to enter the sampling cohort post the M18 visit; no. cases = number of this cohort with an observed HPV endpoint.
+
+# hpv
+M18susnAb:
+  ph1: ph1.M18.sus
+  ph2: ph2.M18.sus.nAb
+  wt: wt.M18.sus.nAb
   WtStratum: Wstratum
   EventIndPrimary:  EventIndPrimaryAnyHPV
   EventTimePrimary: 
