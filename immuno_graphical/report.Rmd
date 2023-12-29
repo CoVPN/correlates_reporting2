@@ -198,12 +198,17 @@ if (study_name != "VAT08") { # VAT08 doesn't repor this
 
 ```{r, echo=FALSE, results='asis'}
 
-### (VAT08) Baseline neg/pos vs. vaccine/placebo
-### Vaccine vs. Placebo
+### Vaccine vs. Placebo (2 arms x 1 baseline status in each plot)
+### (VAT08) Baseline neg/pos vs. vaccine/placebo (2 arms x 2 baseline statuses in each plot)
+### (VAT08) Baseline neg/pos vs. vaccine/placebo vs. female/male (2 arms x 2 baseline statuses x 2 gender in each plot)
 
-for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") "bstatus")) { #only VAT08 report Baseline neg/pos vs. vaccine/placebo
+for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus", "bstatus_gender") )) { # only VAT08 report 2 extra kind of plots
   
-  bseroLabel <- gsub("baseline ", "", bstatus.labels.3[match(bsero, bstatus.labels.2)])
+  bseroLabel <- c(bstatus.labels.3, if(study_name=="VAT08") c("naive + non-naive", "naive + non-naive") )[match(bsero, c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus", "bstatus_gender")))]
+  
+  if (bsero=="bstatus_gender") {gender_lb = " females + males"
+  } else {gender_lb=""}
+  
   for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
     
     if (study_name=="VAT08" && grepl("Delta", tp)) next # only report main timepoints for VAT08
@@ -216,7 +221,7 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") "bstatus")) { #only VA
   }
 }
     
-### Baseline negative vs. positive
+### Baseline negative vs. positive (2 baseline statuses x 1 arm in each plot)
 
 for (trt in c("vaccine_arm","placebo_arm")) {
   for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {

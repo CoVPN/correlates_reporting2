@@ -546,6 +546,42 @@ if (study_name=="VAT08") {# this is only reported for VAT08
 
 
 #-----------------------------------------------
+# - Box plots of the assay readouts, stratified by baseline sero-status, treatment groups and sex at birth
+# - One plot for Placebo and Vaccine arms, Baseline Neg and Pos, Females and Males
+#-----------------------------------------------
+if (study_name=="VAT08") {# this is only reported for VAT08
+  for (tp in tps_no_fold_change) {
+    
+    covid_corr_boxplot_facets(
+      plot_dat = dat.long.twophase.sample %>% mutate(BseroTrtGender = factor(paste0(Bserostatus,"\n",Trt,"\n",sex_label),
+                                                                       levels = paste0(rep(bstatus.labels, 2), "\n", rep(c("Vaccine", "Placebo"), each=2) , "\n", rep(c("Female", "Male"), each=4))
+      )),
+      x = "BseroTrtGender",
+      y = tp,
+      color = "BseroTrtGender",
+      facet_by = "assay",
+      ylim = assay_lim[, tp,],
+      plot_LLOX = !grepl("Delta", tp), # "B", "Day29", "Day57"
+      POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
+      LLOX = log10(lloxs[assay_immuno]),
+      ULOQ = log10(uloqs[assay_immuno]),
+      arrange_ncol = 3,
+      arrange_nrow = ceiling(length(assay_immuno) / 3),
+      legend = paste0(rep(stringr::str_to_title(bstatus.labels.3), 2), ", ", rep(c("Vaccine", "Placebo"), each=2) , ", ", rep(c("Female", "Male"), each=4)),
+      axis_titles_y = labels.axis[tp, ] %>% unlist(),
+      panel_titles = labels.title2[tp, ] %>% unlist(),
+      panel_title_size = ifelse(study_name=="VAT08", 8, 10),
+      height = ifelse(study_name=="VAT08", 11, 3 * arrange_nrow + 0.5),
+      filename = paste0(
+        save.results.to, "/boxplots_", tp,
+        "_x_trt_bstatus_gender_",
+        study_name, ".pdf"
+      )
+    )
+  }
+}
+
+#-----------------------------------------------
 # Spaghetti PLOTS
 #-----------------------------------------------
 # - Spaghetti plots of antibody marker change over time
