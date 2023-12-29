@@ -111,21 +111,17 @@ for (panel in c("pseudoneutid50", "bindSpike")){
 for (grp in c("non_naive_vac_pla", "naive_vac")){
     for (t in c("B","Day22","Day43")) {
         
+        if (grp == "naive_vac" && t=="B") next # this is not needed for VAT08
+        
         if (grp == "non_naive_vac_pla") {
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==1)
-            grp_lb = paste0(gsub("-","",bstatus.labels.3[2]), " vaccine group participants")
+            grp_lb = paste0(gsub("-","",bstatus.labels.3[2]), " participants")
             assays_sub = assays
-        } else if (grp == "naive_vac" && t!="B"){
+        } else if (grp == "naive_vac"){
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)=="Vaccine")
-            grp_lb = paste0(bstatus.labels.3[1], " participants")
+            grp_lb = paste0(bstatus.labels.3[1], " vaccine group participants")
             assays_sub = assays
-        } else if (grp == "naive_vac" && t=="B") {
-            dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)=="Vaccine")
-            grp_lb = paste0(bstatus.labels.3[1], " participants")
-            assays_sub = assays[assays!="pseudoneutid50_mdw"]
         }
-        
-        if (grp == "naive_vac" && t=="B") next
         
         covid_corr_pairplots(
             plot_dat = dat.plot,

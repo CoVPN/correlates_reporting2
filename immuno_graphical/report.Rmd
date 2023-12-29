@@ -129,6 +129,8 @@ for (bsero in bstatus.labels.2) {
 if (study_name=="VAT08"){
   for (tp in tps_no_fold_change){
     
+    tp_lb = ifelse(tp=="B", "Day1", tp)
+    
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf_all.Rmd')), quiet = TRUE)
         cat(res, sep = '\n')
         cat("\\clearpage", sep = '\n')
@@ -137,11 +139,11 @@ if (study_name=="VAT08"){
 
   
 for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo")){
-  trtLabel <- ifelse(trt=="trt_both", "x randomization arm", "vaccine arm")
+  trtLabel <- ifelse(trt=="trt_both", "x randomization arm", paste0(gsub("trt_","", trt), " arm"))
   
   for (bsero in c("bstatus_both", "bstatus_Neg", "bstatus_Pos")){
     if (bsero=="bstatus_Pos" && if.pos.exist==0) next
-    if (trt=="trt_both" && bsero!="bstatus_both" && study_name!="VAT08") next # trt_both is only for bstatus both if the study is not VAT08
+    if (trt=="trt_both" && bsero!="bstatus_both" && study_name!="VAT08") next # trt_both is only for bstatus both if the study is VAT08
     
     bseroLabel <- ifelse(bsero=="bstatus_both", "by serostatus", ifelse(bsero=="bstatus_Neg", bstatus.labels.3[1], bstatus.labels.3[2]))
     
@@ -348,6 +350,8 @@ for (tp in c("day1day22day43", "delta")) {
 
   for (asy in c("bAb" ,"nAb")){
     
+    tpLabel <- ifelse(tp=="day1day22day43", "Day 1, Day 22, Day 43", ifelse(tp=="delta", "fold-rise (D01 to D22, D1 to D43)", ""))
+    
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_spider.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
@@ -363,6 +367,7 @@ for (a in c("bindSpike","pseudoneutid50")){
   
   for (tp in tps_no_delta_over_tinterm){
     
+    tpLabel = ifelse(tp=="B", "Day1", tp)
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set1.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
@@ -395,6 +400,7 @@ for (bsero in c("non_naive")){
   
     for (tp in tps_no_fold_change){
     
+    tpLabel = ifelse(tp=="B", "Day1", tp)
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set3.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
@@ -408,6 +414,7 @@ for (bsero in c("naive")){
   
     for (tp in tps_no_B_and_fold_change){
     
+    tpLabel = ifelse(tp=="B", "Day1", tp)
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set3.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
