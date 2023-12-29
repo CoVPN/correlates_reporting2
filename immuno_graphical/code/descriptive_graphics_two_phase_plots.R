@@ -194,7 +194,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
   ## pairplots by baseline serostatus
   print("Pair plots 2:")
   for (trt in 0:1) {
-    # Don't produce figures for placebo baseline negative to improve build time
+    # Don't produce figures for placebo baseline negative for studies other than VAT08 to improve build time
     if(trt==0 & study_name!="VAT08") {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
   
     for (bserostatus in bstatus.range) {
@@ -204,7 +204,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
         dplyr::filter(Bserostatus == bserostatus & Trt == trt)
       
       times_selected <- if(study_name=="VAT08") {tps_no_delta_over_tinterm[c(1,4,5)]
-        # "B", "Day29", "Day57", "Day29overB", "Day57overB", only show B and fold_change for Sanofi study
+        # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
         } else {tps_no_fold_change} # "B", "Day29", "Day57"
       
       if(study_name=="PREVENT19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
@@ -266,7 +266,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             " Ab markers: ",
             bstatus.labels.3[bserostatus + 1], ", pooled arm"
           ),
-          column_labels = labels.axis[tp, seq_along(assay_immuno_)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
+          column_labels = labels.axis[tp, seq_along(assay_immuno_)] %>% unlist(),
           height = max(1.3 * length(assay_immuno_) + 0.1, 5.5),
           width = max(1.3 * length(assay_immuno_), 5.5),
           column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5),
@@ -478,7 +478,7 @@ for (bstatus in 1:2) {
 # - Make separate plots for Placebo and Vaccine arms
 #-----------------------------------------------
 for (trt in 1:2) {
-  for (tp in if (study_name=="VAT08") {tps_no_fold_change} else {tps_no_delta_over_tinterm}) {
+  for (tp in if (study_name!="VAT08") {tps_no_delta_over_tinterm} else {tps_no_fold_change}) {
     
     covid_corr_boxplot_facets(
       plot_dat = subset(dat.long.twophase.sample, as.numeric(Trt) == trt),
