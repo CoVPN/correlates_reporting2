@@ -102,7 +102,7 @@ if (study_name=="IARCHPV") {tpeak=18}
 ## add case vs non-case indicators
 if (study_name=="IARCHPV"){
   dat = dat %>%
-    filter(enrolltype!="Cohort") %>%
+    filter(enrolltype!="Cohort" & !!as.name(config.cor$ph2) == 1) %>%
     mutate(cohort_event = factor(ifelse(enrolltype=="Case", "Any HPV Cases", ifelse(enrolltype=="Control", "Controls", NA)),
       levels = c("Any HPV Cases", "Controls")))
 } else if(#study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19"
@@ -218,7 +218,7 @@ if (length(timepoints)==1) {
 } else {
   ph2.indicator = paste0("ph2.D", tpeak) # for example: no config.cor$ph2 when COR=D29D57
 }
-dat.cor.subset <- dat <- dat %>%
+dat.cor.subset <- dat %>%
   dplyr::filter(!!as.name(ph2.indicator)==1)
 
 write.csv(dat.cor.subset, file = here::here("data_clean", "cor_data.csv"), row.names=F)
@@ -414,10 +414,9 @@ if (study_name!="IARCHPV") { # IARCHPV doesn't have the minority variable
 if(length(timepoints)==1){ # one timepoint study: ph2.tpeak
   dat.long.cor.subset <- dat.long #%>%
     #dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
-} else {# two timepoints study: ph2.tinterm
+} else {
   dat.long.cor.subset <- dat.long %>%
     dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1", ifelse(grepl("variant", COR), "variant",""))))==1)
-
 }
 
 write.csv(dat.long.cor.subset, file = here::here("data_clean", "long_cor_data.csv"), row.names=F)
@@ -469,7 +468,7 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
 #} else {dat.longer.cor.subset$severe = NA}
 
 # only keep fold change for do.fold.change.overB=1: e.g. vat08m_nonnaive
-if (do.fold.change.overB==1){
+if (do.fold.change.overB==1 | study_name %in% c("VAT08")){
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
 } else (
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl(ifelse(study_name!="IARCHPV", "Day", "M"), time)) # IARCHPV uses "M" instead of "Day" in the assay variables
@@ -539,7 +538,7 @@ if (study_name=="IARCHPV") {
 
 dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset_, groupby_vars1)
 dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>%
-  mutate(N_RespRate = ifelse(grepl("Day|M", time), N_RespRate, ""),
+  mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
          lb = ifelse(grepl("Day|M", time), lb, ""),
          lbval = ifelse(grepl("Day|M", time), lbval, NA),
          lb2 = ifelse(grepl("Day|M", time), lb2, ""),
