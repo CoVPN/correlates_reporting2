@@ -1,11 +1,21 @@
 panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates
-bindL1L2,1,bindL1L2_HPV6,0.2,Inf,NA,0.7,"Binding Antibody to L1, L2 HPV6","Anti L1, L2 IgG HPV6 (AU/ml)",lloq,1
-bindL1L2,2,bindL1L2_HPV11,0.4,Inf,NA,0.8,"Binding Antibody to L1, L2 HPV11","Anti L1, L2 IgG HPV11 (AU/ml)",lloq,1
-bindL1L2,3,bindL1L2_HPV16,1,Inf,NA,1.3,"Binding Antibody to L1, L2 HPV16","Anti L1, L2 IgG HPV16 (IU/ml)",lloq,1
-bindL1L2,4,bindL1L2_HPV18,0.3,Inf,NA,2.9,"Binding Antibody to L1, L2 HPV18","Anti L1, L2 IgG HPV18 (IU/ml)",lloq,1
-bindL1L2,5,bindL1L2_HPV31,1.6,Inf,NA,3.9,"Binding Antibody to L1, L2 HPV31","Anti L1, L2 IgG HPV31 (AU/ml)",lloq,1
-bindL1L2,6,bindL1L2_HPV33,3,Inf,NA,5.7,"Binding Antibody to L1, L2 HPV33","Anti L1, L2 IgG HPV33 (AU/ml)",lloq,1
-bindL1L2,7,bindL1L2_HPV45,2.3,Inf,NA,8.3,"Binding Antibody to L1, L2 HPV45","Anti L1, L2 IgG HPV45 (AU/ml)",lloq,1
-bindL1L2,8,bindL1L2_HPV52,1.6,Inf,NA,2.3,"Binding Antibody to L1, L2 HPV52","Anti L1, L2 IgG HPV52 (AU/ml)",lloq,1
-bindL1L2,9,bindL1L2_HPV58,2.2,Inf,NA,7.1,"Binding Antibody to L1, L2 HPV58","Anti L1, L2 IgG HPV58 (AU/ml)",lloq,1
-bindL1L2,10,bindL1L2_mdw,#NAME?,Inf,NA,NA,Binding Antibody Cross Reactivity,"Anti L1, L2 IgG Score",lloq,1
+bind,1,bind_HPV6,0.2,Inf,NA,0.7,Binding Antibody to HPV6,Anti  IgG HPV6 (AU/ml),lloq,1
+bind,2,bind_HPV11,0.4,Inf,NA,0.8,Binding Antibody to HPV11,Anti  IgG HPV11 (AU/ml),lloq,1
+bind,3,bind_HPV16,1,Inf,NA,1.3,Binding Antibody to HPV16,Anti  IgG HPV16 (IU/ml),lloq,1
+bind,4,bind_HPV18,0.3,Inf,NA,2.9,Binding Antibody to HPV18,Anti  IgG HPV18 (IU/ml),lloq,1
+bind,5,bind_HPV31,1.6,Inf,NA,3.9,Binding Antibody to HPV31,Anti  IgG HPV31 (AU/ml),lloq,1
+bind,6,bind_HPV33,3,Inf,NA,5.7,Binding Antibody to HPV33,Anti  IgG HPV33 (AU/ml),lloq,1
+bind,7,bind_HPV45,2.3,Inf,NA,8.3,Binding Antibody to HPV45,Anti  IgG HPV45 (AU/ml),lloq,1
+bind,8,bind_HPV52,1.6,Inf,NA,2.3,Binding Antibody to HPV52,Anti  IgG HPV52 (AU/ml),lloq,1
+bind,9,bind_HPV58,2.2,Inf,NA,7.1,Binding Antibody to HPV58,Anti  IgG HPV58 (AU/ml),lloq,1
+bind,10,bind_mdw,-Inf,Inf,NA,NA,Binding Antibody Cross Reactivity,Anti  IgG Score,lloq,1
+id50,1,pseudoneutid50_HPV6,40,Inf,NA,155,PsV Neutralization to HPV6,Pseudovirus-nAb HPV6 (AU/ml),lloq,1
+id50,2,pseudoneutid50_HPV11,40,Inf,NA,156,PsV Neutralization to HPV11,Pseudovirus-nAb HPV11 (AU/ml),lloq,1
+id50,3,pseudoneutid50_HPV16,40,Inf,NA,40,PsV Neutralization to HPV16,Pseudovirus-nAb HPV16 (AU/ml),lloq,1
+id50,4,pseudoneutid50_HPV18,40,Inf,NA,40,PsV Neutralization to HPV18,Pseudovirus-nAb HPV18 (AU/ml),lloq,1
+id50,5,pseudoneutid50_HPV31,40,Inf,NA,40,PsV Neutralization to HPV31,Pseudovirus-nAb HPV31 (AU/ml),lloq,1
+id50,6,pseudoneutid50_HPV33,40,Inf,NA,40,PsV Neutralization to HPV33,Pseudovirus-nAb HPV33 (AU/ml),lloq,1
+id50,7,pseudoneutid50_HPV45,40,Inf,NA,40,PsV Neutralization to HPV45,Pseudovirus-nAb HPV45 (AU/ml),lloq,1
+id50,8,pseudoneutid50_HPV52,40,Inf,NA,40,PsV Neutralization to HPV52,Pseudovirus-nAb HPV52 (AU/ml),lloq,1
+id50,9,pseudoneutid50_HPV58,40,Inf,NA,40,PsV Neutralization to HPV58,Pseudovirus-nAb HPV58 (AU/ml),lloq,1
+id50,10,pseudoneutid50_mdw,-Inf,Inf,NA,NA,Neutralizing Antibody Cross Reactivity,Pseudovirus-nAb Score,lloq,1

@@ -1,5 +1,6 @@
-# COR="D22M6ominAb"
 # COR="D43M12omi"
+# COR="D43M6omioriginal2"
+
 Sys.setenv(TRIAL = "vat08_combined")
 Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
@@ -105,7 +106,7 @@ rv=list()
 ################################################################################
 # loop through 3 analyses
 
-for (iAna in 1:3) {
+for (iAna in 3:3) {
   # iAna=3
   cat("\n\n\n\n")
   myprint(iAna)
@@ -132,6 +133,8 @@ for (iAna in 1:3) {
   
   ############################
   # formula for coxph
+  
+  if (iAna==3) dat.vac=subset(dat.vac, !(Country %in% c(10 ) & Trialstage==2 & Bserostatus==1 & Age<60))
 
   form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
 

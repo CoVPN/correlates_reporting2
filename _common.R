@@ -73,7 +73,7 @@ if (!is.null(config$assay_metadata)) {
   
   if (TRIAL=='vat08_combined') {
     if (exists('COR')) {
-      if (contain(COR, "nAb")) {
+      if (contain(COR, "nAb") | endsWith(COR,'original2')) {
         # only keeps ID50 markers
         assay_metadata = subset(assay_metadata, panel=='id50')
       } else {
@@ -509,6 +509,7 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not av
 dat.mock <- read.csv(path_to_data)
 
 
+###################################################################################################
 # some more data processing
 
 # uloq censoring when it is for correlates analyses, not for descriptive analyses
@@ -595,11 +596,10 @@ if (exists("COR")) {
     
         dat.mock$ph1=dat.mock[[config.cor$ph1]]
         dat.mock$ph2=dat.mock[[config.cor$ph2]]
-        dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
-        # some may not have config.cor$EventTimePrimary
-        if (!is.null(config.cor$EventTimePrimary)) dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
         dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
         dat.mock$wt=dat.mock[[config.cor$wt]]
+        dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
+        if (!is.null(config.cor$EventTimePrimary)) dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
         if (!is.null(config.cor$Earlyendpoint)) dat.mock$Earlyendpoint=dat.mock[[config.cor$Earlyendpoint]]
         

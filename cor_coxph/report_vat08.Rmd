@@ -3,9 +3,9 @@ Due to missing variant types, analysis combines ten copies of hotdeck imputed da
 ```{r, echo=FALSE, results='asis'}
 
 for (tpeak in tt[2]) { # 22 and 43
-  for (i in 2:2) { # 1 is for bAb and 2 is for nAb
-    COR0 <- paste0("D", tpeak, "M12omi") # M6 or M12
-    if (i==2) COR0 = COR0 %.% 'nAb'
+  for (i in 1:4) { # 1 is for bAb and 2 is for nAb and 3 is for original
+  for (j in 1:2) { # 1 is for M6  and 2 is for M12
+    COR0 <- paste0("D", tpeak, "M", ifelse(j==1, 6, 12), "omi", switch(i, '1'='bAb', '2'='nAb', '3'='original', '4'='original2'))
     
     config.cor <- config::get(config = COR0)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
@@ -17,7 +17,7 @@ for (tpeak in tt[2]) { # 22 and 43
       assays1=assays[startsWith(assays,'pseudo')]
     }
 
-    for (iAna in 1:3) {
+    for (iAna in 3:3) {
       # modify pathCoRoutput and COR to include subfolder name. Changes to COR will also show up in Section title in report_by_COR.Rmd
       if (iAna==1) tmp <- "stage1nnaive"
       if (iAna==2) tmp <- "stage2naive"
@@ -32,6 +32,7 @@ for (tpeak in tt[2]) { # 22 and 43
       res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
     }
+  }
   }
   
 }
