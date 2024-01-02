@@ -54,7 +54,7 @@ dat.ph1=subset(dat.mock, ph1)
 # define trichotomized markers
 dat.ph1 = add.trichotomized.markers (dat.ph1, all.markers, wt.col.name="wt")
 
-# for hpv33 and above, too few positive responses, change to cut into to low and high
+# for the markers with low positive response rates, change to cut into to low and high
 for (a in c("M18bind_HPV33", "M18bind_HPV45", "M18bind_HPV52", "M18bind_HPV58", "M18pseudoneutid50_HPV45", "M18pseudoneutid50_HPV58")) {        
     cutpoint=min(dat.ph1[[a]], na.rm = T)
     dat.ph1[[a%.%'cat']] = cut(dat.ph1[[a]], breaks = c(-Inf, cutpoint, Inf))

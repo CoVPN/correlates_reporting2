@@ -19,13 +19,15 @@ mypairs(dat_mapped[, "M18"%.%assays[11:19]], ylim=c(1,5), xlim=c(1,5))
 
 mypairs(dat_mapped[, "M18"%.%assays[1:9]], ylim=c(-1,2.5), xlim=c(-1,2.5))
 
+mypairs(dat_mapped[, "M18"%.%assays[c(1,11,2,12,3,13,4,14,5,15)]])
+
 
 for (i in 1:9) {
   print(table(!is.na(dat_mapped[["M18"%.%assays[i+10]]]), 
               !is.na(dat_mapped[["M18"%.%assays[i]]])))
 }
 
-dat=subset(dat_mapped, PerProtocol == 1 & EligibilityorinitialsamplingTimeM18>0)
+dat=subset(dat_mapped, Perprotocol == 1 & EligibilityorinitialsamplingTimeM18>0)
 
 table(!is.na(dat$M18pseudoneutid50_HPV11), dat$EventIndPrimaryAnyHPV)
 table(!is.na(dat$M18bind_HPV11), dat$EventIndPrimaryAnyHPV)

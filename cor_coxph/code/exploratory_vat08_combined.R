@@ -39,6 +39,12 @@ fit.2.2=coxph(update(f, ~.+ FOI), dat)
 anova(fit.2, fit.2.1)
 anova(fit.2, fit.2.2)
 
+# diagnostics
+summary(fit.2)
+# FOI score for cases vs. non-cases within countries
+myboxplot(FOI~EventIndOmicronD43M6hotdeck1+Country, dat)
+
+
 
 dat=subset(dat_proc, Trialstage==2 & Trt==0 & ph1.D43) 
 
