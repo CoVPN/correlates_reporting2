@@ -50,7 +50,7 @@ if (study_name=="IARCHPV") {
   labels.assays.short.clean_ = unlist(str_extract_all(gsub("Score", "(Score)", labels.assays.short), "\\([^()]+\\)")) # Get the parenthesis and what is inside
   labels.assays.short.clean = substring(labels.assays.short.clean_, 2, nchar(labels.assays.short.clean_)-1) # Remove parenthesis
   labels.assays.names = names(labels.assays)
-  labels.assays = paste(gsub("HPV", "HPV ", gsub("Binding Antibody |to L1, L2 " , "", labels.assays)), "titers")
+  labels.assays = paste(gsub("HPV", "HPV ", gsub("Binding Antibody to " , "", labels.assays)), "titers")
   names(labels.assays) = labels.assays.names
 } else {labels.assays.short.clean = labels.assays.short}
 plots_ytitles <- labels.assays.short.clean
@@ -227,7 +227,7 @@ if (COR != "D29variant") {
                                     global.size=25 * 1.6
                                     )
               
-              file_name <- paste0("Violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), if(bstatus[j]!="") "_", gsub(" ","",bstatus[j]), 
+              file_name <- paste0("Violinbox_", gsub("bind_","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), if(bstatus[j]!="") "_", gsub(" ","",bstatus[j]), 
                                   if(casetype!="") "_", casetype, "_", if(case_set=="severe") "severe_", "v",t, "_", study_name, ".pdf")
               suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
             }

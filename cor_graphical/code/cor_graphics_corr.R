@@ -107,9 +107,9 @@ if (study_name == "janssen_partA_VL" & COR == "D29variant") {
       
       # all markers but the marker score
       if(asy == "allbutIgG") {
-        assay_metadata_sub = subset(assay_metadata, assay != "bindL1L2_mdw")
+        assay_metadata_sub = subset(assay_metadata, assay != "bind_mdw")
       } else if (asy=="some") {
-        assay_metadata_sub = subset(assay_metadata, assay %in% c("bindL1L2_HPV6","bindL1L2_HPV11","bindL1L2_HPV16","bindL1L2_HPV18","bindL1L2_HPV31","bindL1L2_mdw"))
+        assay_metadata_sub = subset(assay_metadata, assay %in% c("bind_HPV6","bind_HPV11","bind_HPV16","bind_HPV18","bind_HPV31","bind_mdw"))
       } 
       
       trt_lb = ""

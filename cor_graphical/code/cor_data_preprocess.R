@@ -76,7 +76,6 @@ source(here("code", "params.R"))
 
 ################################################
 dat <- as.data.frame(dat.mock)
-if (study_name=="IARCHPV") {dat$Perprotocol=1}
 
 Args <- commandArgs(trailingOnly=TRUE)
 COR=Args[1]

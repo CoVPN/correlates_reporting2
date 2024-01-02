@@ -146,7 +146,7 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
   		        # skip if specific case type doesn't match with plot type
               if (casetype!="AnyHPV" & !grepl(casetype, assay_long)) next
   		        
-    		      assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
+    		      assay = gsub("bind_", "", gsub("pseudoneut","pnAb_", assay_long))
     	    
     	        
     	        trt = c("pooled", trt.labels)[trt_order]
