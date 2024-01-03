@@ -3,8 +3,10 @@ library(kyotil)
 
 # "Colombia" = 1, "Ghana" = 2, "Honduras" = 3, "India" = 4, "Japan" = 5, "Kenya" = 6, "Nepal" = 7, "United States" = 8, "Mexico" = 9, "Uganda" = 10, "Ukraine" = 11
 
-dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20231213.csv')
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231221.csv')
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20231228.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231228.csv')
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
+assays=assay_metadata$assay
 
 dat_mapped$EventIndPrimaryD1 = dat_mapped$EventIndFirstInfectionD1
 dat_mapped$EventTimePrimaryD1 = dat_mapped$EventTimeFirstInfectionD1
@@ -14,8 +16,77 @@ dat_mapped$ph1.D43= with(dat_mapped, EarlyendpointD43==0 & Perprotocol==1 & Even
 
 
 
+################################################################################
+# select variables to adjust using ph1 data 
+
+dat=subset(dat_proc, Trialstage==2 & ph1.D43) 
+
+f=Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Bserostatus+Trt+strata(Country)
+
+fit.1=coxph(update(f, ~.+ standardized_risk_score + FOI + Sex), dat)
+fit.2=coxph(update(f, ~.+ FOI + Sex), dat)
+fit.3=coxph(update(f, ~.+ standardized_risk_score + Sex), dat)
+fit.4=coxph(update(f, ~.+ standardized_risk_score + FOI), dat)
+
+summary(fit.1)
+anova(fit.1, fit.2)
+anova(fit.1, fit.3)
+anova(fit.1, fit.4)
+
+fit.2.1=coxph(update(f, ~.+ Sex), dat)
+fit.2.2=coxph(update(f, ~.+ FOI), dat)
+
+anova(fit.2, fit.2.1)
+anova(fit.2, fit.2.2)
+
+# diagnostics
+summary(fit.2)
+# FOI score for cases vs. non-cases within countries
+myboxplot(FOI~EventIndOmicronD43M6hotdeck1+Country, dat)
+
+
+
+dat=subset(dat_proc, Trialstage==2 & Trt==0 & ph1.D43) 
+
+fit.1=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ standardized_risk_score+FOI+Sex+Bserostatus+strata(Country), dat)
+fit.4=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Sex+Bserostatus+strata(Country), dat)
+fit.5=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Bserostatus+strata(Country), dat)
+
+summary(fit.1)
+anova(fit.1, fit.4)
+anova(fit.1, fit.5)
+
+
+dat=subset(dat_proc, Trialstage==2 & Trt==1 & ph1.D43) 
+
+fit.1=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ standardized_risk_score+FOI+Sex+Bserostatus+strata(Country), dat)
+fit.4=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Sex+Bserostatus+strata(Country), dat)
+fit.5=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Bserostatus+strata(Country), dat)
+
+summary(fit.1)
+anova(fit.1, fit.4)
+anova(fit.1, fit.5)
+
+
+
+dat=subset(dat_proc, Trialstage==1 & Trt==1 & ph1.D43 & Bserostatus==1) 
+
+fit.1=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ standardized_risk_score+FOI+Sex+strata(Country), dat)
+fit.4=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Sex+strata(Country), dat)
+fit.5=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ strata(Country), dat)
+
+summary(fit.1)
+anova(fit.1, fit.4)
+anova(fit.1, fit.5)
+
+
+summary(coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ standardized_risk_score+FOI+Sex, dat))
+
+
+################################################################################
 # Senior and nAbBatch
 # suggests that batch 2 is complementary, almost no senior in batch 2
+
 dat=subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1)  
 dat$ph2=with(dat, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50))
 with(dat[dat$ph2,], table(Age>=60, nAbBatch, EventIndPrimaryD1))
@@ -34,6 +105,9 @@ with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1), table(!is.na(D
 with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1), table(!is.na(Day43bindSpike)))
 
 
+
+with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50)), table(nAbBatch, Country))
+
 ################################################################################
 # check missingness pattern 
 
@@ -51,112 +125,126 @@ with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & EventI
 with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), 
      table(!is.na(Bpseudoneutid50), !is.na(Day43pseudoneutid50), nAbBatch))
 
-par(mfrow=c(2,2))
-  corplot(Day43pseudoneutid50~Bpseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
-  myboxplot(Day43pseudoneutid50~I(Bpseudoneutid50>0.2), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"))
+# plot fold change
+par(mfrow=c(2,4))
+  corplot(Day43pseudoneutid50~Bpseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
+  myboxplot(Day43pseudoneutid50~I(Bpseudoneutid50>0.2), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
   my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50), c(Bpseudoneutid50, Day43pseudoneutid50)), 
                       x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
   corplot(Delta43overBpseudoneutid50~Bpseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
+  
+  # BA.1
+  corplot(Day43pseudoneutid50_BA.1~Bpseudoneutid50_BA.1, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
+  myboxplot(Day43pseudoneutid50_BA.1~I(Bpseudoneutid50_BA.1>0.2), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
+  my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50_BA.1) & !is.na(Day43pseudoneutid50_BA.1), c(Bpseudoneutid50_BA.1, Day43pseudoneutid50_BA.1)), 
+                      x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+  corplot(Delta43overBpseudoneutid50_BA.1~Bpseudoneutid50_BA.1, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
   
 
 # the conclusion from the above is that we need to restrict to samples with both B and D43 markers
   
   
-dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50))
-dat_proc$Wstratum=dat_proc$Wstratum.nAb
-dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
+################################################################################
+# coxph M6
+
+dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) )#& nAbBatch==2
+dat_proc$Wstratum=dat_proc$Wstratum.nAb # Wstratum.original
+dat=subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43)   # !Senior
 with(dat, table(ph2, Wstratum))
 
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
+# select variables to adjust using ph1 data 
+coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ standardized_risk_score, dat)
+coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ FOI, dat)
+coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ standardized_risk_score+Sex, dat)
+coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ FOI+Sex, dat)
+coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ standardized_risk_score+Sex+strata(Country), dat)
+coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ FOI+Sex+strata(Country), dat)
+
+fit.1=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ standardized_risk_score+FOI+Sex+strata(Country), dat)
+fit.4=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Sex+strata(Country), dat)
+fit.5=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ strata(Country), dat)
+fit.6=coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Sex, dat)
+
+summary(fit.1)
+anova(fit.1, fit.4)
+anova(fit.1, fit.5)
+anova(fit.1, fit.6)
+
+# based on the above, we choose
+f.base = Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Sex + strata(Country)
+
+# Baseline detectable or not 
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50>0.116)), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline
+svycoxph(update(f.base, ~. + Bpseudoneutid50), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# D43
+svycoxph(update(f.base, ~. + Day43pseudoneutid50), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline detectable or not * fold change
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50>0.116) * scale(Delta43overBpseudoneutid50)), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline * fold change
+svycoxph(update(f.base, ~. + scale(Bpseudoneutid50)*scale(Delta43overBpseudoneutid50)), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+
+# BA.1
+# Baseline detectable or not 
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50_BA.1>0.116)), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline
+svycoxph(update(f.base, ~. + Bpseudoneutid50_BA.1), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# D43
+svycoxph(update(f.base, ~. + Day43pseudoneutid50_BA.1), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline detectable or not * fold change
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50_BA.1>0.116) * scale(Delta43overBpseudoneutid50_BA.1)), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline * fold change
+svycoxph(update(f.base, ~. + scale(Bpseudoneutid50_BA.1)*scale(Delta43overBpseudoneutid50_BA.1)), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+
+
+# other markers
+svycoxph(update(f.base, ~. + Bpseudoneutid50_B.1.351*Delta43overBpseudoneutid50_B.1.351),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+svycoxph(update(f.base, ~. + Bpseudoneutid50_BA.1*Delta43overBpseudoneutid50_BA.1),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+svycoxph(update(f.base, ~. + Bpseudoneutid50_BA.2*Delta43overBpseudoneutid50_BA.2),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+svycoxph(update(f.base, ~. + Bpseudoneutid50_BA.4.5*Delta43overBpseudoneutid50_BA.4.5),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+svycoxph(update(f.base, ~. + Bpseudoneutid50_mdw*Delta43overBpseudoneutid50_mdw),
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
 
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + strata(Country),
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50_B.1.351>0.116)*Delta43overBpseudoneutid50_B.1.351),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50_BA.1>0.116)*Delta43overBpseudoneutid50_BA.1),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50_BA.2>0.116)*Delta43overBpseudoneutid50_BA.2),
+         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50_BA.4.5>0.116)*Delta43overBpseudoneutid50_BA.4.5),
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
 
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
 
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50*Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-
-
-dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) & !is.na(BbindSpike) & !is.na(Day43bindSpike))
-dat_proc$Wstratum=dat_proc$Wstratum.nAb
-dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
-with(dat, table(ph2, Wstratum))
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50*Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
+################################################################################
+# batch 2
 
 dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) & nAbBatch==2)
-dat_proc$Wstratum=dat_proc$Wstratum.original # Wstratum.nAb is too fine
-dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
-with(dat, table(ph2, Wstratum))
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50*Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-
-
-dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) & (nAbBatch==1 | EventIndOmicronD43M12hotdeck1==1))
-dat_proc$Wstratum=dat_proc$Wstratum.original # Wstratum.nAb is too fine
-dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
-with(dat, table(ph2, Wstratum))
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50*Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-
-
-dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) & !is.na(BbindSpike) & !is.na(Day43bindSpike) & (nAbBatch==1 | EventIndOmicronD43M12hotdeck1==1))
 dat_proc$Wstratum=dat_proc$Wstratum.original
-dat=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43)  
+dat=subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43 & !Senior)
 with(dat, table(ph2, Wstratum))
-with(dat[dat$ph2,], table(Senior, EventIndOmicronD43M12hotdeck1))
 
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Day43pseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# based on the above, we choose
+f.base = Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Sex + strata(Country)
 
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline detectable or not 
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50>0.116)), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline
+svycoxph(update(f.base, ~. + Bpseudoneutid50), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# D43
+svycoxph(update(f.base, ~. + Day43pseudoneutid50), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline detectable or not * fold change
+svycoxph(update(f.base, ~. + I(Bpseudoneutid50>0.116) * scale(Delta43overBpseudoneutid50)), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
+# Baseline * fold change
+svycoxph(update(f.base, ~. + scale(Bpseudoneutid50)*scale(Delta43overBpseudoneutid50)), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
 
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50 + Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
-
-svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ Sex + Bpseudoneutid50*Delta43overBpseudoneutid50 + strata(Country),
-         twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
 
 
-
+################################################################################
 # bAb
 
 with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), 
@@ -337,13 +425,13 @@ dat=subset(dat.mock, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43)
 
 trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~as.factor(Country)+Sex, dat, family=binomial))
 
-trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~as.factor(Country)+Sex+risk_score, dat, family=binomial))
+trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~as.factor(Country)+Sex+standardized_risk_score, dat, family=binomial))
 
-trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~Sex+risk_score, dat, family=binomial))
+trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~Sex+standardized_risk_score, dat, family=binomial))
 
-trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~risk_score, dat, family=binomial))
+trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~standardized_risk_score, dat, family=binomial))
 trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~as.factor(Country), dat, family=binomial))
-trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~as.factor(Country)+risk_score, dat, family=binomial))
+trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~as.factor(Country)+standardized_risk_score, dat, family=binomial))
 
 trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~as.factor(Country)+Sex+FOI, dat, family=binomial))
 
@@ -356,8 +444,11 @@ trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~as.factor(Country)+Sex+FOI, dat, f
 #     with D01 and D43 nAb, using the simplified definition of Omicron COVID-19 that assumes Omicron if an unknown lineage and event after January 17, 2022; 
 
 # filter out country 2, 4 for stage 2 naive, filter out 4 for stage 2 nnaive
-with(subset(dat_proc, Trialstage==2 & ph1.D43), table(EventIndOmicronD43M6hotdeck1, Country, Bserostatus))
+with(subset(dat_proc, Trialstage==2 & ph1.D43), table(EventIndOmicronD43M12hotdeck1, Country, Bserostatus))
 with(subset(dat_proc, Trialstage==2 & ph2.D43.nAb), table(EventIndOmicronD43M6hotdeck1, Country, Bserostatus))
+
+with(subset(dat_mapped, Trialstage==2 & ph1.D43), table(EventIndPrimaryD1, Country, Bserostatus)) # 2 in Ind, both Delta
+
 
 # filter out country 4, 5, 6 for stage 1 naive, filter out 5, 6 for stage 1 nnaive
 with(subset(dat_proc, Trialstage==1 & ph1.D43), table(EventIndOmicronD43M6hotdeck1, Country, Bserostatus))
@@ -445,16 +536,16 @@ with(subset(dat_proc, Trt==1 & Trialstage==1 & Bserostatus==1 & ph1.D22), table(
 ## do Sex improve prediction?
 ## not in placeo
 
-with(subset(dat_proc, Trt==0 & Bserostatus==1), fastauc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
-glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+risk_score, subset(dat_proc, Trt==0 & Bserostatus==1), family=binomial())
+with(subset(dat_proc, Trt==0 & Bserostatus==1), fastauc(standardized_risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
+glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+standardized_risk_score, subset(dat_proc, Trt==0 & Bserostatus==1), family=binomial())
 trainauc.glm(glm.fit)
 
-with(subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==2), fastauc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
-glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+risk_score, subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==2), family=binomial())
+with(subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==2), fastauc(standardized_risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
+glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+standardized_risk_score, subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==2), family=binomial())
 trainauc.glm(glm.fit)
 
-with(subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2), fastauc(risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
-glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+risk_score, subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2), family=binomial())
+with(subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2), fastauc(standardized_risk_score, EventIndOmicronD22M12hotdeck1, quiet=FALSE))
+glm.fit=glm(EventIndOmicronD22M12hotdeck1~Sex+standardized_risk_score, subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2), family=binomial())
 trainauc.glm(glm.fit)
 
 with(subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==2), table(Sex, EventIndOmicronD22M12hotdeck1))
@@ -556,10 +647,10 @@ myboxplot(FOI~batch2,
                    !EventIndOmicronD43M12hotdeck1 & Country==9 & ph2.all.nAb), 
           main='MEX, Non-cases', ylim=NULL, test='w', names=c("Batch 1", "Batch 2"), ylab='FOI')
 
-myboxplot(risk_score~batch2, 
+myboxplot(standardized_risk_score~batch2, 
           subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
                    !EventIndOmicronD43M12hotdeck1 & Country==9 & ph2.all.nAb), 
-          main='MEX, Non-cases', ylim=NULL, test='w', names=c("Batch 1", "Batch 2"), ylab='risk_score')
+          main='MEX, Non-cases', ylim=NULL, test='w', names=c("Batch 1", "Batch 2"), ylab='standardized_risk_score')
 
 
 
@@ -706,43 +797,43 @@ with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43==1 & Sub
 # is it possible to adjust both as.factor(Country) and strata(Country)?
 # no
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ 
-           Sex + FOI + risk_score + Day43pseudoneutid50 + strata(Country),
+           Sex + FOI + standardized_risk_score + Day43pseudoneutid50 + strata(Country),
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum.nAb), subset=~ph2.D43.nAb, data=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & Region!='IND_Stage2' & ph1.D43) ))
 
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ 
-           Sex + FOI + risk_score + Day43pseudoneutid50 + as.factor(Country),
+           Sex + FOI + standardized_risk_score + Day43pseudoneutid50 + as.factor(Country),
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & Region!='IND_Stage2' & ph1) ))
 
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ 
-           Sex + FOI + risk_score + Day43pseudoneutid50 + strata(Region) + as.factor(Country),
+           Sex + FOI + standardized_risk_score + Day43pseudoneutid50 + strata(Region) + as.factor(Country),
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & Region!='IND_Stage2' & ph1) ))
 
 
 
 # using batch 1 data and pre-specified model
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ 
-           # Sex + FOI + risk_score + Day43pseudoneutid50 + as.factor(Country),
-           # Sex + FOI + risk_score + Day43pseudoneutid50 + strata(Country),
+           # Sex + FOI + standardized_risk_score + Day43pseudoneutid50 + as.factor(Country),
+           # Sex + FOI + standardized_risk_score + Day43pseudoneutid50 + strata(Country),
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & Region!='IND_Stage2' & ph1) ))
 
 # sex is a precision variable
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ 
-           FOI + risk_score + Day43pseudoneutid50 + strata(Region) + Sex, 
+           FOI + standardized_risk_score + Day43pseudoneutid50 + strata(Region) + Sex, 
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & Region!='IND_Stage2' & ph1) ))
 
 # restrict to NotMEXIND, not significant
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ 
-           FOI + risk_score + Day43pseudoneutid50 + strata(Region), 
+           FOI + standardized_risk_score + Day43pseudoneutid50 + strata(Region), 
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & Region=='NotMEXIND_Stage2' & ph1) ))
 
 # ph2.D43.nAb
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ 
-           FOI + risk_score + Day43pseudoneutid50 + strata(Region), 
+           FOI + standardized_risk_score + Day43pseudoneutid50 + strata(Region), 
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.nAb, data=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & Region!='IND_Stage2' & ph1) ))
 
 # ph2.D43.nAb, strata(Country)
 svycoxph(Surv(EventTimeOmicronD43M12hotdeck1, EventIndOmicronD43M12hotdeck1) ~ 
-           FOI + risk_score + Sex + Day43pseudoneutid50 + strata(Region), 
+           FOI + standardized_risk_score + Sex + Day43pseudoneutid50 + strata(Region), 
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.all.nAb.D43, data=subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & Region!='IND_Stage2' & ph1) ))
 
 

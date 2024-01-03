@@ -3,9 +3,7 @@
 # drop age group and add region in regression models. 
 # different weights
 
-
-
-#Sys.setenv(TRIAL = "id27hpv"); COR="M18sus"; Sys.setenv(VERBOSE = 1) 
+# Sys.setenv(TRIAL = "id27hpv"); COR="M18nAb"; Sys.setenv(VERBOSE = 1) 
 
 print(paste0("starting time: ", date()))
 renv::activate(project = here::here(".."))     
@@ -56,8 +54,8 @@ dat.ph1=subset(dat.mock, ph1)
 # define trichotomized markers
 dat.ph1 = add.trichotomized.markers (dat.ph1, all.markers, wt.col.name="wt")
 
-# for hpv33 and above, too few positive responses, change to cut into to low and high
-for (a in c("M18bindL1L2_HPV33", "M18bindL1L2_HPV45", "M18bindL1L2_HPV52", "M18bindL1L2_HPV58")) {        
+# for the markers with low positive response rates, change to cut into to low and high
+for (a in c("M18bind_HPV33", "M18bind_HPV45", "M18bind_HPV52", "M18bind_HPV58", "M18pseudoneutid50_HPV45", "M18pseudoneutid50_HPV58")) {        
     cutpoint=min(dat.ph1[[a]], na.rm = T)
     dat.ph1[[a%.%'cat']] = cut(dat.ph1[[a]], breaks = c(-Inf, cutpoint, Inf))
     attr(dat.ph1, "marker.cutpoints")[[a]] = cutpoint
@@ -145,7 +143,7 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
 }
 
 if(TRIAL=='id27hpv' & COR=='M18') {
-  assertthat::assert_that(all(abs(fits$M18bindL1L2_mdw$coef-c(-4.68354733703185,-0.102079236701852,-0.0989783451284477))<1e-6), msg = "failed cor_logistic unit testing: "%.%concatList(fits$M18bindL1L2_mdw$coef))    
+  assertthat::assert_that(all(abs(fits$M18bind_mdw$coef-c(-4.68354733703185,-0.102079236701852,-0.0989783451284477))<1e-6), msg = "failed cor_logistic unit testing: "%.%concatList(fits$M18bind_mdw$coef))    
 }
     
 natrisk=nrow(dat.ph1)
@@ -353,7 +351,7 @@ tab
 
 # zero cases in Anti L1, L2 IgG HPV18 (IU/ml) medium, use a different test and CI without covariates adjustment
 if (COR=='M18sus') {
-  a='M18bindL1L2_HPV18cat'
+  a='M18bind_HPV18cat'
   tab.2x2 = cbind(as.integer(aggregate(subset(dat.ph1,ph2==1)        [["wt"]], subset(dat.ph1,ph2==1        )[a], sum, na.rm=T, drop=F)[,2]), 
                   as.integer(aggregate(subset(dat.ph1,yy==1 & ph2==1)[["wt"]], subset(dat.ph1,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2])) [1:2,] # take low/med
   tab.2x2[is.na(tab.2x2)]=0 # change NA to 0

@@ -9,13 +9,13 @@ bind,7,bind_HPV45,2.3,Inf,NA,8.3,Binding Antibody to HPV45,Anti  IgG HPV45 (AU/m
 bind,8,bind_HPV52,1.6,Inf,NA,2.3,Binding Antibody to HPV52,Anti  IgG HPV52 (AU/ml),lloq,1
 bind,9,bind_HPV58,2.2,Inf,NA,7.1,Binding Antibody to HPV58,Anti  IgG HPV58 (AU/ml),lloq,1
 bind,10,bind_mdw,-Inf,Inf,NA,NA,Binding Antibody Cross Reactivity,Anti  IgG Score,lloq,1
-id50,1,pseudoneutid50_HPV6,40,Inf,NA,155,PsV Neutralization to HPV6,Pseudovirus-nAb HPV6 (AU/ml),lloq,1
-id50,2,pseudoneutid50_HPV11,40,Inf,NA,156,PsV Neutralization to HPV11,Pseudovirus-nAb HPV11 (AU/ml),lloq,1
-id50,3,pseudoneutid50_HPV16,40,Inf,NA,40,PsV Neutralization to HPV16,Pseudovirus-nAb HPV16 (AU/ml),lloq,1
-id50,4,pseudoneutid50_HPV18,40,Inf,NA,40,PsV Neutralization to HPV18,Pseudovirus-nAb HPV18 (AU/ml),lloq,1
-id50,5,pseudoneutid50_HPV31,40,Inf,NA,40,PsV Neutralization to HPV31,Pseudovirus-nAb HPV31 (AU/ml),lloq,1
-id50,6,pseudoneutid50_HPV33,40,Inf,NA,40,PsV Neutralization to HPV33,Pseudovirus-nAb HPV33 (AU/ml),lloq,1
-id50,7,pseudoneutid50_HPV45,40,Inf,NA,40,PsV Neutralization to HPV45,Pseudovirus-nAb HPV45 (AU/ml),lloq,1
-id50,8,pseudoneutid50_HPV52,40,Inf,NA,40,PsV Neutralization to HPV52,Pseudovirus-nAb HPV52 (AU/ml),lloq,1
-id50,9,pseudoneutid50_HPV58,40,Inf,NA,40,PsV Neutralization to HPV58,Pseudovirus-nAb HPV58 (AU/ml),lloq,1
-id50,10,pseudoneutid50_mdw,-Inf,Inf,NA,NA,Neutralizing Antibody Cross Reactivity,Pseudovirus-nAb Score,lloq,1
+id50,1,pseudoneutid50_HPV6,155,Inf,NA,155,PsV Neutralization to HPV6,Pseudovirus-nAb HPV6 (AU/ml),lloq,1
+id50,2,pseudoneutid50_HPV11,156,Inf,NA,156,PsV Neutralization to HPV11,Pseudovirus-nAb HPV11 (AU/ml),lloq,1
+id50,3,pseudoneutid50_HPV16,40,Inf,NA,40,PsV Neutralization to HPV16,Pseudovirus-nAb HPV16 (IU/ml),lloq,1
+id50,4,pseudoneutid50_HPV18,40,Inf,NA,40,PsV Neutralization to HPV18,Pseudovirus-nAb HPV18 (IU/ml),lloq,1
+id50,5,pseudoneutid50_HPV31,40,Inf,NA,40,PsV Neutralization to HPV31,Pseudovirus-nAb HPV31 (IU/ml),lloq,1
+id50,6,pseudoneutid50_HPV33,40,Inf,NA,40,PsV Neutralization to HPV33,Pseudovirus-nAb HPV33 (IU/ml),lloq,1
+id50,7,pseudoneutid50_HPV45,40,Inf,NA,40,PsV Neutralization to HPV45,Pseudovirus-nAb HPV45 (IU/ml),lloq,1
+id50,8,pseudoneutid50_HPV52,40,Inf,NA,40,PsV Neutralization to HPV52,Pseudovirus-nAb HPV52 (IU/ml),lloq,1
+id50,9,pseudoneutid50_HPV58,40,Inf,NA,40,PsV Neutralization to HPV58,Pseudovirus-nAb HPV58 (IU/ml),lloq,1
+id50,10,pseudoneutid50_mdw,-Inf,Inf,NA,NA,PsV Neutralization Cross Reactivity,Pseudovirus-nAb Score,lloq,1
