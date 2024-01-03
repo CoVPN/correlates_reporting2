@@ -85,6 +85,16 @@ if (!is.null(config$assay_metadata)) {
         }
       }
     }
+    
+  } else if (TRIAL=='id27hpv') {
+    if (exists('COR')) {
+      if (endsWith(COR,'nAb')) {
+        assay_metadata = subset(assay_metadata, panel=='id50')
+      } else {
+        assay_metadata = subset(assay_metadata, panel=='bind')
+      }
+    }
+    
   }
   
 
