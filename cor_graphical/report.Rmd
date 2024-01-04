@@ -121,14 +121,15 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
         tp=COR
         tp_lb=COR
         details=""
-        marker=""
 
         trt = "pooled"
         trt_lb = ""  
         
-        res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
+        for (marker in c("BAb","NAb")){
+          res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+        }
         
         res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant_adhoc.Rmd')), quiet = TRUE)
         cat(res, sep = '\n')

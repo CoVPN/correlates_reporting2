@@ -297,6 +297,9 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29variant"){ 
 } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant"){
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
+} else if (study_name=="IARCHPV"){
+  dat.long$lb = with(dat.long, "Pos.Cut")
+  dat.long$lbval =  with(dat.long, pos.cutoffs)
 } else {
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))

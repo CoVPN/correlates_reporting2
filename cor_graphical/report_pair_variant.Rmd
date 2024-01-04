@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("pairs_by_time_", tp, if(trt!="") "_", gsub("-","_", trt), if (details!="") "_", details, marker, if (region!="") "_", region, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("pairs_by_time_", tp, if(trt!="") "_", gsub("-","_", trt), if (details!="") "_", details, if (marker!="") "_", marker, if (region!="") "_", region, ".pdf"))`}
 
-\caption{`r paste0("Pairwise correlation matrix between ", if(study_name=="IARCHPV") "all available ", tp_lb, if(marker!="") " ", ifelse(marker=="", "", ifelse(marker=="NAb", "PsV-nAb ID50", ifelse(marker=="Spike", "anti-Spike binding Ab", "PsV-nAb ID50 and anti-Spike binding Ab"))), " markers", if(region!="") " in ", ifelse(region=="SA", "South Africa", ifelse(region=="LA", "Latin America", "")), if(trt_lb!="") " in ", gsub("-"," ", trt_lb), if(trt_lb!="") " Arm", COR_postfix_label)`}
+\caption{`r paste0("Pairwise Correlation Matrix between ", tp_lb, if(marker!="") " ", ifelse(marker=="", "", ifelse(marker=="BAb", "Binding Ab", ifelse(marker=="NAb", "PsV-nAb ID50", ifelse(marker=="Spike", "Anti-Spike Binding Ab", "PsV-nAb ID50 and Anti-Spike Binding Ab")))), " Markers", if(region!="") " in ", ifelse(region=="SA", "South Africa", ifelse(region=="LA", "Latin America", "")), if(trt_lb!="") " in ", gsub("-"," ", trt_lb), if(trt_lb!="") " Arm", COR_postfix_label)`}
 \end{figure}
 
 \hphantom{Random text to appease the latex god}
