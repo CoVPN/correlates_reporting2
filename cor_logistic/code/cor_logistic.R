@@ -3,7 +3,7 @@
 # drop age group and add region in regression models. 
 # different weights
 
-# Sys.setenv(TRIAL = "id27hpv"); COR="M18nAb"; Sys.setenv(VERBOSE = 1) 
+# Sys.setenv(TRIAL = "id27hpvnAb"); COR="M18nAb"; Sys.setenv(VERBOSE = 1) 
 
 print(paste0("starting time: ", date()))
 renv::activate(project = here::here(".."))     

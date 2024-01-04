@@ -1,6 +1,10 @@
 ```{r, echo=FALSE, results='asis'}
 
-CORs=c("M18", "M18sus", "M18nAb", "M18susnAb")
+if (TRIAL=="id27hpv") {
+  CORs=c("M18", "M18sus")
+} else {
+  CORs=c("M18nAb", "M18susnAb")
+}
 
 for (COR in CORs) {
   if (endsWith(COR,'nAb')) {

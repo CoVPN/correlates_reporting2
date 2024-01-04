@@ -1,8 +1,8 @@
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20231227.csv')
-dat_proc=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20231228.csv')
+dat_mapped=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20240103.csv')
+dat_proc=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240103.csv')
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/id27hpv_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -13,6 +13,11 @@ assays
 # marker missingness
 summary(dat_mapped)
 
+dat_mapped0=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20231227.csv')
+dat_mapped=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20240103.csv')
+
+subset(dat_mapped0, Ptid==25)
+subset(dat_mapped, Ptid==25)
 
 # correlation
 mypairs(dat_mapped[, "M18"%.%assays[11:19]], ylim=c(1,5), xlim=c(1,5))
