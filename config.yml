@@ -492,7 +492,7 @@ profiscov_lvmn: &profiscov_lvmn
 
 
 id27hpv:
-  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240102.csv
+  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240104.csv
   assay_metadata: assay_metadata/id27hpv_assay_metadata.csv
   sampling_scheme: case_control
   two_marker_timepoints: no
