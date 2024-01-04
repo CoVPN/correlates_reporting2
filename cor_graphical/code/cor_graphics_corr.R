@@ -103,14 +103,17 @@ if (study_name == "janssen_partA_VL" & COR == "D29variant") {
   
   for (t in "M18"){
     
-    for (asy in c("bind", "pseudoneutid50", "some")) {
+    for (asy in c("bind", "pseudoneutid50", "someBAb", "someNAb")) {
       
       # all markers but the marker score
       if(asy %in% c("bind", "pseudoneutid50")) {
         assay_metadata_sub = subset(assay_metadata, grepl(asy, assay) & !grepl("mdw", assay))
-      } else if (asy=="some") {
+      } else if (asy=="someBAb") {
         assay_metadata_sub = subset(assay_metadata, assay %in% c("bind_HPV6","bind_HPV11","bind_HPV16","bind_HPV18","bind_HPV31","bind_mdw"))
-      } 
+      } else if (asy=="someNAb") {
+        assay_metadata_sub = subset(assay_metadata, assay %in% c("pseudoneutid50_HPV6","pseudoneutid50_HPV11","pseudoneutid50_HPV16",
+                                                                 "pseudoneutid50_HPV18","pseudoneutid50_HPV31","pseudoneutid50_mdw"))
+      }
       
       trt_lb = ""
       
@@ -129,7 +132,10 @@ if (study_name == "janssen_partA_VL" & COR == "D29variant") {
         column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub$assay_label_short)))>40, 4.2, 4.3),
         filename = paste0(
           save.results.to, "/pairs_by_time_", paste0(t, if(COR=="M18sus") "sus"), # COR: M18, M18sus
-          "_pooled", ifelse(asy=="bind", "_BAb", ifelse(asy=="pseudoneutid50", "_NAb", ifelse(asy=="some", "_some_markers", ""))), ".pdf"
+          "_pooled", ifelse(asy=="bind", "_BAb", 
+                            ifelse(asy=="pseudoneutid50", "_NAb", 
+                                   ifelse(asy=="someBAb", "_some_BAbmarkers", 
+                                          ifelse(asy=="someNAb", "_some_NAbmarkers", "")))), ".pdf"
         )
       )
     }

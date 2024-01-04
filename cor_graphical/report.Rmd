@@ -131,10 +131,11 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
           cat("\\clearpage", sep = '\n')
         }
         
-        res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant_adhoc.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
-	      
+        for (marker in c("BAb","NAb")){
+          res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant_adhoc.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+        }
         ############################################# Violin plots ###########################################
         
         facet=""
