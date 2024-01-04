@@ -349,7 +349,7 @@ vat08_combined: &vat08_combined
 
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20231222.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240103.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15]
@@ -492,7 +492,7 @@ profiscov_lvmn: &profiscov_lvmn
 
 
 id27hpv:
-  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20231228.csv
+  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240104.csv
   assay_metadata: assay_metadata/id27hpv_assay_metadata.csv
   sampling_scheme: case_control
   two_marker_timepoints: no
@@ -504,6 +504,21 @@ id27hpv:
   num_boot_replicates: 1000
   num_perm_replicates: 10000
   primary_assays: [bind_mdw]
+  
+
+id27hpvnAb:
+  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240104.csv
+  assay_metadata: assay_metadata/id27hpv_assay_metadata.csv
+  sampling_scheme: case_control
+  two_marker_timepoints: no
+  timepoints: [18]
+  times: [M18]
+  time_labels: [Month 18]
+  study_name: IARCHPV
+  covariates_riskscore: ~.+ AgeGroup
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  primary_assays: [pseudoneutid50_mdw]
   
 
 hvtn705base: &hvtn705base
@@ -1347,6 +1362,48 @@ M18susnAb:
   tpeaklag: 0
   txt.endpoint: HPV
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. trial participants becoming susceptible to HPV infection post the M18 visit; no. cases = number of this cohort with an observed HPV endpoint.
+
+# covail
+D15to91:
+  ph1: ph1.D15
+  ph2: ph2.D15
+  wt: wt.D15
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD22toD91
+  EventTimePrimary: COVIDTimeD22toD91
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+D15to181:
+  ph1: ph1.D15
+  ph2: ph2.D15
+  wt: wt.D15
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD22toD181
+  EventTimePrimary: COVIDTimeD22toD181
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+D92to181:
+  ph1: ph1.D92
+  ph2: ph2.D92
+  wt: wt.D92
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD92toD181
+  EventTimePrimary: COVIDTimeD92toD181
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+
 
 
 ####################

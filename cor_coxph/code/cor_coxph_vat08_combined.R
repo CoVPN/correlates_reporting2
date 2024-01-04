@@ -47,15 +47,39 @@ myprint(B, numPerm)
 
 ## add trichotomized markers 
 
-summary(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==0, Day22pseudoneutid50_BA.1, drop=T))
-summary(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T))
 summary(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day22pseudoneutid50_BA.1, drop=T))
+mean(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day22pseudoneutid50_BA.1, drop=T)>0.117,na.rm=T)
+
+summary(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T))
 summary(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T))
 
-summary(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==0, Day43pseudoneutid50_BA.1, drop=T))
-summary(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T))
 summary(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day43pseudoneutid50_BA.1, drop=T))
+mean(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day43pseudoneutid50_BA.1, drop=T)>0.117,na.rm=T)
+
+
+summary(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T))
+mean(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T)>0.117,na.rm=T)
+
 summary(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T))
+
+par(mfrow=c(3,1))
+hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 2 NN', xlab='Day43pseudoneutid50_BA.1')
+hist(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 1 NN', xlab='Day43pseudoneutid50_BA.1')
+hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 2 Naive', xlab='Day43pseudoneutid50_BA.1')
+
+par(mfrow=c(3,1))
+hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 2 NN', xlab='Day22pseudoneutid50_BA.1')
+hist(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 1 NN', xlab='Day22pseudoneutid50_BA.1')
+hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 2 Naive', xlab='Day22pseudoneutid50_BA.1')
+
+for (a in paste0('Day22',assays)) {
+  print(a); print(mean(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0)[[a]]>0.117,na.rm=T))
+}
+for (a in paste0('Day43',assays)) {
+  print(a); print(mean(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0)[[a]]>0.117,na.rm=T))
+}
+
+
 
 # based on the above descriptives, will use the same cut points for nnaive stage 1 and stage 2
 # and a separate set of cut points for naive stage 2
