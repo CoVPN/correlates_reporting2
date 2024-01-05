@@ -1,7 +1,14 @@
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
+Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
+if (study_name %in% c("VAT08")){
+  uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
+  pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
+  lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
+  llods=assay_metadata$lod; names(llods)=assay_metadata$assay
+}
 #-----------------------------------------------
 
 library(here)
@@ -28,7 +35,8 @@ Maxlive50Day57 <- ifelse(exists("Maxlive50Day57"), Maxlive50Day57, NA)
 
 MaxbAbB <- try(dat.long.twophase.sample %>%
   filter(assay %in% c("bindSpike", "bindRBD", "bindN",
-                      "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1")) %>%
+                      "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1",
+                      "bindSpike_mdw")) %>%
   select(B) %>%
   max(na.rm = TRUE), silent = TRUE)
 
@@ -37,7 +45,7 @@ if (class(MaxbAbB) == "try-error") {  ## bAb assays are unavailable
 }
 
 MaxID50ID80B <- try(dat.long.twophase.sample %>%
-  filter(assay %in% c("pseudoneutid50", "pseudoneutid80", "pseudoneutid50sa", "pseudoneutid80la")) %>%
+  filter(assay %in% c("pseudoneutid50", "pseudoneutid80", "pseudoneutid50sa", "pseudoneutid80la", "pseudoneutid50_mdw")) %>%
   select(B) %>%
   max(na.rm = TRUE), silent = TRUE)
 
@@ -64,22 +72,34 @@ dimnames(assay_lim) <- list(assay_immuno, times, c("lb", "ub"))
 
 assay_lim[, !grepl("Delta", times), "lb"] <- 
   floor(log10(llods[assay_immuno] / 2)) # lower bound same for all assays - days
-if (study_name=="AZD1222" & grepl("bind", assays)) {
+if (study_name=="AZD1222" && grepl("bind", assays)) {
   assay_lim["bindSpike", !grepl("Delta", times), "lb"] <- floor(log10(lloqs["bindSpike"] / 2))
   }# prevent19 and AZ has llod for bAb as NA, use lloq instead
 if (study_name=="PREVENT19") {
   assay_lim["bindSpike", !grepl("Delta", times), "lb"] <- floor(log10(lloqs["bindSpike"] / 2))
   assay_lim["bindRBD", !grepl("Delta", times), "lb"] <- floor(log10(lloqs["bindSpike"] / 2))
 }
+if (study_name=="VAT08") {
+  assay_lim["bindSpike_mdw", !grepl("Delta", times), "lb"] <- floor(min(dat.mock[, grepl("bindSpike_mdw", colnames(dat.mock)) & !grepl("Delta", colnames(dat.mock))], na.rm=T))
+  assay_lim["pseudoneutid50_mdw", !grepl("Delta", times), "lb"] <- floor(min(dat.mock[, grepl("pseudoneutid50_mdw", colnames(dat.mock)) & !grepl("Delta", colnames(dat.mock))], na.rm=T))
+  for (aa in assays[grepl("bind", assays) & !grepl("mdw", assays)]){
+    assay_lim[aa, !grepl("Delta", times), "lb"] <- floor(log10(lloqs[aa] / 2))
+  }
+}
 assay_lim[assay_immuno %in% bAb_assays, !grepl("Delta", times), "ub"] <- 
-  max(ceiling(MaxbAb) + ceiling(MaxbAb) %% 2, ceiling(log10(uloqs[assay_immuno])))
+  max(ceiling(MaxbAb) + ceiling(MaxbAb) %% 2, ceiling(log10(uloqs[assay_immuno][!is.infinite(uloqs[assay_immuno])])))
 assay_lim[assay_immuno %in% nAb_assays, !grepl("Delta", times), "ub"] <-
   ceiling(MaxID50ID80) + ceiling(MaxID50ID80) %% 2
+if (study_name=="VAT08") {
+  assay_lim["pseudoneutid50_mdw", !grepl("Delta", times), "ub"] <- ceiling(max(dat.mock[,"Day22pseudoneutid50_mdw"], na.rm=T))
+}
 assay_lim[assay_immuno %in% live_assays, !grepl("Delta", times), "ub"] <-
   ceiling(Maxlive50) + ceiling(Maxlive50) %% 2
 
 
-assay_lim[, grepl("Delta", times), "lb"] <- -2 # lower bound same for all assays - delta
+if (study_name=="VAT08") {assay_lim[, grepl("Delta", times), "lb"] <- -7
+} else {assay_lim[, grepl("Delta", times), "lb"] <- -2 } # lower bound same for all assays - delta
+
 assay_lim[assay_immuno %in% bAb_assays, grepl("Delta", times), "ub"] <- 
   ceiling(MaxbAb - min(log10(llods[bAb_assays] / 2), na.rm=T)) + ceiling(MaxbAb - min(log10(llods[bAb_assays] / 2), na.rm=T)) %% 2
 
@@ -99,7 +119,9 @@ assay_lim[assay_immuno %in% nAb_assays, grepl("Delta", times), "ub"] <-
   ceiling(MaxID50ID80 - min(log10(llods[nAb_assays] / 2), na.rm=T)) + ceiling(MaxID50ID80 - min(log10(llods[nAb_assays] / 2), na.rm=T)) %% 2
 assay_lim[assay_immuno %in% live_assays, grepl("Delta", times), "ub"] <- 
   ceiling(Maxlive50 - min(log10(llods[live_assays] / 2))) + ceiling(Maxlive50 - min(log10(llods[live_assays] / 2))) %% 2
-
+if (study_name=="VAT08") {
+  assay_lim[, grepl("Delta", times), "ub"] <- 8 
+}
 
 
 # Quick workaround for janssen presentation report
@@ -110,6 +132,33 @@ if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
   assay_lim[, grepl("Delta", times),'lb'] <- -1
   assay_lim[, grepl("Delta", times),'ub'] <- 2
 }
+
+if(study_name=="VAT08") {# hard code for VAT08
+  assay_lim["bindSpike_mdw", "B","lb"] <- -2
+  assay_lim["pseudoneutid50_mdw", "B","lb"] <- -1
+  assay_lim["bindSpike_mdw", "Day22","lb"] <- -5
+  assay_lim["pseudoneutid50_mdw", "Day22","lb"] <- -3
+  assay_lim["bindSpike_mdw", "Day43","lb"] <- -6
+  assay_lim["pseudoneutid50_mdw", "Day43","lb"] <- -4
+  
+  assay_lim[, "Delta22overB","lb"] <- rep(-3, 15)
+  assay_lim["bindSpike_mdw", "Delta22overB","lb"] <- -5
+  assay_lim["pseudoneutid50_mdw", "Delta22overB","lb"] <- -4
+  
+  assay_lim[, "Delta43overB","lb"] <- rep(-3, 15)
+  assay_lim["bindSpike_mdw", "Delta43overB","lb"] <- -5
+  assay_lim["pseudoneutid50_mdw", "Delta43overB","lb"] <- -5
+  
+  
+  assay_lim[, "B","ub"] <- 5
+  assay_lim["bindSpike_mdw", "B","ub"] <- 11
+  
+  assay_lim[, "Day22","ub"] <- 6
+  assay_lim[, "Day43","ub"] <- 5
+  
+  assay_lim[, "Delta22overB","ub"] <- 6
+  assay_lim[, "Delta43overB","ub"] <- 4
+} 
 
 # dup assay_lim to avoid dimention got dropped for the dataset with only one marker
 if (length(assay_immuno)==1){ # i.e., AZ study

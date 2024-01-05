@@ -27,6 +27,7 @@
 #' @param pt.size point size
 #' @param axis.text.x.cex font size for x axis text
 #' @param axis.text.y.cex font size for y axis text
+#' @param global.size global font size
 #' @param n_rate variable for counts and response rate: "N_RespRate" or "N_RespRate_severe"
 #' @return A ggplot object for violin + box plot with or without lines
 
@@ -57,26 +58,28 @@ violin_box_plot <-
            n_rate,
            pt.size=5,
            axis.text.x.cex=25,
-           axis.text.y.cex=25){
+           axis.text.y.cex=25,
+           global.size=11){
   
-  p <- ggplot(data=dat, aes_string(x=x, y=y, color=colby, shape=shaby))
+  p <- ggplot(data=dat, aes(x=.data[[x]], y=.data[[y]], color=.data[[colby]], shape=.data[[shaby]]))
   
   if (type=="line") {
     p <- p + geom_violin(scale="width", na.rm = TRUE)
       if (length(unique(dat.sample$time))!=1) p <- p + geom_line(data = dat.sample, aes(group = Ptid))
       # only draw line if there are multiple time points
       p <- p + geom_point(data = dat.sample, size = pt.size, show.legend = TRUE) +
-      geom_boxplot(width=0.25, lwd=1.5, alpha = 0.3, outlier.shape=NA, show.legend = FALSE)
+      geom_boxplot(data = dat, width=0.25, lwd=1.5, alpha = 0.3, outlier.shape=NA, show.legend = FALSE)
   } else if (type=="noline") {
     p <- p + geom_violin(scale="width", na.rm = TRUE) +
-      geom_jitter(data = dat.sample,  width = 0.1, height = 0, size = pt.size, show.legend = TRUE) +
-      geom_boxplot(width=0.25, lwd=1.5, alpha = 0.3, outlier.shape=NA, show.legend = FALSE)}
+      geom_jitter(data = dat.sample, width = 0.1, height = 0, size = pt.size, show.legend = TRUE) +
+      geom_boxplot(data = dat, width=0.25, lwd=1.5, alpha = 0.3, outlier.shape=NA, show.legend = FALSE)
+    }
   
   if (facetopt=="wrap") {p <- p + facet_wrap(facetby, ncol=group.num, drop=FALSE)
   } else if (facetopt=="grid") {p <- p + facet_grid(facetby, drop=FALSE)}
   
   p <- p + 
-    geom_text(aes_string(label=n_rate, x=x, y=rate.y.pos), vjust = 1, color="black", size=prop.cex, check_overlap = TRUE) +
+    geom_text(data = dat, aes(label=.data[[n_rate]], x=.data[[x]], y=as.numeric(rate.y.pos)), vjust = 1, color="black", size=prop.cex, check_overlap = TRUE) +
     geom_text(aes(label="n\nRate", x=0.4, y=rate.y.pos), vjust = 1, hjust = 0, color="black", size=prop.cex, check_overlap = TRUE) +
     geom_hline(aes(yintercept=lbval), linetype="dashed", color="gray", na.rm = TRUE) +
     geom_text(aes(label=lb, x=0.4, y=lbval), hjust = 0, color="black", size=ll.cex, check_overlap = TRUE, na.rm = TRUE) + 
@@ -88,6 +91,7 @@ violin_box_plot <-
     scale_color_manual(values=col, labels=col_lb, drop=FALSE) +
     scale_shape_manual(values=shape, labels=shp_lb, drop=FALSE) +
     theme(plot.margin = unit(c(0.25,0.25,0.25,0.25), "in"),
+          text = element_text(size=global.size),
           plot.title = element_text(hjust = 0.5),
           axis.text.x = element_text(size=axis.text.x.cex),
           axis.text.y = element_text(size=axis.text.y.cex))
@@ -135,8 +139,6 @@ scatter_plot <-
              y.lim=c(floor(mins[plots[i]]), ceiling(maxs[plots[i]])), 
              y.breaks=seq(floor(mins[plots[i]]), ceiling(maxs[plots[i]])),
              x.breaks=seq(from=18, to=86, by=17)){
-        
-        if (!"size" %in% colnames(dat)) {size = 3}
         
         p <- ggplot(dat, aes_string(x = x, y = y)) + 
             facet_wrap(facetby, nrow = 1) + 

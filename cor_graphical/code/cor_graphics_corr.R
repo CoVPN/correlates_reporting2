@@ -21,6 +21,8 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 
 source(here::here("code", "covid_corr_plot_functions.R"))
 source(here::here("..", "_common.R"))
+# load parameters
+source(here::here("code", "params.R"))
 
 ## load data 
 dat.cor.data.pair <- readRDS(here::here("data_clean", "cor_data.rds")); dat.cor.data.pair$all_one <- 1 # as a placeholder for strata values
@@ -38,7 +40,7 @@ print(paste0("save.results.to equals ", save.results.to))
 
 ###### Correlation plots across markers at a given time point
 # 3 markers (Anc, Delta, Beta), SA, Day 29
-if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
+if (study_name == "janssen_partA_VL" & COR == "D29variant") {
 
   for (t in "Day29"){
     for (trt in c(1)){
@@ -55,7 +57,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
         strata = "all_one",
         weight = config.cor$wt,
         plot_title = paste0(
-          "Correlations of 3 ", t, " antibody markers in South Africa,\nCorr = Weighted Spearman Rank Correlation."
+          "Correlations of 3 ", t, " Antibody Markers in South Africa,\nCorr = Weighted Spearman Rank Correlation."
         ),
         column_labels = paste(t, assay_metadata_sub_sa$assay_label_short),
         height = max(1.3 * length(assay_metadata_sub_sa$assay) + 0.1, 5.5),
@@ -83,7 +85,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
         strata = "all_one",
         weight = config.cor$wt,
         plot_title = paste0(
-          "Correlations of 5 ", t, " antibody markers in Latin America,\nCorr = Weighted Spearman Rank Correlation."
+          "Correlations of 5 ", t, " Antibody Markers in Latin America,\nCorr = Weighted Spearman Rank Correlation."
         ),
         column_labels = paste(t, assay_metadata_sub_la$assay_label_short),
         height = max(1.3 * length(assay_metadata_sub_la$assay) + 0.1, 5.5),
@@ -97,4 +99,46 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
     
       }
   }
+} else if (study_name=="IARCHPV"){
+  
+  for (t in "M18"){
+    
+    for (asy in c("bind", "pseudoneutid50", "someBAb", "someNAb")) {
+      
+      # all markers but the marker score
+      if(asy %in% c("bind", "pseudoneutid50")) {
+        assay_metadata_sub = subset(assay_metadata, grepl(asy, assay) & !grepl("mdw", assay))
+      } else if (asy=="someBAb") {
+        assay_metadata_sub = subset(assay_metadata, assay %in% c("bind_HPV6","bind_HPV11","bind_HPV16","bind_HPV18","bind_HPV31","bind_mdw"))
+      } else if (asy=="someNAb") {
+        assay_metadata_sub = subset(assay_metadata, assay %in% c("pseudoneutid50_HPV6","pseudoneutid50_HPV11","pseudoneutid50_HPV16",
+                                                                 "pseudoneutid50_HPV18","pseudoneutid50_HPV31","pseudoneutid50_mdw"))
+      }
+      
+      trt_lb = ""
+      
+      covid_corr_pairplots(
+        plot_dat = dat.cor.data.pair,
+        time = t,
+        assays = assay_metadata_sub$assay,
+        strata = "all_one",
+        weight = config.cor$wt,
+        plot_title = paste0(
+          "Pairwise Correlations of ", paste0(t, if(COR=="M18sus") "sus"), " Antibody Markers\nCorr = Weighted Spearman Rank Correlation."
+        ),
+        column_labels = paste(t, assay_metadata_sub$assay_label_short),
+        height = max(1.3 * length(assay_metadata_sub$assay) + 0.1, 5.5),
+        width = max(1.3 * length(assay_metadata_sub$assay), 5.5),
+        column_label_size = ifelse(max(nchar(paste(t, assay_metadata_sub$assay_label_short)))>40, 4.2, 4.3),
+        filename = paste0(
+          save.results.to, "/pairs_by_time_", paste0(t, if(COR=="M18sus") "sus"), # COR: M18, M18sus
+          "_pooled", ifelse(asy=="bind", "_BAb", 
+                            ifelse(asy=="pseudoneutid50", "_NAb", 
+                                   ifelse(asy=="someBAb", "_some_BAbmarkers", 
+                                          ifelse(asy=="someNAb", "_some_NAbmarkers", "")))), ".pdf"
+        )
+      )
+    }
+  }
+  
 }
