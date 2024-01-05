@@ -47,6 +47,7 @@ TRIAL=attr(config, "config")
 DayPrefix = switch (TRIAL, 
                     'moderna_boost' = "BD", 
                     'id27hpv' = "M",
+                    'id27hpvnAb' = "M",
                     "Day")
 
 if (is.null(config$threshold_grid_size)) {
@@ -85,6 +86,17 @@ if (!is.null(config$assay_metadata)) {
         }
       }
     }
+    
+  } else if (TRIAL=='id27hpv') {
+    if (exists('COR')) {
+      assay_metadata = subset(assay_metadata, panel=='bind')
+    }
+    
+  } else if (TRIAL=='id27hpvnAb') {
+    if (exists('COR')) {
+      assay_metadata = subset(assay_metadata, panel=='id50')
+    }
+    
   }
   
 
@@ -724,7 +736,7 @@ if (exists("COR")) {
         }
 
                 
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv")) {
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb")) {
           # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
