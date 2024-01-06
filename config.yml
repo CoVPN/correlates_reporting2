@@ -349,7 +349,7 @@ vat08_combined: &vat08_combined
 
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240103.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240105.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15]
