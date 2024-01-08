@@ -1,16 +1,26 @@
 ```{r, echo=FALSE, results='asis'}
 
-CORs=c("M18", "M18sus")
+if (TRIAL=="id27hpv") {
+  CORs=c("M18", "M18sus")
+} else {
+  CORs=c("M18nAb", "M18susnAb")
+}
 
 for (COR in CORs) {
+  if (endsWith(COR,'nAb')) {
+    assays1 = assays[contain(assays,'id50')]
+  } else {
+    assays1 = assays[contain(assays,'bind')]
+  }
+
   tpeak=18
   config.cor <- config::get(config = COR)
   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
   special.note = ""
   pathCoRoutput <- paste0("cor_logistic/output/", attr(config,"config"), "/", COR)
   
-  all.markers=paste0(DayPrefix, tpeak, assays)
-  if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+  all.markers=paste0(DayPrefix, tpeak, assays1)
+  if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays1))
   names(all.markers)=all.markers
 
   res = knitr::knit_child(c(here::here('cor_logistic', 'report_by_COR.Rmd')), quiet = TRUE)
