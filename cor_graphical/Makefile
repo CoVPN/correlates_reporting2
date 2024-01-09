@@ -35,7 +35,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
 	Rscript code/CoR_assay_graphics.R D43omi
 	Rscript code/CoR_wrcdf_with_VE_lines.R D43omi
 	
-else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_combined))
+else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 	Rscript code/cor_data_preprocess.R D22D43omi # Yiwen's
 	Rscript code/cor_graphics_all.R D22D43omi
 

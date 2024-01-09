@@ -16,13 +16,18 @@ library(knitr)
 library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
 
-if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV"))) {
+if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
 bsero <- ifelse(study_name=="vat08m_nonnaive", "BaselinePos", 
                 ifelse(study_name=="IARCHPV", "", "BaselineNeg"))
 bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", 
                      ifelse(bsero=="BaselineNeg", "baseline negative", ""))
+
+tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
+tps_no_delta_over_tinterm_lb <-  time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]
+tps_no_fold_change <- times[!grepl("Delta", times)]
+tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
 
 #if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name), '.Rmd')))) {
   
@@ -94,6 +99,78 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
         		      cat("\\clearpage", sep = '\n')
       }
     }
+    
+  } else if (study_name == "VAT08"){
+    
+    # SET 1
+    for (a in c("bindSpike", "pseudoneutid50")){
+  
+      for (tp in tps_no_delta_over_tinterm_lb){
+        
+        tpLabel = tolower(tp)
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+      }
+    }
+    
+    # SET 2
+    for (assay_grp in c(paste0(assays[!assays=="bindSpike_mdw"][1:2], collapse="_"),
+                        paste0(assays[!assays=="bindSpike_mdw"][3:4], collapse="_"), 
+                        paste0(assays[!assays=="bindSpike_mdw"][5:6], collapse="_"),
+                        paste0(assays[!assays=="bindSpike_mdw"][7:8], collapse="_"),
+                        "bindSpike_mdw",
+                        paste0(assays[!assays=="bindSpike_mdw"][9:10], collapse="_"),
+                        paste0(assays[!assays=="bindSpike_mdw"][11:12], collapse="_"),
+                        paste0(assays[!assays=="bindSpike_mdw"][13:14], collapse="_")
+    )){
+        
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+        
+    }
+    
+    # SET 3
+    for (bsero in c("non_naive")){
+        
+        for (trt in c("vac_pla")){
+            
+            for (tp in tps_no_fold_change){
+                
+                tpLabel = ifelse(tp=="B", "Day1", tp)
+                assay_n = length(assays)
+                res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
+                cat(res, sep = '\n')
+                cat("\\clearpage", sep = '\n')
+            }
+        }
+    }
+    
+    for (bsero in c("naive")){
+        
+        for (trt in c("vac")){
+            
+            for (tp in tps_no_B_and_fold_change){
+                
+                tpLabel = ifelse(tp=="B", "Day1", tp)
+                assay_n = length(assays)
+                res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
+                cat(res, sep = '\n')
+                cat("\\clearpage", sep = '\n')
+            }
+        }
+    }
+    
+    # SET 4
+    for (a in assays){
+        
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set4.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+        
+    }
+    
     
   } else { # for all other studies but config: janssen_partA_VL and COR: D29variant
     

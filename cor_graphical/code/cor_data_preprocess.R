@@ -75,7 +75,7 @@ source(here("code", "params.R"))
 
 
 ################################################
-dat <- as.data.frame(dat.mock)
+dat <- as.data.frame(dat.mock); #dat$ph2.D43 = dat$ph2.D43.original; dat$wt.D22 = dat$wt.D22.original; dat$wt.D43 = dat$wt.D43.original
 
 Args <- commandArgs(trailingOnly=TRUE)
 COR=Args[1]
@@ -162,7 +162,9 @@ dat = dat %>%
   
   dat <- dat %>%
     mutate(cohort_event = factor(
-      case_when(ph2.intercurrent.cases==1 ~ "7-27 days PD2 cases",
+      case_when(Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
+                  (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
+                  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 & EventTimePrimaryD22 <= 27 ~ "7-27 days PD2 cases",
                 Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
                   (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
                   (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "28-180 days PD2 cases", 
