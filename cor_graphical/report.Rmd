@@ -19,10 +19,6 @@ here::i_am("cor_graphical/report.Rmd")
 if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
-bsero <- ifelse(study_name=="vat08m_nonnaive", "BaselinePos", 
-                ifelse(study_name=="IARCHPV", "", "BaselineNeg"))
-bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", 
-                     ifelse(bsero=="BaselineNeg", "baseline negative", ""))
 
 tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
 tps_no_delta_over_tinterm_lb <-  time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]
@@ -56,15 +52,15 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
     
     tp="Day29"
     tp_lb="Day 29"
-    details="vaccine_bseroneg_"
     trt_lb=": Vaccine Arm."
-    trt=""
+    trt="vaccine_bseroneg"
     
     for (region in c("LA", "SA")) {
       for (marker in ("NAb" #,"Spike", "NAb_Spike"
                       )) {
+                  marker_lb = ifelse(marker=="NAb", "PsV-nAb ID50 Markers", ifelse(marker=="Spike", "Anti-Spike Binding Ab Markers", ifelse(marker=="NAb_Spike", "PsV-nAb ID50 and Anti-Spike Binding Ab Markers")))
                   
-        
+                  pair_title_beginner = "Pairwise Correlation Matrix between "
         		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant.Rmd')), quiet = TRUE)
         		      cat(res, sep = '\n')
         		      cat("\\clearpage", sep = '\n')
@@ -194,22 +190,18 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
     
         ########################################### Pair plots ###########################################
         region=""
-        marker=""
         tp=COR
         tp_lb=COR
-        details=""
-
+        
         trt = "pooled"
         trt_lb = ""  
-        
-        for (marker in c("BAb","NAb")){
+          
+        for (marker in c("BAb","NAb", "some_BAb","some_NAb")){
+          pair_title_beginner = ifelse(!grepl("some", marker), "Pairwise Correlation Matrix between ", "Pairwise Correlations of ")
+          marker_lb = ifelse(marker=="BAb", "Binding Ab Markers", ifelse(marker=="NAb", "PsV-nAb ID50 Markers", ifelse(marker=="some_BAb", "Binding Ab Markers to HPV Strains 6, 11, 16, 18, 31 and IgG Score", ifelse(marker=="some_NAb", "PsV-nAb ID50 Markers to HPV Strains 6, 11, 16, 18, 31 and
+PsV-nAb ID50 Score"))))
+            
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant.Rmd')), quiet = TRUE)
-          cat(res, sep = '\n')
-          cat("\\clearpage", sep = '\n')
-        }
-        
-        for (marker in c("BAb","NAb")){
-          res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant_adhoc.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
           cat("\\clearpage", sep = '\n')
         }
@@ -220,7 +212,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
         type="Violinbox"
         for (trt_order in c(1,2,4,3,5)) {
   		    for (assay_long in assays) {
-  		      for (casetype in c("AnyHPV", "HPV11", "HPV18", "HPV31", "HPV6", "HPV16")){
+  		      for (casetype in c("AnyHPV", "HPV11", "HPV18", "HPV31", "HPV6", "HPV16")){# overall or breakthrough of specific type
   		        
   		        # skip if specific case type doesn't match with plot type
               if (casetype!="AnyHPV" & !grepl(casetype, assay_long)) next

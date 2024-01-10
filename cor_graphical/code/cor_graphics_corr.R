@@ -134,8 +134,8 @@ if (study_name == "janssen_partA_VL" & COR == "D29variant") {
           save.results.to, "/pairs_by_time_", paste0(t, if(COR=="M18sus") "sus"), # COR: M18, M18sus
           "_pooled", ifelse(asy=="bind", "_BAb", 
                             ifelse(asy=="pseudoneutid50", "_NAb", 
-                                   ifelse(asy=="someBAb", "_some_BAbmarkers", 
-                                          ifelse(asy=="someNAb", "_some_NAbmarkers", "")))), ".pdf"
+                                   ifelse(asy=="someBAb", "_some_BAb", 
+                                          ifelse(asy=="someNAb", "_some_NAb", "")))), ".pdf"
         )
       )
     }
