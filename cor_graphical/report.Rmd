@@ -20,6 +20,14 @@ if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
 
+# called in report_violin etc
+bsero <- ifelse(study_name=="IARCHPV", "", "BaselineNeg")
+bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", 
+                     ifelse(bsero=="BaselineNeg", "baseline negative", ""))
+
+# temporary setting due to unknown reason for assays including bAb for id27hpvnAb
+if (attr(config,"config")=="id27hpvnAb") {assays = assays[!grepl("bind", assays)]}
+
 tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
 tps_no_delta_over_tinterm_lb <-  time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]
 tps_no_fold_change <- times[!grepl("Delta", times)]
@@ -42,7 +50,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & grepl("EUA", attr(config,"config")))) COR_postfix_list <- c("IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1")
   if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & grepl("partA$", attr(config,"config")))) COR_postfix_list <- c("SevereIncludeNotMolecConfirmed") # ModerateIncludeNotMolecConfirmed
   if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & attr(config,"config") == "janssen_partA_VL")) COR_postfix_list <- c("adhoc")
-  if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
+  #if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
   if (study_name=="IARCHPV") COR_postfix_list <- c("", "sus")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29variant
@@ -197,6 +205,10 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
         trt_lb = ""  
           
         for (marker in c("BAb","NAb", "some_BAb","some_NAb")){
+          
+          if (!grepl("pseudoneutid50", assays) && grepl("NAb", marker)) next
+          if (!grepl("bind", assays) && grepl("BAb", marker)) next
+          
           pair_title_beginner = ifelse(!grepl("some", marker), "Pairwise Correlation Matrix between ", "Pairwise Correlations of ")
           marker_lb = ifelse(marker=="BAb", "Binding Ab Markers", ifelse(marker=="NAb", "PsV-nAb ID50 Markers", ifelse(marker=="some_BAb", "Binding Ab Markers to HPV Strains 6, 11, 16, 18, 31 and IgG Score", ifelse(marker=="some_NAb", "PsV-nAb ID50 Markers to HPV Strains 6, 11, 16, 18, 31 and
 PsV-nAb ID50 Score"))))
@@ -212,18 +224,22 @@ PsV-nAb ID50 Score"))))
         type="Violinbox"
         for (trt_order in c(1,2,4,3,5)) {
   		    for (assay_long in assays) {
-  		      for (casetype in c("AnyHPV", "HPV11", "HPV18", "HPV31", "HPV6", "HPV16")){# overall or breakthrough of specific type
+  		      for (casetype in c("AnyHPV", "HPV11", "HPV18", "HPV31", "HPV6", "HPV16", 
+  		                         "HPV11OtherHPV", "HPV18OtherHPV", "HPV31OtherHPV", "HPV6OtherHPV", "HPV16OtherHPV")){# overall or breakthrough of specific type
   		        
   		        # skip if specific case type doesn't match with plot type
-              if (casetype!="AnyHPV" & !grepl(casetype, assay_long)) next
+              if (casetype!="AnyHPV" & !grepl(gsub("OtherHPV", "", casetype), assay_long)) next
+  		        
+  		        #if (!grepl("pseudoneutid50", assays) && grepl("pseudoneutid50", assay_long)) next
+              #if (!grepl("bind", assays) && grepl("bind", assay_long)) next
   		        
     		      assay = gsub("bind_", "", gsub("pseudoneut","pnAb_", assay_long))
     	    
     	        
     	        trt = c("pooled", trt.labels)[trt_order]
               trt_lb = c("pooled", trt.labels2)[trt_order]
-    	      
-    	        res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
+    	        
+    	        res = knitr::knit_child(c(here::here('cor_graphical', 'report_violin.Rmd')), quiet = TRUE)
     	        cat(res, sep = '\n')
     	        cat("\\clearpage", sep = '\n')
   		      }
@@ -322,7 +338,7 @@ PsV-nAb ID50 Score"))))
           		        
           		      trt_lb = trt
           		      casetype = ""
-          		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
+          		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_violin.Rmd')), quiet = TRUE)
           		      cat(res, sep = '\n')
           		      cat("\\clearpage", sep = '\n')
           		    }
@@ -343,7 +359,7 @@ PsV-nAb ID50 Score"))))
           	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
               for (day in gsub(" ","", labels.time.no.fold)) {
                 if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
-          		  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub2.Rmd')), quiet = TRUE)
+          		  res = knitr::knit_child(c(here::here('cor_graphical', 'report_scatter1.Rmd')), quiet = TRUE)
             		cat(res, sep = '\n')
                 cat("\\clearpage", sep = '\n')
           		} 
@@ -357,7 +373,7 @@ PsV-nAb ID50 Score"))))
           	for (assay_long in assays){
           	  assay = gsub("bind", "", gsub("bind", "", gsub("bind", "", gsub("pseudoneut","pnAb_", assay_long))))
               if (length(timepoints)==1){COR=paste0("D",timepoints, COR_postfix)} else {COR=paste0("D",paste(timepoints, collapse="D"), COR_postfix)}
-          	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
+          	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_scatter2.Rmd')), quiet = TRUE)
           		cat(res, sep = '\n')
               cat("\\clearpage", sep = '\n')
           	}

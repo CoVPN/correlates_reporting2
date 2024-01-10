@@ -28,9 +28,6 @@ library(grid)
 longer_cor_data <- readRDS(here("data_clean", "longer_cor_data.rds"))
 longer_cor_data_plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds")) # at level of trt and assay
 plot.25sample1 <- readRDS(here("data_clean", "plot.25sample1.rds"))
-if (study_name=="IARCHPV") {
-  longer_cor_data_plot1.2 <- readRDS(here("data_clean", "longer_cor_data_plot1.2.rds")) # at level of trt, assay and breakthrough cases/non cases
-}
 if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
   longer_cor_data_plot3 <- readRDS(here("data_clean", "longer_cor_data_plot3.rds"))
   plot.25sample3 <- readRDS(here("data_clean", "plot.25sample3.rds"))
@@ -157,7 +154,7 @@ if (COR != "D29variant") { # D29variant requires non-standard figures
                 for (casetype in c("Any HPV Cases", hpv_5_breakthroughs, paste0(hpv_5_breakthroughs, "+Other HPV Cases") )) {# loop through any cases, breakthrough cases, breakthrough cases + other cases 
                   
                   # skip if specific case type doesn't match with plot type
-                  if (casetype!="Any HPV Cases" & !grepl(gsub("bind_HPV", "", plots[i]), casetype)) next
+                  if (casetype!="Any HPV Cases" & !grepl(gsub("bind_HPV|pseudoneutid50_HPV", "", plots[i]), casetype)) next
                   
                   # change label for case type
                   if (casetype=="Any HPV Cases") {

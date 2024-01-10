@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), paste0(a, "_by_case_non_case_at_", tp, ".pdf"))`}
+
+\caption{`r paste0("Distribution of ", a, " at ", tpLabel)`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}

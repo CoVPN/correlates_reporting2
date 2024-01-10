@@ -1,5 +1,5 @@
 #Sys.setenv(TRIAL = "vat08_combined")
-#Sys.setenv(TRIAL = "id27hpv")
+#Sys.setenv(TRIAL = "id27hpv") id27hpvnAb
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -82,7 +82,7 @@ COR=Args[1]
 if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfirmed"
 } else {incNotMol <- ""}
 
-# set EventIndTimePrimary to EventIndTimeOmicron if study_name=="VAT08m" & COR=="D22D43omi"
+# set EventIndTimePrimary to EventIndTimeOmicron if study_name=="VAT08_combined" & COR=="D22D43omi"
 if (study_name=="VAT08_combined" & grepl("omi", COR)){
   # All COVID endpoint cases of observed non-Omicron lineages, or with unknown lineage before January 17, 2022, are excluded
   dat$EventIndPrimaryD1 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD1 & dat$Omi_or_NA_after_cutoff==1) # used by cohort_event def
@@ -471,7 +471,7 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
 #           )
 #} else {dat.longer.cor.subset$severe = NA}
 
-# only keep fold change for do.fold.change.overB=1: e.g. vat08m_nonnaive
+# only keep fold change for do.fold.change.overB=1: e.g. vat08
 if (do.fold.change.overB==1 | study_name %in% c("VAT08")){
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
 } else (
