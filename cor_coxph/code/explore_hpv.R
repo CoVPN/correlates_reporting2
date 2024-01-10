@@ -61,3 +61,9 @@ myboxplot(dat_proc[,"M18"%.%assays[11:19]])
 
 min(dat_proc[,"M18"%.%assays[19]], na.rm=T)
 with(dat_proc, sapply(dat_proc[,"M18"%.%assays[11:19]], function(x) mean(x>1.31, na.rm=T)))
+
+
+with(subset(dat_proc, ph1.M18==1), table(ph2.M18, EventIndPrimaryAnyHPV))
+with(subset(dat_proc, Perprotocol == 1 & EligibilityorinitialsamplingTimeM18>0), table(ph2.M18, EventIndPrimaryAnyHPV))
+
+

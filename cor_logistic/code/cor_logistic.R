@@ -99,6 +99,15 @@ begin=Sys.time()
 
 
 ################################################################################
+# some descriptives
+
+with(subset(dat.ph1, ph2.M18==1), table(M18bind_HPV18cat, AgeGroup, EventIndPrimaryAnyHPV))
+with(subset(dat.ph1, ph2.M18.sus==1), table(M18bind_HPV18cat, AgeGroup, EventIndPrimaryAnyHPV))
+with(subset(dat.ph1, ph2.M18.sus==1), table(M18pseudoneutid50_HPV52cat, AgeGroup, EventIndPrimaryAnyHPV))
+
+
+
+################################################################################
 # to decide adjustment variables
 
 if (TRIAL=='id27hpv') {
