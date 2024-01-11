@@ -1,6 +1,6 @@
 # Cox Proportional Hazards Modeling of Correlates of Risk
 
-## Contents
+## Contents 
 
 * `code`: scripts for pre-processing and analyzing post-processed data
 * `data_clean`: post-processed data used as input to statistical analyses
