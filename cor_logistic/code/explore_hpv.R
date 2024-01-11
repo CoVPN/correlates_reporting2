@@ -9,8 +9,25 @@ assays=assay_metadata$assay
 assays
 
 
+
+################################################################################
+
+# is single.dose confounder?
+par(mfrow=c(1,2))
+myboxplot(M18pseudoneutid50_HPV52~single.dose, dat.ph2, test='w', main='M18pseudoneutid50_HPV52', names=c('">1 dose"','1 dose'))
+myboxplot(M18pseudoneutid50_mdw~single.dose, dat.ph2, test='w', main='M18pseudoneutid50_mdw', names=c('">1 dose"','1 dose'))
+
+# some descriptives
+
+with(subset(dat.ph1, ph2.M18==1), table(M18bind_HPV18cat, AgeGroup, EventIndPrimaryAnyHPV))
+with(subset(dat.ph1, ph2.M18.sus==1), table(M18bind_HPV18cat, AgeGroup, EventIndPrimaryAnyHPV))
+with(subset(dat.ph1, ph2.M18.sus==1), table(M18pseudoneutid50_HPV52cat, AgeGroup, EventIndPrimaryAnyHPV))
+
+
+
 ################################################################################
 # marker missingness
+
 summary(dat_mapped)
 
 dat_mapped0=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20231227.csv')

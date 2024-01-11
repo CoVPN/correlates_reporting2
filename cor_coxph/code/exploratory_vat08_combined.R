@@ -2,18 +2,61 @@ library(survey)
 library(kyotil)
 
 # "Colombia" = 1, "Ghana" = 2, "Honduras" = 3, "India" = 4, "Japan" = 5, "Kenya" = 6, "Nepal" = 7, "United States" = 8, "Mexico" = 9, "Uganda" = 10, "Ukraine" = 11
+country.codes=c("Colombia", "Ghana", "Honduras", "India", "Japan", "Kenya", "Nepal", "United States", "Mexico", "Uganda", "Ukraine")
 
-dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20231228.csv')
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20231228.csv')
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240108.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240110.csv')
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
 assays=assay_metadata$assay
 
 dat_mapped$EventIndPrimaryD1 = dat_mapped$EventIndFirstInfectionD1
 dat_mapped$EventTimePrimaryD1 = dat_mapped$EventTimeFirstInfectionD1
+dat_mapped$EventIndPrimaryD43= dat_mapped$EventIndFirstInfectionD43
 dat_mapped$EventTimePrimaryD43= dat_mapped$EventTimeFirstInfectionD43
 dat_mapped$EarlyendpointD43 <- with(dat_mapped, EarlyinfectionD43==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD43 + 7),1,0)
 dat_mapped$ph1.D43= with(dat_mapped, EarlyendpointD43==0 & Perprotocol==1 & EventTimePrimaryD43 >= 7)
+dat_mapped$Senior=ifelse(dat_mapped$Age>=60,1,0)
 
+dat_mapped$cc = country.codes[dat_mapped$Country]
+
+
+
+################################################################################
+# distribution of samples across countries
+
+table(subset(dat_mapped, Trialstage==2 & Bserostatus==0 & ph1.D43)[,c("Trt","cc")])
+
+table(subset(dat_mapped, Trialstage==2 & Bserostatus==1 & ph1.D43)[,c("Trt","cc")])
+
+table(subset(dat_mapped, Trialstage==1 & Bserostatus==1 & ph1.D43)[,c("Trt","cc")])
+
+# distribution of cases
+table(subset(dat_mapped, Trialstage==2 & Bserostatus==0 & ph1.D43 & EventIndPrimaryD43)[,c("Trt","cc")])
+
+table(subset(dat_mapped, Trialstage==2 & Bserostatus==1 & ph1.D43 & EventIndPrimaryD43)[,c("Trt","cc")])
+
+table(subset(dat_mapped, Trialstage==1 & Bserostatus==1 & ph1.D43 & EventIndPrimaryD43)[,c("Trt","cc")])
+
+
+################################################################################
+# marker distribution to help decide how to create discrete marker variables
+
+par(mfrow=c(3,1))
+hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 2 NN', xlab='Day43pseudoneutid50_BA.1')
+hist(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 1 NN', xlab='Day43pseudoneutid50_BA.1')
+hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 2 Naive', xlab='Day43pseudoneutid50_BA.1')
+
+par(mfrow=c(3,1))
+hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 2 NN', xlab='Day22pseudoneutid50_BA.1')
+hist(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 1 NN', xlab='Day22pseudoneutid50_BA.1')
+hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 2 Naive', xlab='Day22pseudoneutid50_BA.1')
+
+for (a in paste0('Day22',assays)) {
+  print(a); print(mean(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0)[[a]]>0.117,na.rm=T))
+}
+for (a in paste0('Day43',assays)) {
+  print(a); print(mean(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0)[[a]]>0.117,na.rm=T))
+}
 
 
 ################################################################################
@@ -84,34 +127,78 @@ summary(coxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) 
 
 
 ################################################################################
-# Senior and nAbBatch
-# suggests that batch 2 is complementary, almost no senior in batch 2
+# check marker missingness pattern 
 
-dat=subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1)  
-dat$ph2=with(dat, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50))
-with(dat[dat$ph2,], table(Age>=60, nAbBatch, EventIndPrimaryD1))
+assays=assays[startsWith(assays,"pseudoneutid50")]
 
-# using bAb gives same conclusion
-dat$ph2=with(dat, !is.na(BbindSpike) & !is.na(Day43bindSpike))
-with(dat[dat$ph2,], table(Age>=60, nAbBatch, EventIndPrimaryD1))
-
-
-with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1), 
-                 table(!is.na(Day43pseudoneutid50),
-                       !is.na(Day43bindSpike),
-                       nAbBatch))
-
-with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1), table(!is.na(Day43pseudoneutid50)))
-with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1), table(!is.na(Day43bindSpike)))
+# missingness across time points for ancestral id50
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)
+times=c("B","Day22","Day43")
+for (i in 1:3) {
+  dat[['tmp'%.%i]]=ifelse(is.na(dat[[times[i]%.%'pseudoneutid50']]), 0, 1)
+}
+dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3))
+table(dat$tmp)
 
 
+# missingness across variants at baseline
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & EventIndPrimaryD22==1)
+for (i in 1:5) {
+  dat[['tmp'%.%i]]=ifelse(is.na(dat[["B"%.%assays[i]]]), 0, 1)
+}
+dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5))
+table(dat$tmp)
 
-with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50)), table(nAbBatch, Country))
 
-################################################################################
-# check missingness pattern 
+# missingness across variants at d43
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)
+for (i in 1:5) {
+  dat[['tmp'%.%i]]=ifelse(is.na(dat[["Day43"%.%assays[i]]]), 0, 1)
+}
+dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5))
+table(dat$tmp)
 
-# ID50
+# missingness across variants at d22
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)
+for (i in 1:5) {
+  dat[['tmp'%.%i]]=ifelse(is.na(dat[["Day22"%.%assays[i]]]), 0, 1)
+}
+dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5))
+table(dat$tmp)
+
+
+
+
+# missingness across baseline and d43
+for (a in assays[1:5]) {
+  myprint(a)
+  print(with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), 
+             table(!is.na(get("B"%.%a)), !is.na(get("Day43"%.%a)))))
+}
+
+# missingness across baseline and d22
+for (a in assays[1:5]) {
+  myprint(a)
+  print(with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), 
+             table(!is.na(get("B"%.%a)), !is.na(get("Day22"%.%a)))))
+}
+
+# missingness across d22 and d43
+for (a in assays[1:5]) {
+  myprint(a)
+  print(with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), 
+             table(!is.na(get("Day22"%.%a)), !is.na(get("Day43"%.%a)))))
+}
+
+
+# examine correlation between variants
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"B"%.%assays[1:5]])
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"Day43"%.%assays[1:5]])
+
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,c("B","Day22","Day43")%.%assays[1]])
+
+
+S# ID50
 
 with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), 
      table(!is.na(Bpseudoneutid50), !is.na(Day43pseudoneutid50)))
@@ -220,7 +307,6 @@ svycoxph(update(f.base, ~. + I(Bpseudoneutid50_BA.4.5>0.116)*Delta43overBpseudon
          twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat) )
 
 
-################################################################################
 # batch 2
 
 dat_proc$ph2=with(dat_proc, !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50) & nAbBatch==2)
@@ -324,13 +410,23 @@ with(subset(dat_proc, ph2.D22.nAb==1 & (EventIndOmicronD43M6hotdeck1 | nAbBatch=
 
 
 ################################################################################
-# batch
+# batch effect
 
-# both batches refer to stage 2 BV trial
-with(subset(dat_mapped), table(nAbBatch, Trialstage))
+with(subset(dat_mapped), table(!is.na(Bpseudoneutid50), Trialstage))
 
 # batch 2 has a lot more naive vaccinees
 with(subset(dat_mapped, Trialstage==2), table(Trt, Bserostatus, nAbBatch))
+
+# almost no senior in batch 2 among the controls, suggesting that batch 2 is complementary?
+dat=subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1 & EventIndPrimaryD1==0)  
+with(dat, table(Senior, nAbBatch))
+
+# bAb samples are evenly distribution across batches
+with(dat, table(ph2, nAbBatch))
+
+with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50)), 
+     table(nAbBatch, Country))
+
 
 with(subset(dat_mapped, Trialstage==2 & nAbBatch==1 & EventIndFirstInfectionD1!=1), table(Age>=60, Bserostatus, Country))
 
@@ -353,27 +449,54 @@ with(subset(dat_proc, Trialstage==2 & EventIndOmicronD43M12hotdeck1==1 & Bserost
 
 with(subset(dat_proc, Trialstage==2 & EventIndOmicronD1M12hotdeck1==1 ), table(nAbBatch, useNA='ifany'))
 
-
-
 # # verified: no new nAb or bAb data from 1 to 2
 # dat1=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20231030.csv')
 # dat2=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20231107.csv')
 
 
-country.codes=c("Colombia", "Ghana", "Honduras", "India", "Japan", "Kenya", "Nepal", "United States", "Mexico", "Uganda", "Ukraine")
+# batch effect is significant in MEX
+par(mfrow=c(1,3), mar=c(4,4,3,2))
+
+myboxplot(Day43pseudoneutid50~batch2, 
+          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
+                   !EventIndOmicronD43M12hotdeck1 & Country==9), 
+          main='MEX, Non-cases', ylim=c(2,4), test='w', names=c("Batch 1", "Batch 2"), ylab='ID50, Day43')
+
+myboxplot(Day43pseudoneutid50~batch2, 
+          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
+                   !EventIndOmicronD43M12hotdeck1 & Country==4), 
+          main='IND, Non-cases', ylim=c(2,4), test='w', names=c("Batch 1", "Batch 2"), ylab='ID50, Day43')
+
+myboxplot(Day43pseudoneutid50~batch2, 
+          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
+                   !EventIndOmicronD43M12hotdeck1 & Region=='NotMEXIND_Stage2'), 
+          main='NonINDMEX, Non-cases', ylim=c(2,4), test='w', names=c("Batch 1", "Batch 2"), ylab='ID50, Day43')
+
+
+myboxplot(FOI~batch2, 
+          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
+                   !EventIndOmicronD43M12hotdeck1 & Country==9 & ph2.all.nAb), 
+          main='MEX, Non-cases', ylim=NULL, test='w', names=c("Batch 1", "Batch 2"), ylab='FOI')
+
+myboxplot(standardized_risk_score~batch2, 
+          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
+                   !EventIndOmicronD43M12hotdeck1 & Country==9 & ph2.all.nAb), 
+          main='MEX, Non-cases', ylim=NULL, test='w', names=c("Batch 1", "Batch 2"), ylab='standardized_risk_score')
 
 
 
-################################################################################
+
+# stage 2
 # compare ID50 between step 1 and 2
 
-dat=subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43 & !EventIndOmicronD43M6hotdeck1)
-dat.1=subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43 & EventIndOmicronD43M6hotdeck1)
+dat=  subset(dat_mapped, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43 & !EventIndFirstInfectionD43)
+dat.1=subset(dat_mapped, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43 & EventIndFirstInfectionD43)
 
 myboxplot(list(dat$Day43pseudoneutid50[dat$nAbBatch==1], 
                dat$Day43pseudoneutid50[dat$nAbBatch==2], 
                dat.1$Day43pseudoneutid50),
           names=c("Batch 1 non-cases", "Batch 2 non-cases", 'cases'))
+
 
 summary(subset(dat, SubcohortInd==1, Day43pseudoneutid50, drop=T))
 summary(subset(dat, SubcohortInd==0, Day43pseudoneutid50, drop=T))
@@ -383,16 +506,43 @@ summary(subset(dat, nAbBatch==2, Day43pseudoneutid50, drop=T))
 
 with(dat, table(nAbBatch, !is.na(Day43pseudoneutid50), useNA='ifany'))
 
-# by country
+# stage 2 by country
 par(mfrow=c(1,1))
 myboxplot(Day43pseudoneutid50~nAbBatch+Senior+Country, dat)
-abline(v=c(4.5,8.5,11.5,14.5,18.5),lty=2)
+abline(v=c(4.5,7.5,11.5,14.5,17.5,21.5),lty=2)
 # myboxplot(Day43pseudoneutid50~nAbBatch, dat, test='w', names=c('batch 1','batch 2'))
 
-for (c in c(1,2,6,7,9,10)) {
-  cat(c)
-  print(wilcox.test(Day43pseudoneutid50~SubcohortInd, subset(dat,Country==c))$p.value)
+for (c in c(1,2,4,6,7,9,10)) {
+  cat("\n")
+  myprint(c)
+  print("non-Senior comparion between nAbBatch 1 and 2")
+  print(wilcox.test(Day43pseudoneutid50~nAbBatch, subset(dat,Country==c & !Senior))$p.value)
+  print("Senior comparion between nAbBatch 1 and 2")
+  try(print(wilcox.test(Day43pseudoneutid50~nAbBatch, subset(dat,Country==c & Senior)) $p.value))
 }
+
+myboxplot(Day43pseudoneutid50~nAbBatch+Senior+Country, dat[dat$Country%in%c(4,9),],ylab="D43 ID50 ancestral")
+abline(v=c(4.5),lty=2)
+
+
+
+# stage 1 by country
+dat=  subset(dat_mapped, Trialstage==1 & Trt==1 & Bserostatus==1 & ph1.D43 & !EventIndFirstInfectionD43)
+dat.1=subset(dat_mapped, Trialstage==1 & Trt==1 & Bserostatus==1 & ph1.D43 & EventIndFirstInfectionD43)
+
+par(mfrow=c(1,1))
+myboxplot(Day43pseudoneutid50~nAbBatch+Senior+Country, dat)
+abline(v=c(2.5,4.5,6.5),lty=2)
+
+for (c in c(1,3)) {
+  cat("\n")
+  myprint(c)
+  print("non-Senior comparion between nAbBatch 1 and 2")
+  print(wilcox.test(Day43pseudoneutid50~nAbBatch, subset(dat,Country==c & !Senior))$p.value)
+}
+
+myboxplot(Day43pseudoneutid50~nAbBatch+Senior+Country, dat[dat$Country%in%c(1,3),],ylab="Stage 1 NN D43 ID50 ancestral")
+abline(v=c(2.5),lty=2)
 
 
 ################################################################################
@@ -520,15 +670,21 @@ with(subset(dat_proc, Trialstage==2 & ph1.D43 & Trt==0 & Bserostatus==0 & !is.na
 
 
 
-# country 4 (India) and 11 (Ukraine) have no cases
-with(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D43), table(EventIndOmicronD43M12hotdeck1, Country))
-with(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D22), table(EventIndOmicronD22M12hotdeck1, Country))
+# country 4 (India) has no cases in either arm
+for(i in 1:10) print(with(subset(dat_mapped, Trialstage==2 & Bserostatus==1 & ph1.D43 & EventIndFirstInfectionD43==1 & get("seq1.variant.hotdeck"%.%i)=="Omicron"), table(Country, Trt)))
 
-with(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==0 & ph1.D43), table(EventIndOmicronD43M12hotdeck1, Country))
-with(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==0 & ph1.D22), table(EventIndOmicronD22M12hotdeck1, Country))
+# country 5, 6 has no cases in either arm
+for(i in 1:10) print(with(subset(dat_mapped, Trialstage==1 & Bserostatus==1 & ph1.D43 & EventIndFirstInfectionD43==1 & get("seq1.variant.hotdeck"%.%i)=="Omicron"), table(Country, Trt)))
 
-with(subset(dat_proc, Trt==1 & Trialstage==1 & Bserostatus==1 & ph1.D43), table(EventIndOmicronD43M12hotdeck1, Country))
-with(subset(dat_proc, Trt==1 & Trialstage==1 & Bserostatus==1 & ph1.D22), table(EventIndOmicronD22M12hotdeck1, Country))
+# country 2, 4 has no cases in either arm
+for(i in 1:10) print(with(subset(dat_mapped, Trialstage==2 & Bserostatus==0 & ph1.D43 & EventIndFirstInfectionD43==1 & get("seq1.variant.hotdeck"%.%i)=="Omicron"), table(Country, Trt)))
+
+
+with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==1 & ph1.D22), table(EventIndOmicronD22M12hotdeck1, Country))
+
+with(subset(dat_mapped, Trt==1 & Trialstage==2 & Bserostatus==0 & ph1.D22), table(EventIndOmicronD22M12hotdeck1, Country))
+
+with(subset(dat_mapped, Trt==1 & Trialstage==1 & Bserostatus==1 & ph1.D22), table(EventIndOmicronD22M12hotdeck1, Country))
 
 
 
@@ -619,38 +775,6 @@ myboxplot(Day43pseudoneutid50~EventIndOmicronD43M12hotdeck1,
           subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
                    Region!="IND_Stage2"), 
           main='+batch2', ylim=c(2,4), test='w')
-
-
-
-
-# batch effect is significant in MEX
-par(mfrow=c(1,3), mar=c(4,4,3,2))
-
-myboxplot(Day43pseudoneutid50~batch2, 
-          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
-                   !EventIndOmicronD43M12hotdeck1 & Country==9), 
-          main='MEX, Non-cases', ylim=c(2,4), test='w', names=c("Batch 1", "Batch 2"), ylab='ID50, Day43')
-
-myboxplot(Day43pseudoneutid50~batch2, 
-          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
-                   !EventIndOmicronD43M12hotdeck1 & Country==4), 
-          main='IND, Non-cases', ylim=c(2,4), test='w', names=c("Batch 1", "Batch 2"), ylab='ID50, Day43')
-
-myboxplot(Day43pseudoneutid50~batch2, 
-          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
-                   !EventIndOmicronD43M12hotdeck1 & Region=='NotMEXIND_Stage2'), 
-          main='NonINDMEX, Non-cases', ylim=c(2,4), test='w', names=c("Batch 1", "Batch 2"), ylab='ID50, Day43')
-
-
-myboxplot(FOI~batch2, 
-          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
-                   !EventIndOmicronD43M12hotdeck1 & Country==9 & ph2.all.nAb), 
-          main='MEX, Non-cases', ylim=NULL, test='w', names=c("Batch 1", "Batch 2"), ylab='FOI')
-
-myboxplot(standardized_risk_score~batch2, 
-          subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1 &
-                   !EventIndOmicronD43M12hotdeck1 & Country==9 & ph2.all.nAb), 
-          main='MEX, Non-cases', ylim=NULL, test='w', names=c("Batch 1", "Batch 2"), ylab='standardized_risk_score')
 
 
 
