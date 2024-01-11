@@ -128,7 +128,7 @@ if(T){ # for ENSEMBLE SA and LA reports only
   }
 }
 
-dat <- dat.mock
+dat <- dat.mock; #dat$ph2.immuno = dat$ph2.D43.original; dat$wt.subcohort = dat$wt.D43.original
 
 print("Data preprocess")
 

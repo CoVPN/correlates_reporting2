@@ -401,6 +401,7 @@ for (bsero in c("non_naive")){
     for (tp in tps_no_fold_change){
     
     tpLabel = ifelse(tp=="B", "Day1", tp)
+    assay_n = length(assays)
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set3.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
