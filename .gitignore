@@ -49,8 +49,17 @@ cor_graphical/.Rprofile
 cor_graphical/renv/activate.R
 cor_graphical/output/*
 cor_graphical/*.pdf
+cor_graphical/*.RDS
+cor_graphical/code/*.txt
+cor_graphical/data_clean/*
 immuno_graphical/*.pdf
+immuno_graphical/*.png
+immuno_graphical/*.csv
+immuno_graphical/*.RDS
+immuno_graphical/*.db
+immuno_graphical/figs/*.db
 immuno_graphical/output/*
+immuno_graphical/data_clean/*
 cor_nonlinear/output/*
 cop_mediation/*.html
 data_raw/janssen/COVID_ENSEMBLE_realdata.csv
