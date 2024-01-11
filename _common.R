@@ -524,8 +524,9 @@ dat.mock <- read.csv(path_to_data)
 ###################################################################################################
 # some more data processing
 
-# uloq censoring when it is for correlates analyses, not for descriptive analyses
 if (!DESCRIPTIVE) {
+  
+  # uloq censoring when it is for correlates analyses, not for descriptive analyses
   for (a in assays) {
     uloq=uloqs[a]
     for (t in c(DayPrefix%.%timepoints)  ) {
@@ -536,6 +537,7 @@ if (!DESCRIPTIVE) {
       dat.mock[['B' %.% a]] <- ifelse(dat.mock[['B' %.% a]] > log10(uloq), log10(uloq), dat.mock[['B' %.% a]])
     }
   }    
+  
 }
 
 
@@ -543,9 +545,11 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
   # make endpointDate.Bin a factor variable
   dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
 
+  
 } else if (TRIAL %in% c("hvtn705secondRSA", "hvtn705secondNonRSA")) {
   # subset to RSA or non-RSA
   dat.mock = subset(dat.mock, RSA==ifelse(TRIAL=="hvtn705secondRSA", 1, 0))
+  
   
 } else if (study_name=='VAT08') {
   if (DESCRIPTIVE) {
