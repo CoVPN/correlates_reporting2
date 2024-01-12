@@ -734,13 +734,22 @@ if (exists("COR")) {
         } else if (study_name=="IARCHPV") {
           tfinal.tpeak=NULL
           
+        } else if (study_name=="COVAIL") {
+          if (COR %in% c("D15to181","D92to181")) {
+            tfinal.tpeak=181
+          } else if (COR %in% c("D15to91")) {
+            tfinal.tpeak=91
+          } else {
+            stop("COVAIL, wrong COR")
+          }
+          
         } else {
           # default rule for followup time is the last case in ph2 in vaccine arm
           tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
         }
 
                 
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb")) {
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail")) {
           # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
@@ -929,6 +938,9 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age <= 14"
   )
   
+} else if (study_name=="COVAIL") {
+  # do nothing
+  
 } else stop("unknown study_name 2")
 
 
@@ -1006,8 +1018,11 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     )
 
 } else if (study_name=="HVTN705") {
-    # do nothing
-
+  # do nothing
+  
+} else if (study_name=="COVAIL") {
+  # do nothing
+  
 } else if (study_name=="PROFISCOV") {
     demo.stratum.labels <- c("All")
 
