@@ -1,0 +1,20 @@
+```{r, echo=FALSE, results='asis'}
+COR="D15to181"
+
+pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+
+config.cor <- config::get(config = COR)
+for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+
+special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 15.")
+
+assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+all.markers = c("B"%.%assays, "Day15"%.%assays)
+names(all.markers)=all.markers
+
+res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+cat(res, sep = '\n')
+
+
+
+```

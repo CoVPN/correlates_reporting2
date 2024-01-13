@@ -38,11 +38,13 @@ myprint(B, numPerm)
 # redefine assays to focus on the 12 markers
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 all.markers = c("B"%.%assays, "Day15"%.%assays)
+# all.markers.names.short=all.markers.names.short[assays]
 
 # add trichotomized markers 
-dat = subset(dat.mock, TrtmRNA==1 & arm!=3 & ph1.D15) # TrtonedosemRNA := TrtmRNA==1 & arm!=3
-dat$ph2.D15=T
-dat = add.trichotomized.markers (dat, all.markers, ph2.col.name="ph2.D15", wt.col.name="wt.D15")
+dat.onedosemRNA = subset(dat.mock, ph1.D15 & TrtmRNA==1) # TrtonedosemRNA := TrtmRNA==1 & arm!=3
+dat.onedosemRNA$ph2=T
+dat.onedosemRNA = add.trichotomized.markers (dat.onedosemRNA, all.markers, ph2.col.name="ph2", wt.col.name="wt.D15")
+marker.cutpoints = attr(dat.onedosemRNA, "marker.cutpoints")
 
 # save cut points to files
 for (a in all.markers) {        
@@ -52,68 +54,24 @@ for (a in all.markers) {
 
 
 ################################################################################
-# loop through 3 analyses
-
-for (iAna in 3:3) {
-  # iAna=3
-  cat("\n\n\n\n")
-  myprint(iAna)
-  
-  if (iAna==1) {dat.vac=dat.vac.seropos.1; dat.pla=dat.pla.seropos.1; save.results.to=save.results.to.0%.%"stage1nnaive/"}
-  if (iAna==2) {dat.vac=dat.vac.seroneg.2; dat.pla=dat.pla.seroneg.2; save.results.to=save.results.to.0%.%"stage2naive/"}
-  if (iAna==3) {dat.vac=dat.vac.seropos.2; dat.pla=dat.pla.seropos.2; save.results.to=save.results.to.0%.%"stage2nnaive/"}
-
-  fname.suffix = study_name
-  
-  ############################
-  # count ph1 and ph2 cases
-  
-  # imputed events of interest
-  tabs=sapply(1:10, simplify="array", function (imp) {
-    dat.vac$EventIndOfInterest = dat.vac[[config.cor$EventIndPrimary%.%imp]]
-    with(dat.vac, table(ph2, EventIndOfInterest))
-  })
-  tab =apply(tabs, c(1,2), mean)
-  names(dimnames(tab))[2]="Event Indicator"
-  tab
-  mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to, digits=1)
-  
-  
-  ############################
-  # formula for coxph
-  
-  if (iAna==3) dat.vac=subset(dat.vac, !(Country %in% c(10 ) & Trialstage==2 & Bserostatus==1 & Age<60))
-
-  form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
-
-  source(here::here("code", "cor_coxph_ph_MI.R"))
-  
-  
-  
-  # #####################################
-  # # formula for competing risk analysis
-  # 
-  # # if there are very few competing events, the coxph for competing event may throw warnings
-  # 
-  # form.0=list(
-  #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
-  #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
-  # )
-  # 
-  # tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
-  # write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_", fname.suffix))
-  # 
-  # # run analyses
-  # source(here::here("code", "cor_coxph_risk_no_marker.R"))
-  # source(here::here("code", "cor_coxph_risk_bootstrap.R"))
-  # 
-  # # make tables and figures
-  # source(here::here("code", "cor_coxph_risk_plotting.R"))
-  # 
-
-} # for iRegion
+# Obj 1
 
 
+fname.suffix = study_name
+
+form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates_riskscore))
+
+dat=dat.onedosemRNA
+dat$yy=dat$COVIDIndD22toD181
+
+tab=with(dat, table(ph2, COVIDIndD22toD181))
+names(dimnames(tab))[2]="Event Indicator"
+print(tab)
+mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
+
+
+source(here::here("code", "cor_coxph_ph_cohort.R"))
+  
 
 
 

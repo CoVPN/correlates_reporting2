@@ -357,7 +357,7 @@ covail: &covail
   time_labels: [Day 1, Day 22, D15 fold-rise over D1]
   study_name: COVAIL
   assay_metadata: assay_metadata/covail_assay_metadata.csv
-  covariates_riskscore: ~.+ FOI + risk_score + naive
+  covariates_riskscore: ~.+ FOIstandardized + standardized_risk_score + naive
   low_efficacy: no
   num_boot_replicates: 10
   num_perm_replicates: 10
