@@ -14,6 +14,8 @@ assays
 
 table(dat_proc$AsympInfectIndD15to29, dat_proc$ph1.D15)
 
+table(dat_proc$arm, dat_proc$ph1.D15)
+
 table(dat_mapped$ph1.D15, dat_mapped$Immunemarkerset, dat_mapped$arm==3)
 
 

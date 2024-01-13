@@ -24,9 +24,9 @@ print(date())
 
 
 # path for figures and tables etc
-save.results.to.0 = here::here("output"); if (!dir.exists(save.results.to.0))  dir.create(save.results.to.0)
-save.results.to.0 = paste0(save.results.to.0, "/", attr(config,"config")); if (!dir.exists(save.results.to.0))  dir.create(save.results.to.0)
-save.results.to.0 = paste0(save.results.to.0, "/", COR, "/"); if (!dir.exists(save.results.to.0))  dir.create(save.results.to.0)
+save.results.to = here::here("output"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", attr(config,"config")); if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", COR, "/"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
 
 
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
@@ -35,47 +35,20 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-## add trichotomized markers 
+# redefine assays to focus on the 12 markers
+assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+all.markers = c("B"%.%assays, "Day15"%.%assays)
 
-dat.vac.seropos.2 = subset(dat.mock, Trt==1 & ph1 & Bserostatus==1 & Trialstage==2)
-dat.vac.seropos.2 = add.trichotomized.markers (dat.vac.seropos.2, all.markers, wt.col.name="wt")
-
-# use the cut points from nnaive stage 2 for nnaive stage 1 
-marker.cutpoints = attr(dat.vac.seropos.2, "marker.cutpoints")
-
-dat.vac.seropos.1 = subset(dat.mock, Trt==1 & ph1 & Trialstage==1 & Bserostatus==1)
-for (a in all.markers) {        
-  dat.vac.seropos.1[[a%.%'cat']] = cut(dat.vac.seropos.1[[a]], breaks = c(-Inf, marker.cutpoints[[a]], Inf))
-  # attr(dat.vac.seropos.1, "marker.cutpoints")[[a]] = marker.cutpoints[[a]]
-  print(table(dat.vac.seropos.1[[a%.%'cat']]))
-}
-
-dat.vac.seroneg.2 = subset(dat.mock, Trt==1 & ph1 & Trialstage==2 & Bserostatus==0)
-dat.vac.seroneg.2 = add.trichotomized.markers (dat.vac.seroneg.2, all.markers, wt.col.name="wt")
-marker.cutpoints.neg = attr(dat.vac.seroneg.2, "marker.cutpoints")
-
+# add trichotomized markers 
+dat = subset(dat.mock, TrtmRNA==1 & arm!=3 & ph1.D15) # TrtonedosemRNA := TrtmRNA==1 & arm!=3
+dat$ph2.D15=T
+dat = add.trichotomized.markers (dat, all.markers, ph2.col.name="ph2.D15", wt.col.name="wt.D15")
 
 # save cut points to files
 for (a in all.markers) {        
   write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
-        file=paste0(save.results.to.0%.%"/stage1nnaive/", "cutpoints_", a, "_"%.%study_name))
-  
-  write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
-        file=paste0(save.results.to.0%.%"/stage2nnaive/", "cutpoints_", a, "_"%.%study_name))
-  
-  write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints.neg[[a]], 2), ", "), ")%"), 
-        file=paste0(save.results.to.0%.%"/stage2naive/", "cutpoints_", a, "_"%.%study_name))
+        file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
 }
-
-
-# add placebo counterpart
-dat.pla.seropos.1=subset(dat.mock, Trt==0 & ph1 & Trialstage==1 & Bserostatus==1)
-dat.pla.seroneg.2=subset(dat.mock, Trt==0 & ph1 & Trialstage==2 & Bserostatus==0)
-dat.pla.seropos.2=subset(dat.mock, Trt==0 & ph1 & Trialstage==2 & Bserostatus==1)
-
-# for validation use
-rv=list() 
-
 
 
 ################################################################################
