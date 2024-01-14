@@ -35,43 +35,111 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-# redefine assays to focus on the 12 markers
+# add trichotomized markers to TrtonedosemRNA
+dat.onedosemRNA = subset(dat.mock, ph1.D15 & TrtonedosemRNA==1) # TrtonedosemRNA := TrtmRNA==1 & arm!=3
+dat.onedosemRNA$ph2=T
+
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 all.markers = c("B"%.%assays, "Day15"%.%assays)
-# all.markers.names.short=all.markers.names.short[assays]
-
-# add trichotomized markers 
-dat.onedosemRNA = subset(dat.mock, ph1.D15 & TrtmRNA==1) # TrtonedosemRNA := TrtmRNA==1 & arm!=3
-dat.onedosemRNA$ph2=T
 dat.onedosemRNA = add.trichotomized.markers (dat.onedosemRNA, all.markers, ph2.col.name="ph2", wt.col.name="wt.D15")
 marker.cutpoints = attr(dat.onedosemRNA, "marker.cutpoints")
 
 # save cut points to files
 for (a in all.markers) {        
   write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
-        file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
+        file=paste0(save.results.to, "cutpoints_", a))
 }
+
+show.q=F # no multiplicity adjustment
 
 
 ################################################################################
-# Obj 1
 
-
-fname.suffix = study_name
-
-form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates_riskscore))
-
-dat=dat.onedosemRNA
-dat$yy=dat$COVIDIndD22toD181
-
-tab=with(dat, table(ph2, COVIDIndD22toD181))
-names(dimnames(tab))[2]="Event Indicator"
-print(tab)
-mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
-
-
-source(here::here("code", "cor_coxph_ph_cohort.R"))
+if (COR=="D15to181") {
+  form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates_riskscore))
+  dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD181
   
+} else if (COR=="D15to91") {
+  form.0 = update(Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ 1, as.formula(config$covariates_riskscore))
+  dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD91
+  
+} else if (COR=="D92to181") {
+  form.0 = update(Surv(COVIDtimeD92toD181, COVIDIndD92toD181) ~ 1, as.formula(config$covariates_riskscore))
+  dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD92toD181
+} 
+
+
+assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+
+for (iObj in c(1,2,3)) {
+  
+  # define all.markers
+  if(iObj==1) {
+    all.markers = c("B"%.%assays, "Day15"%.%assays)
+    all.markers.names.short = assay_metadata$assay_label_short[match(assays,assay_metadata$assay)]
+    all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short)
+    
+  } else if(iObj==2){
+    all.markers = sapply(assays, function (a) paste0("naive * scale(Day15",a, ")"))
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    # table col names
+    col1="naive"
+    col2="scale(D15)"
+    col3="naive:scale(D15)"
+    
+  } else if(iObj==3){
+    all.markers = sapply(assays, function (a) paste0("scale(B",a, ") * scale(Day15",a, ")"))
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    # table col names
+    col1="scale(B)"
+    col2="scale(D15)"
+    col3="scale(B):scale(D15)"
+  }
+  
+  # same formula, repeated over 7 times
+  for (iTask in 1:7) {
+    if (iTask==1) {
+      dat=dat.onedosemRNA
+      fname.suffix = 'mRNA_onedose'
+      
+    } else if (iTask==2) {
+      dat=subset(dat.onedosemRNA, TrtA==1)
+      fname.suffix = 'mRNA_Moderna'
+    } else if (iTask==3) {
+      dat=subset(dat.onedosemRNA, TrtA==0)
+      fname.suffix = 'mRNA_Pfizer'
+      
+    } else if (iTask==4) {
+      dat=subset(dat.onedosemRNA, TrtB==1)
+      fname.suffix = 'mRNA_Prototype'
+    } else if (iTask==5) {
+      dat=subset(dat.onedosemRNA, TrtB==0)
+      fname.suffix = 'mRNA_Omicron-Containing'
+      
+    } else if (iTask==6) {
+      dat=subset(dat.onedosemRNA, TrtC==1)
+      fname.suffix = 'mRNA_Bivalent'
+    } else if (iTask==7) {
+      dat=subset(dat.onedosemRNA, TrtC==0)
+      fname.suffix = 'mRNA_Monovalent'
+      
+    } 
+    
+    if(iObj==1) {
+      source(here::here("code", "cor_coxph_ph_cohort.R"))
+      
+    } else if(iObj==2) {
+      fname.suffix = paste0(fname.suffix, "_NxD15")
+      source(here::here("code", "cor_coxph_ph_cohort_itxn.R"))
+      
+    } else if(iObj==3) {
+      fname.suffix = paste0(fname.suffix, "_BxD15")
+      source(here::here("code", "cor_coxph_ph_cohort_itxn.R"))
+      
+    }
+    
+  }
+}
 
 
 
