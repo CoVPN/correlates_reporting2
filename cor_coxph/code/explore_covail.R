@@ -2,7 +2,7 @@ library(survey)
 library(kyotil)
 
 dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240112.csv')
-dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240112.csv')
+dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240113.csv')
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -10,9 +10,32 @@ assays
 
 
 ################################################################################
+# coxph showing all coefficients
+
+dat=subset(dat.mock, ph1.D15 & TrtonedosemRNA==1) 
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score + naive + Day15pseudoneutid50_MDW, dat)
+
+
+
+################################################################################
+# correlation between m15 and baseline markers
+
+dat=subset(dat.mock, ph1.D15 & TrtonedosemRNA==1) 
+
+mypairs(dat[,paste0("B",assays)])
+
+mypairs(dat[,paste0("Day15",assays)])
+
+mypairs(dat[,paste0(c("B","Day15", "Delta15overB"),assays[1])])
+
+
+
+################################################################################
 # marker missingness
 
 table(dat_proc$AsympInfectIndD15to29, dat_proc$ph1.D15)
+
+
 
 table(dat_proc$arm, dat_proc$ph1.D15)
 
@@ -31,6 +54,17 @@ for (i in 1:1) {
   with(dat_proc[dat_proc$kp,], print(table(!is.na(get("Day91"%.%assays[i])), !is.na(get("Day15"%.%assays[i])))))
   with(dat_proc[dat_proc$kp,], print(table(!is.na(get("Day181"%.%assays[i])), !is.na(get("Day15"%.%assays[i])))))
 }
+
+
+myboxplot(
+list(dat_proc$Day15pseudoneutid50_MDW[dat_proc$treatment_actual=="Omicron + Wildtype/Prototype (Pfizer 1)"], 
+     dat_proc$Day15pseudoneutid50_MDW[dat_proc$treatment_actual=="1 Dose Omicron + Prototype (Moderna)"])
+)
+
+myboxplot(
+  list(dat_proc$Day15pseudoneutid50_D614G[dat_proc$treatment_actual=="Omicron + Wildtype/Prototype (Pfizer 1)"], 
+       dat_proc$Day15pseudoneutid50_D614G[dat_proc$treatment_actual=="1 Dose Omicron + Prototype (Moderna)"])
+)
 
 
 

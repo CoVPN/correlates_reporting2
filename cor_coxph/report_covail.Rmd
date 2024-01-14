@@ -1,10 +1,43 @@
+# Summary of Univariate CoR: Cox Models of Risk
+
+## Peak Obj 1
+
+For D15to181, both baseline and Day 15 markers are inverse correlates of risk. For example, the baseline PsV Neutralization breadth score has HR 0.65 per 10-fold increase (P value <0.001), and the Day 15 PsV Neutralization breadth score has HR 0.69 per 10-fold increase (P value 0.006). Within subgroups,
+
+- Effect sizes are larger for both Moderna (Day 15 MDW HR 0.58) and Pfizer (Day 15 MDW HR 0.54).
+
+- Effect sizes are smaller for prototype (Day 15 MDW HR 0.78).
+
+- Effect sizes are larger for monovalent (Day 15 MDW HR 0.38).
+
+
+Results are similar for D15to91, with less cases and less significant P values.
+
+For D92to181, some new results are:
+
+- Effect size is larger for Pfizer at Day 15 (MDW HR 0.33) 
+
+- No effect for prototype (only 13 cases), Day 15 MDW HR 0.90, baseline MDR HR 1.44
+
+The results of discrete markers show that the risk of the low and medium groups are similar but the risk of the high group is smaller.
+
+
+## Peak Obj 2 Naive x D15 interaction
+
+Naive by D15 marker interaction is also significant, perhaps not as significant as baseline marker by D15 marker interaction.
+
+
+## Peak Obj 3 Baseline x D15 interaction 
+
+D15to181: Significant interaction between baseline and D15 markers. Pretty consistent across subgroups.
+
+Omicron ID50 baseline x D15 models are more predictive than ancestral ID50 baseline x D15 models.
+
+
+
 ```{r, echo=FALSE, results='asis'}
-COR="D15to181"
 
-pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
-
-config.cor <- config::get(config = COR)
-for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+show.q=F
 
 special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 15.")
 
@@ -12,9 +45,42 @@ assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta"
 all.markers = c("B"%.%assays, "Day15"%.%assays)
 names(all.markers)=all.markers
 
-res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-cat(res, sep = '\n')
-
-
+for (iObj in c(1,2,3)) {
+  
+  for (COR in c("D15to181", "D15to91", "D92to181")) {
+    cat("# Objective Peak ", iObj, "/", COR)
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    
+    for (iTask in 1:7) {
+      fname.suffix = switch (iTask,
+        '1' = 'mRNA_onedose',
+        '2' = 'mRNA_Moderna',
+        '3' = 'mRNA_Pfizer',
+        '4' = 'mRNA_Prototype',
+        '5' = 'mRNA_Omicron-Containing',
+        '6' = 'mRNA_Bivalent',
+        '7' = 'mRNA_Monovalent'
+      )  
+      
+      if (iObj==1) {
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==2) {
+        fname.suffix = fname.suffix %.% "_NxD15"
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==3) {
+        fname.suffix = fname.suffix %.% "_BxD15"
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
+        
+      }
+      cat(res, sep = '\n')
+    }
+  }
+  
+}
 
 ```
+
