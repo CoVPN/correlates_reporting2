@@ -1,37 +1,67 @@
-# Summary of Univariate CoR: Cox Models of Risk
+# Summary of Results
+  
+  
+**Peak Obj 1. Baseline, D15 markers**
 
-## Peak Obj 1
+* D15to181
 
-For D15to181, both baseline and Day 15 markers are inverse correlates of risk. For example, the baseline PsV Neutralization breadth score has HR 0.65 per 10-fold increase (P value <0.001), and the Day 15 PsV Neutralization breadth score has HR 0.69 per 10-fold increase (P value 0.006). Within subgroups,
+  - Both baseline and D15 markers are overall inverse correlates of risk. For example, baseline MDW HR 0.65, D15 MDW HR 0.69. 
+  
+  - The risks in the low and medium groups are similar but the risk in the high group is smaller.
+  
+  - Effect sizes are larger for both Moderna (D15 MDW HR 0.58) and Pfizer (D15 MDW HR 0.54).
 
-- Effect sizes are larger for both Moderna (Day 15 MDW HR 0.58) and Pfizer (Day 15 MDW HR 0.54).
+  - Effect sizes are smaller for prototype (D15 MDW HR 0.78).
 
-- Effect sizes are smaller for prototype (Day 15 MDW HR 0.78).
+  - Effect sizes are larger for monovalent (D15 MDW HR 0.38).
 
-- Effect sizes are larger for monovalent (Day 15 MDW HR 0.38).
+* D15to91
+
+  - Results are similar to D15to181, with less cases and less significant P values.
+
+* For D92to181
+
+  - Results are similar to D15to181, but there are some subtleties 
+  
+  - Effect size is larger for Pfizer, D15 MDW HR 0.33
+
+  - No effect for prototype (only 13 cases), D15 MDW HR 0.90, baseline MDW HR 1.44
+
+ 
+\vspace{.5cm}
+
+**For all interaction models, markers are centered but not scaled so that the size of interaction can be compared.**
+ 
+\vspace{.5cm}
+**Peak Obj 2 Naive x D15 interaction**
+
+* D15to181: Significant interaction between naive and D15 markers. MDW HR 1.96 
+
+* D15to91: Significant interaction between naive and D15 markers. MDW HR 2.74
+  
+* D92to181: Not significant interaction between naive and D15 markers. MDW HR 0.70 
 
 
-Results are similar for D15to91, with less cases and less significant P values.
+\vspace{.5cm}
+**Peak Obj 3 Baseline x D15 interaction**
 
-For D92to181, some new results are:
+* D15to181: Significant interaction between baseline and D15 markers. MDW HR 0.56
 
-- Effect size is larger for Pfizer at Day 15 (MDW HR 0.33) 
+  - Larger interaction for Pfizer (MDW HR 0.26) than for Moderna (MDW HR 0.63)
+  
+  - Similar interaction between Prototype (MDW HR 0.47) and Omicron (MDW HR 0.60)
+  
+  - Larger interaction for Monovalent (MDW HR 0.38) than for Moderna (MDW HR 0.68)
 
-- No effect for prototype (only 13 cases), Day 15 MDW HR 0.90, baseline MDR HR 1.44
+* D15to91: Significant interaction between baseline and D15 markers. MDW HR 0.55
 
-The results of discrete markers show that the risk of the low and medium groups are similar but the risk of the high group is smaller.
-
-
-## Peak Obj 2 Naive x D15 interaction
-
-Naive by D15 marker interaction is also significant, perhaps not as significant as baseline marker by D15 marker interaction.
+* D92to181: Significant interaction between baseline and D15 markers. MDW HR 0.56
 
 
-## Peak Obj 3 Baseline x D15 interaction 
+\vspace{.5cm}
+**Peak Obj 4 TrtA(B|C) x D15 interaction **
 
-D15to181: Significant interaction between baseline and D15 markers. Pretty consistent across subgroups.
-
-Omicron ID50 baseline x D15 models are more predictive than ancestral ID50 baseline x D15 models.
+* Not significant anywhere
 
 
 
@@ -48,7 +78,7 @@ names(all.markers)=all.markers
 for (iObj in c(1,2,3)) {
   
   for (COR in c("D15to181", "D15to91", "D92to181")) {
-    cat("# Objective Peak ", iObj, "/", COR)
+    cat("# Objective Peak ", iObj, ", ", COR, sep="")
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
     config.cor <- config::get(config = COR)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
@@ -78,6 +108,27 @@ for (iObj in c(1,2,3)) {
       }
       cat(res, sep = '\n')
     }
+    
+  }
+  
+}
+
+
+# Peak Obj 4
+for (COR in c("D15to181", "D15to91", "D92to181")) {
+  cat("# Objective Peak ", 4, ", ", COR, sep="")
+  pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+  config.cor <- config::get(config = COR)
+  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  
+  for (iTask in 1:3) {
+    fname.suffix = switch (iTask,
+      '1' = 'mRNA_Mod_Pfi',
+      '2' = 'mRNA_Pro_Omi',
+      '3' = 'mRNA_Bi_Mono'
+    )  
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
   }
   
 }
