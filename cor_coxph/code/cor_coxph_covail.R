@@ -52,9 +52,6 @@ for (a in all.markers) {
 
 show.q=F # no multiplicity adjustment
 
-
-################################################################################
-
 if (COR=="D15to181") {
   form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates_riskscore))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD181
@@ -68,8 +65,11 @@ if (COR=="D15to181") {
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD92toD181
 } 
 
-
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+
+
+################################################################################
+# Peak Obj 1-3
 
 for (iObj in c(1,2,3)) {
   
@@ -80,23 +80,23 @@ for (iObj in c(1,2,3)) {
     all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short)
     
   } else if(iObj==2){
-    all.markers = sapply(assays, function (a) paste0("naive * scale(Day15",a, ")"))
+    all.markers = sapply(assays, function (a) paste0("naive * scale(Day15",a, ",scale=F)"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     # table col names
     col1="naive"
-    col2="scale(D15)"
-    col3="naive:scale(D15)"
+    col2="center(D15)"
+    col3="naive:center(D15)"
     
   } else if(iObj==3){
-    all.markers = sapply(assays, function (a) paste0("scale(B",a, ") * scale(Day15",a, ")"))
+    all.markers = sapply(assays, function (a) paste0("scale(B",a, ") * scale(Day15",a, ",scale=F)"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     # table col names
-    col1="scale(B)"
-    col2="scale(D15)"
-    col3="scale(B):scale(D15)"
+    col1="center(B)"
+    col2="center(D15)"
+    col3="center(B):center(D15)"
   }
   
-  # same formula, repeated over 7 times
+  # same formula, repeated 7 times
   for (iTask in 1:7) {
     if (iTask==1) {
       dat=dat.onedosemRNA
@@ -142,6 +142,48 @@ for (iObj in c(1,2,3)) {
 }
 
 
+################################################################################
+# Peak Obj 4
 
+# same formula, repeated 3 times
+for (iTask in 1:3) {
+  if (iTask==1) {
+    dat=subset(dat.onedosemRNA, TrtA %in% c(1,0))
+    fname.suffix = 'mRNA_Mod_Pfi'
+    
+    all.markers = sapply(assays, function (a) paste0("TrtA * scale(Day15",a, ",scale=F)"))
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    # table col names
+    col1="TrtA Moderna~Pfizer"
+    col2="center(D15)"
+    col3="TrtA:center(D15)"
+    
+  } else if (iTask==2) {
+    dat=subset(dat.onedosemRNA, TrtB %in% c(1,0))
+    fname.suffix = 'mRNA_Pro_Omi'
+    
+    all.markers = sapply(assays, function (a) paste0("TrtB * scale(Day15",a, ",scale=F)"))
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    # table col names
+    col1="TrtB Prot~Omicron"
+    col2="center(D15)"
+    col3="TrtB:center(D15)"
+    
+  } else if (iTask==3) {
+    dat=subset(dat.onedosemRNA, TrtC %in% c(1,0))
+    fname.suffix = 'mRNA_Bi_Mono'
+    
+    all.markers = sapply(assays, function (a) paste0("TrtC * scale(Day15",a, ",scale=F)"))
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    # table col names
+    col1="TrtC Biv~Monovalent"
+    col2="center(D15)"
+    col3="TrtC:center(D15)"
+  } 
+  
+  source(here::here("code", "cor_coxph_ph_cohort_itxn.R"))
+
+}
+  
 print(date())
 print("cor_coxph run time: "%.%format(Sys.time()-time.start, digits=1))
