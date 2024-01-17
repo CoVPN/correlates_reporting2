@@ -220,16 +220,25 @@ tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t
 rownames(tab.1.nop12)=all.markers.names.short
 
 # scaled markers
-tab.1.scaled=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est.scaled), t(ci.scaled), t(p), p.2, p.1)
+tab.1.scaled=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est.scaled), t(ci.scaled), t(p), if(show.q) p.2, if(show.q) p.1)
 rownames(tab.1.scaled)=all.markers.names.short
 tab.1.scaled
-{
-mytex(tab.1.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_"%.%fname.suffix, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
-    col.headers=paste0("\\hline\n 
+if (show.q) {
+  header=paste0("\\hline\n 
          \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
          \\hline\n 
-    "),
+    ")
+} else {
+  header=paste0("\\hline\n 
+         \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   \\\\ 
+         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)}  \\\\ 
+         \\hline\n 
+    ")
+}
+{
+mytex(tab.1.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_"%.%fname.suffix, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
+    col.headers=header,
     longtable=T, 
     label=paste0("tab:CoR_univariable_svycoxph_pretty_scaled"), 
     caption.placement = "top", 
