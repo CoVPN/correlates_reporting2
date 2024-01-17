@@ -34,6 +34,10 @@ if(!exists("COR")) {
 DESCRIPTIVE = Sys.getenv("DESCRIPTIVE") %in% c("1", "T", "TRUE")
 myprint(DESCRIPTIVE)
 
+# if DESCRIPTIVE env variable is set, then we are doing exposure-proximal analyses
+EXPOSUREPROXIMAL = Sys.getenv("EXPOSUREPROXIMAL") %in% c("1", "T", "TRUE")
+myprint(EXPOSUREPROXIMAL)
+
 
 if(Sys.getenv("TRIAL")=="") {
   stop(" *************************************  environmental variable TRIAL not defined  *************************************")
@@ -524,9 +528,9 @@ dat.mock <- read.csv(path_to_data)
 ###################################################################################################
 # some more data processing
 
-if (!DESCRIPTIVE) {
+if (!DESCRIPTIVE & !EXPOSUREPROXIMAL) {
   
-  # uloq censoring when it is for correlates analyses, not for descriptive analyses
+  # uloq censoring when it is for peak correlates analyses, not for descriptive analyses, or for exposure proximal correlates where decay model uses uncensored values
   for (a in assays) {
     uloq=uloqs[a]
     for (t in c(DayPrefix%.%timepoints)  ) {

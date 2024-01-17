@@ -12,6 +12,9 @@ The main regression model is the Cox proportional hazards model. All plots are m
 \setlength{\tabcolsep}{.5ex}
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}
+`r if (!has.alt) '<!--'`
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`_alt}
+`r if (!has.alt)'-->'`
 \normalsize
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
 

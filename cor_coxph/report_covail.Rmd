@@ -18,15 +18,26 @@
 * D15to91
 
   - Results are similar to D15to181, with less cases and less significant P values.
+  
+  - Prototype vs Omicron inserts
+    * Prototype D15 MDW HR 0.74 (30 cases)
+    * Omicron   D15 MDW HR 0.66 (101 cases)
+    * Prototype baseline MDW HR 0.58
+    * Omicron   baseline MDW HR 0.63
 
-* For D92to181
+* D92to181
 
   - Results are similar to D15to181, but there are some subtleties 
   
   - Effect size is larger for Pfizer, D15 MDW HR 0.33
 
-  - No effect for prototype (only 13 cases), D15 MDW HR 0.90, baseline MDW HR 1.44
+  - Prototype vs Omicron inserts
+    * Prototype D15 MDW HR 0.90 (only 13 cases)
+    * Omicron   D15 MDW HR 0.57 (51 cases)
+    * Prototype baseline MDW HR 1.44
+    * Omicron   baseline MDW HR 0.49 
 
+For mRNA prototype-insert vaccines and mRNA omicron-containing insert vaccines, D15 markers were inverse correlates of risk for COVID-19 occurring proximal to vaccination D22-D91. However, for COVID-19 occurring distal to vaccination D92-D181, the D15 correlate of risk result was totally flat for prototype-insert vaccines whereas the D15 inverse correlate of risk was retained for omicron-containing insert vaccines. This result suggests that immunity from ancestral strain vaccines against omicron strains is weak or absent beyond 3 months post-booster whereas the immunity of omicron-matched vaccines persists through 6 months. These results are consistent with literature on short-lived booster efficacy of ancestral-strain mRNA vaccines against omicron COVID-19.
  
 \vspace{.5cm}
 
@@ -35,11 +46,20 @@
 \vspace{.5cm}
 **Peak Obj 2 Naive x D15 interaction**
 
-* D15to181: Significant interaction between naive and D15 markers. MDW ratio of HRs 1.96 
+* D15to181: Significant interaction between naive and D15 markers. 
+    - D15 MDW HR 0.30 (0.09-0.99) among non-naive
+    - D15 MDW HR 0.61 (0.42-0.90) among naive
+    - Ratio of HRs 1.96 (P value 0.025)
 
-* D15to91: Significant interaction between naive and D15 markers. MDW ratio of HRs 2.74
+* D15to91: Significant interaction between naive and D15 markers. 
+    - D15 MDW HR 0.33 (0.19-0.56) among non-naive
+    - D15 MDW HR 0.91 (0.63-1.30) among naive
+    - Ratio of HRs 2.74 (P value 0.002)
   
-* D92to181: Not significant interaction between naive and D15 markers. MDW ratio of HRs 0.70 
+* D92to181: Not significant interaction between naive and D15 markers.  
+    - D15 MDW HR 0.83 (0.21-3.27) among non-naive
+    - D15 MDW HR 0.59 (0.36-0.94) among naive
+    - Ratio of HRs 0.70 (P value 0.632)
 
 
 \vspace{.5cm}
@@ -99,10 +119,12 @@ for (iObj in c(1,2,3)) {
         
       } else if (iObj==2) {
         fname.suffix = fname.suffix %.% "_NxD15"
+        has.alt = T
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
         
       } else if (iObj==3) {
         fname.suffix = fname.suffix %.% "_BxD15"
+        has.alt = F
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
         
       }
