@@ -530,7 +530,9 @@ if (!DESCRIPTIVE) {
   for (a in assays) {
     uloq=uloqs[a]
     for (t in c(DayPrefix%.%timepoints)  ) {
-      dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloq), log10(uloq), dat.mock[[t %.% a]])
+      if ('t'%.%a %in% names(dat.mock)) {
+        dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloq), log10(uloq), dat.mock[[t %.% a]])
+      }
     }
     # process baseline marker if exists
     if ('B'%.%a %in% names(dat.mock)) {

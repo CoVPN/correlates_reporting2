@@ -35,27 +35,27 @@
 \vspace{.5cm}
 **Peak Obj 2 Naive x D15 interaction**
 
-* D15to181: Significant interaction between naive and D15 markers. MDW HR 1.96 
+* D15to181: Significant interaction between naive and D15 markers. MDW ratio of HRs 1.96 
 
-* D15to91: Significant interaction between naive and D15 markers. MDW HR 2.74
+* D15to91: Significant interaction between naive and D15 markers. MDW ratio of HRs 2.74
   
-* D92to181: Not significant interaction between naive and D15 markers. MDW HR 0.70 
+* D92to181: Not significant interaction between naive and D15 markers. MDW ratio of HRs 0.70 
 
 
 \vspace{.5cm}
 **Peak Obj 3 Baseline x D15 interaction**
 
-* D15to181: Significant interaction between baseline and D15 markers. MDW HR 0.56
+* D15to181: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.56
 
-  - Larger interaction for Pfizer (MDW HR 0.26) than for Moderna (MDW HR 0.63)
+  - Larger interaction for Pfizer (MDW ratio of HRs 0.26) than for Moderna (MDW ratio of HRs 0.63)
   
-  - Similar interaction between Prototype (MDW HR 0.47) and Omicron (MDW HR 0.60)
+  - Similar interaction between Prototype (MDW ratio of HRs 0.47) and Omicron (MDW ratio of HRs 0.60)
   
-  - Larger interaction for Monovalent (MDW HR 0.38) than for Moderna (MDW HR 0.68)
+  - Larger interaction for Monovalent (MDW ratio of HRs 0.38) than for Moderna (MDW ratio of HRs 0.68)
 
-* D15to91: Significant interaction between baseline and D15 markers. MDW HR 0.55
+* D15to91: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.55
 
-* D92to181: Significant interaction between baseline and D15 markers. MDW HR 0.56
+* D92to181: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.56
 
 
 \vspace{.5cm}
