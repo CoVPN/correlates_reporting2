@@ -27,15 +27,12 @@ rows=(rows-2):rows
 est=getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=1)
 ci= getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=13)
 p=  getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=10)
-est.scaled=getFormattedSummary(fits.scaled, exp=T, robust=F, rows=rows, type=1)
-ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=F, rows=rows, type=13)
 
 pvals.cont = sapply(fits, function(x) {
     tmp=getFixedEf(x)
     p.val.col=which(startsWith(tolower(colnames(tmp)),"p"))
     tmp[nrow(tmp),p.val.col]
 })
-
 
 
 tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), 
@@ -61,3 +58,6 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%fname.suffix, align=
     caption.placement = "top", 
     caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios per 10-fold increment in the marker*")
 )
+
+
+# if one of the variables in the interaction is binary, then it is often of interest to estimate the effect sizes in the two strata separately

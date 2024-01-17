@@ -1,12 +1,10 @@
 # COR="D15to181"
-
-Sys.setenv(TRIAL = "covail")
-Sys.setenv(VERBOSE = 1) 
-renv::activate(project = here::here(".."))     
+Sys.setenv(TRIAL = "covail"); renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R")) 
+
+{
+Sys.setenv(VERBOSE = 1) 
 source(here::here("code", "params.R"))
-
-
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(xtable) # this is a dependency of kyotil
 library(marginalizedRisk)
@@ -67,11 +65,13 @@ if (COR=="D15to181") {
 
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 
+}
+
 
 ################################################################################
 # Peak Obj 1-3
 
-for (iObj in c(1,2,3)) {
+for (iObj in c(1,2,21,3)) {
   
   # define all.markers
   if(iObj==1) {
@@ -86,6 +86,15 @@ for (iObj in c(1,2,3)) {
     col1="naive"
     col2="center(D15)"
     col3="naive:center(D15)"
+    
+  } else if(iObj==21){
+    # same as 2, except naive is replaced by 1-naive
+    all.markers = sapply(assays, function (a) paste0("I(1-naive) * scale(Day15",a, ",scale=F)"))
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    # table col names
+    col1="I(1-naive)"
+    col2="center(D15)"
+    col3="I(1-naive):center(D15)"
     
   } else if(iObj==3){
     all.markers = sapply(assays, function (a) paste0("scale(B",a, ") * scale(Day15",a, ",scale=F)"))
@@ -130,6 +139,10 @@ for (iObj in c(1,2,3)) {
       
     } else if(iObj==2) {
       fname.suffix = paste0(fname.suffix, "_NxD15")
+      source(here::here("code", "cor_coxph_ph_cohort_itxn.R"))
+      
+    } else if(iObj==21) {
+      fname.suffix = paste0(fname.suffix, "_NxD15_alt")
       source(here::here("code", "cor_coxph_ph_cohort_itxn.R"))
       
     } else if(iObj==3) {
