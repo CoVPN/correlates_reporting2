@@ -1,5 +1,9 @@
 # for datasets where markers are measured for everyone in the cohort
 
+# make two tables. 
+# one for continuous markers, each row is a model. 
+# two is for trichotomized or dichotomized marker, 3 rows per model
+
 # control whether fwer and q values are shown in tables
 if (is.null(show.q)) show.q=T
 
