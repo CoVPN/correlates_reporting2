@@ -138,7 +138,7 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
             column_label_size = ifelse(max(nchar(paste(assay_metadata$assay_label_short)))>28, 4, 6.5),
             filename = paste0(
                 save.results.to, "/pairs_by_time_", t,
-                "_15_markers_", grp, ".pdf"
+                "_", length(assays_sub), "_markers_", grp, ".pdf"
             )
         )
         
@@ -146,27 +146,47 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
 }
 
 ###### Set 4 plots: Correlation plots for a given marker across time points
-# 15 markers, by naive/non-naive, vaccine/placebo
+# all markers, by naive/non-naive, vaccine/placebo, pooling cases and non-cases
 for (a in assays){
+    panels_set <- list()
+    i <- 1
     
-    if (a == "bindSpike_mdw") {y_lim = c(-6, 11)
-    } else if (a == "pseudoneutid50_mdw") {y_lim = c(-4, 6)
-    } else {y_lim = c(0, 5.2)}
-        
-    f_4 <- f_longitude_by_assay(
-        dat = dat.longer.immuno.subset.plot1,
-        x.var = "time",
-        x.lb = c("D1","D22","D43"),
-        assays = a,
-        ylim = y_lim,
-        times = c("B","Day22","Day43"),
-        strip.text.x.size = 25,
-        strip.text.y.size = 22,
-        panel.text.size = 6,
-        facet.y.var = vars(Trt_nnaive), 
-        facet.x.var = vars(assay_label_short)
+    for (trt in c("Vaccine", "Placebo")){
+        for (bsero in c(0, 1)){
+            times_sub = c("B", paste0("Day", timepoints))
+            
+            panels_set[[i]] = covid_corr_pairplots(
+                plot_dat = dat.immuno.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero),
+                time = times_sub,
+                assays = a,
+                strata = "all_one",
+                weight = "wt.subcohort",
+                plot_title = "",
+                column_labels = times_sub,
+                height = 5.5,
+                width = 5.5,
+                column_label_size = 10,
+                write_to_file = F
+            ) 
+            i = i + 1
+        }
+    }
+    
+    y.grob.1 <- textGrob("Vaccine", gp=gpar(fontface="bold", col="black", fontsize=9))
+    y.grob.2 <- textGrob("Placebo", gp=gpar(fontface="bold", col="black", fontsize=9))
+    y.grob.3 <- textGrob("Naive", gp=gpar(fontface="bold", col="black", fontsize=9))
+    y.grob.4 <- textGrob("Non-naive", gp=gpar(fontface="bold", col="black", fontsize=9))
+    
+    #add to plot
+    combined_p <- grid.arrange(
+        grid.arrange(arrangeGrob(plot_grid(
+            arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.3), arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.4)), left = y.grob.1), nrow=1),
+        grid.arrange(arrangeGrob(plot_grid(
+            ggmatrix_gtable(panels_set[[3]]), ggmatrix_gtable(panels_set[[4]])), left = y.grob.2), nrow=1),
+        #bottom = x.grob,
+        ncol = 1
     )
     
-    file_name <- paste0("/", a, "_longitudinal.pdf")
-    ggsave(plot = f_4, filename = paste0(save.results.to, file_name), width = 9, height = 9)
+    ggsave(filename = paste0(
+        save.results.to, "/pairs_across_timepoints_", a, ".pdf"), plot = combined_p, width = 8, height = 10, units="in")
 }

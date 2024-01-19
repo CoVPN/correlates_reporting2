@@ -5,8 +5,8 @@
 #' @param dat.sample Random sample of the param dat for generating dots (showing all dots may be too much)
 #' @param x X variable on x-axis
 #' @param y Y variable on y-axis
-#' @param colby Variables to specify box/dot/line/violin colors
-#' @param shaby Variables to specify dot shapes
+#' @param colby a factor variable to specify box/dot/line/violin colors
+#' @param shaby a factor variable to specify dot shapes
 #' @param ylim Y-axis limits
 #' @param ybreaks Y-axis breaks
 #' @param ytitle X variable title
@@ -19,8 +19,8 @@
 #' @param group.num Number of case/non-case groups
 #' @param col Color options for the colby param
 #' @param shape Shape options for the shapeby param
-#' @param col_lb Color lbs for the colby param
-#' @param shp_lb Shape lbs for the shapeby param
+#' @param col_lb Color breaks for the colby param
+#' @param shp_lb Shape breaks for the shapeby param
 #' @param prop.cex Font size for text within panels, n & response rate
 #' @param ll.cex Font size for text within panels, eg: llod, pos.cut, uloq
 #' @param rate.y.pos Y coordinate for showing response rate eg: "7.7"
@@ -88,8 +88,8 @@ violin_box_plot <-
     scale_x_discrete(labels=xlabel, drop=FALSE) +
     scale_y_continuous(limits=ylim, breaks=ybreaks, labels=math_format(10^.x)) +
     labs(x=xtitle, y=ytitle, title=toptitle, color="Category", shape="Category") +
-    scale_color_manual(values=col, labels=col_lb, drop=FALSE) +
-    scale_shape_manual(values=shape, labels=shp_lb, drop=FALSE) +
+    scale_color_manual(values=col, breaks=col_lb, drop=FALSE) +
+    scale_shape_manual(values=shape, breaks=shp_lb, drop=FALSE) +
     theme(plot.margin = unit(c(0.25,0.25,0.25,0.25), "in"),
           text = element_text(size=global.size),
           plot.title = element_text(hjust = 0.5),
