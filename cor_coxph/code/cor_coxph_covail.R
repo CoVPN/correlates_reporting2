@@ -2,6 +2,7 @@
 Sys.setenv(TRIAL = "covail"); renv::activate(project = here::here(".."))
 source(here::here("..", "_common.R")) 
 
+
 {
 Sys.setenv(VERBOSE = 1) 
 source(here::here("code", "params.R"))
@@ -38,7 +39,7 @@ dat.onedosemRNA = subset(dat.mock, ph1.D15 & TrtonedosemRNA==1) # TrtonedosemRNA
 dat.onedosemRNA$ph2=T
 
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
-all.markers = c("B"%.%assays, "Day15"%.%assays)
+all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
 dat.onedosemRNA = add.trichotomized.markers (dat.onedosemRNA, all.markers, ph2.col.name="ph2", wt.col.name="wt.D15")
 marker.cutpoints = attr(dat.onedosemRNA, "marker.cutpoints")
 
@@ -71,38 +72,67 @@ assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta"
 ################################################################################
 # Peak Obj 1-3
 
-for (iObj in c(1,2,21,3)) {
+for (iObj in c(1,2,21,3,31,32)) {
   
   # define all.markers
   if(iObj==1) {
-    all.markers = c("B"%.%assays, "Day15"%.%assays)
+    all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
     all.markers.names.short = assay_metadata$assay_label_short[match(assays,assay_metadata$assay)]
-    all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short)
+    all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
     
   } else if(iObj==2){
-    all.markers = sapply(assays, function (a) paste0("naive * scale(Day15",a, ",scale=F)"))
+    # interaction naive x D15 marker
+    all.markers = c(sapply(assays, function (a) paste0("naive * scale(Day15",a, ",scale=F)")),
+                    sapply(assays, function (a) paste0("naive * scale(Delta15overB",a, ",scale=F)")))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    # table col names
-    col1="naive"
-    col2="center(D15)"
-    col3="naive:center(D15)"
+    all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
+    # parameters for R script
+    nCoef=3
+    col.headers=c("naive", "center(D15 or fold)", "naive:center(D15 or fold)")
     
   } else if(iObj==21){
-    # same as 2, except naive is replaced by 1-naive
-    all.markers = sapply(assays, function (a) paste0("I(1-naive) * scale(Day15",a, ",scale=F)"))
+    # interaction (1-naive) x D15 marker
+    all.markers = c(sapply(assays, function (a) paste0("I(1-naive) * scale(Day15",a, ",scale=F)")),
+                    sapply(assays, function (a) paste0("I(1-naive) * scale(Delta15overB",a, ",scale=F)")))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    # table col names
-    col1="I(1-naive)"
-    col2="center(D15)"
-    col3="I(1-naive):center(D15)"
-    
+    all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
+    nCoef=3
+    col.headers=c("I(1-naive)", "center(D15 or fold)", "I(1-naive):center(D15 or fold)")
+
   } else if(iObj==3){
-    all.markers = sapply(assays, function (a) paste0("scale(B",a, ") * scale(Day15",a, ",scale=F)"))
+    # interaction B marker x D15 marker or D15/B
+    all.markers = c(sapply(assays, function (a) paste0("scale(B",a, ",scale=F) * scale(Day15",a, ",scale=F)")),
+                    sapply(assays, function (a) paste0("scale(B",a, ",scale=F) * scale(Delta15overB",a, ",scale=F)"))
+    )
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
+    # parameters for R script
+    nCoef=3
+    col.headers=c("center(B)", "center(D15 or fold)", "center(B):center(D15 or fold)")
+    
+  } else if(iObj==31){
+    # B_cat marker x D15 marker or D15/B
+    all.markers = c(sapply(assays, function (a) paste0("B",a, "cat * scale(Day15",a, ",scale=F)")),
+                    sapply(assays, function (a) paste0("B",a, "cat * scale(Delta15overB",a, ",scale=F)")))
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
     # table col names
-    col1="center(B)"
-    col2="center(D15)"
-    col3="center(B):center(D15)"
+    col1="Med B:center(D15 or fold)"
+    col2="High B:center(D15 or fold)"
+    col3="center(D15 or fold) at Low B"
+    col4="center(D15 or fold) at Med B"
+    col5="center(D15 or fold) at High B"
+    
+  } else if(iObj==32){
+    # B marker + D15/B
+    all.markers = sapply(assays, function (a) paste0("scale(B",a, ",scale=F) + scale(Delta15overB",a, ",scale=F)")
+    )
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    all.markers.names.short = all.markers.names.short
+    # parameters for R script
+    nCoef=2
+    col.headers=c("center(B)", "center(D15/B)")
+    
   }
   
   # same formula, repeated 7 times
@@ -139,15 +169,23 @@ for (iObj in c(1,2,21,3)) {
       
     } else if(iObj==2) {
       fname.suffix = paste0(fname.suffix, "_NxD15")
-      source(here::here("code", "cor_coxph_ph_cohort_itxn.R"))
+      source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
       
     } else if(iObj==21) {
-      fname.suffix = paste0(fname.suffix, "_NxD15_alt")
-      source(here::here("code", "cor_coxph_ph_cohort_itxn.R"))
+      fname.suffix = paste0(fname.suffix, "_NxD15_2")
+      source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
       
     } else if(iObj==3) {
       fname.suffix = paste0(fname.suffix, "_BxD15")
-      source(here::here("code", "cor_coxph_ph_cohort_itxn.R"))
+      source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
+      
+    } else if(iObj==31) {
+      fname.suffix = paste0(fname.suffix, "_BxD15_cat")
+      source(here::here("code", "cor_coxph_ph_cohort_itxn_cat.R"))
+      
+    } else if(iObj==32) {
+      fname.suffix = paste0(fname.suffix, "_B+D15")
+      source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
       
     }
     
@@ -166,10 +204,9 @@ for (iTask in 1:3) {
     
     all.markers = sapply(assays, function (a) paste0("TrtA * scale(Day15",a, ",scale=F)"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    # table col names
-    col1="TrtA Moderna~Pfizer"
-    col2="center(D15)"
-    col3="TrtA:center(D15)"
+    # parameters for R script
+    nCoef=3
+    col.headers=c("TrtA Moderna~Pfizer", "center(D15)", "TrtA:center(D15)")
     
   } else if (iTask==2) {
     dat=subset(dat.onedosemRNA, TrtB %in% c(1,0))
@@ -177,10 +214,9 @@ for (iTask in 1:3) {
     
     all.markers = sapply(assays, function (a) paste0("TrtB * scale(Day15",a, ",scale=F)"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    # table col names
-    col1="TrtB Prot~Omicron"
-    col2="center(D15)"
-    col3="TrtB:center(D15)"
+    # parameters for R script
+    nCoef=3
+    col.headers=c("TrtB Prot~Omicron", "center(D15)", "TrtB:center(D15)")
     
   } else if (iTask==3) {
     dat=subset(dat.onedosemRNA, TrtC %in% c(1,0))
@@ -188,13 +224,12 @@ for (iTask in 1:3) {
     
     all.markers = sapply(assays, function (a) paste0("TrtC * scale(Day15",a, ",scale=F)"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    # table col names
-    col1="TrtC Biv~Monovalent"
-    col2="center(D15)"
-    col3="TrtC:center(D15)"
+    # parameters for R script
+    nCoef=3
+    col.headers=c("TrtC Biv~Monovalent", "center(D15)", "TrtC:center(D15)")
   } 
   
-  source(here::here("code", "cor_coxph_ph_cohort_itxn.R"))
+  source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
 
 }
   

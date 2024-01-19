@@ -34,7 +34,7 @@ if(!exists("COR")) {
 DESCRIPTIVE = Sys.getenv("DESCRIPTIVE") %in% c("1", "T", "TRUE")
 myprint(DESCRIPTIVE)
 
-# if DESCRIPTIVE env variable is set, then we are doing exposure-proximal analyses
+# if EXPOSUREPROXIMAL env variable is set, then we are doing exposure-proximal analyses
 EXPOSUREPROXIMAL = Sys.getenv("EXPOSUREPROXIMAL") %in% c("1", "T", "TRUE")
 myprint(EXPOSUREPROXIMAL)
 

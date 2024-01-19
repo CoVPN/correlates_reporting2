@@ -1,3 +1,4 @@
+{
 library(survey)
 library(kyotil)
 
@@ -9,6 +10,23 @@ assays=assay_metadata$assay
 country.codes=c("USA", "ARG", "BRA", "CHL", "COL", "MEX", "PER", "ZAF")
 dat_mapped$cc=country.codes[dat_mapped$Country+1]
 dat_proc$cc=country.codes[dat_proc$Country+1]
+}
+
+
+
+################################################################################
+# correlation between two ancestral ID50 markers
+
+corplot(Day29bindSpike~Day29bindSpike_D614, dat_mapped)
+
+corplot(Day29bindSpike~Day29bindSpike_D614, dat_mapped[dat_mapped$Day29bindSpike>1,])
+
+mytable(!is.na(dat_mapped$Day29bindSpike), !is.na(dat_mapped$Day29bindSpike_D614))
+mytable(!is.na(dat_mapped$Day29pseudoneutid50), !is.na(dat_mapped$Day29pseudoneutid50_Lambda))
+
+dat=dat_mapped[,"Day29"%.%assays[c(1,4:13)]]
+names(dat)=sub("Day29bindSpike","",names(dat))
+mypairs(dat)
 
 ################################################################################
 # missingness pattern
@@ -20,6 +38,8 @@ kpc= with(dat_mapped, !(is.na(EventIndPrimaryIncludeNotMolecConfirmedD29) | Even
 # an alias for subcohort
 subc = dat_mapped$SubcohortInd==1
 
+
+mytable(!is.na(dat_mapped$Day29bindSpike), !is.na(dat_mapped$Day29bindSpike_D614), kpc)
 
 
 # bindRBD and bindSpike is all or none
@@ -67,6 +87,14 @@ table(!is.na(dat_mapped[kp,"Day29pseudoneutid50_Lambda"]), !is.na(dat_mapped[kp,
 table(!is.na(dat_mapped[kp & dat_mapped$SubcohortInd,"Day29pseudoneutid50_Lambda"]), !is.na(dat_mapped[kp & dat_mapped$SubcohortInd,"Day29pseudoneutid50"]))
 
 
+# 98 COL ptids sampled for variants study
+dat=subset(dat_mapped, cc=="COL" & !subc & !is.na(Day29bindSpike_D614) & !kpc); nrow(dat)
+summary(dat)
+
+
+table(!is.na(dat_mapped[kp,"Day29bindSpike_D614"]), !is.na(dat_mapped[kp,"Day29bindSpike"]), subc[kp])
+
+table(!is.na(dat_mapped[kp,"Day29pseudoneutid50_Lambda"]), !is.na(dat_mapped[kp,"Day29pseudoneutid50"]), subc[kp])
 
 
 with(dat_mapped[select & dat_mapped$Region==0, ], table(!is.na(Day29bindSpike), !is.na(Day29bindSpike_D614)))
@@ -89,23 +117,23 @@ with(dat_mapped[select & dat_mapped$Region==1, ], table(!is.na(Day29pseudoneutid
 # no delta in region 1, but there is in 0 and 2
 
 
-# missingness across MSD variants bAb in all
+# missingness is all or none for the MSD panel bAb 
 dat=dat_mapped
-for (i in 4:13) {
+for (i in c(1,4:13)) {
   dat[['tmp'%.%i]]=ifelse(is.na(dat[["Day29"%.%assays[i]]]), 0, 1)
 }
-dat$tmp=with(dat,paste0(tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10,tmp11,tmp12,tmp13))
-table(dat$tmp)
+dat$tmp=with(dat,paste0(tmp1, tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10,tmp11,tmp12,tmp13))
+table(dat$tmp[dat$Region==1], kpc[dat$Region==1])
 
 
 # missingness across variants nAb
 # among controls, all or nothing separately withinn {zeta, mu, gamma, lambda} and {Delta, Beta}
-dat=dat_mapped[kp,]
-for (i in 15:20) {
+dat=dat_mapped#[kp,]
+for (i in 14:20) {
   dat[['tmp'%.%i]]=ifelse(is.na(dat[["Day29"%.%assays[i]]]), 0, 1)
 }
-dat$tmp=with(dat,paste0(tmp15,tmp16,tmp17,tmp18,tmp19,tmp20))
-table(dat$tmp)
+dat$tmp=with(dat,paste0(tmp14,tmp15,tmp16,tmp17,tmp18,tmp19,tmp20))
+table(dat$tmp[dat$Region==1], kpc[dat$Region==1])
 
 
 with(dat_mapped, table(!is.na(Day29bindSpike), !is.na(Day29bindSpike_D614), Region))

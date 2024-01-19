@@ -1,11 +1,13 @@
+{
 library(survey)
 library(kyotil)
 
 # "Colombia" = 1, "Ghana" = 2, "Honduras" = 3, "India" = 4, "Japan" = 5, "Kenya" = 6, "Nepal" = 7, "United States" = 8, "Mexico" = 9, "Uganda" = 10, "Ukraine" = 11
 country.codes=c("Colombia", "Ghana", "Honduras", "India", "Japan", "Kenya", "Nepal", "United States", "Mexico", "Uganda", "Ukraine")
 
-dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240108.csv')
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240111.csv')
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240117.csv')
+# dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240111.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240117.csv')
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
 assays=assay_metadata$assay
 
@@ -21,7 +23,7 @@ dat_mapped$SUBJID = sub("VAT00008-","",dat_mapped$Subjectid)
 dat_mapped$SUBJID = gsub("-","",dat_mapped$SUBJID,)
 dat_proc$SUBJID = sub("VAT00008-","",dat_proc$Ptid)
 dat_proc$SUBJID = gsub("-","",dat_proc$SUBJID,)
-
+}
 
 ################################################################################
 # check which ptids are in which batch
@@ -103,12 +105,12 @@ dat=subset(dat_proc, Trialstage==2 & ph1.D43)
 
 f=Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1) ~ Bserostatus+Trt+strata(Country)
 
-fit.1=coxph(update(f, ~.+ standardized_risk_score + FOI + Sex), dat)
+fit.1=coxph(update(f, ~.+ standardized_risk_score + FOI + Sex), dat); summary(fit.1)
 fit.2=coxph(update(f, ~.+ FOI + Sex), dat)
 fit.3=coxph(update(f, ~.+ standardized_risk_score + Sex), dat)
 fit.4=coxph(update(f, ~.+ standardized_risk_score + FOI), dat)
 
-summary(fit.1)
+
 anova(fit.1, fit.2)
 anova(fit.1, fit.3)
 anova(fit.1, fit.4)
