@@ -66,6 +66,10 @@ if (COR=="D15to181") {
 
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 
+# parameters for ph R scripts
+use.svy = F 
+has.plac = F
+show.q = F
 }
 
 
@@ -165,27 +169,27 @@ for (iObj in c(1,2,21,3,31,32)) {
     } 
     
     if(iObj==1) {
-      source(here::here("code", "cor_coxph_ph_cohort.R"))
+      source(here::here("code", "cor_coxph_ph.R"))
       
     } else if(iObj==2) {
       fname.suffix = paste0(fname.suffix, "_NxD15")
-      source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
+      source(here::here("code", "cor_coxph_ph_coef.R"))
       
     } else if(iObj==21) {
       fname.suffix = paste0(fname.suffix, "_NxD15_2")
-      source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
+      source(here::here("code", "cor_coxph_ph_coef.R"))
       
     } else if(iObj==3) {
       fname.suffix = paste0(fname.suffix, "_BxD15")
-      source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
+      source(here::here("code", "cor_coxph_ph_coef.R"))
       
     } else if(iObj==31) {
       fname.suffix = paste0(fname.suffix, "_BxD15_cat")
-      source(here::here("code", "cor_coxph_ph_cohort_coef_itxn3.R"))
+      source(here::here("code", "cor_coxph_ph_coef_itxn3.R"))
       
     } else if(iObj==32) {
       fname.suffix = paste0(fname.suffix, "_B+D15")
-      source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
+      source(here::here("code", "cor_coxph_ph_coef.R"))
       
     }
     
@@ -229,7 +233,7 @@ for (iTask in 1:3) {
     col.headers=c("TrtC Biv~Monovalent", "center(D15)", "TrtC:center(D15)")
   } 
   
-  source(here::here("code", "cor_coxph_ph_cohort_coef.R"))
+  source(here::here("code", "cor_coxph_ph_coef.R"))
 
 }
   

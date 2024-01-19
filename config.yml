@@ -361,6 +361,7 @@ covail: &covail
   low_efficacy: no
   num_boot_replicates: 10
   num_perm_replicates: 10
+  primary_assays: []
 
 
 # vat08m_nonnaive: &vat08m_nonnaive

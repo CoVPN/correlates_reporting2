@@ -1,3 +1,5 @@
+# can be updated to deal with two phase
+
 # for datasets where markers are measured for everyone in the cohort
 
 # for interaction between a continuous marker and a trichotomized marker
@@ -17,7 +19,6 @@ if(verbose) print("Regression for continuous markers")
 
 fits=list()
 p.gwalds=c()
-p.likras=c()
 # for making a table of effects of continuous variables in the 3 levels
 est.2=NULL
 ci.2=NULL
@@ -25,20 +26,30 @@ p.2=NULL
 for (a in all.markers) {
     f = update(form.0, as.formula(paste0("~.+", a)))
     
-    fit=coxph(f, dat) 
-    fits[[a]]=fit
+    if (use.svy) {
+      fits[[a]]=svycoxph(f, design=design.dat) 
+    } else {
+      fits[[a]]=coxph(f, dat) 
+    }
     
-    # likelihood ratio test
-    f.1 = update(form.0, as.formula(paste0("~.+", sub("\\*","\\+",a))))
-    p.likra= anova(fits[[a]], coxph(f.1, dat))$P[2]
-    p.likras=c(p.likras, p.likra)
+    fit=fits[[a]]
+    
+    if (use.svy) {
+      # generalized Wald test for interaction terms
+      var.ind=length(coef(fit))-1:0
+      stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
+      p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE); p.gwald
+      p.gwalds=c(p.gwalds, p.gwald)
+      
+    } else {
+      # likelihood ratio test if we are not doing two phase
+      # still use p.gwalds to hold results
+      f.1 = update(form.0, as.formula(paste0("~.+", sub("\\*","\\+",a))))
+      p.likra= anova(fit, coxph(f.1, dat))$P[2]
+      p.gwalds=c(p.gwalds, p.likra)
+    
+    }
 
-    # generalized Wald test for interaction terms
-    var.ind=length(coef(fit))-1:0
-    stat=coef(fit)[var.ind] %*% solve(vcov(fit)[var.ind,var.ind]) %*% coef(fit)[var.ind] 
-    p.gwald=pchisq(stat, length(var.ind), lower.tail = FALSE); p.gwald
-    p.gwalds=c(p.gwalds, p.gwald)
-    
     # get effects in l/m/h
     res=sapply(1:3, function (i) {
       if (i==1) var.ind=length(coef(fit))-c(2)
@@ -74,13 +85,12 @@ p=  getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=10)
 tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), 
             est[1,], ci[1,], p[1,],
             est[2,], ci[2,], p[2,],
-            formatDouble(p.likras, 3, remove.leading0 = F))
-#           formatDouble(p.gwalds, 3, remove.leading0 = F))
+          formatDouble(p.gwalds, 3, remove.leading0 = F))
 rownames(tab.1)=all.markers.names.short
 tab.1
 
 header=paste0("\\hline\n 
-       \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{}                         & \\multicolumn{3}{c}{",col1,"}   & \\multicolumn{3}{c}{",col2,"}   & \\multicolumn{1}{c}{Lik Ratio}    \\\\ 
+       \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{}                         & \\multicolumn{3}{c}{",col1,"}   & \\multicolumn{3}{c}{",col2,"}   & \\multicolumn{1}{c}{",ifelse(use.svy,"Generalized Wald","Lik Ratio"),"}    \\\\ 
        \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{No. cases /}              & \\multicolumn{2}{c}{Ratio of HRs}                      & \\multicolumn{1}{c}{P-value}   & \\multicolumn{2}{c}{Ratio of HRs}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{P-value}    \\\\ 
        \\multicolumn{1}{l}{Immunologic Marker}  & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI}  & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{}   \\\\ 
        \\hline\n 

@@ -1,46 +1,45 @@
-# for datasets where markers are measured for everyone in the cohort
-
-# make a coef table showing the last nCoef coefficients. Each row is a model
-# nCoef=3, used for interaction between two continuous models
-# nCoef=2, used for model with two continuous effects of interest
+# Make a table to report HR, CI and P value of the last nCoef coefficients. One model per row
 # nCoef=1, used for model with one continuous effect of interest
+# nCoef=2, used for model with two continuous effects of interest
+# nCoef=3, used for interaction between two continuous models
+
+# no multitesting b/c we usually do multitesting across continuous and discrete variables
+
+# mandatory input: 
+
+# all.markers, which defines the formula and can be flexible, e.g., Bmarkercat * scale(Day15marker,scale=F)
 
 
-# control whether fwer and q values are shown in tables
-if (is.null(show.q)) show.q=T
+# Optional input
+if (is.null(use.svy)) use.svy=T 
+# controls whether we are using survey package to handle two-phase samples or coxph for cohort
+# for svy, we expect design.dat
+# for coxph, we expect dat
 
-###################################################################################################
-if(verbose) print("Regression for continuous markers")
-
-# Report point and 95\% confidence interval estimates for the hazard ratio per 10-fold change in the antibody marker, 
-# for the entire baseline negative vaccine cohort
 
 {
 fits=list()
 for (a in all.markers) {
     f= update(form.0, as.formula(paste0("~.+", a)))
-    fits[[a]]=coxph(f, dat) 
+    if (use.svy) {
+      fits[[a]]=svycoxph(f, design=design.dat) 
+    } else {
+      fits[[a]]=coxph(f, dat) 
+    }
 }
 
 
-natrisk=nrow(dat)
-nevents=sum(dat$yy==1)
-
-# make pretty table
+{
 rows=length(coef(fits[[1]]))
 rows=(rows-(nCoef-1)):rows
-# robust=F b/c not an option to use robust=T for coxph, but it is a required argument for getFormattedSummary
-est=getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=1)
-ci= getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=13)
-p=  getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=10)
-
-pvals.cont = sapply(fits, function(x) {
-    tmp=getFixedEf(x)
-    p.val.col=which(startsWith(tolower(colnames(tmp)),"p"))
-    tmp[nrow(tmp),p.val.col]
-})
+# robust=use.svy b/c not an option to use robust=T for coxph, but it is a required argument for getFormattedSummary
+est=getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=1)
+ci= getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=13)
+p=  getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=10)
 }
-
+  
+natrisk=nrow(dat)
+nevents=sum(dat$yy==1)
 
 tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), 
             est[1,], ci[1,], p[1,])
@@ -51,14 +50,12 @@ if (nCoef>1) {
 rownames(tab.1)=all.markers.names.short
 tab.1
 
-
 header=paste0("\\hline\n 
        \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{}", concatList(paste0("& \\multicolumn{3}{c}{",col.headers,"} ")), "   \\\\ 
        \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{No. cases /}   ", concatList(rep("& \\multicolumn{2}{c}{HR per 10-fold incr.} & \\multicolumn{1}{c}{P-value}",nCoef)), "  \\\\ 
        \\multicolumn{1}{l}{Immunologic Marker}  & \\multicolumn{1}{c}{No. at-risk**} ", concatList(rep("& \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)}", nCoef)), "  \\\\ 
        \\hline\n 
   ")
-
 
 # keep svycoxph in the name so that we can reuse rmd file
 mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%fname.suffix, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
@@ -70,4 +67,10 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%fname.suffix, align=
 )
 
 
-# if one of the variables in the interaction is binary, then it is often of interest to estimate the effect sizes in the two strata separately
+pvals.cont = sapply(fits, function(x) {
+  tmp=getFixedEf(x)
+  p.val.col=which(startsWith(tolower(colnames(tmp)),"p"))
+  tmp[nrow(tmp),p.val.col]
+})
+}
+
