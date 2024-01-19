@@ -148,22 +148,22 @@ for (iObj in c(1,32,2,3,31)) { #tables made in 21 is part of the 2
       } else if (iObj==2) {
         fname.suffix = fname.suffix %.% "_NxD15"
         has.alt = T
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
       } else if (iObj==3) {
         fname.suffix = fname.suffix %.% "_BxD15"
         has.alt = F
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
       } else if (iObj==31) {
         fname.suffix = fname.suffix %.% "_BxD15_cat"
         has.alt = T
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
       } else if (iObj==32) {
         fname.suffix = fname.suffix %.% "_B+D15"
         has.alt = F
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
       }
       cat(res, sep = '\n')
@@ -188,7 +188,7 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
       '3' = 'mRNA_Bi_Mono'
     )  
     has.alt = F
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_conttab.Rmd')), quiet = TRUE)
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
   

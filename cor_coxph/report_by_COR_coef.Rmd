@@ -7,7 +7,7 @@ if(is.null(fname.suffix)) fname.suffix = ''
 
 The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise. One model per row.
 
-### Hazard ratios
+<!-- ### Hazard ratios -->
 
 \setlength{\tabcolsep}{.5ex}
 \small

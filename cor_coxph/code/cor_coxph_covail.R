@@ -181,7 +181,7 @@ for (iObj in c(1,2,21,3,31,32)) {
       
     } else if(iObj==31) {
       fname.suffix = paste0(fname.suffix, "_BxD15_cat")
-      source(here::here("code", "cor_coxph_ph_cohort_itxn_cat.R"))
+      source(here::here("code", "cor_coxph_ph_cohort_coef_itxn3.R"))
       
     } else if(iObj==32) {
       fname.suffix = paste0(fname.suffix, "_B+D15")
