@@ -54,10 +54,10 @@ nevents=sum(dat$yy==1)
 # make pretty table
 rows=length(coef(fits[[1]]))
 est=getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=1)
-ci= getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=13)
+ci= getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=7)
 p=  getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=10)
 est.scaled=getFormattedSummary(fits.scaled, exp=T, robust=use.svy, rows=rows, type=1)
-ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=use.svy, rows=rows, type=13)
+ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=use.svy, rows=rows, type=7)
 
 pvals.cont = sapply(fits, function(x) {
     tmp=getFixedEf(x)
@@ -231,13 +231,13 @@ tab.1
 if (show.q) {
   header=paste0("\\hline\n 
          \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
-         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
+         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
          \\hline\n 
     ")
 } else {
   header=paste0("\\hline\n 
          \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}    \\\\ 
-         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)}  \\\\ 
+         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{}  \\\\ 
          \\hline\n 
     ")
 }
@@ -262,13 +262,13 @@ tab.1.scaled
 if (show.q) {
   header=paste0("\\hline\n 
          \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
-         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
+         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
          \\hline\n 
     ")
 } else {
   header=paste0("\\hline\n 
          \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{HR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   \\\\ 
-         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)}  \\\\ 
+         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{}  \\\\ 
          \\hline\n 
     ")
 }
@@ -305,7 +305,7 @@ nevents[is.na(nevents)]=0
 colSums(matrix(natrisk, nrow=3))
 # regression parameters
 est=c(rbind(1.00,  sapply(fits.tri, function (fit) if(length(fit)==1) rep(NA,2) else getFormattedSummary(list(fit), exp=T, robust=use.svy, rows=rows, type=1))  ))
-ci= c(rbind("N/A", sapply(fits.tri, function (fit) if(length(fit)==1) rep(NA,2) else getFormattedSummary(list(fit), exp=T, robust=use.svy, rows=rows, type=13)) ))
+ci= c(rbind("N/A", sapply(fits.tri, function (fit) if(length(fit)==1) rep(NA,2) else getFormattedSummary(list(fit), exp=T, robust=use.svy, rows=rows, type=7)) ))
 p=  c(rbind("N/A", sapply(fits.tri, function (fit) if(length(fit)==1) rep(NA,2) else getFormattedSummary(list(fit), exp=T, robust=use.svy, rows=rows, type=10)) ))
 
 tab=cbind(
@@ -323,13 +323,13 @@ tab.cat=tab[1:(nrow(tab)),]
 if(show.q) {
   header=paste0("\\hline\n 
          \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
-         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***} & \\multicolumn{1}{c}{value $\\dagger$} & \\multicolumn{1}{c}{FWER} \\\\ 
+         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{} & \\multicolumn{1}{c}{value***} & \\multicolumn{1}{c}{value $\\dagger$} & \\multicolumn{1}{c}{FWER} \\\\ 
          \\hline\n 
     ")
 } else {
   header=paste0("\\hline\n 
          \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}     \\\\ 
-         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***} \\\\ 
+         \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{} & \\multicolumn{1}{c}{value***} \\\\ 
          \\hline\n 
     ")
 }
@@ -402,7 +402,7 @@ if (!is.null(config$multivariate_assays)) {
         
         fits=list(fit)
         est=getFormattedSummary(fits, exp=T, robust=use.svy, rows=var.ind, type=1)
-        ci= getFormattedSummary(fits, exp=T, robust=use.svy, rows=var.ind, type=13)
+        ci= getFormattedSummary(fits, exp=T, robust=use.svy, rows=var.ind, type=7)
         est = paste0(est, " ", ci)
         p=  getFormattedSummary(fits, exp=T, robust=use.svy, rows=var.ind, type=10)
         
@@ -444,7 +444,7 @@ if (!is.null(config$additional_models)) {
 
         fits=list(fit)
         est=getFormattedSummary(fits, exp=T, robust=use.svy, type=1)
-        ci= getFormattedSummary(fits, exp=T, robust=use.svy, type=13)
+        ci= getFormattedSummary(fits, exp=T, robust=use.svy, type=7)
         est = paste0(est, " ", ci)
         p=  getFormattedSummary(fits, exp=T, robust=use.svy, type=10)
         
@@ -470,7 +470,7 @@ if (attr(config,"config")=="janssen_pooled_EUA") {
     
     fits=list(fit)
     est=getFormattedSummary(fits, exp=T, robust=use.svy, rows=1:6, type=1)
-    ci= getFormattedSummary(fits, exp=T, robust=use.svy, rows=1:6, type=13)
+    ci= getFormattedSummary(fits, exp=T, robust=use.svy, rows=1:6, type=7)
     est = paste0(est, " ", ci)
     p=  getFormattedSummary(fits, exp=T, robust=use.svy, rows=1:6, type=10)
     
@@ -512,7 +512,7 @@ if (!is.null(config$interaction)) {
         
         fits=list(fit)
         est=getFormattedSummary(fits, exp=T, robust=use.svy, type=1)
-        ci= getFormattedSummary(fits, exp=T, robust=use.svy, type=13)
+        ci= getFormattedSummary(fits, exp=T, robust=use.svy, type=7)
         est = paste0(est, " ", ci)
         p=  getFormattedSummary(fits, exp=T, robust=use.svy, type=10)
         # generalized Wald test for whether the set of markers has any correlation (rejecting the complete null)

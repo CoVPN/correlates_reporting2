@@ -34,7 +34,7 @@ rows=length(coef(fits[[1]]))
 rows=(rows-(nCoef-1)):rows
 # robust=use.svy b/c not an option to use robust=T for coxph, but it is a required argument for getFormattedSummary
 est=getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=1)
-ci= getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=13)
+ci= getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=7)
 p=  getFormattedSummary(fits, exp=T, robust=use.svy, rows=rows, type=10)
 }
   
@@ -53,7 +53,7 @@ tab.1
 header=paste0("\\hline\n 
        \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{}", concatList(paste0("& \\multicolumn{3}{c}{",col.headers,"} ")), "   \\\\ 
        \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{No. cases /}   ", concatList(rep("& \\multicolumn{2}{c}{HR per 10-fold incr.} & \\multicolumn{1}{c}{P-value}",nCoef)), "  \\\\ 
-       \\multicolumn{1}{l}{Immunologic Marker}  & \\multicolumn{1}{c}{No. at-risk**} ", concatList(rep("& \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)}", nCoef)), "  \\\\ 
+       \\multicolumn{1}{l}{Immunologic Marker}  & \\multicolumn{1}{c}{No. at-risk**} ", concatList(rep("& \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{}", nCoef)), "  \\\\ 
        \\hline\n 
   ")
 

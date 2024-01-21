@@ -1110,8 +1110,8 @@
       "RemoteUsername": "youyifong",
       "RemoteRepo": "kyotil",
       "RemoteRef": "master",
-      "RemoteSha": "0988862851c750c8c6ad2fd978437f98f2482ed2",
-      "Hash": "0211ed0119876288472e8364efbd4e65"
+      "RemoteSha": "3e0b3df42874b28e611551a5f090c16e0bf379ff",
+      "Hash": "8b54b2328406f0c266633db54b852d15"
     },
     "labeling": {
       "Package": "labeling",
