@@ -3,7 +3,7 @@
   
 **Peak Obj 1. Models without interaction terms: baseline, D15, D15/B, baseline + D15**
 
-* D15to181
+* D22to181
 
   - Both baseline and D15 markers are overall inverse correlates of risk. For example, baseline MDW HR 0.65, D15 MDW HR 0.69. 
   
@@ -15,9 +15,9 @@
 
   - Effect sizes are larger for monovalent (D15 MDW HR 0.38).
 
-* D15to91
+* D22to91
 
-  - Results are similar to D15to181, with less cases and less significant P values.
+  - Results are similar to D22to181, with less cases and less significant P values.
   
   - Prototype vs Omicron inserts
     * Prototype D15 MDW HR 0.74 (30 cases)
@@ -27,7 +27,7 @@
 
 * D92to181
 
-  - Results are similar to D15to181, but there are some subtleties 
+  - Results are similar to D22to181, but there are some subtleties 
   
   - Effect size is larger for Pfizer, D15 MDW HR 0.33
 
@@ -49,12 +49,12 @@ For mRNA prototype-insert vaccines and mRNA omicron-containing insert vaccines, 
 
 Interaction is much stronger for Early D22-D91 COVID-19 endpoints than for Late D92-D181 COVID-19 endpoints, which is evidence for the interaction being real.
 
-* D15to181: Significant interaction between naive and D15 markers. 
+* D22to181: Significant interaction between naive and D15 markers. 
     - D15 MDW HR 0.30 (0.09-0.99) among non-naive
     - D15 MDW HR 0.61 (0.42-0.90) among naive
     - Ratio of HRs 1.96 (P value 0.025)
 
-* D15to91: Significant interaction between naive and D15 markers. 
+* D22to91: Significant interaction between naive and D15 markers. 
     - D15 MDW HR 0.33 (0.19-0.56) among non-naive
     - D15 MDW HR 0.91 (0.63-1.30) among naive
     - Ratio of HRs 2.74 (P value 0.002)
@@ -70,7 +70,7 @@ Interaction is much stronger for Early D22-D91 COVID-19 endpoints than for Late 
 
 Significant interaction between baseline (continuous) and D15 markers
 
-* D15to181: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.44
+* D22to181: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.44
 
   - Larger interaction for Pfizer (MDW ratio of HRs 0.16) than for Moderna (MDW ratio of HRs 0.52)
   
@@ -78,13 +78,13 @@ Significant interaction between baseline (continuous) and D15 markers
   
   - Larger interaction for Monovalent (MDW ratio of HRs 0.26) than for Bivalent (MDW ratio of HRs 0.59)
 
-* D15to91: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.44
+* D22to91: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.44
 
 * D92to181: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.44
 
 
 \vspace{.25cm}
-Non-significant interaction between baseline (continuous) and D15/Baseline fold change markers overall, but significant for D15to91 Moderna (Table 13.2)
+Non-significant interaction between baseline (continuous) and D15/Baseline fold change markers overall, but significant for D22to91 Moderna (Table 13.2)
 
 
 \vspace{.25cm}
@@ -92,15 +92,15 @@ Significant interaction between baseline (trichotomized) and D15 markers
 
 Consistent with naive x D15 interaction model results, these results show that the effect of D15 marker is more pronounced among subjects with higher baseline marker level. However, we need to keep in mind that it is harder to get the same fold rise if the baseline marker is already high. In addition, interaction is much stronger for Early D22-D91 COVID-19 endpoints than for Late D92-D181 COVID-19 endpoints, which is evidence for the interaction being real.
 
-* D15to181: Significant interaction between baseline H/M/L and D15 markers. Generalized Wald P value 0.002
+* D22to181: Significant interaction between baseline H/M/L and D15 markers. Generalized Wald P value 0.002
 
-* D15to91: Significant interaction between baseline H/M/L and D15 markers. Generalized Wald P value 0.003
+* D22to91: Significant interaction between baseline H/M/L and D15 markers. Generalized Wald P value 0.003
 
 * D92to181: Non-significant interaction between baseline H/M/L and D15 markers. Generalized Wald P value 0.535
 
 
 \vspace{.25cm}
-Non-significant interaction between baseline (trichotomized) and D15/B fold change markers overall, but significant for D15to91 Moderna (Table 16.3)
+Non-significant interaction between baseline (trichotomized) and D15/B fold change markers overall, but significant for D22to91 Moderna (Table 16.3)
 
 
 
@@ -124,12 +124,16 @@ names(all.markers)=all.markers
 for (iObj in c(1,32,2,3,31)) { #tables made in 21 is part of the 2
   
   for (COR in c("D15to181", "D15to91", "D92to181")) {
-    cat("# Objective Peak ", 
-        switch(iObj%.%"", "1"=1, "2"=2, "3"=3, "31"="3 discrete baseline", "32"="1 baseline+D15/B"), 
-        ", ", COR, sep="")
+    
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
     config.cor <- config::get(config = COR)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    
+    COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+    
+    cat("# Objective Peak ", 
+        switch(iObj%.%"", "1"=1, "2"=2, "3"=3, "31"="3 discrete baseline", "32"="1 baseline+D15/B"), 
+        ", ", COR, sep="")
     
     for (iTask in 1:7) {
       fname.suffix = switch (iTask,
@@ -177,11 +181,15 @@ for (iObj in c(1,32,2,3,31)) { #tables made in 21 is part of the 2
 
 # Peak Obj 4
 for (COR in c("D15to181", "D15to91", "D92to181")) {
-  cat("# Objective Peak ", 4, ", ", COR, sep="")
+  
   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
   config.cor <- config::get(config = COR)
   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
   
+  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  
+  cat("# Objective Peak ", 4, ", ", sub("D15", "D22", COR), sep="")
+
   for (iTask in 1:3) {
     fname.suffix = switch (iTask,
       '1' = 'mRNA_Mod_Pfi',

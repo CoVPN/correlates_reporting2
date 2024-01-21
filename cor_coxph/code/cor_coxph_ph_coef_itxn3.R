@@ -55,13 +55,24 @@ for (a in all.markers) {
       if (i==1) var.ind=length(coef(fit))-c(2)
       if (i==2) var.ind=length(coef(fit))-c(2,1)
       if (i==3) var.ind=length(coef(fit))-c(2,0)
-      ef=rep(1,length(var.ind)) %*% coef(fit)[var.ind];
-      sd=sqrt(rep(1,length(var.ind)) %*% vcov(fit)[var.ind,var.ind] %*% rep(1,length(var.ind))); 
-      p = 2*(1-pnorm(abs(ef)/sd))
-      lb=formatDouble(exp(ef-sd*1.96), 2, remove.leading0=F) 
-      ub=formatDouble(exp(ef+sd*1.96), 2, remove.leading0=F) 
-      ci = "(" %.% lb %.% ", " %.% ub %.% ")" 
-      list(exp(ef), ci, p)
+      
+      est=rep(1,length(var.ind)) %*% coef(fit)[var.ind]
+      sd=sqrt(rep(1,length(var.ind)) %*% vcov(fit)[var.ind,var.ind] %*% rep(1,length(var.ind)))
+      lb=exp(est-sd*1.96)
+      ub=exp(est+sd*1.96)
+      p = 2*(1-pnorm(abs(est)/sd))
+      p=formatDouble(p, digits=3, remove.leading0 = F)
+      est=exp(est)
+      
+      if (est>100) {
+        ci = ""
+      } else {
+        lb=ifelse(lb>100, ">100", formatDouble(lb, 2, remove.leading0=F))
+        ub=ifelse(ub>100, ">100", formatDouble(ub, 2, remove.leading0=F))
+        ci = "(" %.% lb %.% ", " %.% ub %.% ")" 
+      }
+      est=ifelse(est>100, ">100", formatDouble(est, 2, remove.leading0=F))
+      list(est, ci, p)
     })
     
     est.2=cbind(est.2, unlist(res[1,]))
@@ -79,7 +90,7 @@ rows=length(coef(fits[[1]]))
 rows=(rows-1):rows
 # robust=F b/c not an option to use robust=T for coxph, but it is a required argument for getFormattedSummary
 est=getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=1)
-ci= getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=13)
+ci= getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=7)
 p=  getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=10)
 
 tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), 
@@ -92,7 +103,7 @@ tab.1
 header=paste0("\\hline\n 
        \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{}                         & \\multicolumn{3}{c}{",col1,"}   & \\multicolumn{3}{c}{",col2,"}   & \\multicolumn{1}{c}{",ifelse(use.svy,"Generalized Wald","Lik Ratio"),"}    \\\\ 
        \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{No. cases /}              & \\multicolumn{2}{c}{Ratio of HRs}                      & \\multicolumn{1}{c}{P-value}   & \\multicolumn{2}{c}{Ratio of HRs}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{P-value}    \\\\ 
-       \\multicolumn{1}{l}{Immunologic Marker}  & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI}  & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{}   \\\\ 
+       \\multicolumn{1}{l}{Immunologic Marker}  & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI}  & \\multicolumn{1}{c}{} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{} & \\multicolumn{1}{c}{}   \\\\ 
        \\hline\n 
   ")
 
@@ -102,13 +113,11 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%fname.suffix, align=
     longtable=T, 
     label=paste0("tab:CoR_univariable_svycoxph_pretty"), 
     caption.placement = "top", 
-    caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, ": Interaction terms and generalized Wald test P values over interaction terms*")
+    caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, ": Interaction terms and ",ifelse(use.svy,"generalized Wald","likelihood ratio")," test P values over interaction terms*")
 )
 
 
 # table of effects sizes in different strata
-est.2=formatDouble(est.2, digits=2, remove.leading0 = F)
-p.2=formatDouble(p.2, digits=3, remove.leading0 = F)
 tab.2=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), 
             est.2[1,], ci.2[1,], p.2[1,],
             est.2[2,], ci.2[2,], p.2[2,],
@@ -119,7 +128,7 @@ tab.2
 header=paste0("\\hline\n 
        \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{}              & \\multicolumn{3}{c}{",col3,"}   & \\multicolumn{3}{c}{",col4,"}   & \\multicolumn{3}{c}{",col5,"}    \\\\ 
        \\multicolumn{1}{l}{", '', "} & \\multicolumn{1}{c}{No. cases /}              & \\multicolumn{2}{c}{HR per 10-fold incr.} & \\multicolumn{1}{c}{P-value}   & \\multicolumn{2}{c}{HR per 10-fold incr.} & \\multicolumn{1}{c}{P-value}   & \\multicolumn{2}{c}{HR per 10-fold incr.} & \\multicolumn{1}{c}{P-value}    \\\\ 
-       \\multicolumn{1}{l}{Immunologic Marker}  & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)}  \\\\ 
+       \\multicolumn{1}{l}{Immunologic Marker}  & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{}  \\\\ 
        \\hline\n 
   ")
 
