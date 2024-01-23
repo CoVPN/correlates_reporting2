@@ -34,15 +34,15 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-# add trichotomized markers to TrtonedosemRNA
-dat.onedosemRNA = subset(dat.mock, ph1.D15 & TrtonedosemRNA==1) # TrtonedosemRNA := TrtmRNA==1 & arm!=3
-dat.onedosemRNA$ph2=T
-
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
+
+# get cutpoints for trichotomized markers
+# the discrete markers are already computed in data processing, here we are doing it again just to get cut points
+dat.onedosemRNA = subset(dat.mock, ph1.D15 & TrtonedosemRNA==1) # TrtonedosemRNA := TrtmRNA==1 & arm!=3
+dat.onedosemRNA$ph2=1
 dat.onedosemRNA = add.trichotomized.markers (dat.onedosemRNA, all.markers, ph2.col.name="ph2", wt.col.name="wt.D15")
 marker.cutpoints = attr(dat.onedosemRNA, "marker.cutpoints")
-
 # save cut points to files
 for (a in all.markers) {        
   write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
