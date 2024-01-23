@@ -585,6 +585,17 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
 }
 
 
+# converts discrete markers to factors from strings
+if (TRIAL=="covail") {
+  assays1 = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+  assays1 = assays1%.%"cat"
+  all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
+  for (a in all.markers1) {
+    dat.mock[[a]] = as.factor(dat.mock[[a]])
+  }
+}
+
+
 
 ###################################################################################################
 # For correlates reports
