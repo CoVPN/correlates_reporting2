@@ -1,5 +1,5 @@
 panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label
-,,bindSpike,1.683,238.1165,NA,10.8424,Binding Antibody to D614G Spike,Anti Spike IgG - D614G (IU/ml),lloq
+,,bindSpike,1.683,238.1165,NA,10.8424,Binding Antibody to D614G Spike,Anti Spike IgG - D614G (IU/ml),pos
 ,,bindRBD,5.0243,172.5755,NA,14.0858,Binding Antibody to D614G RBD,Anti RBD IgG - D614G (IU/ml),pos
 ,,bindN,4.4897,574.6783,0.093744,23.4711,Binding Antibody to N,Anti N IgG (IU/ml),pos
 bindSpike,1,bindSpike_D614,3.384,55394.17,,1.683,Binding Antibody to D614 Spike,Anti Spike IgG - D614 (IU/ml),lloq
