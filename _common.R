@@ -62,7 +62,7 @@ if (is.null(config$threshold_grid_size)) {
 }
 
 
-
+STOP("need to filter out bindSpike_D614 form assays")
 ###################################################################################################
 # assay metadata
 
