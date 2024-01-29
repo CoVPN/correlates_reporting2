@@ -1,3 +1,3 @@
 panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label
-id50,1,pseudoneutid50,51,127411,40,40,PsV Neutralization to D614G,Pseudovirus-nAb D614G (AU/ml),lod
-id50,2,pseudoneutid50_B1617,50,145858,40,40,PsV Neutralization to Delta,Pseudovirus-nAb Delta (AU/ml),lod
+id50,1,pseudoneutid50,3.3303,8319.938,2.612,2.612,PsV Neutralization to D614G,Pseudovirus-nAb D614G (AU/ml),lod
+id50,2,pseudoneutid50_B1617,3.265,9524.527,2.612,2.612,PsV Neutralization to Delta,Pseudovirus-nAb Delta (AU/ml),lod
