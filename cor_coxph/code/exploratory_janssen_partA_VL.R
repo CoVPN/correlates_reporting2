@@ -2,8 +2,8 @@
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240123.csv')
-dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
+dat_mapped=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240129.csv')
+dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240130.csv')
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
 assays=assay_metadata$assay
 
@@ -37,6 +37,18 @@ table(dat_mapped$SubcohortIndPlus, dat_mapped$SubcohortInd)
 }
 
 
+################################################################################
+# compare data before and after setting ID50 to NA for ARV
+dat1=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240123.csv')
+dat2=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240129.csv')
+
+dim(dat2)
+dim(dat1)
+setdiff(names(dat2), names(dat1))
+with(subset(dat2,Trt==1 & Bserostatus==0 & SubcohortInd), table(Region, ARVuseDay29))
+with(subset(dat2,Trt==1 & Bserostatus==0 & EventIndPrimaryIncludeNotMolecConfirmedD29), table(Region, ARVuseDay29))
+
+
 
 ################################################################################
 # missingness pattern
@@ -48,6 +60,7 @@ table(!is.na(dat_mapped[,"Day29bindSpike"]), !is.na(dat_mapped[,"Day29bindRBD"])
 # the only difference bt Day29bindSpike and Day29pseudoneutid50 is that 4 ptids have Day29bindSpike but no Day29pseudoneutid50
 # they are in the vaccine group and baseline neg and non-cases
 with(subset(dat_proc, SubcohortInd==1), table(!is.na(Day29bindSpike), !is.na(Day29pseudoneutid50), Bserostatus, Trt))
+with(subset(dat_proc, SubcohortInd==1 | EventIndPrimaryIncludeNotMolecConfirmedD1==1), table(!is.na(Day29bindSpike), !is.na(Day29pseudoneutid50), Bserostatus, Trt))
 
 subset(dat_proc, SubcohortInd==1 & !is.na(Day29bindSpike) & is.na(Day29pseudoneutid50), c(Region, Bserostatus, Trt, EventIndPrimaryIncludeNotMolecConfirmedD1))
 
