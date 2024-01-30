@@ -1,10 +1,11 @@
-Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29"; Sys.setenv(VERBOSE = 1) 
+{
+Sys.setenv(TRIAL = "janssen_partA_VL"); 
+COR="D29variant"; 
+Sys.setenv(VERBOSE = 1) 
+
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
-
-# hack
-# source("~/copcor/R/utils.R")
 
 
 library(kyotil) # p.adj.perm, getFormattedSummary
@@ -22,14 +23,6 @@ library(glue)
 time.start=Sys.time()
 print(date())
 
-# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29), table(is.na(seq1.spike.weighted.hamming.hotdeck1), is.na(seq1.log10vl), EventIndPrimaryMolecConfirmedD29))
-# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0), summary(EventTimePrimary))
-# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==1), summary(EventTimePrimary))
-# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0), summary(EventTimePrimary+CalendarDateEnrollment))
-# with(subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==1), summary(EventTimePrimary+CalendarDateEnrollment))
-# subset(dat.mock, EventIndPrimaryIncludeNotMolecConfirmedD29 & Trt==1 & ph1.D29 & is.na(seq1.spike.weighted.hamming.hotdeck1) & EventIndPrimaryMolecConfirmedD29==0, select=Ptid, drop=T)
-
-
 # path for figures and tables etc
 save.results.to = here::here("output"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
 save.results.to = paste0(save.results.to, "/", attr(config,"config")); if (!dir.exists(save.results.to))  dir.create(save.results.to)
@@ -40,23 +33,12 @@ B <-       config$num_boot_replicates
 numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
-
-# uloq censoring, done here b/c should not be done for immunogenicity reports
-# note that if delta are used, delta needs to be recomputed
-for (a in assays) {
-  uloq=assay_metadata$uloq[assay_metadata$assay==a]
-  for (t in c("Day29")  ) {
-    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloq), log10(uloq), dat.mock[[t %.% a]])
-  }
-}    
-
 # "Ancestral.Lineage", "Alpha", "Beta", "Delta", "Epsilon", "Gamma", "Lambda", "Mu", "Zeta", "Iota"
 variants=lapply(tfinal.tpeak.ls, function(x) names(x))
+}
 
-# add trichotomized markers using the same cutoffs for all regions
-dat.vac.seroneg.allregions=subset(dat.mock, Trt==1 & ph1)
-dat.vac.seroneg.allregions = add.trichotomized.markers (dat.vac.seroneg.allregions, all.markers, wt.col.name="wt")
-marker.cutpoints=attr(dat.vac.seroneg.allregions, "marker.cutpoints")
+
+marker.cutpoints=attr(dat.mock, "marker.cutpoints"); marker.cutpoints
 for (a in all.markers) {        
   q.a=marker.cutpoints[[a]]
   if (startsWith(a, "Day")) {
