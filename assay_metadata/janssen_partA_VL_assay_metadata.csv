@@ -1,21 +1,17 @@
-panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label
-,,bindSpike,1.683,238.1165,NA,10.8424,Binding Antibody to D614G Spike,Anti Spike IgG - D614G (IU/ml),pos
-,,bindRBD,5.0243,172.5755,NA,14.0858,Binding Antibody to D614G RBD,Anti RBD IgG - D614G (IU/ml),pos
-,,bindN,4.4897,574.6783,0.093744,23.4711,Binding Antibody to N,Anti N IgG (IU/ml),pos
-bindSpike,1,bindSpike_D614,3.384,55394.17,,3.384,Binding Antibody to D614 Spike,Anti Spike IgG - D614 (AU/ml),lloq
-bindSpike,2,bindSpike_B.1.621,4.284,4387.635,,4.284,Binding Antibody to B.1.621 Mu Spike,Anti Spike IgG - B.1.621 Mu (AU/ml),lloq
-bindSpike,3,bindSpike_AY.2,2.358,9652.068,,2.358,Binding Antibody to AY.2 Delta Spike,Anti Spike IgG - AY.2 Delta (AU/ml),lloq
-bindSpike,4,bindSpike_B.1.617.2_AY.4,2.511,10289.11,,2.511,Binding Antibody to B.1.617.2 AY.4 Delta Spike,Anti Spike IgG - B.1.617.2 AY.4 Delta (AU/ml),lloq
-bindSpike,5,bindSpike_C.37,2.358,9675.18,,2.358,Binding Antibody to C.37 Lambda Spike,Anti Spike IgG - C.37 Lambda (AU/ml),lloq
-bindSpike,6,bindSpike_AY.12,2.583,10572.41,,2.583,Binding Antibody to AY.12 Delta Spike,Anti Spike IgG - AY.12 Delta (AU/ml),lloq
-bindSpike,7,bindSpike_P.1,3.852,15788.42,,3.852,Binding Antibody to P.1 Gamma Spike,Anti Spike IgG - P.1 Gamma (AU/ml),lloq
-bindSpike,8,bindSpike_AY.1,2.439,9995.769,,2.439,Binding Antibody to AY.1 Delta Spike,Anti Spike IgG - AY.1 Delta (AU/ml),lloq
-bindSpike,9,bindSpike_B.1.351,1.683,6889.743,,1.683,Binding Antibody to B.1.351 Beta Spike,Anti Spike IgG - B.1.351 Beta (AU/ml),lloq
-bindSpike,10,bindSpike_B.1.617.2,2.439,9976.401,,2.439,Binding Antibody to B.1.617.2 Delta Spike,Anti Spike IgG - B.1.617.2 Delta (AU/ml),lloq
-id50,1,pseudoneutid50,4.8975,844.7208,2.612,2.612,PsV Neutralization to Reference,Pseudovirus-nAb - Reference (AU/ml),lod
-id50,2,pseudoneutid50_Delta,3.265,844.7208,2.612,2.612,PsV Neutralization to Delta,Pseudovirus-nAb - Delta (AU/ml),lod
-id50,3,pseudoneutid50_Beta,3.918,844.7208,2.612,2.612,PsV Neutralization to Beta,Pseudovirus-nAb - Beta (AU/ml),lod
-id50,4,pseudoneutid50_Zeta,NA,844.7208,2.612,2.612,PsV Neutralization to Zeta,Pseudovirus-nAb - Zeta (AU/ml),lod
-id50,5,pseudoneutid50_Mu,NA,844.7208,2.612,2.612,PsV Neutralization to Mu,Pseudovirus-nAb - Mu (AU/ml),lod
-id50,6,pseudoneutid50_Gamma,4.9628,844.7208,2.612,2.612,PsV Neutralization to Gamma,Pseudovirus-nAb - Gamma (AU/ml),lod
-id50,7,pseudoneutid50_Lambda,NA,844.7208,2.612,2.612,PsV Neutralization to Lambda,Pseudovirus-nAb - Lambda (AU/ml),lod
+panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates
+,,bindSpike,1.683,238.1165,NA,10.8424,Binding Antibody to D614G Spike,Anti Spike IgG - D614G (IU/ml),pos,1
+,,bindRBD,5.0243,172.5755,NA,14.0858,Binding Antibody to D614G RBD,Anti RBD IgG - D614G (IU/ml),pos,0
+,,bindN,4.4897,574.6783,0.093744,23.4711,Binding Antibody to N,Anti N IgG (IU/ml),pos,0
+bindSpike,1,bindSpike_D614,3.384,55394.17,,3.384,Binding Antibody to D614 Spike,Anti Spike IgG - D614 (IU/ml),lloq,0
+bindSpike,2,bindSpike_B.1.621,4.284,4387.635,,4.284,Binding Antibody to B.1.621 Mu Spike,Anti Spike IgG - B.1.621 Mu (IU/ml),lloq,1
+bindSpike,3,bindSpike_C.37,2.358,9675.18,,2.358,Binding Antibody to C.37 Lambda Spike,Anti Spike IgG - C.37 Lambda (IU/ml),lloq,1
+bindSpike,4,bindSpike_P.1,3.852,15788.42,,3.852,Binding Antibody to P.1 Gamma Spike,Anti Spike IgG - P.1 Gamma (IU/ml),lloq,1
+bindSpike,5,bindSpike_B.1.351,1.683,6889.743,,1.683,Binding Antibody to B.1.351 Beta Spike,Anti Spike IgG - B.1.351 Beta (IU/ml),lloq,1
+bindSpike,6,bindSpike_DeltaMDW,2.358,10572.41,,2.358,Binding Antibody to Delta Spike,Anti Spike IgG - Delta (IU/ml),lloq,1
+id50,1,pseudoneutid50,4.8975,844.7208,2.612,2.612,PsV Neutralization to Reference,Pseudovirus-nAb - Reference (AU50/ml),lod,1
+id50,2,pseudoneutid50_Delta,3.265,844.7208,2.612,2.612,PsV Neutralization to Delta,Pseudovirus-nAb - Delta (AU50/ml),lod,1
+id50,3,pseudoneutid50_Beta,3.918,844.7208,2.612,2.612,PsV Neutralization to Beta,Pseudovirus-nAb - Beta (AU50/ml),lod,1
+id50,4,pseudoneutid50_Zeta,NA,844.7208,2.612,2.612,PsV Neutralization to Zeta,Pseudovirus-nAb - Zeta (AU50/ml),lod,1
+id50,5,pseudoneutid50_Mu,NA,844.7208,2.612,2.612,PsV Neutralization to Mu,Pseudovirus-nAb - Mu (AU50/ml),lod,1
+id50,6,pseudoneutid50_Gamma,4.9628,844.7208,2.612,2.612,PsV Neutralization to Gamma,Pseudovirus-nAb - Gamma (AU50/ml),lod,1
+id50,7,pseudoneutid50_Lambda,NA,844.7208,2.612,2.612,PsV Neutralization to Lambda,Pseudovirus-nAb - Lambda (AU50/ml),lod,1

@@ -16,17 +16,12 @@
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 
+{
+if (TRIAL %in% c("janssen_partA_VL")) stop("This TRIAL has its own cor_coxph_TRIAL.R script")    
+
 print(date())
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) # dat.mock is made
-
-# tmp, just so that we can add MIWilson to renv
-library(MIWilson)
-phats = c(0.2, 0.23, 0.25)
-mi_wilson_phat(phats, 100, 0.99, FALSE)
-
-# hack to bring in uncheck commited changes to copcor
-# source("~/copcor/R/plotting.R")
 
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
@@ -69,6 +64,7 @@ write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_
     
 dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
+}
 
 
 # define trichotomized markers

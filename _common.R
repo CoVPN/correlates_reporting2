@@ -34,6 +34,10 @@ if(!exists("COR")) {
 DESCRIPTIVE = Sys.getenv("DESCRIPTIVE") %in% c("1", "T", "TRUE")
 myprint(DESCRIPTIVE)
 
+# if EXPOSUREPROXIMAL env variable is set, then we are doing exposure-proximal analyses
+EXPOSUREPROXIMAL = Sys.getenv("EXPOSUREPROXIMAL") %in% c("1", "T", "TRUE")
+myprint(EXPOSUREPROXIMAL)
+
 
 if(Sys.getenv("TRIAL")=="") {
   stop(" *************************************  environmental variable TRIAL not defined  *************************************")
@@ -58,7 +62,6 @@ if (is.null(config$threshold_grid_size)) {
 }
 
 
-
 ###################################################################################################
 # assay metadata
 
@@ -72,8 +75,8 @@ if (!is.null(config$assay_metadata)) {
   # remove bindN
   assay_metadata=subset(assay_metadata, assay!="bindN")
   
-  if (TRIAL=='vat08_combined') {
-    if (exists('COR')) {
+  if (exists('COR')) {
+    if (TRIAL=='vat08_combined') {
       if (contain(COR, "nAb") | endsWith(COR,'original2')) {
         # only keeps ID50 markers
         assay_metadata = subset(assay_metadata, panel=='id50')
@@ -85,20 +88,17 @@ if (!is.null(config$assay_metadata)) {
           assay_metadata[assay_metadata$panel=='bindSpike' & assay_metadata$assay!="bindSpike_mdw",'lloq'] = lloq_min
         }
       }
-    }
-    
-  } else if (TRIAL=='id27hpv') {
-    if (exists('COR')) {
+      
+    } else if (TRIAL=='id27hpv') {
       assay_metadata = subset(assay_metadata, panel=='bind')
-    }
-    
-  } else if (TRIAL=='id27hpvnAb') {
-    if (exists('COR')) {
+      
+    } else if (TRIAL=='id27hpvnAb') {
       assay_metadata = subset(assay_metadata, panel=='id50')
+        
+    } else if (TRIAL=='janssen_partA_VL') {
+      assay_metadata = subset(assay_metadata, !assay%in%c('bindSpike_D614','bindRBD'))
     }
-    
-  }
-  
+  }  
 
   assays=assay_metadata$assay
   
@@ -524,28 +524,36 @@ dat.mock <- read.csv(path_to_data)
 ###################################################################################################
 # some more data processing
 
-# uloq censoring when it is for correlates analyses, not for descriptive analyses
-if (!DESCRIPTIVE) {
+if (!DESCRIPTIVE & !EXPOSUREPROXIMAL) {
+  
+  # uloq censoring when it is for peak correlates analyses, not for descriptive analyses, or for exposure proximal correlates where decay model uses uncensored values
+  cat("ULOQ censoring\n")
   for (a in assays) {
     uloq=uloqs[a]
     for (t in c(DayPrefix%.%timepoints)  ) {
-      dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloq), log10(uloq), dat.mock[[t %.% a]])
+      if ('t'%.%a %in% names(dat.mock)) {
+        dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloq), log10(uloq), dat.mock[[t %.% a]])
+      }
     }
     # process baseline marker if exists
     if ('B'%.%a %in% names(dat.mock)) {
       dat.mock[['B' %.% a]] <- ifelse(dat.mock[['B' %.% a]] > log10(uloq), log10(uloq), dat.mock[['B' %.% a]])
     }
   }    
+  
 }
 
 
-if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA", "janssen_partA_VL")) {
+if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA", 
+                "janssen_partA_VL")) {
   # make endpointDate.Bin a factor variable
   dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
 
+  
 } else if (TRIAL %in% c("hvtn705secondRSA", "hvtn705secondNonRSA")) {
   # subset to RSA or non-RSA
   dat.mock = subset(dat.mock, RSA==ifelse(TRIAL=="hvtn705secondRSA", 1, 0))
+  
   
 } else if (study_name=='VAT08') {
   if (DESCRIPTIVE) {
@@ -573,6 +581,7 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
   }
   
 }
+
 
 
 
@@ -730,13 +739,22 @@ if (exists("COR")) {
         } else if (study_name=="IARCHPV") {
           tfinal.tpeak=NULL
           
+        } else if (study_name=="COVAIL") {
+          if (COR %in% c("D15to181","D92to181")) {
+            tfinal.tpeak=181
+          } else if (COR %in% c("D15to91")) {
+            tfinal.tpeak=91
+          } else {
+            stop("COVAIL, wrong COR")
+          }
+          
         } else {
           # default rule for followup time is the last case in ph2 in vaccine arm
           tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
         }
 
                 
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb")) {
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail")) {
           # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
@@ -774,13 +792,51 @@ if (exists("COR")) {
 #dat.mock$wt = ifelse(with(dat.mock, ph1), dat.mock$wt, NA) # the step above assigns weights for some subjects outside ph1. the next step makes them NA
 
 
+# converts discrete markers to factors from strings
+# this has to be done after the previous block b/c attribute is lost after subsettting
+
+# set cutpoints attribute
+all.markers1 = NULL
+if (TRIAL=="covail") {
+  assays1 = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+  assays1 = assays1%.%"cat"
+  all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
+  
+} else if (TRIAL=="janssen_partA_VL") {
+  assays1 = c("pseudoneutid50", "bindSpike",
+              "pseudoneutid50_Zeta", "pseudoneutid50_Mu", "pseudoneutid50_Gamma", "pseudoneutid50_Lambda",
+              "bindSpike_B.1.621", "bindSpike_P.1", "bindSpike_C.37",
+              "pseudoneutid50_Beta", "pseudoneutid50_Delta",
+              "bindSpike_B.1.351", "bindSpike_DeltaMDW")
+  all.markers1 = c("Day29"%.%assays1)
+  for (i in 1:10) all.markers1 = c(all.markers1, "Day29"%.%setdiff(assays1,c("pseudoneutid50", "bindSpike"))%.%"_"%.%i)
+}  
+
+if (!is.null(all.markers1)) {
+  marker.cutpoints = list()
+  for (a in all.markers1) {
+    dat.mock[[a%.%"cat"]] = as.factor(dat.mock[[a%.%"cat"]])
+    # get cut points
+    tmpname = names(table(dat.mock[[a%.%"cat"]]))[2]
+    tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+    tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
+    tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
+    marker.cutpoints[[a]] <- tmpname
+  }
+  attr(dat.mock, "marker.cutpoints")=marker.cutpoints
+  cat("set marker.cutpoints attribute\n")
+}
+
+
 
 
 
 ###################################################################################################
-
 # some common graphing parameters
-if(config$is_ows_trial) {
+
+
+if(config$is_ows_trial & !TRIAL %in% c("janssen_partA_VL")) {
+  
     # maxed over Spike, RBD, N, restricting to Day 29 or 57
     if("bindSpike" %in% assays & "bindRBD" %in% assays) {
         if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
@@ -797,7 +853,6 @@ if(config$is_ows_trial) {
         if(has57) MaxID50ID80Delta57overB = max(dat.mock[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
     }
     
-            
 }     
 
 
@@ -925,6 +980,9 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age <= 14"
   )
   
+} else if (study_name=="COVAIL") {
+  # do nothing
+  
 } else stop("unknown study_name 2")
 
 
@@ -1002,8 +1060,11 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     )
 
 } else if (study_name=="HVTN705") {
-    # do nothing
-
+  # do nothing
+  
+} else if (study_name=="COVAIL") {
+  # do nothing
+  
 } else if (study_name=="PROFISCOV") {
     demo.stratum.labels <- c("All")
 

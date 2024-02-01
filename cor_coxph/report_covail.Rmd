@@ -1,0 +1,207 @@
+# Summary of Results
+  
+  
+**Peak Obj 1. Models without interaction terms: baseline, D15, D15/B, baseline + D15**
+
+* D22to181
+
+  - Both baseline and D15 markers are overall inverse correlates of risk. For example, baseline MDW HR 0.65, D15 MDW HR 0.69. 
+  
+  - The risks in the low and medium groups are similar but the risk in the high group is smaller.
+  
+  - Effect sizes are larger for both Moderna (D15 MDW HR 0.58) and Pfizer (D15 MDW HR 0.54).
+
+  - Effect sizes are smaller for prototype (D15 MDW HR 0.78).
+
+  - Effect sizes are larger for monovalent (D15 MDW HR 0.38).
+
+* D22to91
+
+  - Results are similar to D22to181, with less cases and less significant P values.
+  
+  - Prototype vs Omicron inserts
+    * Prototype D15 MDW HR 0.74 (30 cases)
+    * Omicron   D15 MDW HR 0.66 (101 cases)
+    * Prototype baseline MDW HR 0.58
+    * Omicron   baseline MDW HR 0.63
+
+* D92to181
+
+  - Results are similar to D22to181, but there are some subtleties 
+  
+  - Effect size is larger for Pfizer, D15 MDW HR 0.33
+
+  - Prototype vs Omicron inserts
+    * Prototype D15 MDW HR 0.90 (only 13 cases)
+    * Omicron   D15 MDW HR 0.57 (51 cases)
+    * Prototype baseline MDW HR 1.44
+    * Omicron   baseline MDW HR 0.49 
+
+For mRNA prototype-insert vaccines and mRNA omicron-containing insert vaccines, D15 markers were inverse correlates of risk for COVID-19 occurring proximal to vaccination D22-D91. However, for COVID-19 occurring distal to vaccination D92-D181, the D15 correlate of risk result was totally flat for prototype-insert vaccines whereas the D15 inverse correlate of risk was retained for omicron-containing insert vaccines. This result suggests that immunity from ancestral strain vaccines against omicron strains is weak or absent beyond 3 months post-booster whereas the immunity of omicron-matched vaccines persists through 6 months. These results are consistent with literature on short-lived booster efficacy of ancestral-strain mRNA vaccines against omicron COVID-19.
+ 
+\vspace{.5cm}
+
+
+**For all interaction models, markers are centered but not scaled so that the size of interaction can be compared.**
+ 
+\vspace{.5cm}
+**Peak Obj 2 Naive x D15 or D15/B**
+
+Interaction is much stronger for Early D22-D91 COVID-19 endpoints than for Late D92-D181 COVID-19 endpoints, which is evidence for the interaction being real.
+
+* D22to181: Significant interaction between naive and D15 markers. 
+    - D15 MDW HR 0.30 (0.09-0.99) among non-naive
+    - D15 MDW HR 0.61 (0.42-0.90) among naive
+    - Ratio of HRs 1.96 (P value 0.025)
+
+* D22to91: Significant interaction between naive and D15 markers. 
+    - D15 MDW HR 0.33 (0.19-0.56) among non-naive
+    - D15 MDW HR 0.91 (0.63-1.30) among naive
+    - Ratio of HRs 2.74 (P value 0.002)
+  
+* D92to181: Not significant interaction between naive and D15 markers.  
+    - D15 MDW HR 0.83 (0.21-3.27) among non-naive
+    - D15 MDW HR 0.59 (0.36-0.94) among naive
+    - Ratio of HRs 0.70 (P value 0.632)
+
+
+\vspace{.5cm}
+**Peak Obj 3 Baseline (continuous or discrete) x D15 or D15/B**
+
+Significant interaction between baseline (continuous) and D15 markers
+
+* D22to181: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.44
+
+  - Larger interaction for Pfizer (MDW ratio of HRs 0.16) than for Moderna (MDW ratio of HRs 0.52)
+  
+  - Similar interaction between Prototype (MDW ratio of HRs 0.35) and Omicron (MDW ratio of HRs 0.49)
+  
+  - Larger interaction for Monovalent (MDW ratio of HRs 0.26) than for Bivalent (MDW ratio of HRs 0.59)
+
+* D22to91: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.44
+
+* D92to181: Significant interaction between baseline and D15 markers. MDW ratio of HRs 0.44
+
+
+\vspace{.25cm}
+Non-significant interaction between baseline (continuous) and D15/Baseline fold change markers overall, but significant for D22to91 Moderna (Table 13.2)
+
+
+\vspace{.25cm}
+Significant interaction between baseline (trichotomized) and D15 markers
+
+Consistent with naive x D15 interaction model results, these results show that the effect of D15 marker is more pronounced among subjects with higher baseline marker level. However, we need to keep in mind that it is harder to get the same fold rise if the baseline marker is already high. In addition, interaction is much stronger for Early D22-D91 COVID-19 endpoints than for Late D92-D181 COVID-19 endpoints, which is evidence for the interaction being real.
+
+* D22to181: Significant interaction between baseline H/M/L and D15 markers. Generalized Wald P value 0.002
+
+* D22to91: Significant interaction between baseline H/M/L and D15 markers. Generalized Wald P value 0.003
+
+* D92to181: Non-significant interaction between baseline H/M/L and D15 markers. Generalized Wald P value 0.535
+
+
+\vspace{.25cm}
+Non-significant interaction between baseline (trichotomized) and D15/B fold change markers overall, but significant for D22to91 Moderna (Table 16.3)
+
+
+
+\vspace{.5cm}
+**Peak Obj 4 TrtA(B|C) x D15**
+
+* Not significant anywhere
+
+
+
+```{r, echo=FALSE, results='asis'}
+
+show.q=F
+
+special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 15.")
+
+assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays) # use to get list of cutpoints
+names(all.markers)=all.markers
+
+for (iObj in c(1,32,2,3,31)) { #tables made in 21 is part of the 2
+  
+  for (COR in c("D15to181", "D15to91", "D92to181")) {
+    
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    
+    COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+    
+    cat("# Objective Peak ", 
+        switch(iObj%.%"", "1"=1, "2"=2, "3"=3, "31"="3 discrete baseline", "32"="1 baseline+D15/B"), 
+        ", ", COR, sep="")
+    
+    for (iTask in 1:7) {
+      fname.suffix = switch (iTask,
+        '1' = 'mRNA_onedose',
+        '2' = 'mRNA_Moderna',
+        '3' = 'mRNA_Pfizer',
+        '4' = 'mRNA_Prototype',
+        '5' = 'mRNA_Omicron-Containing',
+        '6' = 'mRNA_Bivalent',
+        '7' = 'mRNA_Monovalent'
+      )  
+      
+      if (iObj==1) {
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==2) {
+        fname.suffix = fname.suffix %.% "_NxD15"
+        has.alt = T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==3) {
+        fname.suffix = fname.suffix %.% "_BxD15"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==31) {
+        fname.suffix = fname.suffix %.% "_BxD15_cat"
+        has.alt = T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==32) {
+        fname.suffix = fname.suffix %.% "_B+D15"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      }
+      cat(res, sep = '\n')
+    }
+    
+  }
+  
+}
+
+
+# Peak Obj 4
+for (COR in c("D15to181", "D15to91", "D92to181")) {
+  
+  pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+  config.cor <- config::get(config = COR)
+  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  
+  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  
+  cat("# Objective Peak ", 4, ", ", sub("D15", "D22", COR), sep="")
+
+  for (iTask in 1:3) {
+    fname.suffix = switch (iTask,
+      '1' = 'mRNA_Mod_Pfi',
+      '2' = 'mRNA_Pro_Omi',
+      '3' = 'mRNA_Bi_Mono'
+    )  
+    has.alt = F
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+  
+}
+
+```
+

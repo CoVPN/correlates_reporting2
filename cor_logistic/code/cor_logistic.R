@@ -3,7 +3,8 @@
 # drop age group and add region in regression models. 
 # different weights
 
-# Sys.setenv(TRIAL = "id27hpvnAb"); COR="M18nAb"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "id27hpv"); COR="M18"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "id27hpvnAb"); COR="M18nAb"; Sys.setenv(VERBOSE = 1) 
 
 print(paste0("starting time: ", date()))
 renv::activate(project = here::here(".."))     
@@ -92,31 +93,39 @@ names(dimnames(tab))[2]="Event Indicator"
 print(tab)
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
 
-# for use in competing risk estimation
+
+# dat.ph1=subset(dat.ph1, M18pseudoneutid50_HPV52<2.5) # one outlier
+
 dat.ph2=subset(dat.ph1, ph2)
 
-begin=Sys.time()
-
-
-################################################################################
-# to decide adjustment variables
-
-if (TRIAL=='id27hpv') {
-  fit=glm(EventIndPrimary~AgeGroup + daysbtwnenrollment_and_susceptibility, dat.ph1, family="binomial")
-  summary(fit)
-  # daysbtwnenrollment_and_susceptibility not significant, and hence not adjusted in the following
-}
-  
 
 tab=with(dat.ph1, table(tps.stratum, EventIndPrimary))
 nn0=tab[,1]
 nn1=tab[,2]
 
 
+begin=Sys.time()
+
+
+
+
+
+################################################################################
+# to decide adjustment variables
+
+if (TRIAL=='id27hpv') {
+  fit=glm(EventIndPrimary~AgeGroup + daysbtwnenrollment_and_susceptibility + single.dose, dat.ph1, family="binomial")
+  summary(fit)
+   # daysbtwnenrollment_and_susceptibility not significant, and hence not adjusted in the following
+}
+  
+
+
 ################################################################################
 # get OR on continuous markers
 ################################################################################
-    
+
+
 fits=list()
 fits.scaled=list()
 for (i in 1:2) { # 1: not scaled, 2: scaled
@@ -141,11 +150,11 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
         if (i==1) fits[[a]]=fit else fits.scaled[[a]]=fit
     }
 }
-
 if(TRIAL=='id27hpv' & COR=='M18') {
   assertthat::assert_that(all(abs(fits$M18bind_mdw$coef-c(-4.68354733703185,-0.102079236701852,-0.0989783451284477))<1e-6), msg = "failed cor_logistic unit testing: "%.%concatList(fits$M18bind_mdw$coef))    
 }
     
+
 natrisk=nrow(dat.ph1)
 nevents=sum(dat.ph1$yy==1)
 
@@ -162,6 +171,29 @@ pvals.cont = sapply(fits, function(x) {
     p.val.col=which(startsWith(tolower(colnames(tmp)),"p"))
     tmp[nrow(tmp),p.val.col]
 })
+
+
+
+###################################################################################################
+## interaction model single.dose*titer
+
+fits=list()
+fits.scaled=list()
+i=2
+# 33 fails
+for (a in setdiff(all.markers,c("M18bind_HPV33"))) {
+    fit = tps(update (form.0,  as.formula('~. + single.dose*'%.%ifelse(i==2,"scale("%.%a%.%")", a))), 
+              dat.ph2, nn0 = nn0, nn1 = nn1, 
+              group = dat.ph2$tps.stratum) 
+    if (i==1) fits[[a]]=fit else fits.scaled[[a]]=fit
+}
+tab=getFormattedSummary(fits.scaled, robust=T, type=6)
+rownames(tab)[4]='scale(marker)'
+rownames(tab)[5]='itxn'
+colnames(tab)=sub("pseudoneutid50","ID50",colnames(tab)) # shorten if it is nAb variables
+mytex(t(tab), file.name=save.results.to%.%"CoR_itxn_logistic_pretty_scaled_"%.%study_name, align="r", silent=F, save2input.only=F)
+
+
 
 
 ###################################################################################################
