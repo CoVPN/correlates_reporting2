@@ -38,7 +38,7 @@ print(paste0("save.results.to equals ", save.results.to))
 nums <- as.numeric(gsub("[^\\d]+", "", times, perl=TRUE))
 tps <- times[nums%in%tpeak]
 
-if (COR != "D29variant") {
+if (COR != "D29VLvariant") {
   #=========================================================================================================================
   # Reverse empirical cdf (rcdf) plots, 
   # stratified by treatment group and event status, in baseline negative or positive subjects
@@ -328,7 +328,7 @@ if (COR != "D29variant") {
 
 # RCDF, SA, nab_reference, nab_Delta, nab_Beta, for vaccine and placebo, respectively
 # RCDF, LA, nab_reference, nab_Zeta, nab_Mu, nab_Gamma, nab_Lambda, for vaccine and placebo, respectively
-if (attr(config,"config") == "janssen_partA_VL" & COR == "D29variant") {
+if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
   
   for (tp in c("Day29")){
     

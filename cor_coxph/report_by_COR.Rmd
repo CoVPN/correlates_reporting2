@@ -72,15 +72,26 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 `r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA"))'-->'`
 
 
-<!-- comment out for covail -->
+<!-- Table 1, commented out for covail -->
 `r if (attr(config,"config") %in% c("covail")) '<!--'`
 \begin{table}[H]
 \caption{Number of cases and non-cases in ph2 or not}
 \begin{center}
-  \input{`r pathCoRoutput`/tab1}\\
+  \input{`r pathCoRoutput`/tab1_`r fname.suffix`}\\
 \end{center}
 \end{table}
 `r if (attr(config,"config") %in% c("covail"))'-->'`
+
+
+<!-- Table 1 competing, only for a few TRIALs -->
+`r if (!TRIAL %in% c("janssen_partA_VL")) '<!--'`
+\begin{table}[H]
+\caption{Number of competing cases and non-cases in ph2 or not}
+\begin{center}
+  \input{`r pathCoRoutput`/tab1_competing_`r fname.suffix`}\\
+\end{center}
+\end{table}
+`r if (!TRIAL %in% c("janssen_partA_VL"))'-->'`
 
 
 \clearpage
@@ -91,7 +102,9 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 
 ```{r, echo=FALSE, results='asis'}
 
-if(!contain(attr(config,"config"),"senior") & file.exists(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd')))) {
+if (TRIAL=="janssen_partA_VL") {
+  
+} else if(!contain(attr(config,"config"),"senior") & file.exists(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd')))) {
   message ("forest plots")
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')

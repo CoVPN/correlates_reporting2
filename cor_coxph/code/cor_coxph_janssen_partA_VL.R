@@ -1,6 +1,6 @@
 {
 Sys.setenv(TRIAL = "janssen_partA_VL"); 
-COR="D29variant"; 
+COR="D29VLvariant"; 
 Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     
@@ -33,20 +33,23 @@ B <-       config$num_boot_replicates
 numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
-# "Ancestral.Lineage", "Alpha", "Beta", "Delta", "Epsilon", "Gamma", "Lambda", "Mu", "Zeta", "Iota"
+# COVID lineage: "Ancestral.Lineage", "Alpha", "Beta", "Delta", "Epsilon", "Gamma", "Lambda", "Mu", "Zeta", "Iota"
 variants=lapply(tfinal.tpeak.ls, function(x) names(x))
 }
 
 
+
+{
 marker.cutpoints=attr(dat.mock, "marker.cutpoints"); marker.cutpoints
-for (a in all.markers) {        
+for (a in "Day29"%.%assays) {        
   q.a=marker.cutpoints[[a]]
   if (startsWith(a, "Day")) {
-    write(paste0(gsub("_", "\\\\_", a, fixed = TRUE),     " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
+    write(paste0(gsub("_", " ", a, fixed = TRUE),     " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a))
   }
 }
 
 # add placebo counterpart
+dat.vac.seroneg.allregions=subset(dat.mock, Trt==1 & ph1)
 dat.pla.seroneg.allregions=subset(dat.mock, Trt==0 & ph1)
 
 # for validation use
@@ -69,7 +72,7 @@ cox.df=data.frame(
   ub = numeric(0),
   pval = numeric(0),
   stringsAsFactors=FALSE)
-
+}
 
 
 ################################################################################
@@ -77,12 +80,10 @@ cox.df=data.frame(
 
 for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are fewest cases and most likely to throw errors. 
 # iRegion=1; variant="Ancestral.Lineage"
+# iRegion=2; variant="Lambda"
 # iRegion=3; variant="Beta"
-# iRegion=2; variant="Ancestral.Lineage"
   
   region=regions[iRegion]
-  
-  # subset dataset to region
   dat.vac=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
   dat.pla=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
   
@@ -93,8 +94,6 @@ for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are few
     
     # append to file names for figures and tables
     fname.suffix = paste0(region, "_", variant)
-    #fname.suffix = study_name
-    
     for.title = paste0(variant, " COVID, ", region)
     
     
@@ -130,140 +129,191 @@ for (iRegion in c(3,1,2)) { # 3 is put first to help debugging b/c there are few
     names(dimnames(tab))[2]="Event Indicator"
     mytex(tab, file.name=paste0("tab1_nonimputed_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=0)
     
+    
     ############################
     # formula for coxph
 
     form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  
+    # the markers to study depend on region and COVID lineage
+    if (iRegion==1) {
+      # the only COVID variant is ancestral
+      all.markers=c("Day29bindSpike", "Day29pseudoneutid50")
+      multivariate_assays = "bindSpike+pseudoneutid50"
+      
+    } else if (iRegion==2) {
+      if (variant=="Ancestral.Lineage") {
+        all.markers=c("Day29bindSpike", "Day29pseudoneutid50")
+        multivariate_assays = "bindSpike+pseudoneutid50"
+        
+      } else if (variant=="Gamma") {
+        all.markers=c("Day29bindSpike", "Day29bindSpike_P.1", "Day29pseudoneutid50", "Day29pseudoneutid50_Gamma")
+        multivariate_assays = c("bindSpike+pseudoneutid50",
+                                "bindSpike_P.1+pseudoneutid50_Gamma",
+                                "bindSpike+bindSpike_P.1",
+                                "pseudoneutid50+pseudoneutid50_Gamma")
+        
+      } else if (variant=="Lambda") {
+        all.markers=c("Day29bindSpike", "Day29bindSpike_C.37", "Day29pseudoneutid50", "Day29pseudoneutid50_Lambda")
+        multivariate_assays = c("bindSpike+pseudoneutid50",
+                                "bindSpike_C.37+pseudoneutid50_Lambda",
+                                "bindSpike+bindSpike_C.37",
+                                "pseudoneutid50+pseudoneutid50_Lambda")
+        
+      } else if (variant=="Mu") {
+        all.markers=c("Day29bindSpike", "Day29bindSpike_B.1.621", "Day29pseudoneutid50", "Day29pseudoneutid50_Mu")
+        multivariate_assays = c("bindSpike+pseudoneutid50",
+                                "bindSpike_B.1.621+pseudoneutid50_Mu",
+                                "bindSpike+bindSpike_B.1.621",
+                                "pseudoneutid50+pseudoneutid50_Mu")
+        
+      } else if (variant=="Zeta") {
+        all.markers=c("Day29bindSpike", "Day29pseudoneutid50", "Day29pseudoneutid50_Zeta")
+        multivariate_assays = c("bindSpike+pseudoneutid50",
+                                "pseudoneutid50+pseudoneutid50_Zeta")
+        
+      }
+        
+    } else if (iRegion==3) {
+      all.markers=c("Day29bindSpike", "Day29bindSpike_B.1.351", "Day29pseudoneutid50", "Day29pseudoneutid50_Beta")
+      multivariate_assays = c("bindSpike+pseudoneutid50",
+                              "bindSpike+bindSpike_B.1.351",
+                              "bindSpike_B.1.351+pseudoneutid50_Beta",
+                              "pseudoneutid50+pseudoneutid50_Beta")
 
+    }
+    
+    all.markers.names.short = assay_metadata$assay_label_short[match(sub("Day29","",all.markers),assays)]
+    
     source(here::here("code", "cor_coxph_ph_MI.R"))
     
     
-    #####################################
-    # formula for competing risk analysis
-
-    # if there are very few competing events, the coxph for competing event may throw warnings
-
-    form.0=list(
-      update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
-      update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
-    )
-
-    tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
-    write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_", fname.suffix))
-
-    # run analyses
-    source(here::here("code", "cor_coxph_risk_no_marker.R"))
-    source(here::here("code", "cor_coxph_risk_bootstrap.R"))
-
-    # make tables and figures
-    source(here::here("code", "cor_coxph_risk_plotting.R"))
+    # #####################################
+    # # formula for competing risk analysis
+    # 
+    # # if there are very few competing events, the coxph for competing event may throw warnings
+    # 
+    # form.0=list(
+    #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
+    #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
+    # )
+    # 
+    # tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
+    # write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_", fname.suffix))
+    # 
+    # # run analyses
+    # source(here::here("code", "cor_coxph_risk_no_marker.R"))
+    # source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+    # 
+    # # make tables and figures
+    # source(here::here("code", "cor_coxph_risk_plotting.R"))
 
   } # for variant
   
 } # for iRegion
 
-
-
-###################################################################################################
-if(verbose) print("forest plots")
-
-# add cox model fits for all COVID cases
-trials=c(US="na", LatAm="la", RSA="sa")
-for (iRegion in c(1,2,3)) { 
-  # iRegion=1
-  region=regions[iRegion]
-  
-  # subset dataset to region
-  dat.vac=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
-  dat.pla=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
-  
-  # ph1 case count
-  nevents.df=rbind(nevents.df, list(region = region, variant = "All", nevents=sum(dat.vac$EventIndPrimaryIncludeNotMolecConfirmedD29) ))
-  
-  # load coxph results from regional analyses
-  # the coxph results from analysis ready dataset for janssen_partA_VL are different
-  # b/c cases without VL are not considered ph2 in the janssen_partA_VL dataset
-  load(paste0("/home/yfong/dev/correlates_reporting2-2/cor_coxph/output/janssen_",trials[region],"_partA/D29IncludeNotMolecConfirmed/coxph_fits.Rdata"))
-  for (a in all.markers) {
-    res=fits.cont.coef.ls[[a]]
-    cox.df=rbind(cox.df, list(
-      region = region, 
-      variant = "All", 
-      assay = a, 
-      est = exp(res[nrow(res),"HR"]),
-      lb =  exp(res[nrow(res),"(lower"]),
-      ub =  exp(res[nrow(res),"upper)"])
-    ))  
-  }
-}
-
-
-row.order=c(
-  "LatAm_D614 Ab_All",
-  "LatAm_D614 Ab_D614G",
-  "LatAm_D614 Ab_Zeta",
-  # "LatAm_Zeta Ab_Zeta",
-  "LatAm_D614 Ab_Mu",
-  # "LatAm_Mu Ab_Mu",
-  "LatAm_D614 Ab_Gamma",
-  # "LatAm_Gamma Ab_Gamma",
-  "LatAm_D614 Ab_Lambda",
-  # "LatAm_Lambda Ab_Lambda",
-  "US_D614 Ab_All",
-  "US_D614 Ab_D614G",
-  "RSA_D614 Ab_All",
-  "RSA_D614 Ab_Beta"
-  # "RSA_Beta Ab_Beta"
-)
-
-# add row names
-rownames(nevents.df) = paste0(nevents.df$region, "_D614 Ab_", nevents.df$variant)
-rownames(nevents.df) = sub("Ancestral.Lineage", "D614G", rownames(nevents.df))
-# order by row names
-nevents = nevents.df[row.order,"nevents"]
-
-
-# make forest plots
-assay.titles=c("Binding Antibody to Spike", "Binding Antibody to RBD", "PsV Neutralization" )
-aa=c("bindSpike",      "bindRBD",        "pseudoneutid50")
-names(assay.titles)=aa
-for (a in aa) {
-  #width and height decide margin
-  # to make CI wider, make width bigger and graphwidth larger 
-  # onefile has to be F otherwise there will be an empty page inserted
-  mypdf(onefile=F, width=10,height=6, file=paste0(save.results.to, "hr_forest_", a)) 
-      
-    # subset by assay 
-    est.ci = subset(cox.df, assay==paste0("Day",tpeak,a))
-    # add row names (this needs to be done after subsetting)
-    rownames(est.ci) = paste0(est.ci$region, "_D614", if(a=="pseudoneutid50") "G", " Ab_", est.ci$variant)
-    rownames(est.ci) = sub("Ancestral.Lineage", "D614G", rownames(est.ci))
-    # order by rownames
-    est.ci = est.ci[row.order,]
-    
-    theforestplot(
-      nEvents=nevents, 
-      point.estimates=est.ci[,"est"], 
-      lower.bounds=est.ci[,"lb"], 
-      upper.bounds=est.ci[,"ub"], 
-      p.values=NA, 
-      group=rownames(est.ci), 
-      graphwidth=unit(120, "mm"), fontsize=1.2, decimal.places=2, 
-      table.labels = c("Group", "HR (95% CI)","No. Events"), 
-      title=paste0("Day ", tpeak, " ", assay.titles[a]))
-    
-  dev.off()
-}
-
-
-
-###################################################################################################
-if(verbose) print("differences in risk curves")
-
-load(paste0("/home/yfong/dev/correlates_reporting2-2/cor_coxph/output/janssen_partA_VL/D29VL/risks.all.1.LatAm.Gamma.Rdata"))
-risks.gamma.covid = risks.all.1$Day29bindSpike
-risks.gamma.covid = risks.all.1$Day29bindSpike
-
-
-print(date())
-print("cor_coxph run time: "%.%format(Sys.time()-time.start, digits=1))
+# 
+# 
+# ###################################################################################################
+# if(verbose) print("forest plots")
+# 
+# # add cox model fits for all COVID cases
+# trials=c(US="na", LatAm="la", RSA="sa")
+# for (iRegion in c(1,2,3)) { 
+#   # iRegion=1
+#   region=regions[iRegion]
+#   
+#   # subset dataset to region
+#   dat.vac=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
+#   dat.pla=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
+#   
+#   # ph1 case count
+#   nevents.df=rbind(nevents.df, list(region = region, variant = "All", nevents=sum(dat.vac$EventIndPrimaryIncludeNotMolecConfirmedD29) ))
+#   
+#   # load coxph results from regional analyses
+#   # the coxph results from analysis ready dataset for janssen_partA_VL are different
+#   # b/c cases without VL are not considered ph2 in the janssen_partA_VL dataset
+#   load(paste0("/home/yfong/dev/correlates_reporting2-2/cor_coxph/output/janssen_",trials[region],"_partA/D29IncludeNotMolecConfirmed/coxph_fits.Rdata"))
+#   for (a in all.markers) {
+#     res=fits.cont.coef.ls[[a]]
+#     cox.df=rbind(cox.df, list(
+#       region = region, 
+#       variant = "All", 
+#       assay = a, 
+#       est = exp(res[nrow(res),"HR"]),
+#       lb =  exp(res[nrow(res),"(lower"]),
+#       ub =  exp(res[nrow(res),"upper)"])
+#     ))  
+#   }
+# }
+# 
+# 
+# row.order=c(
+#   "LatAm_D614 Ab_All",
+#   "LatAm_D614 Ab_D614G",
+#   "LatAm_D614 Ab_Zeta",
+#   # "LatAm_Zeta Ab_Zeta",
+#   "LatAm_D614 Ab_Mu",
+#   # "LatAm_Mu Ab_Mu",
+#   "LatAm_D614 Ab_Gamma",
+#   # "LatAm_Gamma Ab_Gamma",
+#   "LatAm_D614 Ab_Lambda",
+#   # "LatAm_Lambda Ab_Lambda",
+#   "US_D614 Ab_All",
+#   "US_D614 Ab_D614G",
+#   "RSA_D614 Ab_All",
+#   "RSA_D614 Ab_Beta"
+#   # "RSA_Beta Ab_Beta"
+# )
+# 
+# # add row names
+# rownames(nevents.df) = paste0(nevents.df$region, "_D614 Ab_", nevents.df$variant)
+# rownames(nevents.df) = sub("Ancestral.Lineage", "D614G", rownames(nevents.df))
+# # order by row names
+# nevents = nevents.df[row.order,"nevents"]
+# 
+# 
+# # make forest plots
+# assay.titles=c("Binding Antibody to Spike", "Binding Antibody to RBD", "PsV Neutralization" )
+# aa=c("bindSpike",      "bindRBD",        "pseudoneutid50")
+# names(assay.titles)=aa
+# for (a in aa) {
+#   #width and height decide margin
+#   # to make CI wider, make width bigger and graphwidth larger 
+#   # onefile has to be F otherwise there will be an empty page inserted
+#   mypdf(onefile=F, width=10,height=6, file=paste0(save.results.to, "hr_forest_", a)) 
+#       
+#     # subset by assay 
+#     est.ci = subset(cox.df, assay==paste0("Day",tpeak,a))
+#     # add row names (this needs to be done after subsetting)
+#     rownames(est.ci) = paste0(est.ci$region, "_D614", if(a=="pseudoneutid50") "G", " Ab_", est.ci$variant)
+#     rownames(est.ci) = sub("Ancestral.Lineage", "D614G", rownames(est.ci))
+#     # order by rownames
+#     est.ci = est.ci[row.order,]
+#     
+#     theforestplot(
+#       nEvents=nevents, 
+#       point.estimates=est.ci[,"est"], 
+#       lower.bounds=est.ci[,"lb"], 
+#       upper.bounds=est.ci[,"ub"], 
+#       p.values=NA, 
+#       group=rownames(est.ci), 
+#       graphwidth=unit(120, "mm"), fontsize=1.2, decimal.places=2, 
+#       table.labels = c("Group", "HR (95% CI)","No. Events"), 
+#       title=paste0("Day ", tpeak, " ", assay.titles[a]))
+#     
+#   dev.off()
+# }
+# 
+# 
+# 
+# ###################################################################################################
+# if(verbose) print("differences in risk curves")
+# 
+# load(paste0("/home/yfong/dev/correlates_reporting2-2/cor_coxph/output/janssen_partA_VL/D29VL/risks.all.1.LatAm.Gamma.Rdata"))
+# risks.gamma.covid = risks.all.1$Day29bindSpike
+# risks.gamma.covid = risks.all.1$Day29bindSpike
+# 
+# 
+# print(date())
+# print("cor_coxph run time: "%.%format(Sys.time()-time.start, digits=1))

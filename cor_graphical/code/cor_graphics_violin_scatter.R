@@ -32,7 +32,7 @@ if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
   longer_cor_data_plot3 <- readRDS(here("data_clean", "longer_cor_data_plot3.rds"))
   plot.25sample3 <- readRDS(here("data_clean", "plot.25sample3.rds"))
 }
-if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant") {
   longer_cor_data_plot_variant <- readRDS(here("data_clean", "longer_cor_data_plot_variant.rds"))
 }
 
@@ -86,7 +86,7 @@ if (length(timepoints)==1){
   shp_val <- c(#18, 16, 
     17, 15)
   
-} else if (COR != "D29variant") {
+} else if (COR != "D29VLvariant") {
   x_lb <- gsub("\\s(?=[a-zA-Z])", "\n", c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), 
                                           paste0("D", tinterm, " fold-rise over D1"), paste0("D",tpeak, " fold-rise over D1"), 
                                           case_grp1, 
@@ -110,7 +110,7 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
 
-if (COR != "D29variant") { # D29variant requires non-standard figures
+if (COR != "D29VLvariant") { # D29VLvariant requires non-standard figures
   #### Figure 1. violin+box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists
   for (i in 1:length(plots)) {
     for (j in 1:length(bstatus)) {
@@ -482,7 +482,7 @@ if (COR != "D29variant") { # D29variant requires non-standard figures
   }
 }
 
-if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant") {
  # Latin America, 5 PsV markers, baseline negative, vaccine
   assay_la <- c("pseudoneutid50","pseudoneutid50_Zeta","pseudoneutid50_Mu","pseudoneutid50_Gamma","pseudoneutid50_Lambda")
   longer_cor_data_plot_variant_la <- longer_cor_data_plot_variant %>%

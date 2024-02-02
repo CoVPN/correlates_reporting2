@@ -76,13 +76,27 @@ show.q = F
 ################################################################################
 # Peak Obj 1-3
 
-for (iObj in c(1,2,21,3,31,32)) {
+# 1 and 11 are both Obj 1, no itxn
+# 2 and 21 are both Obj 2, itxn by naive
+# 3 and 31 are both Obj 3, itxn by B
+for (iObj in c(1,11,2,21,3,31)) {
+# iObj=1
   
   # define all.markers
   if(iObj==1) {
     all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
     all.markers.names.short = assay_metadata$assay_label_short[match(assays,assay_metadata$assay)]
     all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
+    
+  } else if(iObj==11){
+    # B marker + D15/B
+    all.markers = sapply(assays, function (a) paste0("scale(B",a, ",scale=F) + scale(Delta15overB",a, ",scale=F)")
+    )
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    all.markers.names.short = all.markers.names.short
+    # parameters for R script
+    nCoef=2
+    col.headers=c("center(B)", "center(D15/B)")
     
   } else if(iObj==2){
     # interaction naive x D15 marker
@@ -127,49 +141,42 @@ for (iObj in c(1,2,21,3,31,32)) {
     col4="center(D15 or fold) at Med B"
     col5="center(D15 or fold) at High B"
     
-  } else if(iObj==32){
-    # B marker + D15/B
-    all.markers = sapply(assays, function (a) paste0("scale(B",a, ",scale=F) + scale(Delta15overB",a, ",scale=F)")
-    )
-    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    all.markers.names.short = all.markers.names.short
-    # parameters for R script
-    nCoef=2
-    col.headers=c("center(B)", "center(D15/B)")
-    
   }
   
-  # same formula, repeated 7 times
-  for (iTask in 1:7) {
-    if (iTask==1) {
+  # same formula, repeat 7 subpopulations
+  for (iPop in 1:7) {
+    if (iPop==1) {
       dat=dat.onedosemRNA
       fname.suffix = 'mRNA_onedose'
       
-    } else if (iTask==2) {
+    } else if (iPop==2) {
       dat=subset(dat.onedosemRNA, TrtA==1)
       fname.suffix = 'mRNA_Moderna'
-    } else if (iTask==3) {
+    } else if (iPop==3) {
       dat=subset(dat.onedosemRNA, TrtA==0)
       fname.suffix = 'mRNA_Pfizer'
       
-    } else if (iTask==4) {
+    } else if (iPop==4) {
       dat=subset(dat.onedosemRNA, TrtB==1)
       fname.suffix = 'mRNA_Prototype'
-    } else if (iTask==5) {
+    } else if (iPop==5) {
       dat=subset(dat.onedosemRNA, TrtB==0)
       fname.suffix = 'mRNA_Omicron-Containing'
       
-    } else if (iTask==6) {
+    } else if (iPop==6) {
       dat=subset(dat.onedosemRNA, TrtC==1)
       fname.suffix = 'mRNA_Bivalent'
-    } else if (iTask==7) {
+    } else if (iPop==7) {
       dat=subset(dat.onedosemRNA, TrtC==0)
       fname.suffix = 'mRNA_Monovalent'
-      
     } 
     
     if(iObj==1) {
       source(here::here("code", "cor_coxph_ph.R"))
+      
+    } else if(iObj==11) {
+      fname.suffix = paste0(fname.suffix, "_B+D15")
+      source(here::here("code", "cor_coxph_ph_coef.R"))
       
     } else if(iObj==2) {
       fname.suffix = paste0(fname.suffix, "_NxD15")
@@ -186,14 +193,28 @@ for (iObj in c(1,2,21,3,31,32)) {
     } else if(iObj==31) {
       fname.suffix = paste0(fname.suffix, "_BxD15_cat")
       source(here::here("code", "cor_coxph_ph_coef_itxn3.R"))
-      
-    } else if(iObj==32) {
+    }
+  }
+  
+  
+  # repeat Obj 1 and 11 in the naive or nonnaive subpopulation
+  for (iPop in 8:9) {
+    if (iPop==8) {
+      dat=subset(dat.onedosemRNA, naive==1)
+      fname.suffix = 'mRNA_naive'
+    } else if (iPop==9) {
+      dat=subset(dat.onedosemRNA, naive==0)
+      fname.suffix = 'mRNA_nnaive'
+    } 
+    
+    if(iObj==1) {
+      source(here::here("code", "cor_coxph_ph.R"))
+    } else if(iObj==11) {
       fname.suffix = paste0(fname.suffix, "_B+D15")
       source(here::here("code", "cor_coxph_ph_coef.R"))
-      
     }
-    
   }
+  
 }
 
 
@@ -201,8 +222,8 @@ for (iObj in c(1,2,21,3,31,32)) {
 # Peak Obj 4
 
 # same formula, repeated 3 times
-for (iTask in 1:3) {
-  if (iTask==1) {
+for (iPop in 1:3) {
+  if (iPop==1) {
     dat=subset(dat.onedosemRNA, TrtA %in% c(1,0))
     fname.suffix = 'mRNA_Mod_Pfi'
     
@@ -212,7 +233,7 @@ for (iTask in 1:3) {
     nCoef=3
     col.headers=c("TrtA Moderna~Pfizer", "center(D15)", "TrtA:center(D15)")
     
-  } else if (iTask==2) {
+  } else if (iPop==2) {
     dat=subset(dat.onedosemRNA, TrtB %in% c(1,0))
     fname.suffix = 'mRNA_Pro_Omi'
     
@@ -222,7 +243,7 @@ for (iTask in 1:3) {
     nCoef=3
     col.headers=c("TrtB Prot~Omicron", "center(D15)", "TrtB:center(D15)")
     
-  } else if (iTask==3) {
+  } else if (iPop==3) {
     dat=subset(dat.onedosemRNA, TrtC %in% c(1,0))
     fname.suffix = 'mRNA_Bi_Mono'
     

@@ -121,7 +121,8 @@ assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta"
 all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays) # use to get list of cutpoints
 names(all.markers)=all.markers
 
-for (iObj in c(1,32,2,3,31)) { #tables made in 21 is part of the 2
+# tables made in iObj 21 is part of the 2
+for (iObj in c(1,11,2,3,31)) { 
   
   for (COR in c("D15to181", "D15to91", "D92to181")) {
     
@@ -132,11 +133,16 @@ for (iObj in c(1,32,2,3,31)) { #tables made in 21 is part of the 2
     COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
     
     cat("# Objective Peak ", 
-        switch(iObj%.%"", "1"=1, "2"=2, "3"=3, "31"="3 discrete baseline", "32"="1 baseline+D15/B"), 
+        switch(iObj%.%"", 
+               "1"=1, 
+               "2"=2, 
+               "3"=3, 
+               "31"="3 discrete baseline", 
+               "11"="1 baseline+D15/B"), 
         ", ", COR, sep="")
     
-    for (iTask in 1:7) {
-      fname.suffix = switch (iTask,
+    for (iPop in 1:7) {
+      fname.suffix = switch (iPop,
         '1' = 'mRNA_onedose',
         '2' = 'mRNA_Moderna',
         '3' = 'mRNA_Pfizer',
@@ -149,6 +155,11 @@ for (iObj in c(1,32,2,3,31)) { #tables made in 21 is part of the 2
       if (iObj==1) {
         has.alt = F
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==11) {
+        fname.suffix = fname.suffix %.% "_B+D15"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
       } else if (iObj==2) {
         fname.suffix = fname.suffix %.% "_NxD15"
@@ -163,11 +174,6 @@ for (iObj in c(1,32,2,3,31)) { #tables made in 21 is part of the 2
       } else if (iObj==31) {
         fname.suffix = fname.suffix %.% "_BxD15_cat"
         has.alt = T
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-        
-      } else if (iObj==32) {
-        fname.suffix = fname.suffix %.% "_B+D15"
-        has.alt = F
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
       }
@@ -190,8 +196,8 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   
   cat("# Objective Peak ", 4, ", ", sub("D15", "D22", COR), sep="")
 
-  for (iTask in 1:3) {
-    fname.suffix = switch (iTask,
+  for (iPop in 1:3) {
+    fname.suffix = switch (iPop,
       '1' = 'mRNA_Mod_Pfi',
       '2' = 'mRNA_Pro_Omi',
       '3' = 'mRNA_Bi_Mono'
@@ -199,6 +205,45 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
     has.alt = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
+  }
+}
+
+
+# Obj 1 in naive and non-naive
+for (iObj in c(1,11)) { 
+  
+  for (COR in c("D15to181", "D15to91", "D92to181")) {
+    
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    
+    COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+    
+    cat("# Objective Peak ", 
+        switch(iObj%.%"", 
+               "1"=1, 
+               "11"="1 baseline+D15/B"), 
+        ", ", COR, sep="")
+    
+    for (iPop in 8:9) {
+      fname.suffix = switch (iPop%.%"",
+        '8' = 'mRNA_naive',
+        '9' = 'mRNA_nnaive'
+      )  
+      
+      if (iObj==1) {
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==11) {
+        fname.suffix = fname.suffix %.% "_B+D15"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+      }
+      cat(res, sep = '\n')
+    }
+    
   }
   
 }

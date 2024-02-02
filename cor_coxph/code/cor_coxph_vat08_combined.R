@@ -123,6 +123,8 @@ for (iAna in 3:3) {
 
   form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
 
+  multivariate_assays = config$multivariate_assays
+  
   source(here::here("code", "cor_coxph_ph_MI.R"))
   
   

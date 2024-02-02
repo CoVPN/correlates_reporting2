@@ -197,7 +197,7 @@ dat = dat %>%
   
 }
 
-if((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant"){
+if((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant"){
   
   # filter to baseline negative, vaccine ppt and
   # split "peak-cases" by variant type
@@ -294,10 +294,10 @@ dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
 dat.long$LLoQ = with(dat.long, log10(as.numeric(lloqs[as.character(assay)])))
 dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
 
-if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29variant"){ # for ENSEMBLE, ID50 uses LLOQ, ADCP uses LLOD
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant"){ # for ENSEMBLE, ID50 uses LLOQ, ADCP uses LLOD
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", ifelse(assay=="ADCP", "LoD", "LoQ"))) 
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, ifelse(assay=="ADCP", LLoD, LLoQ))) 
-} else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant"){
+} else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant"){
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
 } else if (study_name=="IARCHPV"){
@@ -491,7 +491,7 @@ if (study_name=="PROFISCOV"){
 
 
 
-if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant"){
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant"){
   # remove post case rows for variant strain assay but don't belong to a variant strain (e.g. EventIndPrimaryIncludeNotMolecConfirmedD1_Beta) 
   # The only data points included in 'Zeta Cases' are from ptids with Zeta strain COVID-19
   dat.longer.cor.subset$keep_day29 = 1
@@ -579,7 +579,7 @@ if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
 saveRDS(as.data.frame(dat.longer.cor.subset),
         file = here("data_clean", "longer_cor_data.rds"))
 
-if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant") {
   #### for Figure (variant). post peak case of specific strain vs non-case, (Day 1), Day 29 Day 57
   groupby_vars_variant=c("Trt", "Bserostatus", "cohort_event2", "time", "assay", "Region") # diff from figure 1, uses cohort_event2 instead of cohort_event, add region
   
