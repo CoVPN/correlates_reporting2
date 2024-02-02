@@ -524,11 +524,12 @@ dat.mock <- read.csv(path_to_data)
 
 
 ###################################################################################################
-# some more data processing
+# additional data processing
 
+# uloq censoring 
+# only for peak correlates analyses 
+# not for descriptive analyses or exposure proximal correlates where decay model uses uncensored values
 if (!DESCRIPTIVE & !EXPOSUREPROXIMAL) {
-  
-  # uloq censoring when it is for peak correlates analyses, not for descriptive analyses, or for exposure proximal correlates where decay model uses uncensored values
   cat("ULOQ censoring\n")
   for (a in assays) {
     uloq=uloqs[a]
@@ -542,9 +543,10 @@ if (!DESCRIPTIVE & !EXPOSUREPROXIMAL) {
       dat.mock[['B' %.% a]] <- ifelse(dat.mock[['B' %.% a]] > log10(uloq), log10(uloq), dat.mock[['B' %.% a]])
     }
   }    
-  
 }
 
+
+# misc
 
 if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA", 
                 "janssen_partA_VL")) {

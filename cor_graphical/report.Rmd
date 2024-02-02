@@ -53,9 +53,9 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   #if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
   if (study_name=="IARCHPV") COR_postfix_list <- c("", "sus")
 
-  if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29variant
+  if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
-    COR = "D29variant"
+    COR = "D29VLvariant"
     COR_postfix_label=""
     
     tp="Day29"
@@ -176,7 +176,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
     }
     
     
-  } else { # for all other studies but config: janssen_partA_VL and COR: D29variant
+  } else { # for all other studies but config: janssen_partA_VL and COR: D29VLvariant
     
     for (COR_postfix in COR_postfix_list){
         
