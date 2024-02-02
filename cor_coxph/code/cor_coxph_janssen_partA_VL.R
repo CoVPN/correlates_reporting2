@@ -1,6 +1,6 @@
 {
 Sys.setenv(TRIAL = "janssen_partA_VL"); 
-COR="D29variant"; 
+COR="D29VLvariant"; 
 Sys.setenv(VERBOSE = 1) 
 
 renv::activate(project = here::here(".."))     

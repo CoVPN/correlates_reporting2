@@ -40,7 +40,7 @@ print(paste0("save.results.to equals ", save.results.to))
 
 ###### Correlation plots across markers at a given time point
 # 3 markers (Anc, Delta, Beta), SA, Day 29
-if (study_name == "janssen_partA_VL" & COR == "D29variant") {
+if (study_name == "janssen_partA_VL" & COR == "D29VLvariant") {
 
   for (t in "Day29"){
     for (trt in c(1)){
