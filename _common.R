@@ -1,3 +1,4 @@
+{
 library(methods)
 library(dplyr)
 library(kyotil)
@@ -61,6 +62,7 @@ if (is.null(config$threshold_grid_size)) {
   threshold_grid_size = config$threshold_grid_size
 }
 
+}
 
 ###################################################################################################
 # assay metadata
@@ -404,7 +406,7 @@ if (!is.null(config$assay_metadata)) {
 
 
 
-
+{
 # hacky fix for tabular, since unclear who else is using
 # the truncated labels.assays.short later
 labels.assays.short.tabular <- labels.assays.short
@@ -434,7 +436,7 @@ do.fold.change.overB=F #TRIAL %in% c("vat08_combined")
 # in the immuno report (but is not analyzed in the cor or cop reports).
 include_bindN <- !study_name %in% c("PREVENT19","AZD1222","VAT08m")
 
-
+}
 
 # COR-related config
 if (exists("COR")) {
@@ -799,7 +801,6 @@ if (exists("COR")) {
 all.markers1 = NULL
 if (TRIAL=="covail") {
   assays1 = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
-  assays1 = assays1%.%"cat"
   all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
   
 } else if (TRIAL=="janssen_partA_VL") {
