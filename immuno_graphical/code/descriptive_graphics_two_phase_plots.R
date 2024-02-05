@@ -6,6 +6,10 @@ renv::activate(project = here::here(".."))
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
+if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_metadata$assay; assay_immuno=assay_metadata$assay;
+labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
+labels.axis <- as.data.frame(labels.axis)
+rownames(labels.axis) <- times}
 uloqs=assay_metadata$uloq; names(uloqs)=assays
 pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assays
 lloxs=ifelse(assay_metadata$llox_label=="lloq", assay_metadata$lloq, assay_metadata$lod); names(lloxs)=assays
@@ -35,10 +39,10 @@ library(wCorr)
 
 # produce geom_statistics w/ resampling-based covariate-adjusted Spearman
 source(here("code", "params.R"))
-if (study_name=="VAT08"){
+if (study_name %in% c("VAT08","ENSEMBLE")){
   source(here("code", "covid_corr_plot_functions.R"))
   source(here("code", "process_violin_pair_functions.R")) # pair functions in the first program are overwritten by those in the second program
-  # for VAT08, pairplots are non-bstratum-adjusted, no resampling, IPS-weighted spearman correlation
+  # pairplots are non-bstratum-adjusted, no resampling, IPS-weighted spearman correlation
 } else {
   source(here("code", "ggally_cor_resample.R"))
   source(here("code", "covid_corr_plot_functions.R"))
@@ -136,19 +140,21 @@ if (F){
 #   stratified by treatment group and baseline serostatus
 # - Pairs plots/scatterplots and baseline strata-adjusted Spearman rank correlations are used.
 #-----------------------------------------------
-for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this loop is only for prevent19, prevent19 needs one set of US+MEX, and one set of US only
+for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (attr(config,"config")=="janssen_partA_VL") {c(0,1,2)} else {c("all")}) { 
+  # this loop is for prevent19 and janssen_partA_VL, prevent19 needs to be looped through all people (US+Mex) and US only, janssen_partA_VL needs to be looped through regions
     
-  if (!length(assay_immuno)==1){ # AZ two datasets only have one marker in each as of 5/13/2022, can't do pair 
+  if (length(assay_immuno)==1) next # AZ two datasets only have one marker in each as of 5/13/2022, can't do pair 
     
     print("Pair plots 1:")
     
-    for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "B", "Day29", "Day57", "Day29overB", "Day57overB"
+    for (tp in if(study_name=="VAT08") {tps_no_fold_change} else if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints)} else {tps_no_B_and_delta_over_tinterm}) { # "B", "Day29", "Day57", "Day29overB", "Day57overB"
       for (trt in 0:1) {
         # Don't produce figures for placebo baseline negative to improve build time
-        if(trt==0 & study_name!="VAT08") {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
+        if(trt==0 & study_name!="VAT08" & attr(config,"config")!="janssen_partA_VL") {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
     
         for (bserostatus in bstatus.range) {
           if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
+          if (attr(config,"config")=="janssen_partA_VL" & bserostatus==1) next # skip baseline positive for janssen_partA_VL
           
           tt=match(tp, times)
           
@@ -156,84 +162,112 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
             dplyr::filter(Bserostatus == bserostatus & Trt == trt)
           
           if(study_name=="PREVENT19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
+          if(attr(config,"config")=="janssen_partA_VL") {subdat=subset(subdat, Region==country)} # janssen_partA_VL Region: (Northern America = 0, Latin America = 1, Southern Africa = 2)
+          country_lb = case_when(country=="Nvx_US" ~ "US_only_", 
+                                 country==0 ~ "NAM_",
+                                 country==1 ~ "LATAM_",
+                                 country==2 ~ "ZA_",
+                                 TRUE ~ "")
+          country_lb_long = case_when(country=="Nvx_US" ~ "US only", 
+                                 country==0 ~ "Northern America",
+                                 country==1 ~ "Latin America",
+                                 country==2 ~ "Southern Africa",
+                                 TRUE ~ "")
           
-          if (study_name=="VAT08" && bserostatus==0 && tp=="B") { # psv_mdw doesn't have any value for naive at baseline
-            assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
-          } else {assay_immuno_ = assay_immuno}
-          
-          covid_corr_pairplots(
-            plot_dat = subdat,
-            time = tp,
-            assays = assay_immuno_, # adhoc request by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
-                                   # adhoc request 2 by David: assay_immuno = c("liveneutmn50", "bindSpike_P.1", "bindRBD_P.1", "bindN")
-            strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
-            weight = "wt.subcohort",
-            plot_title = paste0(
-              gsub("ay ","", labels.time)[tt],
-              " Ab markers: ",
-              bstatus.labels.3[bserostatus + 1], ", ",
-              c("placebo", "vaccine")[trt + 1], " arm"
-            ),
-            column_labels = labels.axis[tp, seq_along(assay_immuno_)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
-            height = max(1.3 * length(assay_immuno_) + 0.1, 5.5),
-            width = max(1.3 * length(assay_immuno_), 5.5),
-            column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5),
-            filename = paste0(
-              save.results.to, "/pairs_", tp,
-              "_Markers_", bstatus.labels.2[bserostatus + 1],
-              c("_placebo_arm", "_vaccine_arm")[trt + 1], "_", ifelse(country=="Nvx_US", "US_only_",""),
-              study_name, ".pdf"
+          for (asy in c("*", if (attr(config,"config")=="janssen_partA_VL") "bind", if (attr(config,"config")=="janssen_partA_VL") "pseudo")){
+          # this loop is only for janssen_partA_VL becasue it needs to be looped through all, bAb and nAb
+            assay_lb = case_when(asy=="*" ~ "",
+                                 asy=="bind" ~ "bAb_",
+                                 asy=="pseudo" ~ "nAb_")
+            
+            if (attr(config,"config")=="janssen_partA_VL" & asy %in% c("*", "pseudo") & country==0) next # skip NAM for janssen_partA_VL plots involving pseudo
+            
+            if (study_name=="VAT08" && bserostatus==0 && tp=="B") { # psv_mdw doesn't have any value for naive at baseline
+              assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
+              } else if (asy=="bind") {assay_immuno_ = subset(assay_immuno, grepl(asy, assay_immuno))
+              } else if (asy %in% c("*", "pseudo") & country == 1) { 
+                selected = assay_immuno[grepl("Reference|Beta|Delta", assay_metadata$assay_label_short)]
+                assay_immuno_ = subset(selected, grepl(asy, selected))
+              } else if (asy %in% c("*", "pseudo") & country == 2) {
+                selected = assay_immuno[grepl("Reference|Zeta|Mu|Gamma|Lambda", assay_metadata$assay_label_short)]
+                assay_immuno_ = subset(selected, grepl(asy, selected))
+              }
+            
+            covid_corr_pairplots(
+              plot_dat = subdat,
+              time = tp,
+              assays = assay_immuno_, # adhoc request by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
+                                     # adhoc request 2 by David: assay_immuno = c("liveneutmn50", "bindSpike_P.1", "bindRBD_P.1", "bindN")
+              strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
+              weight = "wt.subcohort",
+              plot_title = paste0(
+                gsub("ay ","", labels.time)[tt],
+                ifelse(assay_lb=="*"," Ab", paste0(" ", gsub("_", "", assay_lb))), " markers: ",
+                bstatus.labels.3[bserostatus + 1], ", ",
+                c("placebo", "vaccine")[trt + 1], " arm", if (attr(config,"config")=="janssen_partA_VL") paste0(", ", country_lb_long)
+              ),
+              column_labels = labels.axis[tp, seq_along(assay_immuno_)] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
+              height = max(1.3 * length(assay_immuno_) + 0.1, 5.5),
+              width = max(1.3 * length(assay_immuno_), 5.5),
+              column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5),
+              filename = paste0(
+                save.results.to, "/pairs_", tp,
+                "_Markers_", bstatus.labels.2[bserostatus + 1],
+                c("_placebo_arm", "_vaccine_arm")[trt + 1], "_", country_lb, assay_lb,
+                study_name, ".pdf"
+              )
             )
-          )
+          }
         }
       }
     }
-  }
     
   ## pairplots of assay readouts for multiple timepoints
   ## pairplots by baseline serostatus
   print("Pair plots 2:")
-  for (trt in 0:1) {
-    # Don't produce figures for placebo baseline negative for studies other than VAT08 to improve build time
-    if(trt==0 & study_name!="VAT08") {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
-  
-    for (bserostatus in bstatus.range) {
-      if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
-      
-      subdat <- dat.twophase.sample %>%
-        dplyr::filter(Bserostatus == bserostatus & Trt == trt)
-      
-      times_selected <- if(study_name=="VAT08") {tps_no_delta_over_tinterm[c(1,4,5)]
-        # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
-        } else {tps_no_fold_change} # "B", "Day29", "Day57"
-      
-      if(study_name=="PREVENT19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
-      
-      for (aa in assay_immuno) {
-        if (study_name=="VAT08" && aa=="pseudoneutid50_mdw" && bserostatus==0) next # psv_mdw doesn't have any value for naive at baseline
+  if (study_name != "ENSEMBLE"){
+    for (trt in 0:1) {
+      # Don't produce figures for placebo baseline negative for studies other than VAT08 to improve build time
+      if(trt==0 & study_name!="VAT08") {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
+    
+      for (bserostatus in bstatus.range) {
+        if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
         
-        covid_corr_pairplots_by_time(
-          plot_dat = subdat,
-          times = times_selected,
-          assay = aa,
-          strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
-          weight = "wt.subcohort",
-          plot_title = paste0(
-            labels.assays[aa], ": ",
-            bstatus.labels.3[bserostatus + 1], " ",
-            c("placebo", "vaccine")[trt + 1], " arm"
-          ), 
-          column_labels = paste(gsub("ay ","", labels.time[times_selected]),
-                                "\n", labels.axis[, aa][1]),
-          column_label_size = ifelse(study_name=="VAT08", 4.5, 
-                                     ifelse(max(str_length(labels.axis[1,])) > 28, 4.3, 6.5)),
-          axis_label_size = ifelse(study_name=="VAT08", 7, 9),
-          filename = paste0(
-            save.results.to, "/pairs_", aa, "_by_times_",
-            bstatus.labels.2[bserostatus + 1], "_", c("placebo_", "vaccine_")[trt + 1], ifelse(country=="Nvx_US", "US_only_",""),
-            study_name, ".pdf"
+        subdat <- dat.twophase.sample %>%
+          dplyr::filter(Bserostatus == bserostatus & Trt == trt)
+        
+        times_selected <- if(study_name=="VAT08") {tps_no_delta_over_tinterm[c(1,4,5)]
+          # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
+          } else {tps_no_fold_change} # "B", "Day29", "Day57"
+        
+        if(study_name=="PREVENT19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
+        
+        for (aa in assay_immuno) {
+          if (study_name=="VAT08" && aa=="pseudoneutid50_mdw" && bserostatus==0) next # psv_mdw doesn't have any value for naive at baseline
+          
+          covid_corr_pairplots_by_time(
+            plot_dat = subdat,
+            times = times_selected,
+            assay = aa,
+            strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
+            weight = "wt.subcohort",
+            plot_title = paste0(
+              labels.assays[aa], ": ",
+              bstatus.labels.3[bserostatus + 1], " ",
+              c("placebo", "vaccine")[trt + 1], " arm"
+            ), 
+            column_labels = paste(gsub("ay ","", labels.time[times_selected]),
+                                  "\n", labels.axis[, aa][1]),
+            column_label_size = ifelse(study_name=="VAT08", 4.5, 
+                                       ifelse(max(str_length(labels.axis[1,])) > 28, 4.3, 6.5)),
+            axis_label_size = ifelse(study_name=="VAT08", 7, 9),
+            filename = paste0(
+              save.results.to, "/pairs_", aa, "_by_times_",
+              bstatus.labels.2[bserostatus + 1], "_", c("placebo_", "vaccine_")[trt + 1], country_lb,
+              study_name, ".pdf"
+            )
           )
-        )
+        }
       }
     }
   }
@@ -273,7 +307,7 @@ for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")) { # this 
           filename = paste0(
             save.results.to, "/pairs_", tp,
             "_Markers_", bstatus.labels.2[bserostatus + 1],
-            "_pooled_arm_", ifelse(country=="Nvx_US", "US_only_",""),
+            "_pooled_arm_", country_lb,
             study_name, ".pdf"
           )
         )

@@ -9,6 +9,7 @@ Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
+if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_metadata$assay; assay_immuno=assay_metadata$assay}
 uloqs=assay_metadata$uloq; names(uloqs)=assays
 pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assays
 loqs=assay_metadata$lloq; names(loqs)=assays
@@ -144,8 +145,8 @@ twophase_sample_id <- dat.twophase.sample$Ptid
 important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex",
   "Bserostatus", "Senior", "Bstratum", "wt.subcohort", 
   "race","EthnicityHispanic","EthnicityNotreported", 
-  "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCove") "HIVinfection", 
-  if (study_name !="COVE" & study_name !="MockCove" & study_name !="PROFISCOV") "Country")
+  "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
+  if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV") "Country")
 
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;
@@ -386,7 +387,7 @@ saveRDS(as.data.frame(dat.twophase.sample),
 
 # longer format by assay and time
 dat.longer.immuno.subset <- dat.twophase.sample %>%
-  tidyr::pivot_longer(cols = all_of(c(outer(times, assays, "%.%"))), names_to = "time_assay", values_to = "value") %>%
+  tidyr::pivot_longer(cols = all_of(c(outer(times, assays, "%.%")))[all_of(c(outer(times, assays, "%.%"))) %in% colnames(dat.twophase.sample)], names_to = "time_assay", values_to = "value") %>%
   mutate(time = gsub(paste0(assays, collapse = "|"), "", time_assay),
          assay = gsub(paste0("^", times, collapse = "|"), "", time_assay))
 
