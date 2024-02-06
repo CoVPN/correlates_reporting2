@@ -16,9 +16,6 @@ library(dplyr)
 library(abind)
 source(here("code", "params.R"))
 
-
-#load(here("..", "data_clean",paste0(attr(config, "config"), "_params.Rdata"))) # file removed. objects moved to _common.R
-
 dat.long.twophase.sample <- readRDS(here(
   "data_clean",
   "long_twophase_data.rds"
@@ -34,9 +31,7 @@ Maxlive50Day57 <- ifelse(exists("Maxlive50Day57"), Maxlive50Day57, NA)
 
 
 MaxbAbB <- try(dat.long.twophase.sample %>%
-  filter(assay %in% c("bindSpike", "bindRBD", "bindN",
-                      "bindSpike_B.1.1.7", "bindSpike_B.1.351", "bindSpike_P.1", "bindRBD_B.1.1.7", "bindRBD_B.1.351", "bindRBD_P.1",
-                      "bindSpike_mdw")) %>%
+  filter(assay %in% bAb_assays) %>%
   select(B) %>%
   max(na.rm = TRUE), silent = TRUE)
 
@@ -45,7 +40,7 @@ if (class(MaxbAbB) == "try-error") {  ## bAb assays are unavailable
 }
 
 MaxID50ID80B <- try(dat.long.twophase.sample %>%
-  filter(assay %in% c("pseudoneutid50", "pseudoneutid80", "pseudoneutid50sa", "pseudoneutid80la", "pseudoneutid50_mdw")) %>%
+  filter(assay %in% nAb_assays) %>%
   select(B) %>%
   max(na.rm = TRUE), silent = TRUE)
 
@@ -54,7 +49,7 @@ if (class(MaxID50ID80B) == "try-error") { ## nAb assays are unavailable
 }
 
 Maxlive50B <- try(dat.long.twophase.sample %>%
-  filter(assay %in% c("liveneutmn50")) %>%
+  filter(assay %in% live_assays) %>%
   select(B) %>%
   max(na.rm = TRUE), silent = TRUE)
 

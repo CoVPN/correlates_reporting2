@@ -30,7 +30,7 @@ getResponder <- function(data,
             bl <- paste0("B", j)
             delta <- paste0("Delta", i, "overB", j)
             
-            if (grepl("bind", j) | attr(config,"config")=="janssen_partA_VL")) {
+            if (grepl("bind", j) | attr(config,"config")=="janssen_partA_VL") {
                 
             data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
             if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}

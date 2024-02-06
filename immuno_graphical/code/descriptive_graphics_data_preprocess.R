@@ -94,10 +94,8 @@ if (F){
                !is.na(BbindSpike) & !is.na(Day43bindSpike))) # 344
   
 }
-  
-#dat.mock <- read.csv(data_name, header = TRUE)
 
-# for unknown reason, the Senior variable has no value in the PROFISCOV (Butantan, Sinovac) dataset
+# for unknown reason, there is no pre-set senior and race variables in the PROFISCOV (Butantan, Sinovac) dataset
 if (study_name=="PROFISCOV") {
   dat.mock$Senior <- as.numeric(with(dat.mock, Age >= age.cutoff, 1, 0))
   
@@ -118,6 +116,7 @@ if (study_name=="PROFISCOV") {
 }
 
 if(T){ # for ENSEMBLE SA and LA reports only
+  # pseudoneutid50la and pseudoneutid50sa don't have baseline variables, so
   # copy Bpseudoneutid50 to Bpseudoneutid50la & calculate delta value if Day29pseudoneutid50la exists and is required for reporting
   # copy Bpseudoneutid50 to Bpseudoneutid50sa & calculate delta value if Day29pseudoneutid50sa exists and is required for reporting
   if ("Day29pseudoneutid50la" %in% colnames(dat.mock) & "pseudoneutid50la" %in% assays) {
@@ -195,18 +194,12 @@ dat.twophase.sample <- subset(dat, Ptid %in% twophase_sample_id)
 
 
 # labels of the demographic strata for the subgroup plotting
-dat.long.twophase.sample$trt_bstatus_label <-
+dat.long.twophase.sample$trt_bstatus_label <- # e.g. Placebo, Baseline Neg 
   with(
     dat.long.twophase.sample,
     factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
       levels = c("11", "12", "21", "22"),
       labels = paste0(rep(c("Placebo","Vaccine"), each=2), ", ", rep(bstatus.labels))
-      #c(
-        #"Placebo, Baseline Neg",
-        #"Placebo, Baseline Pos",
-        #"Vaccine, Baseline Neg",
-        #"Vaccine, Baseline Pos"
-      #)
     )
   )
 
@@ -356,8 +349,9 @@ if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
   }), levels = names(countries.ENSEMBLE))
 }
 
-if(study_name!="COVE" & study_name!="MockCOVE") {dat.long.twophase.sample$hiv_label <- factor(sapply(dat.long.twophase.sample$HIVinfection, function(x) {
-  ifelse(x,
+if(study_name!="COVE" & study_name!="MockCOVE") {
+  dat.long.twophase.sample$hiv_label <- factor(sapply(dat.long.twophase.sample$HIVinfection, function(x) {
+    ifelse(x,
          "HIV Positive",
          "HIV Negative")
 }), levels=c("HIV Negative", "HIV Positive"))
