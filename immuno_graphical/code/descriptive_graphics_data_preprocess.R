@@ -9,7 +9,7 @@ Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
-if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_metadata$assay; assay_immuno=assay_metadata$assay}
+if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_immuno=assay_metadata$assay}
 uloqs=assay_metadata$uloq; names(uloqs)=assays
 pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assays
 loqs=assay_metadata$lloq; names(loqs)=assays

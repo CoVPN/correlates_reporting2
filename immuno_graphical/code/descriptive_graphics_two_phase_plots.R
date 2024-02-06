@@ -6,7 +6,7 @@ renv::activate(project = here::here(".."))
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
-if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_metadata$assay; assay_immuno=assay_metadata$assay;
+if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_immuno=assay_metadata$assay
 labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
 labels.axis <- as.data.frame(labels.axis)
 rownames(labels.axis) <- times}
@@ -140,7 +140,7 @@ if (F){
 #   stratified by treatment group and baseline serostatus
 # - Pairs plots/scatterplots and baseline strata-adjusted Spearman rank correlations are used.
 #-----------------------------------------------
-for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (attr(config,"config")=="janssen_partA_VL") {c(0,1,2)} else {c("all")}) { 
+for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (attr(config,"config")=="janssen_partA_VL") {c(1,2)} else {c("all")}) { 
   # this loop is for prevent19 and janssen_partA_VL, prevent19 needs to be looped through all people (US+Mex) and US only, janssen_partA_VL needs to be looped through regions
     
   if (length(assay_immuno)==1) next # AZ two datasets only have one marker in each as of 5/13/2022, can't do pair 
@@ -185,20 +185,26 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
             if (study_name=="VAT08" && bserostatus==0 && tp=="B") { # psv_mdw doesn't have any value for naive at baseline
               assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
               } else if (asy=="bind") {assay_immuno_ = subset(assay_immuno, grepl(asy, assay_immuno))
-              } else if (asy %in% c("*", "pseudo") & country == 1) { 
-                selected = assay_immuno[grepl("Reference|Beta|Delta", assay_metadata$assay_label_short)]
-                assay_immuno_ = subset(selected, grepl(asy, selected))
-              } else if (asy %in% c("*", "pseudo") & country == 2) {
+              } else if (asy %in% c("*", "pseudo") & country == 1) { # Latin America = 1, Southern Africa = 2
                 selected = assay_immuno[grepl("Reference|Zeta|Mu|Gamma|Lambda", assay_metadata$assay_label_short)]
                 assay_immuno_ = subset(selected, grepl(asy, selected))
+              } else if (asy %in% c("*", "pseudo") & country == 2) {
+                selected = assay_immuno[grepl("Reference|Beta|Delta", assay_metadata$assay_label_short)]
+                assay_immuno_ = subset(selected, grepl(asy, selected))
               }
+            
+            if (sum(complete.cases(subdat[, paste0(tp, assay_immuno_)]))==0) next # skip if no assay data available
+            
+            ######################### need to be looped from 1:10 later
+            if (attr(config,"config")=="janssen_partA_VL") {
+              for (rep in assay_immuno_) {subdat[,paste0("Day29", rep)] = subdat[,paste0("Day29", rep, "_1")]}}
             
             covid_corr_pairplots(
               plot_dat = subdat,
               time = tp,
               assays = assay_immuno_, # adhoc request by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
                                      # adhoc request 2 by David: assay_immuno = c("liveneutmn50", "bindSpike_P.1", "bindRBD_P.1", "bindN")
-              strata = ifelse(study_name=="VAT08", "all_one", "Bstratum"),
+              strata = ifelse(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL", "all_one", "Bstratum"),
               weight = "wt.subcohort",
               plot_title = paste0(
                 gsub("ay ","", labels.time)[tt],
