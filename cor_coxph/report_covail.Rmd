@@ -1,4 +1,4 @@
-# Summary of Results
+# Summary of Results for mRNA vaccines
   
   
 **Peak Obj 1. Models without interaction terms: baseline, D15, D15/B, baseline + D15**
@@ -107,13 +107,31 @@ Non-significant interaction between baseline (trichotomized) and D15/B fold chan
 \vspace{.5cm}
 **Peak Obj 4 TrtA(B|C) x D15**
 
-* Not significant anywhere
+Not significant anywhere
+
+
+\vspace{.5cm}
+**Peak Obj 1 Separately within Naive and Non-Naive**
+
+In models including for both baseline and D15/B markers, D15/B markers show no significance, baseline markers have larger effect sizes (HR 0.34 vs 0.73) and are more significant (in spite of having only 1/6 of the cases) in the non-naive subpopulation compared to the naive subpopulation.
+
+
+
+
+# Summary of Results for Sanofi vaccines
+
+\vspace{.5cm}
+**Peak Obj 1 Sanofi**
+
+Focusing on MDW: D15 marker is significant (HR 0.47), baseline and fold change are not, when studied alone. When both baseline and D15 markers are included, both are significant.
+
 
 
 
 ```{r, echo=FALSE, results='asis'}
 
 show.q=F
+multivariate_assays=NULL
 
 special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 15.")
 
@@ -222,14 +240,14 @@ for (iObj in c(1,11)) {
     
     cat("# Objective Peak ", 
         switch(iObj%.%"", 
-               "1"=1, 
-               "11"="1 baseline+D15/B"), 
+               "1"="1 N/NN", 
+               "11"="1 N/NN baseline+D15/B"), 
         ", ", COR, sep="")
     
-    for (iPop in 8:9) {
+    for (iPop in 1:2) {
       fname.suffix = switch (iPop%.%"",
-        '8' = 'mRNA_naive',
-        '9' = 'mRNA_nnaive'
+        '1' = 'mRNA_naive',
+        '2' = 'mRNA_nnaive'
       )  
       
       if (iObj==1) {
@@ -243,9 +261,44 @@ for (iObj in c(1,11)) {
       }
       cat(res, sep = '\n')
     }
-    
   }
+}
+
+
+# Obj 1 in Sanofi
+for (iObj in c(1,11)) { 
   
+  for (COR in c("D15to181")) {
+    
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    
+    COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+    
+    cat("# Objective Peak ", 
+        switch(iObj%.%"", 
+               "1"="1 Sanofi", 
+               "11"="1 Sanofi baseline+D15/B"), 
+        ", ", COR, sep="")
+    
+    for (iPop in 1:1) {
+      fname.suffix = switch (iPop%.%"",
+        '1' = 'Sanofi'
+      )  
+      
+      if (iObj==1) {
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==11) {
+        fname.suffix = fname.suffix %.% "_B+D15"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+      }
+      cat(res, sep = '\n')
+    }
+  }
 }
 
 ```

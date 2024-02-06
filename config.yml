@@ -348,12 +348,12 @@ vat08_combined: &vat08_combined
 
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240122.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240205.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
-  times: [B, Day15, Delta15overB]
-  time_labels: [Day 1, Day 22, D15 fold-rise over D1]
+  times: [B, Day15, Delta15overB, Day29, Delta29overB]
+  time_labels: [Day 1, Day 15, D15 fold-rise over D1, Day 29, D29 fold-rise over D1]
   study_name: COVAIL
   assay_metadata: assay_metadata/covail_assay_metadata.csv
   covariates_riskscore: ~.+ FOIstandardized + standardized_risk_score + naive
@@ -1416,7 +1416,6 @@ D92to181:
   tpeaklag: 7
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 91 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
-
 
 
 

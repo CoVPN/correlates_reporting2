@@ -83,14 +83,24 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 `r if (attr(config,"config") %in% c("covail"))'-->'`
 
 
-<!-- Table 1 competing, only for a few TRIALs -->
+<!-- additional counts tables if existed -->
 `r if (!TRIAL %in% c("janssen_partA_VL")) '<!--'`
+
 \begin{table}[H]
-\caption{Number of competing cases and non-cases in ph2 or not}
+\caption{Number of cases and non-cases in ph2 (with ancestral Abs measured) or not. The previous table is for ph2 subjects with variants Abs measured}
+\begin{center}
+  \input{`r pathCoRoutput`/tab1_`r fname.suffix`_ancestral}\\
+\end{center}
+\end{table}
+
+
+\begin{table}[H]
+\caption{Number of competing cases in ph2 or not}
 \begin{center}
   \input{`r pathCoRoutput`/tab1_competing_`r fname.suffix`}\\
 \end{center}
 \end{table}
+
 `r if (!TRIAL %in% c("janssen_partA_VL"))'-->'`
 
 
@@ -150,16 +160,22 @@ if (TRIAL=="janssen_partA_VL") {
 <!-- ``` -->
 
 
-<!-- ## Multivariate Cox Models of Risk -->
 
-<!-- ```{r, echo=FALSE, results='asis'} -->
-<!--   if (!is.null(config$multivariate_assays)) { -->
-<!--     for (i in 1:length(config$multivariate_assays)) { -->
-<!--       res = knitr::knit_child(c(here::here('cor_coxph', 'multiple_regression.Rmd')), quiet = TRUE) -->
-<!--       cat(res, sep = '\n') -->
-<!--     } -->
-<!--   } -->
-<!-- ``` -->
+```{r, echo=FALSE, results='asis'}
+
+  tmp = config$multivariate_assays
+  if (!is.null(multivariate_assays)) {
+    tmp = multivariate_assays
+  } 
+  if (!is.null(tmp)) {
+    cat("## Multivariate Cox Models of Risk\n\n")
+    for (i in 1:length(tmp)) {
+      res = knitr::knit_child(c(here::here('cor_coxph', 'multiple_regression.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+  }
+
+```
 
 
 
