@@ -9,11 +9,7 @@ Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
-if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_immuno=assay_metadata$assay}
-uloqs=assay_metadata$uloq; names(uloqs)=assays
-pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assays
-loqs=assay_metadata$lloq; names(loqs)=assays
-lods=assay_metadata$lod; names(lods)=assays
+if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_immuno=assay_metadata$assay; dat.mock$Day29bindSpike_D614 = dat.mock$Day29bindSpike}
 #-----------------------------------------------
 
 library(here)
@@ -145,7 +141,7 @@ important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex"
   "Bserostatus", "Senior", "Bstratum", "wt.subcohort", 
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
-  if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV") "Country")
+  if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV") "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
 
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;
@@ -406,10 +402,19 @@ dat.longer.immuno.subset$lbval2 =  dat.longer.immuno.subset$ULoQ
 # 759 unique ids, 6 timepoints, 15 assays
 dat.longer.immuno.subset <- dat.longer.immuno.subset %>%
   mutate(category=paste0(time, assay, "Resp")) %>%
-  select(Ptid, time, assay, category, Trt, Bserostatus, value, wt.subcohort, pos.cutoffs,
-         lbval,lbval2,
-         lb,lb2) %>%
   left_join(resp_by_time_assay, by=c("Ptid", "category"))
+
+dat.longer.immuno.subset <- dat.longer.immuno.subset[,c("Ptid", "time", "assay", "category", "Trt", "Bserostatus", 
+                                                        "value", "wt.subcohort", "pos.cutoffs","lbval","lbval2", 
+                                                        "lb","lb2",if(attr(config,"config")=="janssen_partA_VL") "Region", 
+                                                        if(study_name=="VAT08") "nnaive", "response")]
+
+dat.longer.immuno.subset$nnaive <- with(dat.longer.immuno.subset, factor(Bserostatus, levels = c(0, 1), labels = bstatus.labels))
+dat.longer.immuno.subset$Trt <- with(dat.longer.immuno.subset, factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")))
+dat.longer.immuno.subset$Trt_nnaive = with(dat.longer.immuno.subset, 
+                                             factor(paste(Trt, nnaive), 
+                    levels = paste(rep(c("Vaccine", "Placebo"), each=2), rep(bstatus.labels, each=2)),
+                    labels = paste0(rep(c("Vaccine", "Placebo"), each=2), "\n", rep(bstatus.labels, each=2))))
 
 # subsets for violin/line plots
 #### figure specific data prep
@@ -421,5 +426,12 @@ groupby_vars1=c("Trt", "Bserostatus", "time", "assay")
 
 # define response rate
 dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1)
-write.csv(dat.longer.immuno.subset.plot1, file = here::here("data_clean", "longer_immuno_data_plot1.csv"), row.names=F)
 saveRDS(dat.longer.immuno.subset.plot1, file = here::here("data_clean", "longer_immuno_data_plot1.rds"))
+
+if(attr(config,"config")=="janssen_partA_VL") {
+  groupby_vars1.2=c("Trt", "Bserostatus", "Region", "time", "assay")
+  
+  # define response rate
+  dat.longer.immuno.subset.plot1.2 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1.2)
+  saveRDS(dat.longer.immuno.subset.plot1.2, file = here::here("data_clean", "longer_immuno_data_plot1.2.rds"))
+}

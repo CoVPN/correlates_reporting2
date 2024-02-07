@@ -66,3 +66,13 @@ labels.title <- as.data.frame(t(labels.title))
 labels.title2 <- apply(labels.title, c(1, 2), function(st) {
   str_replace(st, ":", "\n")
 })
+
+
+if (is.null(uloqs)) {
+  llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
+  lloqs=assay_metadata$lloq; names(lloqs)=assays
+  uloqs=assay_metadata$uloq; names(uloqs)=assays
+  lods=assay_metadata$lod; names(lods)=assays
+  lloxs=ifelse(llox_labels=="lloq", lloqs, lods)
+  lloxs=ifelse(llox_labels=="pos", assay_metadata$pos.cutoff, lloxs)
+}

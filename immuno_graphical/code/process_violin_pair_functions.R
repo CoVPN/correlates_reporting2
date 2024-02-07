@@ -86,6 +86,7 @@ get_desc_by_group <- function(data,
 #' @param assays List of assays for plots
 #' @param times List of times for plots
 #' @param ylim y-axis limit
+#' @param rate.pos y value to show response rates
 #' @param panel.text.size font size for text within panels
 #' @param axis.x.text.size font size for x-axis tick label
 #' @param strip.x.text.size font size for x-axis strip label
@@ -97,6 +98,7 @@ f_by_time_assay <-
              assays = assays,
              times = times,
              ylim = c(0,7.2),
+             rate.pos = 5, 
              panel.text.size = 2.2,
              axis.x.text.size = 18,
              strip.x.text.size = 10,
@@ -125,10 +127,8 @@ f_by_time_assay <-
         p1 <- dat %>%
             filter(assay %in% assays & time %in% times) %>%
             left_join(assay_metadata, by="assay") %>%
-            mutate(Trt_nnaive = factor(paste(Trt, nnaive), 
-                                       levels = c("Vaccine Naive", "Vaccine Non-naive", "Placebo Naive", "Placebo Non-naive"),
-                                       labels = c("Vaccine\nnaive", "Vaccine\nnon-naive", "Placebo\nnaive", "Placebo\nnon-naive")),
-                   assay_label_short = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label)
+            mutate(assay_label2 = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label),
+                   
             ) %>%
             ungroup() %>%
             group_split(time) %>%
@@ -141,8 +141,8 @@ f_by_time_assay <-
                     #scale_color_manual(name = "", values = "#FF6F1B", guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
-                    geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = 5), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                    geom_text(aes(x = x, label = RespRate, y = 5), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = rate.pos), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(x = x, label = RespRate, y = rate.pos), color = "black", size = panel.text.size, check_overlap = TRUE) +
                     
                     geom_hline(aes(yintercept = ifelse(RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                     geom_text(aes(label = ifelse(RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -150,8 +150,8 @@ f_by_time_assay <-
                     geom_hline(aes(yintercept = ifelse(RespRate!="",lbval2,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                     geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                     scale_x_discrete(labels = "") + 
-                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], 3), labels = scales::math_format(10^.x)) +
-                    labs(x = "Assay", y = unique(d$panel), title = paste(unique(d$panel), "distributions at", unique(d$time)), color = "Category", shape = "Category") +
+                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 3, 2)), labels = scales::math_format(10^.x)) +
+                    labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", unique(d$time), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
                     plot_theme +
                     guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
             })

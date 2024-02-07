@@ -26,11 +26,9 @@ assay_metadata = assay_metadata %>%
                                       levels = assay_order
     ))
 
-dat.longer.immuno.subset.plot1 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.rds")) %>%
-    mutate(Trt = factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")),
-           nnaive = factor(Bserostatus,
-                            levels = c(0, 1),
-                            labels = bstatus.labels))
+dat.longer.immuno.subset.plot1 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.rds"))
+if(attr(config,"config")=="janssen_partA_VL") {
+    dat.longer.immuno.subset.plot1.2 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.2.rds"))}
 dat.immuno.subset.plot3 <- readRDS(here::here("data_clean", "twophase_data.rds")); dat.immuno.subset.plot3$all_one <- 1 # as a placeholder for strata values
 dat.immuno.subset.plot3 <- dat.immuno.subset.plot3 %>%
     mutate(Trt = factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")),
@@ -53,7 +51,7 @@ for (panel in c("pseudoneutid50", "bindSpike")){
         strip.x.text.size = ifelse(panel=="pseudoneutid50", 25, 10),
         panel.text.size = ifelse(panel=="pseudoneutid50", 7, 4.5),
         facet.y.var = vars(Trt_nnaive),
-        facet.x.var = vars(assay_label_short))
+        facet.x.var = vars(assay_label2))
     
     for (i in 1:length(set1_times)){
         
@@ -62,6 +60,48 @@ for (panel in c("pseudoneutid50", "bindSpike")){
     }
 }
 
+# just for janssen_partA_VL, loop through panel and region for vaccine at day 29
+if (attr(config,"config")=="janssen_partA_VL") {
+    for (panel in c("bind", "pseudo")){
+        
+        panel_lb = case_when(panel=="bind" ~ "bAb",
+                             panel=="pseudo" ~ "nAb")
+        
+        for (region in c(1, 2)){
+            
+            region_lb = case_when(region==0 ~ "NAM",
+                                  region==1 ~ "LATAM",
+                                  region==2 ~ "ZA")
+            region_lb_long = case_when(region==0 ~ "Northern America",
+                                       region==1 ~ "Latin America",
+                                       region==2 ~ "Southern Africa")
+            
+            if (panel=="bind") {assays_ = subset(assays, grepl(panel, assays))
+            } else if (panel %in% c("pseudo") & region == 1) { # Latin America = 1
+                selected = assays[grepl("Reference|Zeta|Mu|Gamma|Lambda", assay_metadata$assay_label_short)]
+                assays_ = subset(selected, grepl(panel, selected))
+            } else if (panel %in% c("pseudo") & region == 2) { # Southern Africa = 2
+                selected = assays[grepl("Reference|Beta|Delta", assay_metadata$assay_label_short)]
+                assays_ = subset(selected, grepl(panel, selected))
+            }
+            
+            f_1 <- f_by_time_assay(
+                dat = dat.longer.immuno.subset.plot1.2 %>% filter(Trt=="Vaccine" & Bserostatus=="0" & Region==region) %>% mutate(x="1"),
+                assays = assays_,
+                times = "Day29",
+                ylim = c(0, 4),
+                rate.pos = 3.5, 
+                axis.x.text.size = 20,
+                strip.x.text.size = ifelse(panel=="bind" | region==1, 8, 16),
+                panel.text.size = 7,
+                facet.y.var = vars(Trt_nnaive),
+                facet.x.var = vars(assay_label_short))
+                
+                file_name <- paste0("/", panel_lb, "_at_Day29_vaccine_", region_lb, ".pdf")
+                ggsave(plot = f_1[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 16)
+        }
+    }
+}
 
 ###### Set 2 plots: Longitudinal plots D1, D22, D43
 set2_assays = assays
