@@ -189,10 +189,6 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
             
             if (sum(complete.cases(subdat[, paste0(tp, assay_immuno_)]))==0) next # skip if no assay data available
             
-            ######################### need to be looped from 1:10 later
-            #if (attr(config,"config")=="janssen_partA_VL") {
-            #  for (rep in assay_immuno_) {subdat[,paste0("Day29", rep)] = subdat[,paste0("Day29", rep, "_1")]}}
-            
             covid_corr_pairplots(
               plot_dat = subdat,
               time = tp,
@@ -661,61 +657,91 @@ if (study_name!="VAT08"){ # no spaghetti plots for VAT08
   print("Spaghetti plots:")
   ## in each baseline serostatus group, randomly select 10 placebo recipients and 20 vaccine recipients
   set.seed(12345)
-  var_names <- expand.grid(times = times[!grepl("Delta",times)], # "B", "Day29", "Day57" 
-                           assays = assay_immuno) %>%
-    mutate(var_names = paste0(times, assay_immuno)) %>%
-    .[, "var_names"]
   
-  spaghetti_ptid <- dat.twophase.sample[, c("Ptid", "Bserostatus", "Trt", var_names)] %>%
-    filter(., complete.cases(.)) %>%
-    transmute(BT = paste0(as.character(Bserostatus), as.character(Trt)),
-              Ptid = Ptid) %>%
-    split(., .$BT) %>%
-    lapply(function(xx) {
-      if (xx$BT[1] %in% c("10", "00")) {
-        sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 10 placebo recipients
-        # add ifelse(length(xx$Ptid)<20, F, T) because some subset has small sample e.g. janssen_sa_partA
+  for (plot in if(attr(config,"config")=="janssen_partA_VL"){c(1,2,3,4)} else {NA}) { # janssen_partA_VL needs four plots but other just needs one
+  
+    if (attr(config,"config")=="janssen_partA_VL") {
+      
+      # this is ad-hoc request for janssen_partA_VL
+      # at day 29, day 71, month 6, only for vaccine and baseline negative, only for reference assays, only for Latin America 
+      times_ = c("Day29","Day71","Mon6") 
+      
+      assay_immuno_ = if(plot==1) {c("bindSpike_D614")
+        } else if(plot==2) {c("pseudoneutid50")
+        } else if(plot==3) {assays[grepl("bind", assays)]
+            } else if(plot==4) {assays[grepl("pseudo", assays)]}
+  
+      spaghetti_ptid <- dat.twophase.sample %>% filter(Trt==1 & Bserostatus==0 & Region==1) %>% dplyr::select(Ptid) %>% pull()
+      
       } else {
-        sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 20 vaccine recipients
-      }
-    }) %>% unlist %>% as.character
-  
-  spaghetti_dat <- dat.long.twophase.sample[, c("Ptid", "Bserostatus", "Trt", "assay",
-                                                times[!grepl("Delta",times)] # "B", "Day29", "Day57"
-                                                )] %>%
-    filter(Ptid %in% spaghetti_ptid) %>%
-    pivot_longer(cols = times[!grepl("Delta",times)], # "B", "Day29", "Day57"
-                 names_to = "time") %>%
-    mutate(assay = factor(assay, levels = assay_immuno, labels = assay_immuno),
-           time_label = factor(time, levels = times[!grepl("Delta",times)], # "B", "Day29", "Day57"
-                               labels = gsub("B","D1",gsub("ay","", times[!grepl("Delta",times)]))# "D1", "D29", "D57"
-                               )) %>%
-    as.data.frame
-  
-  for (bstatus in 1:2) {
-    subdat <- subset(spaghetti_dat, Bserostatus == bstatus.labels[bstatus])
-    if(nrow(subdat)==0) next
-    covid_corr_spaghetti_facets(plot_dat = subdat,
-                                x = "time_label",
-                                y = "value",
-                                id = "Ptid",
-                                color = "Trt",
-                                facet_by = "assay",
-                                ylim = assay_lim[, times[!grepl("B|Delta",times)][1] # "Day29", "Day57"
-                                                 ,],
-                                panel_titles = labels.assays.short,
-                                plot_title = paste0(
-                                  "Baseline ",
-                                  c("Negative", "Positive")[bstatus],
-                                  " PP Placebo + Vaccine group"
-                                ),
-                                arrange_ncol = 3,
-                                arrange_nrow = ceiling(length(assay_immuno) / 3),
-                                filename = paste0(
-                                  save.results.to, "/spaghetti_plot_",
-                                  bstatus.labels.2[bstatus], "_",
-                                  study_name, ".pdf"
-                                ))
+      
+      times_ = times
+      
+      assay_immuno_ = assay_immuno
+      
+      var_names <- do.call(paste0, expand.grid(times[!grepl("Delta", times)], assay_immuno))
+      
+      spaghetti_ptid <- dat.twophase.sample[, c("Ptid", "Bserostatus", "Trt", var_names)] %>%
+        filter(., complete.cases(.)) %>%
+        transmute(BT = paste0(as.character(Bserostatus), as.character(Trt)),
+                  Ptid = Ptid) %>%
+        split(., .$BT) %>%
+        lapply(function(xx) {
+          if (xx$BT[1] %in% c("10", "00")) {
+            sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 10 placebo recipients
+            # add ifelse(length(xx$Ptid)<20, F, T) because some subset has small sample e.g. janssen_sa_partA
+          } else {
+            sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 20 vaccine recipients
+          }
+        }) %>% unlist %>% as.character
+    }
+    
+    spaghetti_dat <- dat.long.twophase.sample[, c("Ptid", "Bserostatus", "Trt", "assay",
+                                                  times_[!grepl("Delta",times_)] # "B", "Day29", "Day57"
+                                                  )] %>%
+      filter(Ptid %in% spaghetti_ptid & assay %in% assay_immuno_) %>%
+      pivot_longer(cols = times_[!grepl("Delta",times_)], # "B", "Day29", "Day57"
+                   names_to = "time") %>%
+      mutate(assay = factor(assay, levels = assay_immuno_, labels = assay_immuno_),
+             time_label = factor(time, levels = times_[!grepl("Delta",times_)], # "B", "Day29", "Day57"
+                                 labels = gsub("B","D1",gsub("ay","", times_[!grepl("Delta",times_)]))# "D1", "D29", "D57"
+                                 )) %>%
+      as.data.frame
+    
+    for (bstatus in 1:2) {
+      
+      if (attr(config,"config")=="janssen_partA_VL" && bstatus==2) next # skip baseline positive plots for janssen_partA_VL
+      
+      subdat <- subset(spaghetti_dat, Bserostatus == bstatus.labels[bstatus])
+      
+      if(nrow(subdat)==0) next
+      
+      covid_corr_spaghetti_facets(plot_dat = subdat,
+                                  x = "time_label",
+                                  y = "value",
+                                  id = "Ptid",
+                                  color = "Trt",
+                                  facet_by = "assay",
+                                  ylim = assay_lim[, times_[!grepl("B|Delta",times_)][1] # "Day29", "Day57"
+                                                   ,],
+                                  panel_titles = labels.assays.short[assay_immuno_],
+                                  plot_title = ifelse(attr(config,"config")=="janssen_partA_VL", "Baseline Negative Vaccine Group\nLatin America", paste0(
+                                    "Baseline ",
+                                    c("Negative", "Positive")[bstatus],
+                                    " PP Placebo + Vaccine Group"
+                                  )),
+                                  panel_title_size = ifelse(length(assay_immuno_)==1, 6.5, 9.5),
+                                  arrange_ncol = ifelse(length(assay_immuno_)==1, 1, 3),
+                                  arrange_nrow = ceiling(length(assay_immuno_) / 3),
+                                  plot_title_size = ifelse(length(assay_immuno_)==1, 8, 12),
+                                  axis_size = ifelse(length(assay_immuno_)==1, 8, 12),
+                                  axis_title_size = ifelse(length(assay_immuno_)==1, 8, 12),
+                                  filename = paste0(
+                                    save.results.to, "/spaghetti_plot", ifelse(!is.na(plot), plot, ""), "_",
+                                    bstatus.labels.2[bstatus], "_",
+                                    study_name, ".pdf"
+                                  ))
+    }
   }
   
   #-----------------------------------------------
@@ -724,7 +750,8 @@ if (study_name!="VAT08"){ # no spaghetti plots for VAT08
   # - Scatter plots assay vs. age in years, (Day 1) Day tinterm, Day tpeak
   #-----------------------------------------------
   print("Scatter plots:")
-  if(study_name!="VAT08"){
+  if(study_name!="VAT08" && attr(config,"config")!="janssen_partA_VL"){
+    
     for (tp in tps_no_fold_change) {
       for (trt in 1:2) {
         for (bstatus in 1:2) {
@@ -789,7 +816,7 @@ if (study_name!="VAT08"){ # no spaghetti plots for VAT08
 
 
 print("Spider plots:")
-if(study_name=="VAT08"){
+if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
   
   ## load data 
   dat.spider <- readRDS(here::here("data_clean", "twophase_data.rds"))

@@ -42,6 +42,9 @@ set1_times <- times[1:5]
 # bindSpike, at B, D22, D43, D22-B, D43-B
 for (panel in c("pseudoneutid50", "bindSpike")){
     # by naive/non-naive, vaccine/placebo
+    
+    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+    
     f_1 <- f_by_time_assay(
         dat = dat.longer.immuno.subset.plot1 %>% mutate(x="1"),
         assays = assays[grepl(panel, assays)],
@@ -110,6 +113,9 @@ set2_assays = assays
 # bindSpike mdw
 for (panel in c("pseudoneutid50", "bindSpike")){
     # by naive/non-naive, vaccine/placebo
+    
+    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+    
     f_2 <- f_longitude_by_assay(
         dat = dat.longer.immuno.subset.plot1,
         x.var = "time",
@@ -149,6 +155,9 @@ for (panel in c("pseudoneutid50", "bindSpike")){
 # 15 markers, non-naive pooled vaccine & placebo, three timepoints
 # 15 markers, naive vaccine, three timepoints
 for (grp in c("non_naive_vac_pla", "naive_vac")){
+    
+    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+    
     for (t in c("B","Day22","Day43")) {
         
         if (grp == "naive_vac" && t=="B") next # this is not needed for VAT08
@@ -188,6 +197,9 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
 ###### Set 4 plots: Correlation plots for a given marker across time points
 # all markers, by naive/non-naive, vaccine/placebo, pooling cases and non-cases
 for (a in assays){
+    
+    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+    
     panels_set <- list()
     i <- 1
     

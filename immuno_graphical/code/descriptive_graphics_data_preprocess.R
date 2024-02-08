@@ -151,15 +151,15 @@ dat.long.subject_level <- dat[, important.columns] %>%
   bind_rows()
 
 
-dat.long.assay_value.names <- times
+dat.long.assay_value.names <- c(times, if(attr(config,"config")=="janssen_partA_VL") "Day71", if(attr(config,"config")=="janssen_partA_VL") "Mon6")
 dat.long.assay_value <- as.data.frame(matrix(
   nrow = nrow(dat) * length(assay_immuno),
   ncol = length(dat.long.assay_value.names)
 ))
 colnames(dat.long.assay_value) <- dat.long.assay_value.names
 
-for (tt in seq_along(times)) {
-  dat_mock_col_names <- paste(times[tt], assay_immuno, sep = "")
+for (tt in seq_along(dat.long.assay_value.names)) {
+  dat_mock_col_names <- paste(dat.long.assay_value.names[tt], assay_immuno, sep = "")
   dat.long.assay_value[, dat.long.assay_value.names[tt]] <- unlist(lapply(
     dat_mock_col_names,
     function(nn) {

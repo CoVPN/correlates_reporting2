@@ -122,7 +122,7 @@ if (study_name=="VAT08") {
 # Quick workaround for janssen presentation report
 if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
   assay_lim[, !grepl("Delta", times),'lb'] <- 0
-  assay_lim[, !grepl("Delta", times),'ub'] <- 3
+  assay_lim[, !grepl("Delta", times),'ub'] <- ifelse(attr(config,"config")=="janssen_partA_VL", 4, 3)
   
   assay_lim[, grepl("Delta", times),'lb'] <- -1
   assay_lim[, grepl("Delta", times),'ub'] <- 2
