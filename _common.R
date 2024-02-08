@@ -744,7 +744,7 @@ if (exists("COR")) {
           tfinal.tpeak=NULL
           
         } else if (study_name=="COVAIL") {
-          if (COR %in% c("D15to181","D92to181")) {
+          if (COR %in% c("D15to181","D92to181","D29to181")) {
             tfinal.tpeak=181
           } else if (COR %in% c("D15to91")) {
             tfinal.tpeak=91
@@ -797,9 +797,9 @@ if (exists("COR")) {
 
 
 # converts discrete markers to factors from strings
+# and set cut points attribute
 # this has to be done after the previous block b/c attribute is lost after subsettting
 
-# set cutpoints attribute
 all.markers1 = NULL
 if (TRIAL=="covail") {
   assays1 = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
@@ -812,13 +812,13 @@ if (TRIAL=="covail") {
               "pseudoneutid50_Beta", "pseudoneutid50_Delta",
               "bindSpike_B.1.351", "bindSpike_DeltaMDW")
   all.markers1 = c("Day29"%.%assays1)
-  for (i in 1:10) all.markers1 = c(all.markers1, "Day29"%.%setdiff(assays1,c("pseudoneutid50", "bindSpike"))%.%"_"%.%i)
 }  
 
+# set marker cutpoints attr first b/c we don't need to do it for imputed copies
+cat("set marker.cutpoints attribute\n")
 if (!is.null(all.markers1)) {
   marker.cutpoints = list()
   for (a in all.markers1) {
-    dat.mock[[a%.%"cat"]] = as.factor(dat.mock[[a%.%"cat"]])
     # get cut points
     tmpname = names(table(dat.mock[[a%.%"cat"]]))[2]
     tmpname = substr(tmpname, 2, nchar(tmpname)-1)
@@ -827,10 +827,20 @@ if (!is.null(all.markers1)) {
     marker.cutpoints[[a]] <- tmpname
   }
   attr(dat.mock, "marker.cutpoints")=marker.cutpoints
-  cat("set marker.cutpoints attribute\n")
 }
 
-
+# add imputed copies if needed
+# need to keep pseudoneutid50 and bindSpike b/c there are identical copies of them
+if (TRIAL=="janssen_partA_VL") {
+  for (i in 1:10) all.markers1 = c(all.markers1, "Day29"%.%assays1%.%"_"%.%i)
+}  
+  
+# make factor variables for discrete variables
+if (!is.null(all.markers1)) {
+  for (a in all.markers1) {
+    dat.mock[[a%.%"cat"]] = as.factor(dat.mock[[a%.%"cat"]])
+  }
+}
 
 
 

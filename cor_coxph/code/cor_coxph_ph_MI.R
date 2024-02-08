@@ -12,9 +12,9 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
     
     models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
       # imp=1
-      f = update(form.0, as.formula(paste0("~.+", if(i==2) "scale", "(", a, if(TRIAL=="janssen_partA_VL") "_"%.%imp, ")")))
-      f
+      f = update(form.0, as.formula(paste0("~.+", if(i==2) "scale", "(", a, if(TRIAL=="janssen_partA_VL") "_"%.%imp, ")"))); f
       
+      # set event indicator and time
       if (TRIAL=="janssen_partA_VL") {
         dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
       } else if (study_name=="VAT08") {
@@ -22,11 +22,16 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
         dat.vac$EventTimeOfInterest = dat.vac[[config.cor$EventTimePrimary %.% imp]]
       } else stop('wrong TRIAL: '%.%TRIAL)
       
-      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
+      if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
+        dat.vac$ph2a = dat.vac$ph2.D29
+      } else {
+        dat.vac$ph2a = dat.vac$ph2
+      }
+      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vac)
       svycoxph(f, design=design.vac) 
     })
     betas<-MIextract(models, fun=coef)
-    vars<-MIextract(models, fun=vcov)
+    vars<- MIextract(models, fun=vcov)
     res<-summary(MIcombine(betas,vars)) # MIcombine prints the results, there is no way to silent it
     
     if (i==1) {
@@ -80,7 +85,7 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
   
   mytex(tab.1, file.name=paste0("CoR_univariable_svycoxph_pretty_",ifelse(i==1,"","scaled_"),fname.suffix), align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
         col.headers=paste0("\\hline\n 
-         \\multicolumn{1}{l}{""} & \\multicolumn{2}{c}{HR per ",ifelse(i==1,"10-fold","SD")," incr.}                     & \\multicolumn{1}{c}{P-value}   \\\\ 
+         \\multicolumn{1}{l}{} & \\multicolumn{2}{c}{HR per ",ifelse(i==1,"10-fold","SD")," incr.}                     & \\multicolumn{1}{c}{P-value}   \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)}  \\\\ 
          \\hline\n 
     "),
@@ -117,7 +122,12 @@ for (a in all.markers) {
       dat.vac$EventTimeOfInterest = dat.vac[[config.cor$EventTimePrimary %.% imp]]
     } else stop('wrong TRIAL: '%.%TRIAL)
     
-    design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
+    if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
+      dat.vac$ph2a = dat.vac$ph2.D29
+    } else {
+      dat.vac$ph2a = dat.vac$ph2
+    }
+    design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vac)
     svycoxph(f, design=design.vac) 
   })
   
@@ -231,7 +241,13 @@ for (a in multivariate_assays) {
     
     models = lapply(1:10, function (imp) {
       dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
+      
+      if (TRIAL=="janssen_partA_VL" & a=="bindSpike+pseudoneutid50") {
+        dat.vac$ph2a = dat.vac$ph2.D29
+      } else {
+        dat.vac$ph2a = dat.vac$ph2
+      }
+      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vac)
       svycoxph(get.f(i, imp), design=design.vac) 
     })
     betas<-MIextract(models, fun=coef)
@@ -258,7 +274,7 @@ for (a in multivariate_assays) {
     tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
 
     mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", 
-                                match(a, config$multivariate_assays), 
+                                match(a, multivariate_assays), 
                                 if(i==2) "_per10fold",
                                 fname.suffix), 
           align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)

@@ -58,27 +58,55 @@ if (endsWith(TRIAL,"EUA") | endsWith(TRIAL,"partA")) {
     region=regions[iRegion]
     for (variant in variants[[iRegion]]) {
       fname.suffix = paste0(region, "_", variant)
-      cat("# Objective in ", fname.suffix, sep="")
+      cat("# Objective in ", fname.suffix, " COVID", sep="")
       
       # the markers to study depend on region and COVID lineage
       if (iRegion==1) {
+        # the only COVID variant is ancestral
         all.markers=c("Day29bindSpike", "Day29pseudoneutid50")
+        multivariate_assays = "bindSpike+pseudoneutid50"
+        
       } else if (iRegion==2) {
         if (variant=="Ancestral.Lineage") {
           all.markers=c("Day29bindSpike", "Day29pseudoneutid50")
+          multivariate_assays = "bindSpike+pseudoneutid50"
+          
         } else if (variant=="Gamma") {
           all.markers=c("Day29bindSpike", "Day29bindSpike_P.1", "Day29pseudoneutid50", "Day29pseudoneutid50_Gamma")
+          multivariate_assays = c("bindSpike+pseudoneutid50",
+                                  "bindSpike_P.1+pseudoneutid50_Gamma",
+                                  "bindSpike+bindSpike_P.1",
+                                  "pseudoneutid50+pseudoneutid50_Gamma")
+          
         } else if (variant=="Lambda") {
           all.markers=c("Day29bindSpike", "Day29bindSpike_C.37", "Day29pseudoneutid50", "Day29pseudoneutid50_Lambda")
+          multivariate_assays = c("bindSpike+pseudoneutid50",
+                                  "bindSpike_C.37+pseudoneutid50_Lambda",
+                                  "bindSpike+bindSpike_C.37",
+                                  "pseudoneutid50+pseudoneutid50_Lambda")
+          
         } else if (variant=="Mu") {
           all.markers=c("Day29bindSpike", "Day29bindSpike_B.1.621", "Day29pseudoneutid50", "Day29pseudoneutid50_Mu")
+          multivariate_assays = c("bindSpike+pseudoneutid50",
+                                  "bindSpike_B.1.621+pseudoneutid50_Mu",
+                                  "bindSpike+bindSpike_B.1.621",
+                                  "pseudoneutid50+pseudoneutid50_Mu")
+          
         } else if (variant=="Zeta") {
           all.markers=c("Day29bindSpike", "Day29pseudoneutid50", "Day29pseudoneutid50_Zeta")
+          multivariate_assays = c("bindSpike+pseudoneutid50",
+                                  "pseudoneutid50+pseudoneutid50_Zeta")
+          
         }
+          
       } else if (iRegion==3) {
         all.markers=c("Day29bindSpike", "Day29bindSpike_B.1.351", "Day29pseudoneutid50", "Day29pseudoneutid50_Beta")
+        multivariate_assays = c("bindSpike+pseudoneutid50",
+                                "bindSpike+bindSpike_B.1.351",
+                                "bindSpike_B.1.351+pseudoneutid50_Beta",
+                                "pseudoneutid50+pseudoneutid50_Beta")
       }
-      
+    
       res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
     }
