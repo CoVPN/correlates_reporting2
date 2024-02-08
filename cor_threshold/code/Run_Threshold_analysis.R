@@ -32,12 +32,6 @@ begin=Sys.time()
 ################################################################################
 # code from clean_data.R
 
-for (a in assays) {
-  for (t in DayPrefix%.%tpeak ) {
-    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
-  }
-}    
-
 # Generate the outcome and censoring indicator variables
 
 short_key <- COR

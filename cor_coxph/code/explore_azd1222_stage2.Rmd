@@ -1,5 +1,5 @@
 ---
-title: "Novavax UK 302"
+title: "AZD1222 Stage 2"
 output: pdf_document
 ---
 
@@ -12,7 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK 302/adata/COVID_Novavax_302UK_mapped_20240207.csv')
+dat_mapped1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage1/adata/COVID_AstraZeneca_realdata_20221208.csv')
+ 
+dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240129.csv')
 # dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
 # assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
 # assays=assay_metadata$assay
@@ -22,12 +24,13 @@ dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK 3
 
 
 ```{r, echo=FALSE, include=FALSE}
-with(dat_mapped, mytable(EventIndPrimaryD35, Trt))
+print(sort(unique(dat_mapped$Day57pseudoneutid50_D614G))[1:5])
+print(sort(unique(dat_mapped$Day57pseudoneutid50_Delta))[1:5])
 ```
 
 
 ```{r, echo=TRUE, include=TRUE}
-with(dat_mapped, table(CohortInd, EventIndPrimaryD35, Trt))
+corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped)
 ```
 
 
