@@ -1,8 +1,8 @@
 panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates
-,,bindSpike,1.683,238.1165,NA,10.8424,Binding Antibody to D614G Spike,Anti Spike IgG (AU/ml),pos,1
+bindSpike,1,bindSpike,1.683,238.1165,NA,10.8424,Binding Antibody to D614G Spike,Anti Spike IgG (AU/ml),pos,1
 ,,bindRBD,5.0243,172.5755,NA,14.0858,Binding Antibody to D614G RBD,Anti RBD IgG (AU/ml),pos,0
 ,,bindN,4.4897,574.6783,0.093744,23.4711,Binding Antibody to N,Anti N IgG (AU/ml),pos,0
-bindSpike,1,bindSpike_D614,3.384,55394.17,,3.384,Binding Antibody to D614 Spike,Anti Spike IgG - Reference (AU/ml),lloq,0
+,,bindSpike_D614,3.384,55394.17,,3.384,Binding Antibody to D614 Spike,Anti Spike IgG - Reference (AU/ml),lloq,0
 bindSpike,2,bindSpike_DeltaMDW,2.358,10572.41,,2.358,Binding Antibody Score to Delta Spike,Anti Spike IgG - Delta Score (AU/ml),lloq,1
 bindSpike,3,bindSpike_B.1.351,1.683,6889.743,,1.683,Binding Antibody to B.1.351 Beta Spike,Anti Spike IgG - B.1.351 Beta (AU/ml),lloq,1
 bindSpike,4,bindSpike_B.1.621,4.284,4387.635,,4.284,Binding Antibody to B.1.621 Mu Spike,Anti Spike IgG - B.1.621 Mu (AU/ml),lloq,1
