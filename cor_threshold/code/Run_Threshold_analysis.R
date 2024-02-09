@@ -7,6 +7,7 @@ source(here::here("..", "_common.R"))
 
 source(here::here("code", "params.R"))
 
+library(npthreshold)
 
 library(sl3)
 library(SuperLearner)
@@ -16,7 +17,7 @@ library(uuid)
 library(doMC)
 library(earth)
 
-source(here::here("code", "tmleThresh.R"))
+#source(here::here("code", "tmleThresh.R"))
 source(here::here("code", "learners.R"))
 source(here::here("code", "survivalThresh", "Threshold_survivalCR.R"))
 source(here::here("code", "survivalThresh", "fitting_likelihood.R"))
@@ -131,7 +132,7 @@ for (marker in markers.cpy) {
 
 #' @param marker Marker to run threshold analysis for
 run_threshold_analysis <- function(marker, direction = "above") {
-  # markers=markers[1]; direction = "above"
+  # marker=markers[1]; direction = "above"
   
 
   if("risk_score" %in% covariates) {

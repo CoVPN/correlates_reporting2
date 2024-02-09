@@ -1,3 +1,4 @@
+{
 library(survey)
 library(kyotil)
 
@@ -7,7 +8,7 @@ dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/cova
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
 assays
-
+}
 
 ################################################################################
 # sanofi markers
