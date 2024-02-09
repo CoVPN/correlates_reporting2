@@ -1,0 +1,41 @@
+---
+title: "AZD1222 Stage 2"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r, echo=FALSE, include=FALSE}
+library(survey)
+library(kyotil)
+
+dat_mapped1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage1/adata/COVID_AstraZeneca_realdata_20221208.csv')
+ 
+dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240129.csv')
+# dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
+# assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
+# assays=assay_metadata$assay
+
+```
+
+
+
+```{r, echo=FALSE, include=FALSE}
+print(sort(unique(dat_mapped$Day57pseudoneutid50_D614G))[1:5])
+print(sort(unique(dat_mapped$Day57pseudoneutid50_Delta))[1:5])
+```
+
+
+```{r, echo=TRUE, include=TRUE}
+corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped)
+```
+
+
+```{r, echo=TRUE, include=TRUE}
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0), mytable(CohortInd, EventIndPrimaryD35, Trt))
+```
+
+

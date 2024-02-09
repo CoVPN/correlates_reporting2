@@ -79,7 +79,7 @@ moderna_boost: &moderna_boost
   study_name: COVEBoost
   txt.endpoint: COVID
   timepoints: [29]
-  times: [B, M18, DeltaBD29overBD1]
+  times: [BD1, BD29, DeltaBD29overBD1]
   time_labels: [BD1, BD29, BD29/BD1]
   data_cleaned: /trials/covpn/p3001/analysis/correlates/Part_C_Unblinded_Phase_Data/adata/moderna_boost_data_processed_20230819.csv
   assay_metadata: assay_metadata/moderna_boost_assay_metadata.csv
@@ -348,7 +348,7 @@ vat08_combined: &vat08_combined
 
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240205.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240206.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]

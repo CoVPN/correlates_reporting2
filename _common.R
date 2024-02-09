@@ -77,6 +77,17 @@ if (!is.null(config$assay_metadata)) {
   # remove bindN
   assay_metadata=subset(assay_metadata, assay!="bindN")
   
+  if (TRIAL=='janssen_partA_VL') {
+    assay_metadata = subset(assay_metadata, !assay%in%c('bindSpike_D614','bindRBD'))
+    
+  } else if (TRIAL=='id27hpv') {
+    assay_metadata = subset(assay_metadata, panel=='bind')
+    
+  } else if (TRIAL=='id27hpvnAb') {
+    assay_metadata = subset(assay_metadata, panel=='id50')
+    
+  }
+  
   if (exists('COR')) {
     if (TRIAL=='vat08_combined') {
       if (contain(COR, "nAb") | endsWith(COR,'original2')) {
@@ -90,16 +101,7 @@ if (!is.null(config$assay_metadata)) {
           assay_metadata[assay_metadata$panel=='bindSpike' & assay_metadata$assay!="bindSpike_mdw",'lloq'] = lloq_min
         }
       }
-      
-    } else if (TRIAL=='id27hpv') {
-      assay_metadata = subset(assay_metadata, panel=='bind')
-      
-    } else if (TRIAL=='id27hpvnAb') {
-      assay_metadata = subset(assay_metadata, panel=='id50')
-        
-    } else if (TRIAL=='janssen_partA_VL') {
-      assay_metadata = subset(assay_metadata, !assay%in%c('bindSpike_D614','bindRBD'))
-    }
+    } 
   }  
 
   assays=assay_metadata$assay
