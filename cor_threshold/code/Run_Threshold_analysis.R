@@ -17,7 +17,7 @@ library(uuid)
 library(doMC)
 library(earth)
 
-#source(here::here("code", "tmleThresh.R"))
+source(here::here("code", "tmleThresh.R"))
 source(here::here("code", "learners.R"))
 source(here::here("code", "survivalThresh", "Threshold_survivalCR.R"))
 source(here::here("code", "survivalThresh", "fitting_likelihood.R"))
