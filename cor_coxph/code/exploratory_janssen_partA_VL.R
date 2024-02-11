@@ -38,7 +38,23 @@ table(dat_mapped$SubcohortIndPlus, dat_mapped$SubcohortInd)
 
 
 ################################################################################
+# 
+
+
+with(subset(dat_mapped, SubcohortIndPlus==1), mytable(!is.na(Day29bindSpike_D614), !is.na(Day71bindSpike_D614)))
+with(subset(dat_mapped, SubcohortIndPlus==1), mytable(!is.na(Day29bindSpike_AY.1), !is.na(Day71bindSpike_AY.1)))
+
+with(subset(dat_mapped, SubcohortIndPlus==1), mytable(!is.na(Day29bindSpike), !is.na(Day71bindSpike)))
+
+with(subset(dat_mapped, SubcohortIndPlus==1), mytable(!is.na(Day71bindSpike), !is.na(Day71bindSpike_D614)))
+with(subset(dat_mapped, SubcohortIndPlus==1), mytable(!is.na(Day29bindSpike), !is.na(Day29bindSpike_D614)))
+
+
+
+
+################################################################################
 # compare data before and after setting ID50 to NA for ARV
+
 dat1=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240123.csv')
 dat2=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240129.csv')
 
