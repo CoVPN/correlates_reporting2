@@ -26,7 +26,7 @@ default: &default
   threshold_grid_size: 30
   threshold_monotone_only: no
   threshold_fast: no
-  threshold_superfast: no
+  threshold_superfast: yes
 
 
 ####################################################################
@@ -149,11 +149,11 @@ janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
 
 janssen_pooled_partA: &janssen_pooled_partA
   <<: *janssen_trial_partA
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
   assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid50uncensored, ADCP]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer 2, Phagocytic Score]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (IU50/ml) 2, Phagocytic Score]
   llox_label: [POS, POS, LLOQ, LLOQ, LOD] 
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
   covariates_riskscore: ~.+ risk_score + as.factor(Region)
   additional_models: [
     risk_score + as.factor(Region) + DaytpeakbindSpike + Daytpeakpseudoneutid50,
@@ -348,7 +348,7 @@ vat08_combined: &vat08_combined
 
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240206.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240209.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]

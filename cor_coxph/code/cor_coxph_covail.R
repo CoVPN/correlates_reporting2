@@ -190,8 +190,9 @@ for (iObj in c(1,11,2,21,3,31)) {
       
       # unit testing 
       if (iPop==1 & COR=="D15to181") {
+        # print(pvals.cont)
         assertthat::assert_that(all(
-          abs(pvals.cont-c(0.304557, 0.414779, 0.650192, 0.746262, 0.771249, 0.892435))/pvals.cont < 1e6
+          abs(pvals.cont-c(0.321489, 0.441839, 0.701633, 0.824167, 0.678496, 0.865923))/pvals.cont < 1e-6
           ), msg = "failed cor_coxph unit testing")    
         print("Passed cor_coxph unit testing")    
       }
@@ -314,6 +315,20 @@ for (iObj in c(1,11)) {
 
 
 
+################################################################################
+# a quick study of D15 markers in subpopulations defined by baseline titers
+
+res = sapply(assays, function (a) {
+      f= update(form.0, as.formula(paste0("~.+", "Day15", a)))
+      getFormattedSummary(
+        list(coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==1,]),
+             coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==2,]),
+             coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==3,])),
+        type=12, robust=F)[4,]
+})
+tab=t(res)
+colnames(tab)=c("L","M","H")
+mytex(tab, file.name="CoR_univariable_svycoxph_pretty_Bmarkercat", input.foldername=save.results.to)
 
 
 print(date())

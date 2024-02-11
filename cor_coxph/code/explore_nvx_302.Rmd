@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK 302/adata/COVID_Novavax_302UK_mapped_20240207.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK 302/adata/COVID_Novavax_302UK_mapped_20240209.csv')
 # dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
 # assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
 # assays=assay_metadata$assay
@@ -27,7 +27,7 @@ with(dat_mapped, mytable(EventIndPrimaryD35, Trt))
 
 
 ```{r, echo=TRUE, include=TRUE}
-with(dat_mapped, table(CohortInd, EventIndPrimaryD35, Trt))
+with(dat_mapped, table(Site, EventIndPrimaryD35, Trt))
 ```
 
 

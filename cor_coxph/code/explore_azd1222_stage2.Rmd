@@ -22,20 +22,20 @@ dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stag
 ```
 
 
-
+Verifying marker values
 ```{r, echo=FALSE, include=FALSE}
 print(sort(unique(dat_mapped$Day57pseudoneutid50_D614G))[1:5])
 print(sort(unique(dat_mapped$Day57pseudoneutid50_Delta))[1:5])
 ```
 
-
+Correlation between ancestral ID50 and Delta ID50
 ```{r, echo=TRUE, include=TRUE}
 corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped)
 ```
 
 
 ```{r, echo=TRUE, include=TRUE}
-with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0), mytable(CohortInd, EventIndPrimaryD35, Trt))
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable())
 ```
 
 

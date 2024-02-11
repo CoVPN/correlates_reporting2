@@ -301,5 +301,23 @@ for (iObj in c(1,11)) {
   }
 }
 
+
+
+
+# Obj 1 in baseline h/m/l
+COR = "D15to181"
+    
+pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+config.cor <- config::get(config = COR)
+for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+
+COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+
+cat("# Objective Peak 1 Baseline Marker L/M/H ", COR, "\n", sep="")
+
+cat("\\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_Bmarkercat.tex}", sep="")
+
+
+
 ```
 
