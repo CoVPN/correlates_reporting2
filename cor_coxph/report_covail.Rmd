@@ -123,7 +123,7 @@ In models including for both baseline and D15/B markers, D15/B markers show no s
 \vspace{.5cm}
 **Peak Obj 1 Sanofi**
 
-Focusing on MDW: D15 marker is significant (HR 0.47), baseline and fold change are not, when studied alone. When both baseline and D15 markers are included, both are significant.
+Focusing on MDW: D15 marker is significant (HR 0.47), baseline and fold change are not, when studied alone. When both baseline and D15 markers are included, both are significant. This is true for both D22to181 and D22to91, but no signals in D92to181.
 
 
 
@@ -268,7 +268,7 @@ for (iObj in c(1,11)) {
 # Obj 1 in Sanofi
 for (iObj in c(1,11)) { 
   
-  for (COR in c("D15to181")) {
+  for (COR in c("D15to181", "D15to91", "D92to181")) {
     
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
     config.cor <- config::get(config = COR)
@@ -300,6 +300,24 @@ for (iObj in c(1,11)) {
     }
   }
 }
+
+
+
+
+# Obj 1 in baseline h/m/l
+COR = "D15to181"
+    
+pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+config.cor <- config::get(config = COR)
+for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+
+COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+
+cat("# Objective Peak 1 Baseline Marker L/M/H ", COR, "\n", sep="")
+
+cat("\\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_Bmarkercat.tex}", sep="")
+
+
 
 ```
 

@@ -1,3 +1,4 @@
+{
 library(survey)
 library(kyotil)
 
@@ -7,6 +8,24 @@ dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/cova
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
 assays
+}
+
+
+################################################################################
+
+dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240122.csv")
+dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240205.csv")
+dat3=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240208.csv")
+dat4=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240209.csv")
+nrow(dat1)
+nrow(dat2)
+nrow(dat3)
+nrow(dat4)
+
+dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240208.csv")
+dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240118.csv")
+nrow(dat1)
+nrow(dat2)
 
 
 ################################################################################

@@ -7,6 +7,7 @@ source(here::here("..", "_common.R"))
 
 source(here::here("code", "params.R"))
 
+library(npthreshold)
 
 library(sl3)
 library(SuperLearner)
@@ -31,12 +32,6 @@ begin=Sys.time()
 
 ################################################################################
 # code from clean_data.R
-
-for (a in assays) {
-  for (t in DayPrefix%.%tpeak ) {
-    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
-  }
-}    
 
 # Generate the outcome and censoring indicator variables
 
@@ -137,7 +132,7 @@ for (marker in markers.cpy) {
 
 #' @param marker Marker to run threshold analysis for
 run_threshold_analysis <- function(marker, direction = "above") {
-  # markers=markers[1]; direction = "above"
+  # marker=markers[1]; direction = "above"
   
 
   if("risk_score" %in% covariates) {

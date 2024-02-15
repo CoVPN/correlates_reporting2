@@ -188,6 +188,15 @@ for (iObj in c(1,11,2,21,3,31)) {
       fname.suffix = paste0(fname.suffix, "_B+D15")
       source(here::here("code", "cor_coxph_ph_coef.R"))
       
+      # unit testing 
+      if (iPop==1 & COR=="D15to181") {
+        # print(pvals.cont)
+        assertthat::assert_that(all(
+          abs(pvals.cont-c(0.321489, 0.441839, 0.701633, 0.824167, 0.678496, 0.865923))/pvals.cont < 1e-6
+          ), msg = "failed cor_coxph unit testing")    
+        print("Passed cor_coxph unit testing")    
+      }
+      
     } else if(iObj==2) {
       fname.suffix = paste0(fname.suffix, "_NxD15")
       source(here::here("code", "cor_coxph_ph_coef.R"))
@@ -273,41 +282,53 @@ for (iPop in 1:3) {
 ################################################################################
 # Peak Obj 1 for Sanofi vaccines
 
-if (COR=="D15to181") {
+for (iObj in c(1,11)) {
+  
+  # define all.markers
+  if(iObj==1) {
+    all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
+    all.markers.names.short = assay_metadata$assay_label_short[match(assays,assay_metadata$assay)]
+    all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
     
-  for (iObj in c(1,11)) {
-    
-    # define all.markers
-    if(iObj==1) {
-      all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
-      all.markers.names.short = assay_metadata$assay_label_short[match(assays,assay_metadata$assay)]
-      all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
-      
-    } else if(iObj==11){
-      # B marker + D15/B
-      all.markers = sapply(assays, function (a) paste0("scale(B",a, ",scale=F) + scale(Delta15overB",a, ",scale=F)")
-      )
-      all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-      all.markers.names.short = all.markers.names.short
-      # parameters for R script
-      nCoef=2
-      col.headers=c("center(B)", "center(D15/B)")
-    }
-    
-    dat=dat.sanofi
-    fname.suffix = 'sanofi'
-    
-    if(iObj==1) {
-      source(here::here("code", "cor_coxph_ph.R"))
-    } else if(iObj==11) {
-      fname.suffix = paste0(fname.suffix, "_B+D15")
-      source(here::here("code", "cor_coxph_ph_coef.R"))
-    }
-    
+  } else if(iObj==11){
+    # B marker + D15/B
+    all.markers = sapply(assays, function (a) paste0("scale(B",a, ",scale=F) + scale(Delta15overB",a, ",scale=F)")
+    )
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    all.markers.names.short = all.markers.names.short
+    # parameters for R script
+    nCoef=2
+    col.headers=c("center(B)", "center(D15/B)")
   }
-
+  
+  dat=dat.sanofi
+  fname.suffix = 'sanofi'
+  
+  if(iObj==1) {
+    source(here::here("code", "cor_coxph_ph.R"))
+  } else if(iObj==11) {
+    fname.suffix = paste0(fname.suffix, "_B+D15")
+    source(here::here("code", "cor_coxph_ph_coef.R"))
+  }
+  
 }
 
+
+
+################################################################################
+# a quick study of D15 markers in subpopulations defined by baseline titers
+
+res = sapply(assays, function (a) {
+      f= update(form.0, as.formula(paste0("~.+", "Day15", a)))
+      getFormattedSummary(
+        list(coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==1,]),
+             coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==2,]),
+             coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==3,])),
+        type=12, robust=F)[4,]
+})
+tab=t(res)
+colnames(tab)=c("L","M","H")
+mytex(tab, file.name="CoR_univariable_svycoxph_pretty_Bmarkercat", input.foldername=save.results.to)
 
 
 print(date())
