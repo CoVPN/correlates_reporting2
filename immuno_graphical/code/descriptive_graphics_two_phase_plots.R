@@ -666,7 +666,7 @@ if (study_name!="VAT08"){ # no spaghetti plots for VAT08
       # at day 29, day 71, month 6, only for vaccine and baseline negative, only for reference assays, only for Latin America 
       times_ = c("Day29","Day71","Mon6") 
       
-      assay_immuno_ = if(plot==1) {c("bindSpike_D614")
+      assay_immuno_ = if(plot==1) {c("bindSpike")
         } else if(plot==2) {c("pseudoneutid50")
         } else if(plot==3) {assays[grepl("bind", assays)]
             } else if(plot==4) {assays[grepl("pseudo", assays)]}
@@ -820,10 +820,38 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
   
   ## load data 
   dat.spider <- readRDS(here::here("data_clean", "twophase_data.rds"))
+  if (attr(config,"config")=="janssen_partA_VL") {dat.spider = subset(dat.spider, Trt==1 & Bserostatus==0)}
   
   # spider plot showing geometric means calculated using IPS weighting, by trt and baseline status
   
   # calculate geometric mean of IPS weighted readouts
+  dat.spider.by.time2 <- dat.spider %>%
+    select(one_of("Ptid", "Bserostatus", "Trt", "wt.subcohort", do.call(paste0, expand.grid(times, assays)))) %>%
+    pivot_longer(!Ptid:wt.subcohort, names_to = "time_assay", values_to = "value") %>%
+    mutate(assay = gsub(paste0(paste0("^",times), collapse="|"), "", time_assay),
+           time = gsub(paste0(assays, collapse="|"), "", time_assay)) %>%
+    pivot_wider(names_from = assay, values_from = value)
+  
+  
+  dat.spider.by.time <- dat.spider %>%
+    select(one_of(paste0("B", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
+    rename_with(~str_remove(., "^B")) %>%
+    mutate(time="B") %>%
+    rename(Bserostatus=serostatus) %>%
+    bind_rows(
+      dat.spider %>%
+        select(one_of(paste0("Day29", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
+        rename_with(~str_remove(., "^Day29")) %>%
+        mutate(time="Day29")
+    ) %>%
+    bind_rows(
+      dat.spider %>%
+        select(one_of(paste0("Delta29overB", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
+        rename_with(~str_remove(., "^Delta29overB")) %>%
+        mutate(time="Delta29overB")
+    )
+  
+  
   dat.spider.by.time <- dat.spider %>%
     select(one_of(paste0("B", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
     rename_with(~str_remove(., "^B")) %>%
@@ -852,7 +880,9 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
         select(one_of(paste0("Delta43overB", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
         rename_with(~str_remove(., "^Delta43overB")) %>%
         mutate(time="Delta43overB")
-    ) %>%
+    ) 
+  
+  %>%
     mutate(Bserostatus = ifelse(Bserostatus == 1, "Pos", "Neg"),
            Trt = ifelse(Trt == 1, "vaccine", "placebo")) %>%
     group_by(time, Bserostatus, Trt) %>%
