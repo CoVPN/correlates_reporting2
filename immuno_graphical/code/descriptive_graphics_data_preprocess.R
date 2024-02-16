@@ -9,7 +9,7 @@ Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
-if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_immuno=assay_metadata$assay}
+if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 #-----------------------------------------------
 
 library(here)
@@ -391,7 +391,7 @@ resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(res
 # add label = LLoQ, uloq values to show in the plot
 dat.longer.immuno.subset$LLoD = with(dat.longer.immuno.subset, log10(lods[as.character(assay)]))
 dat.longer.immuno.subset$pos.cutoffs = with(dat.longer.immuno.subset, log10(pos.cutoffs[as.character(assay)]))
-dat.longer.immuno.subset$LLoQ = with(dat.longer.immuno.subset, log10(loqs[as.character(assay)]))
+dat.longer.immuno.subset$LLoQ = with(dat.longer.immuno.subset, log10(lloqs[as.character(assay)]))
 dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "LoQ", "LoD"))
 dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), LLoQ, LLoD))
 
@@ -399,7 +399,7 @@ dat.longer.immuno.subset$ULoQ = with(dat.longer.immuno.subset, log10(uloqs[as.ch
 dat.longer.immuno.subset$lb2 = "ULoQ"
 dat.longer.immuno.subset$lbval2 =  dat.longer.immuno.subset$ULoQ
 
-# 759 unique ids, 6 timepoints, 15 assays
+# derive variables for the figures
 dat.longer.immuno.subset <- dat.longer.immuno.subset %>%
   mutate(category=paste0(time, assay, "Resp")) %>%
   left_join(resp_by_time_assay, by=c("Ptid", "category"))
@@ -418,10 +418,9 @@ dat.longer.immuno.subset$Trt_nnaive = with(dat.longer.immuno.subset,
 
 # subsets for violin/line plots
 #### figure specific data prep
-# 1. define response rate:
-# 2. make subsample datasets such that the violin plot only shows <= 100 non-case data points
+# define response rate:
 
-#### for figures 1, 2, 3, 4: by naive/non-naive, vaccine/placebo, (Day 1), Day 22 Day 43, Day 22 - 1, Day 43 - 1
+#### for figures 1
 groupby_vars1=c("Trt", "Bserostatus", "time", "assay")
 
 # define response rate

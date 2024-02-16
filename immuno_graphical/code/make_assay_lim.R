@@ -3,12 +3,7 @@
 renv::activate(project = here::here(".."))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
-if (study_name %in% c("VAT08")){
-  uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
-  pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
-  lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
-  llods=assay_metadata$lod; names(llods)=assay_metadata$assay
-}
+if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 #-----------------------------------------------
 
 library(here)
@@ -66,7 +61,7 @@ dimnames(assay_lim) <- list(assay_immuno, times, c("lb", "ub"))
 
 
 assay_lim[, !grepl("Delta", times), "lb"] <- 
-  floor(log10(llods[assay_immuno] / 2)) # lower bound same for all assays - days
+  floor(log10(lods[assay_immuno] / 2)) # lower bound same for all assays - days
 if (study_name=="AZD1222" && grepl("bind", assays)) {
   assay_lim["bindSpike", !grepl("Delta", times), "lb"] <- floor(log10(lloqs["bindSpike"] / 2))
   }# prevent19 and AZ has llod for bAb as NA, use lloq instead
@@ -96,7 +91,7 @@ if (study_name=="VAT08") {assay_lim[, grepl("Delta", times), "lb"] <- -7
 } else {assay_lim[, grepl("Delta", times), "lb"] <- -2 } # lower bound same for all assays - delta
 
 assay_lim[assay_immuno %in% bAb_assays, grepl("Delta", times), "ub"] <- 
-  ceiling(MaxbAb - min(log10(llods[bAb_assays] / 2), na.rm=T)) + ceiling(MaxbAb - min(log10(llods[bAb_assays] / 2), na.rm=T)) %% 2
+  ceiling(MaxbAb - min(log10(lods[bAb_assays] / 2), na.rm=T)) + ceiling(MaxbAb - min(log10(lods[bAb_assays] / 2), na.rm=T)) %% 2
 
 if (study_name=="AZD1222" & grepl("bind", assays)) {
   assay_lim[assay_immuno %in% bAb_assays, grepl("Delta", times), "ub"] <- 
@@ -111,9 +106,9 @@ if (study_name=="PREVENT19") {
 }
 
 assay_lim[assay_immuno %in% nAb_assays, grepl("Delta", times), "ub"] <- 
-  ceiling(MaxID50ID80 - min(log10(llods[nAb_assays] / 2), na.rm=T)) + ceiling(MaxID50ID80 - min(log10(llods[nAb_assays] / 2), na.rm=T)) %% 2
+  ceiling(MaxID50ID80 - min(log10(lods[nAb_assays] / 2), na.rm=T)) + ceiling(MaxID50ID80 - min(log10(lods[nAb_assays] / 2), na.rm=T)) %% 2
 assay_lim[assay_immuno %in% live_assays, grepl("Delta", times), "ub"] <- 
-  ceiling(Maxlive50 - min(log10(llods[live_assays] / 2))) + ceiling(Maxlive50 - min(log10(llods[live_assays] / 2))) %% 2
+  ceiling(Maxlive50 - min(log10(lods[live_assays] / 2))) + ceiling(Maxlive50 - min(log10(lods[live_assays] / 2))) %% 2
 if (study_name=="VAT08") {
   assay_lim[, grepl("Delta", times), "ub"] <- 8 
 }

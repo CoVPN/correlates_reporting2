@@ -6,10 +6,6 @@ renv::activate(project = here::here(".."))
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
-if (attr(config,"config")=="janssen_partA_VL") {assay_metadata = subset(assay_metadata, panel!=""); assays=assay_immuno=assay_metadata$assay
-labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
-labels.axis <- as.data.frame(labels.axis)
-rownames(labels.axis) <- times}
 #-----------------------------------------------
 
 library(here)
@@ -52,6 +48,7 @@ dat.long.twophase.sample <- readRDS(here(
 ))
 
 dat.twophase.sample <- readRDS(here("data_clean", "twophase_data.rds")); dat.twophase.sample$all_one <- 1 # as a placeholder for strata values
+dat.spider <- readRDS(here::here("data_clean", "twophase_data.rds"))
 
 tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
 tps_no_B_and_delta_over_tinterm <-  times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("Day29", "Delta29overB", "Day57", "Delta57overB")
@@ -669,7 +666,7 @@ if (study_name!="VAT08"){ # no spaghetti plots for VAT08
       assay_immuno_ = if(plot==1) {c("bindSpike")
         } else if(plot==2) {c("pseudoneutid50")
         } else if(plot==3) {assays[grepl("bind", assays)]
-            } else if(plot==4) {assays[grepl("pseudo", assays)]}
+            } else if(plot==4) {assays[grepl("pseudo", assays) & !grepl("Delta|Beta", assays)]}
   
       spaghetti_ptid <- dat.twophase.sample %>% filter(Trt==1 & Bserostatus==0 & Region==1) %>% dplyr::select(Ptid) %>% pull()
       
@@ -730,7 +727,7 @@ if (study_name!="VAT08"){ # no spaghetti plots for VAT08
                                     c("Negative", "Positive")[bstatus],
                                     " PP Placebo + Vaccine Group"
                                   )),
-                                  panel_title_size = ifelse(length(assay_immuno_)==1, 6.5, 9.5),
+                                  panel_title_size = ifelse(length(assay_immuno_)==1, 6.5, 8),
                                   arrange_ncol = ifelse(length(assay_immuno_)==1, 1, 3),
                                   arrange_nrow = ceiling(length(assay_immuno_) / 3),
                                   plot_title_size = ifelse(length(assay_immuno_)==1, 8, 12),
@@ -818,151 +815,111 @@ if (study_name!="VAT08"){ # no spaghetti plots for VAT08
 print("Spider plots:")
 if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
   
-  ## load data 
-  dat.spider <- readRDS(here::here("data_clean", "twophase_data.rds"))
-  if (attr(config,"config")=="janssen_partA_VL") {dat.spider = subset(dat.spider, Trt==1 & Bserostatus==0)}
-  
-  # spider plot showing geometric means calculated using IPS weighting, by trt and baseline status
-  
-  # calculate geometric mean of IPS weighted readouts
-  dat.spider.by.time2 <- dat.spider %>%
-    select(one_of("Ptid", "Bserostatus", "Trt", "wt.subcohort", do.call(paste0, expand.grid(times, assays)))) %>%
-    pivot_longer(!Ptid:wt.subcohort, names_to = "time_assay", values_to = "value") %>%
-    mutate(assay = gsub(paste0(paste0("^",times), collapse="|"), "", time_assay),
-           time = gsub(paste0(assays, collapse="|"), "", time_assay)) %>%
-    pivot_wider(names_from = assay, values_from = value)
-  
-  
-  dat.spider.by.time <- dat.spider %>%
-    select(one_of(paste0("B", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
-    rename_with(~str_remove(., "^B")) %>%
-    mutate(time="B") %>%
-    rename(Bserostatus=serostatus) %>%
-    bind_rows(
-      dat.spider %>%
-        select(one_of(paste0("Day29", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
-        rename_with(~str_remove(., "^Day29")) %>%
-        mutate(time="Day29")
-    ) %>%
-    bind_rows(
-      dat.spider %>%
-        select(one_of(paste0("Delta29overB", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
-        rename_with(~str_remove(., "^Delta29overB")) %>%
-        mutate(time="Delta29overB")
-    )
-  
-  
-  dat.spider.by.time <- dat.spider %>%
-    select(one_of(paste0("B", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
-    rename_with(~str_remove(., "^B")) %>%
-    mutate(time="B") %>%
-    rename(Bserostatus=serostatus) %>%
-    bind_rows(
-      dat.spider %>%
-        select(one_of(paste0("Day22", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
-        rename_with(~str_remove(., "^Day22")) %>%
-        mutate(time="Day22")
-    ) %>%
-    bind_rows(
-      dat.spider %>%
-        select(one_of(paste0("Day43", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
-        rename_with(~str_remove(., "^Day43")) %>%
-        mutate(time="Day43")
-    ) %>%
-    bind_rows(
-      dat.spider %>%
-        select(one_of(paste0("Delta22overB", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
-        rename_with(~str_remove(., "^Delta22overB")) %>%
-        mutate(time="Delta22overB")
-    ) %>%
-    bind_rows(
-      dat.spider %>%
-        select(one_of(paste0("Delta43overB", assays), "Bserostatus", "Trt", "wt.subcohort")) %>%
-        rename_with(~str_remove(., "^Delta43overB")) %>%
-        mutate(time="Delta43overB")
-    ) 
-  
-  %>%
-    mutate(Bserostatus = ifelse(Bserostatus == 1, "Pos", "Neg"),
-           Trt = ifelse(Trt == 1, "vaccine", "placebo")) %>%
-    group_by(time, Bserostatus, Trt) %>%
-    summarise(across(assays, ~ exp(sum(log(.x * wt.subcohort), na.rm=T) / sum(wt.subcohort)))) %>%
-    unique() %>%
-    as.data.frame()
-  
-  # those without any data will have a weighted geomean equal to 1, set these to NA
-  dat.spider.by.time[dat.spider.by.time == 1] <- NA
-  
-  rownames(dat.spider.by.time) <- paste0(dat.spider.by.time$time, dat.spider.by.time$Bserostatus, dat.spider.by.time$Trt)
-  dat.spider.by.time$time <- NULL
-  dat.spider.by.time$Bserostatus <- NULL
-  dat.spider.by.time$Trt <- NULL
-  
-  # stack with max and min values
-  max_min <- rbind(rep(1.8,ncol(dat.spider.by.time)), 
-                   rep(0,ncol(dat.spider.by.time)))
-  colnames(max_min) <- colnames(dat.spider.by.time)
-  rownames(max_min) <- c("max", "min")
-  
-  dat.spider.by.time <- rbind(max_min, 
-                              dat.spider.by.time)
-  
   # setup pdf file
   for (ab in c("bAb", "nAb")) {
     
-    for (time in c("day1day22day43", "delta")) {
+    for (tm in c("Day", "Delta")) {
       
-      filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", time, "_", ab, ".pdf")
-      pdf(filename, width=5.5, height=6.5)
-      par(mfrow=c(2,2), mar=c(0.1,0.1,1,0.1))
-      
-      for (bsero in c("Neg", "Pos")){
-        for(trt in c("placebo", "vaccine")){
+      for (bsero in c("Neg", "Pos")) {
+        
+        for (trt in c("placebo", "vaccine")) {
           
-          #filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", ab, "_trt_", trt, "_bstatus_", bsero, ".pdf")
-          #pdf(filename, width=5.5, height=6)
+          for (reg in if (attr(config,"config")=="janssen_partA_VL") {c(1,2)} else {"all"}) {
+            
+            reg_lb = case_when(reg==0 ~ "NAM_",
+                               reg==1 ~ "LATAM_",
+                               reg==2 ~ "ZA_",
+                               TRUE ~ "")
+            
+            reg_lb_long = case_when(reg==0 ~ "Northern America",
+                                    reg==1 ~ "Latin America",
+                                    reg==2 ~ "Southern Africa",
+                                    TRUE ~ "")
+            
+            if (attr(config,"config")=="janssen_partA_VL") {dat.spider = subset(dat.spider, Trt==1 & Bserostatus==0)}
+            
+            # calculate geometric mean of IPS weighted readouts
+            times_spider = if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints)} else {times}
+            
+            if (!"Region" %in% colnames(dat.spider)) {dat.spider$Region=reg}
+            dat.spider.by.time <- dat.spider %>%
+              select(one_of("Ptid", "Bserostatus", "Trt", "Region", "wt.subcohort", do.call(paste0, expand.grid(times_spider, assays)))) %>%
+              pivot_longer(!Ptid:wt.subcohort, names_to = "time_assay", values_to = "value") %>%
+              mutate(assay = gsub(paste0(paste0("^",times_spider), collapse="|"), "", time_assay),
+                     time = gsub(paste0(assays, collapse="|"), "", time_assay),
+                     time_assay = NULL) %>%
+              pivot_wider(names_from = assay, values_from = value) %>%
+              mutate(Bserostatus = ifelse(Bserostatus == 1, "Pos", "Neg"),
+                     Trt = ifelse(Trt == 1, "vaccine", "placebo")) %>%
+              group_by(time, Bserostatus, Region, Trt) %>%
+              summarise(across(assays, ~ exp(sum(log(.x * wt.subcohort), na.rm=T) / sum(wt.subcohort)))) %>%
+              unique() %>%
+              ungroup() %>%
+              as.data.frame()
+            
+            # stack with max and min values
+            max_min <- rbind(rep(1.8,ncol(dat.spider.by.time)), 
+                             rep(0,ncol(dat.spider.by.time)))
+            colnames(max_min) <- colnames(dat.spider.by.time)
+            rownames(max_min) <- c("max", "min")
+            
+            dat.spider.by.time <- rbind(max_min, 
+                                        dat.spider.by.time)
+            
+            dat.plot <- dat.spider.by.time[c(1,2), ] %>%
+              bind_rows(
+                dat.spider.by.time %>%
+                  filter(grepl(tm, time) & Bserostatus %in% bsero & Trt %in% trt & Region %in% reg)
+                ) %>%
+              mutate(time = NULL, Bserostatus=NULL, Trt=NULL) %>%
+              select(if(ab=="bAb") {starts_with("bindSpike")
+              } else if (ab=="nAb" && reg==1) {matches("pseudoneutid50$|pseudoneutid50_Zeta|pseudoneutid50_Mu|pseudoneutid50_Gamma|pseudoneutid50_Lambda")
+              } else if (ab=="nAb" && reg==2) {matches("pseudoneutid50$|pseudoneutid50_Delta|pseudoneutid50_Beta")
+              } else {contains("pseudoneutid50")})
+            
+            # those without any data will have a weighted geomean equal to 1, set these to NA
+            dat.plot[dat.plot == 1] <- NA
+            
+            if (nrow(dat.plot)==2) next
+            
+            ############# figure start here
+            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", ifelse(study_name=="VAT08", "day1day22day43", tolower(tm)), "_", ifelse(reg!="all", reg_lb, ""), ab, ".pdf")
+            pdf(filename, width=5.5, height=6.5)
+            par(mfrow=if (study_name=="VAT08") {c(2,2)} else {c(1,1)}, mar=c(0.1,0.1,1,0.1))
+            
+            colnames(dat.plot) <- assay_metadata$assay_label[match( colnames(dat.plot) , assay_metadata$assay)]
+            
+            colnames(dat.plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike |Binding Antibody to | Spike|Binding Antibody ", "", colnames(dat.plot))
+            
+            color = c(if(study_name=="VAT08")"#0AB7C9","#FF6F1B","#FF5EBF","dodgerblue","chartreuse3")[1:length(times_spider)]
+            legend_lb = times_spider
           
-          dat.plot <- dat.spider.by.time[c(1,2),] %>%
-            bind_rows(dat.spider.by.time[grepl(paste0(bsero, trt), rownames(dat.spider.by.time)),]) %>%
-            select(starts_with(ifelse(ab=="bAb", "bindSpike", "pseudoneutid50")))
-          
-          colnames(dat.plot) <- assay_metadata$assay_label[match( colnames(dat.plot) , assay_metadata$assay)]
-          
-          colnames(dat.plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", colnames(dat.plot))
-          
-          if (time == "day1day22day43") {
-            dat.plot.sub = dat.plot[1:5, ]
-            color = c("#0AB7C9","#FF6F1B","#FF5EBF")
-            legend_lb = c("B","Day22","Day43")
-          } else {
-            dat.plot.sub = dat.plot[c(1,2,6,7), ]
-            color = c("dodgerblue","chartreuse3")
-            legend_lb = c("Delta22overB","Delta43overB")}
-          
-          radarchart(dat.plot.sub, 
-                     axistype=1 , 
-                     # Customize the polygon
-                     pcol = scales::alpha(color, 0.7), plwd=1.5, pty=c(15), plty=1,
-                     pfcol = scales::alpha(color, 0.2),
-                     #custom the grid
-                     cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^",seq(0.1,1.7,0.4)), 
-                     #label size
-                     vlcex=0.4,
-                     #title
-                     title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", "of nAb Markers, "), 
-                                  ifelse(bsero=="Neg", "naive ", "non-naive "),
-                                  trt),
-                     #title size
-                     cex.main=0.7)
-          
-          #par(xpd=NA)
-          
-          #legend
-          legend("bottom", legend=legend_lb, lty=5, pch=c(15),
-                 col=color, bty="n", ncol=3, cex=0.7,
-                 inset=c(-0.25,0))
-          
-          #dev.off()
+            spider_range = if(attr(config,"config")=="janssen_partA_VL") {seq(1, 1.2, (1.2-1)/4)} else {seq(0.1, 1.7, (1.7-0.1)/4)}
+            radarchart(dat.plot, 
+                       axistype=1 , 
+                       # Customize the polygon
+                       pcol = scales::alpha(color, 0.7), plwd=1.5, pty=c(15), plty=1,
+                       pfcol = scales::alpha(color, 0.2),
+                       #custom the grid
+                       cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^", spider_range), 
+                       #label size
+                       vlcex=ifelse(study_name=="VAT08", 0.4, 1),
+                       #title
+                       title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", "of nAb Markers, "), 
+                                    ifelse(bsero=="Neg", "naive ", "non-naive "),
+                                    trt, ifelse(reg!="all", paste0(", ", reg_lb_long), "")),
+                       #title size
+                       cex.main=0.7)
+            
+            #par(xpd=NA)
+            
+            #legend
+            legend("bottom", legend=legend_lb, lty=5, pch=c(15),
+                   col=color, bty="n", ncol=3, cex=0.7,
+                   inset=c(-0.25,0))
+            
+            #dev.off()
+            }
         }
       }
       par(xpd=NA)
