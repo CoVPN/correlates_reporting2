@@ -12,21 +12,54 @@ assays
 
 
 ################################################################################
+# distribution 
 
-dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240122.csv")
-dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240205.csv")
-dat3=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240208.csv")
-dat4=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240209.csv")
+dat = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
+
+table(dat$Bpseudoneutid50_MDWcat, dat$Day15pseudoneutid50_MDWcat)
+table(dat$Bpseudoneutid50_MDWcat, dat$Day15pseudoneutid50_MDWcat, dat$naive)
+
+# all cases have covid lineage observed
+mytable(dat_proc$COVIDlineageObserved, dat_proc$COVIDlineage)
+mytable(dat_proc$COVIDlineageObserved, dat_proc$COVIDIndD22toend)
+
+
+
+################################################################################
+
+# save the risk score from covail_data_processed_20240205.csv as a separate file that will be treated as the source of risk score
+dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240205.csv")
+write.csv(subset(dat1, select=c(Ptid, risk_score, standardized_risk_score)), row.names=F, file="/trials/covpn/COVAILcorrelates/analysis/correlates/adata/risk_score.csv")
+
+
+# there is a difference in risk score between 0205 and 0206 analysis ready datasets
+dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240205.csv")
+dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240206.csv")
+nrow(dat1)
+nrow(dat2)
+
+cbind(dat1$COVIDIndD22toD181, dat2$COVIDIndD22toD181)[1:100,]
+
+
+dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240205.csv")
+dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240206.csv")
+dat3=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240211.csv")
 nrow(dat1)
 nrow(dat2)
 nrow(dat3)
-nrow(dat4)
+
+with(subset(dat1,ph1.D15==1), fastauc(risk_score, COVIDIndD22toD181))
+with(subset(dat2,ph1.D15==1), fastauc(risk_score, COVIDIndD22toD181))
+
 
 dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240208.csv")
-dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240118.csv")
-nrow(dat1)
-nrow(dat2)
+dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240211.csv")
 
+rbind(dat1[16,-182],dat2[16,]) # COVIDtimeD22toend
+
+setdiff(names(dat1), names(dat2))
+
+mytable(dat2$COVIDIndD92toD181, dat2$COVIDtimeD92toD181)
 
 ################################################################################
 # sanofi markers

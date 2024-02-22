@@ -348,7 +348,7 @@ vat08_combined: &vat08_combined
 
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240209.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240211.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
@@ -1418,6 +1418,48 @@ D92to181:
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 91 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 
+
+# covail, BA4/BA5. used to study D15 markers in followup from D22 to 91
+D15to91BA45: 
+  ph1: ph1.D15
+  ph2: ph2.D15
+  wt: wt.D15
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndOfInterest
+  EventTimePrimary: COVIDTimeD22toD91
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+# covail, BA4/BA5. used to study D15 markers in followup from D22 to 181
+D15to181BA45:
+  ph1: ph1.D15
+  ph2: ph2.D15
+  wt: wt.D15
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndOfInterest
+  EventTimePrimary: COVIDTimeD22toD181
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+# covail, BA4/BA5. used to study D15 markers in followup from D92 to 181
+D92to181BA45:
+  ph1: ph1.D92
+  ph2: ph2.D92
+  wt: wt.D92
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndOfInterest
+  EventTimePrimary: COVIDTimeD92toD181
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 91 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 ####################
 # two time points
