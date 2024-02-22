@@ -14,12 +14,7 @@ dat.long.cor.subset <- readRDS(here(
   "data_clean",
   "long_cor_data.rds"
 ))
-if (study_name %in% c("ENSEMBLE","VAT08m")){
-  uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
-  pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
-  lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
-  llods=assay_metadata$lod; names(llods)=assay_metadata$assay
-}
+if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 #dat.cor.subset <- readRDS(here(
 #  "data_clean",
 #  "cor_data.rds"
@@ -332,95 +327,130 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
   
   for (tp in c("Day29")){
     
-    assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta",
-                                                                 "pseudoneutid50_Beta"))
+    assay_metadata_sub_sa <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Delta", "pseudoneutid50_Beta",
+                                                                 "bindSpike", "bindSpike_DeltaMDW", "bindSpike_B.1.351"))
     dat.long.cor.subset.SA <- subset(dat.long.cor.subset, Region == 2)
     
     rcdf_list_sa <- vector("list", length(assay_metadata_sub_sa$assay))
     
     assay_metadata_sub_la <- subset(assay_metadata, assay %in% c("pseudoneutid50", "pseudoneutid50_Zeta",
                                                                  "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
-                                                                 "pseudoneutid50_Lambda"))
+                                                                 "pseudoneutid50_Lambda",
+                                                                 "bindSpike","bindSpike_B.1.621",
+                                                                 "bindSpike_P.1","bindSpike_C.37"))
     dat.long.cor.subset.LA <- subset(dat.long.cor.subset, Region == 1)
     
     rcdf_list_la <- vector("list", length(assay_metadata_sub_la$assay))
     
-    for (trt in c("Vaccine")) {
+    for (a in c("Delta","Beta","Zeta","Mu","Gamma","Lambda")){
+      tmp=dat.long.cor.subset %>% 
+        filter(EventIndPrimaryIncludeNotMolecConfirmedD29==1 & !!as.name(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", a))==1 & Region==0)
+      cat(paste0(a, nrow(tmp),"\n"))
+    }
+    assay_metadata_sub_us <- subset(assay_metadata, assay %in% c("bindSpike","bindSpike_P.1")) # Zeta and Gamma
+    dat.long.cor.subset.US <- subset(dat.long.cor.subset, Region == 0)
+    
+    rcdf_list_us <- vector("list", length(assay_metadata_sub_us$assay))
+    
+    for (ab in c("bindSpike", "pseudoneutid50")) {
+
+      # SA, reference, Delta, Beta, for vaccine
+      sa_assay_ = subset(assay_metadata_sub_sa$assay, grepl(ab, assay_metadata_sub_sa$assay)) 
       
-      # SA, nab_reference, nab_Delta, nab_Beta, for vaccine
-      for (aa in seq_along(assay_metadata_sub_sa$assay)) {
-        rcdf_list_sa[[aa]] <- ggplot(subset(dat.long.cor.subset.SA, Trt == trt & assay == assay_metadata_sub_sa$assay[aa]), 
+      rcdf_list_sa = NULL
+      for (aa in seq_along(sa_assay_)) {
+        
+        var = case_when(sa_assay_[aa] %in% c("bindSpike", "pseudoneutid50") ~ "",
+                        sa_assay_[aa] %in% c("bindSpike_DeltaMDW", "pseudoneutid50_Delta") ~ "-Delta",
+                        sa_assay_[aa] %in% c("bindSpike_B.1.351", "pseudoneutid50_Beta") ~ "-Beta")
+        dat.long.cor.subset.SA_ = dat.long.cor.subset.SA %>% 
+          filter(cohort_event2 %in% c("Non-Cases", paste0("Post-Peak Cases", var)))
+        
+        rcdf_list_sa[[aa]] <- ggplot(subset(dat.long.cor.subset.SA_, assay == sa_assay_[aa]), 
                                   aes_string(
                                     x = tp, 
-                                    colour = "Trt", 
-                                    linetype = "Trt",
-                                    weight = config.cor$wt
+                                    colour = "cohort_event", 
+                                    linetype = "cohort_event",
+                                    weight = "wt"
                                   )
         ) +
           geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
           theme_pubr(legend = "none") +
-          ylab("Reverse ECDF") + xlab(labels.axis[tp, match(assay_metadata_sub_sa$assay[aa], colnames(labels.axis))]) +
+          ylab("Reverse ECDF") + xlab(labels.axis[tp, match(sa_assay_[aa], colnames(labels.axis))]) +
           scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
-          scale_color_manual(values = c("#1749FF", "#D92321"#, "#0AB7C9", "#FF6F1B"
+          scale_color_manual(values = c("#1749FF", "#D92321"#, #"#0AB7C9", #"#FF6F1B"
                                         )) +
           guides(linetype = "none",
                  color = guide_legend(nrow = 3, byrow = TRUE)) +
-          ggtitle(labels.title2[tp, match(assay_metadata_sub_sa$assay[aa], colnames(labels.title2))]) +
-          theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_sa$assay)>6, 6, 10)),
+          ggtitle(labels.title2[tp, match(sa_assay_[aa], colnames(labels.title2))]) +
+          theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(sa_assay_)>6, 6, 10)),
                 legend.title = element_blank(),
                 legend.text = element_text(size = 14),
                 panel.grid.minor.y = element_line(),
                 panel.grid.major.y = element_line(),
-                axis.title = element_text(size = ifelse(length(assay_metadata_sub_sa$assay)>6, 8, 9)),
+                axis.title = element_text(size = ifelse(length(sa_assay_)>6, 8, 9)),
                 axis.text = element_text(size = 14))
       }
       
-      if (length(assay_metadata_sub_sa$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
-      ggsave(ggarrange(plotlist = rcdf_list_sa, ncol = ncol_val, nrow=ceiling(length(assay_metadata_sub_sa$assay) / ncol_val),
+      if (length(sa_assay_) > 6) {ncol_val = 3} else {ncol_val = 2}
+      ggsave(ggarrange(plotlist = rcdf_list_sa, ncol = ncol_val, nrow=ceiling(length(sa_assay_) / ncol_val),
                        common.legend = TRUE, legend = "bottom",
                        align = "h"),
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_Bseroneg_NAb_SA.png"),
+                               "_Vaccine_Bseroneg_", ifelse(ab=="bindSpike","bAb","nAb"), "_SA.png"),
              height = 7, width = 6.5)
-      
+ 
     
       # LA, nab_reference, nab_Zeta, nab_Mu, nab_Gamma, nab_Lambda, for vaccine
-      for (aa in seq_along(assay_metadata_sub_la$assay)) {
-        rcdf_list_la[[aa]] <- ggplot(subset(dat.long.cor.subset.LA, Trt == trt & assay == assay_metadata_sub_la$assay[aa]), 
+      la_assay_ = subset(assay_metadata_sub_la$assay, grepl(ab, assay_metadata_sub_la$assay)) 
+      
+      rcdf_list_la = NULL
+      for (aa in seq_along(la_assay_)) {
+        
+        var = case_when(la_assay_[aa] %in% c("bindSpike", "pseudoneutid50") ~ "",
+                        la_assay_[aa] %in% c("pseudoneutid50_Zeta") ~ "-Zeta",
+                        la_assay_[aa] %in% c("bindSpike_B.1.621","pseudoneutid50_Mu") ~ "-Mu",
+                        la_assay_[aa] %in% c("bindSpike_P.1","pseudoneutid50_Gamma") ~ "-Gamma",
+                        la_assay_[aa] %in% c("bindSpike_C.37","pseudoneutid50_Lambda") ~ "-Lambda")
+        dat.long.cor.subset.LA_ = dat.long.cor.subset.LA %>% 
+          filter(cohort_event2 %in% c("Non-Cases", paste0("Post-Peak Cases", var)))
+        
+        rcdf_list_la[[aa]] <- ggplot(subset(dat.long.cor.subset.LA_, assay == la_assay_[aa]), 
                                   aes_string(
                                     x = tp, 
-                                    colour = "Trt", 
-                                    linetype = "Trt",
-                                    weight = config.cor$wt
+                                    colour = "cohort_event", 
+                                    linetype = "cohort_event",
+                                    weight = "wt"
                                   )
         ) +
           geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
           theme_pubr(legend = "none") +
-          ylab("Reverse ECDF") + xlab(labels.axis[tp, match(assay_metadata_sub_la$assay[aa], colnames(labels.axis))]) +
+          ylab("Reverse ECDF") + xlab(labels.axis[tp, match(la_assay_[aa], colnames(labels.axis))]) +
           scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
           scale_color_manual(values = c("#1749FF", "#D92321"#, "#0AB7C9", "#FF6F1B"
           )) +
           guides(linetype = "none",
                  color = guide_legend(nrow = 3, byrow = TRUE)) +
-          ggtitle(labels.title2[tp, match(assay_metadata_sub_la$assay[aa], colnames(labels.title2))]) +
-          theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_la$assay)>6, 6, 10)),
+          ggtitle(labels.title2[tp, match(la_assay_[aa], colnames(labels.title2))]) +
+          theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(la_assay_)>6, 6, 10)),
                 legend.title = element_blank(),
                 legend.text = element_text(size = 14),
                 panel.grid.minor.y = element_line(),
                 panel.grid.major.y = element_line(),
-                axis.title = element_text(size = ifelse(length(assay_metadata_sub_la$assay)>6, 8, 9)),
+                axis.title = element_text(size = ifelse(length(la_assay_)>6, 8, 9)),
                 axis.text = element_text(size = 14))
       }
       
-      if (length(assay_metadata_sub_la$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
-      ggsave(ggarrange(plotlist = rcdf_list_la, ncol = ncol_val, nrow=ceiling(length(assay_metadata_sub_la$assay) / ncol_val),
+      if (length(la_assay_) > 6) {ncol_val = 3} else {ncol_val = 2}
+      ggsave(ggarrange(plotlist = rcdf_list_la, ncol = ncol_val, nrow=ceiling(length(la_assay_) / ncol_val),
                        common.legend = TRUE, legend = "bottom",
                        align = "h"),
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_Bseroneg_NAb_LA.png"),
+                               "_Vaccine_Bseroneg_", ifelse(ab=="bindSpike","bAb","nAb"), "_LA.png"),
              height = 7, width = 6.5)
       
-      
+    } # end of bAb and nAb
+    
       ## SA, pooling all assays into one figure
       rcdf_list_sa_pooled <- ggplot(subset(dat.long.cor.subset.SA %>%
                                              mutate(assay = factor(assay, levels = c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta"))), 
@@ -429,7 +459,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
                                       x = tp, 
                                       colour = "assay",
                                       group = "assay",
-                                      weight = config.cor$wt
+                                      weight = "wt"
                                     )
       ) +
         geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
@@ -453,7 +483,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
       if (length(assay_metadata_sub_sa$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
       ggsave(rcdf_list_sa_pooled,
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_Bseroneg_NAb_SA_pooled.png"),
+                               "_Vaccine_Bseroneg_NAb_SA_pooled.png"),
              height = 7, width = 6.5)
       
       
@@ -467,7 +497,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
                                       x = tp, 
                                       colour = "assay",
                                       group = "assay",
-                                      weight = config.cor$wt
+                                      weight = "wt"
                                     )
       ) +
         geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
@@ -491,12 +521,9 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
       if (length(assay_metadata_sub_la$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
       ggsave(rcdf_list_la_pooled,
              filename = paste0(save.results.to, "/Marker_RCDF_", tp, 
-                               "_", trt, "_Bseroneg_NAb_LA_pooled.png"),
+                               "_Vaccine_Bseroneg_NAb_LA_pooled.png"),
              height = 7, width = 6.5)
       
-    } # end of vaccine, placebo
   } # end of tp
-  
-  
   
 }

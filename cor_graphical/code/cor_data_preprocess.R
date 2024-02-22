@@ -13,26 +13,10 @@ library(here)
 library(dplyr)
 library(tidyverse)
 library(stringr)
-if (study_name %in% c("ENSEMBLE","VAT08","IARCHPV")){
-  uloqs=assay_metadata$uloq; names(uloqs)=assay_metadata$assay
-  pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assay_metadata$assay
-  lloqs=assay_metadata$lloq; names(lloqs)=assay_metadata$assay
-  llods=assay_metadata$lod; names(llods)=assay_metadata$assay
-}
-#dat.mock <- read.csv(here("..", "data_clean", data_name))# superceded by _common.R data read
+if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 
-## moved to _common.R
-## COR defines the analysis to be done, e.g. D29, D57, D29start1
-#Args <- commandArgs(trailingOnly=TRUE)
-#if (length(Args)==0) Args=c(COR="D29D57") 
-#COR=Args[1]; myprint(COR)
-#
 ## COR has a set of analysis-specific parameters defined in the config file
 config.cor <- config::get(config = COR)
-#tpeak=as.integer(paste0(config.cor$tpeak))
-#tpeaklag=as.integer(paste0(config.cor$tpeaklag))
-#myprint(tpeak, tpeaklag)
-#if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
 
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0
@@ -94,29 +78,26 @@ if (study_name=="VAT08_combined" & grepl("omi", COR)){
   dat$EventTimePrimaryD43 = dat$EventTimeKnownLineageOmicronOrMissingLineageD43
 }
 
-# create AnyinfectionD1 and assign to 0 if study_name=="IARCHPV" to pass the non-case definition for single-timepoint study below
 # tpeak for this study is not set upstream for some reason, so set it here
 if (study_name=="IARCHPV") {tpeak=18}
 
 ## label the subjects according to their case-control status
-## add case vs non-case indicators
 if (study_name=="IARCHPV"){
   dat = dat %>%
     filter(enrolltype!="Cohort" & !!as.name(config.cor$ph2) == 1) %>%
     mutate(cohort_event = factor(ifelse(enrolltype=="Case", "Any HPV Cases", ifelse(enrolltype=="Control", "Controls", NA)),
       levels = c("Any HPV Cases", "Controls")))
-} else if(#study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" | study_name=="PREVENT19"
-  length(timepoints)==1 & study_name!="IARCHPV")  {
+} else if(length(timepoints)==1)  { # ENSEMBLE, PREVENT19
   
   #intcur2 <- paste0("Day 15-", 28+tpeaklag, " Cases")
-dat = dat %>%
+  dat = dat %>%
     mutate(cohort_event = factor(
       #ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= 13, "Day 2-14 Cases",
       #       ifelse(Perprotocol==1 & Bserostatus==0 & TwophasesampIndD29==1 & (!!as.name(paste0("EventIndPrimary", incNotMol, "D1")))==1  & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) > 13 & (!!as.name(paste0("EventTimePrimary", incNotMol, "D1"))) <= tpeaklag-1 + NumberdaysD1toD29, intcur2,
       case_when(!!as.name(config.cor$ph2)==1 &
                   !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
                 !!as.name(config.cor$ph2)==1 & 
-                  !!as.name(gsub(tpeak, "1", gsub("HasVL", "", config.cor$EventIndPrimary)))==0 & # remove HasVL because the there is no D1 endpoint indicator with "HasVL" in the variable name
+                  !!as.name(gsub(tpeak, "1", config.cor$EventIndPrimary))==0 & # remove HasVL because the there is no D1 endpoint indicator with "HasVL" in the variable name
                   AnyinfectionD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
@@ -178,7 +159,7 @@ dat = dat %>%
       levels = c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases"))
     )
   
-  } else {# keep other two timepoint studies except for AZ and Moderna and Sanofi here
+  } else {# keep other two timepoint studies except for Moderna, AZ and Sanofi here
   
   dat <- dat %>%
     mutate(cohort_event = factor(
@@ -197,7 +178,7 @@ dat = dat %>%
   
 }
 
-if((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant"){
+if(study_name=="ENSEMBLE" & COR=="D29VLvariant"){
   
   # filter to baseline negative, vaccine ppt and
   # split "peak-cases" by variant type
@@ -215,6 +196,7 @@ if((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant"){
 }
 
 dat <- dat[!is.na(dat$cohort_event),]
+
 if (length(timepoints)==1) {
   ph2.indicator = config.cor$ph2
 } else {
@@ -262,8 +244,8 @@ dat.long <- cbind(dat.long.subject_level, dat.long.assay_value)
 
 
 ## change the labels of the factors for plot labels
-if (study_name!="IARCHPV") {dat.long$Trt <- factor(dat.long$Trt, levels = c(0, 1), labels = trt.labels)
-} else {dat.long$Trt <- factor(dat.long$Trt, levels = c(1, 2, 3, 4), labels = trt.labels)}
+if (study_name=="IARCHPV") {dat.long$Trt <- factor(dat.long$Trt, levels = c(1, 2, 3, 4), labels = trt.labels)
+} else {dat.long$Trt <- factor(dat.long$Trt, levels = c(0, 1), labels = trt.labels)}
 
 # no baseline serostatus for the IARCHPV study, set all Bserostatus to 0
 if (study_name=="IARCHPV") {
@@ -282,15 +264,14 @@ dat.long$assay <- factor(dat.long$assay, levels = assays, labels = assays)
 
 
 # add Hispanic or Latino vs. Not Hispanic or Latino variable
-if (study_name!="IARCHPV"){
+if ("EthnicityHispanic" %in% colnames(dat.long)){ # IARCHPV doesn't have this variable
   dat.long$Dich_RaceEthnic = with(dat.long,
                                 ifelse(EthnicityHispanic==1, "Hispanic or Latino",
                                        ifelse(EthnicityHispanic==0 & EthnicityNotreported==0 & EthnicityUnknown==0, "Not Hispanic or Latino", NA)))
 }
 
 # add label = LLoD / poscutoff, uloq values to show in the plot
-dat.long$LLoD = with(dat.long, log10(llods[as.character(assay)]))
-# lloqs[10] = "0"
+dat.long$LLoD = with(dat.long, log10(lods[as.character(assay)]))
 dat.long$LLoQ = with(dat.long, log10(as.numeric(lloqs[as.character(assay)])))
 dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
 
@@ -298,8 +279,8 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", ifelse(assay=="ADCP", "LoD", "LoQ"))) 
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, ifelse(assay=="ADCP", LLoD, LLoQ))) 
 } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant"){
-  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD")) 
-  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
+  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoQ", "LoD")) 
+  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoQ, LLoD))
 } else if (study_name=="IARCHPV"){
   dat.long$lb = with(dat.long, "Pos.Cut")
   dat.long$lbval =  with(dat.long, pos.cutoffs)
@@ -320,7 +301,6 @@ if (study_name=="IARCHPV") {
   dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), "ULoQ", ""))
   dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), ULoQ, -99))
 }
-
 
 # assign values above the uloq to the uloq
 for (t in times[!grepl("Delta", times)]) {
@@ -492,22 +472,25 @@ if (study_name=="PROFISCOV"){
 
 
 if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant"){
-  # remove post case rows for variant strain assay but don't belong to a variant strain (e.g. EventIndPrimaryIncludeNotMolecConfirmedD1_Beta) 
+  # remove post-peak case rows for variant strain assay but don't belong to a variant strain (e.g. EventIndPrimaryIncludeNotMolecConfirmedD1_Beta) 
   # The only data points included in 'Zeta Cases' are from ptids with Zeta strain COVID-19
   dat.longer.cor.subset$keep_day29 = 1
-  for (a in c("Anc","Delta","Beta","Zeta","Mu","Gamma","Lambda")){
+  for (a in c("Anc","Delta|DeltaMDW","Beta|B.1.351","Zeta","Mu|B.1.621","Gamma|P.1","Lambda|C.37")){
+    
     dat.longer.cor.subset <- dat.longer.cor.subset %>%
       mutate(assay = as.character(assay)) %>%
-      mutate(assay = ifelse(assay=="pseudoneutid50", "pseudoneutid50_Anc", assay)) %>%
-      mutate(keep_day29 = ifelse(assay==paste0("pseudoneutid50_", a) & cohort_event=="Post-Peak Cases" & 
-                                   time=="Day 29" & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", a)) == 0, 0, 
+      mutate(assay = case_when(assay=="pseudoneutid50" ~ "pseudoneutid50_Anc", 
+                               assay=="bindSpike" ~ "bindSpike_Anc",
+                               TRUE ~ assay)) %>%
+      mutate(keep_day29 = ifelse(grepl(a, assay) & cohort_event=="Post-Peak Cases" & 
+                                   time=="Day 29" & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", unlist(strsplit(a, split = "|", fixed = TRUE))[1])) == 0, 0, 
                                  # flag the peak case rows for variant assay, but is not a corresponding variant case to 0
-                                 ifelse(assay==paste0("pseudoneutid50_", a) & cohort_event=="Non-Cases" & time=="Day 29" & is.na(value), 0, 
+                                 ifelse(grepl(a, assay) & cohort_event=="Non-Cases" & time=="Day 29" & is.na(value), 0, 
                                         # flag all non-case rows without the data for the corresponding variant to 0
                                         ifelse(time!="Day 29", 0,
                                                # flag all non day 29 rows to 0
                                                keep_day29)))) %>%
-      mutate(assay = factor(ifelse(assay=="pseudoneutid50_Anc", "pseudoneutid50", assay), levels = assays, labels = assays)) %>%
+      mutate(assay = factor(gsub("_Anc", "", assay), levels = assays, labels = assays)) %>%
       filter(keep_day29==1)
     
     table(dat.longer.cor.subset$keep_day29, dat.longer.cor.subset$assay, dat.longer.cor.subset$cohort_event)
@@ -519,8 +502,17 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
   # check if rows for cases not of the variant are not kept for that assay
   for (a in c("Delta","Beta","Zeta","Mu","Gamma","Lambda")){
     stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event=="Post-Peak Cases" & time=="Day29" & assay==paste0("pseudoneutid50_", a) & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", a)) == 0 & keep_day29 == 1)) == 0)
+    
+    bind_var = case_when(a=="Delta" ~ "DeltaMDW",
+                         a=="Beta" ~"B.1.351",
+                         a=="Mu" ~ "B.1.621",
+                         a=="Gamma" ~ "P.1",
+                         a=="Lambdat" ~ "C.37",
+                         TRUE ~ "")
+    if (a!="Zeta") {stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event=="Post-Peak Cases" & time=="Day29" & assay==paste0("bindSpike_", bind_var) & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", a)) == 0 & keep_day29 == 1)) == 0)}
   }
-  stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event=="Post-Peak Cases" & time=="Day29" & assay==paste0("pseudoneutid50") & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_Anc")) == 0 & keep_day29 == 1)) == 0)
+
+  stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event=="Post-Peak Cases" & time=="Day29" & assay %in% c("pseudoneutid50","bindSpike") & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_Anc")) == 0 & keep_day29 == 1)) == 0)
 }
 
 # subsets for violin/line plots
@@ -539,7 +531,7 @@ if (study_name=="IARCHPV") {
     bind_rows(dat.longer.cor.subset)
 } else {
   dat.longer.cor.subset_ = dat.longer.cor.subset
-  }
+}
 
 dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset_, groupby_vars1)
 dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>%
