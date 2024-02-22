@@ -17,11 +17,10 @@
 #Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 
 {
-if (TRIAL %in% c("janssen_partA_VL")) stop("This TRIAL has its own cor_coxph_TRIAL.R script")    
-
 print(date())
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) # dat.mock is made
+if (TRIAL %in% c("janssen_partA_VL")) stop("This TRIAL has its own cor_coxph_TRIAL.R script")    
 
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)

@@ -1,4 +1,7 @@
-# COR="D15to181"
+# COR="D15to181BA45"
+# COR="D15to91"
+# COR="D92to181"
+
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "covail"); 
 source(here::here("..", "_common.R")) 
@@ -49,12 +52,23 @@ dat.sanofi$ph2=1
 dat.onedosemRNA = subset(dat.mock, ph1.D15 & TrtonedosemRNA==1) 
 dat.onedosemRNA$ph2=1
 
+dat.onedosemRNA$Day15_MDW_L = dat.onedosemRNA$Day15pseudoneutid50_MDWcat=="(-Inf,3.62]"
+dat.onedosemRNA$Day15_MDW_M = dat.onedosemRNA$Day15pseudoneutid50_MDWcat=="(3.62,4.07]"
+dat.onedosemRNA$Day15_MDW_H = dat.onedosemRNA$Day15pseudoneutid50_MDWcat=="(4.07, Inf]"
+dat.onedosemRNA$Day15_MDW_M_H = dat.onedosemRNA$Day15_MDW_M | dat.onedosemRNA$Day15_MDW_H
+dat.onedosemRNA$B_MDW_L = dat.onedosemRNA$Bpseudoneutid50_MDWcat=="(-Inf,2.56]"
+dat.onedosemRNA$B_MDW_M = dat.onedosemRNA$Bpseudoneutid50_MDWcat=="(2.56,3.27]"
+dat.onedosemRNA$B_MDW_H = dat.onedosemRNA$Bpseudoneutid50_MDWcat=="(3.27, Inf]"
+dat.onedosemRNA$B_MDW_M_H = dat.onedosemRNA$B_MDW_M | dat.onedosemRNA$B_MDW_H
+
+
+# all cases have covid lineage observed
 
 if (COR=="D15to181") {
   form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates_riskscore))
-  dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD181
   dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD181
-
+  dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD181
+  
 } else if (COR=="D15to91") {
   form.0 = update(Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ 1, as.formula(config$covariates_riskscore))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD91
@@ -64,12 +78,32 @@ if (COR=="D15to181") {
   form.0 = update(Surv(COVIDtimeD92toD181, COVIDIndD92toD181) ~ 1, as.formula(config$covariates_riskscore))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD92toD181
   dat.sanofi$yy     =dat.sanofi$COVIDIndD92toD181
-  
-# } else if (COR=="D29to181") {
-  # for now there is no use because Sanofi will also be analyzed as D15 marker
-#   form.0 = update(Surv(COVIDtimeD36toD181, COVIDIndD36toD181) ~ 1, as.formula(config$covariates_riskscore))
-#   dat.sanofi$yy=dat.sanofi$COVIDIndD36toD181
+
+} else if (COR=="D15to181BA45") {
+  dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD181==1 & dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
+  form.0 = update(Surv(COVIDtimeD22toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  dat.sanofi$yy     =dat.sanofi$EventIndOfInterest
+  dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
+
+} else if (COR=="D15to91BA45") {
+  dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD91==1 & dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
+  form.0 = update(Surv(COVIDtimeD22toD91, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
+  dat.sanofi$yy     =dat.sanofi$EventIndOfInterest
+
+} else if (COR=="D92to181BA45") {
+  dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD92toD181==1 & dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
+  form.0 = update(Surv(COVIDtimeD92toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
+  dat.sanofi$yy     =dat.sanofi$EventIndOfInterest
+
 } 
+
+
+form.1 = update(form.0, ~.-naive)
+
+dat.n = subset(dat.onedosemRNA, naive==1)
+dat.nn = subset(dat.onedosemRNA, naive==0)
 
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 
@@ -192,7 +226,7 @@ for (iObj in c(1,11,2,21,3,31)) {
       if (iPop==1 & COR=="D15to181") {
         # print(pvals.cont)
         assertthat::assert_that(all(
-          abs(pvals.cont-c(0.321489, 0.441839, 0.701633, 0.824167, 0.678496, 0.865923))/pvals.cont < 1e-6
+          abs(pvals.cont-c(0.304557, 0.414779, 0.650192, 0.746262, 0.771249, 0.892435))/pvals.cont < 1e-6
           ), msg = "failed cor_coxph unit testing")    
         print("Passed cor_coxph unit testing")    
       }
@@ -282,6 +316,8 @@ for (iPop in 1:3) {
 ################################################################################
 # Peak Obj 1 for Sanofi vaccines
 
+if (!endsWith(COR,"BA45")) {
+  
 for (iObj in c(1,11)) {
   
   # define all.markers
@@ -313,6 +349,7 @@ for (iObj in c(1,11)) {
   
 }
 
+}
 
 
 ################################################################################
@@ -324,11 +361,106 @@ res = sapply(assays, function (a) {
         list(coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==1,]),
              coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==2,]),
              coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==3,])),
-        type=12, robust=F)[4,]
+        type=12, robust=F, exp=T)[4,]
 })
 tab=t(res)
 colnames(tab)=c("L","M","H")
-mytex(tab, file.name="CoR_univariable_svycoxph_pretty_Bmarkercat", input.foldername=save.results.to)
+tab
+mytex(tab, file.name="CoR_univariable_svycoxph_pretty_Bmarkercat", input.foldername=save.results.to, align="c")
+
+
+
+################################################################################
+# modeling
+
+llik=NULL; zphglobal=NULL; zphmarker=NULL; coef.ls=list()
+
+for (i in 1:3) { # three different populations: N+NN, N, NN
+  if (i==1) {
+    f=form.0 
+    dat=dat.onedosemRNA
+    suffix="N+NN"
+  } else if (i==2) {
+    f=form.1
+    dat=dat.n
+    suffix="N"
+  } else {
+    f=form.1
+    dat=dat.nn
+    suffix="NN"
+  }
+  
+  model.names=c("B", "D15", "B+D15","B*D15","B+D15^2","B^2+D15","Bcat*D15cat") 
+  fits=list(
+     coxph(update(f, ~.+scale(Bpseudoneutid50_MDW)), dat)
+    ,coxph(update(f, ~.+scale(Day15pseudoneutid50_MDW)), dat)
+    ,coxph(update(f, ~.+scale(Bpseudoneutid50_MDW) + scale(Day15pseudoneutid50_MDW)), dat)
+    ,coxph(update(f, ~.+scale(Bpseudoneutid50_MDW) * scale(Day15pseudoneutid50_MDW)), dat)
+    ,coxph(update(f, ~.+scale(Bpseudoneutid50_MDW) + scale(Day15pseudoneutid50_MDW) + I(scale(Day15pseudoneutid50_MDW)^2)), dat)
+    ,coxph(update(f, ~.+scale(Bpseudoneutid50_MDW) + I(Bpseudoneutid50_MDW^2) + scale(Day15pseudoneutid50_MDW)), dat)
+    ,coxph(update(f, ~.+Bpseudoneutid50_MDWcat * Day15pseudoneutid50_MDWcat), dat)
+  )
+  names(fits)=model.names
+  
+  llik = rbind(llik, sapply(fits, function(fit) fit$loglik[2]))
+  
+  zphglobal = rbind(zphglobal, sapply(fits, function(fit) cox.zph(fit)$table["GLOBAL","p"]))
+  
+  zphmarker = rbind(zphmarker, sapply(fits[1:2], function(fit) cox.zph(fit)$table[length(coef(fit)),"p"]))
+  
+  tab=getFormattedSummary(fits[1:6], type=6, robust=F, exp=T)[-(1:ifelse(i==1,3,2)),,drop=F]
+  mytex(tab, file.name="mdw_models_"%.%suffix, input.foldername=save.results.to, align="c")
+  
+}
+
+rownames(llik)<-rownames(zphglobal)<-rownames(zphmarker)<-c("N+NN","N","NN")
+print(llik)
+print(zphglobal)
+print(zphmarker)
+
+mytex(llik, file.name="mdw_llik", input.foldername=save.results.to, align="c")
+mytex(zphglobal, file.name="mdw_zphglobal", input.foldername=save.results.to, align="c")
+mytex(zphmarker, file.name="mdw_zphmarker", input.foldername=save.results.to, align="c")
+
+
+# myboxplot(Day15pseudoneutid50_MDW~naive, dat.onedosemRNA)
+# tmp = aggregate(Day15pseudoneutid50_MDW~naive, dat.onedosemRNA, summary)
+# (tmp[1,]-tmp[2,])[4]
+
+
+###################################
+# discrete at both baseline and D15
+
+for (i in 1:3) { # three different populations: N+NN, N, NN
+  if (i==1) {
+    dat=dat.onedosemRNA
+    suffix="N+NN"
+    f=form.0
+  } else if (i==2) {
+    dat=dat.n
+    suffix="N"
+    f=form.1
+  } else {
+    dat=dat.nn
+    suffix="NN"
+    f=form.1
+  }
+  
+  f=update(f, ~ . 
+           + I(B_MDW_L * Day15_MDW_M_H) + I(B_MDW_M_H * Day15_MDW_L)
+           + I(B_MDW_M * Day15_MDW_M) + I(B_MDW_M * Day15_MDW_H)
+           + I(B_MDW_H * Day15_MDW_M) + I(B_MDW_H * Day15_MDW_H)
+  )
+  
+  fit=coxph(f, dat)
+  
+  tab=getFormattedSummary(list(fit), robust=F, exp=T); tab
+  mytex(tab, file.name="mdw_discrete_discrete_itxn_model_"%.%suffix, input.foldername=save.results.to, align="c")
+
+}
+
+
+
 
 
 print(date())

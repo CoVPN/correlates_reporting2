@@ -3,7 +3,7 @@ library(survey)
 library(kyotil)
 
 dat_mapped=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240129.csv')
-dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240131.csv')
+dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
 assays=assay_metadata$assay
 
@@ -39,6 +39,11 @@ table(dat_mapped$SubcohortIndPlus, dat_mapped$SubcohortInd)
 
 ################################################################################
 # 
+
+with(subset(dat_pooled_partA,ph1.D29==1), table(is.na(risk_score)))
+
+
+with(subset(dat_proc, ph2.D29variant==1 & Region==1 & Trt==1), mytable(!is.na(Day29bindSpike), !is.na(Day29bindSpike_C.37_1)))
 
 
 with(subset(dat_mapped, SubcohortIndPlus==1), mytable(!is.na(Day29bindSpike_D614), !is.na(Day71bindSpike_D614)))
@@ -262,3 +267,5 @@ with(subset(dat_mapped, SubcohortInd==1), table(!is.na(Day29bindSpike), !is.na(D
 with(subset(dat_mapped, EventIndPrimaryIncludeNotMolecConfirmedD1==1), table(!is.na(Day29bindSpike), !is.na(Day29pseudoneutid50)))
 with(subset(dat_mapped, SubcohortInd==1), table(!is.na(Day29bindSpike), !is.na(Day29pseudoneutid50), Region))
 with(subset(dat_mapped, EventIndPrimaryIncludeNotMolecConfirmedD1==1), table(!is.na(Day29bindSpike), !is.na(Day29pseudoneutid50), Region))
+
+

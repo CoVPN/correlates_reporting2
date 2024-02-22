@@ -12,7 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK 302/adata/COVID_Novavax_302UK_mapped_20240209.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240212.csv')
+
 # dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
 # assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
 # assays=assay_metadata$assay
@@ -32,7 +33,20 @@ with(dat_mapped, table(Site, EventIndPrimaryD35, Trt))
 
 
 ```{r, echo=TRUE, include=TRUE}
-with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0), mytable(CohortInd, EventIndPrimaryD35, Trt))
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0), mytable(SampleSet, EventIndPrimaryD35, Trt))
+```
+
+```{r, echo=TRUE, include=TRUE}
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(SampleSet, SubcohortInd, EventIndPrimaryD35))
 ```
 
 
+```{r, echo=TRUE, include=TRUE}
+# this 3.Case is ambiguous
+subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & EventIndPrimaryD35==0 & SampleSet=="3.Case")
+```
+
+```{r, echo=TRUE, include=TRUE}
+# this control drops out before D35
+subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & is.na(EventIndPrimaryD35) & SampleSet=="3.Control")
+```
