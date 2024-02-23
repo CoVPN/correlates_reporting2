@@ -142,7 +142,7 @@ names(all.markers)=all.markers
 # tables made in iObj 21 is part of the 2
 for (iObj in c(1,11,2,3,31)) { 
   
-  for (COR in c("D15to181", "D15to91", "D92to181")) {
+  for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
     
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
     config.cor <- config::get(config = COR)
@@ -204,7 +204,7 @@ for (iObj in c(1,11,2,3,31)) {
 
 
 # Peak Obj 4
-for (COR in c("D15to181", "D15to91", "D92to181")) {
+for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
   
   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
   config.cor <- config::get(config = COR)
@@ -230,7 +230,7 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
 # Obj 1 in naive and non-naive
 for (iObj in c(1,11)) { 
   
-  for (COR in c("D15to181", "D15to91", "D92to181")) {
+  for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
     
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
     config.cor <- config::get(config = COR)
@@ -305,17 +305,76 @@ for (iObj in c(1,11)) {
 
 
 # Obj 1 in baseline h/m/l
-COR = "D15to181"
-    
-pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
-config.cor <- config::get(config = COR)
-for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
+  
+  pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+  config.cor <- config::get(config = COR)
+  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  
+  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  
+  cat("# Objective Peak 1 Baseline Marker L/M/H ", COR, "\n", sep="")
+  
+  cat("\\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_Bmarkercat.tex}", sep="")
 
-COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+}
 
-cat("# Objective Peak 1 Baseline Marker L/M/H ", COR, "\n", sep="")
 
-cat("\\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_Bmarkercat.tex}", sep="")
+
+
+# Modeling
+cat("# Modeling for all COVID\n", sep="")
+  
+cat("B+D15^2 has the best log likelhood overall. There are trends in cox.zph P values.\n\n")
+
+for (COR in c("D15to181", "D15to91", "D92to181")) {
+  
+  pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+  config.cor <- config::get(config = COR)
+  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  
+  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  
+  cat("\\clearpage")
+  cat("## ",COR,  "\n\n", sep="")
+  cat("Each number comes from a model. Each row represents one population; N: naive, NN: non-naive. The Bcat*D15cat model is the saturated model. \n\n")
+  
+  cat("Log likelihood\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_llik.tex}\n\n", sep="")
+  
+  cat("Cox.zph global P value\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_zphglobal.tex}\n\n", sep="")
+  
+  cat("Cox.zph marker P value\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_zphmarker.tex}\n\n", sep="")
+  
+  cat("\\vspace{10pt}\n")
+  cat("**Model coefficients (p values)**\n\n")
+  cat("Each column represents one formula. B: baseline MDW, D15: Day 15 MDW. Markers are centered and scaled to make the coef more interpretable because quadratic modeles are included. \n\n")
+  
+  cat("N+NN (dat.onedosemRNA)\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_models_N+NN.tex}\n\n", sep="")
+  cat("Naive\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_models_N.tex}\n\n", sep="")
+  cat("Non-naive\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_models_NN.tex}\n\n", sep="")
+  
+  
+  cat("\\clearpage\n\n")
+  cat("**Models with discrete baseline and Day15 markers**\n\n")
+  cat("Instead of fitting the fully saturated model, which has 8 dof for the two L/M/H markers together, we choose to fit a model with 6 dof by merging L/M and L/H and merging M/L and M/H so that we don't have levels with 10 or less subjects among the Naive.\n\n")
+  
+  cat("N+NN (dat.onedosemRNA)\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_N+NN.tex}\n\n", sep="")
+  cat("Naive\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_N.tex}\n\n", sep="")
+  cat("Non-naive\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_NN.tex}\n\n", sep="")
+
+}
+
+
+
 
 
 

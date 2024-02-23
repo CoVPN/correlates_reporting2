@@ -63,10 +63,10 @@ for (r in 0:2) {
   for(j in 1:2) {
     if (j==1) {
       # bAb, 4 is not included because bindSpike_D614 is removed from dat_proc
-      aa = c(assays[1], assays[5:13]) 
+      aa = c(assays[1], assays[5:9]) 
     } else if (j==2) {
       # nAb
-      aa = assays[14:20] 
+      aa = assays[10:16] 
     }
     cat("\n", switch(j, "bAb", "nAb"), "\n")
     print(aa)

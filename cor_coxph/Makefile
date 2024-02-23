@@ -77,7 +77,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail))
 	Rscript code/cor_coxph_covail.R D15to181
 	Rscript code/cor_coxph_covail.R D15to91
 	Rscript code/cor_coxph_covail.R D92to181
-	Rscript code/cor_coxph_covail.R D15to181
+	Rscript code/cor_coxph_covail.R D15to181BA45
+	Rscript code/cor_coxph_covail.R D15to91BA45
+	Rscript code/cor_coxph_covail.R D92to181BA45
 endif
 
 collate:
