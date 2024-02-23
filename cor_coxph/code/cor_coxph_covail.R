@@ -1,3 +1,4 @@
+# COR="D15to181"
 # COR="D15to181BA45"
 # COR="D15to91"
 # COR="D92to181"
@@ -45,6 +46,10 @@ for (a in names(marker.cutpoints)) {
         file=paste0(save.results.to, "cutpoints_", a))
 }
 
+# create scaled version of markers for later use, which is necessary because we do not want to do scaling within naive and non-naive separately
+for (a in c("Day15"%.%assays, "B"%.%assays, "Delta15overB"%.%assays)) {
+  dat.mock[[a%.%"scaled"]] = scale(dat.mock[[a]], scale=F)
+}
 
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 dat.sanofi = subset(dat.mock, ph1.D15 & TrtSanofi==1)
@@ -123,7 +128,7 @@ show.q = F
 # 1 and 11 are both Obj 1, no itxn
 # 2 and 21 are both Obj 2, itxn by naive
 # 3 and 31 are both Obj 3, itxn by B
-for (iObj in c(1,11,2,21,3,31)) {
+for (iObj in c(1,11,12,2,21,3,31)) {
 # iObj=1
   
   # define all.markers
@@ -134,18 +139,26 @@ for (iObj in c(1,11,2,21,3,31)) {
     
   } else if(iObj==11){
     # B marker + D15/B
-    all.markers = sapply(assays, function (a) paste0("scale(B",a, ",scale=F) + scale(Delta15overB",a, ",scale=F)")
-    )
+    all.markers = sapply(assays, function (a) paste0("B",a, "scaled + Delta15overB",a, "scaled"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     all.markers.names.short = all.markers.names.short
     # parameters for R script
     nCoef=2
     col.headers=c("center(B)", "center(D15/B)")
     
+  } else if(iObj==12){
+    # B marker + D15 + D15^2
+    all.markers = sapply(assays, function (a) paste0("B",a, "scaled + Day15",a, "scaled + I(Day15",a, "scaled^2)"))
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    all.markers.names.short = all.markers.names.short
+    # parameters for R script
+    nCoef=3
+    col.headers=c("center(B)", "center(D15)", "center(D15)**2")
+    
   } else if(iObj==2){
     # interaction naive x D15 marker
-    all.markers = c(sapply(assays, function (a) paste0("naive * scale(Day15",a, ",scale=F)")),
-                    sapply(assays, function (a) paste0("naive * scale(Delta15overB",a, ",scale=F)")))
+    all.markers = c(sapply(assays, function (a) paste0("naive * Day15",a, "scaled")),
+                    sapply(assays, function (a) paste0("naive * Delta15overB",a, "scaled")))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
     # parameters for R script
@@ -154,8 +167,8 @@ for (iObj in c(1,11,2,21,3,31)) {
     
   } else if(iObj==21){
     # interaction (1-naive) x D15 marker
-    all.markers = c(sapply(assays, function (a) paste0("I(1-naive) * scale(Day15",a, ",scale=F)")),
-                    sapply(assays, function (a) paste0("I(1-naive) * scale(Delta15overB",a, ",scale=F)")))
+    all.markers = c(sapply(assays, function (a) paste0("I(1-naive) * Day15",a, "scaled")),
+                    sapply(assays, function (a) paste0("I(1-naive) * Delta15overB",a, "scaled")))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
     nCoef=3
@@ -163,8 +176,8 @@ for (iObj in c(1,11,2,21,3,31)) {
 
   } else if(iObj==3){
     # interaction B marker x D15 marker or D15/B
-    all.markers = c(sapply(assays, function (a) paste0("scale(B",a, ",scale=F) * scale(Day15",a, ",scale=F)")),
-                    sapply(assays, function (a) paste0("scale(B",a, ",scale=F) * scale(Delta15overB",a, ",scale=F)"))
+    all.markers = c(sapply(assays, function (a) paste0("B",a, "scaled * Day15",a, "scaled")),
+                    sapply(assays, function (a) paste0("B",a, "scaled * Delta15overB",a, "scaled"))
     )
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
@@ -174,8 +187,8 @@ for (iObj in c(1,11,2,21,3,31)) {
     
   } else if(iObj==31){
     # B_cat marker x D15 marker or D15/B
-    all.markers = c(sapply(assays, function (a) paste0("B",a, "cat * scale(Day15",a, ",scale=F)")),
-                    sapply(assays, function (a) paste0("B",a, "cat * scale(Delta15overB",a, ",scale=F)")))
+    all.markers = c(sapply(assays, function (a) paste0("B",a, "cat * Day15",a, "scaled")),
+                    sapply(assays, function (a) paste0("B",a, "cat * Delta15overB",a, "scaled")))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
     # table col names
@@ -227,9 +240,13 @@ for (iObj in c(1,11,2,21,3,31)) {
         # print(pvals.cont)
         assertthat::assert_that(all(
           abs(pvals.cont-c(0.304557, 0.414779, 0.650192, 0.746262, 0.771249, 0.892435))/pvals.cont < 1e-6
-          ), msg = "failed cor_coxph unit testing")    
+        ), msg = "failed cor_coxph unit testing")    
         print("Passed cor_coxph unit testing")    
       }
+      
+    } else if(iObj==12) {
+      fname.suffix = paste0(fname.suffix, "_B+D15^2")
+      source(here::here("code", "cor_coxph_ph_coef.R"))
       
     } else if(iObj==2) {
       fname.suffix = paste0(fname.suffix, "_NxD15")
@@ -265,6 +282,9 @@ for (iObj in c(1,11,2,21,3,31)) {
     } else if(iObj==11) {
       fname.suffix = paste0(fname.suffix, "_B+D15")
       source(here::here("code", "cor_coxph_ph_coef.R"))
+    } else if(iObj==12) {
+      fname.suffix = paste0(fname.suffix, "_B+D15^2")
+      source(here::here("code", "cor_coxph_ph_coef.R"))
     }
   }
   
@@ -281,7 +301,7 @@ for (iPop in 1:3) {
     dat=subset(dat.onedosemRNA, TrtA %in% c(1,0))
     fname.suffix = 'mRNA_Mod_Pfi'
     
-    all.markers = sapply(assays, function (a) paste0("TrtA * scale(Day15",a, ",scale=F)"))
+    all.markers = sapply(assays, function (a) paste0("TrtA * Day15",a, "scaled"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     # parameters for R script
     nCoef=3
@@ -291,7 +311,7 @@ for (iPop in 1:3) {
     dat=subset(dat.onedosemRNA, TrtB %in% c(1,0))
     fname.suffix = 'mRNA_Pro_Omi'
     
-    all.markers = sapply(assays, function (a) paste0("TrtB * scale(Day15",a, ",scale=F)"))
+    all.markers = sapply(assays, function (a) paste0("TrtB * Day15",a, "scaled"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     # parameters for R script
     nCoef=3
@@ -301,7 +321,7 @@ for (iPop in 1:3) {
     dat=subset(dat.onedosemRNA, TrtC %in% c(1,0))
     fname.suffix = 'mRNA_Bi_Mono'
     
-    all.markers = sapply(assays, function (a) paste0("TrtC * scale(Day15",a, ",scale=F)"))
+    all.markers = sapply(assays, function (a) paste0("TrtC * Day15",a, "scaled"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     # parameters for R script
     nCoef=3
@@ -328,7 +348,7 @@ for (iObj in c(1,11)) {
     
   } else if(iObj==11){
     # B marker + D15/B
-    all.markers = sapply(assays, function (a) paste0("scale(B",a, ",scale=F) + scale(Delta15overB",a, ",scale=F)")
+    all.markers = sapply(assays, function (a) paste0("B",a, "scaled + Delta15overB",a, "scaled")
     )
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     all.markers.names.short = all.markers.names.short
@@ -392,12 +412,12 @@ for (i in 1:3) { # three different populations: N+NN, N, NN
   
   model.names=c("B", "D15", "B+D15","B*D15","B+D15^2","B^2+D15","Bcat*D15cat") 
   fits=list(
-     coxph(update(f, ~.+scale(Bpseudoneutid50_MDW)), dat)
-    ,coxph(update(f, ~.+scale(Day15pseudoneutid50_MDW)), dat)
-    ,coxph(update(f, ~.+scale(Bpseudoneutid50_MDW) + scale(Day15pseudoneutid50_MDW)), dat)
-    ,coxph(update(f, ~.+scale(Bpseudoneutid50_MDW) * scale(Day15pseudoneutid50_MDW)), dat)
-    ,coxph(update(f, ~.+scale(Bpseudoneutid50_MDW) + scale(Day15pseudoneutid50_MDW) + I(scale(Day15pseudoneutid50_MDW)^2)), dat)
-    ,coxph(update(f, ~.+scale(Bpseudoneutid50_MDW) + I(Bpseudoneutid50_MDW^2) + scale(Day15pseudoneutid50_MDW)), dat)
+     coxph(update(f, ~.+Bpseudoneutid50_MDWscaled), dat)
+    ,coxph(update(f, ~.+Day15pseudoneutid50_MDWscaled), dat)
+    ,coxph(update(f, ~.+Bpseudoneutid50_MDWscaled + Day15pseudoneutid50_MDWscaled), dat)
+    ,coxph(update(f, ~.+Bpseudoneutid50_MDWscaled * Day15pseudoneutid50_MDWscaled), dat)
+    ,coxph(update(f, ~.+Bpseudoneutid50_MDWscaled + Day15pseudoneutid50_MDWscaled + I(Day15pseudoneutid50_MDWscaled^2)), dat)
+    ,coxph(update(f, ~.+Bpseudoneutid50_MDWscaled + I(Bpseudoneutid50_MDWscaled^2) + Day15pseudoneutid50_MDWscaled), dat)
     ,coxph(update(f, ~.+Bpseudoneutid50_MDWcat * Day15pseudoneutid50_MDWcat), dat)
   )
   names(fits)=model.names

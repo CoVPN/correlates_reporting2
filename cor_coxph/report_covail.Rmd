@@ -1,6 +1,13 @@
 # Summary of Results for mRNA vaccines
-  
-  
+
+Most analyses are repeated six times for D15to181, D15to91, D92to181, D15to181BA45, D15to91BA45, and D92to181BA45, each having its own chapters. In a chapter name ends with BA45, cases other than BA4/BA5 are censored.
+
+Some analyses are also repeated separately within naive and non-naive in new chapters.
+ 
+When more than one marker is present in model, e.g. B + D15^2, the markers are centered (not scaled) so that the coefficients do not explode.  
+ 
+ 
+\vspace{0.5cm} 
 **Peak Obj 1. Models without interaction terms: baseline, D15, D15/B, baseline + D15**
 
 * D22to181
@@ -140,7 +147,7 @@ all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays) # use t
 names(all.markers)=all.markers
 
 # tables made in iObj 21 is part of the 2
-for (iObj in c(1,11,2,3,31)) { 
+for (iObj in c(1,11,12,2,3,31)) { 
   
   for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
     
@@ -155,8 +162,9 @@ for (iObj in c(1,11,2,3,31)) {
                "1"=1, 
                "2"=2, 
                "3"=3, 
-               "31"="3 discrete baseline", 
-               "11"="1 baseline+D15/B"), 
+               "31"="3, discrete baseline", 
+               "11"="1, baseline+D15/B", 
+               "12"="1, baseline+D15+D15^2"), 
         ", ", COR, sep="")
     
     for (iPop in 1:7) {
@@ -176,6 +184,11 @@ for (iObj in c(1,11,2,3,31)) {
         
       } else if (iObj==11) {
         fname.suffix = fname.suffix %.% "_B+D15"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==12) {
+        fname.suffix = fname.suffix %.% "_B+D15^2"
         has.alt = F
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
@@ -228,7 +241,7 @@ for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", 
 
 
 # Obj 1 in naive and non-naive
-for (iObj in c(1,11)) { 
+for (iObj in c(1,11,12)) { 
   
   for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
     
@@ -240,8 +253,9 @@ for (iObj in c(1,11)) {
     
     cat("# Objective Peak ", 
         switch(iObj%.%"", 
-               "1"="1 N/NN", 
-               "11"="1 N/NN baseline+D15/B"), 
+               "1"="1, N or NN", 
+               "11"="1, N or NN baseline+D15/B", 
+               "12"="1, N or NN baseline+D15^2"), 
         ", ", COR, sep="")
     
     for (iPop in 1:2) {
@@ -256,6 +270,11 @@ for (iObj in c(1,11)) {
         
       } else if (iObj==11) {
         fname.suffix = fname.suffix %.% "_B+D15"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==12) {
+        fname.suffix = fname.suffix %.% "_B+D15^2"
         has.alt = F
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
       }
@@ -278,8 +297,8 @@ for (iObj in c(1,11)) {
     
     cat("# Objective Peak ", 
         switch(iObj%.%"", 
-               "1"="1 Sanofi", 
-               "11"="1 Sanofi baseline+D15/B"), 
+               "1"="1, Sanofi", 
+               "11"="1, Sanofi baseline+D15/B"), 
         ", ", COR, sep="")
     
     for (iPop in 1:1) {
@@ -313,19 +332,20 @@ for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", 
   
   COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
   
-  cat("# Objective Peak 1 Baseline Marker L/M/H ", COR, "\n", sep="")
+  cat("# Objective Peak 1, baseline L/M/H ", COR, "\n", sep="")
   
   cat("\\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_Bmarkercat.tex}", sep="")
 
 }
 
+```
 
 
-
-# Modeling
-cat("# Modeling for all COVID\n", sep="")
+# Modeling for all COVID
   
-cat("B+D15^2 has the best log likelhood overall. There are trends in cox.zph P values.\n\n")
+
+```{r, echo=FALSE, results='asis'}
+
 
 for (COR in c("D15to181", "D15to91", "D92to181")) {
   
@@ -337,7 +357,10 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   
   cat("\\clearpage")
   cat("## ",COR,  "\n\n", sep="")
-  cat("Each number comes from a model. Each row represents one population; N: naive, NN: non-naive. The Bcat*D15cat model is the saturated model. \n\n")
+  
+  cat("**Model likelihood and Cox PH test**\n\n")
+  
+  cat("In the following tables, each number comes from a model. Each row represents one population; N: naive, NN: non-naive. The Bcat*D15cat model is the saturated model. \n\n")
   
   cat("Log likelihood\n\n")
   cat("\\input{", pathCoRoutput, "/mdw_llik.tex}\n\n", sep="")
@@ -348,9 +371,17 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   cat("Cox.zph marker P value\n\n")
   cat("\\input{", pathCoRoutput, "/mdw_zphmarker.tex}\n\n", sep="")
   
+  if (COR=="D15to181") {
+    cat("B*D15 and B+D15^2 have similar log likelhoods and are the best among . There are trends in cox.zph P values.")
+  }
+
+
+  
+  
   cat("\\vspace{10pt}\n")
+  
   cat("**Model coefficients (p values)**\n\n")
-  cat("Each column represents one formula. B: baseline MDW, D15: Day 15 MDW. Markers are centered and scaled to make the coef more interpretable because quadratic modeles are included. \n\n")
+  cat("In the following tables, each column represents one formula. B: baseline MDW, D15: Day 15 MDW. Markers are centered but not scaled to make the coef more interpretable because quadratic modeles are included. \n\n")
   
   cat("N+NN (dat.onedosemRNA)\n\n")
   cat("\\input{", pathCoRoutput, "/mdw_models_N+NN.tex}\n\n", sep="")
@@ -362,7 +393,7 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   
   cat("\\clearpage\n\n")
   cat("**Models with discrete baseline and Day15 markers**\n\n")
-  cat("Instead of fitting the fully saturated model, which has 8 dof for the two L/M/H markers together, we choose to fit a model with 6 dof by merging L/M and L/H and merging M/L and M/H so that we don't have levels with 10 or less subjects among the Naive.\n\n")
+  cat("Instead of fitting the fully saturated model, which has 8 dof for the two L/M/H markers together, we choose to fit a model with 6 dof by merging L/M and L/H and merging M/L and M/H so that we don't have cells with 10 or less subjects in the 3x3 table among the naive subpopulation.\n\n")
   
   cat("N+NN (dat.onedosemRNA)\n\n")
   cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_N+NN.tex}\n\n", sep="")
