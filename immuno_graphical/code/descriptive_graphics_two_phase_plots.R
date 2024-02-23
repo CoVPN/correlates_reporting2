@@ -868,7 +868,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             
             dat.plot <- dat.spider.by.time[c(1,2), ] %>%
               bind_rows(
-                dat.spider.by.time %>%
+                dat.spider.by.time[2:nrow(dat.spider.by.time), ] %>%
                   filter(grepl(tm, time) & Bserostatus %in% bsero & Trt %in% trt & Region %in% reg)
                 ) %>%
               mutate(time = NULL, Bserostatus=NULL, Trt=NULL) %>%
@@ -877,7 +877,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
               } else if (ab=="nAb" && reg==2) {matches("pseudoneutid50$|pseudoneutid50_Delta|pseudoneutid50_Beta")
               } else {contains("pseudoneutid50")})
             
-            # those without any data will have a weighted geomean equal to 1, set these to NA
+            # those without any data will have a weighted geomean equal to 1 because exp(0)=1, set these to NA
             dat.plot[dat.plot == 1] <- NA
             
             if (nrow(dat.plot)==2) next

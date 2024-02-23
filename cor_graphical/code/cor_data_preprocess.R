@@ -13,7 +13,7 @@ library(here)
 library(dplyr)
 library(tidyverse)
 library(stringr)
-if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
+if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; names(pos.cutoffs) <- assays}
 
 ## COR has a set of analysis-specific parameters defined in the config file
 config.cor <- config::get(config = COR)
@@ -260,7 +260,6 @@ if (study_name=="IARCHPV") {
   labels = bstatus.labels
 )
 }
-dat.long$assay <- factor(dat.long$assay, levels = assays, labels = assays)
 
 
 # add Hispanic or Latino vs. Not Hispanic or Latino variable
@@ -271,9 +270,11 @@ if ("EthnicityHispanic" %in% colnames(dat.long)){ # IARCHPV doesn't have this va
 }
 
 # add label = LLoD / poscutoff, uloq values to show in the plot
-dat.long$LLoD = with(dat.long, log10(lods[as.character(assay)]))
-dat.long$LLoQ = with(dat.long, log10(as.numeric(lloqs[as.character(assay)])))
-dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[as.character(assay)]))
+dat.long$LLoD = with(dat.long, log10(lods[assay]))
+dat.long$LLoQ = with(dat.long, log10(lloqs[assay]))
+dat.long$pos.cutoffs = with(dat.long, log10(pos.cutoffs[assay]))
+
+dat.long$assay <- factor(dat.long$assay, levels = assays, labels = assays)
 
 if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant"){ # for ENSEMBLE, ID50 uses LLOQ, ADCP uses LLOD
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", ifelse(assay=="ADCP", "LoD", "LoQ"))) 
@@ -507,7 +508,7 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
                          a=="Beta" ~"B.1.351",
                          a=="Mu" ~ "B.1.621",
                          a=="Gamma" ~ "P.1",
-                         a=="Lambdat" ~ "C.37",
+                         a=="Lambda" ~ "C.37",
                          TRUE ~ "")
     if (a!="Zeta") {stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event=="Post-Peak Cases" & time=="Day29" & assay==paste0("bindSpike_", bind_var) & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", a)) == 0 & keep_day29 == 1)) == 0)}
   }
