@@ -110,7 +110,7 @@ for (ab in c("bAb", "nAb")) {
         colnames(spider_plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike |Binding Antibody to | Spike|Binding Antibody ", "", colnames(spider_plot))
     
         # figure starts here
-        filename = paste0(save.results.to, "radar_plot_weighted_geomean_Day29_vaccine_bseroneg_", ab, "_", reg_lb, " .pdf")
+        filename = paste0(save.results.to, "radar_weighted_geomean_Day29_vaccine_bseroneg_", ab, "_", reg_lb, " .pdf")
         pdf(filename, width=5.5, height=6.5)
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
         
@@ -136,4 +136,4 @@ for (ab in c("bAb", "nAb")) {
         dev.off()
     }
 }
-
+if (length(dev.list()!=0)) {dev.off()}

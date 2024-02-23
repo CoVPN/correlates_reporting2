@@ -368,7 +368,7 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
           theme_pubr(legend = "none") +
           ylab("Reverse ECDF") + xlab(labels.axis["Day29", match(assay_subset[aa], colnames(labels.axis))]) +
           scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
-          scale_color_manual(values = c("#1749FF", "#D92321"#, #"#0AB7C9", #"#FF6F1B"
+          scale_color_manual(values = c("Post-Peak Cases"="#1749FF", "Non-Cases"="#D92321"#, #"#0AB7C9", #"#FF6F1B"
                                         )) +
           guides(linetype = "none",
                  color = guide_legend(nrow = 3, byrow = TRUE)) +
@@ -392,78 +392,81 @@ if (attr(config,"config") == "janssen_partA_VL" & COR == "D29VLvariant") {
       } # end of region
       
     } # end of bAb and nAb
-    
-      ## SA, pooling all assays into one figure
-      rcdf_list_sa_pooled <- ggplot(subset(dat.long.cor.subset.SA %>%
-                                             mutate(assay = factor(assay, levels = c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta"))), 
-                                           assay %in% assay_metadata_sub_sa$assay), 
-                                    aes_string(
-                                      x = "Day29", 
-                                      colour = "assay",
-                                      group = "assay",
-                                      weight = "wt"
-                                    )
-      ) +
-        geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
-        theme_pubr(legend = "none") +
-        ylab("Reverse ECDF") + xlab(paste0("Assay Level at Day ", gsub("[a-zA-Z]", "", "Day29"))) +
-        scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
-        scale_color_manual(name = "", 
-                           values = c("#1749FF","#D92321","#0AB7C9"),
-                           labels = setNames(assay_metadata_sub_sa$assay_label_short, assay_metadata_sub_sa$assay)) +
-        guides(linetype = "none",
-               color = guide_legend(nrow = 3, byrow = TRUE)) +
-        ggtitle(paste0("RCDF at Day ", gsub("[a-zA-Z]", "", "Day29"), ", in Southern America")) +
-        theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_sa$assay)>6, 6, 10)),
-              legend.text = element_text(size = 12),
-              legend.position = "bottom",
-              panel.grid.minor.y = element_line(),
-              panel.grid.major.y = element_line(),
-              axis.title = element_text(size = ifelse(length(assay_metadata_sub_sa$assay)>6, 8, 15)),
-              axis.text = element_text(size = 14))
-      
-      if (length(assay_metadata_sub_sa$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
-      ggsave(rcdf_list_sa_pooled,
-             filename = paste0(save.results.to, "/Marker_RCDF_", "Day29", 
-                               "_Vaccine_Bseroneg_NAb_ZA_pooled.png"),
-             height = 7, width = 6.5)
-      
-      
-      ## LA, pooling all assays into one figure
-      rcdf_list_la_pooled <- ggplot(subset(dat.long.cor.subset.LA %>%
-                                             mutate(assay = factor(assay, levels = c("pseudoneutid50", "pseudoneutid50_Zeta",
-                                                                                     "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
-                                                                                     "pseudoneutid50_Lambda"))), 
-                                           assay %in% assay_metadata_sub_la$assay), 
-                                    aes_string(
-                                      x = "Day29", 
-                                      colour = "assay",
-                                      group = "assay",
-                                      weight = "wt"
-                                    )
-      ) +
-        geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
-        theme_pubr(legend = "none") +
-        ylab("Reverse ECDF") + xlab(paste0("Assay Level at Day ", gsub("[a-zA-Z]", "", ))) +
-        scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
-        scale_color_manual(name = "", 
-                           values = c("#1749FF","#FF6F1B","#810094","#378252","#FF5EBF"),
-                           labels = setNames(assay_metadata_sub_la$assay_label_short, assay_metadata_sub_la$assay)) +
-        guides(linetype = "none",
-               color = guide_legend(nrow = 3, byrow = TRUE)) +
-        ggtitle(paste0("RCDF at Day ", gsub("[a-zA-Z]", "", ), ", in Latin America")) +
-        theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_la$assay)>6, 6, 10)),
-              legend.text = element_text(size = 10),
-              legend.position = "bottom",
-              panel.grid.minor.y = element_line(),
-              panel.grid.major.y = element_line(),
-              axis.title = element_text(size = ifelse(length(assay_metadata_sub_la$assay)>6, 8, 15)),
-              axis.text = element_text(size = 14))
-      
-      if (length(assay_metadata_sub_la$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
-      ggsave(rcdf_list_la_pooled,
-             filename = paste0(save.results.to, "/Marker_RCDF_", , 
-                               "_Vaccine_Bseroneg_NAb_LATAM_pooled.png"),
-             height = 7, width = 6.5)
   
+}
+
+
+if (F){
+  ## SA, pooling all assays into one figure
+  rcdf_list_sa_pooled <- ggplot(dat.long.cor.subset %>%
+                                  filter(Region==2 & assay %in% c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta")) %>%
+                                  mutate(assay = factor(assay, levels = c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta"))),
+                                aes_string(
+                                  x = "Day29", 
+                                  colour = "assay",
+                                  group = "assay",
+                                  weight = "wt"
+                                )
+  ) +
+    geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
+    theme_pubr(legend = "none") +
+    ylab("Reverse ECDF") + xlab(paste0("Assay Level at Day ", gsub("[a-zA-Z]", "", "Day29"))) +
+    scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
+    scale_color_manual(name = "", 
+                       values = c("#1749FF","#D92321","#0AB7C9"),
+                       labels = setNames(assay_metadata_sub_sa$assay_label_short, assay_metadata_sub_sa$assay)) +
+    guides(linetype = "none",
+           color = guide_legend(nrow = 3, byrow = TRUE)) +
+    ggtitle(paste0("RCDF at Day ", gsub("[a-zA-Z]", "", "Day29"), ", in Southern America")) +
+    theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_sa$assay)>6, 6, 10)),
+          legend.text = element_text(size = 12),
+          legend.position = "bottom",
+          panel.grid.minor.y = element_line(),
+          panel.grid.major.y = element_line(),
+          axis.title = element_text(size = ifelse(length(assay_metadata_sub_sa$assay)>6, 8, 15)),
+          axis.text = element_text(size = 14))
+  
+  if (length(assay_metadata_sub_sa$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
+  ggsave(rcdf_list_sa_pooled,
+         filename = paste0(save.results.to, "/Marker_RCDF_Day29_Vaccine_Bseroneg_nAb_ZA_pooled.png"),
+         height = 7, width = 6.5)
+  
+  
+  ## LA, pooling all assays into one figure
+  rcdf_list_la_pooled <- ggplot(dat.long.cor.subset %>%
+                                  filter(Region==1 & assay %in% c("pseudoneutid50", "pseudoneutid50_Zeta",
+                                                                  "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
+                                                                  "pseudoneutid50_Lambda")) %>%
+                                  mutate(assay = factor(assay, levels = c("pseudoneutid50", "pseudoneutid50_Zeta",
+                                                                          "pseudoneutid50_Mu", "pseudoneutid50_Gamma",
+                                                                          "pseudoneutid50_Lambda"))),
+                                aes_string(
+                                  x = "Day29", 
+                                  colour = "assay",
+                                  group = "assay",
+                                  weight = "wt"
+                                )
+  ) +
+    geom_step(aes(y = 1 - ..y..), stat = "ecdf", lwd = 1) +
+    theme_pubr(legend = "none") +
+    ylab("Reverse ECDF") + xlab(paste0("Assay Level at Day ", gsub("[a-zA-Z]", "", ))) +
+    scale_x_continuous(labels = label_math(10^.x), limits = c(-2, 6), breaks = seq(-2, 6, 2)) +
+    scale_color_manual(name = "", 
+                       values = c("#1749FF","#FF6F1B","#810094","#378252","#FF5EBF"),
+                       labels = setNames(assay_metadata_sub_la$assay_label_short, assay_metadata_sub_la$assay)) +
+    guides(linetype = "none",
+           color = guide_legend(nrow = 3, byrow = TRUE)) +
+    ggtitle(paste0("RCDF at Day ", gsub("[a-zA-Z]", "", ), ", in Latin America")) +
+    theme(plot.title = element_text(hjust = 0.5, size = ifelse(length(assay_metadata_sub_la$assay)>6, 6, 10)),
+          legend.text = element_text(size = 10),
+          legend.position = "bottom",
+          panel.grid.minor.y = element_line(),
+          panel.grid.major.y = element_line(),
+          axis.title = element_text(size = ifelse(length(assay_metadata_sub_la$assay)>6, 8, 15)),
+          axis.text = element_text(size = 14))
+  
+  if (length(assay_metadata_sub_la$assay) > 6) {ncol_val = 3} else {ncol_val = 2}
+  ggsave(rcdf_list_la_pooled,
+         filename = paste0(save.results.to, "/Marker_RCDF_Day29_Vaccine_Bseroneg_nAb_LATAM_pooled.png"),
+         height = 7, width = 6.5)
 }
