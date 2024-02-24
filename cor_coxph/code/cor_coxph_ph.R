@@ -1,14 +1,9 @@
-# make two tables
-# one for continuous markers, each row is a model. 
-# two is for trichotomized or dichotomized marker, 3 rows per model
+# make one table for continuous markers and one table for discrete markers
 
 # mandatory input: 
+  # fname.suffix, which is used in the file names to save results
 
-# fname.suffix
-# used in the file names to save results
-
-
-# optional input:
+# optional inputs
 
 if (is.null(show.q)) show.q=T # control whether fwer and q values are shown in tables
 
@@ -20,9 +15,10 @@ if (is.null(use.svy)) use.svy=T
 if (is.null(has.plac)) has.plac=T # control whether there are placebo data
 # for T, we expect dat.pla.seroneg
 
+
+
 ###################################################################################################
 if(verbose) print("Regression for continuous markers")
-
 
 fits=list()
 for (a in all.markers) {

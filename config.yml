@@ -236,7 +236,7 @@ janssen_sa_partAnonsenior: &janssen_sa_partAnonsenior
 
 janssen_partA_VL: &janssen_partA_VL 
   <<: *janssen_trial
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240131.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240223.csv
   assay_metadata: assay_metadata/janssen_partA_VL_assay_metadata.csv
   covariates_riskscore: ~.+ risk_score
   study_name: ENSEMBLE

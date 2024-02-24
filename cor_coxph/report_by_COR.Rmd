@@ -119,6 +119,16 @@ if (TRIAL=="janssen_partA_VL") {
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
   cat("\\clearpage\n")
+  
+} else if(file.exists(paste0("../", pathCoRoutput, "/hr_forest_",fname.suffix,".pdf"))) {
+  # ../ is necessary because pathCoRoutput starts at corcoxph
+  cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_", fname.suffix, ".pdf}
+\\caption{Forest plot.}
+\\end{figure}
+\\clearpage", sep="")
 }
 ```
 

@@ -1,11 +1,13 @@
-# Summary of Results for mRNA vaccines
+# Summary for mRNA vaccines
 
-Most analyses are repeated six times for D15to181, D15to91, D92to181, D15to181BA45, D15to91BA45, and D92to181BA45, each having its own chapters. In a chapter name ends with BA45, cases other than BA4/BA5 are censored.
+Most analyses are repeated six times for D15to181, D15to91, D92to181, D15to181BA45, D15to91BA45, and D92to181BA45. If a chapter/section title ends with BA45, cases other than BA4/BA5 are censored.
 
-Some analyses are also repeated separately within naive and non-naive in new chapters.
+Objective 1 are main effects models, including B, D15, fold change, B + D15/B, B + D15 + D15^2, etc. Objectives 2, 3 and 4 are interaction models
  
-When more than one marker is present in model, e.g. B + D15^2, the markers are centered (not scaled) so that the coefficients do not explode.  
+Some analyses are repeated separately within naive and non-naive. Some analyses are repeated separately within baseline L/M/H groups.
  
+When a model has more than one marker covariate, e.g. B + D15^2, both baseline and D15 markers are centered (not scaled) so that the coefficients do not explode.  
+
  
 \vspace{0.5cm} 
 **Peak Obj 1. Models without interaction terms: baseline, D15, D15/B, baseline + D15**
@@ -45,12 +47,9 @@ When more than one marker is present in model, e.g. B + D15^2, the markers are c
     * Omicron   baseline MDW HR 0.49 
 
 For mRNA prototype-insert vaccines and mRNA omicron-containing insert vaccines, D15 markers were inverse correlates of risk for COVID-19 occurring proximal to vaccination D22-D91. However, for COVID-19 occurring distal to vaccination D92-D181, the D15 correlate of risk result was totally flat for prototype-insert vaccines whereas the D15 inverse correlate of risk was retained for omicron-containing insert vaccines. This result suggests that immunity from ancestral strain vaccines against omicron strains is weak or absent beyond 3 months post-booster whereas the immunity of omicron-matched vaccines persists through 6 months. These results are consistent with literature on short-lived booster efficacy of ancestral-strain mRNA vaccines against omicron COVID-19.
- 
-\vspace{.5cm}
 
 
-**For all interaction models, markers are centered but not scaled so that the size of interaction can be compared.**
- 
+
 \vspace{.5cm}
 **Peak Obj 2 Naive x D15 or D15/B**
 
@@ -123,9 +122,17 @@ Not significant anywhere
 In models including for both baseline and D15/B markers, D15/B markers show no significance, baseline markers have larger effect sizes (HR 0.34 vs 0.73) and are more significant (in spite of having only 1/6 of the cases) in the non-naive subpopulation compared to the naive subpopulation.
 
 
+\vspace{.5cm}
+**Modeling results**
+
+To check whether the markers behave differently for naive and non-naive, we fit an interaction model with naive * 9-category. Even though there are some two fold ratios of HRs, none are significant.
+
+We also fit a model with interaction between naive and D15 and a model with interaction between naive and baseline. There is significant interaction between naive and baseline in the 3rd column. This analysis suggests that naive and non-naive do not differ in their relationship between D15 markers and risk, but do differ in their relationship between baseline markers and risk. Roughly speaking, a 10-fold increase in baseline marker in a non-naive is worth 100-fold increase baseline marker in a non-naive. 
 
 
-# Summary of Results for Sanofi vaccines
+
+
+# Summary of Sanofi vaccines
 
 \vspace{.5cm}
 **Peak Obj 1 Sanofi**
@@ -162,9 +169,9 @@ for (iObj in c(1,11,12,2,3,31)) {
                "1"=1, 
                "2"=2, 
                "3"=3, 
-               "31"="3, discrete baseline", 
-               "11"="1, baseline+D15/B", 
-               "12"="1, baseline+D15+D15^2"), 
+               "31"="3 discrete baseline", 
+               "11"="1 baseline+D15/B", 
+               "12"="1 baseline+D15+D15^2"), 
         ", ", COR, sep="")
     
     for (iPop in 1:7) {
@@ -238,32 +245,41 @@ for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", 
     cat(res, sep = '\n')
   }
 }
+```
 
+
+
+
+```{r, echo=FALSE, results='asis'}
 
 # Obj 1 in naive and non-naive
 for (iObj in c(1,11,12)) { 
   
-  for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
-    
-    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
-    config.cor <- config::get(config = COR)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    
-    COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
-    
+  for (iPop in 1:2) {
     cat("# Objective Peak ", 
         switch(iObj%.%"", 
-               "1"="1, N or NN", 
-               "11"="1, N or NN baseline+D15/B", 
-               "12"="1, N or NN baseline+D15^2"), 
-        ", ", COR, sep="")
-    
-    for (iPop in 1:2) {
+               "1"="1", 
+               "11"="1 baseline+D15/B", 
+               "12"="1 baseline+D15^2"), 
+        ", ", 
+        switch(iPop%.%"", 
+               "1"="naive", 
+               "2"="nnaive"), 
+        sep="")
+  
+    for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
+      
+      pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+      config.cor <- config::get(config = COR)
+      for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+      
+      COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+      
       fname.suffix = switch (iPop%.%"",
         '1' = 'mRNA_naive',
         '2' = 'mRNA_nnaive'
       )  
-      
+    
       if (iObj==1) {
         has.alt = F
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
@@ -282,10 +298,54 @@ for (iObj in c(1,11,12)) {
     }
   }
 }
+```
 
 
-# Obj 1 in Sanofi
+# Objective Peak 1, separately by baseline L/M/H 
+
+```{r, echo=FALSE, results='asis'}
+
+for (COR in c("D15to181", "D15to91", "D92to181")) {
+  
+  pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+  config.cor <- config::get(config = COR)
+  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  
+  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  
+  cat("## ", COR, "\n", sep="")
+  
+  cat("\\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_Bmarkercat.tex}", sep="")
+
+}
+
+cat("\\clearpage")
+
+for (COR in c("D15to181BA45", "D15to91BA45", "D92to181BA45")) {
+  
+  pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+  config.cor <- config::get(config = COR)
+  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  
+  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  
+  cat("## ", COR, "\n", sep="")
+  
+  cat("\\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_Bmarkercat.tex}", sep="")
+
+}
+```
+
+
+```{r, echo=FALSE, results='asis'}
+# Sanofi Obj 1
 for (iObj in c(1,11)) { 
+  
+  cat("# Objective Peak ", 
+      switch(iObj%.%"", 
+             "1"="1, Sanofi", 
+             "11"="1 baseline+D15/B, Sanofi"), 
+      sep="")
   
   for (COR in c("D15to181", "D15to91", "D92to181")) {
     
@@ -295,15 +355,9 @@ for (iObj in c(1,11)) {
     
     COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
     
-    cat("# Objective Peak ", 
-        switch(iObj%.%"", 
-               "1"="1, Sanofi", 
-               "11"="1, Sanofi baseline+D15/B"), 
-        ", ", COR, sep="")
-    
     for (iPop in 1:1) {
       fname.suffix = switch (iPop%.%"",
-        '1' = 'Sanofi'
+        '1' = 'sanofi'
       )  
       
       if (iObj==1) {
@@ -319,33 +373,13 @@ for (iObj in c(1,11)) {
     }
   }
 }
-
-
-
-
-# Obj 1 in baseline h/m/l
-for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
-  
-  pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
-  config.cor <- config::get(config = COR)
-  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-  
-  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
-  
-  cat("# Objective Peak 1, baseline L/M/H ", COR, "\n", sep="")
-  
-  cat("\\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_Bmarkercat.tex}", sep="")
-
-}
-
 ```
 
 
+
+
 # Modeling for all COVID
-  
-
 ```{r, echo=FALSE, results='asis'}
-
 
 for (COR in c("D15to181", "D15to91", "D92to181")) {
   
@@ -401,6 +435,14 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_N.tex}\n\n", sep="")
   cat("Non-naive\n\n")
   cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_NN.tex}\n\n", sep="")
+  cat("Naive * LMH\n\n")
+  cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_N*LMH.tex}\n\n", sep="")
+
+  
+  cat("\\clearpage\n\n")
+  cat("**Models with naive * markers interaction**\n\n")
+
+  cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_N*marker.tex}\n\n", sep="")
 
 }
 
