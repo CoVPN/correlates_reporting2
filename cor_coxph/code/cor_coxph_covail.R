@@ -42,7 +42,7 @@ myprint(B, numPerm)
 marker.cutpoints = attr(dat.mock, "marker.cutpoints")
 # save cut points to files
 for (a in names(marker.cutpoints)) {        
-  write(paste0(gsub("_", "\\_", a, fixed = TRUE),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
+  write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
         file=paste0(save.results.to, "cutpoints_", a))
 }
 
@@ -129,7 +129,7 @@ show.q = F
 # 2 and 21 are both Obj 2, itxn by naive
 # 3 and 31 are both Obj 3, itxn by B
 for (iObj in c(1,11,12,2,21,3,31)) {
-# iObj=1
+    # iObj=1
   
   # define all.markers
   if(iObj==1) {
@@ -271,8 +271,9 @@ for (iObj in c(1,11,12,2,21,3,31)) {
   }
   
   
-  # repeat Obj 1 and 11 in the naive or nonnaive subpopulation
+  # repeat Obj 1, 11 and 12 in the naive or nonnaive subpopulation
   # it is okay to use form.0 even though it includes naive because coxph handles it gracefully by setting everything related to it to NA
+  # but it is better to use form.1 b/c the caption uses formula and it is more clear this way
   for (iPop in 1:2) {
     if (iPop==1) {
       dat=subset(dat.onedosemRNA, naive==1)
@@ -292,6 +293,7 @@ for (iObj in c(1,11,12,2,21,3,31)) {
     } else if(iObj==11) {
       fname.suffix = paste0(fname.suffix, "_B+D15")
       source(here::here("code", "cor_coxph_ph_coef.R"))
+      
     } else if(iObj==12) {
       fname.suffix = paste0(fname.suffix, "_B+D15^2")
       source(here::here("code", "cor_coxph_ph_coef.R"))
@@ -355,9 +357,7 @@ res = sapply(assays, function (a) {
              coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==3,])),
         type=12, robust=F, exp=T)[4,]
 })
-tab=t(res)
-colnames(tab)=c("L","M","H")
-tab
+tab=t(res); colnames(tab)=c("L","M","H") #tab
 mytex(tab, file.name="CoR_univariable_svycoxph_pretty_Bmarkercat", input.foldername=save.results.to, align="c")
 
 
@@ -451,9 +451,6 @@ for (i in 1:3) { # three different populations: N+NN, N, NN
 }
 
 rownames(llik)<-rownames(zphglobal)<-rownames(zphmarker)<-c("N+NN","N","NN")
-print(llik)
-print(zphglobal)
-print(zphmarker)
 
 mytex(llik, file.name="mdw_llik", input.foldername=save.results.to, align="c")
 mytex(zphglobal, file.name="mdw_zphglobal", input.foldername=save.results.to, align="c")
@@ -491,7 +488,7 @@ for (i in 1:3) { # three different populations: N+NN, N, NN
   
   fit=coxph(f, dat)
   
-  tab=getFormattedSummary(list(fit), robust=F, exp=T); tab
+  tab=getFormattedSummary(list(fit), robust=F, exp=T); #tab
   mytex(tab, file.name="mdw_discrete_discrete_itxn_model_"%.%suffix, input.foldername=save.results.to, align="c")
 
 }
@@ -508,7 +505,7 @@ f=update(form.0, ~ .
 
 fit=coxph(f, dat)
 
-tab=getFormattedSummary(list(fit), robust=F, exp=T); tab
+tab=getFormattedSummary(list(fit), robust=F, exp=T); #tab
 mytex(tab, file.name="mdw_discrete_discrete_itxn_model_"%.%suffix, input.foldername=save.results.to, align="c")
 
 
@@ -523,7 +520,7 @@ fs=list(
   update(form.0, ~ . + Bpseudoneutid50_MDWcentered*naive + Day15pseudoneutid50_MDWcentered+ I(Day15pseudoneutid50_MDWcentered^2) ))
 fits=lapply(fs, function (f) coxph(f, dat))
 tab=getFormattedSummary(fits, robust=F, exp=T, type=6); rownames(tab)=names(coef(fits[[1]])); 
-colnames(tab)=c("","N*D15","N*B"); tab
+colnames(tab)=c("","N*D15","N*B"); #tab
 
 mytex(tab, file.name="mdw_discrete_discrete_itxn_model_"%.%suffix, input.foldername=save.results.to, align="l")
 

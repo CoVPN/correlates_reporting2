@@ -130,8 +130,6 @@ To check whether the markers behave differently for naive and non-naive, we fit 
 We also fit a model with interaction between naive and D15 and a model with interaction between naive and baseline. There is significant interaction between naive and baseline in the 3rd column. This analysis suggests that naive and non-naive do not differ in their relationship between D15 markers and risk, but do differ in their relationship between baseline markers and risk. Roughly speaking, a 10-fold increase in baseline marker in a non-naive is worth 100-fold increase baseline marker in a non-naive. 
 
 
-
-
 # Summary of Sanofi vaccines
 
 \vspace{.5cm}
@@ -140,10 +138,8 @@ We also fit a model with interaction between naive and D15 and a model with inte
 Focusing on MDW: D15 marker is significant (HR 0.47), baseline and fold change are not, when studied alone. When both baseline and D15 markers are included, both are significant. This is true for both D22to181 and D22to91, but no signals in D92to181.
 
 
-
-
+<!-- Set up -->
 ```{r, echo=FALSE, results='asis'}
-
 show.q=F
 multivariate_assays=NULL
 
@@ -152,6 +148,18 @@ special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 15.")
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays) # use to get list of cutpoints
 names(all.markers)=all.markers
+
+config <- config::get(config = "covail")
+dat_proc=read.csv(config$data_cleaned)
+dat = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
+dat.n=subset(dat, naive==1)
+dat.nn=subset(dat, naive==0)
+
+```
+
+
+<!-- Objective 1, 2 and 3 -->
+```{r, echo=FALSE, results='asis'}
 
 # tables made in iObj 21 is part of the 2
 for (iObj in c(1,11,12,2,3,31)) { 
@@ -221,9 +229,13 @@ for (iObj in c(1,11,12,2,3,31)) {
   }
   
 }
+```
 
 
-# Peak Obj 4
+<!-- Objective 4 -->
+```{r, echo=FALSE, results='asis'}
+
+
 for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
   
   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
@@ -248,8 +260,7 @@ for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", 
 ```
 
 
-
-
+<!-- Separate analyses within naive and non-naive -->
 ```{r, echo=FALSE, results='asis'}
 
 # Obj 1 in naive and non-naive
@@ -257,14 +268,13 @@ for (iObj in c(1,11,12)) {
   
   for (iPop in 1:2) {
     cat("# Objective Peak ", 
-        switch(iObj%.%"", 
-               "1"="1", 
-               "11"="1 baseline+D15/B", 
-               "12"="1 baseline+D15^2"), 
-        ", ", 
         switch(iPop%.%"", 
-               "1"="naive", 
-               "2"="nnaive"), 
+               "1"="1 naive", 
+               "2"="1 nnaive"), 
+        switch(iObj%.%"", 
+               "1"="", 
+               "11"=", baseline+D15/B", 
+               "12"=", baseline+D15^2"), 
         sep="")
   
     for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
@@ -301,10 +311,9 @@ for (iObj in c(1,11,12)) {
 ```
 
 
-# Objective Peak 1, separately by baseline L/M/H 
-
+<!-- Separate analyses within baseline L/M/H -->
 ```{r, echo=FALSE, results='asis'}
-
+cat("# Objective Peak 1, separately by baseline L/M/H\n\n")
 for (COR in c("D15to181", "D15to91", "D92to181")) {
   
   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
@@ -337,14 +346,14 @@ for (COR in c("D15to181BA45", "D15to91BA45", "D92to181BA45")) {
 ```
 
 
+<!-- Sanofi -->
 ```{r, echo=FALSE, results='asis'}
-# Sanofi Obj 1
 for (iObj in c(1,11)) { 
   
   cat("# Objective Peak ", 
       switch(iObj%.%"", 
-             "1"="1, Sanofi", 
-             "11"="1 baseline+D15/B, Sanofi"), 
+             "1"="1 Sanofi", 
+             "11"="1 Sanofi, baseline+D15/B"), 
       sep="")
   
   for (COR in c("D15to181", "D15to91", "D92to181")) {
@@ -377,10 +386,10 @@ for (iObj in c(1,11)) {
 
 
 
-
+<!-- Modeling for all COVID -->
 # Modeling for all COVID
-```{r, echo=FALSE, results='asis'}
 
+```{r, echo=FALSE, results='asis'}
 for (COR in c("D15to181", "D15to91", "D92to181")) {
   
   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
@@ -389,7 +398,6 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   
   COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
   
-  cat("\\clearpage")
   cat("## ",COR,  "\n\n", sep="")
   
   cat("**Model likelihood and Cox PH test**\n\n")
@@ -410,10 +418,7 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   }
 
 
-  
-  
-  cat("\\vspace{10pt}\n")
-  
+  cat("\\clearpage\n\n")
   cat("**Model coefficients (p values)**\n\n")
   cat("In the following tables, each column represents one formula. B: baseline MDW, D15: Day 15 MDW. Markers are centered but not scaled to make the coef more interpretable because quadratic modeles are included. \n\n")
   
@@ -423,7 +428,6 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   cat("\\input{", pathCoRoutput, "/mdw_models_N.tex}\n\n", sep="")
   cat("Non-naive\n\n")
   cat("\\input{", pathCoRoutput, "/mdw_models_NN.tex}\n\n", sep="")
-  
   
   cat("\\clearpage\n\n")
   cat("**Models with discrete baseline and Day15 markers**\n\n")
@@ -438,18 +442,38 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   cat("Naive * LMH\n\n")
   cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_N*LMH.tex}\n\n", sep="")
 
-  
   cat("\\clearpage\n\n")
   cat("**Models with naive * markers interaction**\n\n")
-
   cat("\\input{", pathCoRoutput, "/mdw_discrete_discrete_itxn_model_N*marker.tex}\n\n", sep="")
-
+  
+  cat("\\clearpage")
 }
-
-
-
-
-
 
 ```
 
+
+## Relationship between baseline and Day 15 titers
+
+```{r fig.width=4, fig.asp=1.5}
+par(mfrow=c(2,1), mar=c(3,4,2,2))
+  lim=range(c(dat$Bpseudoneutid50_MDW, dat$Day15pseudoneutid50_MDW))
+  corplot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, dat.n, add.deming.fit = T, xlim=lim, ylim=lim, xlab="", main="Naive", method="pearson", ylab="Day 15 ID50 MDW")
+  corplot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, dat.nn, add.deming.fit = T, xlim=lim, ylim=lim, main="Non-naive", method="pearson", ylab="Day 15 ID50 MDW")
+  title(xlab="Baseline ID50 MDW", line=2)
+  
+```
+\clearpage
+
+**Demming regression results:**
+
+Naive
+```{r}
+fit.n =  Deming(dat.n$Bpseudoneutid50_MDW,  dat.n$Day15pseudoneutid50_MDW,  boot = TRUE)
+summary(fit.n)[1:2,]
+```
+
+Non-naive
+```{r}
+fit.nn = Deming(dat.nn$Bpseudoneutid50_MDW, dat.nn$Day15pseudoneutid50_MDW, boot = TRUE)
+summary(fit.nn)[1:2,]
+```

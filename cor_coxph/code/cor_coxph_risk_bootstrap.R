@@ -29,7 +29,7 @@ if (TRIAL=="janssen_partA_VL") {
 if(!file.exists(fname)) {    
   risks.all.2=lapply(all.markers, function (a) {
     if(verbose) myprint(a)
-    marginalized.risk.svycoxph.boot(form.0, marker.name=a, type=2, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)        
+    marginalized.risk.svycoxph.boot(form.0, marker.name=a, type=2, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)
   }) 
   save(risks.all.2, file=fname)
 } else {

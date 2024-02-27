@@ -1,20 +1,22 @@
-# make one table for continuous markers and one table for discrete markers
-
 # mandatory input: 
   # fname.suffix, which is used in the file names to save results
 
 # optional inputs
-
+{
 if (is.null(show.q)) show.q=T # control whether fwer and q values are shown in tables
 
-if (is.null(use.svy)) use.svy=T 
 # controls whether we are using survey package to handle two-phase samples or coxph for cohort
 # for svy, we expect design.dat
 # for coxph, we expect dat
+if (is.null(use.svy)) use.svy=T 
 
-if (is.null(has.plac)) has.plac=T # control whether there are placebo data
 # for T, we expect dat.pla.seroneg
+if (is.null(has.plac)) has.plac=T # control whether there are placebo data
+}
 
+# makes one table for continuous markers and one table for discrete markers
+
+myprint(fname.suffix)
 
 
 ###################################################################################################
@@ -67,7 +69,7 @@ if(verbose) print("regression for trichotomized markers")
 
 fits.tri=list()
 for (a in all.markers) {
-    if(verbose) myprint(a)
+    if(verbose>=2) myprint(a)
     f= update(form.0, as.formula(paste0("~.+", a, "cat")))
     if (use.svy) {
       fits.tri[[a]]=svycoxph(f, design=design.dat) 
@@ -95,7 +97,7 @@ overall.p.0=formatDouble(c(rbind(overall.p.tri, NA,NA)), digits=3, remove.leadin
 
 
 ###################################################################################################
-if(verbose) print("# multitesting adjustment for continuous and trichotomized markers together")
+if(verbose) print("multitesting adjustment for continuous and trichotomized markers together")
 
 # If primary_assays is not defined in config, multitesting adjustment is over all assays. 
 # If primary_assays defined, multitesting adjustment is only over this subset. If this set is empty, then no multitesting adjustment is done
@@ -213,6 +215,8 @@ if (TRIAL=="prevent19" | TRIAL=='prevent19_stage2') {
     pvals.adj=rbind(pvals.adj, tri.Day35bindSpike=c(NA,NA,NA))
 }
 
+
+
 ###################################################################################################
 # make continuous markers table
 
@@ -243,7 +247,7 @@ mytex(tab.1, file.name="CoR_univariable_svycoxph_pretty_"%.%fname.suffix, align=
     longtable=T, 
     label=paste0("tab:CoR_univariable_svycoxph_pretty"), 
     caption.placement = "top", 
-    caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios per 10-fold increment in the marker*")
+    caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the ", escape(fname.suffix), " group: Hazard ratios per 10-fold increment in the marker*")
 )
 tab.cont=tab.1
 
@@ -274,7 +278,7 @@ mytex(tab.1.scaled, file.name="CoR_univariable_svycoxph_pretty_scaled_"%.%fname.
     longtable=T, 
     label=paste0("tab:CoR_univariable_svycoxph_pretty_scaled"), 
     caption.placement = "top", 
-    caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios per SD increment in the marker*")
+    caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the ", escape(fname.suffix), " group: Hazard ratios per SD increment in the marker*")
 )
 tab.cont.scaled=tab.1.scaled
 
@@ -351,7 +355,7 @@ mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_svycoxph_cat_pretty_"%.%fn
     longtable=T, 
     label=paste0("tab:CoR_univariable_svycoxph_cat_pretty_", fname.suffix), 
     caption.placement = "top", 
-    caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*")
+    caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the ", escape(fname.suffix), " group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*")
 )
 
 

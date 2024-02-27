@@ -167,3 +167,25 @@ get.dat.with.no.empty=function(dat.tmp) {
     tab=with(dat.tmp, table(Wstratum, ph2))
     subset(dat.tmp, !Wstratum %in% as.integer(rownames(tab)[which(tab[,"TRUE"]==0)]))
 }
+
+
+# _ causes trouble in captions, and that has to be taken care of by putting \protect{} around the word
+escape=function(x) {
+  for (i in c("_","^")) {
+    x=gsub(i, "\\"%.%i, x, fixed = TRUE)
+  }
+  x
+}
+# a more comprehensive, slower version
+escape_latex <- function(text) {
+  # Define the special characters and their LaTeX escaped equivalents
+  special_chars <- c("\\", "%", "$", "#", "_", "{", "}", "&", "^", "~", "<", ">", "|", "\"")
+  latex_escapes <- c("\\textbackslash{}", "\\%", "\\$", "\\#", "\\_", "\\{", "\\}", "\\&", "\\textasciicircum{}", "\\textasciitilde{}", "\\textless{}", "\\textgreater{}", "\\textbar{}", "\\textquotedbl{}")
+  
+  # Replace each special character in the text with its escaped version
+  for (i in seq_along(special_chars)) {
+    text <- gsub(special_chars[i], latex_escapes[i], text, fixed = TRUE)
+  }
+  
+  return(text)
+}

@@ -1,15 +1,42 @@
 {
+renv::activate(project = here::here(".."))
 library(survey)
 library(kyotil)
 
+config <- config::get(config = "covail")
 dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240205.csv')
-dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240122.csv')
+dat_proc=read.csv(config$data_cleaned)
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
 assays
 }
 
+
+################################################################################
+# B and D15 marker
+
+dat = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
+
+table(dat$Bpseudoneutid50_MDWcat, dat$Day15pseudoneutid50_MDWcat)
+
+corplot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, dat, col=ifelse(dat$naive==1,1,2))
+
+# fit demming regression
+dat.n=subset(dat, naive==1)
+dat.nn=subset(dat, naive==0)
+
+fit.n =  Deming(dat.n$Bpseudoneutid50_MDW,  dat.n$Day15pseudoneutid50_MDW,  boot = TRUE)
+fit.nn = Deming(dat.nn$Bpseudoneutid50_MDW, dat.nn$Day15pseudoneutid50_MDW, boot = TRUE)
+
+summary(fit.n)
+summary(fit.nn)
+
+par(mfrow=c(2,1), mar=c(3,4,2,2))
+lim=range(c(dat$Bpseudoneutid50_MDW, dat$Day15pseudoneutid50_MDW))
+corplot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, dat.n, add.deming.fit = T, xlim=lim, ylim=lim, xlab="", main="Naive", method="pearson")
+corplot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, dat.nn, add.deming.fit = T, xlim=lim, ylim=lim, main="Non-naive", method="pearson")
+title(xlab="Bpseudoneutid50_MDW", line=2)
 
 ################################################################################
 # distribution 

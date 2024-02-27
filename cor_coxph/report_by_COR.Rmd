@@ -5,10 +5,9 @@ if(is.null(fname.suffix)) fname.suffix = ''
 
 ## `r COR` `r fname.suffix`  Univariate CoR: Cox Models of Risk
 
-The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise. One model per row.
+The main regression model is the Cox proportional hazards model. Each row represents results from one model. All plots are made with Cox models fit unless specified otherwise. 
 
-<!-- ### Hazard ratios -->
-
+<!-- Hazard ratios -->
 \setlength{\tabcolsep}{.5ex}
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
