@@ -5,12 +5,11 @@ library(GGally)
 library(stringr)
 require(devtools)
 library(tidyverse)
-install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
 library(grid)
 library(gridExtra)
-install.packages("wCorr", repos = "http://cran.us.r-project.org") # for the weightedCorr() in pairplot, weighted correlation
+#install.packages("wCorr", repos = "http://cran.us.r-project.org") # for the weightedCorr() in pairplot, weighted correlation
 library(wCorr)
-install.packages("fmsb", repos = "http://cran.us.r-project.org") # radar plot
+#install.packages("fmsb", repos = "http://cran.us.r-project.org") # radar plot
 library(fmsb) # radarchart()
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -114,8 +113,8 @@ for (ab in c("bAb", "nAb")) {
         colnames(spider_plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike |Binding Antibody to | Spike|Binding Antibody ", "", colnames(spider_plot))
     
         # figure starts here
-        filename = paste0(save.results.to, "radar_weighted_geomean_Day29_vaccine_bseroneg_", ab, "_", reg_lb, " .pdf")
-        pdf(filename, width=5.5, height=6.5)
+        filename = paste0(save.results.to, "radar_weighted_geomean_Day29_vaccine_bseroneg_", ab, "_", reg_lb, ".pdf")
+        pdf(filename, width=9.5, height=6.5)
         par(mfrow=c(1,1), mar=c(0.1,0.1,1,0.1))
         
         radarchart(spider_plot, 
@@ -133,9 +132,8 @@ for (ab in c("bAb", "nAb")) {
         par(xpd=NA)
         
         #legend
-        legend("bottom", legend=c("Peak-Peak Cases","Non-Cases"), lty=5, pch=c(15),
-               col=c("#FF6F1B","#0AB7C9"), bty="n", ncol=1, cex=0.7,
-               inset=c(-0.25,0))
+        legend("right", legend=c("Peak-Peak Cases","Non-Cases"), lty=5, pch=c(15),
+               col=c("#FF6F1B","#0AB7C9"), bty="n", ncol=1, cex=0.7)
     
         dev.off()
     }
