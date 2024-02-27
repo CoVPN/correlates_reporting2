@@ -502,8 +502,10 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
   
   # check if rows for cases not of the variant are not kept for that assay
   for (a in c("Delta","Beta","Zeta","Mu","Gamma","Lambda")){
+    # check nAb
     stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event=="Post-Peak Cases" & time=="Day29" & assay==paste0("pseudoneutid50_", a) & get(paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", a)) == 0 & keep_day29 == 1)) == 0)
     
+    # check bAb
     bind_var = case_when(a=="Delta" ~ "DeltaMDW",
                          a=="Beta" ~"B.1.351",
                          a=="Mu" ~ "B.1.621",

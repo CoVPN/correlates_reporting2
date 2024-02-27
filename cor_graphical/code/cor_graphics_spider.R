@@ -36,29 +36,33 @@ save.results.to = paste0(save.results.to, "/", COR,"/");
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
-
-# spider plot showing geometric means calculated using IPS weighting in vaccine arm for 2 region: SA and LA
-
 # calculate geometric mean of IPS weighted readouts
 assays_variant <- assays[!assays %in% c("bindSpike", "pseudoneutid50")]
 assays_ancestral <- c("bindSpike", "pseudoneutid50")
 
 spider_plot_ <- dat.cor.data.spider %>%
-    filter(Region %in% c(0, 1, 2) & Trt==1 & cohort_event2!="Post-Peak Cases") %>%
+    filter(Region %in% c(0, 1, 2) & Trt==1 & cohort_event2!="Post-Peak Cases") %>% # cohort_event2 = Post-Peak Cases means no variant/strain type
     mutate(Day29pseudoneutid50 = ifelse(cohort_event2 %in% c("Post-Peak Cases-Reference", "Non-Cases"), Day29pseudoneutid50, NA),
            Day29pseudoneutid50_Beta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Beta", "Non-Cases"), Day29pseudoneutid50_Beta, NA),
            Day29pseudoneutid50_Delta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Delta", "Non-Cases"), Day29pseudoneutid50_Delta, NA),
            Day29pseudoneutid50_Gamma = ifelse(cohort_event2 %in% c("Post-Peak Cases-Gamma", "Non-Cases"), Day29pseudoneutid50_Gamma, NA),
            Day29pseudoneutid50_Lambda = ifelse(cohort_event2 %in% c("Post-Peak Cases-Lambda", "Non-Cases"), Day29pseudoneutid50_Lambda, NA),
            Day29pseudoneutid50_Mu = ifelse(cohort_event2 %in% c("Post-Peak Cases-Mu", "Non-Cases"), Day29pseudoneutid50_Mu, NA),
-           Day29pseudoneutid50_Zeta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Zeta", "Non-Cases"), Day29pseudoneutid50_Zeta, NA)
+           Day29pseudoneutid50_Zeta = ifelse(cohort_event2 %in% c("Post-Peak Cases-Zeta", "Non-Cases"), Day29pseudoneutid50_Zeta, NA),
+           
+           Day29bindSpike = ifelse(cohort_event2 %in% c("Post-Peak Cases-Reference", "Non-Cases"), Day29bindSpike, NA),
+           Day29bindSpike_B.1.351 = ifelse(cohort_event2 %in% c("Post-Peak Cases-Beta", "Non-Cases"), Day29bindSpike_B.1.351, NA),
+           Day29bindSpike_DeltaMDW = ifelse(cohort_event2 %in% c("Post-Peak Cases-Delta", "Non-Cases"), Day29bindSpike_DeltaMDW, NA),
+           Day29bindSpike_P.1 = ifelse(cohort_event2 %in% c("Post-Peak Cases-Gamma", "Non-Cases"), Day29bindSpike_P.1, NA),
+           Day29bindSpike_C.37 = ifelse(cohort_event2 %in% c("Post-Peak Cases-Lambda", "Non-Cases"), Day29bindSpike_C.37, NA),
+           Day29bindSpike_B.1.621 = ifelse(cohort_event2 %in% c("Post-Peak Cases-Mu", "Non-Cases"), Day29bindSpike_B.1.621, NA)
            ) %>%
     # only keep variant data for the corresponding case strain, i.e, delete wild and delta values for beta cases
     ungroup() %>%
     select(one_of(paste0("Day29", assays_variant), paste0("Day29", assays_ancestral), "Region", "cohort_event", "wt.D29variant", "wt.D29")) %>%
     group_by(Region, cohort_event) %>%
     summarise(across(c(paste0("Day29",assays_variant)), ~ exp(sum(log(.x * wt.D29variant), na.rm=T) / sum(wt.D29variant))),
-              across(c(paste0("Day29",assays)), ~ exp(sum(log(.x * wt.D29), na.rm=T) / sum(wt.D29)))) %>% # ancestral assays use wt.D29
+              across(c(paste0("Day29",assays_ancestral)), ~ exp(sum(log(.x * wt.D29), na.rm=T) / sum(wt.D29)))) %>% # ancestral assays use wt.D29
     unique() %>%
     rename_with(~ gsub("Day29", "", .), everything()) %>%
     as.data.frame()
