@@ -1,39 +1,25 @@
-# optional input
-{
-  # whether to get risk conditional on continuous S>=s
-  if (!exists("show.ve.curves")) show.ve.curves=T
-  
-  # whether to plot risk vs S>=s
-  if (!exists("eq.geq.ub")) eq.geq.ub=2
-  
-  # whether to plot plac
-  if (!exists("wo.w.plac.ub")) wo.w.plac.ub=2
-  
-  if (!exists("for.title")) for.title=""
-  
-  # if T, we expect dat.pla.seroneg
-  if (!exists("has.plac")) has.plac=T 
-  
-}
-myprint(run.Sgts, eq.geq.ub, wo.w.plac.ub, for.title)
+cor_coxph_risk_plotting = function(
+  form.0,
+  fname.suffix,
+  multi.imp,
+  dat,
+  tfinal.tpeak,
+  all.markers,
+  show.ve.curves=T,
+  eq.geq.ub=2, # whether to plot risk vs S>=s
+  wo.w.plac.ub=2, # whether to plot plac
+  for.title="",
+  comp.risk=F, 
+  has.plac=T
+) {
 
-
-# mandatory input: 
-{
-  # used in the file names to save results
-  myprint(fname.suffix) 
   
-  myprint(multi.imp)
+myprint(eq.geq.ub, wo.w.plac.ub, for.title)
   
-  # dat 
+# make form.s from form.0
+form.s=as.formula(deparse((if(comp.risk) form.0[[1]] else form.0)[[2]])%.%"~1")
+
   
-  # tfinal.tpeak
-  
-  # all.markers
-}
-
-
-
 ###################################################################################################
 # sensitivity analyses parameters
 
@@ -205,7 +191,7 @@ for (a in all.markers) {
     f1=lapply(form.0, function(x) update(x, as.formula(paste0("~.+",marker.name))))
     ss=unique(dat[[marker.name]]); ss=sort(ss[!is.na(ss)])
     names(ss)=c("low","med","high")
-    
+
     if (multi.imp) {
       out=lapply(1:10, function(imp) {
         data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
@@ -256,8 +242,6 @@ for (a in all.markers) {
 }
 #rv$marginalized.risk.over.time=list()
 #for (a in assays) rv$marginalized.risk.over.time[[a]] = risks.all.ter[[a]]
-
-
 
 # get cumulative risk from placebo
 if(has.plac) {
@@ -885,4 +869,7 @@ if (!is.null(config$interaction)) {
       dev.off()
     }
   }
+}
+
+
 }

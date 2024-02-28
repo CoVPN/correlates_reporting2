@@ -6,11 +6,13 @@
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "covail"); 
 source(here::here("..", "_common.R")) 
+source(here::here("code", "params.R"))
+source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+source(here::here("code", "cor_coxph_risk_plotting.R"))
 
 
 {
 Sys.setenv(VERBOSE = 1) 
-source(here::here("code", "params.R"))
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(xtable) # this is a dependency of kyotil
 library(marginalizedRisk)
@@ -71,40 +73,34 @@ dat.onedosemRNA$B_MDW_M_H = dat.onedosemRNA$B_MDW_M | dat.onedosemRNA$B_MDW_H
 # all cases have covid lineage observed
 
 if (COR=="D15to181") {
-  form.s = Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1
-  form.0 = update(form.s, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates_riskscore))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD181
   dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD181
   
 } else if (COR=="D15to91") {
-  form.s = Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ 1
-  form.0 = update(form.s, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ 1, as.formula(config$covariates_riskscore))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD91
   dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD91
   
 } else if (COR=="D92to181") {
-  form.s = Surv(COVIDtimeD92toD181, COVIDIndD92toD181) ~ 1
-  form.0 = update(form.s, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD92toD181, COVIDIndD92toD181) ~ 1, as.formula(config$covariates_riskscore))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD92toD181
   dat.sanofi$yy     =dat.sanofi$COVIDIndD92toD181
 
 } else if (COR=="D15to181BA45") {
-  form.s = Surv(COVIDtimeD22toD181, EventIndOfInterest) ~ 1
-  form.0 = update(form.s, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD22toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
   dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD181==1 &  dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD22toD181==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
   
 } else if (COR=="D15to91BA45") {
-  form.s = Surv(COVIDtimeD22toD91, EventIndOfInterest) ~ 1
-  form.0 = update(form.s, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD22toD91, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
   dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD91==1 &  dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD22toD91==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
   
 } else if (COR=="D92to181BA45") {
-  form.s = Surv(COVIDtimeD92toD181, EventIndOfInterest) ~ 1
-  form.0 = update(form.s, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD92toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
   dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD92toD181==1 &  dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD92toD181==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
@@ -138,7 +134,7 @@ has.plac = F
 # 2 and 21 are itxn by naive
 # 3 and 31 are itxn by baseline markers
 for (iObj in c(1,11,12,2,21,3,31)) {
-  # iObj=1; iPop=1  
+# iObj=1; iPop=1  
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
@@ -250,23 +246,32 @@ for (iObj in c(1,11,12,2,21,3,31)) {
       
       # risk curves using competing risk for BA45 COVID for all mRNA
       if (COR=="D15to181BA45" & iPop==1) {
-        comp.risk=T
-        # make form.0 a list
-        if (comp.risk) form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500)))) )
-        # only do risk curves for a small set of markers
-        all.markers.save = all.markers; all.markers = "Day15"%.%assays
         
-        run.Sgts=F 
-        source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+        cor_coxph_risk_bootstrap(  
+          form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+          fname.suffix, 
+          tfinal.tpeak,
+          numCores,
+          all.markers = "Day15"%.%assays,
+          dat, 
+          comp.risk=T, 
+          run.Sgts=F # whether to get risk conditional on continuous S>=s
+        )
         
-        eq.geq.ub=1; wo.w.plac.ub=1; show.ve.curves=F
-        source(here::here("code", "cor_coxph_risk_plotting.R"))
-        
-        # restore all.markers
-        all.markers = all.markers.save
-        # return form.0 to its original form
-        form.0 = form.0[[1]]
-        comp.risk = F
+        cor_coxph_risk_plotting(
+          form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+          fname.suffix,
+          multi.imp=F,
+          dat,
+          tfinal.tpeak,
+          all.markers = "Day15"%.%assays,
+          show.ve.curves=F,
+          eq.geq.ub=1, # whether to plot risk vs S>=s
+          wo.w.plac.ub=1, # whether to plot plac
+          for.title="",
+          comp.risk=T, 
+          has.plac=F
+        )
         
       }
       

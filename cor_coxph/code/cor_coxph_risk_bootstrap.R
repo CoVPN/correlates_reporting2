@@ -1,36 +1,17 @@
-
-
-# optional input
-{
-  # controls whether we are using survey package to handle two-phase samples or coxph for cohort
-  # for svy, we expect design.dat
-  # for coxph, we expect dat
-  if (!exists("use.svy")) use.svy=T 
+cor_coxph_risk_bootstrap = function(
+  form.0,
+  fname.suffix, #used in the file names to save results
+  tfinal.tpeak,
+  numCores,
+  all.markers,
+  dat, 
+  comp.risk=F, # competing risk
+  run.Sgts=T # whether to get risk conditional on continuous S>=s
+) {
   
-  if (!exists("comp.risk")) comp.risk=F
-  
-  # whether to get risk conditional on continuous S>=s
-  if (!exists("run.Sgts")) run.Sgts=T
-}
+myprint(fname.suffix) 
 myprint(use.svy, comp.risk, run.Sgts)
-
-# mandatory input: 
-{
-  # used in the file names to save results
-  myprint(fname.suffix) 
   
-  # dat or design.dat
-  
-  print(form.0)
-  
-  # tfinal.tpeak
-  
-  # numCores
-  
-  # all.markers
-}
-
-
 
 ###################################################################################################
 cat("bootstrap vaccine arm risk, conditional on continuous S=s\n")
@@ -52,7 +33,9 @@ if(!file.exists(fname)) {
 } else {
   load(fname)
 }
-  
+assign("risks.all.1", risks.all.1, envir = .GlobalEnv) # make it available outside this function
+
+
 write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_replicates"))
 
 
@@ -77,6 +60,7 @@ if(!file.exists(fname)) {
 } else {
   load(fname)
 }
+assign("risks.all.3", risks.all.3, envir = .GlobalEnv) # make it available outside this function
 
 
 
@@ -219,3 +203,4 @@ if (!is.null(config$interaction)) {
 
 
 
+}
