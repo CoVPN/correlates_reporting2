@@ -1,6 +1,7 @@
 #Sys.setenv(TRIAL = "vat08_combined")
 #Sys.setenv(TRIAL = "id27hpv") id27hpvnAb
 #Sys.setenv(TRIAL = "janssen_partA_VL")
+#Sys.setenv(TRIAL = "janssen_pooled_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
