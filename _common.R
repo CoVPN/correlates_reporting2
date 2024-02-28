@@ -399,6 +399,7 @@ if (!is.null(config$assay_metadata)) {
   }
   
   # create assay_metadata from llods etc 
+  lods=llods
   assay_metadata = data.frame(assay=names(lloqs), lod=llods, lloq=lloqs, uloq=uloqs)
   # llox_label is treated differently b/c it may not contain bindN
   assay_metadata = cbinduneven(list(assay_metadata, llox_label=data.frame(llox_labels)))
@@ -630,8 +631,9 @@ if (exists("COR")) {
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
         if (!is.null(config.cor$Earlyendpoint)) dat.mock$Earlyendpoint=dat.mock[[config.cor$Earlyendpoint]]
         
-        # this day may be different from tpeak. it is the origin of followup days
-        tpeak1 = as.integer(sub(".*[^0-9]+", "", config.cor$EventTimePrimary))
+        # origin of followup days, may be different from tpeak
+        tpeak1 = config.cor$torigin
+        if (is.null(tpeak1)) tpeak1 = as.integer(sub(".*[^0-9]+", "", config.cor$EventTimePrimary))
         
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
@@ -660,9 +662,10 @@ if (exists("COR")) {
         
         # define tfinal.tpeak
         if (TRIAL == "moderna_boost") {
-            tfinal.tpeak = 92 # as computed in reporting3 repo
+          tfinal.tpeak = 92 # as computed in reporting3 repo
         } else if (TRIAL == "moderna_real" & COR == "D57a") {
           tfinal.tpeak = 92 # for comparing with stage 2 
+          
         } else if (TRIAL == "janssen_na_EUA") {
             tfinal.tpeak=53
         } else if (TRIAL == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
@@ -747,7 +750,7 @@ if (exists("COR")) {
           
         } else if (study_name=="COVAIL") {
           if (COR %in% c("D15to181","D92to181","D15to181BA45","D92to181BA45")) {
-            tfinal.tpeak=181
+            tfinal.tpeak=188
           } else if (COR %in% c("D15to91","D15to91BA45")) {
             tfinal.tpeak=91
           } else {
@@ -766,7 +769,7 @@ if (exists("COR")) {
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
           overall.ve = c(1 - prev.vacc/prev.plac) 
           myprint(prev.plac, prev.vacc, overall.ve)
-        }
+        } 
 
 #        # get VE in the first month or two of followup
 #        dat.tmp=dat.mock
