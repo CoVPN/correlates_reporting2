@@ -170,7 +170,9 @@ for (iObj in c(1,11,12,2,3,31)) {
     config.cor <- config::get(config = COR)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
     
-    COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+    # shift by 7 days to start counting from D15
+    COR = sub("D15to", "D22to", COR) 
+    # COR = sub("to181", "to188", COR) 
     
     cat("# Objective Peak ", 
         switch(iObj%.%"", 
@@ -242,7 +244,9 @@ for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", 
   config.cor <- config::get(config = COR)
   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
   
-  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  # shift by 7 days to start counting from D15
+  COR = sub("D15to", "D22to", COR) 
+  # COR = sub("to181", "to188", COR) 
   
   cat("# Objective Peak ", 4, ", ", sub("D15", "D22", COR), sep="")
 
@@ -283,7 +287,9 @@ for (iObj in c(1,11,12)) {
       config.cor <- config::get(config = COR)
       for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
       
-      COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+      # shift by 7 days to start counting from D15
+      COR = sub("D15to", "D22to", COR) 
+      # COR = sub("to181", "to188", COR) 
       
       fname.suffix = switch (iPop%.%"",
         '1' = 'mRNA_naive',
@@ -320,7 +326,9 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   config.cor <- config::get(config = COR)
   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
   
-  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  # shift by 7 days to start counting from D15
+  COR = sub("D15to", "D22to", COR) 
+  # COR = sub("to181", "to188", COR) 
   
   cat("## ", COR, "\n", sep="")
   
@@ -336,7 +344,9 @@ for (COR in c("D15to181BA45", "D15to91BA45", "D92to181BA45")) {
   config.cor <- config::get(config = COR)
   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
   
-  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  # shift by 7 days to start counting from D15
+  COR = sub("D15to", "D22to", COR) 
+  # COR = sub("to181", "to188", COR) 
   
   cat("## ", COR, "\n", sep="")
   
@@ -362,7 +372,9 @@ for (iObj in c(1,11)) {
     config.cor <- config::get(config = COR)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
     
-    COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+    # shift by 7 days to start counting from D15
+    COR = sub("D15to", "D22to", COR) 
+    # COR = sub("to181", "to188", COR) 
     
     for (iPop in 1:1) {
       fname.suffix = switch (iPop%.%"",
@@ -396,7 +408,9 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
   config.cor <- config::get(config = COR)
   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
   
-  COR = sub("D15to", "D22to", COR) # D15to tells the start of the follow up period
+  # shift by 7 days to start counting from D15
+  COR = sub("D15to", "D22to", COR) 
+  # COR = sub("to181", "to188", COR) 
   
   cat("## ",COR,  "\n\n", sep="")
   

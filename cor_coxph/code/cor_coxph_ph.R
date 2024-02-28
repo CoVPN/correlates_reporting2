@@ -1,7 +1,13 @@
-# mandatory input: 
-  # fname.suffix, which is used in the file names to save results
+# mandatory input
+{
+  myprint(fname.suffix) # used in the file names to save results
+  
+  # dat or design.dat
+  
+  # form.0
+}
 
-# optional inputs
+# optional input
 {
 if (is.null(show.q)) show.q=T # control whether fwer and q values are shown in tables
 
@@ -14,9 +20,9 @@ if (is.null(use.svy)) use.svy=T
 if (is.null(has.plac)) has.plac=T # control whether there are placebo data
 }
 
-# makes one table for continuous markers and one table for discrete markers
-
-myprint(fname.suffix)
+# Output:
+  # one table for continuous markers 
+  # one table for discrete markers
 
 
 ###################################################################################################

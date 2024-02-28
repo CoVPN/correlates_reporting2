@@ -1,5 +1,5 @@
-# COR="D15to181"
 # COR="D15to181BA45"
+# COR="D15to181"
 # COR="D15to91"
 # COR="D92to181"
 
@@ -71,8 +71,8 @@ dat.onedosemRNA$B_MDW_M_H = dat.onedosemRNA$B_MDW_M | dat.onedosemRNA$B_MDW_H
 
 if (COR=="D15to181") {
   form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates_riskscore))
-  dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD181
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD181
+  dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD181
   
 } else if (COR=="D15to91") {
   form.0 = update(Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ 1, as.formula(config$covariates_riskscore))
@@ -85,30 +85,33 @@ if (COR=="D15to181") {
   dat.sanofi$yy     =dat.sanofi$COVIDIndD92toD181
 
 } else if (COR=="D15to181BA45") {
-  dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD181==1 & dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   form.0 = update(Surv(COVIDtimeD22toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
-  dat.sanofi$yy     =dat.sanofi$EventIndOfInterest
+  dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD181==1 &  dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
+  dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD22toD181==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
-
+  
 } else if (COR=="D15to91BA45") {
-  dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD91==1 & dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   form.0 = update(Surv(COVIDtimeD22toD91, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD91==1 &  dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
+  dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD22toD91==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
-  dat.sanofi$yy     =dat.sanofi$EventIndOfInterest
-
+  
 } else if (COR=="D92to181BA45") {
-  dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD92toD181==1 & dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   form.0 = update(Surv(COVIDtimeD92toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD92toD181==1 &  dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
+  dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD92toD181==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
-  dat.sanofi$yy     =dat.sanofi$EventIndOfInterest
-
-} 
+  
+} else stop("Wrong COR")
 
 
 form.1 = update(form.0, ~.-naive)
 
 dat.n = subset(dat.onedosemRNA, naive==1)
 dat.nn = subset(dat.onedosemRNA, naive==0)
+
+prev.vacc = get.marginalized.risk.no.marker(form.0, dat.onedosemRNA, tfinal.tpeak)
+myprint(prev.vacc)
 
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 
@@ -125,13 +128,15 @@ show.q = F
 ################################################################################
 # Peak Obj 1-3 for mRNA vaccines
 
-# 1 and 11 are both Obj 1, no itxn
-# 2 and 21 are both Obj 2, itxn by naive
-# 3 and 31 are both Obj 3, itxn by B
+# 1, 11 and 12 are main effects models
+# 2 and 21 are itxn by naive
+# 3 and 31 are itxn by baseline markers
 for (iObj in c(1,11,12,2,21,3,31)) {
-    # iObj=1
+  # iObj=1; iPop=1  
   
-  # define all.markers
+  # define the list of all.markers to work on
+  # an item in the list need not be a single marker but is more like a formula
+
   if(iObj==1) {
     all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
     all.markers.names.short = assay_metadata$assay_label_short[match(assays,assay_metadata$assay)]
@@ -141,7 +146,6 @@ for (iObj in c(1,11,12,2,21,3,31)) {
     # B marker + D15/B
     all.markers = sapply(assays, function (a) paste0("B",a, "centered + Delta15overB",a, "centered"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    all.markers.names.short = all.markers.names.short
     # parameters for R script
     nCoef=2
     col.headers=c("center(B)", "center(D15/B)")
@@ -150,7 +154,6 @@ for (iObj in c(1,11,12,2,21,3,31)) {
     # B marker + D15 + D15^2
     all.markers = sapply(assays, function (a) paste0("B",a, "centered + Day15",a, "centered + I(Day15",a, "centered^2)"))
     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    all.markers.names.short = all.markers.names.short
     # parameters for R script
     nCoef=3
     col.headers=c("center(B)", "center(D15)", "center(D15)**2")
@@ -199,9 +202,12 @@ for (iObj in c(1,11,12,2,21,3,31)) {
     col5="center(D15 or fold) at High B"
     
   }
+  names(all.markers.names.short) = all.markers
   
-  # same formula, repeat 7 subpopulations
+  # repeat all objectives over several subpopulations, save results with different fname.suffix
+  
   for (iPop in 1:7) {
+    
     if (iPop==1) {
       dat=dat.onedosemRNA
       fname.suffix = 'mRNA_onedose'
@@ -229,13 +235,32 @@ for (iObj in c(1,11,12,2,21,3,31)) {
     } 
     
     if(iObj==1) {
+      
       source(here::here("code", "cor_coxph_ph.R"))
       
       # forest plot
       fits = lapply ("Day15"%.%assays, function (a) coxph(update(form.0, as.formula(paste0("~.+", a))), dat) )
       forest.covail (fits, names=assays, fname.suffix, save.results.to)
       
+      # risk curves using competing risk for BA45 COVID for all mRNA
+      if (COR=="D15to181BA45" & iPop==1) {
+        # only do risk curves for a small set of markers
+        all.markers.save = all.markers; all.markers = "Day15"%.%assays
+        
+        run.Sgts=F 
+        comp.risk=T
+        source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+        
+        eq.geq.ub=1
+        wo.w.plac.ub=1
+        source(here::here("code", "cor_coxph_risk_plotting.R"))
+        
+        # restore all.markers
+        all.markers = all.markers.save
+      }
+      
     } else if(iObj==11) {
+      
       fname.suffix = paste0(fname.suffix, "_B+D15")
       source(here::here("code", "cor_coxph_ph_coef.R"))
       
@@ -272,8 +297,8 @@ for (iObj in c(1,11,12,2,21,3,31)) {
   
   
   # repeat Obj 1, 11 and 12 in the naive or nonnaive subpopulation
-  # it is okay to use form.0 even though it includes naive because coxph handles it gracefully by setting everything related to it to NA
-  # but it is better to use form.1 b/c the caption uses formula and it is more clear this way
+  # it may be better to use form.1 b/c the caption uses formula, but it is harder to implement and 
+  # it is okay to use form.0 because coxph handles it gracefully by setting everything related to it to NA
   for (iPop in 1:2) {
     if (iPop==1) {
       dat=subset(dat.onedosemRNA, naive==1)
