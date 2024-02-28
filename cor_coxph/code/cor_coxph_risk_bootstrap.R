@@ -1,15 +1,18 @@
+
+
 # optional input
 {
   # controls whether we are using survey package to handle two-phase samples or coxph for cohort
   # for svy, we expect design.dat
   # for coxph, we expect dat
-  if (is.null(use.svy)) use.svy=T 
+  if (!exists("use.svy")) use.svy=T 
   
-  if (is.null(comp.risk)) comp.risk=F
+  if (!exists("comp.risk")) comp.risk=F
   
   # whether to get risk conditional on continuous S>=s
-  if (is.null(run.Sgts)) run.Sgts=F
+  if (!exists("run.Sgts")) run.Sgts=T
 }
+myprint(use.svy, comp.risk, run.Sgts)
 
 # mandatory input: 
 {
@@ -18,13 +21,6 @@
   
   # dat or design.dat
   
-  # form.0
-  # if comp.risk, make it into a list
-  if (comp.risk) {
-    form.0 = list(form.0, 
-                  as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))
-                  )
-  }
   print(form.0)
   
   # tfinal.tpeak
@@ -43,7 +39,7 @@ cat("bootstrap vaccine arm risk, conditional on continuous S=s\n")
 #   fname = paste0(save.results.to, "risks.all.1.", region, ".", variant, ".Rdata")
 # } else fname = paste0(save.results.to, "risks.all.1.Rdata")
 
-fname = paste0(save.results.to, "risks.all.1.", fname.suffix, ".Rdata")
+fname = paste0(save.results.to, "risks.all.1_", fname.suffix, ".Rdata")
 myprint(fname)
   
 if(!file.exists(fname)) {    
@@ -62,13 +58,13 @@ write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_repli
 
 
 ###################################################################################################
-cat("bootstrap vaccine arm, conditional on categorical S")
+cat("bootstrap vaccine arm, conditional on categorical S\n")
 
 # if (TRIAL=="janssen_partA_VL") {
 #   fname = paste0(save.results.to, "risks.all.3.", region, ".", variant, ".Rdata")
 # } else fname = paste0(save.results.to, "risks.all.3.Rdata")
 
-fname = paste0(save.results.to, "risks.all.3.", fname.suffix, ".Rdata")
+fname = paste0(save.results.to, "risks.all.3_", fname.suffix, ".Rdata")
 myprint(fname)
 
 if(!file.exists(fname)) {    
@@ -92,7 +88,7 @@ if (run.Sgts) {
   #   fname = paste0(save.results.to, "risks.all.2.", region, ".", variant, ".Rdata")
   # } else fname = paste0(save.results.to, "risks.all.2.Rdata")
   
-  fname = paste0(save.results.to, "risks.all.2.", fname.suffix, ".Rdata")
+  fname = paste0(save.results.to, "risks.all.2_", fname.suffix, ".Rdata")
   myprint(fname)
   
   
@@ -214,19 +210,12 @@ if (!is.null(config$interaction)) {
       } # end inner.id
       
     }
-    save(risks.itxn, file=paste0(save.results.to, "itxn.marginalized.risk.",fname.suffix,".Rdata"))
+    save(risks.itxn, file=paste0(save.results.to, "itxn.marginalized.risk_",fname.suffix,".Rdata"))
     
   } else {
-    load(paste0(save.results.to, "itxn.marginalized.risk.",fname.suffix,".Rdata"))
+    load(paste0(save.results.to, "itxn.marginalized.risk_",fname.suffix,".Rdata"))
   }
 }
 
 
 
-###################################################################################################
-# clean up
-
-# return form.0 to its original form
-if (comp.risk) {
-  form.0 = form.0[[1]]
-}

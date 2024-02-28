@@ -1,11 +1,17 @@
 ```{r, echo=FALSE, results='asis'}
+if(!exists("has.plac")) has.plac = F
+
+```
+
+
+
+```{r, echo=FALSE, results='asis'}
 if (TRIAL=="janssen_partA_VL") {
     cat("\\subsubsection{",a,"}")
 } else {
-  message  ("\\subsection{",a,"}")
-  cat  ("### ",a)
+  cat  ("### ",a,"\n")
 }
-    
+
 ```  
 
 
@@ -14,11 +20,25 @@ if (TRIAL=="janssen_partA_VL") {
   \subfloat[][Marginalized cumulative incidence rate curves for trichotomized Day `r tpeak` markers among vaccine recipients. The gray line is the overall cumulative incidence rate curve in the placebo arm.]{\includegraphics
   [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_cat_`r fname.suffix`.pdf}}
   \hspace{10pt}
-  \subfloat[][Marginalized cumulative risk as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). The horizontal lines indicate the overall cumulative risk of the placebo and vaccine arms by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r fname.suffix`} and its 95\% point-wise confidence interval. Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
-  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_eq_`r fname.suffix`.pdf}}
+  \subfloat[][Marginalized cumulative risk as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). The horizontal lines indicate the overall cumulative risk of the placebo and vaccine arms and its 95\% point-wise confidence interval. Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
+  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_eq_`r if(!has.plac) "woplacebo_"``r fname.suffix`.pdf}}
 \caption{Marginalized cumulative risk curves (=s). `r special.note`}
 \end{figure}
 \clearpage
+
+
+
+
+\begin{figure}
+\center
+  \subfloat[][log(-log) of marginalized cumulative incidence rate curves for trichotomized Day `r tpeak` markers among vaccine recipients. ]{\includegraphics
+  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_cat_logclog_`r fname.suffix`.pdf}}
+\caption{More plots. `r special.note`}
+\end{figure}
+\clearpage
+
+
+`r if (!show.ve.curves) '<!--'`
 
 
 \begin{figure}
@@ -48,21 +68,12 @@ if (TRIAL=="janssen_partA_VL") {
 \end{figure}
 \clearpage
 
-
-\begin{figure}
-\center
-  \subfloat[][log(-log) of marginalized cumulative incidence rate curves for trichotomized Day `r tpeak` markers among vaccine recipients. ]{\includegraphics
-  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_cat_logclog}}
-\caption{More plots. `r special.note`}
-\end{figure}
-\clearpage
-
 \fi
 
 
 \begin{figure}
 \center
-  \subfloat[][Marginalized cumulative risk as functions of Day `r tpeak` markers above a threshold ($\geq s$) among vaccine recipients with 95\% bootstrap point-wise confidence bands (at least 5 cases are required, \protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). The horizontal lines indicate the overall cumulative risk of the vaccine arm by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r fname.suffix`} and its 95\% point-wise confidence interval. Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
+  \subfloat[][Marginalized cumulative risk as functions of Day `r tpeak` markers above a threshold ($\geq s$) among vaccine recipients with 95\% bootstrap point-wise confidence bands (at least 5 cases are required, \protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). The horizontal lines indicate the overall cumulative risk of the vaccine arm and its 95\% point-wise confidence interval. Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
   [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_geq_woplacebo_`r fname.suffix`.pdf}}
   \hspace{10pt}
   \subfloat[][Controlled VE as functions of Day `r tpeak` markers (>=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
@@ -71,6 +82,7 @@ if (TRIAL=="janssen_partA_VL") {
 \end{figure}
 
 
+`r if (!show.ve.curves) '-->'`
 
 
 
@@ -80,6 +92,10 @@ if (TRIAL=="janssen_partA_VL") {
 \small
 \input{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_eq_`r fname.suffix`}
 
+\clearpage
+
+
+`r if (!show.ve.curves) '<!--'`
 
 \clearpage
 \setlength{\tabcolsep}{.5ex}
@@ -94,3 +110,5 @@ if (TRIAL=="janssen_partA_VL") {
 \fi
 
 \clearpage
+
+`r if (!show.ve.curves) '-->'`

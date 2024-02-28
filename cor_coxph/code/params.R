@@ -1,6 +1,6 @@
 numCores <- unname(ifelse(Sys.info()["sysname"] == "Windows",
                           1, 
-                          min(10, future::availableCores())))
+                          min(20, future::availableCores())))
 
  
 load.data=function(TRIAL, COR, trt=1) {
