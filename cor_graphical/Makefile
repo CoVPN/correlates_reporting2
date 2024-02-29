@@ -54,9 +54,9 @@ else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_partA janssen_na_partA ja
 	Rscript code/cor_data_preprocess.R D29SevereIncludeNotMolecConfirmed # Yiwen's
 	Rscript code/cor_graphics_violin_scatter.R D29SevereIncludeNotMolecConfirmed
 
-	Rscript code/cor_data_preprocess_2.R D29SevereIncludeNotMolecConfirmed # Brian's
-	Rscript code/CoR_assay_graphics.R D29SevereIncludeNotMolecConfirmed
-	Rscript code/CoR_wrcdf_with_VE_lines.R D29SevereIncludeNotMolecConfirmed
+	#Rscript code/cor_data_preprocess_2.R D29SevereIncludeNotMolecConfirmed # Brian's
+	#Rscript code/CoR_assay_graphics.R D29SevereIncludeNotMolecConfirmed
+	#Rscript code/CoR_wrcdf_with_VE_lines.R D29SevereIncludeNotMolecConfirmed
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
 	Rscript code/cor_data_preprocess.R D29VLvariant

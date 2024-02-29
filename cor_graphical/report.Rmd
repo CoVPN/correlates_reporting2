@@ -252,6 +252,7 @@ PsV-nAb ID50 Score"))))
         
         # Eventually will have to loop through assays, and combine each individual assay's boxplots into one figure
         for(time in timepoints) {
+          if (attr(config,"config")=="janssen_pooled_partA") next
           
           tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
           tpsLabels <- labels.time[tps]
@@ -273,6 +274,7 @@ PsV-nAb ID50 Score"))))
         
         # Eventually will have to loop through assays, and combine each individual assay's RCDFs into one figure
         for(time in timepoints) {
+          if (attr(config,"config")=="janssen_pooled_partA") next
           
           tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
           tpsLabels <- labels.time[tps]
@@ -300,6 +302,7 @@ PsV-nAb ID50 Score"))))
         # Only show figures if there are substantial cases
         # (I haven't seen a scenario where there aren't, but keeping this from Kendrick)
         for(time in timepoints) {
+          if (attr(config,"config")=="janssen_pooled_partA") next
           
           tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
           tpsLabels <- labels.time[tps]
