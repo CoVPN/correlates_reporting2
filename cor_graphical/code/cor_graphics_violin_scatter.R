@@ -147,6 +147,27 @@ if (COR != "D29VLvariant") { # D29VLvariant requires non-standard figures
               file_name <- paste0("Linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
               suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
             
+              p <- violin_box_plot(dat=       subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                   dat.sample=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                   ytitle=plots_ytitles[i],toptitle=plots_titles[i],
+                                   x="cohort_event",
+                                   xtitle="Cohort Event",
+                                   facetby=vars(time),
+                                   ylim=y.lim,
+                                   type="noline",
+                                   ybreaks=y.breaks,
+                                   prop.cex=prop.cex,
+                                   ll.cex=ll.cex,
+                                   pt.size=1.5,
+                                   group.num=length(timesls[[t]]),
+                                   rate.y.pos=rate.y.pos,
+                                   axis.text.x.cex=20,
+                                   n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
+                                   xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+              )
+              file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
+              suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+              
               } else if (study_name=="IARCHPV"){
                 
                 hpv_5_breakthroughs = paste(longer_cor_data$persistentindicator[!is.na(longer_cor_data$persistentindicator)], "Cases") %>% unique()
