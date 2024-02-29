@@ -1,16 +1,35 @@
 cor_coxph_risk_plotting = function(
   form.0,
-  fname.suffix,
-  multi.imp,
   dat,
+  fname.suffix,
+  save.results.to,
+  
+  config,
+  config.cor,
+  assay_metadata,
+  
   tfinal.tpeak,
   all.markers,
+  all.markers.names.short,
+  all.markers.names.long,
+  labels.assays.short,
+  marker.cutpoints,
+  
+  multi.imp=F,
+  comp.risk=F, 
+  
+  has.plac=T,
+  dat.pla.seroneg = NULL,
+  res.plac.cont = NULL,
+  prev.plac=NULL,
+  overall.ve=NULL,
+  
+  variant=NULL,
+  
   show.ve.curves=T,
   eq.geq.ub=2, # whether to plot risk vs S>=s
   wo.w.plac.ub=2, # whether to plot plac
-  for.title="",
-  comp.risk=F, 
-  has.plac=T
+  for.title=""
 ) {
 
   
@@ -19,7 +38,30 @@ myprint(eq.geq.ub, wo.w.plac.ub, for.title)
 # make form.s from form.0
 form.s=as.formula(deparse((if(comp.risk) form.0[[1]] else form.0)[[2]])%.%"~1")
 
-  
+# compute prevalence
+prev.vacc = get.marginalized.risk.no.marker(form.0, dat, tfinal.tpeak)
+
+.mfrow <- c(1, 1)
+
+# origin of followup days, may be different from tpeak
+tpeak1 = config.cor$torigin
+if (is.null(tpeak1)) tpeak1 = as.integer(sub(".*[^0-9]+", "", config.cor$EventTimePrimary))
+
+tpeak = config.cor$tpeak
+tpeaklag = config.cor$tpeaklag
+
+study_name = config$study_name
+
+assays=assay_metadata$assay
+llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
+lloqs=assay_metadata$lloq; names(lloqs)=assays
+uloqs=assay_metadata$uloq; names(uloqs)=assays
+lods=assay_metadata$lod; names(lods)=assays
+lloxs=ifelse(llox_labels=="lloq", lloqs, lods)
+lloxs=ifelse(llox_labels=="pos", assay_metadata$pos.cutoff, lloxs)
+
+
+
 ###################################################################################################
 # sensitivity analyses parameters
 
@@ -44,12 +86,12 @@ form.s=as.formula(deparse((if(comp.risk) form.0[[1]] else form.0)[[2]])%.%"~1")
   report.ve.levels=c(.65,.9,.95)
   digits.risk=4
   
-  # yy is used to chose the boundary for showing >=s risk curves 
-  if (TRIAL=="janssen_partA_VL") {
-    dat$yy = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck1"]]==variant, 1, 0)    
-  } else {
-    dat$yy = ifelse(dat$EventIndPrimary==1, 1, 0)
-  }
+  # # yy is used to chose the boundary for showing >=s risk curves 
+  # if (TRIAL=="janssen_partA_VL") {
+  #   dat$yy = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck1"]]==variant, 1, 0)    
+  # } else {
+  #   dat$yy = ifelse(dat$EventIndPrimary==1, 1, 0)
+  # }
 }
 
 
@@ -77,8 +119,9 @@ for (wo.w.plac in 1:wo.w.plac.ub) { # 1 with placebo lines, 2 without placebo li
       }
       ylims.cor[[eq.geq]][[wo.w.plac]]=ylim
     }
-    # the following is done so that the ylim looks comparable to ID50 in this trial
-    if (attr(config,"config")=="azd1222_bAb" & eq.geq==1 & wo.w.plac==2 & COR=="D57") ylim=c(0,0.05)    
+    # the following is commented out because it depends on COR
+    # make the ylim look comparable to ID50 in this trial
+    # if (attr(config,"config")=="azd1222_bAb" & eq.geq==1 & wo.w.plac==2 & COR=="D57") ylim=c(0,0.05)    
     if(verbose>=2) myprint(ylim)
     lwd=2
     
@@ -165,7 +208,7 @@ for (a in all.markers) {
   while (nrow(out)%%4!=0) out=rbind(out, c("s"="", "Estimate"=""))
   tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])
   mytex(tab, file.name=paste0(a, "_marginalized_risks_eq", "_"%.%fname.suffix), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
-        longtable=T, caption.placement = "top", label=paste0("tab marginalized_risks_eq ", COR), caption=paste0("Marginalized cumulative risk by Day ",tfinal.tpeak," as functions of Day ",
+        longtable=T, caption.placement = "top", label=paste0("tab marginalized_risks_eq ", fname.suffix), caption=paste0("Marginalized cumulative risk by Day ",tfinal.tpeak," as functions of Day ",
                                                                                                                 tpeak, " ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
                                                                                                                 ncol(risks.all[[1]]$boot)," replicates). ",
                                                                                                                 "Last four values correspond to 2.5\\%, 5.0\\%, 95.0\\%, 97.5\\%, respectively.")
@@ -227,6 +270,12 @@ for (a in all.markers) {
     
   } else {
     f1=update(form.0, as.formula(paste0("~.+",marker.name)))        
+    
+    run.svycoxph = function(f, design) {
+      fit=try(svycoxph(f, design=design), silent=T)
+      if (class(fit)[1]=="try-error") NA else fit
+    }
+    
     fit.risk=run.svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat))
     
     #    f2=update(form.0, as.formula(paste0(marker.name,"~.")))
@@ -236,7 +285,7 @@ for (a in all.markers) {
       risks.all.ter[[a]]=NA
     } else {
       risks.all.ter[[a]]=marginalized.risk(fit.risk, marker.name, subset(dat,ph2==1), 
-                                           weights=subset(dat,ph2==1,wt,drop=T), categorical.s=T, t.end=tfinal.tpeak)
+                                           weights=dat[dat$ph2==1,"wt"], categorical.s=T, t.end=tfinal.tpeak)
     }
   }
 }
@@ -342,7 +391,7 @@ for (a in all.markers) {
       
       dat$EventIndOfInterest = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
       f1=update(form.s, as.formula(paste0("~.+",marker.name)))
-      km <- survfit(f1, subset(dat, ph2==1), weights=wt)
+      km <- survfit(f1, dat[dat$ph2==1,], weights=dat[dat$ph2==1,"wt"])
       tmp=summary(km, times=x.time)            
       
       #    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
@@ -375,7 +424,7 @@ for (a in all.markers) {
     
   } else {
     f1=update(form.s, as.formula(paste0("~.+",marker.name)))
-    km <- survfit(f1, subset(dat, ph2==1), weights=wt)
+    km <- survfit(f1, dat[dat$ph2==1,], weights=dat[dat$ph2==1,"wt"])
     tmp=summary(km, times=x.time)            
     
     # the use of cbinduneven helps to get around these exceptions if they do occur
@@ -443,7 +492,7 @@ for (a in all.markers) {
 cat("make trichotomized markers, marginalized risk and controlled risk table")
 
 res=sapply (all.markers, function(a) {        
-  risks=risks.all.3[[a]]
+  risks=get("risks.all.3")[[a]]
   with(risks, c(prob[3]/prob[1], quantile(boot[3,]/boot[1,], c(.025,.975), na.rm=T)))
 })
 #    
@@ -544,9 +593,9 @@ for (eq.geq in 1:5) {
         ylim=c(0,1)
       }
     } else if (eq.geq %in% c(4,5)) {
-      ylim=-log(1-ve_ylim_log)
+      ylim=-log(1-config$ve_ylim_log)
     } else {
-      ylim=ve_ylim
+      ylim=config$ve_ylim
     }
     
     ncases=sapply(risks$marker, function(s) sum(dat$yy[dat[[a]]>=s], na.rm=T))        
@@ -656,7 +705,7 @@ for (eq.geq in 1:5) {
       while (nrow(out)%%4!=0) out=rbind(out, c("s"="", "Estimate"=""))
       tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])        
       mytex(tab, file.name=paste0(a, "_controlled_ve_sens_eq", "_"%.%fname.suffix), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
-            longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_sens_eq ", COR), caption=paste0("Controlled VE with sensitivity analysis as functions of Day ",
+            longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_sens_eq ", fname.suffix), caption=paste0("Controlled VE with sensitivity analysis as functions of Day ",
                                                                                                                     tpeak," ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
                                                                                                                     ncol(risks.all[[1]]$boot)," replicates). ",
                                                                                                                     "Last four values correspond to 2.5\\%, 5.0\\%, 95.0\\%, 97.5\\%, respectively.")
@@ -693,7 +742,7 @@ for(a in all.markers) {
   tab=cbind(ret[1:(nrow(ret)/4), ], ret[1:(nrow(ret)/4)+(nrow(ret)/4), ], ret[1:(nrow(ret)/4)+(nrow(ret)/4*2), ], ret[1:(nrow(ret)/4)+(nrow(ret)/4*3), ])
   
   mytex(tab, file.name=paste0(a, "_controlled_ve_eq", "_"%.%fname.suffix), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
-        longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", COR), 
+        longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", fname.suffix), 
         caption=paste0("Controlled VE as functions of Day ",
                        tpeak," ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
                        ncol(risks.all[[1]]$boot)," replicates). ", 
@@ -717,6 +766,8 @@ for(a in all.markers) {
 # interaction models and risk curves
 
 if (!is.null(config$interaction)) {
+  risks.itxn = get("risks.itxn")
+  
   for (ab in config$interaction) {
     tmp = trim(strsplit(ab, " *\\* *")[[1]])
     aold = tmp[1]

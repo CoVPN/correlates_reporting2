@@ -358,7 +358,7 @@ covail: &covail
   assay_metadata: assay_metadata/covail_assay_metadata.csv
   covariates_riskscore: ~.+ FOIstandardized + standardized_risk_score + naive
   low_efficacy: no
-  num_boot_replicates: 1000
+  num_boot_replicates: 10
   num_perm_replicates: 10
   primary_assays: []
 

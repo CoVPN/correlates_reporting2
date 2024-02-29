@@ -1,16 +1,22 @@
 cor_coxph_risk_bootstrap = function(
   form.0,
+  dat,
   fname.suffix, #used in the file names to save results
+  save.results.to,
+  
+  tpeak,
   tfinal.tpeak,
-  numCores,
   all.markers,
-  dat, 
+  
+  numCores,
+  B,
+  
   comp.risk=F, # competing risk
   run.Sgts=T # whether to get risk conditional on continuous S>=s
 ) {
   
 myprint(fname.suffix) 
-myprint(use.svy, comp.risk, run.Sgts)
+myprint(comp.risk, run.Sgts)
   
 
 ###################################################################################################
@@ -86,6 +92,7 @@ if (run.Sgts) {
   } else {
     load(fname)
   }
+  assign("risks.all.2", risks.all.2, envir = .GlobalEnv) # make it available outside this function
 }
 
 
@@ -108,7 +115,7 @@ if (!is.null(config$interaction)) {
       
       # idx=2: only use vaccine arm. idx=1 uses placebo data and structural knowledge; it is commented out and moved to the end of the file
       dat.ph1=dat            
-      data.ph2=subset(dat.ph1, ph2==1)     
+      data.ph2=dat.ph1[dat.ph1$ph2==1,]     
       
       # fit the interaction model and save regression results to a table
       f= update(form.0, as.formula(paste0("~.+", a," + ",b," + ",a,":",b)))
@@ -160,7 +167,7 @@ if (!is.null(config$interaction)) {
           #                                          subset(dat.ph1, Trt==0)[sample.int(nrow(subset(dat.ph1, Trt==0)), r=TRUE),])         
           dat.b = bootstrap.case.control.samples(dat.ph1, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2")
           
-          dat.b.ph2=subset(dat.b, ph2==1)
+          dat.b.ph2=dat.b[dat.b$ph2==1,]
           with(dat.b, table(Wstratum, ph2))     
           
           # inline design object b/c it may also throw an error
@@ -199,6 +206,9 @@ if (!is.null(config$interaction)) {
   } else {
     load(paste0(save.results.to, "itxn.marginalized.risk_",fname.suffix,".Rdata"))
   }
+  
+  assign("risks.itxn", risks.itxn, envir = .GlobalEnv) # make it available outside this function
+  
 }
 
 

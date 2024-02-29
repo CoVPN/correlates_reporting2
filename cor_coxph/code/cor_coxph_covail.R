@@ -4,7 +4,7 @@
 # COR="D92to181"
 
 renv::activate(project = here::here(".."))
-Sys.setenv(TRIAL = "covail"); 
+Sys.setenv(TRIAL = "covail")
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
 source(here::here("code", "cor_coxph_risk_bootstrap.R"))
@@ -112,9 +112,6 @@ form.1 = update(form.0, ~.-naive)
 
 dat.n = subset(dat.onedosemRNA, naive==1)
 dat.nn = subset(dat.onedosemRNA, naive==0)
-
-prev.vacc = get.marginalized.risk.no.marker(form.0, dat.onedosemRNA, tfinal.tpeak)
-myprint(prev.vacc)
 
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 
@@ -249,28 +246,52 @@ for (iObj in c(1,11,12,2,21,3,31)) {
         
         cor_coxph_risk_bootstrap(  
           form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
-          fname.suffix, 
-          tfinal.tpeak,
-          numCores,
-          all.markers = "Day15"%.%assays,
           dat, 
+          fname.suffix, 
+          save.results.to,
+          
+          tpeak,
+          tfinal.tpeak,
+          all.markers = "Day15"%.%assays,
+          
+          numCores,
+          B,
+          
           comp.risk=T, 
           run.Sgts=F # whether to get risk conditional on continuous S>=s
         )
         
         cor_coxph_risk_plotting(
           form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
-          fname.suffix,
-          multi.imp=F,
           dat,
+          fname.suffix,
+          save.results.to,
+          
+          config,
+          config.cor,
+          assay_metadata,
+          
           tfinal.tpeak,
           all.markers = "Day15"%.%assays,
+          all.markers.names.short,
+          all.markers.names.long,
+          labels.assays.short,
+          marker.cutpoints,
+
+          multi.imp=F,
+          comp.risk=T, 
+          
+          has.plac=F,
+          dat.pla.seroneg = NULL,
+          res.plac.cont = NULL,
+          prev.plac=NULL,
+          
+          variant=NULL,
+          
           show.ve.curves=F,
           eq.geq.ub=1, # whether to plot risk vs S>=s
           wo.w.plac.ub=1, # whether to plot plac
-          for.title="",
-          comp.risk=T, 
-          has.plac=F
+          for.title=""
         )
         
       }
