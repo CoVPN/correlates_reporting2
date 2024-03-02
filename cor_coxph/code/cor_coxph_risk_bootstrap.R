@@ -1,40 +1,23 @@
-# optional input
-{
-  # controls whether we are using survey package to handle two-phase samples or coxph for cohort
-  # for svy, we expect design.dat
-  # for coxph, we expect dat
-  if (is.null(use.svy)) use.svy=T 
+cor_coxph_risk_bootstrap = function(
+  form.0,
+  dat,
+  fname.suffix, #used in the file names to save results
+  save.results.to,
   
-  if (is.null(comp.risk)) comp.risk=F
+  tpeak,
+  tfinal.tpeak,
+  all.markers,
   
-  # whether to get risk conditional on continuous S>=s
-  if (is.null(run.Sgts)) run.Sgts=F
-}
-
-# mandatory input: 
-{
-  # used in the file names to save results
-  myprint(fname.suffix) 
+  numCores,
+  B,
   
-  # dat or design.dat
+  comp.risk=F, # competing risk
+  run.Sgts=T # whether to get risk conditional on continuous S>=s
+) {
   
-  # form.0
-  # if comp.risk, make it into a list
-  if (comp.risk) {
-    form.0 = list(form.0, 
-                  as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))
-                  )
-  }
-  print(form.0)
+myprint(fname.suffix) 
+myprint(comp.risk, run.Sgts)
   
-  # tfinal.tpeak
-  
-  # numCores
-  
-  # all.markers
-}
-
-
 
 ###################################################################################################
 cat("bootstrap vaccine arm risk, conditional on continuous S=s\n")
@@ -43,7 +26,7 @@ cat("bootstrap vaccine arm risk, conditional on continuous S=s\n")
 #   fname = paste0(save.results.to, "risks.all.1.", region, ".", variant, ".Rdata")
 # } else fname = paste0(save.results.to, "risks.all.1.Rdata")
 
-fname = paste0(save.results.to, "risks.all.1.", fname.suffix, ".Rdata")
+fname = paste0(save.results.to, "risks.all.1_", fname.suffix, ".Rdata")
 myprint(fname)
   
 if(!file.exists(fname)) {    
@@ -56,19 +39,21 @@ if(!file.exists(fname)) {
 } else {
   load(fname)
 }
-  
+assign("risks.all.1", risks.all.1, envir = .GlobalEnv) # make it available outside this function
+
+
 write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_replicates"))
 
 
 
 ###################################################################################################
-cat("bootstrap vaccine arm, conditional on categorical S")
+cat("bootstrap vaccine arm, conditional on categorical S\n")
 
 # if (TRIAL=="janssen_partA_VL") {
 #   fname = paste0(save.results.to, "risks.all.3.", region, ".", variant, ".Rdata")
 # } else fname = paste0(save.results.to, "risks.all.3.Rdata")
 
-fname = paste0(save.results.to, "risks.all.3.", fname.suffix, ".Rdata")
+fname = paste0(save.results.to, "risks.all.3_", fname.suffix, ".Rdata")
 myprint(fname)
 
 if(!file.exists(fname)) {    
@@ -81,6 +66,7 @@ if(!file.exists(fname)) {
 } else {
   load(fname)
 }
+assign("risks.all.3", risks.all.3, envir = .GlobalEnv) # make it available outside this function
 
 
 
@@ -92,7 +78,7 @@ if (run.Sgts) {
   #   fname = paste0(save.results.to, "risks.all.2.", region, ".", variant, ".Rdata")
   # } else fname = paste0(save.results.to, "risks.all.2.Rdata")
   
-  fname = paste0(save.results.to, "risks.all.2.", fname.suffix, ".Rdata")
+  fname = paste0(save.results.to, "risks.all.2_", fname.suffix, ".Rdata")
   myprint(fname)
   
   
@@ -106,6 +92,7 @@ if (run.Sgts) {
   } else {
     load(fname)
   }
+  assign("risks.all.2", risks.all.2, envir = .GlobalEnv) # make it available outside this function
 }
 
 
@@ -128,7 +115,7 @@ if (!is.null(config$interaction)) {
       
       # idx=2: only use vaccine arm. idx=1 uses placebo data and structural knowledge; it is commented out and moved to the end of the file
       dat.ph1=dat            
-      data.ph2=subset(dat.ph1, ph2==1)     
+      data.ph2=dat.ph1[dat.ph1$ph2==1,]     
       
       # fit the interaction model and save regression results to a table
       f= update(form.0, as.formula(paste0("~.+", a," + ",b," + ",a,":",b)))
@@ -180,7 +167,7 @@ if (!is.null(config$interaction)) {
           #                                          subset(dat.ph1, Trt==0)[sample.int(nrow(subset(dat.ph1, Trt==0)), r=TRUE),])         
           dat.b = bootstrap.case.control.samples(dat.ph1, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2")
           
-          dat.b.ph2=subset(dat.b, ph2==1)
+          dat.b.ph2=dat.b[dat.b$ph2==1,]
           with(dat.b, table(Wstratum, ph2))     
           
           # inline design object b/c it may also throw an error
@@ -214,19 +201,16 @@ if (!is.null(config$interaction)) {
       } # end inner.id
       
     }
-    save(risks.itxn, file=paste0(save.results.to, "itxn.marginalized.risk.",fname.suffix,".Rdata"))
+    save(risks.itxn, file=paste0(save.results.to, "itxn.marginalized.risk_",fname.suffix,".Rdata"))
     
   } else {
-    load(paste0(save.results.to, "itxn.marginalized.risk.",fname.suffix,".Rdata"))
+    load(paste0(save.results.to, "itxn.marginalized.risk_",fname.suffix,".Rdata"))
   }
+  
+  assign("risks.itxn", risks.itxn, envir = .GlobalEnv) # make it available outside this function
+  
 }
 
 
 
-###################################################################################################
-# clean up
-
-# return form.0 to its original form
-if (comp.risk) {
-  form.0 = form.0[[1]]
 }
