@@ -1,18 +1,15 @@
 ---
 title: "Novavax UK 302"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-```
-
-```{r, echo=FALSE, include=FALSE}
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240212.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240301.csv')
 
 # dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
 # assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
@@ -22,31 +19,33 @@ dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK30
 
 
 
-```{r, echo=FALSE, include=FALSE}
-with(dat_mapped, mytable(EventIndPrimaryD35, Trt))
-```
-
-
-```{r, echo=TRUE, include=TRUE}
+Sampling is stratified on region.
+```{r}
 with(dat_mapped, table(Site, EventIndPrimaryD35, Trt))
-```
-
-
-```{r, echo=TRUE, include=TRUE}
 with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0), mytable(SampleSet, EventIndPrimaryD35, Trt))
+
 ```
 
-```{r, echo=TRUE, include=TRUE}
+Immune markers come from several studies. SubcohortInd is defined as 3.Case + 3.Control and that is what we will use for our correlates study. 
+```{r}
 with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(SampleSet, SubcohortInd, EventIndPrimaryD35))
 ```
 
+There is one ptid in 3.Case in the table above, whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. They are not a case by a stringent criterion but is by a relaxed criterion.
 
-```{r, echo=TRUE, include=TRUE}
+```{r}
 # this 3.Case is ambiguous
-subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & EventIndPrimaryD35==0 & SampleSet=="3.Case")
+subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & EventIndPrimaryD35==0 & SampleSet=="3.Case", select=c(Subjectid, AnyinfectionD1, EventIndPrimaryD1))
 ```
 
-```{r, echo=TRUE, include=TRUE}
-# this control drops out before D35
+
+There are also 16 ptids without marekrs whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. We will exclude all such ptids from ph1.D35.
+```{r}
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(AnyinfectionD1, EventIndPrimaryD1, SubcohortInd))
+```
+
+
+This control drops out before D35
+```{r}
 subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & is.na(EventIndPrimaryD35) & SampleSet=="3.Control")
 ```
