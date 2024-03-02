@@ -8,7 +8,7 @@
 # two showing the effects of the continuous marker in each level of the trichotomized marker
 
 # control whether fwer and q values are shown in tables
-if (is.null(show.q)) show.q=T
+if (!exists("show.q")) show.q=T
 
 ###################################################################################################
 if(verbose) print("Regression for continuous markers")

@@ -4,13 +4,15 @@
 # COR="D92to181"
 
 renv::activate(project = here::here(".."))
-Sys.setenv(TRIAL = "covail"); 
+Sys.setenv(TRIAL = "covail")
 source(here::here("..", "_common.R")) 
+source(here::here("code", "params.R"))
+source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+source(here::here("code", "cor_coxph_risk_plotting.R"))
 
 
 {
 Sys.setenv(VERBOSE = 1) 
-source(here::here("code", "params.R"))
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(xtable) # this is a dependency of kyotil
 library(marginalizedRisk)
@@ -26,6 +28,7 @@ library(glue)
 time.start=Sys.time()
 print(date())
 
+multi.imp=FALSE
 
 # path for figures and tables etc
 save.results.to = here::here("output"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
@@ -110,16 +113,12 @@ form.1 = update(form.0, ~.-naive)
 dat.n = subset(dat.onedosemRNA, naive==1)
 dat.nn = subset(dat.onedosemRNA, naive==0)
 
-prev.vacc = get.marginalized.risk.no.marker(form.0, dat.onedosemRNA, tfinal.tpeak)
-myprint(prev.vacc)
-
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 
 # parameters for ph R scripts
 show.q=F # no multiplicity adjustment
 use.svy = F 
 has.plac = F
-show.q = F
 }
 
 
@@ -132,7 +131,7 @@ show.q = F
 # 2 and 21 are itxn by naive
 # 3 and 31 are itxn by baseline markers
 for (iObj in c(1,11,12,2,21,3,31)) {
-  # iObj=1; iPop=1  
+# iObj=1; iPop=1  
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
@@ -244,19 +243,57 @@ for (iObj in c(1,11,12,2,21,3,31)) {
       
       # risk curves using competing risk for BA45 COVID for all mRNA
       if (COR=="D15to181BA45" & iPop==1) {
-        # only do risk curves for a small set of markers
-        all.markers.save = all.markers; all.markers = "Day15"%.%assays
         
-        run.Sgts=F 
-        comp.risk=T
-        source(here::here("code", "cor_coxph_risk_bootstrap.R"))
+        cor_coxph_risk_bootstrap(  
+          form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+          dat, 
+          fname.suffix, 
+          save.results.to,
+          
+          tpeak,
+          tfinal.tpeak,
+          all.markers = "Day15"%.%assays,
+          
+          numCores,
+          B,
+          
+          comp.risk=T, 
+          run.Sgts=F # whether to get risk conditional on continuous S>=s
+        )
         
-        eq.geq.ub=1
-        wo.w.plac.ub=1
-        source(here::here("code", "cor_coxph_risk_plotting.R"))
+        cor_coxph_risk_plotting(
+          form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+          dat,
+          fname.suffix,
+          save.results.to,
+          
+          config,
+          config.cor,
+          assay_metadata,
+          
+          tfinal.tpeak,
+          all.markers = "Day15"%.%assays,
+          all.markers.names.short,
+          all.markers.names.long,
+          labels.assays.short,
+          marker.cutpoints,
+
+          multi.imp=F,
+          comp.risk=T, 
+          
+          has.plac=F,
+          dat.pla.seroneg = NULL,
+          res.plac.cont = NULL,
+          prev.plac=NULL,
+          
+          variant=NULL,
+          
+          show.ve.curves=F,
+          eq.geq.ub=1, # whether to plot risk vs S>=s
+          wo.w.plac.ub=1, # whether to plot plac
+          for.title=""
+        )
         
-        # restore all.markers
-        all.markers = all.markers.save
       }
       
     } else if(iObj==11) {
@@ -471,6 +508,8 @@ for (i in 1:3) { # three different populations: N+NN, N, NN
   zphmarker = rbind(zphmarker, sapply(fits[1:2], function(fit) cox.zph(fit)$table[length(coef(fit)),"p"]))
   
   tab=getFormattedSummary(fits[1:6], type=6, robust=F, exp=T)[-(1:ifelse(i==1,3,2)),,drop=F]
+  # # make row names shorter to fit the page
+  # rownames(tab)=sub("centered","",rownames(tab))
   mytex(tab, file.name="mdw_models_"%.%suffix, input.foldername=save.results.to, align="c")
   
 }

@@ -1,5 +1,6 @@
 ```{r, echo=FALSE, results='asis'}
-if(is.null(fname.suffix)) fname.suffix = ''
+if(!exists("fname.suffix")) fname.suffix = ''
+if(!exists("show.risk.curves")) show.risk.curves = F
 ```
 
 
@@ -132,6 +133,27 @@ if (TRIAL=="janssen_partA_VL") {
 ```
 
 
+
+
+
+```{r, echo=FALSE, results='asis'}
+
+  tmp = config$multivariate_assays
+  if (!is.null(multivariate_assays)) {
+    tmp = multivariate_assays
+  } 
+  if (!is.null(tmp)) {
+    cat("## Multivariate Cox Models of Risk\n\n")
+    for (i in 1:length(tmp)) {
+      res = knitr::knit_child(c(here::here('cor_coxph', 'multiple_regression.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+  }
+
+```
+
+
+
 <!-- ## Marginalized risk and controlled vaccine efficacy plots -->
 
 <!-- \setlength{\tabcolsep}{.5ex} -->
@@ -160,30 +182,16 @@ if (TRIAL=="janssen_partA_VL") {
 <!-- \clearpage -->
 
 
-<!-- ```{r, echo=FALSE, results='asis'} -->
-<!--   for (a in all.markers) { -->
-<!--     assay=marker.name.to.assay(a) -->
-<!--     res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE) -->
-<!--     cat(res, sep = '\n') -->
-<!--   } -->
-<!-- ``` -->
-
-
-
 ```{r, echo=FALSE, results='asis'}
 
-  tmp = config$multivariate_assays
-  if (!is.null(multivariate_assays)) {
-    tmp = multivariate_assays
-  } 
-  if (!is.null(tmp)) {
-    cat("## Multivariate Cox Models of Risk\n\n")
-    for (i in 1:length(tmp)) {
-      res = knitr::knit_child(c(here::here('cor_coxph', 'multiple_regression.Rmd')), quiet = TRUE)
-      cat(res, sep = '\n')
-    }
+if (show.risk.curves) {
+  for (a in all.markers) {
+    assay=marker.name.to.assay(a)
+    res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
   }
-
+  
+}
 ```
 
 
