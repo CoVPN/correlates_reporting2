@@ -421,10 +421,7 @@ nvvx_uk302: &nvvx_uk302
   times: [Day35]
   time_labels: [Day 35]
   data_cleaned: /trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240303.csv
-  assays: [bindSpike]
-  llox_label: [LLOQ]
-  assay_labels: [Binding Antibody to Spike]
-  assay_labels_short: [Anti Spike IgG (BAU/ml)]
+  assay_metadata: assay_metadata/nvx_uk302_assay_metadata.csv
   study_name: UK302
   covariates_riskscore: ~.+ Senior
   ve_ylim: [0,1]
