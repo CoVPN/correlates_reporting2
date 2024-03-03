@@ -415,6 +415,26 @@ prevent19_stage2: &prevent19_stage2
   num_perm_replicates: 10000
   
 
+nvvx_uk302: &nvvx_uk302
+  two_marker_timepoints: no
+  timepoints: [35]
+  times: [Day35]
+  time_labels: [Day 35]
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240303.csv
+  assays: [bindSpike]
+  llox_label: [LLOQ]
+  assay_labels: [Binding Antibody to Spike]
+  assay_labels_short: [Anti Spike IgG (BAU/ml)]
+  study_name: UK302
+  covariates_riskscore: ~.+ Senior
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
+  low_efficacy: no
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  
+  
+  
 azd1222_base: &azd1222_base
   <<: *ows_trial
   two_marker_timepoints: yes
