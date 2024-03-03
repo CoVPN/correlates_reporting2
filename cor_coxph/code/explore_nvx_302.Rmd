@@ -1,52 +1,107 @@
 ---
 title: "Novavax UK 302"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-```
-
-```{r, echo=FALSE, include=FALSE}
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240212.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240301.csv')
 
-# dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
-# assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
-# assays=assay_metadata$assay
+dat_proc = read.csv('/trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240303.csv')
+
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/nvx_uk302_assay_metadata.csv')
+assays=assay_metadata$assay
 
 ```
 
 
 
-```{r, echo=FALSE, include=FALSE}
-with(dat_mapped, mytable(EventIndPrimaryD35, Trt))
-```
-
-
-```{r, echo=TRUE, include=TRUE}
+Sampling is stratified on region.
+```{r}
 with(dat_mapped, table(Site, EventIndPrimaryD35, Trt))
-```
-
-
-```{r, echo=TRUE, include=TRUE}
 with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0), mytable(SampleSet, EventIndPrimaryD35, Trt))
+
 ```
 
-```{r, echo=TRUE, include=TRUE}
+Immune markers come from several studies. In addition to the samples collected to study the correlates, the database contains antibody measurements from a separate immunogenicity study and a flu study. We will only use the samples collected for the correlates study because 1) all but 1 case are in this set, 2) we don't know if we can compute sampling probabilities for the other samples, and 3) to avoid potential batch effects because samples for different studies were run at different times.
+
+SubcohortInd is defined as 3.Case + 3.Control and that is what we will use for our correlates study. Note that there are about 400 samples from the placebo arm.
+```{r}
+cat("Vaccine\n\n")
 with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(SampleSet, SubcohortInd, EventIndPrimaryD35))
+cat("\n\n")
+cat("Placebo\n\n")
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==0), mytable(SampleSet, SubcohortInd, EventIndPrimaryD35))
 ```
 
+There is one ptid in 3.Case in the table above, whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. They are not a case by a stringent criterion but is by a relaxed criterion.
 
-```{r, echo=TRUE, include=TRUE}
+```{r}
 # this 3.Case is ambiguous
-subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & EventIndPrimaryD35==0 & SampleSet=="3.Case")
+subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & EventIndPrimaryD35==0 & SampleSet=="3.Case", select=c(Subjectid, AnyinfectionD1, EventIndPrimaryD1))
 ```
 
-```{r, echo=TRUE, include=TRUE}
-# this control drops out before D35
+
+There are also 16 ptids without marekrs whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. We will exclude all such ptids from ph1.D35.
+```{r}
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(AnyinfectionD1, EventIndPrimaryD1, SubcohortInd))
+```
+
+
+This control drops out before D35
+```{r}
 subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & is.na(EventIndPrimaryD35) & SampleSet=="3.Control")
+```
+
+
+Correlation plot between baseline and D35 marker suggests that the lower limit for the assay is around 1 on the log10 scale.
+```{r}
+par(mfrow=c(1,2))
+lim=range(dat_mapped$Day35bindSpike, na.rm=T)
+corplot(Day35bindSpike~BbindSpike, dat_mapped[dat_mapped$Trt==1,], xlim=lim, asp=1, main="Vacc")
+corplot(Day35bindSpike~BbindSpike, dat_mapped[dat_mapped$Trt==0,], xlim=lim, asp=1, main="Plac")
+```
+
+
+The positivity rate is low at D35, around 50%.
+```{r}
+hist(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & SubcohortInd==1)$Day35bindSpike)
+```
+
+
+Risk factors investigation. Age is a risk factor in placebo but not vaccine. Test interaction is not signficant. Thus will adjust for age>=65, which is also one of the stratification variables.
+```{r}
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Site+Age+Sex, subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Site+Age+Sex, subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Site+Sex+Age*Trt, subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Site+Sex+I(Age>=65)*Trt, subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0))
+```
+
+
+VE as context
+```{r}
+with (subset(dat_proc, ph1.D35==1), table.prop(EventIndPrimaryD35, Trt))
+cat("VE: "); myprint(1-0.3/1.4)
+```
+
+
+The distribution of case/control and ph1/ph2:
+```{r}
+with(subset(dat_proc, ph1.D35==1 & Trt==1), mytable(ph2.D35, EventIndPrimaryD35))
+```
+
+
+Distribution of sampling weights looks normal. There is one case stratum and six controls strata formed by Senior x Site.
+```{r}
+with (subset(dat_proc, ph1.D35==1 & Trt==1), table(wt.D35, Senior, EventIndPrimaryD35))
+```
+
+Immunogenicity
+```{r}
+myboxplot(Day35bindSpike~Trt+Senior, subset(dat_proc, ph2.D35==1), names=c("plac,young","vacc,young","plac,senior","vacc,senior"))
+# with(subset(dat_proc, ph2.D35==1), mytable(Trt, Day35bindSpikecat))
 ```
