@@ -63,22 +63,23 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
     trt_lb=": Vaccine Arm."
     trt="vaccine_bseroneg"
     
-    for (region in c("LA", "SA")) {
-      for (marker in ("NAb" #,"Spike", "NAb_Spike"
-                      )) {
-                  marker_lb = ifelse(marker=="NAb", "PsV-nAb ID50 Markers", ifelse(marker=="Spike", "Anti-Spike Binding Ab Markers", ifelse(marker=="NAb_Spike", "PsV-nAb ID50 and Anti-Spike Binding Ab Markers")))
+    #for (region in c("LA", "SA")) {
+    #  for (marker in ("NAb" #,"Spike", "NAb_Spike"
+    #                  )) {
+    #              marker_lb = ifelse(marker=="NAb", "PsV-nAb ID50 Markers", ifelse(marker=="Spike", "Anti-Spike Binding Ab Markers", ifelse(marker=="NAb_Spike", "PsV-nAb ID50 and Anti-Spike Binding Ab Markers")))
                   
-                  pair_title_beginner = "Pairwise Correlation Matrix between "
-        		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant.Rmd')), quiet = TRUE)
-        		      cat(res, sep = '\n')
-        		      cat("\\clearpage", sep = '\n')
+    #              pair_title_beginner = "Pairwise Correlation Matrix between "
+    #    		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_pair_variant.Rmd')), quiet = TRUE)
+    #    		      cat(res, sep = '\n')
+    #    		      cat("\\clearpage", sep = '\n')
         		      
-      }
-    }
+    #  }
+    #}
     
-    for (region in c("LA", "LA_pooled", "SA", "SA_pooled")) {
-      for (marker in ("NAb" #,"Spike"
-                      )) {
+    for (region in c("LATAM", #"LATAM_pooled", 
+                     "ZA"#, #"ZA_pooled"
+                     )) {
+      for (marker in c("nAb","bAb")) {
         		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_rcdf_variant.Rmd')), quiet = TRUE)
         		      cat(res, sep = '\n')
         		      cat("\\clearpage", sep = '\n')
@@ -86,18 +87,17 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
     }
     
     
-    for (region in c("LA", "SA")) {
-      for (marker in ("NAb" #,"Spike"
-                      )) {
+    for (region in c("LATAM", "ZA")) {
+      for (marker in c("nAb", "bAb")) {
         		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_spider_variant.Rmd')), quiet = TRUE)
         		      cat(res, sep = '\n')
         		      cat("\\clearpage", sep = '\n')
       }
     }
     
-    for (region in c("LA", "SA", "US")) {
-      for (marker in ("NAb" #,"Spike"
-                      )) {
+    for (region in c("LATAM", "ZA", "NAM")) {
+      for (marker in c("nAb", "bAb")) {
+        if (region=="NAM" && marker=="nAb") next
         		      res = knitr::knit_child(c(here::here('cor_graphical', 'report_violin_variant.Rmd')), quiet = TRUE)
         		      cat(res, sep = '\n')
         		      cat("\\clearpage", sep = '\n')

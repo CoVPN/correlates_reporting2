@@ -1,6 +1,7 @@
 #Sys.setenv(TRIAL = "profiscov"); lloxs = lloqs
 #Sys.setenv(TRIAL = "profiscov_all"); lloxs = llods
 #Sys.setenv(TRIAL = "vat08_combined");
+#Sys.setenv(TRIAL = "janssen_partA_VL");
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -8,10 +9,7 @@ Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
-uloqs=assay_metadata$uloq; names(uloqs)=assays
-pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assays
-loqs=assay_metadata$lloq; names(loqs)=assays
-lods=assay_metadata$lod; names(lods)=assays
+if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 #-----------------------------------------------
 
 library(here)
@@ -92,10 +90,8 @@ if (F){
                !is.na(BbindSpike) & !is.na(Day43bindSpike))) # 344
   
 }
-  
-#dat.mock <- read.csv(data_name, header = TRUE)
 
-# for unknown reason, the Senior variable has no value in the PROFISCOV (Butantan, Sinovac) dataset
+# for unknown reason, there is no pre-set senior and race variables in the PROFISCOV (Butantan, Sinovac) dataset
 if (study_name=="PROFISCOV") {
   dat.mock$Senior <- as.numeric(with(dat.mock, Age >= age.cutoff, 1, 0))
   
@@ -116,6 +112,7 @@ if (study_name=="PROFISCOV") {
 }
 
 if(T){ # for ENSEMBLE SA and LA reports only
+  # pseudoneutid50la and pseudoneutid50sa don't have baseline variables, so
   # copy Bpseudoneutid50 to Bpseudoneutid50la & calculate delta value if Day29pseudoneutid50la exists and is required for reporting
   # copy Bpseudoneutid50 to Bpseudoneutid50sa & calculate delta value if Day29pseudoneutid50sa exists and is required for reporting
   if ("Day29pseudoneutid50la" %in% colnames(dat.mock) & "pseudoneutid50la" %in% assays) {
@@ -143,8 +140,8 @@ twophase_sample_id <- dat.twophase.sample$Ptid
 important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex",
   "Bserostatus", "Senior", "Bstratum", "wt.subcohort", 
   "race","EthnicityHispanic","EthnicityNotreported", 
-  "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCove") "HIVinfection", 
-  if (study_name !="COVE" & study_name !="MockCove" & study_name !="PROFISCOV") "Country")
+  "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
+  if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV") "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
 
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;
@@ -154,15 +151,15 @@ dat.long.subject_level <- dat[, important.columns] %>%
   bind_rows()
 
 
-dat.long.assay_value.names <- times
+dat.long.assay_value.names <- c(times, if(attr(config,"config")=="janssen_partA_VL") "Day71", if(attr(config,"config")=="janssen_partA_VL") "Mon6")
 dat.long.assay_value <- as.data.frame(matrix(
   nrow = nrow(dat) * length(assay_immuno),
   ncol = length(dat.long.assay_value.names)
 ))
 colnames(dat.long.assay_value) <- dat.long.assay_value.names
 
-for (tt in seq_along(times)) {
-  dat_mock_col_names <- paste(times[tt], assay_immuno, sep = "")
+for (tt in seq_along(dat.long.assay_value.names)) {
+  dat_mock_col_names <- paste(dat.long.assay_value.names[tt], assay_immuno, sep = "")
   dat.long.assay_value[, dat.long.assay_value.names[tt]] <- unlist(lapply(
     dat_mock_col_names,
     function(nn) {
@@ -193,18 +190,12 @@ dat.twophase.sample <- subset(dat, Ptid %in% twophase_sample_id)
 
 
 # labels of the demographic strata for the subgroup plotting
-dat.long.twophase.sample$trt_bstatus_label <-
+dat.long.twophase.sample$trt_bstatus_label <- # e.g. Placebo, Baseline Neg 
   with(
     dat.long.twophase.sample,
     factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
       levels = c("11", "12", "21", "22"),
       labels = paste0(rep(c("Placebo","Vaccine"), each=2), ", ", rep(bstatus.labels))
-      #c(
-        #"Placebo, Baseline Neg",
-        #"Placebo, Baseline Pos",
-        #"Vaccine, Baseline Neg",
-        #"Vaccine, Baseline Pos"
-      #)
     )
   )
 
@@ -354,8 +345,9 @@ if(study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
   }), levels = names(countries.ENSEMBLE))
 }
 
-if(study_name!="COVE" & study_name!="MockCOVE") {dat.long.twophase.sample$hiv_label <- factor(sapply(dat.long.twophase.sample$HIVinfection, function(x) {
-  ifelse(x,
+if(study_name!="COVE" & study_name!="MockCOVE") {
+  dat.long.twophase.sample$hiv_label <- factor(sapply(dat.long.twophase.sample$HIVinfection, function(x) {
+    ifelse(x,
          "HIV Positive",
          "HIV Negative")
 }), levels=c("HIV Negative", "HIV Positive"))
@@ -385,7 +377,7 @@ saveRDS(as.data.frame(dat.twophase.sample),
 
 # longer format by assay and time
 dat.longer.immuno.subset <- dat.twophase.sample %>%
-  tidyr::pivot_longer(cols = all_of(c(outer(times, assays, "%.%"))), names_to = "time_assay", values_to = "value") %>%
+  tidyr::pivot_longer(cols = all_of(c(outer(times, assays, "%.%")))[all_of(c(outer(times, assays, "%.%"))) %in% colnames(dat.twophase.sample)], names_to = "time_assay", values_to = "value") %>%
   mutate(time = gsub(paste0(assays, collapse = "|"), "", time_assay),
          assay = gsub(paste0("^", times, collapse = "|"), "", time_assay))
 
@@ -399,7 +391,7 @@ resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(res
 # add label = LLoQ, uloq values to show in the plot
 dat.longer.immuno.subset$LLoD = with(dat.longer.immuno.subset, log10(lods[as.character(assay)]))
 dat.longer.immuno.subset$pos.cutoffs = with(dat.longer.immuno.subset, log10(pos.cutoffs[as.character(assay)]))
-dat.longer.immuno.subset$LLoQ = with(dat.longer.immuno.subset, log10(loqs[as.character(assay)]))
+dat.longer.immuno.subset$LLoQ = with(dat.longer.immuno.subset, log10(lloqs[as.character(assay)]))
 dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "LoQ", "LoD"))
 dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), LLoQ, LLoD))
 
@@ -407,23 +399,38 @@ dat.longer.immuno.subset$ULoQ = with(dat.longer.immuno.subset, log10(uloqs[as.ch
 dat.longer.immuno.subset$lb2 = "ULoQ"
 dat.longer.immuno.subset$lbval2 =  dat.longer.immuno.subset$ULoQ
 
-# 759 unique ids, 6 timepoints, 15 assays
+# derive variables for the figures
 dat.longer.immuno.subset <- dat.longer.immuno.subset %>%
   mutate(category=paste0(time, assay, "Resp")) %>%
-  select(Ptid, time, assay, category, Trt, Bserostatus, value, wt.subcohort, pos.cutoffs,
-         lbval,lbval2,
-         lb,lb2) %>%
   left_join(resp_by_time_assay, by=c("Ptid", "category"))
+
+dat.longer.immuno.subset <- dat.longer.immuno.subset[,c("Ptid", "time", "assay", "category", "Trt", "Bserostatus", 
+                                                        "value", "wt.subcohort", "pos.cutoffs","lbval","lbval2", 
+                                                        "lb","lb2",if(attr(config,"config")=="janssen_partA_VL") "Region", 
+                                                        if(study_name=="VAT08") "nnaive", "response")]
+
+dat.longer.immuno.subset$nnaive <- with(dat.longer.immuno.subset, factor(Bserostatus, levels = c(0, 1), labels = bstatus.labels))
+dat.longer.immuno.subset$Trt <- with(dat.longer.immuno.subset, factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")))
+dat.longer.immuno.subset$Trt_nnaive = with(dat.longer.immuno.subset, 
+                                             factor(paste(Trt, nnaive), 
+                    levels = paste(rep(c("Vaccine", "Placebo"), each=2), rep(bstatus.labels, each=2)),
+                    labels = paste0(rep(c("Vaccine", "Placebo"), each=2), "\n", rep(bstatus.labels, each=2))))
 
 # subsets for violin/line plots
 #### figure specific data prep
-# 1. define response rate:
-# 2. make subsample datasets such that the violin plot only shows <= 100 non-case data points
+# define response rate:
 
-#### for figures 1, 2, 3, 4: by naive/non-naive, vaccine/placebo, (Day 1), Day 22 Day 43, Day 22 - 1, Day 43 - 1
+#### for figures 1
 groupby_vars1=c("Trt", "Bserostatus", "time", "assay")
 
 # define response rate
 dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1)
-write.csv(dat.longer.immuno.subset.plot1, file = here::here("data_clean", "longer_immuno_data_plot1.csv"), row.names=F)
 saveRDS(dat.longer.immuno.subset.plot1, file = here::here("data_clean", "longer_immuno_data_plot1.rds"))
+
+if(attr(config,"config")=="janssen_partA_VL") {
+  groupby_vars1.2=c("Trt", "Bserostatus", "Region", "time", "assay")
+  
+  # define response rate
+  dat.longer.immuno.subset.plot1.2 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1.2)
+  saveRDS(dat.longer.immuno.subset.plot1.2, file = here::here("data_clean", "longer_immuno_data_plot1.2.rds"))
+}

@@ -3,8 +3,8 @@
 renv::activate(project = here::here(".."))
 library(GGally)
 library(stringr)
-require(devtools)
-install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
+#require(devtools)
+#install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org") # for warning suppression in the covid_corr_plot_functions.R
 library(grid)
 library(gridExtra)
 install.packages("wCorr", repos = "http://cran.us.r-project.org") # for the weightedCorr() in pairplot, weighted correlation

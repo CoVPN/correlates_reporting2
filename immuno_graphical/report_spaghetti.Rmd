@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("spaghetti_plot", ind, "_BaselineNeg_", study_name, ".pdf"))`}
+
+\caption{`r paste0("Spaghetti plots for Day29 markers, Latin America")`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}
