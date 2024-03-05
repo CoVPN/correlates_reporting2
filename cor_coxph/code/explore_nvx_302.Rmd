@@ -57,8 +57,12 @@ This control drops out before D35
 subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & is.na(EventIndPrimaryD35) & SampleSet=="3.Control")
 ```
 
+The minimum marker value is 0.9 on the antilog scale, which suggests that the lower limit is 1.8.
+```{r}
+10**sort(unique(dat_mapped$BbindSpike))[1:10]
+```
 
-Correlation plot between baseline and D35 marker suggests that the lower limit for the assay is around 1 on the log10 scale.
+Correlation plot between baseline and D35 marker suggests that under 10 (antilog scale), the values are non-specific. But it does not matter too much for our study because only a few ptids are in that range in the vaccine arm.
 ```{r}
 par(mfrow=c(1,2))
 lim=range(dat_mapped$Day35bindSpike, na.rm=T)
@@ -67,9 +71,9 @@ corplot(Day35bindSpike~BbindSpike, dat_mapped[dat_mapped$Trt==0,], xlim=lim, asp
 ```
 
 
-The positivity rate is low at D35, around 50%.
-```{r}
-hist(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & SubcohortInd==1)$Day35bindSpike)
+Distribution of D35 marker in the trt.
+```{r, echo=T}
+hist(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & SubcohortInd==1)$Day35bindSpike, main="")
 ```
 
 
