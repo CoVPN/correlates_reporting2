@@ -1,3 +1,12 @@
 panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label
 id50,1,pseudoneutid50_D614G,51,127411,40,40,PsV Neutralization to D614G,nAb ID50 D614G (AU/ml),lod
 id50,2,pseudoneutid50_Delta,50,145858,40,40,PsV Neutralization to Delta,nAb DI50 Delta (AU/ml),lod
+
+bindSpike,1,bindSpike_D614,,,,,Binding Antibody to Spike D614,Anti Spike IgG - Reference (AU/ml),loq
+bindSpike,2,bindSpike_Beta,,,,,Binding Antibody to Spike Beta,Anti Spike IgG - Beta (AU/ml),loq
+bindSpike,3,bindSpike_Alpha,,,,,Binding Antibody to Spike Alpha,Anti Spike IgG - Alpha (AU/ml),loq
+bindSpike,4,bindSpike_Gamma,,,,,Binding Antibody to Spike Gamma,Anti Spike IgG - Gamma (AU/ml),loq
+bindSpike,5,bindSpike_Delta1,,,,,Binding Antibody to Spike Delta AY.4.2,Anti Spike IgG - Delta AY.4.2 (AU/ml),loq
+bindSpike,6,bindSpike_Delta3,,,,,Binding Antibody to Spike Delta Alt Seq 1,Anti Spike IgG - Delta Alt Seq 1 (AU/ml),loq
+bindSpike,7,bindSpike_Delta2,,,,,Binding Antibody to Spike Delta Alt Seq 2,Anti Spike IgG - Delta Alt Seq 2 (AU/ml),loq
+bindSpike,8,bindSpike_Omicron,,,,,Binding Antibody to Spike Omicron,Anti Spike IgG - Omicron (AU/ml),loq
