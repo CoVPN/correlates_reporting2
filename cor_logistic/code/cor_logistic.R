@@ -1,10 +1,10 @@
+#Sys.setenv(TRIAL = "id27hpv"); COR="M18"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "id27hpvnAb"); COR="M18nAb"; Sys.setenv(VERBOSE = 1) 
+
 # restrict to <=14 year olds
 # Consider hpv31 infections, it seems that we only need to consider hpv18 and 31 ab. 
 # drop age group and add region in regression models. 
 # different weights
-
-#Sys.setenv(TRIAL = "id27hpv"); COR="M18"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "id27hpvnAb"); COR="M18nAb"; Sys.setenv(VERBOSE = 1) 
 
 print(paste0("starting time: ", date()))
 renv::activate(project = here::here(".."))     
@@ -161,10 +161,10 @@ nevents=sum(dat.ph1$yy==1)
 # make pretty table
 rows=length(coef(fits[[1]]))
 est=getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=1)
-ci= getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=13)
+ci= getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=7)
 p=  getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=10)
 est.scaled=getFormattedSummary(fits.scaled, exp=T, robust=T, rows=rows, type=1)
-ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=T, rows=rows, type=13)
+ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=T, rows=rows, type=7)
 
 pvals.cont = sapply(fits, function(x) {
     tmp=getFixedEf(x)
@@ -333,7 +333,7 @@ get.est=function(a) {
 get.ci =function(a) {
   fit=fits.tri[[a]]
   rows=length(fit$coef) - (marker.levels[a]-2):0
-  out = getFormattedSummary(list(fit), exp=T, robust=T, rows=rows, type=13)
+  out = getFormattedSummary(list(fit), exp=T, robust=T, rows=rows, type=7)
   if (length(out)==1) c(NA,out) else out
 }
 get.p  =function(a) {

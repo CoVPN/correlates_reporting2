@@ -11,7 +11,7 @@ library(kyotil)
 
 dat_mapped_stage1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage1/adata/COVID_AstraZeneca_realdata_20221208.csv')
  
-dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240226.csv')
+dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240306.csv')
 
 dat_mapped$EarlyendpointD57 <- with(dat_mapped, EarlyinfectionD57==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD57 + 7),1,0)
 dat_mapped$ph1.D57 = with(dat_mapped, EarlyendpointD57==0 & Perprotocol==1 & EventTimePrimaryD57 >= 7)
@@ -24,6 +24,17 @@ assays=assay_metadata$assay
 ```
 
 
+Only the vaccine arm is sampled. 
+```{r}
+mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list)
+```
+
+
+```{r}
+dat_mapped$EventIndPrimaryD1
+
+dat_mapped$
+```
 
 Number of severe cases is >20, allowing for severe study
 ```{r}

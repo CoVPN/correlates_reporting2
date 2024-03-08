@@ -9,11 +9,11 @@ knitr::opts_chunk$set(echo = FALSE)
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240304.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240305.csv')
 # dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_stage2_data_processed_20230928.csv')
 
-dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD35 + 7),1,0)
-dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & EventTimePrimaryD35 >= 7)
+dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (DeltaEventIndD1==1 & DeltaEventTimeD1 < NumberdaysD1toD35 + 7),1,0)
+dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & DeltaEventTimeD35 >= 7)
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/prevent19_stage2_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -22,10 +22,6 @@ assays
 times=c("Day35","C1","BD1","DD1")
 ```
 
-Number of severe cases
-```{r}
-with(subset(dat_mapped, ph1.D35==1), mytable(Severity))
-```
 
 ### Data descriptives
 
@@ -35,10 +31,62 @@ mytable(dat_mapped$Trt)
 mytable(dat_mapped$Bserostatus)
 ```
 
+About half of the ptids have missing BD1 date
+```{r}
+mytable(dat_mapped$NumberdaysD1toBD1 - dat_mapped$DeltaEventTimeD1 < 0)
+```
+
+Many of the ptids with missing BD1 date have markers
+```{r}
+mytable(is.na(dat_mapped$NumberdaysD1toBD1), !is.na(dat_mapped$Day35bindSpike_Delta3))
+```
+
+There are 13 severe cases in the study window, of which 7 have markers. The number is too small to study severe correlates.
+```{r}
+with(subset(dat_mapped, ph1.D35==1), mytable(Severity_first, !is.na(Day35bindSpike_Delta3))) #  & NumberdaysD1toBD1>=DeltaEventTimeD1
+```
+
+Distribution of variant first (variant of the first COVID event). Not all Delta have markers b/c sampling requires DD2 samples.
+```{r}
+# fix variant coding. empty string to empty string
+dat_mapped$VARTYPE_first1 = sapply(strsplit(dat_mapped$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
+
+with(subset(dat_mapped, ph1.D35==1), mytable(VARTYPE_first1, !is.na(Day35bindSpike_Delta3)))
+```
+
+Distribution of variant second:
+```{r}
+# fix variant codeing
+dat_mapped$VARTYPE_second1 = sapply(strsplit(dat_mapped$VARTYPE_second,","), function (x) ifelse(length(x)==0, "Unknown", x[1]))
+
+with(subset(dat_mapped, ph1.D35==1), mytable(VARTYPE_second1, !is.na(Day35bindSpike_Delta3)))
+```
+
+
+Distribution of variants type between the first and second COVID events shows that Delta is always the first.
+```{r}
+with (subset(dat_mapped, !is.na(VARTYPE_second1)), mytable(paste(VARTYPE_first1, VARTYPE_second1, sep=",")))
+```
+
+Distribution of severity and variants
+```{r}
+with(subset(dat_mapped, ph1.D35==1), mytable(Severity_first, VARTYPE_first1)) 
+
+```
+
+Comparing timing of events of different variants. Re-do this with DD1 date
+
+```{r}
+myboxplot(EventTimeFirstD1~VARTYPE_first1, dat_mapped, ylab="EventTimeFirstD1")
+myboxplot(EventTimeFirstD1~VARTYPE_first1, subset(dat_mapped, !is.na(Day35bindSpike_Delta3)), ylab="EventTimeFirstD1")
+```
+
 D35ancestralnAbBatch is the first two digits in the Monogram accession number and represents year. Most nAb were measured in 2023. Earlier samples may be from Stage 1 study.
 ```{r}
 mytable(dat_mapped$D35ancestralnAbBatch)
 ```
+
+
 
 Stage 2 sampling lists:
 

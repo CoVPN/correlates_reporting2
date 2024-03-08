@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240301.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240305.csv')
 
 dat_proc = read.csv('/trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240303.csv')
 
@@ -59,7 +59,7 @@ subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt=
 
 The minimum marker value is 0.9 on the antilog scale, which suggests that the lower limit is 1.8.
 ```{r}
-10**sort(unique(dat_mapped$BbindSpike))[1:10]
+10**sort(unique(dat_mapped$BbindNVXIgG))[1:10]
 ```
 
 Correlation plot between baseline and D35 marker suggests that under 10 (antilog scale), the values are non-specific. But it does not matter too much for our study because only a few ptids are in that range in the vaccine arm.

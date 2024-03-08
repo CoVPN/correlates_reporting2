@@ -8,8 +8,63 @@ knitr::opts_chunk$set(echo = FALSE)
 
 library(survey)
 library(kyotil)
+library(readxl)
+
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20240305.csv')
+dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD35 + 7),1,0)
+dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & EventTimePrimaryD35 >= 7)
+
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240307.csv')
+
+dat_raw=read_excel('/trials/covpn/p3004/download_data/formatted_for_fred_hutch.xlsx')
 ```
 
+## For the bindNVXIgG correlates in the addendum 
+
+The number of cases in the mapped data is 15.
+```{r}
+with (dat_mapped, mytable(EventIndPrimaryD1, Trt))
+```
+
+
+There are 1750 subjects (with the new marker), of which 1710 belong to the original Stage 1 dataset. 
+```{r}
+mytable(!is.na(dat_mapped$Day35bindNVXIgG), dat_mapped$EventIndPrimaryD1)
+mytable(!is.na(dat_raw[,"IGG Day 35"]))
+sum(("2019nCoV301-"%.%dat_raw[,1,drop=T]) %in% dat_mapped$Subjectid)
+```
+
+Number of cases is 15 in the vaccine arm. 12 out of 15 are in ph1.D35, these 12 have both bindSpike and bindNVXIgG.
+```{r}
+with(subset(dat_mapped, Trt==1), mytable(EventIndPrimaryD1, Country))
+with(subset(dat_mapped, Trt==1), mytable(EventIndPrimaryD1, ph1.D35))
+with(subset(dat_mapped, Trt==1), mytable(EventIndPrimaryD1, !is.na(Day35bindSpike)))
+with(subset(dat_mapped, Trt==1), mytable(EventIndPrimaryD1, !is.na(Day35bindNVXIgG)))
+subset(dat_mapped, Subjectid=="2019nCoV301-US147-0424")
+with(subset(dat_mapped, ph1.D35 & Trt==1), mytable(!is.na(Day35bindSpike), !is.na(Day35bindNVXIgG), EventIndPrimaryD1))
+```
+
+
+The smallest value of NVX IgG is 100, consistent with LLOQ being 200. Assume LOD and pos.cutoff are also 200 and ULOQ is Inf
+```{r}
+10**(sort(dat_mapped$Day35bindNVXIgG)[1:20])
+```
+
+Compare NVX IgG with USG bindSpike. Only 20% overlap between 
+```{r}
+with(subset(dat_mapped, ph1.D35 & Trt==1), mytable(!is.na(Day35bindSpike), !is.na(Day35bindNVXIgG), EventIndPrimaryD1))
+with(subset(dat_mapped, ph1.D35 & Trt==1), mypairs(cbind(Day35bindSpike, Day35bindNVXIgG)))
+```
+
+Compare NVX IgG with USG bindSpike in dat_proc
+```{r}
+with(subset(dat_proc, ph1.D35 & Trt==1 & Country==0 & Bserostatus==0), mytable(ph2.D35, ph2.D35NVX, EventIndPrimaryD1))
+with(subset(dat_proc, ph1.D35 & Trt==1 & Country==0 & Bserostatus==0), mytable(tps.stratum))
+with(subset(dat_proc, ph1.D35 & Trt==1 & Country==0 & Bserostatus==0 & ph2.D35NVX & ph2.D35), mytable(EventIndPrimaryD1, tps.stratum))
+```
+
+
+## Older stuff
 
 binding Ab
 ```{r}
@@ -44,26 +99,12 @@ tab=with(dat.1, mytable(Patient.Number, PVC))
 
 
 
-Earlier stuff
-```{r}
-dat=as.data.frame(read_excel("../Novavax/COVPN Sample Strata Freqs.xlsx"))
-
-dat$racestrata[dat$country=="MX"]=""
-dat$comorbid[dat$country=="MX"]=""
-
-dat$country[dat$country=="MX"]="XM"
-dat$N=dat$Frequency
-
-dat=aggregate(N~agestrata+racestrata+comorbid+country+blserostat, dat, sum)
-
-cbind(dat, n=c(rep("100+12",8), rep("50+6",2), rep("35+35",8), rep("13+13",2)))
-```
 
 
 This supports imputing ID50 by Spike binding.
 ```{r}
-dat.04=read.csv("/trials/covpn/p3004/analysis/mapping_immune_correlates/adata/COVID_Novavax_realdata_20220404.csv")
-dat.18=read.csv("/trials/covpn/p3004/analysis/mapping_immune_correlates/adata/COVID_Novavax_realdata_20220418.csv")
+dat.04=read.csv("/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20220404.csv")
+dat.18=read.csv("/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20220418.csv")
 
 dat.tmp.1=subset(dat.04, Subjectid %in% c("2019nCoV301-US049-0039","2019nCoV301-US159-0063","2019nCoV301-US159-0135","2019nCoV301-US162-0231"
                                           ,"2019nCoV301-US163-0193","2019nCoV301-US172-0511","2019nCoV301-US200-0046","2019nCoV301-US228-0067"
@@ -74,19 +115,14 @@ dat.tmp.2=subset(dat.18, Subjectid %in% c("2019nCoV301-US049-0039","2019nCoV301-
                                           ,"2019nCoV301-US228-0210","2019nCoV301-US239-0100","2019nCoV301-US241-0121","2019nCoV301-US242-0118"
 ))$Day35pseudoneutid50
 
-with(subset(dat.1, Trt==1), mytable(!is.na(Day35bindSpike), !is.na(Day35pseudoneutid50), EventIndPrimaryD35))
-```
-
-```{r}
-with(subset(dat.1, Trt==1), mytable(!is.na(BbindSpike), !is.na(Bpseudoneutid50), EventIndPrimaryD35))
+# Need to add Trt to dat.1
+# with(subset(dat.1, Trt==1), mytable(!is.na(Day35bindSpike), !is.na(Day35pseudoneutid50), EventIndPrimaryD35))
 ```
 
 
 
-
-
 ```{r}
-dat.2.pr.new=read.csv("/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_with_riskscore.csv")
+dat.2.pr.new=read.csv("/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20230928.csv")
 dat.2.pr.old=read.csv("/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/archive/prevent19_data_processed_with_riskscore_2022-04-04 time 18.05.03.csv")
 
 dat.tmp.1=subset(dat.2.pr.new, Ptid %in% c("2019nCoV301-US049-0039","2019nCoV301-US159-0063","2019nCoV301-US159-0135","2019nCoV301-US162-0231"
@@ -99,16 +135,8 @@ dat.tmp.2=subset(dat.2.pr.old, Ptid %in% c("2019nCoV301-US049-0039","2019nCoV301
 ))$Day35pseudoneutid50
 
 
-with(subset(dat.2.pr, Trt==1), mytable(EventIndPrimaryD57, Country, ph1.D57))
-with(subset(dat.2.pr, Trt==1 & ph1.D57==1), mytable(EventIndPrimaryD57, Country, ph2.D57))
-
-with(subset(dat.2.pr, Trt==1 & Bserostatus==0), mytable(EventIndPrimaryD35, ph1.D35))
-
 with(subset(dat.2.pr.new, Trt==1 & SubcohortInd==1 & Country==0), mytable(!is.na(BbindSpike)&!is.na(Day35bindSpike), ph1.D35))
 
-with(subset(dat.mock, Country==0 & SubcohortInd), mytable(Bserostatus, Trt))
-with(subset(dat.mock, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1), mytable(!is.na(BbindSpike), !is.na(Day35bindSpike)))
-with(subset(dat.mock, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1), mytable(!is.na(Bpseudoneutid50), !is.na(Day35pseudoneutid50)))
 with(subset(dat.2.pr.new, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1 & ph1.D35 & !is.na(BbindSpike) & !is.na(Day35bindSpike)), mytable(is.na(Day35pseudoneutid50), EventIndPrimaryD35))
 
 with(subset(dat.2.pr.new, Country==0 & SubcohortInd==1 & Bserostatus==0 & Trt==1 & Perprotocol ), mytable(!is.na(BbindSpike)&!is.na(Day35bindSpike)) )
@@ -141,3 +169,18 @@ dat.tmp.1==dat.tmp.2
 
 
 
+
+Stuff for sampling plan 
+```{r}
+# dat=as.data.frame(read_excel("../Novavax/COVPN Sample Strata Freqs.xlsx"))
+# 
+# dat$racestrata[dat$country=="MX"]=""
+# dat$comorbid[dat$country=="MX"]=""
+# 
+# dat$country[dat$country=="MX"]="XM"
+# dat$N=dat$Frequency
+# 
+# dat=aggregate(N~agestrata+racestrata+comorbid+country+blserostat, dat, sum)
+# 
+# cbind(dat, n=c(rep("100+12",8), rep("50+6",2), rep("35+35",8), rep("13+13",2)))
+```
