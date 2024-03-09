@@ -10,6 +10,8 @@ print(paste0("starting time: ", date()))
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) # dat.mock is made
 
+
+{
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
 library(survey)
@@ -106,7 +108,7 @@ nn1=tab[,2]
 
 begin=Sys.time()
 
-
+}
 
 
 
