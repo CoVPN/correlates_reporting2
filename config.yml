@@ -348,7 +348,7 @@ vat08_combined: &vat08_combined
 
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240211.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240305.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
@@ -385,7 +385,7 @@ prevent19: &prevent19
   timepoints: [35]
   times: [B, Day35, Delta35overB]
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20230928.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240307.csv
   assays: [bindSpike, bindRBD, pseudoneutid50]
   llox_label: [LLOQ, LLOQ, LOD]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
@@ -420,7 +420,7 @@ nvvx_uk302: &nvvx_uk302
   timepoints: [35]
   times: [Day35]
   time_labels: [Day 35]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240303.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240310.csv
   assay_metadata: assay_metadata/nvx_uk302_assay_metadata.csv
   study_name: UK302
   covariates_riskscore: ~.+ Senior

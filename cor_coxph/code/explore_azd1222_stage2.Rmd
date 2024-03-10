@@ -4,17 +4,16 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 
-```
-
-```{r, echo=FALSE, include=FALSE}
 library(survey)
 library(kyotil)
 
+dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240306.csv')
 dat_mapped_stage1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage1/adata/COVID_AstraZeneca_realdata_20221208.csv')
  
-dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240226.csv')
+dat_mapped$EarlyendpointD57 <- with(dat_mapped, EarlyinfectionD57==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD57 + 7),1,0)
+dat_mapped$ph1.D57 = with(dat_mapped, EarlyendpointD57==0 & Perprotocol==1 & EventTimePrimaryD57 >= 7)
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/azd1222_stage2_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -24,20 +23,39 @@ assays=assay_metadata$assay
 ```
 
 
+Only the vaccine arm is sampled. 
+```{r}
+mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list)
+```
+
+
+```{r}
+dat_mapped$EventIndPrimaryD1
+
+dat_mapped$
+```
+
+Number of severe cases is >20, allowing for severe study
+```{r}
+with(subset(dat_mapped, ph1.D57==1), mytable(EventIndPrimarySevere))
+```
+
+
+
 Verifying marker values are subject to lower limits
-```{r, echo=FALSE, include=FALSE}
+```{r}
 print(sort(unique(dat_mapped$Day57pseudoneutid50_D614G))[1:5])
 print(sort(unique(dat_mapped$Day57pseudoneutid50_Delta))[1:5])
 ```
 
 Correlation between ancestral ID50 and Delta ID50
-```{r, echo=TRUE, include=TRUE}
+```{r}
 corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped)
 ```
 
 
 Compare severe and moderate case indicators
-```{r, echo=TRUE, include=TRUE}
+```{r}
 # with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable())
 
 mytable(dat_mapped$SevereEventIndPrimaryIncludeNotMolecConfirmedD1)

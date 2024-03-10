@@ -1,3 +1,4 @@
 panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label
 id50,1,pseudoneutid50_D614G,51,127411,40,40,PsV Neutralization to D614G,nAb ID50 D614G (AU/ml),lod
 id50,2,pseudoneutid50_Delta,50,145858,40,40,PsV Neutralization to Delta,nAb DI50 Delta (AU/ml),lod
+
