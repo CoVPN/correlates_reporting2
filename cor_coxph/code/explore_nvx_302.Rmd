@@ -19,39 +19,28 @@ assays=assay_metadata$assay
 ```
 
 
-
-Sampling is stratified on region.
-```{r}
-with(dat_mapped, table(Site, EventIndPrimaryD35, Trt))
-with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0), mytable(SampleSet, EventIndPrimaryD35, Trt))
-
-```
+### Marker set
 
 Immune markers come from several studies. In addition to the samples collected to study the correlates, the database contains antibody measurements from a separate immunogenicity study and a flu study. We will only use the samples collected for the correlates study because 1) we don't know if we can compute sampling probabilities for the other samples, 2) to avoid potential batch effects because samples for different studies were run at different times, and 3) 17 out of 19 cases with markers are in this set. Hence, we define SubcohortIn as 3.Case + 3.Control and that is what we will use for our correlates study. 
 ```{r}
 with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(SampleSet, EventIndPrimaryD35))
 ```
-```{r}
-with(subset(dat_proc, ph1.D35 & Bserostatus==0 & Trt==1), mytable(SampleSet, EventIndPrimaryD35))
-```
 
 There is one ptid in 3.Case in the table above, whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. They are not a case by a stringent criterion but is by a relaxed criterion.
 ```{r}
-# this 3.Case is ambiguous
 subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & EventIndPrimaryD35==0 & SampleSet=="3.Case", select=c(Subjectid, AnyinfectionD1, EventIndPrimaryD1))
 ```
-
 
 There are also 16 ptids without marekrs whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. We will exclude all such ptids from ph1.D35.
 ```{r}
 with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & AnyinfectionD1==1 & EventIndPrimaryD1==0), mytable( SubcohortInd))
 ```
-
-
-This control drops out before D35
+In the analysis data, the one ptid within 3.case and with EventIndPrimaryD35==0 has been filtered out.
 ```{r}
-subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & is.na(EventIndPrimaryD35) & SampleSet=="3.Control")
+with(subset(dat_proc, ph1.D35 & Bserostatus==0 & Trt==1), mytable(SampleSet, EventIndPrimaryD35))
 ```
+
+### Marker data
 
 The minimum marker value is 100 on the antilog scale, which suggests that the lower limit is 200.
 ```{r}
@@ -65,10 +54,18 @@ lim=range(dat_mapped$Day35bindNVXIgG, na.rm=T)
 corplot(Day35bindNVXIgG~BbindNVXIgG, dat_mapped[dat_mapped$Trt==1,], xlim=lim, asp=1, main="Vacc")
 corplot(Day35bindNVXIgG~BbindNVXIgG, dat_mapped[dat_mapped$Trt==0,], xlim=lim, asp=1, main="Plac")
 ```
+
 This does not matter too much for our study because only a few ptids are in that range in the vaccine arm:
 ```{r, echo=T}
 hist(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & SubcohortInd==1)$Day35bindNVXIgG, main="")
 ```
+
+Marker is higher in the young people than the old people.
+```{r}
+myboxplot(Day35bindNVXIgG~Trt+Senior, subset(dat_proc, ph2.D35==1), names=c("plac,young","vacc,young","plac,senior","vacc,senior"))
+# with(subset(dat_proc, ph2.D35==1), mytable(Trt, Day35bindNVXIgGcat))
+```
+
 
 
 ### Risk factors 
@@ -93,14 +90,15 @@ Numbers of case/control in ph1/ph2:
 with(subset(dat_proc, ph1.D35==1 & Trt==1), mytable(ph2.D35, EventIndPrimaryD35))
 ```
 
+### Twophase sampling
+
+Sampling is stratified on region.
+```{r}
+with(dat_mapped, table(Site, EventIndPrimaryD35, Trt))
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0), mytable(SampleSet, EventIndPrimaryD35, Trt))
+```
 
 Distribution of sampling weights looks normal. There is one case stratum and six controls strata formed by Senior x Site.
 ```{r}
 with (subset(dat_proc, ph1.D35==1 & Trt==1), table(wt.D35, Senior, EventIndPrimaryD35))
-```
-
-Immunogenicity
-```{r}
-myboxplot(Day35bindNVXIgG~Trt+Senior, subset(dat_proc, ph2.D35==1), names=c("plac,young","vacc,young","plac,senior","vacc,senior"))
-# with(subset(dat_proc, ph2.D35==1), mytable(Trt, Day35bindNVXIgGcat))
 ```
