@@ -3,9 +3,9 @@
 library(here)
 library(stringr)
 
-#labels.title2 <- apply(labels.title, c(1, 2), function(st) {
-#  str_replace(st, ":", "\n")
-#})
+labels.title2 <- apply(labels.title, c(1, 2), function(st) {
+  str_replace(st, ":", "\n")
+})
 
 if (study_name=="IARCHPV") {
   trt.labels <- c("Single-dose","Two-dose","Two doses default","Three-dose")
