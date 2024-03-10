@@ -420,7 +420,7 @@ nvvx_uk302: &nvvx_uk302
   timepoints: [35]
   times: [Day35]
   time_labels: [Day 35]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240303.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240310.csv
   assay_metadata: assay_metadata/nvx_uk302_assay_metadata.csv
   study_name: UK302
   covariates_riskscore: ~.+ Senior

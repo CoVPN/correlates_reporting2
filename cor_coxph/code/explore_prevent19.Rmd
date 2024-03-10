@@ -19,52 +19,6 @@ dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_
 dat_raw=read_excel('/trials/covpn/p3004/download_data/formatted_for_fred_hutch.xlsx')
 ```
 
-## For the bindNVXIgG correlates in the addendum 
-
-The number of cases in the mapped data is 15.
-```{r}
-with (dat_mapped, mytable(EventIndPrimaryD1, Trt))
-```
-
-
-There are 1750 subjects (with the new marker), of which 1710 belong to the original Stage 1 dataset. 
-```{r}
-mytable(!is.na(dat_mapped$Day35bindNVXIgG), dat_mapped$EventIndPrimaryD1)
-mytable(!is.na(dat_raw[,"IGG Day 35"]))
-sum(("2019nCoV301-"%.%dat_raw[,1,drop=T]) %in% dat_mapped$Subjectid)
-```
-
-Number of cases is 15 in the vaccine arm. 12 out of 15 are in ph1.D35, these 12 have both bindSpike and bindNVXIgG.
-```{r}
-with(subset(dat_mapped, Trt==1), mytable(EventIndPrimaryD1, Country))
-with(subset(dat_mapped, Trt==1), mytable(EventIndPrimaryD1, ph1.D35))
-with(subset(dat_mapped, Trt==1), mytable(EventIndPrimaryD1, !is.na(Day35bindSpike)))
-with(subset(dat_mapped, Trt==1), mytable(EventIndPrimaryD1, !is.na(Day35bindNVXIgG)))
-subset(dat_mapped, Subjectid=="2019nCoV301-US147-0424")
-with(subset(dat_mapped, ph1.D35 & Trt==1), mytable(!is.na(Day35bindSpike), !is.na(Day35bindNVXIgG), EventIndPrimaryD1))
-```
-
-
-The smallest value of NVX IgG is 100, consistent with LLOQ being 200. Assume LOD and pos.cutoff are also 200 and ULOQ is Inf
-```{r}
-10**(sort(dat_mapped$Day35bindNVXIgG)[1:20])
-```
-
-Compare NVX IgG with USG bindSpike. Only 20% overlap between 
-```{r}
-with(subset(dat_mapped, ph1.D35 & Trt==1), mytable(!is.na(Day35bindSpike), !is.na(Day35bindNVXIgG), EventIndPrimaryD1))
-with(subset(dat_mapped, ph1.D35 & Trt==1), mypairs(cbind(Day35bindSpike, Day35bindNVXIgG)))
-```
-
-Compare NVX IgG with USG bindSpike in dat_proc
-```{r}
-with(subset(dat_proc, ph1.D35 & Trt==1 & Country==0 & Bserostatus==0), mytable(ph2.D35, ph2.D35NVX, EventIndPrimaryD1))
-with(subset(dat_proc, ph1.D35 & Trt==1 & Country==0 & Bserostatus==0), mytable(tps.stratum))
-with(subset(dat_proc, ph1.D35 & Trt==1 & Country==0 & Bserostatus==0 & ph2.D35NVX & ph2.D35), mytable(EventIndPrimaryD1, tps.stratum))
-```
-
-
-## Older stuff
 
 binding Ab
 ```{r}
