@@ -303,7 +303,7 @@ if (!is.null(config$assay_metadata)) {
     llods["bindNVXIgG"]=200
     lloqs["bindNVXIgG"]=200
     uloqs["bindNVXIgG"]=2904275
-    pos.cutoffs["bindNVXIgG"]=200
+    pos.cutoffs["bindNVXIgG"]=500
     
   } else if(TRIAL=="azd1222") {
     
