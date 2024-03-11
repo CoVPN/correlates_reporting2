@@ -300,6 +300,11 @@ if (!is.null(config$assay_metadata)) {
     uloqs["bindN"]=574.6783
     pos.cutoffs["bindN"]=23.4711
     
+    llods["bindNVXIgG"]=200
+    lloqs["bindNVXIgG"]=200
+    uloqs["bindNVXIgG"]=2904275
+    pos.cutoffs["bindNVXIgG"]=200
+    
   } else if(TRIAL=="azd1222") {
     
     # data less than lod is set to lod/2
