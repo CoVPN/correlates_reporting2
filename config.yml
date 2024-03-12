@@ -362,6 +362,10 @@ covail: &covail
   num_perm_replicates: 10
   primary_assays: []
 
+# a copy of covail, used to drive Makefile
+covail_sanofi: &covail_sanofi
+  inherits: covail
+
 
 # vat08m_nonnaive: &vat08m_nonnaive
 #   inherits: vat08m_base
@@ -386,10 +390,10 @@ prevent19: &prevent19
   times: [B, Day35, Delta35overB]
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
   data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240307.csv
-  assays: [bindSpike, bindRBD, pseudoneutid50]
-  llox_label: [LLOQ, LLOQ, LOD]
-  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
-  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
+  assays: [bindSpike, bindRBD, pseudoneutid50, bindNVXIgG]
+  llox_label: [LLOQ, LLOQ, LOD, POS]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, NVX Binding Assay]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), NVX IgG]
   study_name: PREVENT19
   covariates_riskscore: ~.+ risk_score
   ve_ylim: [0,1]

@@ -134,14 +134,6 @@ To check whether the markers behave differently for naive and non-naive, we fit 
 We also fit a model with interaction between naive and D15 and a model with interaction between naive and baseline. There is significant interaction between naive and baseline in the 3rd column. This analysis suggests that naive and non-naive do not differ in their relationship between D15 markers and risk, but do differ in their relationship between baseline markers and risk. Roughly speaking, a 10-fold increase in baseline marker in a non-naive is worth 100-fold increase baseline marker in a non-naive. 
 
 
-# Summary of Sanofi vaccines
-
-\vspace{.5cm}
-**Peak Obj 1 Sanofi**
-
-Focusing on MDW: D15 marker is significant (HR 0.47), baseline and fold change are not, when studied alone. When both baseline and D15 markers are included, both are significant. This is true for both D22to181 and D22to91, but no signals in D92to181.
-
-
 <!-- Set up -->
 ```{r, echo=FALSE, results='asis'}
 show.q=F
@@ -207,7 +199,7 @@ for (iObj in c(1,11,12,2,3,31)) {
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
         
       } else if (iObj==11) {
-        fname.suffix = fname.suffix %.% "_B+D15"
+        fname.suffix = fname.suffix %.% "_B+D15overB"
         has.alt = F
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
@@ -319,7 +311,7 @@ for (iObj in c(1,11,12)) {
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
         
       } else if (iObj==11) {
-        fname.suffix = fname.suffix %.% "_B+D15"
+        fname.suffix = fname.suffix %.% "_B+D15overB"
         has.alt = F
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
@@ -370,47 +362,6 @@ for (COR in c("D15to181BA45", "D15to91BA45", "D92to181BA45")) {
   
   cat("\\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_Bmarkercat.tex}", sep="")
 
-}
-```
-
-
-<!-- Sanofi -->
-```{r, echo=FALSE, results='asis'}
-for (iObj in c(1,11)) { 
-  
-  cat("# Objective Peak ", 
-      switch(iObj%.%"", 
-             "1"="1 Sanofi", 
-             "11"="1 Sanofi, baseline+D15/B"), 
-      sep="")
-  
-  for (COR in c("D15to181", "D15to91", "D92to181")) {
-    
-    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
-    config.cor <- config::get(config = COR)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    
-    # shift by 7 days to start counting from D15
-    COR = sub("D15to", "D22to", COR) 
-    # COR = sub("to181", "to188", COR) 
-    
-    for (iPop in 1:1) {
-      fname.suffix = switch (iPop%.%"",
-        '1' = 'sanofi'
-      )  
-      
-      if (iObj==1) {
-        has.alt = F
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-        
-      } else if (iObj==11) {
-        fname.suffix = fname.suffix %.% "_B+D15"
-        has.alt = F
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-      }
-      cat(res, sep = '\n')
-    }
-  }
 }
 ```
 

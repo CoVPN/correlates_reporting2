@@ -49,7 +49,7 @@ with(subset(dat_mapped, ph1.D35 & Trt==1), mypairs(cbind(Day35bindSpike, Day35bi
 ```
 
 
-The smallest value of NVX IgG is 100, consistent with LLOQ being 200. Is the unit EU (ELISA Unit)? Should we divide by 12 to get IU? Are there different LOD, and pos.cutoff? Is there ULOQ?
+The smallest value of NVX IgG is 100, consistent with LLOQ being 200. The unit EU (ELISA Unit), which can be divided by 22 to get IU. Should we? Pos.cutoff is set to 500 according to Iksung, ULOQ is set to 2,904,275 EU/mL.
 ```{r}
 10**(sort(dat_mapped$Day35bindNVXIgG)[1:20])
 ```

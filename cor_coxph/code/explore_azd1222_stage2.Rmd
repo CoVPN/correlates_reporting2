@@ -64,3 +64,12 @@ mytable(dat_mapped_stage1$SevereEventIndPrimaryIncludeNotMolecConfirmedD1)
 ```
 
 
+
+Comparing timing of events of different variants. Re-do this with DD1 date
+
+```{r}
+myboxplot(EventTimeFirstD1~VARTYPE_first1, dat_mapped, ylab="EventTimeFirstD1", col=ifelse(!is.na(dat_mapped$Day35bindSpike_Delta3),3,1))
+myboxplot(as.Date(DateDD1)~VARTYPE_first1, subset(dat_mapped), ylab="DateDD1", col=ifelse(!is.na(dat_mapped$Day35bindSpike_Delta3),3,1))
+abline(h=as.Date("2022-03-26")) # data cut
+abline(h=as.Date("2021-12-16"), lty=2) # data cut
+```

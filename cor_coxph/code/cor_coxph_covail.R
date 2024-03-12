@@ -298,7 +298,7 @@ for (iObj in c(1,11,12,2,21,3,31)) {
       
     } else if(iObj==11) {
       
-      fname.suffix = paste0(fname.suffix, "_B+D15")
+      fname.suffix = paste0(fname.suffix, "_B+D15overB")
       source(here::here("code", "cor_coxph_ph_coef.R"))
       
       # unit testing 
@@ -353,7 +353,7 @@ for (iObj in c(1,11,12,2,21,3,31)) {
       forest.covail (fits, names=assays, fname.suffix, save.results.to)
       
     } else if(iObj==11) {
-      fname.suffix = paste0(fname.suffix, "_B+D15")
+      fname.suffix = paste0(fname.suffix, "_B+D15overB")
       source(here::here("code", "cor_coxph_ph_coef.R"))
       
     } else if(iObj==12) {
@@ -423,50 +423,6 @@ tab=t(res); colnames(tab)=c("L","M","H") #tab
 mytex(tab, file.name="CoR_univariable_svycoxph_pretty_Bmarkercat", input.foldername=save.results.to, align="c")
 
 
-
-
-################################################################################
-# Peak Obj 1 for Sanofi vaccines
-
-if (!endsWith(COR,"BA45")) {
-  
-  for (iObj in c(1,11)) {
-    
-    # define all.markers
-    if(iObj==1) {
-      all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
-      all.markers.names.short = assay_metadata$assay_label_short[match(assays,assay_metadata$assay)]
-      all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
-      
-    } else if(iObj==11){
-      # B marker + D15/B
-      all.markers = sapply(assays, function (a) paste0("B",a, "centered + Delta15overB",a, "centered")
-      )
-      all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-      all.markers.names.short = all.markers.names.short
-      # parameters for R script
-      nCoef=2
-      col.headers=c("center(B)", "center(D15/B)")
-    }
-    
-    dat=dat.sanofi
-    fname.suffix = 'sanofi'
-    
-    if(iObj==1) {
-      source(here::here("code", "cor_coxph_ph.R"))
-      
-      # forest plot
-      fits = lapply ("Day15"%.%assays, function (a) coxph(update(form.0, as.formula(paste0("~.+", a))), dat) )
-      forest.covail (fits, names=assays, fname.suffix, save.results.to)
-      
-    } else if(iObj==11) {
-      fname.suffix = paste0(fname.suffix, "_B+D15")
-      source(here::here("code", "cor_coxph_ph_coef.R"))
-    }
-    
-  }
-  
-}
 
 
 ################################################################################
