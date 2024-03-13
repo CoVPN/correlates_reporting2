@@ -47,9 +47,9 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   # for ENSEMBLE part A variant, no loop, present adhoc figures
   # for other studies, loop through ""
   COR_postfix_list = ""
-  if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & grepl("EUA", attr(config,"config")))) COR_postfix_list <- c("IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1")
-  if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & grepl("partA$", attr(config,"config")))) COR_postfix_list <- c("SevereIncludeNotMolecConfirmed") # ModerateIncludeNotMolecConfirmed
-  if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" & attr(config,"config") == "janssen_partA_VL")) COR_postfix_list <- c("adhoc")
+  if (study_name=="ENSEMBLE" & grepl("EUA", attr(config,"config"))) COR_postfix_list <- c("IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1")
+  if (study_name=="ENSEMBLE" & grepl("partA$", attr(config,"config"))) COR_postfix_list <- c("SevereIncludeNotMolecConfirmed") # ModerateIncludeNotMolecConfirmed
+  if (study_name=="ENSEMBLE" & attr(config,"config") == "janssen_partA_VL") COR_postfix_list <- c("adhoc")
   #if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
   if (study_name=="IARCHPV") COR_postfix_list <- c("", "sus")
 
@@ -252,6 +252,7 @@ PsV-nAb ID50 Score"))))
         
         # Eventually will have to loop through assays, and combine each individual assay's boxplots into one figure
         for(time in timepoints) {
+          if (attr(config,"config")=="janssen_pooled_partA") next
           
           tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
           tpsLabels <- labels.time[tps]
@@ -273,6 +274,7 @@ PsV-nAb ID50 Score"))))
         
         # Eventually will have to loop through assays, and combine each individual assay's RCDFs into one figure
         for(time in timepoints) {
+          if (attr(config,"config")=="janssen_pooled_partA") next
           
           tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
           tpsLabels <- labels.time[tps]
@@ -300,6 +302,7 @@ PsV-nAb ID50 Score"))))
         # Only show figures if there are substantial cases
         # (I haven't seen a scenario where there aren't, but keeping this from Kendrick)
         for(time in timepoints) {
+          if (attr(config,"config")=="janssen_pooled_partA") next
           
           tps <- times[gsub("[^\\d]+", "", times, perl=TRUE)==time]
           tpsLabels <- labels.time[tps]

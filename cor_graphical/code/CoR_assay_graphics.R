@@ -162,7 +162,7 @@ if (COR != "D29VLvariant") {
           geom_hline(yintercept = log10(pos.cutoffs[assays][aa]), linetype = 2, color = "black", lwd = 1) 
       } else {
         boxplot_list[[aa]] <- boxplot_list[[aa]] + 
-          geom_hline(yintercept = log10(llods[assays][aa]), linetype = 2, color = "black", lwd = 1)
+          geom_hline(yintercept = log10(lods[assays][aa]), linetype = 2, color = "black", lwd = 1)
       }
       
       
@@ -240,7 +240,7 @@ if (COR != "D29VLvariant") {
       
       if (!grepl("delta", tp, ignore.case = TRUE)) {
         boxplots <- boxplots + 
-          geom_hline(yintercept = log10(llods[assays][aa]), linetype = 2, color = "black", lwd = 1) +
+          geom_hline(yintercept = log10(lods[assays][aa]), linetype = 2, color = "black", lwd = 1) +
           geom_hline(yintercept = log10(lloqs[assays][aa]), linetype = 2, color = "black", lwd = 1) +
           geom_hline(yintercept = log10(uloqs[assays][aa]), linetype = 2, color = "black", lwd = 1)
       }

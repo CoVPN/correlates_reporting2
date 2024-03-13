@@ -62,6 +62,7 @@ lloxs=ifelse(llox_labels=="pos", assay_metadata$pos.cutoff, lloxs)
 
 
 
+
 ###################################################################################################
 # sensitivity analyses parameters
 
@@ -218,9 +219,8 @@ for (a in all.markers) {
 
 
 
-
-###################################################################################################
 cat("plot marginalized risk curves over time for trichotomized markers\n")
+
 
 # no bootstrap
 
@@ -230,6 +230,7 @@ risks.all.ter=list()
 for (a in all.markers) {        
   marker.name=a%.%"cat"    
   
+
   if (comp.risk) {
     f1=lapply(form.0, function(x) update(x, as.formula(paste0("~.+",marker.name))))
     ss=unique(dat[[marker.name]]); ss=sort(ss[!is.na(ss)])
@@ -293,6 +294,7 @@ for (a in all.markers) {
 #for (a in assays) rv$marginalized.risk.over.time[[a]] = risks.all.ter[[a]]
 
 # get cumulative risk from placebo
+
 if(has.plac) {
   if (TRIAL=="janssen_partA_VL") {
     out=lapply(1:10, function(imp) {
@@ -317,6 +319,7 @@ if(has.plac) {
     time.0 = time.0[keep]
   }
 }
+
 
 #fit.1=coxph(form.s, dat) 
 #risk.1= 1 - exp(-predict(fit.1, type="expected"))

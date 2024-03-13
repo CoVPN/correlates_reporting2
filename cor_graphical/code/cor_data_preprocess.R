@@ -1,6 +1,7 @@
 #Sys.setenv(TRIAL = "vat08_combined")
 #Sys.setenv(TRIAL = "id27hpv") id27hpvnAb
 #Sys.setenv(TRIAL = "janssen_partA_VL")
+#Sys.setenv(TRIAL = "janssen_pooled_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -215,15 +216,17 @@ dat.long.subject_level <- dat %>%
   replicate(length(assays),., simplify = FALSE) %>%
   bind_rows()
 
-dat.long.assay_value.names <- times
+if(attr(config,"config")=="janssen_pooled_partA") {times_ = c("B","Day29","Day71","Mon6")} else {times_ = times}
+
+dat.long.assay_value.names <- times_
 dat.long.assay_value <- as.data.frame(matrix(
   nrow = nrow(dat) * length(assays),
   ncol = length(dat.long.assay_value.names)
 ))
 colnames(dat.long.assay_value) <- dat.long.assay_value.names
 
-for (tt in seq_along(times)) {
-  dat_mock_col_names <- paste(times[tt], assays, sep = "")
+for (tt in seq_along(times_)) {
+  dat_mock_col_names <- paste(times_[tt], assays, sep = "")
   dat.long.assay_value[, dat.long.assay_value.names[tt]] <- unlist(lapply(
     # B, Day29, Delta29overB
     dat_mock_col_names,
@@ -304,14 +307,17 @@ if (study_name=="IARCHPV") {
 }
 
 # assign values above the uloq to the uloq
-for (t in times[!grepl("Delta", times)]) {
+for (t in times_[!grepl("Delta", times_)]) {
   dat.long[[t]] <- ifelse(dat.long[[t]] > dat.long$ULoQ, dat.long$ULoQ, dat.long[[t]])
 }
 
 # reset Delta29overB & Delta57overB for response call later using LLoD & ULoQ truncated data at Day 1, Day 29, Day 57
 if (study_name!="IARCHPV") { # IARCHPV doesn't have delta assay variables
-  for (t in unique(gsub("Day", "", times[!grepl("Delta|B", times)]))) {
-    dat.long[, "Delta"%.%t%.%"overB"] = dat.long[, "Day"%.%t] - dat.long[, "B"]
+  for (t in unique(gsub("Day", "", times_[!grepl("Delta|B", times_)]))) {
+    tp = ifelse(grepl("[A-Za-z]", t), t, paste0("Day", t))
+    
+    if (attr(config,"config")=="janssen_pooled_partA") {dat.long$Delta6overB = NA} # this variable doesn't exist for janssen_pooled_partA which breaks the code
+    dat.long[, "Delta"%.%t%.%"overB"] = dat.long[, tp] - dat.long[, "B"]
   }
 }
 
@@ -410,7 +416,7 @@ saveRDS(dat.long.cor.subset, file = here::here("data_clean", "long_cor_data.rds"
 
 # long to longer format by time
 dat.longer.cor.subset <- dat.long.cor.subset %>%
-  pivot_longer(cols = all_of(times), names_to = "time", values_to = "value")
+  pivot_longer(cols = all_of(times_), names_to = "time", values_to = "value")
 
 # phase 2 filters: 
 #    include both +++ and ++- at D29 for intercurrent cases and Post-Peak Cases
@@ -431,7 +437,10 @@ if (study_name=="AZD1222") {
 }
 
 # define response rates
-resp <- getResponder(dat.mock, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day", "M"), times, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
+if (attr(config,"config")=="janssen_pooled_partA"){
+  dat.mock$Day71pseudoneutid50uncensored=NA; dat.mock$Mon6pseudoneutid50uncensored=NA;
+  labels.time = c("Day 1","Day 29", "Day 71", "Month 6"); names(labels.time) = times_}
+resp <- getResponder(dat.mock, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day|Mon", "M"), times_, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
                assays=assays, pos.cutoffs = pos.cutoffs)
 resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
   pivot_longer(!Ptid, names_to = "category", values_to = "response")
@@ -457,7 +466,7 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
 if (do.fold.change.overB==1 | study_name %in% c("VAT08")){
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
 } else (
-  dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl(ifelse(study_name!="IARCHPV", "Day", "M"), time)) # IARCHPV uses "M" instead of "Day" in the assay variables
+  dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl(ifelse(study_name!="IARCHPV", "Day|Mon", "M"), time)) # IARCHPV uses "M" instead of "Day" in the assay variables
 )
 
 
@@ -532,6 +541,8 @@ if (study_name=="IARCHPV") {
   dat.longer.cor.subset_ = dat.longer.cor.subset %>% 
     mutate(Trt="pooled") %>%
     bind_rows(dat.longer.cor.subset)
+} else if (attr(config,"config")=="janssen_pooled_partA"){ # remove day 71 and mon 6 for this set of figures 1 of janssen_pooled_partA
+  dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(time %in% c("Day 1","Day 29"))
 } else {
   dat.longer.cor.subset_ = dat.longer.cor.subset
 }
@@ -551,13 +562,48 @@ plot.25sample1 <- get_sample_by_group(dat.longer.cor.subset.plot1, groupby_vars1
 write.csv(plot.25sample1, file = here("data_clean", "plot.25sample1.csv"), row.names=F)
 saveRDS(plot.25sample1, file = here("data_clean", "plot.25sample1.rds"))
 
+if (attr(config,"config")=="janssen_pooled_partA") { 
+  # for adhoc plots showing moderate, severe and non-cases at 3 timepoints (day 29, day 71, month 6) 
+  # 1 ptid with both severe and moderate cases post day 29 (moderate first), VAC31518COV3001-3010000, so moderate post-peak cases can be derived from config.cor$EventIndPrimary, i.e., EventIndPrimaryIncludeNotMolecConfirmedD29
+  groupby_vars1_adhoc=c("Trt", "Bserostatus", "cohort_event_adhoc", "time", "assay")
+  
+  dat.longer.cor.subset.adhoc <- subset(dat.longer.cor.subset, ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1) %>%
+    mutate(cohort_event_adhoc = "Moderate Post-Peak Cases") %>%
+    
+    bind_rows(subset(dat.longer.cor.subset, SevereEventIndPrimaryIncludeNotMolecConfirmedD29==1) %>%
+                mutate(Ptid = ifelse(Ptid=="VAC31518COV3001-3010000", "VAC31518COV3001-3010000_severe", Ptid),
+                       cohort_event_adhoc = "Severe Post-Peak Cases")) %>%
+    
+    bind_rows(subset(dat.longer.cor.subset, as.character(cohort_event) == "Non-Cases") %>%
+                mutate(cohort_event_adhoc = "Non-Cases")) %>%
+    mutate(cohort_event_adhoc = factor(cohort_event_adhoc, levels = c("Moderate Post-Peak Cases","Severe Post-Peak Cases","Non-Cases")))
+  
+  #table(unique(dat.longer.cor.subset.adhoc[,c("Ptid","cohort_event_adhoc")])$cohort_event_adhoc)
+  #table(unique(dat.longer.cor.subset[,c("Ptid","cohort_event")])$cohort_event)
+  
+  dat.longer.cor.subset.plot1_adhoc <- get_resp_by_group(dat.longer.cor.subset.adhoc, groupby_vars1_adhoc)
+  dat.longer.cor.subset.plot1_adhoc <- dat.longer.cor.subset.plot1_adhoc %>%
+    mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+           lb = ifelse(grepl("Day|M", time), lb, ""),
+           lbval = ifelse(grepl("Day|M", time), lbval, NA),
+           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  saveRDS(dat.longer.cor.subset.plot1_adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.rds"))
+}
 
 #### for Figure 3. intercurrent vs pp, case vs non-case, (Day 1) Day 29 Day 57, by if Age >=65 and if at risk
 if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
+  
+  if (attr(config,"config")=="janssen_pooled_partA"){ # remove day 71 and mon 6 for this set of figures 1 of janssen_pooled_partA
+    dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(time %in% c("Day 1","Day 29"))
+  } else {
+    dat.longer.cor.subset_ = dat.longer.cor.subset
+  }
+  
   groupby_vars3 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", "age_geq_65_label", "highrisk_label")
   
   # define response rate
-  dat.longer.cor.subset.plot3 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars3)
+  dat.longer.cor.subset.plot3 <- get_resp_by_group(dat.longer.cor.subset_, groupby_vars3)
   dat.longer.cor.subset.plot3 <- dat.longer.cor.subset.plot3 %>%
     mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
            lb = ifelse(grepl("Day", time), lb, ""),
