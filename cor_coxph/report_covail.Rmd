@@ -281,6 +281,8 @@ for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", 
 }
 ```
 
+<!-- Separate analyses within naive and non-naive -->
+```{r, echo=FALSE, results='asis'}
 
 <!-- Separate analyses within naive and non-naive -->
 ```{r, echo=FALSE, results='asis'}
@@ -483,8 +485,8 @@ for (COR in c("D15to181", "D15to91", "D92to181")) {
 
 ```
 
-
 ## Relationship between baseline and Day 15 titers
+
 
 ```{r fig.width=4, fig.asp=1.5}
 par(mfrow=c(2,1), mar=c(3,4,2,2))
@@ -517,4 +519,5 @@ Delta and BA4BA5 markers are least closely correlated.
 
 ```{r}
 mypairs(dat[,"Day15"%.%assays])
+
 ```

@@ -113,6 +113,9 @@ form.1 = update(form.0, ~.-naive)
 dat.n = subset(dat.onedosemRNA, naive==1)
 dat.nn = subset(dat.onedosemRNA, naive==0)
 
+prev.vacc = get.marginalized.risk.no.marker(form.0, dat.onedosemRNA, tfinal.tpeak)
+myprint(prev.vacc)
+
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
 
 # parameters for ph R scripts

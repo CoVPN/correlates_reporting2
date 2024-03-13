@@ -45,6 +45,8 @@ assign("risks.all.1", risks.all.1, envir = .GlobalEnv) # make it available outsi
 write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_replicates"))
 
 
+###################################################################################################
+cat("bootstrap vaccine arm, conditional on categorical S")
 
 ###################################################################################################
 cat("bootstrap vaccine arm, conditional on categorical S\n")
@@ -213,4 +215,14 @@ if (!is.null(config$interaction)) {
 
 
 
+}
+
+
+
+###################################################################################################
+# clean up
+
+# return form.0 to its original form
+if (comp.risk) {
+  form.0 = form.0[[1]]
 }
