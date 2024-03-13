@@ -149,7 +149,7 @@ janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
 
 janssen_pooled_partA: &janssen_pooled_partA
   <<: *janssen_trial_partA
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore_20240226.csv
   assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid50uncensored, ADCP]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer 2, Phagocytic Score]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (IU50/ml) 2, Phagocytic Score]
@@ -348,7 +348,7 @@ vat08_combined: &vat08_combined
 
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240211.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240305.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
@@ -358,7 +358,7 @@ covail: &covail
   assay_metadata: assay_metadata/covail_assay_metadata.csv
   covariates_riskscore: ~.+ FOIstandardized + standardized_risk_score + naive
   low_efficacy: no
-  num_boot_replicates: 10
+  num_boot_replicates: 1000
   num_perm_replicates: 10
   primary_assays: []
 
@@ -385,7 +385,7 @@ prevent19: &prevent19
   timepoints: [35]
   times: [B, Day35, Delta35overB]
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20230928.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240307.csv
   assays: [bindSpike, bindRBD, pseudoneutid50]
   llox_label: [LLOQ, LLOQ, LOD]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
@@ -415,6 +415,23 @@ prevent19_stage2: &prevent19_stage2
   num_perm_replicates: 10000
   
 
+nvvx_uk302: &nvvx_uk302
+  two_marker_timepoints: no
+  timepoints: [35]
+  times: [Day35]
+  time_labels: [Day 35]
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240310.csv
+  assay_metadata: assay_metadata/nvx_uk302_assay_metadata.csv
+  study_name: UK302
+  covariates_riskscore: ~.+ Senior
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
+  low_efficacy: no
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+  
+  
+  
 azd1222_base: &azd1222_base
   <<: *ows_trial
   two_marker_timepoints: yes
@@ -1434,7 +1451,7 @@ D15to91BA45:
   tpeak: 15
   tpeaklag: 7
   torigin: 15
-  txt.endpoint: BA4BA5
+  txt.endpoint: BA4BA5 COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 # covail, BA4/BA5. used to study D15 markers in followup from D22 to 181
@@ -1449,7 +1466,7 @@ D15to181BA45:
   tpeak: 15
   tpeaklag: 7
   torigin: 15
-  txt.endpoint: BA4BA5
+  txt.endpoint: BA4BA5 COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 # covail, BA4/BA5. used to study D15 markers in followup from D92 to 181
@@ -1464,7 +1481,7 @@ D92to181BA45:
   tpeak: 15
   tpeaklag: 7
   torigin: 15
-  txt.endpoint: BA4BA5
+  txt.endpoint: BA4BA5 COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 91 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 ####################

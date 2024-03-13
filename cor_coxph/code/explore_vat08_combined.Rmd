@@ -1,0 +1,249 @@
+---
+title: "VAT08 Stage 1 and 2 Data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(survey)
+library(kyotil)
+
+country.codes=c("Colombia", "Ghana", "Honduras", "India", "Japan", "Kenya", "Nepal", "United States", "Mexico", "Uganda", "Ukraine")
+region.1 = c( # stage 1
+  "United States" = 1, "Japan" = 1, 
+  "Colombia" = 2, "Honduras" = 2, 
+  "Ghana" = 3, "Kenya" = 3, 
+  "Nepal" = 4, "India" = 4)
+region.2 = c( # stage 2
+  "Colombia" = 1, "Mexico" = 1, 
+  "Ghana" = 2, "Kenya" = 2, "Uganda" = 2,
+  "Nepal" = 3, "India" = 3)
+
+
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240117.csv')
+# dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240111.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240117.csv')
+
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
+assays=assay_metadata$assay
+
+dat_mapped$EventIndPrimaryD1 = dat_mapped$EventIndFirstInfectionD1
+dat_mapped$EventTimePrimaryD1 = dat_mapped$EventTimeFirstInfectionD1
+dat_mapped$EventIndPrimaryD43= dat_mapped$EventIndFirstInfectionD43
+dat_mapped$EventTimePrimaryD43= dat_mapped$EventTimeFirstInfectionD43
+dat_mapped$EarlyendpointD43 <- with(dat_mapped, EarlyinfectionD43==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD43 + 7),1,0)
+dat_mapped$ph1.D43= with(dat_mapped, EarlyendpointD43==0 & Perprotocol==1 & EventTimePrimaryD43 >= 7)
+dat_mapped$Senior=ifelse(dat_mapped$Age>=60,1,0)
+dat_mapped$cc = country.codes[dat_mapped$Country]
+# first set it to stage 1 region, then change the region for stage 2 countries
+dat_mapped$region = region.1[dat_mapped$cc] 
+dat_mapped$region = ifelse(dat_mapped$Trialstage==2, region.2[dat_mapped$cc], dat_mapped$region)
+
+
+dat_mapped$SUBJID = sub("VAT00008-","",dat_mapped$Subjectid)
+dat_mapped$SUBJID = gsub("-","",dat_mapped$SUBJID,)
+
+dat_proc$SUBJID = sub("VAT00008-","",dat_proc$Ptid)
+dat_proc$SUBJID = gsub("-","",dat_proc$SUBJID,)
+
+```
+
+### Immunogenicity
+Note that the marker level in the NN, placebo is higher in Stage 2 than in Stage 1, probably reflecting different countries.
+```{r}
+myboxplot(Day43bindSpike~Trt+Bserostatus+Trialstage, dat_mapped, ylab="D43 bAb Spike",
+  names=rep(c("N,pla", "N,vac", "NN,pla", "NN,vac"),2),
+  main="Stage 1                                        Stage 2")
+```
+
+### nAb markers correlation
+
+The list of markers:
+```{r}
+assays=assays[startsWith(assays,"pseudoneutid50")]
+print(assays)
+```
+
+Correlation is high between variant markers at both baseline and D43 in Stage 2 non-naive, vaccine arm.
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"B"%.%assays[1:5]])
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"Day43"%.%assays[1:5]])
+```
+
+Correlation is medium between variant markers at D43 in Stage 2 naive, vaccine arm. The correlation between the ancestral marker and the other markers range between 0.63 and 0.67.
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==0 & Trt==1 & ph1.D43)[,"B"%.%assays[1:5]])
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==0 & Trt==1 & ph1.D43)[,"Day43"%.%assays[1:5]])
+```
+
+Correlation is low between baseline and D22 or D43 in Stage 2 non-naive, vaccine arm.
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,c("B","Day22","Day43")%.%assays[1]])
+```
+
+Overall, "because the correlation among variants is pretty good for the non-naives and really the analysis focuses on the non-naives" (Peter), we decide to impute variants for those who have data for at least one variant to make the complexity of data processing more manageable. The missingenss pattern across variants is shown in the next section.
+
+
+A closer look at the relationship between baseline and Day 43 markers in the baseline positive. Note that the D43 markers appear saturated since level seems flat across different baseline marker levels.
+```{r}
+par(mfrow=c(2,4))
+  # ancestral marker
+  corplot(Day43pseudoneutid50~Bpseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
+  myboxplot(Day43pseudoneutid50~I(Bpseudoneutid50>0.2), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
+  my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50), c(Bpseudoneutid50, Day43pseudoneutid50)), 
+                      x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+  corplot(Delta43overBpseudoneutid50~Bpseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
+  
+  # BA.1
+  corplot(Day43pseudoneutid50_BA.1~Bpseudoneutid50_BA.1, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
+  myboxplot(Day43pseudoneutid50_BA.1~I(Bpseudoneutid50_BA.1>0.2), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
+  my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50_BA.1) & !is.na(Day43pseudoneutid50_BA.1), c(Bpseudoneutid50_BA.1, Day43pseudoneutid50_BA.1)), 
+                      x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+  corplot(Delta43overBpseudoneutid50_BA.1~Bpseudoneutid50_BA.1, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
+```
+ 
+ 
+ 
+### nAb markers missingness
+
+Missingness across baseline, d22 and d43, for the ancestral markers in the vaccine arms. The results support the decision "to keep it simple and require for RIS membership availability of data at all 3 time points" (Peter).
+```{r}
+for(trt in 1) {
+  myprint(trt)
+  for (i in 2:1) {
+    cat(paste0("stage ", i, '\n'))
+    dat=subset(dat_proc, Trialstage==i & Trt==trt & ph1.D43)
+    times=c("B","Day22","Day43")
+    for (i in 1:3) {
+      dat[['tmp'%.%i]]=ifelse(is.na(dat[[times[i]%.%'pseudoneutid50']]), 0, 1)
+    }
+    dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3))
+    print(table(dat$tmp))
+    cat("\n")
+  }
+}
+```
+
+Missingness across variants. Some ptids only have the ancestral marker measured. The missingness pattern is explained by the fact that samples from different steps have different set of markers measured. We decide to impute all variants if one variant marker exists.
+
+```{r}
+# for (tp in c("B")) {
+for (tp in c("B", "Day22", "Day43")) {
+  # before imputation
+  dat1=dat_mapped
+  # after imputation
+  # dat1=dat_proc
+  
+  for(trt in 1) {
+    myprint(tp, trt)
+    for (i in 2:1) {
+      cat(paste0("stage ", i, '\n'))
+      if (trt==2) {
+        # pool over arms
+        dat=subset(dat1, Trialstage==i & ph1.D43)
+      } else {
+        dat=subset(dat1, Trialstage==i & ph1.D43 & Trt==trt)
+      }
+      for (i in 1:5) {
+        dat[['tmp'%.%i]]=ifelse(is.na(dat[[tp%.%assays[i]]]), 0, 1)
+      }
+      dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5))
+      print(table(dat$tmp))
+      cat("\n")
+      # print(table(dat$EventIndPrimaryD43, dat$tmp, dat$Bserostatus))
+    }
+  }
+
+}
+```
+
+
+
+
+```{r}
+# a more detailed look at missingness by batch
+# for (tp in c("B")) {
+# #for (tp in c("B", "Day22", "Day43")) {
+#   # before imputation
+#   dat1=dat_mapped
+#   # after imputation
+#   # dat1=dat_proc
+#   
+#   for(trt in 1) {
+#     myprint(tp, trt)
+#     for (i in 2:1) { # stage
+#       cat(paste0("stage ", i, '\n'))
+#       if (trt==2) {
+#         # pool over arms
+#         dat=subset(dat1, Trialstage==i & ph1.D43)
+#       } else {
+#         dat=subset(dat1, Trialstage==i & ph1.D43 & Trt==trt)
+#       }
+#       for (i in 1:5) {
+#         dat[['tmp'%.%i]]=ifelse(is.na(dat[[tp%.%assays[i]]]), 0, 1)
+#       }
+#       dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5))
+#       print(mytable(dat$EventIndPrimaryD43, dat$tmp, dat$nAbBatch, dat$Bserostatus))
+#     }
+#   }
+# 
+# }
+```
+
+
+The number of D43 nAb ph2 samples by Bserostatus 0/1 (row) and Case 1/0 (column) and broken down by treatment arms (vaccine, placebo).
+```{r}
+dat1=dat_proc
+
+f=function(tab2, tab1, tab0) {
+  for (i in 1:2) {
+    print(paste0(tab2[i,1], " (", tab1[i,1], ", ", tab0[i,1], ") ", tab2[i,2], " (", tab1[i,2], ", ", tab0[i,2], ")"))
+  }
+}
+
+for (i in 2:1) {
+  cat(paste0("stage ", i, '\n'))
+  dat=subset(dat1, Trialstage==i & ph1.D43 & TwophasesampIndD43nAb)
+  tab2 = table(dat$Bserostatus, dat$EventIndPrimaryD43)[,2:1] # [,2:1] moves cases before non-cases
+  dat=subset(dat1, Trialstage==i & ph1.D43 & Trt==1 & TwophasesampIndD43nAb)
+  tab1 = table(dat$Bserostatus, dat$EventIndPrimaryD43)[,2:1] # [,2:1] moves cases before non-cases
+  dat=subset(dat1, Trialstage==i & ph1.D43 & Trt==0 & TwophasesampIndD43nAb)
+  tab0 = table(dat$Bserostatus, dat$EventIndPrimaryD43)[,2:1] # [,2:1] moves cases before non-cases
+  f(tab2, tab1, tab0)
+}
+```
+
+
+  
+### Check which ptids are in which batch
+
+```{r}
+stage2step2=read.csv("~/Aiying700.csv")
+stage1step2=read.csv("~/JinStage1Step2.csv")
+dat_mapped$stage2step2 = dat_mapped$Subjectid %in% stage2step2$Unique.Subject.Identifier
+dat_mapped$stage1step2 = dat_mapped$SUBJID %in% stage1step2$SUBJID
+dat_proc$stage2step2 = dat_proc$Ptid %in% stage2step2$Unique.Subject.Identifier
+dat_proc$stage1step2 = dat_proc$SUBJID %in% stage1step2$SUBJID
+```
+
+```{r}
+cat("nAb\n")
+
+# stage2: batch 1 = step2 and nothing else
+with(subset(dat_mapped, Trialstage==2), table(stage2step2, nAbBatch, EventIndPrimaryD1))
+
+# stage 1
+with(subset(dat_mapped, Trialstage==1), table(stage1step2, nAbBatch, EventIndPrimaryD1))
+
+cat("bAb\n")
+
+# stage 1
+with(subset(dat_proc, Trialstage==1 & TwophasesampIndD43bAb), table(stage1step2, EventIndPrimaryD1))
+
+# stage 2
+with(subset(dat_proc, Trialstage==2 & TwophasesampIndD43bAb), table(stage2step2, EventIndPrimaryD1))
+```
+
+
+

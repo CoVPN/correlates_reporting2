@@ -9,15 +9,15 @@
 
 # optional input
 {
-if (is.null(show.q)) show.q=T # control whether fwer and q values are shown in tables
+if (!exists("show.q")) show.q=T # control whether fwer and q values are shown in tables
 
 # controls whether we are using survey package to handle two-phase samples or coxph for cohort
 # for svy, we expect design.dat
 # for coxph, we expect dat
-if (is.null(use.svy)) use.svy=T 
+if (!exists("use.svy")) use.svy=T 
 
 # for T, we expect dat.pla.seroneg
-if (is.null(has.plac)) has.plac=T # control whether there are placebo data
+if (!exists("has.plac")) has.plac=T # control whether there are placebo data
 }
 
 # Output:
@@ -548,7 +548,7 @@ if (!is.null(config$interaction)) {
 
 ###################################################################################################
 
-save(fits.cont.coef.ls, fits.tri.coef.ls, file=paste0(save.results.to, paste0("coxph_fits", fname.suffix, ".Rdata")))
+save(fits.cont.coef.ls, fits.tri.coef.ls, file=paste0(save.results.to, paste0("coxph_fits_", fname.suffix, ".Rdata")))
 
 # save.s.1, save.s.2
-save (tab.cont, tab.cat, tab.cont.scaled, pvals.adj, file=paste0(save.results.to, paste0("coxph_slopes", fname.suffix, ".Rdata")))
+save (tab.cont, tab.cat, tab.cont.scaled, pvals.adj, file=paste0(save.results.to, paste0("coxph_slopes_", fname.suffix, ".Rdata")))

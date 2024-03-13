@@ -1,6 +1,6 @@
 numCores <- unname(ifelse(Sys.info()["sysname"] == "Windows",
                           1, 
-                          min(10, future::availableCores())))
+                          min(20, config$num_boot_replicates, future::availableCores())))
 
  
 load.data=function(TRIAL, COR, trt=1) {
@@ -36,16 +36,6 @@ get.trial=function(x, assay) {
 
 
 
-#if (length(assays) %in% c(3,4)) {
-#  .mfrow <- c(2, 2)
-#} else if (length(assays) == 5) {
-#  .mfrow <- c(3, 2)
-#} else if (length(assays) == 2) {
-#  .mfrow <- c(1, 2)
-#} else {
-#  stop("Please re-define variable .mfrows")
-#}
-.mfrow <- c(1, 1)
 
 
 # need this function b/c svycoxh may error due to singularity if, e.g. all cases have the same marker value

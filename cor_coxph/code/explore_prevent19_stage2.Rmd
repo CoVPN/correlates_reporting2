@@ -1,0 +1,192 @@
+---
+title: "PREVENT-19 Stage 2 Delta Correlates"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(survey)
+library(kyotil)
+
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240305.csv')
+# dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_stage2_data_processed_20230928.csv')
+
+dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (DeltaEventIndD1==1 & DeltaEventTimeD1 < NumberdaysD1toD35 + 7),1,0)
+dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & DeltaEventTimeD35 >= 7)
+
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/prevent19_stage2_assay_metadata.csv')
+assays=assay_metadata$assay
+assays
+
+times=c("Day35","C1","BD1","DD1")
+```
+
+
+### Data descriptives
+
+Dataset contains vaccine arm only and seroneg only
+```{r, include=F}
+mytable(dat_mapped$Trt)
+mytable(dat_mapped$Bserostatus)
+```
+
+About half of the ptids have missing BD1 date
+```{r}
+mytable(dat_mapped$NumberdaysD1toBD1 - dat_mapped$DeltaEventTimeD1 < 0)
+```
+
+Many of the ptids with missing BD1 date have markers
+```{r}
+mytable(is.na(dat_mapped$NumberdaysD1toBD1), !is.na(dat_mapped$Day35bindSpike_Delta3))
+```
+
+There are 13 severe cases in the study window, of which 7 have markers. The number is too small to study severe correlates.
+```{r}
+with(subset(dat_mapped, ph1.D35==1), mytable(Severity_first, !is.na(Day35bindSpike_Delta3))) #  & NumberdaysD1toBD1>=DeltaEventTimeD1
+```
+
+Distribution of variant first (variant of the first COVID event). Not all Delta have markers b/c sampling requires DD2 samples.
+```{r}
+# fix variant coding. empty string to empty string
+dat_mapped$VARTYPE_first1 = sapply(strsplit(dat_mapped$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
+
+with(subset(dat_mapped, ph1.D35==1), mytable(VARTYPE_first1, !is.na(Day35bindSpike_Delta3)))
+```
+
+Distribution of variant second:
+```{r}
+# fix variant codeing
+dat_mapped$VARTYPE_second1 = sapply(strsplit(dat_mapped$VARTYPE_second,","), function (x) ifelse(length(x)==0, "Unknown", x[1]))
+
+with(subset(dat_mapped, ph1.D35==1), mytable(VARTYPE_second1, !is.na(Day35bindSpike_Delta3)))
+```
+
+
+Distribution of variants type between the first and second COVID events shows that Delta is always the first.
+```{r}
+with (subset(dat_mapped, !is.na(VARTYPE_second1)), mytable(paste(VARTYPE_first1, VARTYPE_second1, sep=",")))
+```
+
+Distribution of severity and variants
+```{r}
+with(subset(dat_mapped, ph1.D35==1), mytable(Severity_first, VARTYPE_first1)) 
+
+```
+
+Comparing timing of events of different variants. Re-do this with DD1 date
+
+```{r}
+myboxplot(EventTimeFirstD1~VARTYPE_first1, dat_mapped, ylab="EventTimeFirstD1")
+myboxplot(EventTimeFirstD1~VARTYPE_first1, subset(dat_mapped, !is.na(Day35bindSpike_Delta3)), ylab="EventTimeFirstD1")
+```
+
+D35ancestralnAbBatch is the first two digits in the Monogram accession number and represents year. Most nAb were measured in 2023. Earlier samples may be from Stage 1 study.
+```{r}
+mytable(dat_mapped$D35ancestralnAbBatch)
+```
+
+
+
+Stage 2 sampling lists:
+
+- For the 402 cases,  the time points of interest are D35 (after primary series in initial period),  the acute illness visit associated with the Delta case, and crossover 1 (if applicable for subject).   D35 may or may not be already tested earlier at the USG labs.
+
+- For the 649 non-case, the D35 blood sample should already be at the USG lab from earlier.
+
+- The list of 279 non-cases is a subset of the list of 649. For the 279 subjects, the time points of interest are D35, crossover 1 and booster D0 - the database says these subjects should have all 3 visits/blood sample.  
+
+
+
+Missingness across two time points, D35 and C1, for ancestral id50
+```{r}
+for (j in 1:2){
+  # change the comments to focus on different subsets
+  dat=subset(dat_mapped)
+  # dat=subset(dat_mapped, D35ancestralnAbBatch==23) # remove batch 1
+  # dat=subset(dat_mapped, VARTYPE=="Delta") # delta cases
+  
+  v=ifelse(j==1,"D614G","Delta")
+  print(v)
+  
+  for (i in 1:2) {
+    dat[['tmp'%.%i]]=ifelse(is.na(dat[[times[i]%.%'pseudoneutid50_'%.%v]]), 0, 1)
+  }
+  dat$tmp=with(dat,paste0(tmp1,tmp2))
+  print(table(dat$tmp))
+  cat("\n")
+}
+```
+
+Correlation between ancestral and Delta ID50s is high, and highest at BD1 and DD1.
+```{r}
+dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
+names(dat)=sub("pseudoneutid50","",names(dat))
+mypairs(dat)
+```
+
+Delta ID50 readouts are lower than ancestral ID50.
+```{r}
+dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
+names(dat)=sub("pseudoneutid50","",names(dat))
+myboxplot(dat)
+```
+
+
+### Batch effect
+
+679 D35 samples (including cases and non-cases) are measured twice, once in Dec 21 in the Stage 1 work and once in July 23 in the Stage 2 work.
+The Pearson correlation is 0.88 between the two. Two-sample test by wilcoxon paired test p value is 6.046e-16. 
+Applications that are sensitives to a shift of ~20% fold change in titers could be impacted.
+
+```{r}
+dat.2=read.csv('/trials/covpn/p3004/download_data/2019nCoV2-301_ nAB_D614G_27Oct2023 - 2.csv')
+
+dat.2$batch=substr(dat.2$Monogram.Accession, 1, 2)
+mytable(dat.2$batch)
+
+mytable(dat.2$PVC, dat.2$Test.Method)
+
+# find duplicated measurement of the same samples
+dat.2.anc=subset(dat.2, Test.Method=='SARS-COV-2 D614G NEUT' & PVC=='D35')
+dat.2.anc=dat.2.anc[order(dat.2.anc$Patient.Number),]
+
+tmp = mytable(dat.2.anc$Patient.Number)
+mytable(tmp)
+tmp[tmp==3] # US097-0021
+subset(dat.2.anc, Patient.Number=='US097-0021')
+
+dat.2.anc=subset(dat.2.anc, Patient.Number %in% names(tmp[tmp==2]))
+dat.2.anc$batch = ifelse(startsWith(dat.2.anc$Monogram.Accession,'23'),2,1)
+
+subset(dat.2.anc, Patient.Number=='US152-0064')
+
+dat.n=myreshapewide(Titer.Result~batch, dat.2.anc, 'Accession.Container')
+
+clean=function(x) {
+  x[x=='< 40']=20
+  x[x=='ZNG40']=20
+  as.integer((x))
+}
+
+dat.n$Titer.Result.1=clean(dat.n$Titer.Result.1)
+dat.n$Titer.Result.2=clean(dat.n$Titer.Result.2)
+
+dat.n$dif=log10(dat.n$Titer.Result.1)-log10(dat.n$Titer.Result.2)
+summary(dat.n$dif)
+summary(10**dat.n$dif)
+myboxplot(list(dat.n$dif))
+
+corplot(Titer.Result.1~Titer.Result.2,dat.n, log='xy', method='p')
+# abline(h=(8282), lty=2)
+# abline(v=(26859), lty=2)
+abline(a=-log10(2),b=1, lty=2) # 2 fold difference
+abline(a=log10(2),b=1, lty=2)
+
+myboxplot(dat.n[,c('Titer.Result.1','Titer.Result.2')], log='y', test='w')
+
+wilcox.test(dat.n$Titer.Result.1, dat.n$Titer.Result.2,paired=T)
+
+nrow(dat.n)
+```
+

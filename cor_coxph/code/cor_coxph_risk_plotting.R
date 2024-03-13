@@ -1,32 +1,65 @@
-# optional input
-{
-  # whether to get risk conditional on continuous S>=s
-  if (is.null(run.Sgts)) run.Sgts=F
+cor_coxph_risk_plotting = function(
+  form.0,
+  dat,
+  fname.suffix,
+  save.results.to,
   
-  # whether to plot risk vs S>=s
-  if (is.null(eq.geq.ub)) eq.geq.ub=2
+  config,
+  config.cor,
+  assay_metadata,
   
-  # whether to plot plac
-  if (is.null(wo.w.plac.ub)) wo.w.plac.ub=2
+  tfinal.tpeak,
+  all.markers,
+  all.markers.names.short,
+  all.markers.names.long,
+  labels.assays.short,
+  marker.cutpoints,
   
-  if (is.null(for.title)) for.title=""
+  multi.imp=F,
+  comp.risk=F, 
   
-}
+  has.plac=T,
+  dat.pla.seroneg = NULL,
+  res.plac.cont = NULL,
+  prev.plac=NULL,
+  overall.ve=NULL,
+  
+  variant=NULL,
+  
+  show.ve.curves=T,
+  eq.geq.ub=2, # whether to plot risk vs S>=s
+  wo.w.plac.ub=2, # whether to plot plac
+  for.title=""
+) {
 
-# mandatory input: 
-{
-  # used in the file names to save results
-  myprint(fname.suffix) 
   
-  # if T, we expect dat.pla.seroneg
-  if (is.null(has.plac)) has.plac=T 
+myprint(eq.geq.ub, wo.w.plac.ub, for.title)
   
-  # dat 
-  
-  # tfinal.tpeak
-  
-  # all.markers
-}
+# make form.s from form.0
+form.s=as.formula(deparse((if(comp.risk) form.0[[1]] else form.0)[[2]])%.%"~1")
+
+# compute prevalence
+prev.vacc = get.marginalized.risk.no.marker(form.0, dat, tfinal.tpeak)
+
+.mfrow <- c(1, 1)
+
+# origin of followup days, may be different from tpeak
+tpeak1 = config.cor$torigin
+if (is.null(tpeak1)) tpeak1 = as.integer(sub(".*[^0-9]+", "", config.cor$EventTimePrimary))
+
+tpeak = config.cor$tpeak
+tpeaklag = config.cor$tpeaklag
+
+study_name = config$study_name
+
+assays=assay_metadata$assay
+llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
+lloqs=assay_metadata$lloq; names(lloqs)=assays
+uloqs=assay_metadata$uloq; names(uloqs)=assays
+lods=assay_metadata$lod; names(lods)=assays
+lloxs=ifelse(llox_labels=="lloq", lloqs, lods)
+lloxs=ifelse(llox_labels=="pos", assay_metadata$pos.cutoff, lloxs)
+
 
 
 
@@ -40,7 +73,7 @@
   
   # load ylims.cor if exists
   # by changing which file to load, we can enforce the same ylim for different sets of tables/figures
-  tmp=paste0(here::here(), paste0(save.results.to, "/ylims.cor.", fname.suffix, ".Rdata"))
+  tmp=paste0(here::here(), paste0(save.results.to, "/ylims.cor_", fname.suffix, ".Rdata"))
   if (file.exists(tmp)) {
     load(tmp)
     create.ylims.cor=F
@@ -54,17 +87,17 @@
   report.ve.levels=c(.65,.9,.95)
   digits.risk=4
   
-  # yy is used to chose the boundary for showing >=s risk curves 
-  if (TRIAL=="janssen_partA_VL") {
-    dat$yy = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck1"]]==variant, 1, 0)    
-  } else {
-    dat$yy = ifelse(dat$EventIndPrimary==1, 1, 0)
-  }
+  # # yy is used to chose the boundary for showing >=s risk curves 
+  # if (TRIAL=="janssen_partA_VL") {
+  #   dat$yy = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck1"]]==variant, 1, 0)    
+  # } else {
+  #   dat$yy = ifelse(dat$EventIndPrimary==1, 1, 0)
+  # }
 }
 
 
 ###################################################################################################
-print("marginalized risk curves for continuous markers, both S=s and S>=s")
+cat("plot marginalized risk curves for continuous markers, both S=s and S>=s\n")
 
 for (eq.geq in 1:eq.geq.ub) {  # 1 conditional on s,   2 is conditional on S>=s
 for (wo.w.plac in 1:wo.w.plac.ub) { # 1 with placebo lines, 2 without placebo lines. Implementation-wise, the main difference is in ylim
@@ -87,8 +120,9 @@ for (wo.w.plac in 1:wo.w.plac.ub) { # 1 with placebo lines, 2 without placebo li
       }
       ylims.cor[[eq.geq]][[wo.w.plac]]=ylim
     }
-    # the following is done so that the ylim looks comparable to ID50 in this trial
-    if (attr(config,"config")=="azd1222_bAb" & eq.geq==1 & wo.w.plac==2 & COR=="D57") ylim=c(0,0.05)    
+    # the following is commented out because it depends on COR
+    # make the ylim look comparable to ID50 in this trial
+    # if (attr(config,"config")=="azd1222_bAb" & eq.geq==1 & wo.w.plac==2 & COR=="D57") ylim=c(0,0.05)    
     if(verbose>=2) myprint(ylim)
     lwd=2
     
@@ -161,7 +195,7 @@ for (wo.w.plac in 1:wo.w.plac.ub) { # 1 with placebo lines, 2 without placebo li
     
 }
 }
-save(ylims.cor, file=paste0(save.results.to, "ylims.cor."%.%fname.suffix%.%".Rdata"))
+save(ylims.cor, file=paste0(save.results.to, "ylims.cor_"%.%fname.suffix%.%".Rdata"))
 
 
 # show the results at select assay values
@@ -175,7 +209,7 @@ for (a in all.markers) {
   while (nrow(out)%%4!=0) out=rbind(out, c("s"="", "Estimate"=""))
   tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])
   mytex(tab, file.name=paste0(a, "_marginalized_risks_eq", "_"%.%fname.suffix), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
-        longtable=T, caption.placement = "top", label=paste0("tab marginalized_risks_eq ", COR), caption=paste0("Marginalized cumulative risk by Day ",tfinal.tpeak," as functions of Day ",
+        longtable=T, caption.placement = "top", label=paste0("tab marginalized_risks_eq ", fname.suffix), caption=paste0("Marginalized cumulative risk by Day ",tfinal.tpeak," as functions of Day ",
                                                                                                                 tpeak, " ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
                                                                                                                 ncol(risks.all[[1]]$boot)," replicates). ",
                                                                                                                 "Last four values correspond to 2.5\\%, 5.0\\%, 95.0\\%, 97.5\\%, respectively.")
@@ -185,9 +219,337 @@ for (a in all.markers) {
 
 
 
+cat("plot marginalized risk curves over time for trichotomized markers\n")
+
+
+# no bootstrap
+
+data.ph2<- subset(dat,ph2==1)
+
+risks.all.ter=list()
+for (a in all.markers) {        
+  marker.name=a%.%"cat"    
+  
+
+  if (comp.risk) {
+    f1=lapply(form.0, function(x) update(x, as.formula(paste0("~.+",marker.name))))
+    ss=unique(dat[[marker.name]]); ss=sort(ss[!is.na(ss)])
+    names(ss)=c("low","med","high")
+
+    if (multi.imp) {
+      out=lapply(1:10, function(imp) {
+        data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+        newdata=data.ph2
+        out=lapply(ss, function(s) {
+          newdata[[marker.name]]=s
+          risks = pcr2(f1, data.ph2, tfinal.tpeak, weights=data.ph2$wt, newdata=newdata)
+          cbind(t=attr(risks,"time"), 
+                cumulative=apply(attr(risks,"cumulative"), 1, weighted.mean, weights=data.ph2$wt))
+          
+        })
+        cbind(out[[1]], out[[2]][,"cumulative"], out[[3]][,"cumulative"])
+      })
+      
+      all.t=lapply(out, function(x) x[,"t"])
+      common.t = Reduce(intersect, all.t)
+      risks = sapply(out, simplify="array", function(x) x[x[,"t"] %in% common.t,-1,drop=F])
+      risks.all.ter[[a]]=list(time=common.t, risk=apply(risks, 1:2, mean))
+      
+    } else {
+      out=lapply(ss, function(s) {
+        newdata = data.ph2
+        newdata[[marker.name]]=s
+        risks = pcr2(f1, data.ph2, tfinal.tpeak, weights=data.ph2$wt, newdata=newdata)
+        cbind(t=attr(risks,"time"), 
+              cumulative=apply(attr(risks,"cumulative"), 1, weighted.mean, weights=data.ph2$wt))
+        
+      })
+      risks.all.ter[[a]] = list(time=out[[1]][,"t"], risk=cbind(out[[1]][,"cumulative"], out[[2]][,"cumulative"], out[[3]][,"cumulative"]))
+
+    }
+    
+  } else {
+    f1=update(form.0, as.formula(paste0("~.+",marker.name)))        
+    
+    run.svycoxph = function(f, design) {
+      fit=try(svycoxph(f, design=design), silent=T)
+      if (class(fit)[1]=="try-error") NA else fit
+    }
+    
+    fit.risk=run.svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat))
+    
+    #    f2=update(form.0, as.formula(paste0(marker.name,"~.")))
+    #    fit.s=nnet::multinom(f2, dat, weights=dat$wt) 
+    
+    if(length(fit.risk)==1) {
+      risks.all.ter[[a]]=NA
+    } else {
+      risks.all.ter[[a]]=marginalized.risk(fit.risk, marker.name, subset(dat,ph2==1), 
+                                           weights=dat[dat$ph2==1,"wt"], categorical.s=T, t.end=tfinal.tpeak)
+    }
+  }
+}
+#rv$marginalized.risk.over.time=list()
+#for (a in assays) rv$marginalized.risk.over.time[[a]] = risks.all.ter[[a]]
+
+# get cumulative risk from placebo
+
+if(has.plac) {
+  if (TRIAL=="janssen_partA_VL") {
+    out=lapply(1:10, function(imp) {
+      dat.pla.seroneg$EventIndOfInterest = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      dat.pla.seroneg$EventIndCompeting  = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+      risks = pcr2(form.0, dat.pla.seroneg, tfinal.tpeak)
+      cbind(t=attr(risks,"time"), cumulative=apply(attr(risks,"cumulative"), 1, mean))
+    })
+    all.t=lapply(out, function(x) x[,"t"])
+    common.t = Reduce(intersect, all.t)
+    risks = sapply(out, simplify="array", function(x) x[x[,"t"] %in% common.t,-1])
+    time.0=common.t
+    risk.0=apply(risks, 1, mean)
+    
+  } else {
+    fit.0=coxph(form.s, dat.pla.seroneg) 
+    risk.0= 1 - exp(-predict(fit.0, type="expected"))
+    time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
+    # risk.0 for 7 and 7+ are different
+    keep=dat.pla.seroneg[[config.cor$EventIndPrimary]]==1 & time.0<=tfinal.tpeak
+    risk.0 = risk.0[keep]
+    time.0 = time.0[keep]
+  }
+}
+
+
+#fit.1=coxph(form.s, dat) 
+#risk.1= 1 - exp(-predict(fit.1, type="expected"))
+#time.1= dat[[config.cor$EventTimePrimary]]
+#mypdf(file="tmp")
+#    plot(time.1, risk.1)
+#    mylines(time.0, risk.0, col="gray", lwd=2)
+#    mylegend(x=1, legend=c("placebo","vaccine"), col=c("gray","black"), lty=1)
+#dev.off()
+
+lwd=2
+ylim=c(0,
+       max(max(sapply(all.markers, function(a) 
+             max(risks.all.ter[[a]]$risk [risks.all.ter[[a]]$time<=tfinal.tpeak,])
+           )),
+           if(has.plac) risk.0)
+       )
+
+
+if (config$is_ows_trial) {
+  x.time<-seq(0,tfinal.tpeak,by=30)
+  if(tfinal.tpeak-last(x.time)>15) x.time=c(x.time, tfinal.tpeak) else x.time[length(x.time)]=tfinal.tpeak
+} else {
+  x.time<-floor(seq(0,tfinal.tpeak,length=8))
+}
+#
+if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
+
+
+for (a in all.markers) {        
+  mypdf(oma=c(1,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_", fname.suffix), mfrow=.mfrow, mar=c(12,4,5,2))
+  par(las=1, cex.axis=0.9, cex.lab=1)# axis label 
+  
+  marker.name=a%.%"cat"    
+  
+  out=risks.all.ter[[a]]
+  # cutpoints
+  q.a=marker.cutpoints[[a]]
+  
+  if(length(out)==1) empty.plot() else {
+    mymatplot(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,], lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint), ylim=ylim, xlab="", las=1, 
+              xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
+    title(xlab="Days Since Day "%.%tpeak1%.%" Visit", line=2)
+    title(main=all.markers.names.long[a], cex.main=.9, line=2)
+    title(main=for.title, cex.main=.9, line=.6)
+    mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= 12.4, cex=.8, side=1)
+    legend=c("Vaccine low","Vaccine medium","Vaccine high", if(has.plac) "Placebo")
+    mylegend(x=1, legend=legend, lty=c(1:3,if(has.plac) 1), col=c("green3","green","darkgreen",if(has.plac) "gray"), lwd=2)
+    if(has.plac) mylines(time.0, risk.0, col="gray", lwd=2, type="l")
+  }
+  
+  # save source data for images per some journals' requirements
+  img.dat=cbind(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,])
+  rownames(img.dat)=img.dat[,1]
+  # add placebo risk
+  if(has.plac) {
+    tmp=cbind(time.0, risk.0)
+    tmp=tmp[order (tmp[,1]),]
+    tmp=unique(tmp)    
+    rownames(tmp)=tmp[,1]
+    # combine and sort
+    img.dat=cbinduneven(list(img.dat, tmp))
+  }
+  img.dat=img.dat[order(img.dat[,1]),]
+  mywrite.csv(img.dat, paste0(save.results.to, a, "_marginalized_risks_cat_", fname.suffix))
+  
+  
+  # add data ribbon
+  if (TRIAL=="janssen_partA_VL") {
+    out=sapply(1:10, simplify="array", function(imp) {
+      form.s = Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1
+      
+      dat$EventIndOfInterest = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      f1=update(form.s, as.formula(paste0("~.+",marker.name)))
+      km <- survfit(f1, dat[dat$ph2==1,], weights=dat[dat$ph2==1,"wt"])
+      tmp=summary(km, times=x.time)            
+      
+      #    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
+      #    stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
+      #    stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
+      
+      L.idx=which(tmp$time==0)[1]:(which(tmp$time==0)[2]-1)
+      M.idx=which(tmp$time==0)[2]:(which(tmp$time==0)[3]-1)
+      H.idx=which(tmp$time==0)[3]:length(tmp$time==0)
+      
+      n.risk.L <- round(tmp$n.risk[L.idx])
+      n.risk.M <- round(tmp$n.risk[M.idx])
+      n.risk.H <- round(tmp$n.risk[H.idx])
+      
+      cum.L <- round(cumsum(tmp$n.event[L.idx]))
+      cum.M <- round(cumsum(tmp$n.event[M.idx]))
+      cum.H <- round(cumsum(tmp$n.event[H.idx]))
+      
+      # add placebo
+      dat.pla.seroneg$EventIndOfInterest = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      tmp.P=summary(survfit(form.s, dat.pla.seroneg), times=x.time)            
+      n.risk.P <- round(tmp.P$n.risk)
+      cum.P <- round(cumsum(tmp.P$n.event))
+      
+      cbind(cum.L, cum.M, cum.H, cum.P, n.risk.L, n.risk.M, n.risk.H, n.risk.P)
+    })
+    if (is.list(out)) stop("cor_coxph_risk_plotting.R: data ribon issue - getting different length output for imputed data")
+    data.ribbon = apply(out, 1:2, mean)
+    data.ribbon=as.data.frame(data.ribbon)
+    
+  } else {
+    f1=update(form.s, as.formula(paste0("~.+",marker.name)))
+    km <- survfit(f1, dat[dat$ph2==1,], weights=dat[dat$ph2==1,"wt"])
+    tmp=summary(km, times=x.time)            
+    
+    # the use of cbinduneven helps to get around these exceptions if they do occur
+    # stopifnot(all(tmp$time[1:length(x.time)]==x.time))
+    # stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
+    # stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
+    
+    L.idx=which(tmp$time==0)[1]:(which(tmp$time==0)[2]-1)
+    n.risk.L <- round(tmp$n.risk[L.idx])
+    cum.L <- round(cumsum(tmp$n.event[L.idx]))
+    tmp.L = cbind(n.risk.L, cum.L)
+    rownames(tmp.L)=tmp$time[L.idx]
+    
+    M.idx=which(tmp$time==0)[2]:(which(tmp$time==0)[3]-1)
+    n.risk.M <- round(tmp$n.risk[M.idx])
+    cum.M <- round(cumsum(tmp$n.event[M.idx]))
+    tmp.M = cbind(n.risk.M, cum.M)
+    rownames(tmp.M)=tmp$time[M.idx]
+    
+    H.idx=which(tmp$time==0)[3]:length(tmp$time==0)
+    n.risk.H <- round(tmp$n.risk[H.idx])
+    cum.H <- round(cumsum(tmp$n.event[H.idx]))
+    tmp.H = cbind(n.risk.H, cum.H)
+    rownames(tmp.H)=tmp$time[H.idx]
+    
+    # add placebo
+    if (has.plac) {
+      survfit.P=summary(survfit(form.s, dat.pla.seroneg), times=x.time)            
+      n.risk.P <- round(survfit.P$n.risk)
+      cum.P <- round(cumsum(survfit.P$n.event))  
+      tmp.P = cbind(n.risk.P, cum.P)
+      rownames(tmp.P)=survfit.P$time
+      data.ribbon = cbinduneven(list(tmp.L, tmp.M, tmp.H, tmp.P))
+    } else {
+      data.ribbon = cbinduneven(list(tmp.L, tmp.M, tmp.H))
+    }
+    
+  }
+  
+  cex.text <- 0.7
+  at.label=-tfinal.tpeak/6
+  
+  mtext("No. at risk",side=1,outer=FALSE,line=2.5,at=-2,adj=0,cex=cex.text)
+  mtext(paste0("Low:"),side=1,outer=F,line=3.4,at=at.label,adj=0,cex=cex.text);  mtext(data.ribbon$n.risk.L,side=1,outer=FALSE,line=3.4,at=x.time,cex=cex.text)
+  mtext(paste0("Med:"),side=1,outer=F,line=4.3,at=at.label,adj=0,cex=cex.text);  mtext(data.ribbon$n.risk.M,side=1,outer=FALSE,line=4.3,at=x.time,cex=cex.text)
+  mtext(paste0("High:"),side=1,outer=F,line=5.2,at=at.label,adj=0,cex=cex.text); mtext(data.ribbon$n.risk.H,side=1,outer=FALSE,line=5.2,at=x.time,cex=cex.text)
+  mtext(paste0("Plac:"),side=1,outer=F,line=6.2,at=at.label,adj=0,cex=cex.text); mtext(data.ribbon$n.risk.P,side=1,outer=FALSE,line=6.2,at=x.time,cex=cex.text)
+  
+  mtext(paste0("Cumulative No. of ",config.cor$txt.endpoint," Endpoints"),side=1,outer=FALSE,line=7.4,at=-2,adj=0,cex=cex.text)
+  mtext(paste0("Low:"),side=1,outer=FALSE,line=8.3,at=at.label,adj=0,cex=cex.text);  mtext(data.ribbon$cum.L,side=1,outer=FALSE,line=8.3, at=x.time,cex=cex.text)
+  mtext(paste0("Med:"),side=1,outer=FALSE,line=9.2,at=at.label,adj=0,cex=cex.text);  mtext(data.ribbon$cum.M,side=1,outer=FALSE,line=9.2 ,at=x.time,cex=cex.text)
+  mtext(paste0("High:"),side=1,outer=FALSE,line=10.1,at=at.label,adj=0,cex=cex.text);mtext(data.ribbon$cum.H,side=1,outer=FALSE,line=10.1,at=x.time,cex=cex.text)
+  mtext(paste0("Plac:"),side=1,outer=FALSE,line=11.1,at=at.label,adj=0,cex=cex.text);mtext(data.ribbon$cum.P,side=1,outer=FALSE,line=11.1,at=x.time,cex=cex.text)
+  
+  dev.off()    
+}
+#mtext(toTitleCase(study_name), side = 1, line = 2, outer = T, at = NA, adj = NA, padj = NA, cex = .8, col = NA, font = NA)
+#
+#cumsum(summary(survfit(form.s, subset(dat, ph2==1)), times=x.time)$n.event)
+#table(subset(dat, yy==1)[["Day"%.%tpeak%.%"pseudoneutid80cat"]])
+
+
 
 ###################################################################################################
-print("continuous markers, controlled VE curves")
+cat("make trichotomized markers, marginalized risk and controlled risk table")
+
+res=sapply (all.markers, function(a) {        
+  risks=get("risks.all.3")[[a]]
+  with(risks, c(prob[3]/prob[1], quantile(boot[3,]/boot[1,], c(.025,.975), na.rm=T)))
+})
+#    
+tab=sapply (all.markers, function(a) {
+  paste0(
+    all.markers.names.short[a], "&",
+    # marginal RR and ci
+    formatDouble(res[1,a],2,remove.leading0=F), "&", formatDouble(res[2,a],2,remove.leading0=F), "--", ifelse(res[3,a]>1000,"Inf",formatDouble(res[3,a],2,remove.leading0=F))
+    , "&" ,
+    # causal RR and ci
+    formatDouble(res[1,a]*bias.factor,2,remove.leading0=F), "&", formatDouble(res[2,a]*bias.factor,2,remove.leading0=F), "--", ifelse(res[3,a]*bias.factor>1000,"Inf",formatDouble(res[3,a]*bias.factor,2,remove.leading0=F))
+    , "&" ,
+    # E-value and ub
+    formatDouble(E.value(res[1,a]),1), "&", formatDouble(E.value(res[3,a]),1)
+  )
+})
+write(concatList(tab, "\\\\"), file=paste0(save.results.to, "marginalized_risks_cat_", fname.suffix,".tex"))
+
+
+
+###################################################################################################
+cat("plot trichotomized markers, log(-log) marginalized survival curves")
+# for goodness of fit check on PH assumptions
+
+for (a in all.markers) {        
+  mypdf(onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_logclog_",fname.suffix), mfrow=.mfrow)
+  marker.name=a%.%"cat"    
+  
+  out=risks.all.ter[[a]]
+  # cutpoints
+  q.a=marker.cutpoints[[a]]
+  
+  if(length(out)==1) empty.plot() else {
+    mymatplot(out$time[out$time<=tfinal.tpeak], log(-log(out$risk[out$time<=tfinal.tpeak,])), 
+              lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, 
+              ylab=paste0("log(-log( Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak, " ))"), xlab="", 
+              las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
+    title(xlab="Days Since Day "%.%tpeak1%.%" Visit", line=2)
+    title(main=all.markers.names.long[a], cex.main=.9, line=2)
+    title(main=for.title, line=.6, cex.main=.9)
+    mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= 3, cex=.8, side=1)   
+    legend=c("Vaccine low","Vaccine medium","Vaccine high")
+    mylegend(x=3, legend=legend, lty=c(1:3), col=c("green3","green","darkgreen"), lwd=2)
+  }
+  
+  dev.off()    
+}
+
+
+
+###################################################################################################
+if(show.ve.curves) {
+
+cat("continuous markers, controlled VE curves\n")
 
 # 1 conditional on s
 # 2 conditional on S>=s
@@ -234,9 +596,9 @@ for (eq.geq in 1:5) {
         ylim=c(0,1)
       }
     } else if (eq.geq %in% c(4,5)) {
-      ylim=-log(1-ve_ylim_log)
+      ylim=-log(1-config$ve_ylim_log)
     } else {
-      ylim=ve_ylim
+      ylim=config$ve_ylim
     }
     
     ncases=sapply(risks$marker, function(s) sum(dat$yy[dat[[a]]>=s], na.rm=T))        
@@ -346,7 +708,7 @@ for (eq.geq in 1:5) {
       while (nrow(out)%%4!=0) out=rbind(out, c("s"="", "Estimate"=""))
       tab=cbind(out[1:(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4), ], out[1:(nrow(out)/4)+(nrow(out)/4*2), ], out[1:(nrow(out)/4)+(nrow(out)/4*3), ])        
       mytex(tab, file.name=paste0(a, "_controlled_ve_sens_eq", "_"%.%fname.suffix), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
-            longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_sens_eq ", COR), caption=paste0("Controlled VE with sensitivity analysis as functions of Day ",
+            longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_sens_eq ", fname.suffix), caption=paste0("Controlled VE with sensitivity analysis as functions of Day ",
                                                                                                                     tpeak," ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
                                                                                                                     ncol(risks.all[[1]]$boot)," replicates). ",
                                                                                                                     "Last four values correspond to 2.5\\%, 5.0\\%, 95.0\\%, 97.5\\%, respectively.")
@@ -383,7 +745,7 @@ for(a in all.markers) {
   tab=cbind(ret[1:(nrow(ret)/4), ], ret[1:(nrow(ret)/4)+(nrow(ret)/4), ], ret[1:(nrow(ret)/4)+(nrow(ret)/4*2), ], ret[1:(nrow(ret)/4)+(nrow(ret)/4*3), ])
   
   mytex(tab, file.name=paste0(a, "_controlled_ve_eq", "_"%.%fname.suffix), align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to, include.rownames = F,
-        longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", COR), 
+        longtable=T, caption.placement = "top", label=paste0("tab controlled_ve_eq ", fname.suffix), 
         caption=paste0("Controlled VE as functions of Day ",
                        tpeak," ", all.markers.names.short[a], " (=s) among baseline negative vaccine recipients with 95\\% bootstrap point-wise confidence intervals (",
                        ncol(risks.all[[1]]$boot)," replicates). ", 
@@ -398,302 +760,6 @@ for(a in all.markers) {
 }
 
 
-
-###################################################################################################
-print("trichotomized markers, marginalized risk and controlled risk table")
-
-res=sapply (all.markers, function(a) {        
-  risks=risks.all.3[[a]]
-  with(risks, c(prob[3]/prob[1], quantile(boot[3,]/boot[1,], c(.025,.975), na.rm=T)))
-})
-#    
-tab=sapply (all.markers, function(a) {
-  paste0(
-    all.markers.names.short[a], "&",
-    # marginal RR and ci
-    formatDouble(res[1,a],2,remove.leading0=F), "&", formatDouble(res[2,a],2,remove.leading0=F), "--", ifelse(res[3,a]>1000,"Inf",formatDouble(res[3,a],2,remove.leading0=F))
-    , "&" ,
-    # causal RR and ci
-    formatDouble(res[1,a]*bias.factor,2,remove.leading0=F), "&", formatDouble(res[2,a]*bias.factor,2,remove.leading0=F), "--", ifelse(res[3,a]*bias.factor>1000,"Inf",formatDouble(res[3,a]*bias.factor,2,remove.leading0=F))
-    , "&" ,
-    # E-value and ub
-    formatDouble(E.value(res[1,a]),1), "&", formatDouble(E.value(res[3,a]),1)
-  )
-})
-write(concatList(tab, "\\\\"), file=paste0(save.results.to, "marginalized_risks_cat_", fname.suffix,".tex"))
-
-
-
-###################################################################################################
-print("trichotomized markers, marginalized risk curves over time")
-# no bootstrap
-
-data.ph2<- subset(dat,ph2==1)
-
-risks.all.ter=list()
-for (a in all.markers) {        
-  marker.name=a%.%"cat"    
-  
-  if (is.list(form.0)) {
-    # competing risk implementation
-    f1=lapply(form.0, function(x) update(x, as.formula(paste0("~.+",marker.name))))
-    ss=unique(dat[[marker.name]]); ss=sort(ss[!is.na(ss)])
-    names(ss)=c("low","med","high")
-    
-    out=lapply(1:10, function(imp) {
-      data.ph2$EventIndOfInterest = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      data.ph2$EventIndCompeting  = ifelse(data.ph2$EventIndPrimary==1 & data.ph2[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-      newdata=data.ph2
-      out=lapply(ss, function(s) {
-        newdata[[marker.name]]=s
-        risks = pcr2(f1, data.ph2, tfinal.tpeak, weights=data.ph2$wt, newdata=newdata)
-        cbind(t=attr(risks,"time"), 
-              cumulative=apply(attr(risks,"cumulative"), 1, weighted.mean, weights=data.ph2$wt))
-        
-      })
-      cbind(out[[1]], out[[2]][,"cumulative"], out[[3]][,"cumulative"])
-    })
-    
-    all.t=lapply(out, function(x) x[,"t"])
-    common.t = Reduce(intersect, all.t)
-    risks = sapply(out, simplify="array", function(x) x[x[,"t"] %in% common.t,-1,drop=F])
-    risks.all.ter[[a]]=list(time=common.t, risk=apply(risks, 1:2, mean))
-    
-  } else {
-    f1=update(form.0, as.formula(paste0("~.+",marker.name)))        
-    fit.risk=run.svycoxph(f1, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat))
-    
-    #    f2=update(form.0, as.formula(paste0(marker.name,"~.")))
-    #    fit.s=nnet::multinom(f2, dat, weights=dat$wt) 
-    
-    if(length(fit.risk)==1) {
-      risks.all.ter[[a]]=NA
-    } else {
-      risks.all.ter[[a]]=marginalized.risk(fit.risk, marker.name, subset(dat,ph2==1), 
-                                           weights=subset(dat,ph2==1,wt,drop=T), categorical.s=T, t.end=tfinal.tpeak)
-    }
-  }
-}
-#rv$marginalized.risk.over.time=list()
-#for (a in assays) rv$marginalized.risk.over.time[[a]] = risks.all.ter[[a]]
-
-
-
-# get cumulative risk from placebo
-if (TRIAL=="janssen_partA_VL") {
-  out=lapply(1:10, function(imp) {
-    dat.pla.seroneg$EventIndOfInterest = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-    dat.pla.seroneg$EventIndCompeting  = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-    risks = pcr2(form.0, dat.pla.seroneg, tfinal.tpeak)
-    cbind(t=attr(risks,"time"), cumulative=apply(attr(risks,"cumulative"), 1, mean))
-  })
-  all.t=lapply(out, function(x) x[,"t"])
-  common.t = Reduce(intersect, all.t)
-  risks = sapply(out, simplify="array", function(x) x[x[,"t"] %in% common.t,-1])
-  time.0=common.t
-  risk.0=apply(risks, 1, mean)
-  
-} else {
-  fit.0=coxph(form.s, dat.pla.seroneg) 
-  risk.0= 1 - exp(-predict(fit.0, type="expected"))
-  time.0= dat.pla.seroneg[[config.cor$EventTimePrimary]]
-  # risk.0 for 7 and 7+ are different
-  keep=dat.pla.seroneg[[config.cor$EventIndPrimary]]==1 & time.0<=tfinal.tpeak
-  risk.0 = risk.0[keep]
-  time.0 = time.0[keep]
-}
-
-
-#fit.1=coxph(form.s, dat) 
-#risk.1= 1 - exp(-predict(fit.1, type="expected"))
-#time.1= dat[[config.cor$EventTimePrimary]]
-#mypdf(file="tmp")
-#    plot(time.1, risk.1)
-#    mylines(time.0, risk.0, col="gray", lwd=2)
-#    mylegend(x=1, legend=c("placebo","vaccine"), col=c("gray","black"), lty=1)
-#dev.off()
-
-lwd=2
-ylim=c(0,
-       max(risk.0, 
-           max(sapply(all.markers, function(a) 
-             max(risks.all.ter[[a]]$risk [risks.all.ter[[a]]$time<=tfinal.tpeak,])
-           ))))
-
-
-if (config$is_ows_trial) {
-  x.time<-seq(0,tfinal.tpeak,by=30)
-  if(tfinal.tpeak-last(x.time)>15) x.time=c(x.time, tfinal.tpeak) else x.time[length(x.time)]=tfinal.tpeak
-} else {
-  x.time<-floor(seq(0,tfinal.tpeak,length=8))
-}
-#
-if(.mfrow[1]==1)  height=7.5/2*1.5 else height=7.5/2*.mfrow[1]*1.3
-
-
-for (a in all.markers) {        
-  mypdf(oma=c(1,0,0,0), onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_", fname.suffix), mfrow=.mfrow, mar=c(12,4,5,2))
-  par(las=1, cex.axis=0.9, cex.lab=1)# axis label 
-  
-  marker.name=a%.%"cat"    
-  
-  out=risks.all.ter[[a]]
-  # cutpoints
-  q.a=marker.cutpoints[[a]]
-  
-  if(length(out)==1) empty.plot() else {
-    mymatplot(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,], lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, ylab=paste0("Probability* of ",config.cor$txt.endpoint), ylim=ylim, xlab="", las=1, 
-              xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
-    title(xlab="Days Since Day "%.%tpeak1%.%" Visit", line=2)
-    title(main=all.markers.names.long[a], cex.main=.9, line=2)
-    title(main=for.title, cex.main=.9, line=.6)
-    mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= 12.4, cex=.8, side=1)
-    legend=c("Vaccine low","Vaccine medium","Vaccine high","Placebo")
-    mylegend(x=1, legend=legend, lty=c(1:3,1), col=c("green3","green","darkgreen","gray"), lwd=2)
-    mylines(time.0, risk.0, col="gray", lwd=2, type="l")
-  }
-  
-  # save source data for images per some journals' requirements
-  img.dat=cbind(out$time[out$time<=tfinal.tpeak], out$risk[out$time<=tfinal.tpeak,])
-  rownames(img.dat)=img.dat[,1]
-  # add placebo risk
-  tmp=cbind(time.0, risk.0)
-  tmp=tmp[order (tmp[,1]),]
-  tmp=unique(tmp)    
-  rownames(tmp)=tmp[,1]
-  # combine and sort
-  img.dat=cbinduneven(list(img.dat, tmp))
-  img.dat=img.dat[order(img.dat[,5]),]
-  mywrite.csv(img.dat, paste0(save.results.to, a, "_marginalized_risks_cat_", fname.suffix))
-  
-  
-  # add data ribbon
-  if (TRIAL=="janssen_partA_VL") {
-    out=sapply(1:10, simplify="array", function(imp) {
-      form.s = Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1
-      
-      dat$EventIndOfInterest = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      f1=update(form.s, as.formula(paste0("~.+",marker.name)))
-      km <- survfit(f1, subset(dat, ph2==1), weights=wt)
-      tmp=summary(km, times=x.time)            
-      
-      #    stopifnot(all(tmp$time[1:length(x.time)]==x.time))
-      #    stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
-      #    stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
-      
-      L.idx=which(tmp$time==0)[1]:(which(tmp$time==0)[2]-1)
-      M.idx=which(tmp$time==0)[2]:(which(tmp$time==0)[3]-1)
-      H.idx=which(tmp$time==0)[3]:length(tmp$time==0)
-      
-      n.risk.L <- round(tmp$n.risk[L.idx])
-      n.risk.M <- round(tmp$n.risk[M.idx])
-      n.risk.H <- round(tmp$n.risk[H.idx])
-      
-      cum.L <- round(cumsum(tmp$n.event[L.idx]))
-      cum.M <- round(cumsum(tmp$n.event[M.idx]))
-      cum.H <- round(cumsum(tmp$n.event[H.idx]))
-      
-      # add placebo
-      dat.pla.seroneg$EventIndOfInterest = ifelse(dat.pla.seroneg$EventIndPrimary==1 & dat.pla.seroneg[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      tmp.P=summary(survfit(form.s, dat.pla.seroneg), times=x.time)            
-      n.risk.P <- round(tmp.P$n.risk)
-      cum.P <- round(cumsum(tmp.P$n.event))
-      
-      cbind(cum.L, cum.M, cum.H, cum.P, n.risk.L, n.risk.M, n.risk.H, n.risk.P)
-    })
-    if (is.list(out)) stop("cor_coxph_risk_plotting.R: data ribon issue - getting different length output for imputed data")
-    data.ribbon = apply(out, 1:2, mean)
-    data.ribbon=as.data.frame(data.ribbon)
-    
-  } else {
-    f1=update(form.s, as.formula(paste0("~.+",marker.name)))
-    km <- survfit(f1, subset(dat, ph2==1), weights=wt)
-    tmp=summary(km, times=x.time)            
-    
-    # the use of cbinduneven helps to get around these exceptions if they do occur
-    # stopifnot(all(tmp$time[1:length(x.time)]==x.time))
-    # stopifnot(tmp$time[1:length(x.time)+length(x.time)]==x.time)
-    # stopifnot(tmp$time[1:length(x.time)+length(x.time)*2]==x.time)
-    
-    L.idx=which(tmp$time==0)[1]:(which(tmp$time==0)[2]-1)
-    n.risk.L <- round(tmp$n.risk[L.idx])
-    cum.L <- round(cumsum(tmp$n.event[L.idx]))
-    tmp.L = cbind(n.risk.L, cum.L)
-    rownames(tmp.L)=tmp$time[L.idx]
-    
-    M.idx=which(tmp$time==0)[2]:(which(tmp$time==0)[3]-1)
-    n.risk.M <- round(tmp$n.risk[M.idx])
-    cum.M <- round(cumsum(tmp$n.event[M.idx]))
-    tmp.M = cbind(n.risk.M, cum.M)
-    rownames(tmp.M)=tmp$time[M.idx]
-    
-    H.idx=which(tmp$time==0)[3]:length(tmp$time==0)
-    n.risk.H <- round(tmp$n.risk[H.idx])
-    cum.H <- round(cumsum(tmp$n.event[H.idx]))
-    tmp.H = cbind(n.risk.H, cum.H)
-    rownames(tmp.H)=tmp$time[H.idx]
-    
-    # add placebo
-    survfit.P=summary(survfit(form.s, dat.pla.seroneg), times=x.time)            
-    n.risk.P <- round(survfit.P$n.risk)
-    cum.P <- round(cumsum(survfit.P$n.event))  
-    tmp.P = cbind(n.risk.P, cum.P)
-    rownames(tmp.P)=survfit.P$time
-    
-    data.ribbon = cbinduneven(list(tmp.L, tmp.M, tmp.H, tmp.P))
-    
-  }
-  
-  cex.text <- 0.7
-  at.label=-tfinal.tpeak/6
-  
-  mtext("No. at risk",side=1,outer=FALSE,line=2.5,at=-2,adj=0,cex=cex.text)
-  mtext(paste0("Low:"),side=1,outer=F,line=3.4,at=at.label,adj=0,cex=cex.text);  mtext(data.ribbon$n.risk.L,side=1,outer=FALSE,line=3.4,at=x.time,cex=cex.text)
-  mtext(paste0("Med:"),side=1,outer=F,line=4.3,at=at.label,adj=0,cex=cex.text);  mtext(data.ribbon$n.risk.M,side=1,outer=FALSE,line=4.3,at=x.time,cex=cex.text)
-  mtext(paste0("High:"),side=1,outer=F,line=5.2,at=at.label,adj=0,cex=cex.text); mtext(data.ribbon$n.risk.H,side=1,outer=FALSE,line=5.2,at=x.time,cex=cex.text)
-  mtext(paste0("Plac:"),side=1,outer=F,line=6.2,at=at.label,adj=0,cex=cex.text); mtext(data.ribbon$n.risk.P,side=1,outer=FALSE,line=6.2,at=x.time,cex=cex.text)
-  
-  mtext(paste0("Cumulative No. of ",config.cor$txt.endpoint," Endpoints"),side=1,outer=FALSE,line=7.4,at=-2,adj=0,cex=cex.text)
-  mtext(paste0("Low:"),side=1,outer=FALSE,line=8.3,at=at.label,adj=0,cex=cex.text);  mtext(data.ribbon$cum.L,side=1,outer=FALSE,line=8.3, at=x.time,cex=cex.text)
-  mtext(paste0("Med:"),side=1,outer=FALSE,line=9.2,at=at.label,adj=0,cex=cex.text);  mtext(data.ribbon$cum.M,side=1,outer=FALSE,line=9.2 ,at=x.time,cex=cex.text)
-  mtext(paste0("High:"),side=1,outer=FALSE,line=10.1,at=at.label,adj=0,cex=cex.text);mtext(data.ribbon$cum.H,side=1,outer=FALSE,line=10.1,at=x.time,cex=cex.text)
-  mtext(paste0("Plac:"),side=1,outer=FALSE,line=11.1,at=at.label,adj=0,cex=cex.text);mtext(data.ribbon$cum.P,side=1,outer=FALSE,line=11.1,at=x.time,cex=cex.text)
-  
-  dev.off()    
-}
-#mtext(toTitleCase(study_name), side = 1, line = 2, outer = T, at = NA, adj = NA, padj = NA, cex = .8, col = NA, font = NA)
-#
-#cumsum(summary(survfit(form.s, subset(dat, ph2==1)), times=x.time)$n.event)
-#table(subset(dat, yy==1)[["Day"%.%tpeak%.%"pseudoneutid80cat"]])
-
-
-
-###################################################################################################
-print("trichotomized markers, log(-log) marginalized survival curves")
-# for goodness of fit check on PH assumptions
-
-for (a in all.markers) {        
-  mypdf(onefile=F, file=paste0(save.results.to, a, "_marginalized_risks_cat_logclog"), mfrow=.mfrow)
-  marker.name=a%.%"cat"    
-  
-  out=risks.all.ter[[a]]
-  # cutpoints
-  q.a=marker.cutpoints[[a]]
-  
-  if(length(out)==1) empty.plot() else {
-    mymatplot(out$time[out$time<=tfinal.tpeak], log(-log(out$risk[out$time<=tfinal.tpeak,])), 
-              lty=1:3, col=c("green3","green","darkgreen"), type="l", lwd=lwd, make.legend=F, 
-              ylab=paste0("log(-log(Probability* of ",config.cor$txt.endpoint," by Day "%.%tfinal.tpeak, "))"), xlab="", 
-              las=1, xlim=c(0,tfinal.tpeak), at=x.time, xaxt="n")
-    title(xlab="Days Since Day "%.%tpeak1%.%" Visit", line=2)
-    title(main=all.markers.names.long[a], cex.main=.9, line=2)
-    title(main=for.title, line=.6, cex.main=.9)
-    mtext(bquote(cutpoints: list(.(formatDouble(10^q.a[1]/10^floor(q.a[1]),1)) %*% 10^ .(floor(q.a[1])), .(formatDouble(10^q.a[2]/10^floor(q.a[2]),1)) %*% 10^ .(floor(q.a[2])))), line= 3, cex=.8, side=1)   
-    legend=c("Vaccine low","Vaccine medium","Vaccine high")
-    mylegend(x=3, legend=legend, lty=c(1:3), col=c("green3","green","darkgreen"), lwd=2)
-  }
-  
-  dev.off()    
 }
 
 
@@ -703,6 +769,8 @@ for (a in all.markers) {
 # interaction models and risk curves
 
 if (!is.null(config$interaction)) {
+  risks.itxn = get("risks.itxn")
+  
   for (ab in config$interaction) {
     tmp = trim(strsplit(ab, " *\\* *")[[1]])
     aold = tmp[1]
@@ -855,4 +923,7 @@ if (!is.null(config$interaction)) {
       dev.off()
     }
   }
+}
+
+
 }
