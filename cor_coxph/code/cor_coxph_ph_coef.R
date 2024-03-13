@@ -11,10 +11,12 @@
 
 
 # Optional input
-if (is.null(use.svy)) use.svy=T 
+{
+if (!exists("use.svy")) use.svy=T 
 # controls whether we are using survey package to handle two-phase samples or coxph for cohort
 # for svy, we expect design.dat
 # for coxph, we expect dat
+}
 
 
 {

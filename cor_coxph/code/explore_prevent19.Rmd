@@ -1,0 +1,140 @@
+---
+title: "PREVENT-19 Correlates"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(survey)
+library(kyotil)
+library(readxl)
+
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20240305.csv')
+dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD35 + 7),1,0)
+dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & EventTimePrimaryD35 >= 7)
+
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240307.csv')
+
+dat_raw=read_excel('/trials/covpn/p3004/download_data/formatted_for_fred_hutch.xlsx')
+```
+
+
+binding Ab
+```{r}
+dat=read.csv("/trials/covpn/p3004/download_data/Binding Antibody/BARDA_SARS_MSD_2019nCoV2-301_Nexelis_6001_04Jan2022.csv")
+
+with(dat, mytable(Test.Name)) # SARS-CoV-2 Spike Protein (Wild Type) 
+
+
+x=subset(dat, Visit=="35.00 Day", Test.Result, drop=T)
+x.1=ifelse(x=="<150.4", 75.2, as.numeric(x))
+
+hist(log10(x.1), xlab="log10 (bAb Spike)")
+
+
+
+#ID50
+dat.1=read.csv("/trials/covpn/p3004/download_data/Neutralizing_Antibody/2019nCoV2-301_ nAB_D614G_09Mar2022.csv")
+#dat.1=read.csv("/trials/covpn/p3004/download_data/Neutralizing_Antibody/2019nCoV2-301_ nAB_D614G_30Mar2022.csv")
+with(dat.1, mytable(Visit.Description, PVC)) # just use PVC D35 and D0
+with(dat.1, mytable(Test.Method, Specimen.Type, Unit.of.Results)) # SARS-COV-2 D614G NEUT, SERUM, 1/Dilution
+
+with(dat.1, mytable(Reason.Not.Done.or.Comment.for.Result)) # some are "ZPABG"
+
+# two that have records duplicated on D0 due to input errors
+subset(dat.1, Patient.Number=="MX006-0187")
+subset(dat.1, Patient.Number=="US179-0077")
+
+
+tab=with(dat.1, mytable(Patient.Number, PVC))
+```
+
+
+
+
+
+
+This supports imputing ID50 by Spike binding.
+```{r}
+dat.04=read.csv("/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20220404.csv")
+dat.18=read.csv("/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20220418.csv")
+
+dat.tmp.1=subset(dat.04, Subjectid %in% c("2019nCoV301-US049-0039","2019nCoV301-US159-0063","2019nCoV301-US159-0135","2019nCoV301-US162-0231"
+                                          ,"2019nCoV301-US163-0193","2019nCoV301-US172-0511","2019nCoV301-US200-0046","2019nCoV301-US228-0067"
+                                          ,"2019nCoV301-US228-0210","2019nCoV301-US239-0100","2019nCoV301-US241-0121","2019nCoV301-US242-0118"
+))$Day35pseudoneutid50
+dat.tmp.2=subset(dat.18, Subjectid %in% c("2019nCoV301-US049-0039","2019nCoV301-US159-0063","2019nCoV301-US159-0135","2019nCoV301-US162-0231"
+                                          ,"2019nCoV301-US163-0193","2019nCoV301-US172-0511","2019nCoV301-US200-0046","2019nCoV301-US228-0067"
+                                          ,"2019nCoV301-US228-0210","2019nCoV301-US239-0100","2019nCoV301-US241-0121","2019nCoV301-US242-0118"
+))$Day35pseudoneutid50
+
+# Need to add Trt to dat.1
+# with(subset(dat.1, Trt==1), mytable(!is.na(Day35bindSpike), !is.na(Day35pseudoneutid50), EventIndPrimaryD35))
+```
+
+
+
+```{r}
+dat.2.pr.new=read.csv("/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20230928.csv")
+dat.2.pr.old=read.csv("/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/archive/prevent19_data_processed_with_riskscore_2022-04-04 time 18.05.03.csv")
+
+dat.tmp.1=subset(dat.2.pr.new, Ptid %in% c("2019nCoV301-US049-0039","2019nCoV301-US159-0063","2019nCoV301-US159-0135","2019nCoV301-US162-0231"
+                                           ,"2019nCoV301-US163-0193","2019nCoV301-US172-0511","2019nCoV301-US200-0046","2019nCoV301-US228-0067"
+                                           ,"2019nCoV301-US228-0210","2019nCoV301-US239-0100","2019nCoV301-US241-0121","2019nCoV301-US242-0118"
+))$Day35pseudoneutid50
+dat.tmp.2=subset(dat.2.pr.old, Ptid %in% c("2019nCoV301-US049-0039","2019nCoV301-US159-0063","2019nCoV301-US159-0135","2019nCoV301-US162-0231"
+                                           ,"2019nCoV301-US163-0193","2019nCoV301-US172-0511","2019nCoV301-US200-0046","2019nCoV301-US228-0067"
+                                           ,"2019nCoV301-US228-0210","2019nCoV301-US239-0100","2019nCoV301-US241-0121","2019nCoV301-US242-0118"
+))$Day35pseudoneutid50
+
+
+with(subset(dat.2.pr.new, Trt==1 & SubcohortInd==1 & Country==0), mytable(!is.na(BbindSpike)&!is.na(Day35bindSpike), ph1.D35))
+
+with(subset(dat.2.pr.new, Country==0 & SubcohortInd & Bserostatus==0 & Trt==1 & ph1.D35 & !is.na(BbindSpike) & !is.na(Day35bindSpike)), mytable(is.na(Day35pseudoneutid50), EventIndPrimaryD35))
+
+with(subset(dat.2.pr.new, Country==0 & SubcohortInd==1 & Bserostatus==0 & Trt==1 & Perprotocol ), mytable(!is.na(BbindSpike)&!is.na(Day35bindSpike)) )
+with(subset(dat.2.pr.new, Country==0 & SubcohortInd==1 & Bserostatus==0 & Trt==1 & Perprotocol & ph2.immuno ), mytable(ph2.D35) )
+subset(dat.2.pr.new, Country==0 & SubcohortInd==1 & Bserostatus==0 & Trt==1 & Perprotocol & ph2.immuno & ph2.D35 & AnyinfectionD1==1)
+```
+
+```{r}
+dat.new=read.csv("/trials/covpn/p3004/download_data/Neutralizing_Antibody/2019nCoV2-301_ nAB_D614G_14Apr2022.csv")
+dat.old=read.csv("/trials/covpn/p3004/download_data/Neutralizing_Antibody/2019nCoV2-301_ nAB_D614G_30Mar2022.csv")
+
+all(dat.old$Monogram.Accession %in% dat.new$Monogram.Accession)
+
+dat.tmp = dat.new[!dat.new$Monogram.Accession %in% dat.old$Monogram.Accession, ]
+
+dat.new$Subjectid = "2019nCoV301-" %.% dat.new$Patient.Number
+dat.old$Subjectid = "2019nCoV301-" %.% dat.old$Patient.Number
+
+dat.tmp.1=subset(dat.new, Subjectid %in% c("2019nCoV301-US049-0039","2019nCoV301-US159-0063","2019nCoV301-US159-0135","2019nCoV301-US162-0231"
+                                           ,"2019nCoV301-US163-0193","2019nCoV301-US172-0511","2019nCoV301-US200-0046","2019nCoV301-US228-0067"
+                                           ,"2019nCoV301-US228-0210","2019nCoV301-US239-0100","2019nCoV301-US241-0121","2019nCoV301-US242-0118"
+))[,c(4:10)]
+dat.tmp.2=subset(dat.old, Subjectid %in% c("2019nCoV301-US049-0039","2019nCoV301-US159-0063","2019nCoV301-US159-0135","2019nCoV301-US162-0231"
+                                           ,"2019nCoV301-US163-0193","2019nCoV301-US172-0511","2019nCoV301-US200-0046","2019nCoV301-US228-0067"
+                                           ,"2019nCoV301-US228-0210","2019nCoV301-US239-0100","2019nCoV301-US241-0121","2019nCoV301-US242-0118"
+))[,c(4:10)]
+
+dat.tmp.1==dat.tmp.2
+```
+
+
+
+
+Stuff for sampling plan 
+```{r}
+# dat=as.data.frame(read_excel("../Novavax/COVPN Sample Strata Freqs.xlsx"))
+# 
+# dat$racestrata[dat$country=="MX"]=""
+# dat$comorbid[dat$country=="MX"]=""
+# 
+# dat$country[dat$country=="MX"]="XM"
+# dat$N=dat$Frequency
+# 
+# dat=aggregate(N~agestrata+racestrata+comorbid+country+blserostat, dat, sum)
+# 
+# cbind(dat, n=c(rep("100+12",8), rep("50+6",2), rep("35+35",8), rep("13+13",2)))
+```
