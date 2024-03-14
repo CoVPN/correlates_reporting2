@@ -1,0 +1,12 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0(asy, "_longitudinal_by_case_non_case_vaccine_baselineNeg.pdf"))`}
+
+\caption{`r paste0("Longitudinal plot of ", asy_lb, " at Day 29, Day 71, Month 6, by Cases and Non-Cases in Vaccine Baseline Negative Cohort")`}
+\end{figure}
+
+\hphantom{Random text to appease the latex god}
+
+
+
