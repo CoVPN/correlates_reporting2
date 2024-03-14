@@ -381,6 +381,18 @@ PsV-nAb ID50 Score"))))
               cat("\\clearpage", sep = '\n')
           	}
           }
+        
+          ############################################## adhoc longitudinal violin plots (for manuscript reviewers) ############
+        
+        for (asy in c("RBD","Spike","pnAb_id50")){
+          
+              asy_lb = case_when(asy=="RBD" ~ "bindRBD",
+                                 asy=="Spike" ~ "",
+                                 asy=="pnAb_id50" ~ "")
+          	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_violin_adhoc.Rmd')), quiet = TRUE)
+          		cat(res, sep = '\n')
+              cat("\\clearpage", sep = '\n')
+          	}
       }
     }
   }
