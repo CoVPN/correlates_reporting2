@@ -300,6 +300,11 @@ if (!is.null(config$assay_metadata)) {
     uloqs["bindN"]=574.6783
     pos.cutoffs["bindN"]=23.4711
     
+    llods["bindNVXIgG"]=200
+    lloqs["bindNVXIgG"]=200
+    uloqs["bindNVXIgG"]=2904275
+    pos.cutoffs["bindNVXIgG"]=500
+    
   } else if(TRIAL=="azd1222") {
     
     # data less than lod is set to lod/2
@@ -759,7 +764,7 @@ if (exists("COR")) {
         }
 
                 
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail")) {
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi")) {
           # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
@@ -802,7 +807,7 @@ if (exists("COR")) {
 # this has to be done after the previous block b/c attribute is lost after subsettting
 
 all.markers1 = NULL
-if (TRIAL=="covail") {
+if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
   assays1 = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
   all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
   
@@ -829,14 +834,12 @@ if (!is.null(all.markers1)) {
   }
   attr(dat.mock, "marker.cutpoints")=marker.cutpoints
 }
-
 # add imputed copies if needed
 # need to keep pseudoneutid50 and bindSpike b/c there are identical copies of them
 if (TRIAL=="janssen_partA_VL") {
   for (i in 1:10) all.markers1 = c(all.markers1, "Day29"%.%assays1%.%"_"%.%i)
 }  
-  
-# make factor variables for discrete variables
+# turn categorical variables into factors
 if (!is.null(all.markers1)) {
   for (a in all.markers1) {
     dat.mock[[a%.%"cat"]] = as.factor(dat.mock[[a%.%"cat"]])

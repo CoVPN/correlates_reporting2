@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240306.csv')
+dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240312.csv')
 dat_mapped_stage1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage1/adata/COVID_AstraZeneca_realdata_20221208.csv')
  
 dat_mapped$EarlyendpointD57 <- with(dat_mapped, EarlyinfectionD57==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD57 + 7),1,0)
@@ -25,22 +25,8 @@ assays=assay_metadata$assay
 
 Only the vaccine arm is sampled. 
 ```{r}
-mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list)
+mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list, dat_mapped$Trt)
 ```
-
-
-```{r}
-dat_mapped$EventIndPrimaryD1
-
-dat_mapped$
-```
-
-Number of severe cases is >20, allowing for severe study
-```{r}
-with(subset(dat_mapped, ph1.D57==1), mytable(EventIndPrimarySevere))
-```
-
-
 
 Verifying marker values are subject to lower limits
 ```{r}
@@ -49,18 +35,42 @@ print(sort(unique(dat_mapped$Day57pseudoneutid50_Delta))[1:5])
 ```
 
 Correlation between ancestral ID50 and Delta ID50
+
 ```{r}
 corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped)
 ```
 
 
-Compare severe and moderate case indicators
+Number of severe cases
 ```{r}
-# with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable())
-
-mytable(dat_mapped$SevereEventIndPrimaryIncludeNotMolecConfirmedD1)
-mytable(dat_mapped_stage1$SevereEventIndPrimaryIncludeNotMolecConfirmedD1)
-
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_7to303))
+```
+Number of Delta cases
+```{r}
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_124to303))
 ```
 
 
+Distribution of event time by variant types. Severe cases are red, cases with markers are green. 
+
+```{r}
+dat_mapped$EventIndPrimaryType_short=substr(dat_mapped$EventIndPrimaryType,1,3)
+dat_mapped$EventIndPrimaryType_short=ifelse(dat_mapped$EventIndPrimaryType_short=="", NA,dat_mapped$EventIndPrimaryType_short)
+
+myboxplot(EventTimePrimaryD57~EventIndPrimaryType_short, dat_mapped, ylab="EventTimePrimary57",
+          col=ifelse(dat_mapped$SevereEventIndD57_7to303==1,2,ifelse(!is.na(dat_mapped$Day57bindSpike_Delta3),3,1)), cex.axis=0.8)
+abline(h=120, lty=2) 
+
+
+# myboxplot(as.Date(DateDD1)~EventIndPrimaryType_short, subset(dat_mapped), ylab="DateDD1",
+          # col=ifelse(!is.na(dat_mapped$Day57bindSpike_Delta3),3,1))
+
+# subset(dat_mapped,EventIndPrimaryType_short=="Del" & as.Date(DateDD1)<as.Date("2021-01-01"), c(Subjectid, EventTimePrimaryDate, DateDD1))
+```
+We chose 120 days post D57 to break the follow-up period into two because all Delta cases happened after that.
+```{r}
+min(subset(dat_mapped,EventIndPrimaryType_short=="Del",EventTimePrimaryD57),na.rm=T)
+```
+
+
+Note that DateDD1 is defined by Yiwen and corresponds to the first illness visit in the clinical database. It does not seem to match the primary event date. 
