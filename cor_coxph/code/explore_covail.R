@@ -3,9 +3,9 @@ renv::activate(project = here::here(".."))
 library(survey)
 library(kyotil)
 
-config <- config::get(config = "covail")
-dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240205.csv')
-dat_proc=read.csv(config$data_cleaned)
+# config <- config::get(config = "covail")
+dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240211.csv')
+dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240313.csv')
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -293,6 +293,7 @@ sort(names(dat_mapped))
 
 table(dat_mapped$treatment_actual, dat_mapped$stage)
 
+with(subset(dat, ph1.D15==1 & COVIDIndD22toD181), mytable(treatment_actual, COVIDlineageObserved))
 
 table(dat_mapped$Immunemarkerset, dat_mapped$Perprotocol, useNA='ifany')
 table(dat_mapped$Immunemarkerset, dat_mapped$eligibility_deviation, useNA='ifany')
