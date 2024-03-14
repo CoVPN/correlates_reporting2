@@ -1,0 +1,85 @@
+---
+title: "PREVENT-19 Stage 1 Correlates for NVX IgG an ACE2 Assays"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(survey)
+library(kyotil)
+library(readxl)
+
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20240313.csv')
+dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD35 + 7),1,0)
+dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & EventTimePrimaryD35 >= 7)
+
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240313.csv')
+
+dat_raw=read_excel('/trials/covpn/p3004/download_data/formatted_for_fred_hutch.xlsx')
+```
+
+## Data descriptive
+
+This dataset adds two NVX assays to the stage 1 dataset and contains both vaccine and placebo arms and seroneg/seropos.
+```{r, include=F}
+mytable(dat_mapped$Trt)
+mytable(dat_mapped$Bserostatus)
+mytable(dat_mapped$Country)
+```
+
+A decision is made to use the same clinical database that was used in the original correlates paper, and not use the updated clinical database. The updated database includes some late changes, e.g. US147-0424 is a case in the new database. For the stage 2 study, we will use the updated clinical database. 
+```{r}
+subset(dat_mapped, Subjectid=="2019nCoV301-US147-0424")
+```
+
+There are 1750 subjects with NVX IgG, of which 1710 belong to the original Stage 1 dataset. 
+```{r}
+mytable(!is.na(dat_raw[,"IGG Day 35"]))
+sum(("2019nCoV301-"%.%dat_raw[,1,drop=T]) %in% dat_mapped$Subjectid)
+with(subset(dat_mapped, ph1.D35 & Trt==1 & Bserostatus==0 & Country==0), mytable(!is.na(Day35ACE2), !is.na(Day35bindNVXIgG), EventIndPrimaryD1))
+```
+
+NVX ACE2 was measured on 1708 out of the 1710 subjects with NVX IgG. We will define ph2 as requiring both IgG and ACE2.
+```{r}
+with(subset(dat_mapped, ph1.D35 & Trt==1 & Bserostatus==0 & Country==0), mytable(!is.na(Day35ACE2), !is.na(Day35bindNVXIgG), EventIndPrimaryD1))
+```
+
+There are 15 cases in the vaccine arm, US, baseline negative, 12 out of which are in ph1.D35 and have both bindSpike and bindNVXIgG. For the non-cases, 186 from the subcohort have bindNVXIgG, but 1462 outside the subcohort have bindNVXIgG. 
+```{r}
+with(subset(dat_proc, ph1.D35 & Trt==1 & Bserostatus==0 & Country==0), mytable(!is.na(Day35bindSpike), !is.na(Day35ACE2), EventIndPrimaryD1))
+```
+Because the sampling for bindNVXIgG factors in the strata for the subcohort sampling, we will use 1648 non-cases and compute weights 
+```{r}
+with(subset(dat_proc, ph1.D35 & Trt==1 & Country==0 & Bserostatus==0), mytable(ph2.D35NVX, Wstratum))
+```
+
+
+## Assay data
+
+Correlation between USG bindSpike and NVX IgG and ACE2. The two NVX assays are more highly correlated. 
+```{r}
+with(subset(dat_mapped, ph1.D35 & Trt==1), mypairs(cbind(Day35bindSpike, Day35bindNVXIgG, Day35ACE2)))
+```
+
+
+The smallest value of NVX IgG is 100, consistent with LLOQ being 200. The unit EU (ELISA Unit), which can be divided by 22 to get IU. Should we? Pos.cutoff is set to 500 according to Iksung, ULOQ is set to 2,904,275 EU/mL.
+```{r}
+10**(sort(dat_mapped$Day35bindNVXIgG)[1:20])
+```
+
+
+The smallest value of NVX IgG is 5, consistent with LOD being 10. Do we have info on LLOQ and ULOQ and POS cutoff?
+```{r}
+10**(sort(dat_mapped$Day35ACE2)[1:100])
+```
+
+Correlation plot between baseline and D35 marker. Without placebo, it is hard to tell the range of non-specific binding. 
+```{r}
+par(mfrow=c(1,2))
+lim=range(dat_mapped$Day35ACE2, na.rm=T)
+corplot(Day35ACE2~BACE2, dat_mapped[dat_mapped$Trt==1,], xlim=lim, asp=1, main="ACE2, Vacc")
+lim=range(dat_mapped$Day35bindNVXIgG, na.rm=T)
+corplot(Day35bindNVXIgG~BbindNVXIgG, dat_mapped[dat_mapped$Trt==1,], xlim=lim, asp=1, main="IgG, Vacc")
+```
+
