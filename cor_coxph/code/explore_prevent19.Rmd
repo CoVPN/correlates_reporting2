@@ -20,6 +20,14 @@ dat_raw=read_excel('/trials/covpn/p3004/download_data/formatted_for_fred_hutch.x
 ```
 
 
+number of cases
+```{r}
+with(subset(dat_proc, ph1.D35==1 & Trt==1 & Bserostatus==0 & Country==0), table(EventIndPrimaryD35, ph2.D35))
+subset(dat_proc, ph1.D35==1 & Trt==1 & Bserostatus==0 & Country==0 & EventIndPrimaryD35==1)[2,]
+```
+
+
+
 binding Ab
 ```{r}
 dat=read.csv("/trials/covpn/p3004/download_data/Binding Antibody/BARDA_SARS_MSD_2019nCoV2-301_Nexelis_6001_04Jan2022.csv")
