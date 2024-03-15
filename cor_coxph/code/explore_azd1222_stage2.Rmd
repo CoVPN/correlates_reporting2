@@ -56,19 +56,16 @@ with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 &
 
 \vspace{1in}
 
-Distribution of event time by variant types. Severe cases are red, cases with markers are green. 
+Distribution of event time by variant types. Severe cases are red, cases with markers are green. Will add another plot using calendar date when that info is added to the mapped data
 
 ```{r, echo=F}
 dat_mapped$EventIndPrimaryType_short=substr(dat_mapped$EventIndPrimaryType,1,3)
 dat_mapped$EventIndPrimaryType_short=ifelse(dat_mapped$EventIndPrimaryType_short=="", NA,dat_mapped$EventIndPrimaryType_short)
+dat_mapped$EventIndPrimaryType_short=ifelse(is.na(dat_mapped$EventIndPrimaryType_short) & dat_mapped$EventIndPrimaryD1==1, "Unk",dat_mapped$EventIndPrimaryType_short)
 
-myboxplot(EventTimePrimaryD57~EventIndPrimaryType_short, dat_mapped, ylab="EventTimePrimary57",
-          col=ifelse(dat_mapped$SevereEventIndD57_7to303==1,2,ifelse(!is.na(dat_mapped$Day57bindSpike_Delta3),3,1)), cex.axis=0.8)
+dat.tmp=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+myboxplot(EventTimePrimaryD57~EventIndPrimaryType_short, dat.tmp, ylab="EventTimePrimary57", col=ifelse(dat.tmp$SevereEventIndD57_7to303==1,2,ifelse(!is.na(dat.tmp$Day57bindSpike_Delta3),3,1)), cex.axis=0.8)
 abline(h=120, lty=2) 
-
-
-# myboxplot(as.Date(DateDD1)~EventIndPrimaryType_short, subset(dat_mapped), ylab="DateDD1",
-          # col=ifelse(!is.na(dat_mapped$Day57bindSpike_Delta3),3,1))
 
 # subset(dat_mapped,EventIndPrimaryType_short=="Del" & as.Date(DateDD1)<as.Date("2021-01-01"), c(Subjectid, EventTimePrimaryDate, DateDD1))
 ```
