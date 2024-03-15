@@ -23,6 +23,14 @@ assays=assay_metadata$assay
 ```
 
 
+### Data descriptives
+
+The dataset contains both treatment arms and both seropos and seroneg, and has US, CHL and PERU.
+```{r, include=T}
+mytable(dat_mapped$Bserostatus)
+mytable(dat_mapped$Country, dat_mapped$Trt)
+```
+
 Only the vaccine arm is sampled. 
 ```{r}
 mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list, dat_mapped$Trt)
@@ -34,11 +42,7 @@ print(sort(unique(dat_mapped$Day57pseudoneutid50_D614G))[1:5])
 print(sort(unique(dat_mapped$Day57pseudoneutid50_Delta))[1:5])
 ```
 
-Correlation between ancestral ID50 and Delta ID50
 
-```{r}
-corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped, asp=1)
-```
 
 
 Number of severe cases in ph1 and ph2
@@ -56,6 +60,8 @@ with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 &
 
 \vspace{1in}
 
+**Study periods**
+
 Distribution of event time by variant types. Severe cases are red, cases with markers are green. Will add another plot using calendar date when that info is added to the mapped data
 
 ```{r, echo=F}
@@ -70,10 +76,44 @@ abline(h=120, lty=2)
 # subset(dat_mapped,EventIndPrimaryType_short=="Del" & as.Date(DateDD1)<as.Date("2021-01-01"), c(Subjectid, EventTimePrimaryDate, DateDD1))
 ```
 
-We chose 120 days post D57 to break the follow-up period into two because all Delta cases happened after that.
+We chose 100/101 days post D57 to break the follow-up period into two because all Delta cases and all severe happened after that.
 ```{r}
 min(subset(dat_mapped,EventIndPrimaryType_short=="Del",EventTimePrimaryD57),na.rm=T)
 ```
 
 
-Note that DateDD1 is defined by Yiwen and corresponds to the first illness visit in the clinical database. It does not seem to match the primary event date. 
+### Missingness and imputation
+
+Correlation is high between bAb markers, but moderate between the two nAb markers.
+```{r}
+dat=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+dat=dat[,"Day57"%.%assays]
+names(dat)=sub("Day57","",names(dat))
+mypairs(dat)
+```
+
+A closer look at the correlation between ancestral ID50 and Delta ID50
+
+```{r}
+corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped, asp=1)
+```
+
+bAb markers are all-or-none. For nAb, we will require Delta nAb to be present. For the 9 ptids without ancestral nAb but with Delta nAb, we will impute the ancestral nAb. There are a lot more ptids with just ancestral nAb but we won't use them in the correlates study to allow comparison between Delta and ancestral nAb.
+```{r}
+dat=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+for (i in 1:length(assays)) {
+  dat[['tmp'%.%i]]=ifelse(is.na(dat[['Day57'%.%assays[i]]]), 0, 1)
+}
+dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10))
+print(table(dat$tmp, dat$DeltaEventIndD57_7to303))
+```
+
+We will only impute ancestral nAb using Delta nAb. We will have two sets of weights, one for bAb and one for nAb. 
+```{r}
+dat=subset(dat_mapped)
+dat$tmp1 = !is.na(dat$Day57pseudoneutid50_Delta)
+dat$tmp2 = !is.na(dat$Day57bindSpike_Alpha)
+dat$tmp=with(dat,paste0(as.integer(tmp1),as.integer(tmp2)))
+print(table(dat$tmp, dat$DeltaEventIndD57_7to303))
+```
+
