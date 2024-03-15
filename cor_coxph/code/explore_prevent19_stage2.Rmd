@@ -44,9 +44,6 @@ mytable(dat_mapped$Bserostatus)
 mytable(dat_mapped$Country)
 ```
 
-```{r}
-# dat_mapped=subset(dat_mapped, Country==0)
-```
 
 **Case definitions**
 
@@ -122,7 +119,7 @@ abline(h=as.Date("2021-12-16"), lty=2)
 
 ### Missingness and imputation
 
-Correlation between markers
+Correlation is high among bAb markers and high between the two nAb markers.
 ```{r}
 dat=dat_mapped[,"Day35"%.%assays]
 names(dat)=sub("Day35","",names(dat))
@@ -166,6 +163,13 @@ dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_D
 names(dat)=sub("pseudoneutid50","",names(dat))
 mypairs(dat)
 ```
+
+A closer look at the correlation between ancestral ID50 and Delta ID50
+
+```{r}
+corplot(Day35pseudoneutid50_D614G~Day35pseudoneutid50_Delta, dat_mapped, asp=1)
+```
+
 
 Delta ID50 readouts are lower than ancestral ID50.
 ```{r}
