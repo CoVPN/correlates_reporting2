@@ -9,9 +9,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240313.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240314.csv')
 
-# extract the first variant. empty string to empty string
 dat_mapped$VARTYPE_first1 = sapply(strsplit(dat_mapped$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
 dat_mapped$VARTYPE_first1 = ifelse(dat_mapped$EventIndFirstD1==0, NA, dat_mapped$VARTYPE_first1)
 dat_mapped$VARTYPE_first1 = ifelse(dat_mapped$EventIndFirstD1==1 & is.na(dat_mapped$VARTYPE_first1), "Unk", dat_mapped$VARTYPE_first1)
@@ -23,7 +22,20 @@ dat_mapped$VARTYPE_second1 = ifelse(dat_mapped$EventIndFirstD1==1 & is.na(dat_ma
 dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (DeltaEventIndD1==1 & DeltaEventTimeD1 < NumberdaysD1toD35 + 7),1,0)
 dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & DeltaEventTimeD35 >= 7)
 
-dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_stage2_data_processed_20240314.csv')
+dat_mapped$EventCalTimeFirstD35 = with(dat_mapped, as.Date(D35Date)+EventTimeFirstD35)
+
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_stage2_data_processed_20240315.csv')
+
+# extract the first variant. empty string to empty string
+dat_proc$VARTYPE_first1 = sapply(strsplit(dat_proc$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
+dat_proc$VARTYPE_first1 = ifelse(dat_proc$EventIndFirstD1==0, NA, dat_proc$VARTYPE_first1)
+dat_proc$VARTYPE_first1 = ifelse(dat_proc$EventIndFirstD1==1 & is.na(dat_proc$VARTYPE_first1), "Unk", dat_proc$VARTYPE_first1)
+
+dat_proc$VARTYPE_second1 = sapply(strsplit(dat_proc$VARTYPE_second,","), function (x) ifelse(length(x)==0, "Unknown", x[1]))
+dat_proc$VARTYPE_second1 = ifelse(dat_proc$EventIndFirstD1==0, NA, dat_proc$VARTYPE_second1)
+dat_proc$VARTYPE_second1 = ifelse(dat_proc$EventIndFirstD1==1 & is.na(dat_proc$VARTYPE_second1), "Unk", dat_proc$VARTYPE_second1)
+
+dat_proc$EventCalTimeFirstD35 = with(dat_proc, as.Date(D35Date)+EventTimeFirstD35)
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/prevent19_stage2_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -47,12 +59,12 @@ mytable(dat_mapped$Country)
 
 **Case definitions**
 
-The 17-month BLA analysis primary endpoint definition and the case definition we are using now are different. Is it censored at C1? Does include less than mild?
+The 17-month BLA analysis primary endpoint definition and the case definition we are using now are different. The former are censored at C1.
 
 
-There are 16 severe cases, of which 9 have markers. The number is not sufficient to study severe correlates.
+There are 9 severe cases with markers. There are four degrees of severity. **Less-than-mild cases are not counted cases or censoring events.**
 ```{r}
-with(subset(dat_mapped, ph1.D35==1 & Country==0 & EventIndFirstD35==1), mytable(Severity_first, !is.na(Day35bindSpike_Delta3)))
+with(subset(dat_proc, ph1.D35==1 & Country==0), mytable(Severity_first, ph2.D35, EventIndFirstD1))
 ```
 
 
@@ -69,6 +81,14 @@ with(subset(dat_mapped, ph1.D35==1 & Country==0 & EventIndFirstD35==1), mytable(
 mytable(dat_mapped$NumberdaysD1toBD1 - dat_mapped$DeltaEventTimeD1 < 0, dat_mapped$DeltaEventIndD1)
 with(subset(dat_mapped, ph1.D35==1 & Country==0 & DeltaEventIndD1==1), mytable(is.na(NumberdaysD1toBD1), !is.na(Day35bindSpike_Delta3)))
 ```
+
+**Stage 2 sampling lists**:
+
+- For the 402 cases,  the time points of interest are D35 (after primary series in initial period),  the acute illness visit associated with the Delta case, and crossover 1 (if applicable for subject).   D35 may or may not be already tested earlier at the USG labs.
+
+- For the 649 non-case, the D35 blood sample should already be at the USG lab from earlier.
+
+- The list of 279 non-cases is a subset of the list of 649. For the 279 subjects, the time points of interest are D35, crossover 1 and booster D0 - the database says these subjects should have all 3 visits/blood sample.  
 
 
 ### COVID variants
@@ -96,33 +116,33 @@ with(subset(dat_mapped, ph1.D35==1), mytable(Severity_first, VARTYPE_first1, Del
 ```
 
 
-### Adjusting followup period
+### Adjusting endpoint period
 
-Comparing timing of events of different variants, first using time since D35, second using calendar time. Ptids with markers are colored green. The plots suggest that we move the censoring date back by 3 months. That way we avoid the Omicron wave near the beginning of 2022.
+Comparing timing of events of different variants, first using time since D35, second using calendar time. Ptids with markers are colored green. Based on the first plot, we define the followup period to start at **101** days post the D35 visit. Based on the second plot, we replace censoring at the data cut date of 2022-03-26 by censoring at **2021-12-10** to avoid the Omicron wave at the end of 2021 and the beginning of 2022.
 
 ```{r}
-dat.tmp = subset(dat_mapped, ph1.D35==1 & Country==0)
-myboxplot(EventTimeFirstD35~VARTYPE_first1, dat.tmp, ylab="EventTimeFirstD35", col=ifelse(!is.na(dat.tmp$Day35bindSpike_Delta3),3,1))
+dat.tmp = subset(dat_proc, ph2.D35==1 & Country==0 & Trt==1)
+col=ifelse(dat.tmp$Severity_first=="SEVERE", 2, ifelse(!is.na(dat.tmp$Day35bindSpike_Delta3),3,1))
 
-dat.tmp = subset(dat_mapped, ph1.D35==1 & Country==0 & !is.na(DateDD1))
-myboxplot(as.Date(DateDD1)~VARTYPE_first1, dat.tmp, ylab="DateDD1", col=ifelse(!is.na(dat.tmp$Day35bindSpike_Delta3),3,1))
+myboxplot(EventTimeFirstD35~VARTYPE_first1, dat.tmp, ylab="EventTimeFirstD35", col=col)
+abline(h=100, lty=2)
+
+myboxplot(EventCalTimeFirstD35~VARTYPE_first1, dat.tmp, ylab="Event Calendar Time", col=col)
 abline(h=as.Date("2022-03-26")) # data cut
-abline(h=as.Date("2021-12-16"), lty=2) 
+abline(h=as.Date("2021-04-19")) # data cut
+abline(h=as.Date("2021-12-10"), lty=2) 
+
+with(subset(dat.tmp, Severity_first=="SEVERE"), mytable(VARTYPE_first1, ph2.D35))
 ```
  
- Some ptids apparently have inconsistent case status in stage 1 and 2 datasets, e.g.
- ```{r}
- subset(dat_mapped, Subjectid=="2019nCoV-301-US049-0039")
- subset(dat_mapped, Subjectid=="2019nCoV-301-US159-0063")
-```
 
+### Immunogenecity and imputation
 
-### Missingness and imputation
-
-Correlation is high among bAb markers and high between the two nAb markers.
+Correlation is high among bAb markers (1 between the three Delta bAb markers) and high between the two nAb markers.
 ```{r}
 dat=dat_mapped[,"Day35"%.%assays]
-names(dat)=sub("Day35","",names(dat))
+names(dat)=sub("Day35pseudoneut","",names(dat))
+names(dat)=sub("Day35bindSpike_","",names(dat))
 mypairs(dat)
 ```
 
@@ -147,15 +167,6 @@ subset(dat, tmp=="10" & Country==0, c(Subjectid))[1:10,]
 ```
 
 
-***Stage 2 sampling lists***:
-
-- For the 402 cases,  the time points of interest are D35 (after primary series in initial period),  the acute illness visit associated with the Delta case, and crossover 1 (if applicable for subject).   D35 may or may not be already tested earlier at the USG labs.
-
-- For the 649 non-case, the D35 blood sample should already be at the USG lab from earlier.
-
-- The list of 279 non-cases is a subset of the list of 649. For the 279 subjects, the time points of interest are D35, crossover 1 and booster D0 - the database says these subjects should have all 3 visits/blood sample.  
-
-
 
 Correlation between ancestral and Delta ID50s is high at each time point, and highest at BD1 (0.97) and DD1 (0.98).
 ```{r}
@@ -171,11 +182,11 @@ corplot(Day35pseudoneutid50_D614G~Day35pseudoneutid50_Delta, dat_mapped, asp=1)
 ```
 
 
-Delta ID50 readouts are lower than ancestral ID50.
+The following plot shows that Delta ID50 readouts are lower than ancestral ID50 and that marker level drops from D35 to C1 to BD1 as time goes by. At DD1, the markers rises, which suggests that they were influenced by the COVDID events
 ```{r}
 dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
 names(dat)=sub("pseudoneutid50","",names(dat))
-myboxplot(dat)
+myboxplot(dat, cex.axis=0.55)
 ```
 
 
