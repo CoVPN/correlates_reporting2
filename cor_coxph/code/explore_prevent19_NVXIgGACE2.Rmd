@@ -1,5 +1,5 @@
 ---
-title: "PREVENT-19 Stage 1 Correlates for NVX IgG an ACE2 Assays"
+title: "PREVENT-19 Stage 1 Correlates for NVX IgG and ACE2 Assays"
 output: html_document
 ---
 
@@ -14,10 +14,11 @@ dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stag
 dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD35 + 7),1,0)
 dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & EventTimePrimaryD35 >= 7)
 
-dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240313.csv')
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240316.csv')
 
 dat_raw=read_excel('/trials/covpn/p3004/download_data/formatted_for_fred_hutch.xlsx')
 ```
+
 
 ## Data descriptive
 
@@ -29,9 +30,6 @@ mytable(dat_mapped$Country)
 ```
 
 A decision is made to use the same clinical database that was used in the original correlates paper, and not use the updated clinical database. The updated database includes some late changes, e.g. US147-0424 is a case in the new database. For the stage 2 study, we will use the updated clinical database. 
-```{r}
-subset(dat_mapped, Subjectid=="2019nCoV301-US147-0424")
-```
 
 There are 1750 subjects with NVX IgG, of which 1710 belong to the original Stage 1 dataset. 
 ```{r}
@@ -62,14 +60,60 @@ Correlation between USG bindSpike and NVX IgG and ACE2. The two NVX assays are m
 with(subset(dat_mapped, ph1.D35 & Trt==1), mypairs(cbind(Day35bindSpike, Day35bindNVXIgG, Day35ACE2)))
 ```
 
+The scatterplot shows that the bindNVXIgG readout has some outliers. We define the outliers to be the red dots based on the scatterplot between bindNVXIgG and ACE2. No outliers are cases. The green dots are not defined as outliers although they show larger discrepancy between bindNVXIgG and bindSpike.
 
-The smallest value of NVX IgG is 100, consistent with LLOQ being 200. The unit EU (ELISA Unit), which can be divided by 22 to get IU. Should we? Pos.cutoff is set to 500 according to Iksung, ULOQ is set to 2,904,275 EU/mL.
+```{r}
+# use this version to get dat for outliers study
+dat_proc1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240313.csv')
+dat=subset(dat_proc1, ph1.D35 & Trt==1 & Bserostatus==0 & Country==0) 
+
+
+outliers1 = subset(dat, Day35bindNVXIgG-Day35ACE2 < 1.8 & Day35ACE2 > 2 & Day35bindNVXIgG > 3, Ptid, drop=T)
+outliers2 = subset(dat, Day35bindNVXIgG-Day35bindSpike < .9, Ptid, drop=T)
+any(subset(dat, EventIndPrimaryD35==1, Ptid, drop=T) %in% outliers1)
+
+col=ifelse(dat$Ptid %in% outliers1, 2, 1)
+col[dat$Ptid %in% outliers2 & col==1]=3
+
+par(mfrow=c(1,2))
+corplot(Day35bindNVXIgG~Day35ACE2, dat, col=col, asp=1)
+abline(1.8,1, lty=2)
+# abline(h=log10(500))
+
+corplot(Day35bindNVXIgG~Day35bindSpike, dat, col=col, asp=1)
+abline(1,1, lty=2)
+
+```
+
+The list of outliers
+```{r}
+outliers1
+```
+
+List of newly tested ptids are highlighted in red below.
+```{r}
+stratum7 = "2019nCoV301-"%.%c("US005-0247","US013-0005","US013-0051","US018-0022","US027-0191","US039-0294","US039-0381","US049-0037","US081-0007","US081-0050","US097-0030","US097-0034","US097-0042","US097-0127","US098-0067","US098-0084","US106-0027","US134-0011","US135-0068","US135-0229","US139-0041","US142-0036","US143-0039","US143-0081","US143-0102","US143-0513","US143-0518","US143-0585","US144-0051","US147-0145","US147-0163","US147-0275","US147-0344","US152-0176","US152-0337","US154-0100","US154-0209","US156-0093","US157-0048","US160-0192","US160-0239","US160-0275","US160-0382","US160-0392","US160-0436","US160-0525","US161-0306","US162-0187","US170-0064","US176-0014","US178-0161","US179-0057","US179-0332","US179-0382","US180-0004","US180-0227","US187-0007","US189-0040","US191-0162","US191-0301","US191-0334","US191-0366","US194-0284","US195-0053","US196-0057","US203-0065","US204-0100","US204-0127","US206-0203","US206-0260","US207-0292","US208-0029","US213-0007","US213-0080","US215-0003","US215-0081","US215-0142","US215-0160","US215-0175","US217-0160","US219-0056","US225-0013","US228-0018","US228-0113","US228-0182","US228-0183","US230-0014","US230-0046","US230-0054","US232-0001","US232-0004","US235-0031","US235-0062","US236-0062","US239-0036","US239-0177","US239-0316","US242-0004","US243-0020","US249-0089")
+stratum8 = "2019nCoV301-"%.%c("US005-0018","US005-0272","US039-0004","US039-0081","US047-0105","US049-0219","US060-0015","US060-0138","US081-0042","US097-0009","US097-0021","US097-0031","US097-0040","US104-0092","US134-0084","US135-0010","US135-0158","US142-0018","US142-0021","US142-0041","US142-0060","US142-0064","US142-0117","US143-0233","US146-0107","US147-0266","US152-0183","US154-0020","US154-0123","US154-0222","US156-0002","US156-0013","US156-0145","US157-0045","US160-0037","US160-0085","US160-0477","US160-0506","US160-0555","US161-0272","US162-0247","US163-0039","US163-0041","US164-0113","US166-0010","US168-0348","US172-0008","US172-0031","US176-0006","US176-0027","US176-0028","US176-0034","US178-0252","US179-0068","US188-0053","US191-0048","US191-0099","US191-0144","US191-0246","US194-0170","US194-0219","US196-0378","US203-0016","US203-0039","US204-0027","US204-0103","US204-0138","US205-0131","US205-0145","US206-0286","US208-0247","US211-0005","US211-0008","US211-0063","US215-0026","US215-0027","US215-0109","US215-0112","US215-0218","US217-0074","US217-0143","US217-0266","US218-0017","US219-0060","US225-0030","US231-0148","US232-0026","US232-0208","US232-0245","US232-0305","US239-0078","US239-0242","US239-0251","US239-0309","US240-0061","US242-0027","US242-0040","US244-0039","US245-0078","US245-0116")
+
+col=ifelse(dat$Ptid %in% c(stratum7, stratum8), 2, 1)
+
+par(mfrow=c(1,2))
+corplot(Day35bindNVXIgG~Day35ACE2, dat, col=col, ylim=c(1.9,6))
+abline(1.8,1, lty=2)
+
+corplot(Day35bindNVXIgG~Day35bindSpike, dat, col=col, ylim=c(1.9,6))
+abline(1,1, lty=2)
+
+```
+
+
+The smallest value of NVX IgG is 100, consistent with LLOQ being 200. The unit EU (ELISA Unit), which can be divided by 22 to get IU. Pos.cutoff is set to 500 according to Iksung, ULOQ is set to 2,904,275 EU/mL.
 ```{r}
 10**(sort(dat_mapped$Day35bindNVXIgG)[1:20])
 ```
 
 
-The smallest value of NVX IgG is 5, consistent with LOD being 10. Do we have info on LLOQ and ULOQ and POS cutoff?
+The smallest value of NVX IgG is 5, consistent with LOD being 10. The scatterplot between ACE2 and ELISA suggests that ACE2 may be more specific at the low end of the readout.
 ```{r}
 10**(sort(dat_mapped$Day35ACE2)[1:100])
 ```
@@ -81,5 +125,11 @@ lim=range(dat_mapped$Day35ACE2, na.rm=T)
 corplot(Day35ACE2~BACE2, dat_mapped[dat_mapped$Trt==1,], xlim=lim, asp=1, main="ACE2, Vacc")
 lim=range(dat_mapped$Day35bindNVXIgG, na.rm=T)
 corplot(Day35bindNVXIgG~BbindNVXIgG, dat_mapped[dat_mapped$Trt==1,], xlim=lim, asp=1, main="IgG, Vacc")
+```
+
+Distributions of sampling weights shows that for the USG markers, stratum 27 and 28 (7 and 8) have weights 2.0 and 2.7, respectively. For the NVX markers, if we exclude the latest batch that contains the outliers, the weights rise to 4.3 and 4.2, respectively. 
+```{r}
+with (subset(dat_proc, ph1.D35==1 & Trt==1 & Bserostatus==0 & Country==0), table(wt.D35, Wstratum))
+with (subset(dat_proc, ph1.D35==1 & Trt==1 & Bserostatus==0 & Country==0), table(wt.D35NVX, Wstratum))
 ```
 
