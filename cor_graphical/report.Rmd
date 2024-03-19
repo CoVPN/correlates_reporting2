@@ -48,7 +48,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   # for other studies, loop through ""
   COR_postfix_list = ""
   if (study_name=="ENSEMBLE" & grepl("EUA", attr(config,"config"))) COR_postfix_list <- c("IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1")
-  if (study_name=="ENSEMBLE" & grepl("partA$", attr(config,"config"))) COR_postfix_list <- c("SevereIncludeNotMolecConfirmed") # ModerateIncludeNotMolecConfirmed
+  if (study_name=="ENSEMBLE" & grepl("partA$", attr(config,"config"))) COR_postfix_list <- c("IncludeNotMolecConfirmed") # ModerateIncludeNotMolecConfirmed SevereIncludeNotMolecConfirmed
   if (study_name=="ENSEMBLE" & attr(config,"config") == "janssen_partA_VL") COR_postfix_list <- c("adhoc")
   #if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
   if (study_name=="IARCHPV") COR_postfix_list <- c("", "sus")
@@ -381,6 +381,18 @@ PsV-nAb ID50 Score"))))
               cat("\\clearpage", sep = '\n')
           	}
           }
+        
+          ############################################## adhoc longitudinal violin plots (for manuscript reviewers) ############
+        
+        for (asy in c("RBD","Spike","pnAb_id50")){
+          
+              asy_lb = case_when(asy=="RBD" ~ "bindRBD",
+                                 asy=="Spike" ~ "",
+                                 asy=="pnAb_id50" ~ "")
+          	  res = knitr::knit_child(c(here::here('cor_graphical', 'report_violin_adhoc.Rmd')), quiet = TRUE)
+          		cat(res, sep = '\n')
+              cat("\\clearpage", sep = '\n')
+          	}
       }
     }
   }

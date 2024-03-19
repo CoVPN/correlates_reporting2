@@ -23,6 +23,7 @@ library(here)
 library(cowplot) # ggsave2()
 library(gridExtra)
 library(grid)
+library(ggnewscale) # for new_scale_color() 
 
 ## load data 
 longer_cor_data <- readRDS(here("data_clean", "longer_cor_data.rds"))
@@ -595,4 +596,35 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
 
 
 #### Figure 1 adhoc. longitudinal plot for janssen_pooled_partA severe manuscript: moderate, severe, non-case at 3 timepoints (day 29, day 71, month 6) 
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29IncludeNotMolecConfirmed") {
+  
+  p <- f_longitude_by_assay (
+    dat = longer_cor_data_plot1_adhoc %>% 
+      filter(Trt=="Vaccine") %>%
+      mutate(cohort_event = cohort_event_adhoc), # function assumes this variable is always called cohort_event
+    x.var = "time_cohort",
+    x.lb = do.call(paste0, expand.grid(c("Day 29", "Day 71", "Month 6"), "\n", c("Moderate\nPost-Peak Cases", "Severe\nPost-Peak Cases", "Non-Cases"))),
+    assays = c("bindSpike", "bindRBD", "pseudoneutid50"),
+    times = c("Day 29", "Day 71", "Month 6"),
+    ylim = c(0,3),
+    ybreaks = c(0,1,2,3),
+    facet.x.var = vars(assay),
+    facet.y.var = vars(Trt, Bserostatus),
+    split.var = "assay",
+    pointby = "cohort_col",
+    lgdbreaks = c("Moderate Post-Peak Cases", "Severe Post-Peak Cases", "Non-Cases", "Non-Responders"),
+    chtcols = setNames(c("#FF6F1B", "#D92321", "#0AB7C9", "#8F8F8F"), c("Moderate Post-Peak Cases", "Severe Post-Peak Cases", "Non-Cases", "Non-Responders")),
+    chtpchs = setNames(c(19, 19, 19, 2), c("Moderate Post-Peak Cases", "Severe Post-Peak Cases","Non-Cases", "Non-Responders")),
+    strip.text.y.size = 25,
+    axis.text.x.size = 12,
+    panel.text.size = 6
+  )
+  
+  for (i in 1:3){
+    
+    file_name <- paste0(c("RBD","Spike","pnAb_id50")[i], "_longitudinal_by_case_non_case_vaccine_baselineNeg.pdf")
+    ggsave(plot = p[[i]], filename = paste0(save.results.to, file_name), width = 16, height = 11)
+    
+  }
+}
 
