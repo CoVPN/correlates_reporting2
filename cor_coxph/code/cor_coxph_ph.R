@@ -305,7 +305,10 @@ overall.p.2=c(rbind(overall.p.2, NA,NA))
 
 # n cases and n at risk
 natrisk = round(c(sapply (all.markers%.%"cat", function(a) aggregate(subset(dat,ph2==1)        [["wt"]], subset(dat,ph2==1        )[a], sum, na.rm=T, drop=F)[,2] )))
-nevents = round(c(sapply (all.markers%.%"cat", function(a) aggregate(subset(dat,yy==1 & ph2==1)[["wt"]], subset(dat,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] )))
+nevents = round(c(sapply (all.markers%.%"cat", function(a) {
+  aggregate(subset(dat,yy==1 & ph2==1)[["wt"]], subset(dat,yy==1 & ph2==1)[a], sum, na.rm=T, drop=F)[,2] 
+}
+)))
 natrisk[is.na(natrisk)]=0
 nevents[is.na(nevents)]=0
 colSums(matrix(natrisk, nrow=3))

@@ -300,6 +300,11 @@ if (!is.null(config$assay_metadata)) {
     uloqs["bindN"]=574.6783
     pos.cutoffs["bindN"]=23.4711
     
+    llods["bindNVXIgG"]=200
+    lloqs["bindNVXIgG"]=200
+    uloqs["bindNVXIgG"]=2904275
+    pos.cutoffs["bindNVXIgG"]=500
+    
   } else if(TRIAL=="azd1222") {
     
     # data less than lod is set to lod/2
@@ -631,10 +636,6 @@ if (exists("COR")) {
         if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
         if (!is.null(config.cor$Earlyendpoint)) dat.mock$Earlyendpoint=dat.mock[[config.cor$Earlyendpoint]]
         
-        # origin of followup days, may be different from tpeak
-        tpeak1 = config.cor$torigin
-        if (is.null(tpeak1)) tpeak1 = as.integer(sub(".*[^0-9]+", "", config.cor$EventTimePrimary))
-        
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
         if(!is.null(dat.mock$risk_score)) {
@@ -663,8 +664,13 @@ if (exists("COR")) {
         # define tfinal.tpeak
         if (TRIAL == "moderna_boost") {
           tfinal.tpeak = 92 # as computed in reporting3 repo
-        } else if (TRIAL == "moderna_real" & COR == "D57a") {
-          tfinal.tpeak = 92 # for comparing with stage 2 
+        } else if (TRIAL == "moderna_real") {
+          if (COR == "D57a") {
+            tfinal.tpeak = 92 # for comparing with stage 2 
+          } else {
+            # default rule for followup time is the last case in ph2 in vaccine arm
+            tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+          }
           
         } else if (TRIAL == "janssen_na_EUA") {
             tfinal.tpeak=53
@@ -674,7 +680,6 @@ if (exists("COR")) {
             tfinal.tpeak=40            
         } else if (TRIAL == "janssen_pooled_EUA") {
             tfinal.tpeak=54
-            
         } else if (startsWith(TRIAL, "janssen_") & endsWith(TRIAL, "partA")) {
           # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
           tfinal.tpeak=min(
@@ -688,7 +693,6 @@ if (exists("COR")) {
               with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
             )
           }
-          
         } else if (TRIAL %in% c("janssen_partA_VL")) {
           # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
           tfinal.tpeak = NULL 
@@ -757,14 +761,28 @@ if (exists("COR")) {
             stop("COVAIL, wrong COR")
           }
           
-        } else {
+        } else if (TRIAL=="azd1222_stage2") {
+          stop("todo")
+          
+        } else if (TRIAL=="prevent19_stage2") {
+          stop("todo")
+          
+        } else if (TRIAL=="nvx_uk302") {
+          stop("todo")
+          
+        } else if (TRIAL %in% c("prevent19")) {
           # default rule for followup time is the last case in ph2 in vaccine arm
           tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+          
+        } else {
+          stop("unknown study name 11")
         }
 
-                
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail")) {
-          # this block depends on tfinal.tpeak. For variants analysis, there is not just one tfinal.tpeak
+        # compute overall VE
+        # except for 
+        #   janssen_partA_VL because for variants analysis, there is not just one tfinal.tpeak
+        #   prevent19_stage2, azd1222_stage2 because CoR only
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "prevent19_stage2", "azd1222_stage2")) {
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
           overall.ve = c(1 - prev.vacc/prev.plac) 
@@ -806,7 +824,7 @@ if (exists("COR")) {
 # this has to be done after the previous block b/c attribute is lost after subsettting
 
 all.markers1 = NULL
-if (TRIAL=="covail") {
+if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
   assays1 = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
   all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
   
@@ -833,14 +851,12 @@ if (!is.null(all.markers1)) {
   }
   attr(dat.mock, "marker.cutpoints")=marker.cutpoints
 }
-
 # add imputed copies if needed
 # need to keep pseudoneutid50 and bindSpike b/c there are identical copies of them
 if (TRIAL=="janssen_partA_VL") {
   for (i in 1:10) all.markers1 = c(all.markers1, "Day29"%.%assays1%.%"_"%.%i)
 }  
-  
-# make factor variables for discrete variables
+# turn categorical variables into factors
 if (!is.null(all.markers1)) {
   for (a in all.markers1) {
     dat.mock[[a%.%"cat"]] = as.factor(dat.mock[[a%.%"cat"]])
