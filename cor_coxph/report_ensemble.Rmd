@@ -1,32 +1,12 @@
-
-<!-- D29start1 is ENSEMBLE specific -->
-
 ```{r, echo=FALSE, results='asis'}
 
-if (endsWith(attr(config,"config"),"_VL")) {
-  
-  CORs=c("D29VL")
+if (endsWith(TRIAL,"EUA") | endsWith(TRIAL,"partA")) {
 
-  for (COR in CORs) {
-    tpeak <- tt[1]
-    config.cor <- config::get(config = COR)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    special.note = paste0("$\\ddagger$ Count cases starting ", ifelse(endsWith(COR,"start1"),1,7), " days post Day 29.")
-    pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
-
-    all.markers=paste0("Day", tpeak, assays)
-    if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
-    names(all.markers)=all.markers
-
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_variants.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
-  }
-
-  
-} else {
-  
+  # start1 is ENSEMBLE specific
+    
   if (endsWith(attr(config,"config"),"EUA")) {
     CORs=c("D29IncludeNotMolecConfirmed", "D29IncludeNotMolecConfirmedstart1")
+    
   } else {
     if (attr(config,"config") %in% c("janssen_pooled_partA", "janssen_la_partA")) {
       CORs=c("D29IncludeNotMolecConfirmed", "D29SevereIncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
@@ -50,5 +30,90 @@ if (endsWith(attr(config,"config"),"_VL")) {
     cat(res, sep = '\n')
   }
   
-}
+
+} else if (TRIAL=="janssen_partA_VL") {
+  
+  COR="D29VLvariant"
+  show.q=F
+  has.alt = F
+
+  variants=list(US=c("Ancestral.Lineage"),
+                LatAme=c("Ancestral.Lineage", "Gamma", "Lambda", "Mu", "Zeta"),
+                RSA=c("Beta"))
+  
+  regions=c("US","LatAm","RSA")
+
+  tpeak <- tt[1]
+  config.cor <- config::get(config = COR)
+  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  special.note = paste0("$\\ddagger$ Count cases starting ", ifelse(endsWith(COR,"start1"),1,7), " days post Day 29.")
+  pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
+
+  all.markers=paste0("Day", tpeak, assays)
+  if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+  names(all.markers)=all.markers
+  
+    
+  for (iRegion in 1:3) {
+    region=regions[iRegion]
+    for (variant in variants[[iRegion]]) {
+      fname.suffix = paste0(region, "_", variant)
+      cat("# Objective in ", fname.suffix, " COVID", sep="")
+      
+      # the markers to study depend on region and COVID lineage
+      if (iRegion==1) {
+        # the only COVID variant is ancestral
+        all.markers=c("Day29bindSpike", "Day29pseudoneutid50")
+        multivariate_assays = "bindSpike+pseudoneutid50"
+        
+      } else if (iRegion==2) {
+        if (variant=="Ancestral.Lineage") {
+          all.markers=c("Day29bindSpike", "Day29pseudoneutid50")
+          multivariate_assays = "bindSpike+pseudoneutid50"
+          
+        } else if (variant=="Gamma") {
+          all.markers=c("Day29bindSpike", "Day29bindSpike_P.1", "Day29pseudoneutid50", "Day29pseudoneutid50_Gamma")
+          multivariate_assays = c("bindSpike+pseudoneutid50",
+                                  "bindSpike_P.1+pseudoneutid50_Gamma",
+                                  "bindSpike+bindSpike_P.1",
+                                  "pseudoneutid50+pseudoneutid50_Gamma")
+          
+        } else if (variant=="Lambda") {
+          all.markers=c("Day29bindSpike", "Day29bindSpike_C.37", "Day29pseudoneutid50", "Day29pseudoneutid50_Lambda")
+          multivariate_assays = c("bindSpike+pseudoneutid50",
+                                  "bindSpike_C.37+pseudoneutid50_Lambda",
+                                  "bindSpike+bindSpike_C.37",
+                                  "pseudoneutid50+pseudoneutid50_Lambda")
+          
+        } else if (variant=="Mu") {
+          all.markers=c("Day29bindSpike", "Day29bindSpike_B.1.621", "Day29pseudoneutid50", "Day29pseudoneutid50_Mu")
+          multivariate_assays = c("bindSpike+pseudoneutid50",
+                                  "bindSpike_B.1.621+pseudoneutid50_Mu",
+                                  "bindSpike+bindSpike_B.1.621",
+                                  "pseudoneutid50+pseudoneutid50_Mu")
+          
+        } else if (variant=="Zeta") {
+          all.markers=c("Day29bindSpike", "Day29pseudoneutid50", "Day29pseudoneutid50_Zeta")
+          multivariate_assays = c("bindSpike+pseudoneutid50",
+                                  "pseudoneutid50+pseudoneutid50_Zeta")
+          
+        }
+          
+      } else if (iRegion==3) {
+        all.markers=c("Day29bindSpike", "Day29bindSpike_B.1.351", "Day29pseudoneutid50", "Day29pseudoneutid50_Beta")
+        multivariate_assays = c("bindSpike+pseudoneutid50",
+                                "bindSpike+bindSpike_B.1.351",
+                                "bindSpike_B.1.351+pseudoneutid50_Beta",
+                                "pseudoneutid50+pseudoneutid50_Beta")
+      }
+    
+      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+    
+  }
+  
+  
+  
+} else stop("report_ensemble: TRIAL not supported:" %.%TRIAL)
 ```

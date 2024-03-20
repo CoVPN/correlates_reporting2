@@ -1,0 +1,324 @@
+---
+title: "Covail"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(survey)
+library(kyotil)
+
+dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240211.csv')
+dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240313.csv')
+dat = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
+
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
+assays=assay_metadata$assay
+
+```
+
+
+
+### Modeling
+
+```{r}
+dat$D1_id50=scale(dat$Bpseudoneutid50_MDW,scale=F)
+dat$Day15_id50=scale(dat$Day15pseudoneutid50_MDW,scale=F)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score + naive + Day15_id50, dat)
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + D1_id50 + Day15_id50 + I(Day15_id50^2), dat)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + naive*D1_id50 + Day15_id50 + I(Day15_id50^2), dat)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + naive*(D1_id50 + Day15_id50 + I(Day15_id50^2)), dat)
+```
+
+
+
+### B and D15 marker
+```{r}
+
+table(dat$Bpseudoneutid50_MDWcat, dat$Day15pseudoneutid50_MDWcat)
+
+corplot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, dat, col=ifelse(dat$naive==1,1,2))
+
+# fit demming regression
+dat.n=subset(dat, naive==1)
+dat.nn=subset(dat, naive==0)
+
+fit.n =  Deming(dat.n$Bpseudoneutid50_MDW,  dat.n$Day15pseudoneutid50_MDW,  boot = TRUE)
+fit.nn = Deming(dat.nn$Bpseudoneutid50_MDW, dat.nn$Day15pseudoneutid50_MDW, boot = TRUE)
+
+summary(fit.n)
+summary(fit.nn)
+
+par(mfrow=c(2,1), mar=c(3,4,2,2))
+lim=range(c(dat$Bpseudoneutid50_MDW, dat$Day15pseudoneutid50_MDW))
+corplot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, dat.n, add.deming.fit = T, xlim=lim, ylim=lim, xlab="", main="Naive", method="pearson")
+corplot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, dat.nn, add.deming.fit = T, xlim=lim, ylim=lim, main="Non-naive", method="pearson")
+title(xlab="Bpseudoneutid50_MDW", line=2)
+```
+
+### distribution 
+
+```{r}
+dat = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
+
+table(dat$Bpseudoneutid50_MDWcat, dat$Day15pseudoneutid50_MDWcat)
+table(dat$Bpseudoneutid50_MDWcat, dat$Day15pseudoneutid50_MDWcat, dat$naive)
+
+# all cases have covid lineage observed
+mytable(dat_proc$COVIDlineageObserved, dat_proc$COVIDlineage)
+mytable(dat_proc$COVIDlineageObserved, dat_proc$COVIDIndD22toend)
+```
+
+
+
+### save the risk score from covail_data_processed_20240205.csv as a separate file that will be treated as the source of risk score
+
+```{r}
+dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240205.csv")
+write.csv(subset(dat1, select=c(Ptid, risk_score, standardized_risk_score)), row.names=F, file="/trials/covpn/COVAILcorrelates/analysis/correlates/adata/risk_score.csv")
+```
+
+There is a difference in risk score between 0205 and 0206 analysis ready datasets
+```
+dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240205.csv")
+dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240206.csv")
+nrow(dat1)
+nrow(dat2)
+
+cbind(dat1$COVIDIndD22toD181, dat2$COVIDIndD22toD181)[1:100,]
+
+
+dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240205.csv")
+dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240206.csv")
+dat3=read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240211.csv")
+nrow(dat1)
+nrow(dat2)
+nrow(dat3)
+
+with(subset(dat1,ph1.D15==1), fastauc(risk_score, COVIDIndD22toD181))
+with(subset(dat2,ph1.D15==1), fastauc(risk_score, COVIDIndD22toD181))
+
+
+dat1=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240208.csv")
+dat2=read.csv("/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240211.csv")
+
+rbind(dat1[16,-182],dat2[16,]) # COVIDtimeD22toend
+
+setdiff(names(dat1), names(dat2))
+
+mytable(dat2$COVIDIndD92toD181, dat2$COVIDtimeD92toD181)
+```
+
+### sanofi markers
+
+```{r}
+with(dat_mapped, table(treatment_actual %in% c("Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"), TrtSanofi))
+
+dat.sanofi = subset(dat_mapped, TrtSanofi==1) #treatment_actual %in% c("Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)")
+summary(dat.sanofi[,c("Day29"%.%assays[1:5])])
+
+summary(dat.sanofi[,c("Day15"%.%assays[1:5])])
+
+with(subset(dat_mapped, TrtSanofi==1), mytable(naive, COVIDIndD36toD181))
+with(subset(dat_mapped, TrtSanofi==1), mytable(naive, COVIDIndD22toD181))
+```
+
+
+
+
+### correlation between m15 and baseline markers
+
+```{r}
+dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
+
+mypairs(dat[,paste0("B",assays)])
+
+mypairs(dat[,paste0("Day15",assays)])
+
+mypairs(dat[,paste0(c("B","Day15", "Delta15overB"),assays[1])])
+```
+
+
+### marker missingness
+
+```{r}
+table(dat_proc$AsympInfectIndD15to29, dat_proc$ph1.D15)
+
+
+
+table(dat_proc$arm, dat_proc$ph1.D15)
+
+table(dat_mapped$ph1.D15, dat_mapped$Immunemarkerset, dat_mapped$arm==3)
+
+
+# across assays, all or none
+summary(subset(dat_proc, ph1.D15 & is.na(Day29pseudoneutid50_D614G))["Day29"%.%assays[1:5]])
+summary(subset(dat_proc, ph1.D15 & is.na(Day91pseudoneutid50_D614G))["Day91"%.%assays[1:5]])
+summary(subset(dat_proc, ph1.D15 & is.na(Day181pseudoneutid50_D614G))["Day181"%.%assays[1:5]])
+
+dat_proc$kp = dat_proc$ph1.D15==1 & dat_proc$COVIDIndD22toend!=1 & dat_proc$AsympInfectIndD15to271!=1 
+dat_proc$kp = dat_proc$ph1.D15==1 
+for (i in 1:1) {
+  with(dat_proc[dat_proc$kp,], print(table(!is.na(get("Day29"%.%assays[i])), !is.na(get("Day15"%.%assays[i])))))
+  with(dat_proc[dat_proc$kp,], print(table(!is.na(get("Day91"%.%assays[i])), !is.na(get("Day15"%.%assays[i])))))
+  with(dat_proc[dat_proc$kp,], print(table(!is.na(get("Day181"%.%assays[i])), !is.na(get("Day15"%.%assays[i])))))
+}
+
+
+myboxplot(
+list(dat_proc$Day15pseudoneutid50_MDW[dat_proc$treatment_actual=="Omicron + Wildtype/Prototype (Pfizer 1)"], 
+     dat_proc$Day15pseudoneutid50_MDW[dat_proc$treatment_actual=="1 Dose Omicron + Prototype (Moderna)"])
+)
+
+myboxplot(
+  list(dat_proc$Day15pseudoneutid50_D614G[dat_proc$treatment_actual=="Omicron + Wildtype/Prototype (Pfizer 1)"], 
+       dat_proc$Day15pseudoneutid50_D614G[dat_proc$treatment_actual=="1 Dose Omicron + Prototype (Moderna)"])
+)
+# my.interaction.plot(subset(dat_proc, ph1==1, 
+#                            c(Bpseudoneutid50_BA.1, Day15pseudoneutid50_BA.1)), 
+#                     x.ori = 0, xaxislabels = c("B", "D15"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+# 
+# my.interaction.plot(subset(dat_proc, ph1==1, 
+#                            c(Day15pseudoneutid50_BA.1, Day29pseudoneutid50_BA.1)), 
+#                     x.ori = 1, xaxislabels = c("D15", "D29"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+# 
+# my.interaction.plot(subset(dat_proc, ph1==1, 
+#                            c(Day29pseudoneutid50_BA.1, Day91pseudoneutid50_BA.1)), 
+#                     x.ori = 2, xaxislabels = c("D29", "D91"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+# 
+# my.interaction.plot(subset(dat_proc, ph1==1, 
+#                            c(Day91pseudoneutid50_BA.1, Day181pseudoneutid50_BA.1)), 
+#                     x.ori = 3, xaxislabels = c("D91", "D181"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+# 
+```
+
+
+
+
+
+### marker level over time
+```{r}
+
+par(mfrow=c(4,1), mar=c(2,4,1,1))
+
+dat_proc$ph1 = dat_proc$ph1.D15==1 & dat_proc$COVIDIndD22toend!=1 & dat_proc$AsympInfectIndD15to181!=1 & dat_proc$AsympInfectIndD182to271!=1
+
+plot(0,0,type='n', xlim=c(1,5), ylim=c(1,5), xaxt="n", xlab="", ylab="ID50_BA.1")
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1<1.5, 
+                           c(Bpseudoneutid50_BA.1, Day15pseudoneutid50_BA.1)), 
+                    x.ori = 0, xaxislabels = c("B", "D15"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1<1.5, 
+                           c(Day15pseudoneutid50_BA.1, Day29pseudoneutid50_BA.1)), 
+                    x.ori = 1, xaxislabels = c("D15", "D29"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1<1.5, 
+                           c(Day29pseudoneutid50_BA.1, Day91pseudoneutid50_BA.1)), 
+                    x.ori = 2, xaxislabels = c("D29", "D91"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1<1.5, 
+                           c(Day91pseudoneutid50_BA.1, Day181pseudoneutid50_BA.1)), 
+                    x.ori = 3, xaxislabels = c("D91", "D181"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+
+plot(0,0,type='n', xlim=c(1,5), ylim=c(1,5), xaxt="n", xlab="", ylab="ID50_BA.1")
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1>1.5, 
+                           c(Bpseudoneutid50_BA.1, Day15pseudoneutid50_BA.1)), 
+                    x.ori = 0, xaxislabels = c("B", "D15"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1>1.5, 
+                           c(Day15pseudoneutid50_BA.1, Day29pseudoneutid50_BA.1)), 
+                    x.ori = 1, xaxislabels = c("D15", "D29"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1>1.5, 
+                           c(Day29pseudoneutid50_BA.1, Day91pseudoneutid50_BA.1)), 
+                    x.ori = 2, xaxislabels = c("D29", "D91"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1>1.5, 
+                           c(Day91pseudoneutid50_BA.1, Day181pseudoneutid50_BA.1)), 
+                    x.ori = 3, xaxislabels = c("D91", "D181"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+
+
+dat_proc$ph1 = dat_proc$ph1.D92 & dat_proc$ph1.D15==1 & dat_proc$COVIDIndD22toend!=1 & dat_proc$AsympInfectIndD15to181!=1 & dat_proc$AsympInfectIndD182to271!=1
+
+plot(0,0,type='n', xlim=c(1,5), ylim=c(1,5), xaxt="n", xlab="", ylab="ID50_BA.1")
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1<1.5, 
+                           c(Bpseudoneutid50_BA.1, Day15pseudoneutid50_BA.1)), 
+                    x.ori = 0, xaxislabels = c("B", "D15"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1<1.5, 
+                           c(Day15pseudoneutid50_BA.1, Day29pseudoneutid50_BA.1)), 
+                    x.ori = 1, xaxislabels = c("D15", "D29"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1<1.5, 
+                           c(Day29pseudoneutid50_BA.1, Day91pseudoneutid50_BA.1)), 
+                    x.ori = 2, xaxislabels = c("D29", "D91"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1<1.5, 
+                           c(Day91pseudoneutid50_BA.1, Day181pseudoneutid50_BA.1)), 
+                    x.ori = 3, xaxislabels = c("D91", "D181"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+
+plot(0,0,type='n', xlim=c(1,5), ylim=c(1,5), xaxt="n", xlab="", ylab="ID50_BA.1")
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1>1.5, 
+                           c(Bpseudoneutid50_BA.1, Day15pseudoneutid50_BA.1)), 
+                    x.ori = 0, xaxislabels = c("B", "D15"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1>1.5, 
+                           c(Day15pseudoneutid50_BA.1, Day29pseudoneutid50_BA.1)), 
+                    x.ori = 1, xaxislabels = c("D15", "D29"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1>1.5, 
+                           c(Day29pseudoneutid50_BA.1, Day91pseudoneutid50_BA.1)), 
+                    x.ori = 2, xaxislabels = c("D29", "D91"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+my.interaction.plot(subset(dat_proc, ph1==1 & Bpseudoneutid50_BA.1>1.5, 
+                           c(Day91pseudoneutid50_BA.1, Day181pseudoneutid50_BA.1)), 
+                    x.ori = 3, xaxislabels = c("D91", "D181"), cex.axis = 1, add = T, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+
+
+
+
+sum(dat_proc$ph1.D15==1)
+
+dat_proc$kp = dat_proc$ph1.D15==1 & dat_proc$COVIDIndD22toend!=1 & dat_proc$AsympInfectIndD15to271!=1 &
+  !is.na(dat_proc$Day29pseudoneutid50_D614G) & !is.na(dat_proc$Day91pseudoneutid50_D614G) & !is.na(dat_proc$Day181pseudoneutid50_D614G) 
+
+nrow(subset(dat_proc, kp))
+
+nrow(subset(dat_proc, kp & Bpseudoneutid50_BA.1>1.5))
+
+nrow(subset(dat_proc, kp & Bpseudoneutid50_BA.1<1.5))
+```
+
+
+
+
+
+### Misc
+
+```{r}
+myboxplot(dat_mapped[, c("B"%.%assays[1:5], "Day15"%.%assays[1:5])], names=sub("pseudoneutid50_", "", rep(assays[1:5],2)))
+
+
+
+summary(dat_mapped)
+sort(names(dat_mapped))
+
+table(dat_mapped$treatment_actual, dat_mapped$stage)
+
+with(subset(dat, ph1.D15==1 & COVIDIndD22toD181), mytable(treatment_actual, COVIDlineageObserved))
+
+table(dat_mapped$Immunemarkerset, dat_mapped$Perprotocol, useNA='ifany')
+table(dat_mapped$Immunemarkerset, dat_mapped$eligibility_deviation, useNA='ifany')
+
+
+
+```

@@ -1,0 +1,12 @@
+\begin{figure}
+\center
+    
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, gsub("[_]+", "_", paste0(type, "_", assay, if(trt!="") "_", gsub("-","_", trt), if(bsero!="") "_", bsero, if(facet!="") "_", facet, if(casetype!="") "_", casetype, "_", ver, "_", study_name, ".pdf")))`}
+
+\caption{`r paste0(gsub("box", "", type), "plots of ", gsub("%", "\\\\%", labels.assays[grepl(paste0(assay_long,"$"), names(labels.assays))]), ": ", bseroLabel, " ", gsub("-"," ",tolower(trt_lb)), " arm", ifelse(facet!="", paste0(" by ", names(facets)[facets==facet]), ""), if(study_name!="IARCHPV") paste0(" (version ", gsub("v", "", ver), ")"), COR_postfix_label)`}
+\end{figure}
+
+\hphantom{Random text to appease the latex god}
+
+
+

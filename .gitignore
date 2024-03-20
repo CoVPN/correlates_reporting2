@@ -1,5 +1,7 @@
 _main.Rmd
+covpn_correlates_cor_logistic_id27hpv.tex
 nohup.out
+cor_coxph/code/*.pdf
 cor_coxph/output/*
 .nfs80ca7186000a11ce00000044
 renv/settings.json
@@ -47,6 +49,18 @@ data_clean/janssen_pooled_mock_data_processed.zip
 cor_graphical/.Rprofile
 cor_graphical/renv/activate.R
 cor_graphical/output/*
+cor_graphical/*.pdf
+cor_graphical/*.RDS
+cor_graphical/code/*.txt
+cor_graphical/data_clean/*
+immuno_graphical/*.pdf
+immuno_graphical/*.png
+immuno_graphical/*.csv
+immuno_graphical/*.RDS
+immuno_graphical/*.db
+immuno_graphical/figs/*.db
+immuno_graphical/output/*
+immuno_graphical/data_clean/*
 cor_nonlinear/output/*
 cop_mediation/*.html
 data_raw/janssen/COVID_ENSEMBLE_realdata.csv
@@ -54,3 +68,4 @@ covpn_correlates_cor_moderna_mock.tex
 cor_surrogates/output/*
 cor_surrogates/figs/*
 correlates_reporting2-2.Rproj
+.Rproj.user

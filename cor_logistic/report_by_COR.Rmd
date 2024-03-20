@@ -1,0 +1,67 @@
+```{r, echo=FALSE, results='asis'}
+fname.suffix = study_name
+```
+
+
+# `r COR` Univariate CoR: Logistic Regression Models
+
+The main regression model is the logistic regression model fit with osDesign unless specified otherwise. One model per row.
+
+## Odds ratios
+
+\setlength{\tabcolsep}{.5ex}
+  \input{`r pathCoRoutput`/CoR_univariable_logistic_pretty_`r fname.suffix`}
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
+
+$\ast$`r txt.coxph.note2`
+
+$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers
+<!-- using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates). -->
+
+`r special.note`
+
+
+\clearpage
+\setlength{\tabcolsep}{.5ex}
+  \input{`r pathCoRoutput`/CoR_univariable_logistic_pretty_scaled_`r fname.suffix`}
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
+
+$\ast$$\ast$`r txt.coxph.note2`
+
+$\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers
+<!-- using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates). -->
+
+`r special.note`
+
+
+\clearpage
+\scriptsize
+\input{`r paste0(pathCoRoutput, "/CoR_univariable_logistic_cat_pretty_", study_name)`}
+\normalsize
+\vspace{-15pt}
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, "_", study_name, "}"), sep=",")`
+
+$\ast\ast$`r txt.coxph.note2`
+
+$\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
+
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers
+<!-- using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates). -->
+
+`r special.note`
+
+`r if(TRIAL=="id27hpv" & COR=='M18sus') "Confidence interval and p value for Anti L1, L2 IgG HPV18 (IU/ml) are calculated with Fisher exact test using No cases and No at risk because OR is 0."`
+
+
+\clearpage
+\begin{table}[H]
+\caption{Number of cases and non-cases in ph2 or not}
+\begin{center}
+  \input{`r pathCoRoutput`/tab1}\\
+\end{center}
+\end{table}
+
+
+\clearpage
+
+

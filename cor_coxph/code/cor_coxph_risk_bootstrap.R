@@ -1,66 +1,101 @@
-cat("Bootstrap controlled risks ...\n")
+cor_coxph_risk_bootstrap = function(
+  form.0,
+  dat,
+  fname.suffix, #used in the file names to save results
+  save.results.to,
+  
+  tpeak,
+  tfinal.tpeak,
+  all.markers,
+  
+  numCores,
+  B,
+  
+  comp.risk=F, # competing risk
+  run.Sgts=T # whether to get risk conditional on continuous S>=s
+) {
+  
+myprint(fname.suffix) 
+myprint(comp.risk, run.Sgts)
+  
 
+###################################################################################################
+cat("bootstrap vaccine arm risk, conditional on continuous S=s\n")
 
-# vaccine arm, conditional on continuous S=s
-if (verbose) print("create risks.all.1")
+# if (TRIAL=="janssen_partA_VL") {
+#   fname = paste0(save.results.to, "risks.all.1.", region, ".", variant, ".Rdata")
+# } else fname = paste0(save.results.to, "risks.all.1.Rdata")
 
-if (TRIAL=="janssen_partA_VL") {
-  fname = paste0(save.results.to, "risks.all.1.", region, ".", variant, ".Rdata")
-} else fname = paste0(save.results.to, "risks.all.1.Rdata")
-
+fname = paste0(save.results.to, "risks.all.1_", fname.suffix, ".Rdata")
+myprint(fname)
+  
 if(!file.exists(fname)) {    
   risks.all.1=lapply(all.markers, function (a) {
     if(verbose) myprint(a)
-    marginalized.risk.svycoxph.boot(form.0, marker.name=a, type=1, data=dat.vac.seroneg, t=tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
+    marginalized.risk.svycoxph.boot(form.0, marker.name=a, type=1, data=dat, t=tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)
   })
+  names(risks.all.1)=all.markers
   save(risks.all.1, file=fname)
 } else {
   load(fname)
 }
-  
-  
-# vaccine arm, conditional on continuous S>=s
-if (verbose) print("create risks.all.2")
-
-if (TRIAL=="janssen_partA_VL") {
-  fname = paste0(save.results.to, "risks.all.2.", region, ".", variant, ".Rdata")
-} else fname = paste0(save.results.to, "risks.all.2.Rdata")
-
-if(!file.exists(fname)) {    
-  risks.all.2=lapply(all.markers, function (a) {
-    if(verbose) myprint(a)
-    marginalized.risk.svycoxph.boot(form.0, marker.name=a, type=2, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)        
-  }) 
-  save(risks.all.2, file=fname)
-} else {
-  load(fname)
-}
+assign("risks.all.1", risks.all.1, envir = .GlobalEnv) # make it available outside this function
 
 
-# vaccine arm, conditional on categorical S
-if (verbose) print("create risks.all.3")
+write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_replicates"))
 
-if (TRIAL=="janssen_partA_VL") {
-  fname = paste0(save.results.to, "risks.all.3.", region, ".", variant, ".Rdata")
-} else fname = paste0(save.results.to, "risks.all.3.Rdata")
+
+###################################################################################################
+cat("bootstrap vaccine arm, conditional on categorical S")
+
+###################################################################################################
+cat("bootstrap vaccine arm, conditional on categorical S\n")
+
+# if (TRIAL=="janssen_partA_VL") {
+#   fname = paste0(save.results.to, "risks.all.3.", region, ".", variant, ".Rdata")
+# } else fname = paste0(save.results.to, "risks.all.3.Rdata")
+
+fname = paste0(save.results.to, "risks.all.3_", fname.suffix, ".Rdata")
+myprint(fname)
 
 if(!file.exists(fname)) {    
   risks.all.3=lapply(all.markers, function (a) {
     if(verbose) myprint(a)
-    marginalized.risk.svycoxph.boot(form.0, marker.name=a%.%"cat", type=3, data=dat.vac.seroneg, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
+    marginalized.risk.svycoxph.boot(form.0, marker.name=a%.%"cat", type=3, data=dat, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)                
   })    
+  names(risks.all.3)=all.markers
   save(risks.all.3, file=fname)
 } else {
   load(fname)
 }
-
-write(ncol(risks.all.1[[1]]$boot), file=paste0(save.results.to, "bootstrap_replicates"))
-#rv$marginalized.risk.S.eq.s=list()
-#for (a in assays) rv$marginalized.risk.S.eq.s[[a]] = risks.all.1[[a]][c("marker","prob")]
-#rv$marginalized.risk.S.geq.s=list()
-#for (a in assays) rv$marginalized.risk.S.geq.s[[a]] = risks.all.2[[a]][c("marker","prob")]
+assign("risks.all.3", risks.all.3, envir = .GlobalEnv) # make it available outside this function
 
 
+
+###################################################################################################
+if (run.Sgts) {
+  cat("bootstrap vaccine arm risk, conditional on continuous S>=s\n")
+  
+  # if (TRIAL=="janssen_partA_VL") {
+  #   fname = paste0(save.results.to, "risks.all.2.", region, ".", variant, ".Rdata")
+  # } else fname = paste0(save.results.to, "risks.all.2.Rdata")
+  
+  fname = paste0(save.results.to, "risks.all.2_", fname.suffix, ".Rdata")
+  myprint(fname)
+  
+  
+  if(!file.exists(fname)) {    
+    risks.all.2=lapply(all.markers, function (a) {
+      if(verbose) myprint(a)
+      marginalized.risk.svycoxph.boot(form.0, marker.name=a, type=2, data=dat, tfinal.tpeak, B=B, ci.type="quantile", numCores=numCores)
+    }) 
+    names(risks.all.2)=all.markers
+    save(risks.all.2, file=fname)
+  } else {
+    load(fname)
+  }
+  assign("risks.all.2", risks.all.2, envir = .GlobalEnv) # make it available outside this function
+}
 
 
 ###################################################################################################
@@ -81,8 +116,8 @@ if (!is.null(config$interaction)) {
       b=paste0("Day",tpeak,bold)
       
       # idx=2: only use vaccine arm. idx=1 uses placebo data and structural knowledge; it is commented out and moved to the end of the file
-      dat.ph1=dat.vac.seroneg            
-      data.ph2=subset(dat.ph1, ph2==1)     
+      dat.ph1=dat            
+      data.ph2=dat.ph1[dat.ph1$ph2==1,]     
       
       # fit the interaction model and save regression results to a table
       f= update(form.0, as.formula(paste0("~.+", a," + ",b," + ",a,":",b)))
@@ -134,7 +169,7 @@ if (!is.null(config$interaction)) {
           #                                          subset(dat.ph1, Trt==0)[sample.int(nrow(subset(dat.ph1, Trt==0)), r=TRUE),])         
           dat.b = bootstrap.case.control.samples(dat.ph1, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2")
           
-          dat.b.ph2=subset(dat.b, ph2==1)
+          dat.b.ph2=dat.b[dat.b$ph2==1,]
           with(dat.b, table(Wstratum, ph2))     
           
           # inline design object b/c it may also throw an error
@@ -159,7 +194,7 @@ if (!is.null(config$interaction)) {
           res=sapply(out, function (x) x[,i])
           res[,!is.na(res[1,])] # remove NA's
         })
-        if (verbose) str(res.ls)
+        if (verbose>=2) str(res.ls)
         # put lb and ub into matrices
         lb.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.025)))) )
         ub.ls=sapply(res.ls, function (res) t(apply(res, 1, function(x) quantile(x, c(.975)))) )
@@ -168,9 +203,26 @@ if (!is.null(config$interaction)) {
       } # end inner.id
       
     }
-    save(risks.itxn, file=paste0(save.results.to, "itxn.marginalized.risk.Rdata"))
+    save(risks.itxn, file=paste0(save.results.to, "itxn.marginalized.risk_",fname.suffix,".Rdata"))
     
   } else {
-    load(paste0(save.results.to, "itxn.marginalized.risk.Rdata"))
+    load(paste0(save.results.to, "itxn.marginalized.risk_",fname.suffix,".Rdata"))
   }
+  
+  assign("risks.itxn", risks.itxn, envir = .GlobalEnv) # make it available outside this function
+  
+}
+
+
+
+}
+
+
+
+###################################################################################################
+# clean up
+
+# return form.0 to its original form
+if (comp.risk) {
+  form.0 = form.0[[1]]
 }

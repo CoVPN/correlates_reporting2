@@ -14,26 +14,10 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real azd1222 azd1222_bAb)
 	Rscript code/cor_data_preprocess_2.R D57 # Brian's
 	Rscript code/CoR_assay_graphics.R D57
 	Rscript code/CoR_wrcdf_with_VE_lines.R D57
-
-else ifeq ($(TRIAL),$(filter $(TRIAL), vat08m_naive vat08m_nonnaive))
-	Rscript code/cor_data_preprocess.R D22D43 # Yiwen's
-	Rscript code/cor_graphics_violin_scatter.R D22D43
+	
+else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 	Rscript code/cor_data_preprocess.R D22D43omi # Yiwen's
-	Rscript code/cor_graphics_violin_scatter.R D22D43omi
-
-	Rscript code/cor_data_preprocess_2.R D22 # Brian's
-	Rscript code/CoR_assay_graphics.R D22
-	Rscript code/CoR_wrcdf_with_VE_lines.R D22
-	Rscript code/cor_data_preprocess_2.R D43 # Brian's
-	Rscript code/CoR_assay_graphics.R D43
-	Rscript code/CoR_wrcdf_with_VE_lines.R D43
-
-	Rscript code/cor_data_preprocess_2.R D22omi # Brian's
-	Rscript code/CoR_assay_graphics.R D22omi
-	Rscript code/CoR_wrcdf_with_VE_lines.R D22omi
-	Rscript code/cor_data_preprocess_2.R D43omi # Brian's
-	Rscript code/CoR_assay_graphics.R D43omi
-	Rscript code/CoR_wrcdf_with_VE_lines.R D43omi
+	Rscript code/cor_graphics_all.R D22D43omi
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janssen_la_mock janssen_sa_mock))
 	Rscript code/cor_data_preprocess.R D29 # Yiwen's
@@ -67,25 +51,20 @@ else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_EUA janssen_na_EUA jansse
 	
 # else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_partA janssen_na_partA janssen_la_partA janssen_sa_partA janssen_pooled_partAsenior janssen_na_partAsenior janssen_la_partAsenior  janssen_pooled_partAnonsenior janssen_na_partAnonsenior janssen_la_partAnonsenior janssen_sa_partAnonsenior))
 else ifeq ($(TRIAL), $(filter $(TRIAL), janssen_pooled_partA janssen_na_partA janssen_la_partA janssen_sa_partA))
-	Rscript code/cor_data_preprocess.R D29SevereIncludeNotMolecConfirmed # Yiwen's
-	Rscript code/cor_graphics_violin_scatter.R D29SevereIncludeNotMolecConfirmed
+	Rscript code/cor_data_preprocess.R D29IncludeNotMolecConfirmed # Yiwen's
+	Rscript code/cor_graphics_violin_scatter.R D29IncludeNotMolecConfirmed
 
-	Rscript code/cor_data_preprocess_2.R D29SevereIncludeNotMolecConfirmed # Brian's
-	Rscript code/CoR_assay_graphics.R D29SevereIncludeNotMolecConfirmed
-	Rscript code/CoR_wrcdf_with_VE_lines.R D29SevereIncludeNotMolecConfirmed
+	#Rscript code/cor_data_preprocess_2.R D29SevereIncludeNotMolecConfirmed # Brian's
+	#Rscript code/CoR_assay_graphics.R D29SevereIncludeNotMolecConfirmed
+	#Rscript code/CoR_wrcdf_with_VE_lines.R D29SevereIncludeNotMolecConfirmed
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
-	Rscript code/cor_data_preprocess.R D29variant
-	Rscript code/cor_graphics_corr.R D29variant # pair
-    
-	Rscript code/cor_data_preprocess_2.R D29variant
-	Rscript code/CoR_assay_graphics.R D29variant # RCDF
-    
-	Rscript code/cor_data_preprocess.R D29variant
-	Rscript code/cor_graphics_spider.R D29variant # spider
+	Rscript code/cor_data_preprocess.R D29VLvariant
 	
-	Rscript code/cor_data_preprocess.R D29variant
-	Rscript code/cor_graphics_violin_scatter.R D29variant # violin
+	#Rscript code/cor_graphics_corr.R D29VLvariant # pair, dat
+	Rscript code/CoR_assay_graphics.R D29VLvariant # RCDF, dat.long by assay
+	Rscript code/cor_graphics_spider.R D29VLvariant # spider, dat
+	Rscript code/cor_graphics_violin_scatter.R D29VLvariant # violin, dat.longer by both assay and time
 	
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/cor_data_preprocess.R D35 # Yiwen's
@@ -114,6 +93,17 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov_lvmn))
 	Rscript code/cor_data_preprocess_2.R D43 # Brian's
 	Rscript code/CoR_assay_graphics.R D43
 	Rscript code/CoR_wrcdf_with_VE_lines.R D43
+	
+else ifeq ($(TRIAL),$(filter $(TRIAL), id27hpv id27hpvnAb))
+	Rscript code/cor_data_preprocess.R M18
+	
+	Rscript code/cor_graphics_corr.R M18 # pair, dat
+	Rscript code/cor_graphics_violin_scatter.R M18 # violin, dat.longer by both assay and time
+	
+	Rscript code/cor_data_preprocess.R M18sus
+	
+	Rscript code/cor_graphics_corr.R M18sus # pair, dat
+	Rscript code/cor_graphics_violin_scatter.R M18sus # violin, dat.longer by both assay and time
 endif
 
 ## clean          : clean up data_clean and output folder

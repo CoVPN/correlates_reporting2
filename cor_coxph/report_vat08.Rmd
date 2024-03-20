@@ -1,0 +1,39 @@
+Due to missing variant types, analysis combines ten copies of hotdeck imputed datasets.
+
+```{r, echo=FALSE, results='asis'}
+
+for (tpeak in tt[2]) { # 22 and 43
+  for (i in 1:4) { # 1 is for bAb and 2 is for nAb and 3 is for original
+  for (j in 1:2) { # 1 is for M6  and 2 is for M12
+    COR0 <- paste0("D", tpeak, "M", ifelse(j==1, 6, 12), "omi", switch(i, '1'='bAb', '2'='nAb', '3'='original', '4'='original2'))
+    
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
+    
+    if (endsWith(COR0,'omi')) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
+
+    for (iAna in 3:3) {
+      # modify pathCoRoutput and COR to include subfolder name. Changes to COR will also show up in Section title in report_by_COR.Rmd
+      if (iAna==1) tmp <- "stage1nnaive"
+      if (iAna==2) tmp <- "stage2naive"
+      if (iAna==3) tmp <- "stage2nnaive"
+      COR <- paste0(COR0, " ", tmp)
+      pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", tmp)
+    
+      all.markers=paste0("Day", tpeak, assays1)
+      if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays1))
+      names(all.markers)=all.markers
+    
+      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    }
+  }
+  }
+  
+}
+```

@@ -207,10 +207,12 @@ get_rgmt <- function(dat, v, groups, comp_lev, sub.by, strata, weights, subset){
         
         design.ij <- subset(design.ij, all.sub.by %in% n.ij$all.sub.by & eval(parse(text=sprintf("!is.na(%s) & !is.na(%s)", i, j))))
         
-        ret <- svyby(as.formula(sprintf("%s~%s", i, j)),
+        ret <- try(svyby(as.formula(sprintf("%s~%s", i, j)),
                      by=as.formula(sprintf("~%s", paste(sub.by, collapse="+"))),
                      design=design.ij,
-                     svyglm, vartype="ci")
+                     svyglm, vartype="ci"))
+        
+        if(class(ret)=="try-error") next()
         
         rgmt <- bind_rows(
           ret %>% 

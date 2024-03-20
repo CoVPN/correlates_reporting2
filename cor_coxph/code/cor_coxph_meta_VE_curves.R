@@ -72,8 +72,8 @@ draw.ve.curves=function(a, TRIALS, file.name, include.az=FALSE, log="", add.hist
         delta=(xlim[2]-xlim[1])/20     
         xlim.ls[[x]]=c(xlim[1]-delta, xlim[2]+delta)
         
-        markers.x[[x]]=dat.vac.seroneg[[tmp]][dat.vac.seroneg$ph2]
-        weight[[x]]=dat.vac.seroneg[["wt"]][dat.vac.seroneg$ph2]
+        markers.x[[x]]=dat.vac.seroneg[[tmp]][dat.vac.seroneg$ph2==1]
+        weight[[x]]=dat.vac.seroneg[["wt"]][dat.vac.seroneg$ph2==1]
     }    
     xlim=c(min(sapply(xlim.ls, function(x) x[1])), max(sapply(xlim.ls, function(x) x[2])))
     myprint(xlim)
@@ -294,8 +294,8 @@ draw.ve.curves.aa=function(aa, TRIALS, file.name, log="") {
         delta=(xlim[2]-xlim[1])/20     
         xlim.ls[[a]]=c(xlim[1]-delta, xlim[2]+delta)
         
-        markers.x[[a]]=dat.vac.seroneg[[tmp]][dat.vac.seroneg$ph2]
-        weight[[a]]=dat.vac.seroneg[["wt"]][dat.vac.seroneg$ph2]
+        markers.x[[a]]=dat.vac.seroneg[[tmp]][dat.vac.seroneg$ph2==1]
+        weight[[a]]=dat.vac.seroneg[["wt"]][dat.vac.seroneg$ph2==1]
     }    
     xlim=c(min(sapply(xlim.ls, function(x) x[1])), max(sapply(xlim.ls, function(x) x[2])))
     myprint(xlim)
