@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240314.csv')
+dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240319.csv')
 dat_mapped_stage1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage1/adata/COVID_AstraZeneca_realdata_20221208.csv')
  
 dat_mapped$EarlyendpointD57 <- with(dat_mapped, EarlyinfectionD57==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD57 + 7),1,0)
@@ -23,8 +23,9 @@ dat_mapped$EventCalTimePrimaryD57 = with(dat_mapped, as.Date(D57Date)+EventTimeP
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/azd1222_stage2_assay_metadata.csv')
 assays=assay_metadata$assay
 
-# dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
+dat_proc = read.csv('/trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_stage2_data_processed_20240319.csv')
 
+times="Day"%.%c(57,90,180,360)
 ```
 
 
@@ -42,41 +43,41 @@ mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list, dat_mapped$Tr
 
 Number of severe cases in ph1 and ph2
 ```{r}
-with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_7to303))
-with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_7to119))
-with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_120to303))
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_120to21Dec10))
 ```
 
-Number of Delta cases in D57_120to303 in ph1 and ph2
+Number of Delta cases in D57_120to21Dec10 in ph1 and ph2
 ```{r}
-with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_120to303))
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_120to21Dec10))
 ```
 
 
 ### Adjusting endpoint period
 
-Distribution of event time by variant types. Severe cases are red, cases with markers are green. 
-We chose 100/101 days post D57 to break the follow-up period into two because all Delta cases and all severe happened after that.
-We censor on the same day at the PREVENT-19 stage2 on 2021-12-10 to avoid the Omicron wave. We lose no severe cases by this censoring
+Distribution of event time by variant types. Ph2 cases are colored green and severe cases are colored red.
 
-```{r, echo=F}
+We chose 119/120 days post D57 to break the follow-up period into two because all Delta cases and all but two severe cases happened after that. 120 days post D57 is the first Delta case, on 2021-07-02.
+
+We censor on 2021-12-10 to avoid the Omicron wave, the same day the PREVENT-19 stage2 data is censored on as well. We lose no severe cases by this censoring.
+```{r, echo=T}
 dat.tmp=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+col=rep(1, nrow(dat.tmp))
+col[!is.na(dat.tmp$Day57bindSpike_Delta3)]=3 # set ph2 ptids to green
+col[dat.tmp$SevereEventIndD57_120to21Dec10==1]=2 # set severe cases to red
 
 # D57 study day
-myboxplot(EventTimePrimaryD57~EventIndPrimaryType_short, dat.tmp, ylab="EventTimePrimary57", col=ifelse(dat.tmp$SevereEventIndD57_7to303==1,2,ifelse(!is.na(dat.tmp$Day57bindSpike_Delta3),3,1)), cex.axis=0.8)
-abline(h=100, lty=2) 
+myboxplot(EventTimePrimaryD57~EventIndPrimaryType_short, dat.tmp, ylab="EventTimePrimary57", col=col, cex.axis=0.8)
+abline(h=120, lty=2) 
+print(min(subset(dat.tmp,EventIndPrimaryType_short=="Del",EventTimePrimaryD57),na.rm=T))
+subset(dat.tmp,EventIndPrimaryType_short=="Del" & EventTimePrimaryD57==120, EventCalTimePrimaryD57)
 
 # calendar day
-myboxplot(EventCalTimePrimaryD57~EventIndPrimaryType_short, dat.tmp, ylab="Event Calendar Time", col=ifelse(dat.tmp$SevereEventIndD57_7to303==1,2,ifelse(!is.na(dat.tmp$Day57bindSpike_Delta3),3,1)), cex.axis=0.8)
+myboxplot(EventCalTimePrimaryD57~EventIndPrimaryType_short, dat.tmp, ylab="Event Calendar Time", col=col, cex.axis=0.8)
 abline(h=120, lty=2) 
 abline(h=as.Date("2021-12-10"), lty=2) 
 
 # subset(dat_mapped,EventIndPrimaryType_short=="Del" & as.Date(DateDD1)<as.Date("2021-01-01"), c(Subjectid, EventTimePrimaryDate, DateDD1))
-
-# min(subset(dat_mapped,EventIndPrimaryType_short=="Del",EventTimePrimaryD57),na.rm=T)
-
 ```
-
 
 
 ### Immunogenecity and imputation
@@ -86,6 +87,16 @@ Verifying marker values are subject to lower limits
 print(sort(unique(dat_mapped$Day57pseudoneutid50_D614G))[1:5])
 print(sort(unique(dat_mapped$Day57pseudoneutid50_Delta))[1:5])
 ```
+
+
+The following plot shows that Delta ID50 readouts are lower than ancestral ID50 and that marker level drops from over time. 
+```{r}
+dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
+names(dat)=sub("pseudoneutid50","",names(dat))
+myboxplot(dat, cex.axis=0.55)
+```
+
+
 
 Correlation is high between bAb markers (0.99 between the three Delta bAb markers), but moderate between the two nAb markers.
 ```{r}
@@ -102,22 +113,24 @@ A closer look at the correlation between ancestral ID50 and Delta ID50
 corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped, asp=1)
 ```
 
-bAb markers are all-or-none. For nAb, we will require Delta nAb to be present. For the 9 ptids without ancestral nAb but with Delta nAb, we will impute the ancestral nAb. There are a lot more ptids with just ancestral nAb but we won't use them in the correlates study to allow comparison between Delta and ancestral nAb.
+bAb markers are all-or-none. 
+
+For nAb, we will require Delta nAb to be present. For the 9 ptids without ancestral nAb but with Delta nAb, we will impute the ancestral nAb. There are a lot more ptids with just ancestral nAb but we won't use them in the correlates study to allow comparison between Delta and ancestral nAb.
 ```{r}
 dat=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
 for (i in 1:length(assays)) {
   dat[['tmp'%.%i]]=ifelse(is.na(dat[['Day57'%.%assays[i]]]), 0, 1)
 }
 dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10))
-print(table(dat$tmp, dat$DeltaEventIndD57_7to303))
+print(table(dat$tmp, dat$DeltaEventIndD57_120to21Dec10))
 ```
 
-We will only impute ancestral nAb using Delta nAb. We will have two sets of weights, one for bAb and one for nAb. 
+We will only impute ancestral ID50 using Delta ID50. We will have two sets of weights, one for bAb and one for nAb. 
 ```{r}
 dat=subset(dat_mapped)
 dat$tmp1 = !is.na(dat$Day57pseudoneutid50_Delta)
 dat$tmp2 = !is.na(dat$Day57bindSpike_Alpha)
 dat$tmp=with(dat,paste0(as.integer(tmp1),as.integer(tmp2)))
-print(table(dat$tmp, dat$DeltaEventIndD57_7to303))
+print(table(dat$tmp, dat$DeltaEventIndD57_120to21Dec10))
 ```
 
