@@ -467,6 +467,22 @@ azd1222_bAb: &azd1222_bAb
   assay_labels: [Binding Antibody to Spike]
   assay_labels_short: [Anti Spike IgG (BAU/ml)]
 
+azd1222_stage2: &azd1222_stage2
+  <<: *ows_trial
+  timepoints: [57]
+  times: [Day57]
+  time_labels: [Day 57]
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_stage2_data_processed_20240319.csv
+  assay_metadata: assay_metadata/azd1222_stage2_assay_metadata.csv
+  study_name: AZD1222
+  covariates_riskscore: ~.+ risk_score
+  ve_ylim: [0,1]
+  ve_ylim_log: [0.0,0.98]
+  low_efficacy: no
+  num_boot_replicates: 1000
+  num_perm_replicates: 10000
+
+
 
 ####################################################################
 # Non-OWS COVID trials
@@ -1211,6 +1227,58 @@ D35prevent19_stage2:
   EventTimePrimary: DeltaEventTimeD35
   Earlyendpoint: EarlyendpointD35
   tpeak: 35
+  tpeaklag: 7
+  txt.endpoint: Delta COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+D57azd1222_stage2_delta_nAb:
+  ph1: ph1.D57nAb
+  ph2: ph2.D57nAb
+  wt: wt.D35nAb
+  WtStratum: Wstratum
+  EventIndPrimary: DeltaEventIndD57_120to21Dec10
+  EventTimePrimary: DeltaEventTimeD57_to21Dec10
+  Earlyendpoint: EarlyendpointD57
+  tpeak: 57
+  tpeaklag: 7
+  txt.endpoint: Delta COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+D57azd1222_stage2_delta_bAb:
+  ph1: ph1.D57bAb
+  ph2: ph2.D57bAb
+  wt: wt.D35bAb
+  WtStratum: Wstratum
+  EventIndPrimary: DeltaEventIndD57_120to21Dec10
+  EventTimePrimary: DeltaEventTimeD57_to21Dec10
+  Earlyendpoint: EarlyendpointD57
+  tpeak: 57
+  tpeaklag: 7
+  txt.endpoint: Delta COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+D57azd1222_stage2_severe_nAb:
+  ph1: ph1.D57nAb
+  ph2: ph2.D57nAb
+  wt: wt.D35nAb
+  WtStratum: Wstratum
+  EventIndPrimary: SevereEventIndD57_120to21Dec10
+  EventTimePrimary: SevereEventTimeD57_to21Dec10
+  Earlyendpoint: EarlyendpointD57
+  tpeak: 57
+  tpeaklag: 7
+  txt.endpoint: Delta COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+D57azd1222_stage2_severe_bAb:
+  ph1: ph1.D57bAb
+  ph2: ph2.D57bAb
+  wt: wt.D35bAb
+  WtStratum: Wstratum
+  EventIndPrimary: SevereEventIndD57_120to21Dec10
+  EventTimePrimary: SevereEventTimeD57_to21Dec10
+  Earlyendpoint: EarlyendpointD57
+  tpeak: 57
   tpeaklag: 7
   txt.endpoint: Delta COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
