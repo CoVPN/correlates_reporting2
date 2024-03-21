@@ -71,11 +71,11 @@ get_desc_by_group <- function(data,
                denom = sum(wt, na.rm=T),
                #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
                RespRate = ifelse(denom!=0 && !is.na(pos.cutoffs), paste0(round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
-               min = min(value),
+               min = min(value, na.rm=T),
                q1 = quantile(value, 0.25, na.rm=T),
                median = median(value, na.rm=T),
                q3 = quantile(value, 0.75, na.rm=T),
-               max= max(value))
+               max= max(value, na.rm=T))
     
     return(dat_stats)
 }

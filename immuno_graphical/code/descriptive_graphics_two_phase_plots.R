@@ -182,7 +182,7 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
               } else if (asy %in% c("*", "pseudo") & country == 2) { # Southern Africa = 2
                 selected = assay_immuno[grepl("Reference|Beta|Delta", assay_metadata$assay_label_short)]
                 assay_immuno_ = subset(selected, grepl(asy, selected))
-              }
+              } else {assay_immuno_ = assay_immuno}
             
             if (sum(complete.cases(subdat[, paste0(tp, assay_immuno_)]))==0) next # skip if no assay data available
             
@@ -524,7 +524,7 @@ for (bstatus in 1:2) {
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
-      height = ifelse(study_name=="VAT08", 11, 3 * arrange_nrow + 0.5),
+      height = ifelse(study_name=="VAT08", 11, 3 * ceiling(length(assay_immuno) / 3) + 0.5),
       filename = paste0(
         save.results.to, "/boxplots_", tp, "_x_trt_", bstatus.labels.2[bstatus],
         "_", study_name, ".pdf"
@@ -560,7 +560,7 @@ for (trt in 1:2) {
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
-      height = ifelse(study_name=="VAT08", 11, 3 * arrange_nrow + 0.5),
+      height = ifelse(study_name=="VAT08", 11, 3 * ceiling(length(assay_immuno) / 3) + 0.5),
       filename = paste0(
         save.results.to, "/boxplots_", tp,
         "_x_bstatus_", c("placebo_arm_", "vaccine_arm_")[trt],
@@ -597,7 +597,7 @@ if (study_name=="VAT08") {# this is only reported for VAT08
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
-      height = ifelse(study_name=="VAT08", 11, 3 * arrange_nrow + 0.5),
+      height = ifelse(study_name=="VAT08", 11, 3 * ceiling(length(assay_immuno) / 3) + 0.5),
       filename = paste0(
         save.results.to, "/boxplots_", tp,
         "_x_trt_bstatus_",
@@ -634,7 +634,7 @@ if (study_name=="VAT08") {# this is only reported for VAT08
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
-      height = ifelse(study_name=="VAT08", 11, 3 * arrange_nrow + 0.5),
+      height = ifelse(study_name=="VAT08", 11, 3 * ceiling(length(assay_immuno) / 3) + 0.5),
       filename = paste0(
         save.results.to, "/boxplots_", tp,
         "_x_trt_bstatus_gender_",

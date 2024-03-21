@@ -2,6 +2,7 @@
 #Sys.setenv(TRIAL = "profiscov_all"); lloxs = llods
 #Sys.setenv(TRIAL = "vat08_combined");
 #Sys.setenv(TRIAL = "janssen_partA_VL");
+#Sys.setenv(TRIAL = "janssen_pooled_partA")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -150,8 +151,9 @@ dat.long.subject_level <- dat[, important.columns] %>%
   replicate(length(assay_immuno), ., simplify = FALSE) %>%
   bind_rows()
 
+if(attr(config,"config")=="janssen_pooled_partA") {times_ = c("B","Day29","Delta29overB","Day71"); timepoints_=c(29,71)} else {times_ = times; timepoints_=timepoints}
 
-dat.long.assay_value.names <- c(times, if(attr(config,"config")=="janssen_partA_VL") "Day71", if(attr(config,"config")=="janssen_partA_VL") "Mon6")
+dat.long.assay_value.names <- c(times_, if(attr(config,"config")=="janssen_partA_VL") "Day71", if(attr(config,"config")=="janssen_partA_VL") "Mon6")
 dat.long.assay_value <- as.data.frame(matrix(
   nrow = nrow(dat) * length(assay_immuno),
   ncol = length(dat.long.assay_value.names)
@@ -373,16 +375,23 @@ saveRDS(as.data.frame(dat.twophase.sample),
 )
 
 ###################################################################### 
-# prepare datasets for violin plots
+# prepare datasets for violin plots, required for janssen_partA_VL, janssen_pooled_partA
 
 # longer format by assay and time
 dat.longer.immuno.subset <- dat.twophase.sample %>%
-  tidyr::pivot_longer(cols = all_of(c(outer(times, assays, "%.%")))[all_of(c(outer(times, assays, "%.%"))) %in% colnames(dat.twophase.sample)], names_to = "time_assay", values_to = "value") %>%
+  tidyr::pivot_longer(cols = all_of(c(outer(times_, assays, "%.%")))[all_of(c(outer(times_, assays, "%.%"))) %in% colnames(dat.twophase.sample)], names_to = "time_assay", values_to = "value") %>%
   mutate(time = gsub(paste0(assays, collapse = "|"), "", time_assay),
-         assay = gsub(paste0("^", times, collapse = "|"), "", time_assay))
+         assay = gsub(paste0("^", times_, collapse = "|"), "", time_assay))
 
 # define response rates
-resp <- getResponder(dat.mock, post_times = timepoints, 
+if (attr(config,"config")=="janssen_pooled_partA" & !any(grepl("Delta71", colnames(dat.mock)))){
+  dat.mock$Delta71overBbindSpike = dat.mock$Day71bindSpike - dat.mock$BbindSpike
+  dat.mock$Delta71overBbindRBD = dat.mock$Day71bindRBD - dat.mock$BbindRBD
+  dat.mock$Delta71overBpseudoneutid50 = dat.mock$Day71pseudoneutid50 - dat.mock$Bpseudoneutid50
+  dat.mock$Delta71overBADCP = dat.mock$Day71ADCP - dat.mock$BADCP
+  dat.mock$Day71pseudoneutid50uncensored=NA; dat.mock$Delta71overBpseudoneutid50uncensored=NA
+}
+resp <- getResponder(dat.mock, post_times = timepoints_, 
                      assays=assays, pos.cutoffs = pos.cutoffs)
 
 resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
@@ -392,9 +401,13 @@ resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(res
 dat.longer.immuno.subset$LLoD = with(dat.longer.immuno.subset, log10(lods[as.character(assay)]))
 dat.longer.immuno.subset$pos.cutoffs = with(dat.longer.immuno.subset, log10(pos.cutoffs[as.character(assay)]))
 dat.longer.immuno.subset$LLoQ = with(dat.longer.immuno.subset, log10(lloqs[as.character(assay)]))
-dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "LoQ", "LoD"))
-dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), LLoQ, LLoD))
-
+if (attr(config,"config")=="janssen_pooled_partA"){
+  dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "Pos.Cut", "LoQ"))
+  dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), pos.cutoffs, LLoQ))
+} else {
+  dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "LoQ", "LoD"))
+  dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), LLoQ, LLoD))
+}
 dat.longer.immuno.subset$ULoQ = with(dat.longer.immuno.subset, log10(uloqs[as.character(assay)]))
 dat.longer.immuno.subset$lb2 = "ULoQ"
 dat.longer.immuno.subset$lbval2 =  dat.longer.immuno.subset$ULoQ
