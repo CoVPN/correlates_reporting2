@@ -138,9 +138,12 @@ for (panel in c("pseudoneutid50", "bindSpike")){
 # adhoc figure needed for the severe manuscript reviewer
 if (attr(config,"config") == "janssen_pooled_partA"){
     assay_metadata$assay_label = labels.assays[match(assay_metadata$assay, names(labels.assays))]
-    assay_metadata$panel = ifelse(grepl("bind", assay_metadata$assay), "bAb", ifelse(grepl("id50", assay_metadata$assay), "nAb", ""))
+    assay_metadata$assay_label = case_when(assay_metadata$assay_label=="Binding Antibody to Spike" ~ "Binding Antibody to Spike\nBAU/mL",
+                                           assay_metadata$assay_label=="Binding Antibody to RBD" ~ "Binding Antibody to RBD\nBAU/mL",
+                                           assay_metadata$assay_label=="PsV Neutralization 50% Titer" ~ "PsV Neutralization 50% Titer\nIU/mL",
+                                           TRUE ~ assay_metadata$assay_label)
+    panel=""
     
-    panel="adhoc"
     dat_plot_ = subset(dat.longer.immuno.subset.plot1, 
                       Trt=="Vaccine" & nnaive=="Baseline Neg" & time %in% c("Day29","Day71") & assay %in% c("bindSpike","bindRBD","pseudoneutid50")) %>% 
         filter(!is.na(value))
@@ -161,7 +164,7 @@ if (attr(config,"config") == "janssen_pooled_partA"){
     set.seed(20240320)
     random25 <- sample(ids_day71, 25)
     dat_plot = dat_plot_ %>% filter(Ptid %in% random25) %>% mutate(RespRate=" ")
-
+    
     f_2 <- f_longitude_by_assay(
         dat = dat_plot,
         x.var = "time",
