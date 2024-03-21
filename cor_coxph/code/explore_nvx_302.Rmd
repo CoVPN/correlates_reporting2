@@ -11,7 +11,8 @@ library(kyotil)
 
 dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240305.csv')
 
-dat_proc = read.csv('/trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240310.csv')
+dat_proc = read.csv('/trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240315.csv')
+dat_proc$Region1 = dat_proc$Region=="England South East"
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/nvx_uk302_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -31,7 +32,7 @@ There is one ptid in 3.Case in the table above, whose AnyinfectionD1 is 1 and Ev
 subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & EventIndPrimaryD35==0 & SampleSet=="3.Case", select=c(Subjectid, AnyinfectionD1, EventIndPrimaryD1))
 ```
 
-There are also 16 ptids without marekrs whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. We will exclude all such ptids from ph1.D35.
+There are also 16 ptids without markrs whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. **We will exclude all such ptids from ph1.D35.**
 ```{r}
 with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & AnyinfectionD1==1 & EventIndPrimaryD1==0), mytable( SubcohortInd))
 ```
@@ -67,15 +68,24 @@ myboxplot(Day35bindNVXIgG~Trt+Senior, subset(dat_proc, ph2.D35==1), names=c("pla
 ```
 
 
+Two sample test comparing marker between England South East and England Other is not significant, but there is a trend.
+```{r}
+myboxplot(Day35bindNVXIgG~Region1, subset(dat_proc, ph2.D35==1 & Trt==1), cex.axis=0.8, test="w", names=c("Other","England South East"))
+wilcox.test(Day35bindNVXIgG~Region, subset(dat_proc, ph2.D35==1 & Trt==1 & Region!="Scotland, Wales, Northern Ireland"))
+```
+
 
 ### Risk factors 
-Age is a risk factor in placebo but not vaccine. Test of interaction is not significant. In both arms together, age is significant. Thus, we will adjust for age>=65, which is one of the stratification variables.
+Age is a risk factor in placebo but not vaccine. Southeast England (London) is a risk factror in placebo but not vaccine. Both could be due to the number of cases is much smaller in the vaccine arm. Test of interaction is not significant. In both arms together, they are significant. We decide to adjust for both age and Southeast England because **they are both confounders**! Younger people and London both have higher risk and higher markers.
 ```{r}
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Site+Age+Sex, subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==0))
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Site+Age+Sex, subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1))
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Site+Sex+Age*Trt, subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0))
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Site+Sex+I(Age>=65)*Trt, subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Age*Trt, subset(dat_proc, ph1.D35==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Age+Trt, subset(dat_proc, ph1.D35==1))
 ```
+
+
+### Twophase sampling
 
 
 VE as context of the correlates study
@@ -84,21 +94,18 @@ with (subset(dat_proc, ph1.D35==1), table.prop(EventIndPrimaryD35, Trt))
 cat("VE: "); myprint(1-0.3/1.4)
 ```
 
-
 Numbers of case/control in ph1/ph2:
 ```{r}
 with(subset(dat_proc, ph1.D35==1 & Trt==1), mytable(ph2.D35, EventIndPrimaryD35))
 ```
 
-### Twophase sampling
 
 Sampling is stratified on region.
 ```{r}
-with(dat_mapped, table(Site, EventIndPrimaryD35, Trt))
-with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0), mytable(SampleSet, EventIndPrimaryD35, Trt))
+with(dat_mapped, table(Region, EventIndPrimaryD35, Trt))
 ```
 
-Distribution of sampling weights looks normal. There is one case stratum and six controls strata formed by Senior x Site.
+Distribution of sampling weights looks normal. There is one case stratum and six controls strata formed by Senior x Region.
 ```{r}
-with (subset(dat_proc, ph1.D35==1 & Trt==1), table(wt.D35, Senior, EventIndPrimaryD35))
+with (subset(dat_proc, ph1.D35==1 & Trt==1), table(wt.D35, Region, Senior))
 ```

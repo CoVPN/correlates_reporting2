@@ -4,16 +4,38 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240305.csv')
-# dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_stage2_data_processed_20230928.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240314.csv')
+
+dat_mapped$VARTYPE_first1 = sapply(strsplit(dat_mapped$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
+dat_mapped$VARTYPE_first1 = ifelse(dat_mapped$EventIndFirstD1==0, NA, dat_mapped$VARTYPE_first1)
+dat_mapped$VARTYPE_first1 = ifelse(dat_mapped$EventIndFirstD1==1 & is.na(dat_mapped$VARTYPE_first1), "Unk", dat_mapped$VARTYPE_first1)
+
+dat_mapped$VARTYPE_second1 = sapply(strsplit(dat_mapped$VARTYPE_second,","), function (x) ifelse(length(x)==0, "Unknown", x[1]))
+dat_mapped$VARTYPE_second1 = ifelse(dat_mapped$EventIndFirstD1==0, NA, dat_mapped$VARTYPE_second1)
+dat_mapped$VARTYPE_second1 = ifelse(dat_mapped$EventIndFirstD1==1 & is.na(dat_mapped$VARTYPE_second1), "Unk", dat_mapped$VARTYPE_second1)
 
 dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (DeltaEventIndD1==1 & DeltaEventTimeD1 < NumberdaysD1toD35 + 7),1,0)
 dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & DeltaEventTimeD35 >= 7)
+
+dat_mapped$EventCalTimeFirstD35 = with(dat_mapped, as.Date(D35Date)+EventTimeFirstD35)
+
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_stage2_data_processed_20240315.csv')
+
+# extract the first variant. empty string to empty string
+dat_proc$VARTYPE_first1 = sapply(strsplit(dat_proc$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
+dat_proc$VARTYPE_first1 = ifelse(dat_proc$EventIndFirstD1==0, NA, dat_proc$VARTYPE_first1)
+dat_proc$VARTYPE_first1 = ifelse(dat_proc$EventIndFirstD1==1 & is.na(dat_proc$VARTYPE_first1), "Unk", dat_proc$VARTYPE_first1)
+
+dat_proc$VARTYPE_second1 = sapply(strsplit(dat_proc$VARTYPE_second,","), function (x) ifelse(length(x)==0, "Unknown", x[1]))
+dat_proc$VARTYPE_second1 = ifelse(dat_proc$EventIndFirstD1==0, NA, dat_proc$VARTYPE_second1)
+dat_proc$VARTYPE_second1 = ifelse(dat_proc$EventIndFirstD1==1 & is.na(dat_proc$VARTYPE_second1), "Unk", dat_proc$VARTYPE_second1)
+
+dat_proc$EventCalTimeFirstD35 = with(dat_proc, as.Date(D35Date)+EventTimeFirstD35)
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/prevent19_stage2_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -25,41 +47,60 @@ times=c("Day35","C1","BD1","DD1")
 
 ### Data descriptives
 
-Dataset contains vaccine arm only and seroneg only
+This dataset uses the updated clinical database, which is slightly different from the Stage 1 dataset. 
+
+The dataset contains vaccine arm only and seroneg only, but has both US and MEX.
 ```{r, include=F}
 mytable(dat_mapped$Trt)
 mytable(dat_mapped$Bserostatus)
+mytable(dat_mapped$Country)
 ```
 
-About half of the ptids have missing BD1 date
+
+**Case definitions**
+
+The 17-month BLA analysis primary endpoint definition and the case definition we are using now are different. The former are censored at C1.
+
+
+There are 9 severe cases with markers. There are four degrees of severity. **Less-than-mild cases are not counted cases or censoring events.**
 ```{r}
-mytable(dat_mapped$NumberdaysD1toBD1 - dat_mapped$DeltaEventTimeD1 < 0)
+with(subset(dat_proc, ph1.D35==1 & Country==0), mytable(Severity_first, ph2.D35, EventIndFirstD1))
 ```
 
-Many of the ptids with missing BD1 date have markers
-```{r}
-mytable(is.na(dat_mapped$NumberdaysD1toBD1), !is.na(dat_mapped$Day35bindSpike_Delta3))
+
+**Booster dose**
+
+- Getting COVID did not disqualify a person from getting the booster, but there are other eligibility criteria. About half of the ptids have missing BD1 date, and presumably not getting booster. 
+
+- Sampling was done regardless of having BD1 dates. 
+
+- There are no cases infected after BD. 
+
+- There were 10 non-cases censored after BD before we applied censoring by BD. 
+```{r, echo=T}
+mytable(dat_mapped$NumberdaysD1toBD1 - dat_mapped$DeltaEventTimeD1 < 0, dat_mapped$DeltaEventIndD1)
+with(subset(dat_mapped, ph1.D35==1 & Country==0 & DeltaEventIndD1==1), mytable(is.na(NumberdaysD1toBD1), !is.na(Day35bindSpike_Delta3)))
 ```
 
-There are 13 severe cases in the study window, of which 7 have markers. The number is too small to study severe correlates.
-```{r}
-with(subset(dat_mapped, ph1.D35==1), mytable(Severity_first, !is.na(Day35bindSpike_Delta3))) #  & NumberdaysD1toBD1>=DeltaEventTimeD1
-```
+**Stage 2 sampling lists**:
 
-Distribution of variant first (variant of the first COVID event). Not all Delta have markers b/c sampling requires DD2 samples.
-```{r}
-# fix variant coding. empty string to empty string
-dat_mapped$VARTYPE_first1 = sapply(strsplit(dat_mapped$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
+- For the 402 cases,  the time points of interest are D35 (after primary series in initial period),  the acute illness visit associated with the Delta case, and crossover 1 (if applicable for subject).   D35 may or may not be already tested earlier at the USG labs.
 
-with(subset(dat_mapped, ph1.D35==1), mytable(VARTYPE_first1, !is.na(Day35bindSpike_Delta3)))
+- For the 649 non-case, the D35 blood sample should already be at the USG lab from earlier.
+
+- The list of 279 non-cases is a subset of the list of 649. For the 279 subjects, the time points of interest are D35, crossover 1 and booster D0 - the database says these subjects should have all 3 visits/blood sample.  
+
+
+### COVID variants
+
+Distribution of variant first (variant of the first COVID event). Not all Delta have markers b/c sampling requires DD1 samples.
+```{r}
+with(subset(dat_mapped, ph1.D35==1 & Country==0 ), mytable(VARTYPE_first1, !is.na(Day35bindSpike_Delta3)))
 ```
 
 Distribution of variant second:
 ```{r}
-# fix variant codeing
-dat_mapped$VARTYPE_second1 = sapply(strsplit(dat_mapped$VARTYPE_second,","), function (x) ifelse(length(x)==0, "Unknown", x[1]))
-
-with(subset(dat_mapped, ph1.D35==1), mytable(VARTYPE_second1, !is.na(Day35bindSpike_Delta3)))
+with(subset(dat_mapped, ph1.D35==1 & Country==0 ), mytable(VARTYPE_second1, !is.na(Day35bindSpike_Delta3)))
 ```
 
 
@@ -68,34 +109,85 @@ Distribution of variants type between the first and second COVID events shows th
 with (subset(dat_mapped, !is.na(VARTYPE_second1)), mytable(paste(VARTYPE_first1, VARTYPE_second1, sep=",")))
 ```
 
-Distribution of severity and variants
+Distribution of severity and variants. Note that less than mild are not counted as cases.
 ```{r}
-with(subset(dat_mapped, ph1.D35==1), mytable(Severity_first, VARTYPE_first1)) 
+with(subset(dat_mapped, ph1.D35==1), mytable(Severity_first, VARTYPE_first1, DeltaEventIndD35)) 
 
 ```
 
-Comparing timing of events of different variants. Re-do this with DD1 date
+
+### Adjusting endpoint period
+
+Comparing timing of events of different variants, first using time since D35, second using calendar time. Ptids with markers are colored green. Based on the first plot, we define the followup period to start at **101** days post the D35 visit. Based on the second plot, we replace censoring at the data cut date of 2022-03-26 by censoring at **2021-12-10** to avoid the Omicron wave at the end of 2021 and the beginning of 2022.
 
 ```{r}
-myboxplot(EventTimeFirstD1~VARTYPE_first1, dat_mapped, ylab="EventTimeFirstD1")
-myboxplot(EventTimeFirstD1~VARTYPE_first1, subset(dat_mapped, !is.na(Day35bindSpike_Delta3)), ylab="EventTimeFirstD1")
-```
+dat.tmp = subset(dat_proc, ph2.D35==1 & Country==0 & Trt==1)
+col=ifelse(dat.tmp$Severity_first=="SEVERE", 2, ifelse(!is.na(dat.tmp$Day35bindSpike_Delta3),3,1))
 
-D35ancestralnAbBatch is the first two digits in the Monogram accession number and represents year. Most nAb were measured in 2023. Earlier samples may be from Stage 1 study.
+myboxplot(EventTimeFirstD35~VARTYPE_first1, dat.tmp, ylab="EventTimeFirstD35", col=col)
+abline(h=100, lty=2)
+
+myboxplot(EventCalTimeFirstD35~VARTYPE_first1, dat.tmp, ylab="Event Calendar Time", col=col)
+abline(h=as.Date("2022-03-26")) # data cut
+abline(h=as.Date("2021-04-19")) # data cut
+abline(h=as.Date("2021-12-10"), lty=2) 
+
+with(subset(dat.tmp, Severity_first=="SEVERE"), mytable(VARTYPE_first1, ph2.D35))
+```
+ 
+
+### Immunogenecity and imputation
+
+Correlation is high among bAb markers (1 between the three Delta bAb markers) and high between the two nAb markers.
 ```{r}
-mytable(dat_mapped$D35ancestralnAbBatch)
+dat=dat_mapped[,"Day35"%.%assays]
+names(dat)=sub("Day35pseudoneut","",names(dat))
+names(dat)=sub("Day35bindSpike_","",names(dat))
+mypairs(dat)
+```
+
+Missingness across markers at D35
+```{r}
+dat=subset(dat_mapped)
+for (i in 1:length(assays)) {
+  dat[['tmp'%.%i]]=ifelse(is.na(dat[['Day35'%.%assays[i]]]), 0, 1)
+}
+dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10))
+print(table(dat$tmp, dat$DeltaEventIndD35))
+```
+
+Because the correlation between ancestral and Delta ID50s is 0.9, we will impute them if only one is missing. The bAb is all or none. We then restrict the ph2 samples to be the ptids with both bAb and nAb. Doing this allows us to compare nAb and bAb and avoid any batch effect in nAb.
+```{r}
+dat=subset(dat_mapped)
+dat$tmp1 = !is.na(dat$Day35pseudoneutid50_D614G) | !is.na(dat$Day35pseudoneutid50_Delta)
+dat$tmp2 = !is.na(dat$Day35bindSpike_Alpha)
+dat$tmp=with(dat,paste0(as.integer(tmp1),as.integer(tmp2)))
+print(table(dat$tmp, dat$DeltaEventIndD35))
+subset(dat, tmp=="10" & Country==0, c(Subjectid))[1:10,]
 ```
 
 
 
-Stage 2 sampling lists:
+Correlation between ancestral and Delta ID50s is high at each time point, and highest at BD1 (0.97) and DD1 (0.98).
+```{r}
+dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
+names(dat)=sub("pseudoneutid50","",names(dat))
+mypairs(dat)
+```
 
-- For the 402 cases,  the time points of interest are D35 (after primary series in initial period),  the acute illness visit associated with the Delta case, and crossover 1 (if applicable for subject).   D35 may or may not be already tested earlier at the USG labs.
+A closer look at the correlation between ancestral ID50 and Delta ID50
 
-- For the 649 non-case, the D35 blood sample should already be at the USG lab from earlier.
+```{r}
+corplot(Day35pseudoneutid50_D614G~Day35pseudoneutid50_Delta, dat_mapped, asp=1)
+```
 
-- The list of 279 non-cases is a subset of the list of 649. For the 279 subjects, the time points of interest are D35, crossover 1 and booster D0 - the database says these subjects should have all 3 visits/blood sample.  
 
+The following plot shows that Delta ID50 readouts are lower than ancestral ID50 and that marker level drops from D35 to C1 to BD1 as time goes by. At DD1, the markers rises, which suggests that they were influenced by the COVDID events
+```{r}
+dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
+names(dat)=sub("pseudoneutid50","",names(dat))
+myboxplot(dat, cex.axis=0.55)
+```
 
 
 Missingness across two time points, D35 and C1, for ancestral id50
@@ -118,24 +210,10 @@ for (j in 1:2){
 }
 ```
 
-Correlation between ancestral and Delta ID50s is high, and highest at BD1 and DD1.
-```{r}
-dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
-names(dat)=sub("pseudoneutid50","",names(dat))
-mypairs(dat)
-```
-
-Delta ID50 readouts are lower than ancestral ID50.
-```{r}
-dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
-names(dat)=sub("pseudoneutid50","",names(dat))
-myboxplot(dat)
-```
-
 
 ### Batch effect
 
-679 D35 samples (including cases and non-cases) are measured twice, once in Dec 21 in the Stage 1 work and once in July 23 in the Stage 2 work.
+679 D35 samples (including cases and non-cases) have ID50s measured twice by Monogram, once in Dec 21 in the Stage 1 work and once in July 23 in the Stage 2 work.
 The Pearson correlation is 0.88 between the two. Two-sample test by wilcoxon paired test p value is 6.046e-16. 
 Applications that are sensitives to a shift of ~20% fold change in titers could be impacted.
 
@@ -190,3 +268,10 @@ wilcox.test(dat.n$Titer.Result.1, dat.n$Titer.Result.2,paired=T)
 nrow(dat.n)
 ```
 
+
+We use the later measurements when there are duplicates. 
+
+D35ancestralnAbBatch is the first two digits in the Monogram accession number and represents year. Most nAb were measured in 2023. Earlier samples may be from Stage 1 study.
+```{r}
+mytable(dat_mapped$D35ancestralnAbBatch)
+```

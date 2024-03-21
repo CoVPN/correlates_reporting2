@@ -1,5 +1,5 @@
 ---
-title: "PREVENT-19 Correlates"
+title: "PREVENT-19 Stage 1 Correlates"
 output: html_document
 ---
 
@@ -18,6 +18,14 @@ dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_
 
 dat_raw=read_excel('/trials/covpn/p3004/download_data/formatted_for_fred_hutch.xlsx')
 ```
+
+
+number of cases
+```{r}
+with(subset(dat_proc, ph1.D35==1 & Trt==1 & Bserostatus==0 & Country==0), table(EventIndPrimaryD35, ph2.D35))
+subset(dat_proc, ph1.D35==1 & Trt==1 & Bserostatus==0 & Country==0 & EventIndPrimaryD35==1)[2,]
+```
+
 
 
 binding Ab
