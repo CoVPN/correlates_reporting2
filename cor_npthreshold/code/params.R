@@ -64,7 +64,7 @@ max_t = tfinal.tpeak
 
 data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
 
-covariates = strsplit(sub("~", "", config$covariates_riskscore), "\\+")[[1]][-1]
+covariates = strsplit(sub("~", "", config$covariates), "\\+")[[1]][-1]
 covariates = kyotil::trim(covariates)
 
 if ("risk_score" %in% covariates) {

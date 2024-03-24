@@ -53,7 +53,7 @@ source(here::here("..", "_common.R")) # dat.mock is made
     
     form.0 = update(
       Surv(EventTimeD35_to21Dec10, EventIndOfInterest) ~ 1,
-      as.formula(config$covariates_riskscore)
+      as.formula(config$covariates)
     )
     dat.mock$yy = dat.mock$EventIndOfInterest
     
@@ -63,7 +63,7 @@ source(here::here("..", "_common.R")) # dat.mock is made
         SevereEventTimeD35_to21Dec10,
         SevereEventIndD35_108to21Dec10
       ) ~ 1,
-      as.formula(config$covariates_riskscore)
+      as.formula(config$covariates)
     )
     dat.mock$yy = dat.mock$SevereEventIndD35_108to21Dec10
   }

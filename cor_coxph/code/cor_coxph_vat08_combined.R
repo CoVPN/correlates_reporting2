@@ -121,7 +121,7 @@ for (iAna in 3:3) {
   
   if (iAna==3) dat.vac=subset(dat.vac, !(Country %in% c(10 ) & Trialstage==2 & Bserostatus==1 & Age<60))
 
-  form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates))
 
   multivariate_assays = config$multivariate_assays
   
@@ -135,8 +135,8 @@ for (iAna in 3:3) {
   # # if there are very few competing events, the coxph for competing event may throw warnings
   # 
   # form.0=list(
-  #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
-  #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
+  #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates)),
+  #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates))
   # )
   # 
   # tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]

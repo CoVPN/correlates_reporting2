@@ -74,7 +74,7 @@ dat.pla.seroneg$yy=dat.pla.seroneg[["EventIndPrimary"]]
 #hist(dat.vac.seroneg$EventTimePrimaryD29)
 #hist(dat.vac.seroneg$EventTimePrimaryD29[dat.vac.seroneg$EventIndPrimaryD29==1])
     
-form.0.logistic = update (EventIndPrimary ~ 1, as.formula(config$covariates_riskscore))
+form.0.logistic = update (EventIndPrimary ~ 1, as.formula(config$covariates))
 print(form.0.logistic)
 
 

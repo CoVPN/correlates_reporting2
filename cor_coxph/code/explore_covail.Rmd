@@ -46,9 +46,23 @@ dat$Day15_id50=scale(dat$Day15pseudoneutid50_BA.4.BA.5,scale=F)
 coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + naive*D1_id50 + Day15_id50 + I(Day15_id50^2), dat)
 # filter out those with undetectable D1
 coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + naive*D1_id50 + Day15_id50 + I(Day15_id50^2), subset(dat, D1_id50 > -1.06))
+
+# fit model to get inference for D1_id50 in the naive
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + I(1-naive)*D1_id50 + Day15_id50 + I(Day15_id50^2), dat)
+# filter out those with undetectable D1
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + I(1-naive)*D1_id50 + Day15_id50 + I(Day15_id50^2), subset(dat, D1_id50 > -1.06))
+
 ```
 
+The effect of risk score is different between models with and without double naive (naive and with undetectable D1_id50).
+```{r}
+dat$D1_id50=scale(dat$Bpseudoneutid50_BA.4.BA.5,scale=F)
 
+myboxplot(standardized_risk_score~I(1-naive)*I(D1_id50 > -1.06), dat, ylab="standardized_risk_score", names=c("N, D1 undet", "NN, D1 undet", "N, D1 det", "NN, D1 det"))
+
+fit=lm(standardized_risk_score ~ I(1-naive) * I(D1_id50 > -1.06), dat); summary(fit)
+fit=lm(standardized_risk_score ~ I(1-naive), subset(dat, D1_id50 <= -1.06)); summary(fit)
+```
 
 
 ### B and D15 marker

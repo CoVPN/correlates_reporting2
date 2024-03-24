@@ -26,7 +26,7 @@ myprint(study_name)
 myprint(verbose)
 
 # redefine form.0
-form.0 = update (EventIndPrimary~1, as.formula(config$covariates_riskscore))
+form.0 = update (EventIndPrimary~1, as.formula(config$covariates))
 print(form.0)
 
 

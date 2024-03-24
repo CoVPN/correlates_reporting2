@@ -308,7 +308,7 @@ coxph(Surv(SevereEventTimeD35_to21Dec10, SevereEventIndD35_108to21Dec10)~Senior,
 ```
 
 
-We will **adjust for age group in both Delta COVID correlates analyses**.
+We will **adjust for age group in Delta COVID correlates analyses**.
 ```{r}
 coxph(Surv(DeltaEventTimeD35_to21Dec10, DeltaEventIndD35_108to21Dec10)~Age, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
 coxph(Surv(DeltaEventTimeD35_to21Dec10, DeltaEventIndD35_108to21Dec10)~Senior, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
