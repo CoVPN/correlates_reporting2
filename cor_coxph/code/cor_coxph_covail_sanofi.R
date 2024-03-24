@@ -74,34 +74,34 @@ dat.onedosemRNA$B_MDW_M_H = dat.onedosemRNA$B_MDW_M | dat.onedosemRNA$B_MDW_H
 # all cases have covid lineage observed
 
 if (COR=="D15to181") {
-  form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD181
   dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD181
   
 } else if (COR=="D15to91") {
-  form.0 = update(Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ 1, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ 1, as.formula(config$covariates))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD91
   dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD91
   
 } else if (COR=="D92to181") {
-  form.0 = update(Surv(COVIDtimeD92toD181, COVIDIndD92toD181) ~ 1, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD92toD181, COVIDIndD92toD181) ~ 1, as.formula(config$covariates))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD92toD181
   dat.sanofi$yy     =dat.sanofi$COVIDIndD92toD181
 
 } else if (COR=="D15to181BA45") {
-  form.0 = update(Surv(COVIDtimeD22toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD22toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates))
   dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD181==1 &  dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD22toD181==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
   
 } else if (COR=="D15to91BA45") {
-  form.0 = update(Surv(COVIDtimeD22toD91, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD22toD91, EventIndOfInterest) ~ 1, as.formula(config$covariates))
   dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD22toD91==1 &  dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD22toD91==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
   
 } else if (COR=="D92to181BA45") {
-  form.0 = update(Surv(COVIDtimeD92toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(COVIDtimeD92toD181, EventIndOfInterest) ~ 1, as.formula(config$covariates))
   dat.onedosemRNA$EventIndOfInterest = ifelse(dat.onedosemRNA$COVIDIndD92toD181==1 &  dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD92toD181==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest

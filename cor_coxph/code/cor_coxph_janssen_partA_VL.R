@@ -149,7 +149,7 @@ for (iRegion in c(1,2,3)) {
     ############################
     # formula for coxph
 
-    form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+    form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates))
   
     # the markers to study depend on region and COVID lineage
     if (iRegion==1) {
@@ -209,8 +209,8 @@ for (iRegion in c(1,2,3)) {
     # # if there are very few competing events, the coxph for competing event may throw warnings
     # 
     # form.0=list(
-    #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
-    #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
+    #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates)),
+    #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates))
     # )
     # 
     # 

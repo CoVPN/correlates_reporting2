@@ -532,7 +532,7 @@ abline(a=log10(2),b=1, lty=2)</code></pre>
 ## 
 ## Likelihood ratio test=0.3  on 1 df, p=0.5811
 ## n= 12435, number of events= 11</code></pre>
-<p>We will <strong>adjust for age group in both Delta COVID correlates analyses</strong>.</p>
+<p>We will <strong>adjust for age group in Delta COVID correlates analyses</strong>.</p>
 <pre class="r"><code>coxph(Surv(DeltaEventTimeD35_to21Dec10, DeltaEventIndD35_108to21Dec10)~Age, subset(dat_proc, ph1.D35_108==1 &amp; Country==0 &amp; Trt==1))</code></pre>
 <pre><code>## Call:
 ## coxph(formula = Surv(DeltaEventTimeD35_to21Dec10, DeltaEventIndD35_108to21Dec10) ~ 

@@ -623,7 +623,12 @@ if (exists("COR")) {
 
     } else {
       form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
-      form.0 = update (form.s, as.formula(config$covariates_riskscore))
+      
+      # covariates may come from config or config.cor, the latter, if exists, overwrites the former
+      if(!is.null(config.cor$covariates)) {
+        config$covariates = config.cor$covariates
+      }
+      form.0 = update (form.s, as.formula(config$covariates))
       print(form.0)
     }
     
@@ -642,7 +647,7 @@ if (exists("COR")) {
         
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
-        if(!is.null(dat.mock$risk_score) & contain(config$covariates_riskscore, "risk_score")) {
+        if(!is.null(dat.mock$risk_score) & contain(config$covariates, "risk_score")) {
             if (!TRIAL %in% c("janssen_pooled_EUA","janssen_na_EUA","janssen_na_partA")) { 
                 # check this for backward compatibility
                 stopifnot(nrow(subset(dat.mock, ph1 & is.na(risk_score)))==0)
