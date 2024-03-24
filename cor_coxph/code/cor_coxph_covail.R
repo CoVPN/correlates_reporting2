@@ -253,12 +253,11 @@ for (iObj in c(1,11,12,2,21,3,31)) {
           fname.suffix, 
           save.results.to,
           
-          tpeak,
+          config,
+          config.cor,
+          
           tfinal.tpeak,
           all.markers = "Day15"%.%assays,
-          
-          numCores,
-          B,
           
           comp.risk=T, 
           run.Sgts=F # whether to get risk conditional on continuous S>=s
@@ -269,22 +268,20 @@ for (iObj in c(1,11,12,2,21,3,31)) {
           dat,
           fname.suffix,
           save.results.to,
-          
           config,
           config.cor,
+          
           assay_metadata,
           
           tfinal.tpeak,
           all.markers = "Day15"%.%assays,
           all.markers.names.short,
           all.markers.names.long,
-          labels.assays.short,
           marker.cutpoints,
 
           multi.imp=F,
           comp.risk=T, 
           
-          has.plac=F,
           dat.pla.seroneg = NULL,
           res.plac.cont = NULL,
           prev.plac=NULL,
@@ -292,8 +289,8 @@ for (iObj in c(1,11,12,2,21,3,31)) {
           variant=NULL,
           
           show.ve.curves=F,
-          eq.geq.ub=1, # whether to plot risk vs S>=s
-          wo.w.plac.ub=1, # whether to plot plac
+          plot.geq = F,
+          plot.no.plac = F,
           for.title=""
         )
         

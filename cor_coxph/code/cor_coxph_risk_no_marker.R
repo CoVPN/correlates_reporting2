@@ -25,8 +25,10 @@ fname=paste0(save.results.to, "marginalized.risk.no.marker.",fname.suffix,".Rdat
 
 if(!file.exists(fname)) {    
     cat("Bootstrap marginalized risks using models without markers ...\n")
-
-    for (.trt in 0:1) {
+    
+    if (nrow(dat.pla.seroneg)==0) vacc.only=T
+    
+    for (.trt in ifelse(vacc.only, 1, 0):1) {
         dat.tmp=if(.trt==1) dat.vac.seroneg else dat.pla.seroneg
                 
         prob = if (TRIAL %in% c("janssen_partA_VL")) {
@@ -47,7 +49,7 @@ if(!file.exists(fname)) {
         if(config$sampling_scheme == 'case_cohort') ptids.by.stratum=get.ptids.by.stratum.for.bootstrap (dat.tmp) 
     
         # if mc.cores is >1 here, the process will be stuck in coxph for some unknown reason
-        out=mclapply(1:B, mc.cores = 1, FUN=function(seed) {  
+        out=mclapply(1:config$num_boot_replicates, mc.cores = 1, FUN=function(seed) {  
             if (verbose>=2) myprint(seed) 
             if(config$sampling_scheme == 'case_cohort') {
                 dat.b = get.bootstrap.data.cor (dat.tmp, ptids.by.stratum, seed) 
@@ -80,7 +82,13 @@ if(!file.exists(fname)) {
         }
     }    
     
-    overall.ve = c(1 - res.vacc.cont["est"]/res.plac.cont["est"], quantile(1 - res.vacc.cont[-1]/res.plac.cont[-1], c(0.025, 0.975)))
+    if(!vacc.only) {
+        overall.ve = c(1 - res.vacc.cont["est"]/res.plac.cont["est"], quantile(1 - res.vacc.cont[-1]/res.plac.cont[-1], c(0.025, 0.975)))
+    } else {
+        prev.plac=NA
+        res.plac.cont = NA
+        overall.ve = NA
+    }
 
     print(cbind(prev.plac, prev.vacc, overall.ve))
     

@@ -1,6 +1,3 @@
-numCores <- unname(ifelse(Sys.info()["sysname"] == "Windows",
-                          1, 
-                          min(20, config$num_boot_replicates, future::availableCores())))
 
  
 load.data=function(TRIAL, COR, trt=1) {
@@ -160,14 +157,8 @@ get.dat.with.no.empty=function(dat.tmp) {
 }
 
 
-# _ causes trouble in captions, and that has to be taken care of by putting \protect{} around the word
-escape=function(x) {
-  for (i in c("_","^")) {
-    x=gsub(i, "\\"%.%i, x, fixed = TRUE)
-  }
-  x
-}
-# a more comprehensive, slower version
+
+# a more comprehensive, slower version of copcor::escape
 escape_latex <- function(text) {
   # Define the special characters and their LaTeX escaped equivalents
   special_chars <- c("\\", "%", "$", "#", "_", "{", "}", "&", "^", "~", "<", ">", "|", "\"")

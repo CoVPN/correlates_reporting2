@@ -22,15 +22,32 @@ assays=assay_metadata$assay
 
 ### Modeling
 
+ID50 Score
 ```{r}
 dat$D1_id50=scale(dat$Bpseudoneutid50_MDW,scale=F)
 dat$Day15_id50=scale(dat$Day15pseudoneutid50_MDW,scale=F)
+
 coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score + naive + Day15_id50, dat)
 
 coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + D1_id50 + Day15_id50 + I(Day15_id50^2), dat)
-coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + naive*D1_id50 + Day15_id50 + I(Day15_id50^2), dat)
 coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + naive*(D1_id50 + Day15_id50 + I(Day15_id50^2)), dat)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + naive*D1_id50 + Day15_id50 + I(Day15_id50^2), dat)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + D1_id50 + naive*Day15_id50 + naive*I(Day15_id50^2), dat)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + D1_id50 + Day15_id50 + naive*I(Day15_id50^2), dat)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + D1_id50 + naive*Day15_id50 + I(Day15_id50^2), dat)
 ```
+
+
+ID50 BA4BA5
+```{r}
+dat$D1_id50=scale(dat$Bpseudoneutid50_BA.4.BA.5,scale=F)
+dat$Day15_id50=scale(dat$Day15pseudoneutid50_BA.4.BA.5,scale=F)
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + naive*D1_id50 + Day15_id50 + I(Day15_id50^2), dat)
+# filter out those with undetectable D1
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + naive + naive*D1_id50 + Day15_id50 + I(Day15_id50^2), subset(dat, D1_id50 > -1.06))
+```
+
 
 
 
