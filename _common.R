@@ -109,13 +109,12 @@ if (!is.null(config$assay_metadata)) {
   labels.assays=assay_metadata$assay_label; names(labels.assays)=assays
   labels.assays.short=assay_metadata$assay_label_short; names(labels.assays.short)=assays
 
-  llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
+  lods=assay_metadata$lod; names(lods)=assays
   lloqs=assay_metadata$lloq; names(lloqs)=assays
   uloqs=assay_metadata$uloq; names(uloqs)=assays
-  lods=assay_metadata$lod; names(lods)=assays
-  lloxs=ifelse(llox_labels=="lloq", lloqs, lods)
-  lloxs=ifelse(llox_labels=="pos", assay_metadata$pos.cutoff, lloxs)
-  
+  llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
+  lloxs=sapply(assays, function (a) assay_metadata[[llox_labels[a]]][assay_metadata$assay==a])
+
   
 } else {
   
@@ -304,6 +303,11 @@ if (!is.null(config$assay_metadata)) {
     lloqs["bindNVXIgG"]=200
     uloqs["bindNVXIgG"]=2904275
     pos.cutoffs["bindNVXIgG"]=500
+    
+    llods["bindNVXIgGIU"]=200/22
+    lloqs["bindNVXIgGIU"]=200/22
+    uloqs["bindNVXIgGIU"]=2904275/22
+    pos.cutoffs["bindNVXIgGIU"]=500/22
     
   } else if(TRIAL=="azd1222") {
     
@@ -638,7 +642,7 @@ if (exists("COR")) {
         
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
-        if(!is.null(dat.mock$risk_score)) {
+        if(!is.null(dat.mock$risk_score) & contain(config$covariates_riskscore, "risk_score")) {
             if (!TRIAL %in% c("janssen_pooled_EUA","janssen_na_EUA","janssen_na_partA")) { 
                 # check this for backward compatibility
                 stopifnot(nrow(subset(dat.mock, ph1 & is.na(risk_score)))==0)
@@ -764,13 +768,11 @@ if (exists("COR")) {
         } else if (TRIAL=="azd1222_stage2") {
           stop("todo")
           
-        } else if (TRIAL=="prevent19_stage2") {
-          stop("todo")
-          
         } else if (TRIAL=="nvx_uk302") {
           stop("todo")
           
-        } else if (TRIAL %in% c("prevent19")) {
+          
+        } else if (TRIAL %in% c("prevent19", "prevent19_stage2")) {
           # default rule for followup time is the last case in ph2 in vaccine arm
           tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
           
@@ -835,7 +837,10 @@ if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
               "pseudoneutid50_Beta", "pseudoneutid50_Delta",
               "bindSpike_B.1.351", "bindSpike_DeltaMDW")
   all.markers1 = c("Day29"%.%assays1)
-}  
+  
+} else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302")) {
+  all.markers1 = c("Day"%.%timepoints%.%assays)
+} 
 
 # set marker cutpoints attr first b/c we don't need to do it for imputed copies
 cat("set marker.cutpoints attribute\n")

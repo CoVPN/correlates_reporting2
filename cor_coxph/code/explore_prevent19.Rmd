@@ -10,7 +10,7 @@ library(survey)
 library(kyotil)
 library(readxl)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20240305.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20240318.csv')
 dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD35 + 7),1,0)
 dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & EventTimePrimaryD35 >= 7)
 

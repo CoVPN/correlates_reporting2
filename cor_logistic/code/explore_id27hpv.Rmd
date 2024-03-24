@@ -11,23 +11,28 @@ library(kyotil)
 library(readxl)
 
 
-dat_mapped=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20240307.csv')
+# dat_mapped=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20240307.csv')
+# dat_proc_=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240308.csv')
 
-dat_proc_=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240308.csv')
+dat_mapped=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20240318.csv')
+dat_proc=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240320.csv')
 
+
+dat_mapped_old=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20240104.csv')
+dat_proc_old=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240110.csv')
 ```
 
 
 Compare with an older mapped data
 ```{r}
-dat_mapped_old=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/mapping_immune_correlates/adata/ID27_IARC_HPV_mapped_20240104.csv')
-
-dat_proc_old=read.csv('/networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240110.csv')
-
-
 dim(dat_mapped)
 dim(dat_mapped_old)
 
+mytable(dat_mapped$EventIndPrimaryAnyHPV)
+mytable(dat_mapped_old$EventIndPrimaryAnyHPV)
+
 nrow(subset(dat_mapped, Perprotocol == 1 & EligibilityorinitialsamplingTimeM18>0))
 nrow(subset(dat_mapped_old, Perprotocol == 1 & EligibilityorinitialsamplingTimeM18>0))
+
+subset(dat_proc, ph1.M18==1 & is.na(EventIndPrimaryAnyHPV))
 ```

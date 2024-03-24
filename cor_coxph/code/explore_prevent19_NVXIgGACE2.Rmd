@@ -10,11 +10,11 @@ library(survey)
 library(kyotil)
 library(readxl)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20240313.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20240318.csv')
 dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD35 + 7),1,0)
 dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & EventTimePrimaryD35 >= 7)
 
-dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240316.csv')
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240320.csv')
 
 dat_raw=read_excel('/trials/covpn/p3004/download_data/formatted_for_fred_hutch.xlsx')
 ```
@@ -38,7 +38,7 @@ sum(("2019nCoV301-"%.%dat_raw[,1,drop=T]) %in% dat_mapped$Subjectid)
 with(subset(dat_mapped, ph1.D35 & Trt==1 & Bserostatus==0 & Country==0), mytable(!is.na(Day35ACE2), !is.na(Day35bindNVXIgG), EventIndPrimaryD1))
 ```
 
-NVX ACE2 was measured on 1708 out of the 1710 subjects with NVX IgG. We will define ph2 as requiring both IgG and ACE2.
+NVX ACE2 was measured on 1708 out of the 1710 subjects with NVX IgG. We will **define ph2 as requiring both IgG and ACE2**.
 ```{r}
 with(subset(dat_mapped, ph1.D35 & Trt==1 & Bserostatus==0 & Country==0), mytable(!is.na(Day35ACE2), !is.na(Day35bindNVXIgG), EventIndPrimaryD1))
 ```
@@ -53,7 +53,14 @@ with(subset(dat_proc, ph1.D35 & Trt==1 & Country==0 & Bserostatus==0), mytable(p
 ```
 
 
-## Assay data
+## Immunogenicity
+
+Before censoring with pos cutoff, the minimum marker value is 100 on the antilog scale, which suggests that the lower limit is 200. After censoring at 500, the min is 500 on the antilog scale. The unit is EU (ELISA Unit), which can be divided by 22 to get IU. ULOQ is set to 2,904,275 EU/mL.
+```{r}
+10**sort(unique(dat_mapped$BbindNVXIgG))[1:10]
+```
+
+
 
 Correlation between USG bindSpike and NVX IgG and ACE2. The two NVX assays are more highly correlated. 
 ```{r}
@@ -106,14 +113,7 @@ abline(1,1, lty=2)
 
 ```
 
-
-The smallest value of NVX IgG is 100, consistent with LLOQ being 200. The unit EU (ELISA Unit), which can be divided by 22 to get IU. Pos.cutoff is set to 500 according to Iksung, ULOQ is set to 2,904,275 EU/mL.
-```{r}
-10**(sort(dat_mapped$Day35bindNVXIgG)[1:20])
-```
-
-
-The smallest value of NVX IgG is 5, consistent with LOD being 10. The scatterplot between ACE2 and ELISA suggests that ACE2 may be more specific at the low end of the readout.
+The smallest value of NVX ACE2 is 5, consistent with LOD being 10. The scatterplot between ACE2 and ELISA suggests that ACE2 may be more specific at the low end of the readout.
 ```{r}
 10**(sort(dat_mapped$Day35ACE2)[1:100])
 ```

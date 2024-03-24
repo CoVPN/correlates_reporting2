@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = T)
 
 library(survey)
 library(kyotil)
@@ -49,31 +49,35 @@ dat_proc$SUBJID = gsub("-","",dat_proc$SUBJID,)
 
 ```
 
-### Immunogenicity
+### nAb immunogenicity and imputation
 Note that the marker level in the NN, placebo is higher in Stage 2 than in Stage 1, probably reflecting different countries.
 ```{r}
 myboxplot(Day43bindSpike~Trt+Bserostatus+Trialstage, dat_mapped, ylab="D43 bAb Spike",
   names=rep(c("N,pla", "N,vac", "NN,pla", "NN,vac"),2),
-  main="Stage 1                                        Stage 2")
+  main="Stage 1                                        Stage 2",
+  cex.axis=0.8)
+abline(v=4.5)
 ```
 
-### nAb markers correlation
-
-The list of markers:
+There are five different ID50s and one score.
 ```{r}
 assays=assays[startsWith(assays,"pseudoneutid50")]
 print(assays)
 ```
 
-Correlation is high between variant markers at both baseline and D43 in Stage 2 non-naive, vaccine arm.
+Correlation is high between variant markers in Stage 2 non-naive, vaccine arm at both baseline
 ```{r}
 mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"B"%.%assays[1:5]])
-mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"Day43"%.%assays[1:5]])
 ```
 
-Correlation is medium between variant markers at D43 in Stage 2 naive, vaccine arm. The correlation between the ancestral marker and the other markers range between 0.63 and 0.67.
+and D43 
+
 ```{r}
-mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==0 & Trt==1 & ph1.D43)[,"B"%.%assays[1:5]])
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"Day43"%.%assays[1:5]])
+```
+ 
+Correlation is medium between variant markers at D43 in Stage 2 naive, vaccine arm. (The correlation between the ancestral marker and the other markers range between 0.63 and 0.67.)
+```{r}
 mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==0 & Trt==1 & ph1.D43)[,"Day43"%.%assays[1:5]])
 ```
 
@@ -81,8 +85,6 @@ Correlation is low between baseline and D22 or D43 in Stage 2 non-naive, vaccine
 ```{r}
 mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,c("B","Day22","Day43")%.%assays[1]])
 ```
-
-Overall, "because the correlation among variants is pretty good for the non-naives and really the analysis focuses on the non-naives" (Peter), we decide to impute variants for those who have data for at least one variant to make the complexity of data processing more manageable. The missingenss pattern across variants is shown in the next section.
 
 
 A closer look at the relationship between baseline and Day 43 markers in the baseline positive. Note that the D43 markers appear saturated since level seems flat across different baseline marker levels.
@@ -103,13 +105,12 @@ par(mfrow=c(2,4))
   corplot(Delta43overBpseudoneutid50_BA.1~Bpseudoneutid50_BA.1, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
 ```
  
- 
- 
-### nAb markers missingness
 
-Missingness across baseline, d22 and d43, for the ancestral markers in the vaccine arms. The results support the decision "to keep it simple and require for RIS membership availability of data at all 3 time points" (Peter).
+Overall, "because the correlation among variants is pretty good for the non-naives and really the analysis focuses on the non-naives" (Peter), we decide to **impute variants for those who have data for at least one variant to make the complexity of data processing more manageable**. 
+
+Missingness across baseline, d22 and d43, for the ancestral markers in the vaccine arms. The results support the decision "**to keep it simple and require for RIS membership availability of data at all 3 time points**" (Peter).
 ```{r}
-for(trt in 1) {
+for(trt in 1:0) {
   myprint(trt)
   for (i in 2:1) {
     cat(paste0("stage ", i, '\n'))
@@ -218,31 +219,38 @@ for (i in 2:1) {
   
 ### Check which ptids are in which batch
 
-```{r}
+We have list of ptids sampled in step 2 in both stages of the trial.
+```{r, include=T}
 stage2step2=read.csv("~/Aiying700.csv")
-stage1step2=read.csv("~/JinStage1Step2.csv")
 dat_mapped$stage2step2 = dat_mapped$Subjectid %in% stage2step2$Unique.Subject.Identifier
-dat_mapped$stage1step2 = dat_mapped$SUBJID %in% stage1step2$SUBJID
 dat_proc$stage2step2 = dat_proc$Ptid %in% stage2step2$Unique.Subject.Identifier
+
+stage1step2=read.csv("~/JinStage1Step2.csv")
+dat_mapped$stage1step2 = dat_mapped$SUBJID %in% stage1step2$SUBJID
 dat_proc$stage1step2 = dat_proc$SUBJID %in% stage1step2$SUBJID
 ```
 
+Stage 2, nAb. batch 1 = step2 for both cases and noncases
 ```{r}
-cat("nAb\n")
+with(subset(dat_proc, Trt==1 & Trialstage==2 & ph2.D43.nAb), table(stage2step2, EventIndPrimaryD1, nAbBatch))
+with(subset(dat_proc, Trt==0 & Trialstage==2 & ph2.D43.nAb), table(stage2step2, EventIndPrimaryD1, nAbBatch))
+with(subset(dat_proc, Trt==1 & Trialstage==2 & ph2.D22.nAb), table(stage2step2, EventIndPrimaryD1, nAbBatch))
+with(subset(dat_proc, Trt==0 & Trialstage==2 & ph2.D22.nAb), table(stage2step2, EventIndPrimaryD1, nAbBatch))
+```
 
-# stage2: batch 1 = step2 and nothing else
-with(subset(dat_mapped, Trialstage==2), table(stage2step2, nAbBatch, EventIndPrimaryD1))
+Stage 1, nAb. Most non-cases are done in batch 2, most cases are done in batch 1. Step 1 and 2 are spread mostly equally between batches.
+```{r}
+with(subset(dat_proc, Trialstage==1 & ph2.D43.nAb), table(stage1step2, nAbBatch, EventIndPrimaryD1))
+```
 
+bAb.
+
+```{r}
 # stage 1
-with(subset(dat_mapped, Trialstage==1), table(stage1step2, nAbBatch, EventIndPrimaryD1))
-
-cat("bAb\n")
-
-# stage 1
-with(subset(dat_proc, Trialstage==1 & TwophasesampIndD43bAb), table(stage1step2, EventIndPrimaryD1))
+with(subset(dat_proc, Trialstage==1 & ph2.D22.bAb), table(stage1step2, EventIndPrimaryD1))
 
 # stage 2
-with(subset(dat_proc, Trialstage==2 & TwophasesampIndD43bAb), table(stage2step2, EventIndPrimaryD1))
+with(subset(dat_proc, Trialstage==2 & ph2.D22.bAb), table(stage2step2, EventIndPrimaryD1))
 ```
 
 
