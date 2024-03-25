@@ -168,7 +168,7 @@ coxph(Surv(SevereEventTimeD57_to21Dec10, SevereEventIndD57_120to21Dec10)~Senior+
 ```
 
 
-We will **adjust for Senior in both Delta COVID correlates analyses**.
+We will **adjust for Senior in Delta COVID correlates analyses**.
 
 ```{r}
 coxph(Surv(DeltaEventTimeD57_to21Dec10, DeltaEventIndD57_120to21Dec10)~Age+risk_score, subset(dat_proc, ph1.D57_120==1 & Bserostatus==0 & Trt==1))

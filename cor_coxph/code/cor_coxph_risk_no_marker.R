@@ -26,7 +26,7 @@ fname=paste0(save.results.to, "marginalized.risk.no.marker.",fname.suffix,".Rdat
 if(!file.exists(fname)) {    
     cat("Bootstrap marginalized risks using models without markers ...\n")
     
-    if (nrow(dat.pla.seroneg)==0) vacc.only=T
+    vacc.only=nrow(dat.pla.seroneg)==0
     
     for (.trt in ifelse(vacc.only, 1, 0):1) {
         dat.tmp=if(.trt==1) dat.vac.seroneg else dat.pla.seroneg
@@ -53,9 +53,10 @@ if(!file.exists(fname)) {
             if (verbose>=2) myprint(seed) 
             if(config$sampling_scheme == 'case_cohort') {
                 dat.b = get.bootstrap.data.cor (dat.tmp, ptids.by.stratum, seed) 
-            } else {
+            } else if(config$sampling_scheme == 'case_control') {
                 dat.b = bootstrap.case.control.samples(dat.tmp, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=0) 
-            }
+            } else stop("sampling_scheme not supported: "%.%config$sampling_scheme)
+            
             prob = if (TRIAL %in% c("janssen_partA_VL")) {
                 # if there is no missing variant info in a bootstrap dataset, only need to run the MI code once
                 nImp=ifelse(any(with(subset(dat.b, EventIndPrimary==1), is.na(seq1.variant))), 10, 1)

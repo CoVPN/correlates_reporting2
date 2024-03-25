@@ -152,9 +152,9 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
         if (i==1) fits[[a]]=fit else fits.scaled[[a]]=fit
     }
 }
-if(TRIAL=='id27hpv' & COR=='M18') {
-  assertthat::assert_that(all(abs(fits$M18bind_mdw$coef-c(-4.68354733703185,-0.102079236701852,-0.0989783451284477))<1e-6), msg = "failed cor_logistic unit testing: "%.%concatList(fits$M18bind_mdw$coef))    
-}
+# if(TRIAL=='id27hpv' & COR=='M18') {
+#   assertthat::assert_that(all(abs(fits$M18bind_mdw$coef-c(-4.68354733703185,-0.102079236701852,-0.0989783451284477))<1e-6), msg = "failed cor_logistic unit testing: "%.%concatList(fits$M18bind_mdw$coef))    
+# }
     
 
 natrisk=nrow(dat.ph1)

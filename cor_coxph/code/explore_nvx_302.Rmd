@@ -20,7 +20,7 @@ assays=assay_metadata$assay
 ```
 
 
-### Marker set
+### Immunigenicity dataset
 
 Immune markers come from several studies. In addition to the samples collected to study the correlates, the database contains antibody measurements from a separate immunogenicity study and a flu study. We will only use the samples collected for the correlates study because 1) we don't know if we can compute sampling probabilities for the other samples, 2) to avoid potential batch effects because samples for different studies were run at different times, and 3) 17 out of 19 cases with markers are in this set. Hence, we define SubcohortIn as 3.Case + 3.Control and that is what we will use for our correlates study. 
 ```{r}
@@ -46,6 +46,9 @@ with(subset(dat_proc, ph1.D35 & Bserostatus==0 & Trt==1), mytable(SampleSet, Eve
 Before censoring with pos cutoff, the minimum marker value is 100 on the antilog scale, which suggests that the lower limit is 200. After censoring at 500, the min is 500 on the antilog scale.
 ```{r}
 10**sort(unique(dat_mapped$BbindNVXIgG))[1:10]
+10**sort(unique(dat_mapped$BbindNVXIgGIU))[1:10]
+10**sort(unique(dat_proc$Day35bindNVXIgG[dat_proc$ph2.D35==1]))[1:10]
+10**sort(unique(dat_proc$Day35bindNVXIgGIU[dat_proc$ph2.D35==1]))[1:10]
 ```
 
 Correlation plot between baseline and D35 marker suggests that under 1000 (antilog scale), the values are non-specific. 
@@ -75,18 +78,6 @@ wilcox.test(Day35bindNVXIgG~Region, subset(dat_proc, ph2.D35==1 & Trt==1 & Regio
 ```
 
 
-### Risk factors 
-Age is a risk factor in placebo but not vaccine. Southeast England (London) is a risk factror in placebo but not vaccine. Both could be due to the number of cases is much smaller in the vaccine arm. Test of interaction is not significant. In both arms together, they are significant. We decide to adjust for both Senior (age>=65) and Southeast England because **they are both confounders**. Younger people and London both have higher risk and higher markers. We adjust for Senior instead of age because the relationship between age and risk is complicated.
-```{r}
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==0))
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==1))
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Senior+Sex, subset(dat_proc, ph1.D35==1 & Trt==1))
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Age*Trt, subset(dat_proc, ph1.D35==1))
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Age+Trt, subset(dat_proc, ph1.D35==1))
-coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Senior+Trt, subset(dat_proc, ph1.D35==1))
-```
-
-
 ### Twophase sampling
 
 
@@ -111,3 +102,25 @@ Distribution of sampling weights looks normal. There is one case stratum and six
 ```{r}
 with (subset(dat_proc, ph1.D35==1 & Trt==1), table(wt.D35, Region, Senior))
 ```
+
+
+
+
+### Covariates adjustment
+
+Age is a risk factor in placebo but not vaccine. Southeast England (London) is a risk factror in placebo but not vaccine. Both could be due to the number of cases is much smaller in the vaccine arm. Test of interaction is not significant. In both arms together, they are significant. We decide to adjust for both Senior (age>=65) and Southeast England because **they are both confounders**. Younger people and London both have higher risk and higher markers. We adjust for Senior instead of age because the relationship between age and risk is complicated.
+```{r}
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Senior+Sex, subset(dat_proc, ph1.D35==1 & Trt==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Age*Trt, subset(dat_proc, ph1.D35==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Age+Trt, subset(dat_proc, ph1.D35==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Senior+Trt, subset(dat_proc, ph1.D35==1))
+```
+Age or age group
+```{r}
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Senior+Sex, subset(dat_proc, ph1.D35==1 & Trt==0))
+
+```
+

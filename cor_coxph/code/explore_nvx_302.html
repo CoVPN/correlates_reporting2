@@ -227,8 +227,8 @@ corplot(Day35bindNVXIgG~BbindNVXIgG, dat_mapped[dat_mapped$Trt==0,], xlim=lim, a
 ## W = 356, p-value = 0.1341
 ## alternative hypothesis: true location shift is not equal to 0</code></pre>
 </div>
-<div id="risk-factors" class="section level3">
-<h3>Risk factors</h3>
+<div id="covariates-adjustment" class="section level3">
+<h3>Covariates adjustment</h3>
 <p>Age is a risk factor in placebo but not vaccine. Southeast England (London) is a risk factror in placebo but not vaccine. Both could be due to the number of cases is much smaller in the vaccine arm. Test of interaction is not significant. In both arms together, they are significant. We decide to adjust for both Senior (age&gt;=65) and Southeast England because <strong>they are both confounders</strong>. Younger people and London both have higher risk and higher markers. We adjust for Senior instead of age because the relationship between age and risk is complicated.</p>
 <pre class="r"><code>coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 &amp; Trt==0))</code></pre>
 <pre><code>## Call:
@@ -352,6 +352,45 @@ corplot(Day35bindNVXIgG~BbindNVXIgG, dat_mapped[dat_mapped$Trt==0,], xlim=lim, a
 ## 
 ## Likelihood ratio test=87.67  on 5 df, p=&lt; 2.2e-16
 ## n= 13379, number of events= 116</code></pre>
+<p>Age or age group</p>
+<pre class="r"><code>coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 &amp; Trt==0))</code></pre>
+<pre><code>## Call:
+## coxph(formula = Surv(EventTimePrimaryD35, EventIndPrimaryD35) ~ 
+##     Region + Age + Sex, data = subset(dat_proc, ph1.D35 == 1 &amp; 
+##     Trt == 0))
+## 
+##                                              coef exp(coef)  se(coef)      z
+## RegionEngland South East                 0.838491  2.312874  0.221102  3.792
+## RegionScotland, Wales, Northern Ireland -0.045821  0.955213  0.337524 -0.136
+## Age                                     -0.025403  0.974916  0.006849 -3.709
+## Sex                                      0.015118  1.015232  0.206016  0.073
+##                                                p
+## RegionEngland South East                0.000149
+## RegionScotland, Wales, Northern Ireland 0.892013
+## Age                                     0.000208
+## Sex                                     0.941503
+## 
+## Likelihood ratio test=33.15  on 4 df, p=1.115e-06
+## n= 6640, number of events= 95</code></pre>
+<pre class="r"><code>coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Senior+Sex, subset(dat_proc, ph1.D35==1 &amp; Trt==0))</code></pre>
+<pre><code>## Call:
+## coxph(formula = Surv(EventTimePrimaryD35, EventIndPrimaryD35) ~ 
+##     Region + Senior + Sex, data = subset(dat_proc, ph1.D35 == 
+##     1 &amp; Trt == 0))
+## 
+##                                              coef exp(coef)  se(coef)      z
+## RegionEngland South East                 0.919596  2.508277  0.218742  4.204
+## RegionScotland, Wales, Northern Ireland -0.006737  0.993286  0.337175 -0.020
+## Senior                                  -1.247686  0.287169  0.370839 -3.364
+## Sex                                     -0.011876  0.988194  0.205918 -0.058
+##                                                p
+## RegionEngland South East                2.62e-05
+## RegionScotland, Wales, Northern Ireland 0.984059
+## Senior                                  0.000767
+## Sex                                     0.954009
+## 
+## Likelihood ratio test=35.32  on 4 df, p=3.988e-07
+## n= 6640, number of events= 95</code></pre>
 </div>
 <div id="twophase-sampling" class="section level3">
 <h3>Twophase sampling</h3>
