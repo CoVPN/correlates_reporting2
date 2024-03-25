@@ -85,7 +85,6 @@ moderna_boost: &moderna_boost
   assay_metadata: assay_metadata/moderna_boost_assay_metadata.csv
   sampling_scheme: case_control
   covariates: ~. + MinorityInd + HighRiskInd + risk_score
-  covariates: ~. + MinorityInd + HighRiskInd + risk_score
   multivariate_assays: [
     BD1bindSpike_BA.1,
     BD29bindSpike_BA.1,
