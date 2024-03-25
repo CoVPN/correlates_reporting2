@@ -54,7 +54,7 @@ if(!file.exists(fname)) {
             if(config$sampling_scheme == 'case_cohort') {
                 dat.b = get.bootstrap.data.cor (dat.tmp, ptids.by.stratum, seed) 
             } else if(config$sampling_scheme == 'case_control') {
-                dat.b = bootstrap.case.control.samples(dat.tmp, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=0) 
+                dat.b = bootstrap.case.control.samples(dat.ph1=dat.tmp, seed, delta.name="EventIndPrimary", strata.name="tps.stratum", ph2.name="ph2", min.cell.size=0) 
             } else stop("sampling_scheme not supported: "%.%config$sampling_scheme)
             
             prob = if (TRIAL %in% c("janssen_partA_VL")) {

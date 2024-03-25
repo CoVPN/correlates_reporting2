@@ -45,10 +45,8 @@ with(subset(dat_proc, ph1.D35 & Bserostatus==0 & Trt==1), mytable(SampleSet, Eve
 
 Before censoring with pos cutoff, the minimum marker value is 100 on the antilog scale, which suggests that the lower limit is 200. After censoring at 500, the min is 500 on the antilog scale.
 ```{r}
-10**sort(unique(dat_mapped$BbindNVXIgG))[1:10]
-10**sort(unique(dat_mapped$BbindNVXIgGIU))[1:10]
-10**sort(unique(dat_proc$Day35bindNVXIgG[dat_proc$ph2.D35==1]))[1:10]
-10**sort(unique(dat_proc$Day35bindNVXIgGIU[dat_proc$ph2.D35==1]))[1:10]
+with(subset(dat_proc, ph2.D35==1 & Trt==1 & Bserostatus==0), 10**sort(unique(Day35bindNVXIgG))[1:10])
+with(subset(dat_proc, ph2.D35==1 & Trt==1 & Bserostatus==0), 10**sort(unique(Day35bindNVXIgGIU))[1:10])
 ```
 
 Correlation plot between baseline and D35 marker suggests that under 1000 (antilog scale), the values are non-specific. 
