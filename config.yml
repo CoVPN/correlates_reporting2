@@ -408,7 +408,7 @@ prevent19_stage2: &prevent19_stage2
   timepoints: [35]
   times: [Day35]
   time_labels: [Day 35]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_stage2_data_processed_20240321.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240321.csv
   assay_metadata: assay_metadata/prevent19_stage2_assay_metadata.csv
   study_name: PREVENT19
   covariates: ~.+ Age
@@ -419,15 +419,17 @@ prevent19_stage2: &prevent19_stage2
   num_perm_replicates: 10000
   
 
-nvvx_uk302: &nvvx_uk302
+nvx_uk302: &nvx_uk302
   two_marker_timepoints: no
+  sampling_scheme: case_control
   timepoints: [35]
   times: [Day35]
   time_labels: [Day 35]
   data_cleaned: /trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240320.csv
   assay_metadata: assay_metadata/nvx_uk302_assay_metadata.csv
   study_name: UK302
-  covariates: ~.+ Age + London
+  covariates: ~.+ Senior + London
+  primary_assays: [bindNVXIgG]
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]
   low_efficacy: no
@@ -452,7 +454,7 @@ azd1222_base: &azd1222_base
   
 azd1222: &azd1222
   <<: *azd1222_base
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_stage2_data_processed_20240322.csv
   assays: [pseudoneutid50]
   llox_label: [LOD]
   assay_labels: [PsV Neutralization 50% Titer]
@@ -472,7 +474,7 @@ azd1222_stage2: &azd1222_stage2
   timepoints: [57]
   times: [Day57]
   time_labels: [Day 57]
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_stage2_data_processed_20240321.csv
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240321.csv
   assay_metadata: assay_metadata/azd1222_stage2_assay_metadata.csv
   study_name: AZD1222
   covariates: ~.+ Age + risk_score
@@ -529,7 +531,7 @@ profiscov_lvmn: &profiscov_lvmn
 
 
 id27hpv:
-  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240320.csv
+  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240324.csv
   assay_metadata: assay_metadata/id27hpv_assay_metadata.csv
   sampling_scheme: case_control
   two_marker_timepoints: no
@@ -543,7 +545,7 @@ id27hpv:
   primary_assays: [bind_mdw]
 
 id27hpvnAb:
-  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240110.csv
+  data_cleaned: /networks/cavd/Objective 4/GH-VAP/ID27-Sankaranarayanan/analysis/correlates/adata/id27hpv_data_processed_20240324.csv
   assay_metadata: assay_metadata/id27hpv_assay_metadata.csv
   sampling_scheme: case_control
   two_marker_timepoints: no
@@ -1226,11 +1228,11 @@ D35prevent19_stage2_delta:
   EventIndPrimary: DeltaEventIndD35_108to21Dec10
   EventTimePrimary: EventTimeD35_to21Dec10
   Earlyendpoint: EarlyendpointD35
+  covariates: ~.+ Senior
   tpeak: 35
   tpeaklag: 108
   txt.endpoint: Delta COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
-  covariates: ~.+ Senior
 
 
 D35prevent19_stage2_severe:
@@ -1241,7 +1243,7 @@ D35prevent19_stage2_severe:
   EventIndPrimary:  SevereEventIndD35_108to21Dec10
   EventTimePrimary: SevereEventTimeD35_to21Dec10
   Earlyendpoint: EarlyendpointD35
-  covariates: ~.+ Senior
+  covariates: ~.+ Age
   tpeak: 35
   tpeaklag: 108
   txt.endpoint: Severe COVID
@@ -1255,6 +1257,7 @@ D57azd1222_stage2_delta_nAb:
   EventIndPrimary: DeltaEventIndD57_120to21Dec10
   EventTimePrimary: EventTimeD57_to21Dec10
   Earlyendpoint: EarlyendpointD57
+  covariates: ~.+ Senior + risk_score
   tpeak: 57
   tpeaklag: 120
   txt.endpoint: Delta COVID
@@ -1268,6 +1271,7 @@ D57azd1222_stage2_delta_bAb:
   EventIndPrimary: DeltaEventIndD57_120to21Dec10
   EventTimePrimary: EventTimeD57_to21Dec10
   Earlyendpoint: EarlyendpointD57
+  covariates: ~.+ Senior + risk_score
   tpeak: 57
   tpeaklag: 120
   txt.endpoint: Delta COVID
@@ -1281,7 +1285,7 @@ D57azd1222_stage2_severe_nAb:
   EventIndPrimary: SevereEventIndD57_120to21Dec10
   EventTimePrimary: SevereEventTimeD57_to21Dec10
   Earlyendpoint: EarlyendpointD57
-  covariates: ~.+ Senior + risk_score
+  covariates: ~.+ Age + risk_score
   tpeak: 57
   tpeaklag: 120
   txt.endpoint: Severe COVID
@@ -1295,7 +1299,7 @@ D57azd1222_stage2_severe_bAb:
   EventIndPrimary: SevereEventIndD57_120to21Dec10
   EventTimePrimary: SevereEventTimeD57_to21Dec10
   Earlyendpoint: EarlyendpointD57
-  covariates: ~.+ Senior + risk_score
+  covariates: ~.+ Age + risk_score
   tpeak: 57
   tpeaklag: 120
   txt.endpoint: Severe COVID

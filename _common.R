@@ -773,11 +773,8 @@ if (exists("COR")) {
         } else if (TRIAL=="azd1222_stage2") {
           stop("todo")
           
-        } else if (TRIAL=="nvx_uk302") {
-          stop("todo")
           
-          
-        } else if (TRIAL %in% c("prevent19", "prevent19_stage2")) {
+        } else if (TRIAL %in% c("prevent19", "prevent19_stage2", "nvx_uk302")) {
           # default rule for followup time is the last case in ph2 in vaccine arm
           tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
           
@@ -1006,6 +1003,12 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
       "Age < 65"
     )
 
+} else if (TRIAL %in% c("nvx_uk302")) {
+  Bstratum.labels <- c(
+    "Age >= 65",
+    "Age < 65"
+  )
+  
 } else if (study_name %in% c("VAT08")) {
     Bstratum.labels <- c(
       "Age >= 60",
@@ -1024,7 +1027,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age <= 14"
   )
   
-} else if (study_name=="COVAIL") {
+} else if (TRIAL %in% c("covail")) {
   # do nothing
   
 } else stop("unknown study_name 2")
@@ -1106,8 +1109,18 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name=="HVTN705") {
   # do nothing
   
-} else if (study_name=="COVAIL") {
+} else if (TRIAL %in% c("covail")) {
   # do nothing
+  
+} else if (TRIAL == "nvx_uk302") {
+  demo.stratum.labels <- c(
+    "England Other, Age >= 65",
+    "England Other, Age 18-64",
+    "England South East, Age >= 65",
+    "England South East, Age 18-64",
+    "Scotland, Wales, Northern Ireland, Age >= 65",
+    "Scotland, Wales, Northern Ireland, Age 18-64"
+  )
   
 } else if (study_name=="PROFISCOV") {
     demo.stratum.labels <- c("All")
