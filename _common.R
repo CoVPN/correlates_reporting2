@@ -304,11 +304,7 @@ if (!is.null(config$assay_metadata)) {
     uloqs["bindNVXIgG"]=2904275
     pos.cutoffs["bindNVXIgG"]=500
     
-    llods["bindNVXIgGIU"]=200/22
-    lloqs["bindNVXIgGIU"]=200/22
-    uloqs["bindNVXIgGIU"]=2904275/22
-    pos.cutoffs["bindNVXIgGIU"]=500/22
-    
+  
   } else if(TRIAL=="azd1222") {
     
     # data less than lod is set to lod/2
@@ -774,7 +770,7 @@ if (exists("COR")) {
           stop("todo")
           
           
-        } else if (TRIAL %in% c("prevent19", "prevent19_stage2", "nvx_uk302")) {
+        } else if (TRIAL %in% c("prevent19", "prevent19nvx", "prevent19_stage2", "nvx_uk302")) {
           # default rule for followup time is the last case in ph2 in vaccine arm
           tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
           
