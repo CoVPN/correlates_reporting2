@@ -41,6 +41,15 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2 hvtn705second hvtn705
 	Rscript code/cor_coxph.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/cor_coxph.R D35
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19nvx))
+	Rscript code/cor_coxph_prevent19nvx.R D35prevent19nvx
+else ifeq ($(TRIAL),$(filter $(TRIAL), nvx_uk302))
+	Rscript code/cor_coxph_nvx_uk302.R D35
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
+	Rscript code/cor_coxph_prevent19_stage2.R D35prevent19_stage2_severe
+else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_stage2))
+	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_severe_nAb
+	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_severe_bAb
 else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222))
 	Rscript code/cor_coxph.R D29
 	Rscript code/cor_coxph.R D57

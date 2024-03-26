@@ -40,7 +40,7 @@ variants=lapply(tfinal.tpeak.ls, function(x) names(x))
 
 
 {
-marker.cutpoints=attr(dat.mock, "marker.cutpoints"); marker.cutpoints
+marker.cutpoints=attr(dat_proc, "marker.cutpoints"); marker.cutpoints
 for (a in "Day29"%.%assays) {        
   q.a=marker.cutpoints[[a]]
   if (startsWith(a, "Day")) {
@@ -49,8 +49,8 @@ for (a in "Day29"%.%assays) {
 }
 
 # add placebo counterpart
-dat.vac.seroneg.allregions=subset(dat.mock, Trt==1 & ph1)
-dat.pla.seroneg.allregions=subset(dat.mock, Trt==0 & ph1)
+dat.vac.seroneg.allregions=subset(dat_proc, Trt==1 & ph1)
+dat.pla.seroneg.allregions=subset(dat_proc, Trt==0 & ph1)
 
 # for validation use
 rv=list() 
@@ -149,7 +149,7 @@ for (iRegion in c(1,2,3)) {
     ############################
     # formula for coxph
 
-    form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+    form.0 = update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates))
   
     # the markers to study depend on region and COVID lineage
     if (iRegion==1) {
@@ -209,8 +209,8 @@ for (iRegion in c(1,2,3)) {
     # # if there are very few competing events, the coxph for competing event may throw warnings
     # 
     # form.0=list(
-    #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
-    #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
+    #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates)),
+    #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates))
     # )
     # 
     # 

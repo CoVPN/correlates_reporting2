@@ -29,8 +29,8 @@ source(here::here("..", "_common.R"))
 ```{r dataio, echo=FALSE}
 
 # read in practice data
-dat.mock <- read.csv(here("verification","verification_input","practice_data.csv"), stringsAsFactors = F)
-dat <- dat.mock
+dat_proc <- read.csv(here("verification","verification_input","practice_data.csv"), stringsAsFactors = F)
+dat <- dat_proc
 
 dat$immuno_ind <- with(dat, ifelse(Perprotocol==1 & SubcohortInd==1 & TwophasesampIndD57==1 & EarlyendpointD57==0 & !is.na(wt.subcohort), 1, 0))
 

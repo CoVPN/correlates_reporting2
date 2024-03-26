@@ -4,36 +4,27 @@ if(!exists("show.risk.curves")) show.risk.curves = F
 ```
 
 
-## `r COR` `r fname.suffix`  Univariate CoR: Cox Models of Risk
+`r paste(concatList(rep('#',level)), COR, fname.suffix)`  Univariate
 
 The main regression model is the Cox proportional hazards model. Each row represents results from one model. All plots are made with Cox models fit unless specified otherwise. 
 
 <!-- Hazard ratios -->
 \setlength{\tabcolsep}{.5ex}
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}
+  
+\vspace{-15pt}
+
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
 
-$\ast$`r txt.coxph.note2`
+$\ast$`r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
 
 `r if (!show.q) '<!--'`
 $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
 `r if (!show.q)'-->'`
 
-`r special.note`
-
-\vspace{10pt}
-
-\setlength{\tabcolsep}{.5ex}
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r fname.suffix`}
-$\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
 
-$\ast$$\ast$`r txt.coxph.note2`
 
-`r if (!show.q) '<!--'`
-$\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
-`r if (!show.q)'-->'`
-
-`r special.note`
 
 
 \clearpage
@@ -43,7 +34,7 @@ $\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over th
 \vspace{-15pt}
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, "}"), sep=",")`
 
-$\ast\ast$`r txt.coxph.note2`
+$\ast\ast$`r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
 
 $\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
 
@@ -51,7 +42,6 @@ $\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the ha
 $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
 `r if (!show.q)'-->'`
 
-`r special.note`
 
 \vspace{30pt}
 
@@ -65,7 +55,6 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
     (lb, ub)\\
     \input{`r pathCoRoutput`/follmann2018_samplesizeratio_lbub}\\
 \end{center}
-`r special.note`
     %\label{tab:follmann2018_samplesizeratio}
 \end{table}
 \vspace{10pt}
@@ -112,9 +101,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 
 ```{r, echo=FALSE, results='asis'}
 
-if (TRIAL=="janssen_partA_VL") {
-  
-} else if(!contain(attr(config,"config"),"senior") & file.exists(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd')))) {
+if(TRIAL %in% c("azd1222")) {
   message ("forest plots")
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
@@ -139,7 +126,7 @@ if (TRIAL=="janssen_partA_VL") {
 ```{r, echo=FALSE, results='asis'}
 
   tmp = config$multivariate_assays
-  if (!is.null(multivariate_assays)) {
+  if (exists("multivariate_assays")) {
     tmp = multivariate_assays
   } 
   if (!is.null(tmp)) {
@@ -175,7 +162,6 @@ if (TRIAL=="janssen_partA_VL") {
 
 <!-- $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) biomarker subgroups after controlling for `r covariates_adjusted`; UL = upper limit. -->
 
-<!-- `r special.note` -->
 
 
 
@@ -213,7 +199,7 @@ if (show.risk.curves) {
 <!-- \begin{table}[H] -->
 <!-- \centering -->
 <!-- \input{`r pathCoRoutput`/CoR_itxn_multitesting} -->
-<!-- \caption{ Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r fname.suffix`} in the vaccine arm. Interaction P values. `r special.note`} -->
+<!-- \caption{ Inference for Day `r tpeak` antibody marker covariate-adjusted correlates of risk by Day \protect\input{`r pathCoRoutput`/timepoints_cum_risk_`r fname.suffix`} in the vaccine arm. Interaction P values. } -->
 <!-- \end{table} -->
 
 <!-- \clearpage -->

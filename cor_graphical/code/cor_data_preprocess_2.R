@@ -9,30 +9,30 @@ library(here)
 library(dplyr)
 library(tidyverse)
 library(stringr)
-#dat.mock <- read.csv(here("..", "data_clean", data_name))# superceded by _common.R data read
+#dat_proc <- read.csv(here("..", "data_clean", data_name))# superceded by _common.R data read
 
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0
-wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
-for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
+wt.vars <- colnames(dat_proc)[grepl("wt.D", colnames(dat_proc))]
+for (a in wt.vars) dat_proc[a][is.na(dat_proc[a])]<-0
 
 if(T){ # for ENSEMBLE SA and LA reports only
   # copy Bpseudoneutid50 to Bpseudoneutid50la & calculate delta value if Day29pseudoneutid50la exists and is required for reporting
   # copy Bpseudoneutid50 to Bpseudoneutid50sa & calculate delta value if Day29pseudoneutid50sa exists and is required for reporting
-  if ("Day29pseudoneutid50la" %in% colnames(dat.mock) & "pseudoneutid50la" %in% assays) {
-    dat.mock$Bpseudoneutid50la = dat.mock$Bpseudoneutid50
-    dat.mock$Delta29overBpseudoneutid50la = pmin(log10(uloqs["pseudoneutid50la"]), dat.mock$Day29pseudoneutid50la) - pmin(log10(uloqs["pseudoneutid50la"]), dat.mock$Bpseudoneutid50la)
+  if ("Day29pseudoneutid50la" %in% colnames(dat_proc) & "pseudoneutid50la" %in% assays) {
+    dat_proc$Bpseudoneutid50la = dat_proc$Bpseudoneutid50
+    dat_proc$Delta29overBpseudoneutid50la = pmin(log10(uloqs["pseudoneutid50la"]), dat_proc$Day29pseudoneutid50la) - pmin(log10(uloqs["pseudoneutid50la"]), dat_proc$Bpseudoneutid50la)
   }
-  if ("Day29pseudoneutid50sa" %in% colnames(dat.mock) & "pseudoneutid50sa" %in% assays) {
-    dat.mock$Bpseudoneutid50sa = dat.mock$Bpseudoneutid50
-    dat.mock$Delta29overBpseudoneutid50sa = pmin(log10(uloqs["pseudoneutid50sa"]), dat.mock$Day29pseudoneutid50sa) - pmin(log10(uloqs["pseudoneutid50sa"]), dat.mock$Bpseudoneutid50sa)
+  if ("Day29pseudoneutid50sa" %in% colnames(dat_proc) & "pseudoneutid50sa" %in% assays) {
+    dat_proc$Bpseudoneutid50sa = dat_proc$Bpseudoneutid50
+    dat_proc$Delta29overBpseudoneutid50sa = pmin(log10(uloqs["pseudoneutid50sa"]), dat_proc$Day29pseudoneutid50sa) - pmin(log10(uloqs["pseudoneutid50sa"]), dat_proc$Bpseudoneutid50sa)
   }
 }
 
 # load parameters
 source(here("code", "params.R"))
 ################################################
-dat <- as.data.frame(dat.mock)
+dat <- as.data.frame(dat_proc)
 
 Args <- commandArgs(trailingOnly=TRUE)
 COR=Args[1]

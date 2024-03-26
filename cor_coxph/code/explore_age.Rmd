@@ -1,0 +1,97 @@
+---
+title: "Age Risk Correlate"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(survey)
+library(kyotil)
+library(readxl)
+library(vaccine)
+
+dat_prevent19_stage1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240320.csv')
+dat_azd1222_stage1=read.csv('/trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv')
+dat_unk302 = read.csv('/trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240320.csv')
+
+```
+
+Age is a potential confounder because immune markers are lower in older people and age is also associated with risk of mild-moderate-severe COVID and severe COVID in complicated ways. 
+
+
+
+## Mild-moderate-severe ancestral COVID risk
+
+### NVX PREVENT19 stage 1, placebo arm
+Age (continuous) is a better predictor than age group, log likelihood ratio 1.5.
+```{r}
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Age, subset(dat_prevent19_stage1, ph1.D35==1 & Trt==0 & Bserostatus==0 & Country==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Senior, subset(dat_prevent19_stage1, ph1.D35==1 & Trt==0 & Bserostatus==0 & Country==0))
+```
+
+### NVX UK302, placebo arm
+Age group is a better predictor than age, log likelihood ratio 2.2.
+```{r}
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Age+Region, subset(dat_unk302, ph1.D35==1 & Trt==0 & Bserostatus==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Senior+Region, subset(dat_unk302, ph1.D35==1 & Trt==0 & Bserostatus==0))
+```
+
+
+
+### AZ stage 1, placebo arm
+Age group is a better predictor than age, log likelihood ratio 3-4 depending on whether risk score is adjusted.
+```{r}
+coxph(Surv(EventTimePrimaryD57,EventIndPrimaryD57)~Age+Country, subset(dat_azd1222_stage1, ph1.D57==1 & Trt==0 & Bserostatus==0))
+coxph(Surv(EventTimePrimaryD57,EventIndPrimaryD57)~Senior+Country, subset(dat_azd1222_stage1, ph1.D57==1 & Trt==0 & Bserostatus==0))
+coxph(Surv(EventTimePrimaryD57,EventIndPrimaryD57)~Age+Country+risk_score, subset(dat_azd1222_stage1, ph1.D57==1 & Trt==0 & Bserostatus==0))
+coxph(Surv(EventTimePrimaryD57,EventIndPrimaryD57)~Senior+Country+risk_score, subset(dat_azd1222_stage1, ph1.D57==1 & Trt==0 & Bserostatus==0))
+```
+
+
+Non-parametric estimation
+```{r}
+# takes about 10 min to run
+
+library(kyotil)
+library(vaccine)
+
+time.start = Sys.time()
+
+dat_azd1222_stage1=read.csv('/trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv')
+
+dat=subset(dat_azd1222_stage1, ph1.D57==1 & Trt==0 & Bserostatus==0)
+dat$wt=1
+dat$Trt=1 # pretend to be vacc so that the code will work
+dat <- load_data(time="EventTimePrimaryD57", event="EventIndPrimaryD57", vacc="Trt",
+                 marker="Age", covariates=c("Country","risk_score"),
+                 weights="wt", ph2="wt", data=dat)
+
+# may get error about rlang being too old
+
+# non-monotone fit
+p=params_ce_np()
+p$mono_cis=F
+ests_np_2 <- est_ce(dat=dat, type="NP", t_0=92, params_np=p)
+# monotone fit
+ests_np <- est_ce(dat=dat, type="NP", t_0=92)
+
+ests_cox <- est_ce(dat=dat, type="Cox", t_0=92)
+
+save(ests_np, ests_cox, file="../../tmp_non_mono.Rdata")
+save(ests_np_2, file="../../tmp_non_mono.Rdata")
+
+```
+
+
+```{r}
+load("~/tmp.Rdata")
+load("~/tmp_non_mono.Rdata")
+# cut off risk above 0.25 for plotting
+ests_np_2$cr$ci_upper[ests_np_2$cr$ci_upper>0.1]=0.1
+plot_ce(ests_cox, ests_np_2)
+
+# ub not so wild, but otherwise similar to np estimates
+plot_ce(ests_cox, ests_np)
+
+```

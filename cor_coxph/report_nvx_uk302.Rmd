@@ -1,0 +1,34 @@
+# Summary
+
+The trichotomized marker is significant after multitesting adjustment.
+
+```{r, echo=FALSE, results='asis'}
+
+show.q=T
+
+COR <- "D35"
+pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
+config.cor <- config::get(config = COR); for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+all.markers=paste0("Day", tpeak, assays)
+if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+names(all.markers)=all.markers
+
+fname.suffix=""
+
+# coef tables for linear and trichotomized
+level=1 # section title indent
+res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+cat(res, sep = '\n')
+
+# risks curves
+level=level+1 # section title indent
+plot.geq=F
+has.plac=T
+show.ve.curves=T
+for (a in all.markers) {
+  res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+
+
+```

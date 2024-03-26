@@ -53,18 +53,18 @@ key <- COR
 markers <- paste0(DayPrefix, tpeak, assays)
 if (TRIAL=='moderna_boost') markers = c(markers, paste0("DeltaBD29overBD1", assays))
 
-markers <- intersect(markers, colnames(dat.mock))
+markers <- intersect(markers, colnames(dat_proc))
 marker_to_assay <- sapply(markers, function(v) marker.name.to.assay(v))
 
 
 
-# max_t <- max(dat.mock[dat.mock$EventIndPrimary==1 & dat.mock$Trt == 1 & dat.mock$ph2 == 1, "EventTimePrimary" ])
+# max_t <- max(dat_proc[dat_proc$EventIndPrimary==1 & dat_proc$Trt == 1 & dat_proc$ph2 == 1, "EventTimePrimary" ])
 max_t = tfinal.tpeak
 # Covariates to adjust for. SHOULD BE AT LEAST TWO VARIABLES OR GLMNET WILL ERROR
 
 data_name_updated <- sub(".csv", "_with_riskscore.csv", data_name)
 
-covariates = strsplit(sub("~", "", config$covariates_riskscore), "\\+")[[1]][-1]
+covariates = strsplit(sub("~", "", config$covariates), "\\+")[[1]][-1]
 covariates = kyotil::trim(covariates)
 
 if ("risk_score" %in% covariates) {

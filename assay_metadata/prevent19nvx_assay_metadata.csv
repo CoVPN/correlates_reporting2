@@ -1,3 +1,4 @@
 panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label
 bAb,1,bindNVXIgG,200,2904275,200,500,NVX IgG (EU),NVX IgG (EU),pos.cutoff
 bAb,2,bindNVXIgGIU,9.1,132012,9.1,22.7,NVX IgG (IU),NVX IgG (IU),pos.cutoff
+bAb,3,ACE2,10,Inf,10,10,NVX ACE2,NVX ACE2,lod

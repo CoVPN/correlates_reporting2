@@ -9,31 +9,23 @@ knitr::opts_chunk$set(echo = TRUE)
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240314.csv')
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240322.csv')
 
 dat_mapped$VARTYPE_first1 = sapply(strsplit(dat_mapped$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
 dat_mapped$VARTYPE_first1 = ifelse(dat_mapped$EventIndFirstD1==0, NA, dat_mapped$VARTYPE_first1)
 dat_mapped$VARTYPE_first1 = ifelse(dat_mapped$EventIndFirstD1==1 & is.na(dat_mapped$VARTYPE_first1), "Unk", dat_mapped$VARTYPE_first1)
-
-dat_mapped$VARTYPE_second1 = sapply(strsplit(dat_mapped$VARTYPE_second,","), function (x) ifelse(length(x)==0, "Unknown", x[1]))
-dat_mapped$VARTYPE_second1 = ifelse(dat_mapped$EventIndFirstD1==0, NA, dat_mapped$VARTYPE_second1)
-dat_mapped$VARTYPE_second1 = ifelse(dat_mapped$EventIndFirstD1==1 & is.na(dat_mapped$VARTYPE_second1), "Unk", dat_mapped$VARTYPE_second1)
 
 dat_mapped$EarlyendpointD35 <- with(dat_mapped, EarlyinfectionD35==1 | (DeltaEventIndD1==1 & DeltaEventTimeD1 < NumberdaysD1toD35 + 7),1,0)
 dat_mapped$ph1.D35 = with(dat_mapped, EarlyendpointD35==0 & Perprotocol==1 & DeltaEventTimeD35 >= 7)
 
 dat_mapped$EventCalTimeFirstD35 = with(dat_mapped, as.Date(D35Date)+EventTimeFirstD35)
 
-dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_stage2_data_processed_20240315.csv')
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240322.csv')
 
 # extract the first variant. empty string to empty string
 dat_proc$VARTYPE_first1 = sapply(strsplit(dat_proc$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
 dat_proc$VARTYPE_first1 = ifelse(dat_proc$EventIndFirstD1==0, NA, dat_proc$VARTYPE_first1)
 dat_proc$VARTYPE_first1 = ifelse(dat_proc$EventIndFirstD1==1 & is.na(dat_proc$VARTYPE_first1), "Unk", dat_proc$VARTYPE_first1)
-
-dat_proc$VARTYPE_second1 = sapply(strsplit(dat_proc$VARTYPE_second,","), function (x) ifelse(length(x)==0, "Unknown", x[1]))
-dat_proc$VARTYPE_second1 = ifelse(dat_proc$EventIndFirstD1==0, NA, dat_proc$VARTYPE_second1)
-dat_proc$VARTYPE_second1 = ifelse(dat_proc$EventIndFirstD1==1 & is.na(dat_proc$VARTYPE_second1), "Unk", dat_proc$VARTYPE_second1)
 
 dat_proc$EventCalTimeFirstD35 = with(dat_proc, as.Date(D35Date)+EventTimeFirstD35)
 
@@ -42,6 +34,11 @@ assays=assay_metadata$assay
 assays
 
 times=c("Day35","C1","BD1","DD1")
+
+dat = subset(dat_proc, ph1.D35==1 & Country==0 & Trt==1)
+
+dat_mapped_stage1=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage1/adata/COVID_Novavax_realdata_20240318.csv')
+dat_mapped_stage1$Subjectid=sub("2019nCoV301", "2019nCoV-301", dat_mapped_stage1$Subjectid)
 ```
 
 
@@ -56,19 +53,25 @@ mytable(dat_mapped$Bserostatus)
 mytable(dat_mapped$Country)
 ```
 
+There are 65 ptids in the stage 2 mapped data and not in the stage 1 mapped data
+```{r, include=F}
+dat_mapped$Subjectid[!dat_mapped$Subjectid %in% dat_mapped_stage1$Subjectid]
+```
+
 
 **Case definitions**
 
-The 17-month BLA analysis primary endpoint definition and the case definition we are using now are different. The former are censored at C1.
 
+<!-- The 17-month BLA analysis primary endpoint definition and the case definition we are using now are different. The former are censored at C1. -->
 
-There are 9 severe cases with markers. There are four degrees of severity. **Less-than-mild cases are not counted cases or censoring events.**
+There are 8 severe cases with markers. There are four degrees of severity. **Less-than-mild cases are not counted cases or censoring events.**
 ```{r}
 with(subset(dat_proc, ph1.D35==1 & Country==0), mytable(Severity_first, ph2.D35, EventIndFirstD1))
 ```
 
 
 **Booster dose**
+
 
 - Getting COVID did not disqualify a person from getting the booster, but there are other eligibility criteria. About half of the ptids have missing BD1 date, and presumably not getting booster. 
 
@@ -88,26 +91,34 @@ with(subset(dat_mapped, ph1.D35==1 & Country==0 & DeltaEventIndD1==1), mytable(i
 
 - For the 649 non-case, the D35 blood sample should already be at the USG lab from earlier.
 
-- The list of 279 non-cases is a subset of the list of 649. For the 279 subjects, the time points of interest are D35, crossover 1 and booster D0 - the database says these subjects should have all 3 visits/blood sample.  
+  - The list of 279 non-cases is a subset of the list of 649. For the 279 subjects, the time points of interest are D35, crossover 1 and booster D0 - the database says these subjects should have all 3 visits/blood sample.  
 
 
-### COVID variants
+
+**Number of cases in ph1 and ph2**
+```{r, echo=T}
+with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1), mytable(ph2.D35, DeltaEventIndD35_108to21Dec10))
+
+with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1), mytable(ph2.D35, SevereEventIndD35_108to21Dec10))
+
+with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1 & Severity_first=="SEVERE"), mytable(VARTYPE_first1, ph2.D35))
+
+```
+
+
+Distributions of sampling weights:
+```{r}
+with (subset(dat_proc, ph2.D35==1 & Trt==1 & Bserostatus==0 & Country==0), table(wt.D35, Wstratum))
+```
+
+### Adjusting endpoint period
 
 Distribution of variant first (variant of the first COVID event). Not all Delta have markers b/c sampling requires DD1 samples.
 ```{r}
 with(subset(dat_mapped, ph1.D35==1 & Country==0 ), mytable(VARTYPE_first1, !is.na(Day35bindSpike_Delta3)))
 ```
 
-Distribution of variant second:
-```{r}
-with(subset(dat_mapped, ph1.D35==1 & Country==0 ), mytable(VARTYPE_second1, !is.na(Day35bindSpike_Delta3)))
-```
-
-
-Distribution of variants type between the first and second COVID events shows that Delta is always the first.
-```{r}
-with (subset(dat_mapped, !is.na(VARTYPE_second1)), mytable(paste(VARTYPE_first1, VARTYPE_second1, sep=",")))
-```
+All second episodes are after censoring. But if we push the censoring date out, the distribution of variants type between the first and second COVID events shows that Delta is always the first (data not shown).
 
 Distribution of severity and variants. Note that less than mild are not counted as cases.
 ```{r}
@@ -116,23 +127,22 @@ with(subset(dat_mapped, ph1.D35==1), mytable(Severity_first, VARTYPE_first1, Del
 ```
 
 
-### Adjusting endpoint period
 
-Comparing timing of events of different variants, first using time since D35, second using calendar time. Ptids with markers are colored green. Based on the first plot, we define the followup period to start at **101** days post the D35 visit. Based on the second plot, we replace censoring at the data cut date of 2022-03-26 by censoring at **2021-12-10** to avoid the Omicron wave at the end of 2021 and the beginning of 2022.
+Comparing timing of events of different variants, first using time since D35, second using calendar time. Ptids with markers are colored green. Based on the first plot, one proposal is to define the followup period to start at **108** days post the D35 visit, which includes all but two of the Delta cases that preceded the main wave. The Delta case on 108 days post D35 occurs on 2021-07-05. Based on the second plot, we replace censoring at the data cut date of 2022-03-26 by censoring at **2021-12-10** to avoid the Omicron wave at the end of 2021 and the beginning of 2022.
 
 ```{r}
-dat.tmp = subset(dat_proc, ph2.D35==1 & Country==0 & Trt==1)
-col=ifelse(dat.tmp$Severity_first=="SEVERE", 2, ifelse(!is.na(dat.tmp$Day35bindSpike_Delta3),3,1))
+# some severe are not EventIndFirstD1
+col=with(dat, ifelse(Severity_first=="SEVERE" & ph2.D35 & EventIndFirstD1==1, 2, ifelse(ph2.D35,3,1)))
 
-myboxplot(EventTimeFirstD35~VARTYPE_first1, dat.tmp, ylab="EventTimeFirstD35", col=col)
-abline(h=100, lty=2)
+myboxplot(EventTimeFirstD35~VARTYPE_first1, dat, ylab="EventTimeFirstD35", col=col)
+abline(h=108, lty=2)
+sort(subset(dat, VARTYPE_first1=="Delta", EventTimeFirstD35, drop=T))[1:5]
+subset(dat, VARTYPE_first1=="Delta" & EventTimeFirstD35<=108, EventCalTimeFirstD35) 
 
-myboxplot(EventCalTimeFirstD35~VARTYPE_first1, dat.tmp, ylab="Event Calendar Time", col=col)
+myboxplot(EventCalTimeFirstD35~VARTYPE_first1, dat, ylab="Event Calendar Time", col=col)
 abline(h=as.Date("2022-03-26")) # data cut
 abline(h=as.Date("2021-04-19")) # data cut
 abline(h=as.Date("2021-12-10"), lty=2) 
-
-with(subset(dat.tmp, Severity_first=="SEVERE"), mytable(VARTYPE_first1, ph2.D35))
 ```
  
 
@@ -211,6 +221,9 @@ for (j in 1:2){
 ```
 
 
+
+
+
 ### Batch effect
 
 679 D35 samples (including cases and non-cases) have ID50s measured twice by Monogram, once in Dec 21 in the Stage 1 work and once in July 23 in the Stage 2 work.
@@ -275,3 +288,30 @@ D35ancestralnAbBatch is the first two digits in the Monogram accession number an
 ```{r}
 mytable(dat_mapped$D35ancestralnAbBatch)
 ```
+
+
+### Covariates adjustment
+
+Age affects immune response. 
+
+```{r}
+myboxplot(Day35pseudoneutid50_D614G~Senior, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
+```
+
+
+Age>=65 is a stratification variable of the randomization and adjusted for in the primary efficacy analysis. 
+
+We will **adjust for Age in severe COVID correlates analyses**.
+```{r}
+coxph(Surv(SevereEventTimeD35_to21Dec10, SevereEventIndD35_108to21Dec10)~Age, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
+coxph(Surv(SevereEventTimeD35_to21Dec10, SevereEventIndD35_108to21Dec10)~Senior, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
+```
+
+
+We will **adjust for age group in Delta COVID correlates analyses**.
+```{r}
+coxph(Surv(DeltaEventTimeD35_to21Dec10, DeltaEventIndD35_108to21Dec10)~Age, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
+coxph(Surv(DeltaEventTimeD35_to21Dec10, DeltaEventIndD35_108to21Dec10)~Senior, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
+```
+
+

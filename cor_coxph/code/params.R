@@ -1,6 +1,3 @@
-numCores <- unname(ifelse(Sys.info()["sysname"] == "Windows",
-                          1, 
-                          min(20, config$num_boot_replicates, future::availableCores())))
 
  
 load.data=function(TRIAL, COR, trt=1) {
@@ -9,13 +6,13 @@ load.data=function(TRIAL, COR, trt=1) {
     # uloq censoring    
     for (a in assays) {
         tmp="Day"%.%config.cor$tpeak %.% a
-        dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
+        dat_proc[[tmp]] <- ifelse(dat_proc[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat_proc[[tmp]])
     }
     if (trt==1) {
-        dat=subset(dat.mock, Trt==1 & ph1)
+        dat=subset(dat_proc, Trt==1 & ph1)
         dat = add.trichotomized.markers (dat, tpeak, wt.col.name="wt")
     } else {
-        dat=subset(dat.mock, Trt==0 & ph1)        
+        dat=subset(dat_proc, Trt==0 & ph1)        
     }
     dat
 }
@@ -160,14 +157,8 @@ get.dat.with.no.empty=function(dat.tmp) {
 }
 
 
-# _ causes trouble in captions, and that has to be taken care of by putting \protect{} around the word
-escape=function(x) {
-  for (i in c("_","^")) {
-    x=gsub(i, "\\"%.%i, x, fixed = TRUE)
-  }
-  x
-}
-# a more comprehensive, slower version
+
+# a more comprehensive, slower version of copcor::escape
 escape_latex <- function(text) {
   # Define the special characters and their LaTeX escaped equivalents
   special_chars <- c("\\", "%", "$", "#", "_", "{", "}", "&", "^", "~", "<", ">", "|", "\"")

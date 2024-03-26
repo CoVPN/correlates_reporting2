@@ -47,20 +47,20 @@ myprint(B, numPerm)
 
 ## add trichotomized markers 
 
-dat.vac.seropos.2 = subset(dat.mock, Trt==1 & ph1 & Bserostatus==1 & Trialstage==2)
+dat.vac.seropos.2 = subset(dat_proc, Trt==1 & ph1 & Bserostatus==1 & Trialstage==2)
 dat.vac.seropos.2 = add.trichotomized.markers (dat.vac.seropos.2, all.markers, wt.col.name="wt")
 
 # use the cut points from nnaive stage 2 for nnaive stage 1 
 marker.cutpoints = attr(dat.vac.seropos.2, "marker.cutpoints")
 
-dat.vac.seropos.1 = subset(dat.mock, Trt==1 & ph1 & Trialstage==1 & Bserostatus==1)
+dat.vac.seropos.1 = subset(dat_proc, Trt==1 & ph1 & Trialstage==1 & Bserostatus==1)
 for (a in all.markers) {        
   dat.vac.seropos.1[[a%.%'cat']] = cut(dat.vac.seropos.1[[a]], breaks = c(-Inf, marker.cutpoints[[a]], Inf))
   # attr(dat.vac.seropos.1, "marker.cutpoints")[[a]] = marker.cutpoints[[a]]
   print(table(dat.vac.seropos.1[[a%.%'cat']]))
 }
 
-dat.vac.seroneg.2 = subset(dat.mock, Trt==1 & ph1 & Trialstage==2 & Bserostatus==0)
+dat.vac.seroneg.2 = subset(dat_proc, Trt==1 & ph1 & Trialstage==2 & Bserostatus==0)
 dat.vac.seroneg.2 = add.trichotomized.markers (dat.vac.seroneg.2, all.markers, wt.col.name="wt")
 marker.cutpoints.neg = attr(dat.vac.seroneg.2, "marker.cutpoints")
 
@@ -79,9 +79,9 @@ for (a in all.markers) {
 
 
 # add placebo counterpart
-dat.pla.seropos.1=subset(dat.mock, Trt==0 & ph1 & Trialstage==1 & Bserostatus==1)
-dat.pla.seroneg.2=subset(dat.mock, Trt==0 & ph1 & Trialstage==2 & Bserostatus==0)
-dat.pla.seropos.2=subset(dat.mock, Trt==0 & ph1 & Trialstage==2 & Bserostatus==1)
+dat.pla.seropos.1=subset(dat_proc, Trt==0 & ph1 & Trialstage==1 & Bserostatus==1)
+dat.pla.seroneg.2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==0)
+dat.pla.seropos.2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==1)
 
 # for validation use
 rv=list() 
@@ -121,7 +121,7 @@ for (iAna in 3:3) {
   
   if (iAna==3) dat.vac=subset(dat.vac, !(Country %in% c(10 ) & Trialstage==2 & Bserostatus==1 & Age<60))
 
-  form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore))
+  form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates))
 
   multivariate_assays = config$multivariate_assays
   
@@ -135,8 +135,8 @@ for (iAna in 3:3) {
   # # if there are very few competing events, the coxph for competing event may throw warnings
   # 
   # form.0=list(
-  #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates_riskscore)),
-  #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates_riskscore))
+  #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates)),
+  #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates))
   # )
   # 
   # tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]

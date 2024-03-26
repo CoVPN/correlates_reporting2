@@ -35,7 +35,7 @@ if (two_marker_timepoints & is_ows_trial ) {
 
 ```{r, echo=FALSE, results='asis'}
 
-covariates_adjusted = covariates_riskscore
+covariates_adjusted = covariates
 covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
 covariates_adjusted = sub("_","",covariates_adjusted)
 
@@ -58,6 +58,8 @@ if(file.exists(here::here('cor_coxph', paste0('report_', TRIAL, '.Rmd')))
 } else {
   # generic report
   
+  level=1; show.q=T
+
   for (tpeak in tt) {
     COR <- paste0("D", tpeak)
     config.cor <- config::get(config = COR)

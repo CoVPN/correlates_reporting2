@@ -1,0 +1,49 @@
+# Severe COVID
+
+**Summary**
+
+Because all severe COVID cases are concentrated in the low marker group, quadratic models are fit for severe COVID, but quadratic terms are not significant.
+
+
+```{r, echo=FALSE, results='asis'}
+
+show.q=F
+
+COR <- "D35prevent19_stage2_severe"
+pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
+config.cor <- config::get(config = COR); for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+
+all.markers=paste0("Day", tpeak, assays)
+if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+names(all.markers)=all.markers
+
+fname.suffix=""
+
+# coef tables for linear and trichotomized
+level=2 # section title indent
+res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+cat(res, sep = '\n')
+
+# risks curves
+level=level+1
+plot.geq=F
+has.plac=F
+show.ve.curves=F
+for (a in "Day35" %.% c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "bindSpike_D614", "bindSpike_Delta1")) {
+  assay=marker.name.to.assay(a)
+  res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
+
+
+# quadratic models
+fname.suffix="Quadratic"
+
+# coef tables 
+level=2 # section title indent
+has.alt = F
+res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+cat(res, sep = '\n')
+
+
+```

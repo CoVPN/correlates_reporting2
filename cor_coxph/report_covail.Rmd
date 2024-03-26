@@ -276,9 +276,6 @@ for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", 
 <!-- Separate analyses within naive and non-naive -->
 ```{r, echo=FALSE, results='asis'}
 
-<!-- Separate analyses within naive and non-naive -->
-```{r, echo=FALSE, results='asis'}
-
 # Obj 1 in naive and non-naive
 for (iObj in c(1,11,12)) { 
   
