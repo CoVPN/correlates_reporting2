@@ -537,7 +537,7 @@ cat("Analysis-ready data: ", path_to_data, "\n")
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
 if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not available ===========================================")
 
-dat.mock <- read.csv(path_to_data)
+dat_proc <- read.csv(path_to_data)
 
 
 ###################################################################################################
@@ -551,13 +551,13 @@ if (!DESCRIPTIVE & !EXPOSUREPROXIMAL) {
   for (a in assays) {
     uloq=uloqs[a]
     for (t in c(DayPrefix%.%timepoints)  ) {
-      if ('t'%.%a %in% names(dat.mock)) {
-        dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloq), log10(uloq), dat.mock[[t %.% a]])
+      if ('t'%.%a %in% names(dat_proc)) {
+        dat_proc[[t %.% a]] <- ifelse(dat_proc[[t %.% a]] > log10(uloq), log10(uloq), dat_proc[[t %.% a]])
       }
     }
     # process baseline marker if exists
-    if ('B'%.%a %in% names(dat.mock)) {
-      dat.mock[['B' %.% a]] <- ifelse(dat.mock[['B' %.% a]] > log10(uloq), log10(uloq), dat.mock[['B' %.% a]])
+    if ('B'%.%a %in% names(dat_proc)) {
+      dat_proc[['B' %.% a]] <- ifelse(dat_proc[['B' %.% a]] > log10(uloq), log10(uloq), dat_proc[['B' %.% a]])
     }
   }    
 }
@@ -568,12 +568,12 @@ if (!DESCRIPTIVE & !EXPOSUREPROXIMAL) {
 if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", "janssen_sa_partA", 
                 "janssen_partA_VL")) {
   # make endpointDate.Bin a factor variable
-  dat.mock$endpointDate.Bin = as.factor(dat.mock$endpointDate.Bin)
+  dat_proc$endpointDate.Bin = as.factor(dat_proc$endpointDate.Bin)
 
   
 } else if (TRIAL %in% c("hvtn705secondRSA", "hvtn705secondNonRSA")) {
   # subset to RSA or non-RSA
-  dat.mock = subset(dat.mock, RSA==ifelse(TRIAL=="hvtn705secondRSA", 1, 0))
+  dat_proc = subset(dat_proc, RSA==ifelse(TRIAL=="hvtn705secondRSA", 1, 0))
   
   
 } else if (study_name=='VAT08') {
@@ -582,7 +582,7 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
     bAb_markers = subset(assay_metadata, panel=='bindSpike' & assay!='bindSpike_mdw', assay, drop=T)
     for (a in bAb_markers) {
       for (t in c("B", paste0(DayPrefix, timepoints)) ) {
-        dat.mock[[t%.%a]] = ifelse(dat.mock[[t%.%a]] < log10(lloqs[a]), log10(lloqs[a]/2), dat.mock[[t%.%a]])
+        dat_proc[[t%.%a]] = ifelse(dat_proc[[t%.%a]] < log10(lloqs[a]), log10(lloqs[a]/2), dat_proc[[t%.%a]])
       }
     }
     
@@ -591,14 +591,14 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
     tmp=list()
     for (a in bAb_markers) {
       for (t in c("B", paste0(DayPrefix, timepoints)) ) {
-        tmp[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
+        tmp[[t %.% a]] <- ifelse(dat_proc[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat_proc[[t %.% a]])
       }
     }
     tmp=as.data.frame(tmp) # cannot subtract list from list, but can subtract data frame from data frame
     for (tp in rev(timepoints)) {
-      dat.mock["Delta"%.%tp%.%"overB" %.% bAb_markers] <- tmp[DayPrefix%.%tp %.% bAb_markers] - tmp["B" %.% bAb_markers]
+      dat_proc["Delta"%.%tp%.%"overB" %.% bAb_markers] <- tmp[DayPrefix%.%tp %.% bAb_markers] - tmp["B" %.% bAb_markers]
     }   
-    dat.mock["Delta"%.%timepoints[2]%.%"over"%.%timepoints[1] %.% bAb_markers] <- tmp[DayPrefix%.% timepoints[2]%.% bAb_markers] - tmp[DayPrefix%.%timepoints[1] %.% bAb_markers]
+    dat_proc["Delta"%.%timepoints[2]%.%"over"%.%timepoints[1] %.% bAb_markers] <- tmp[DayPrefix%.% timepoints[2]%.% bAb_markers] - tmp[DayPrefix%.%timepoints[1] %.% bAb_markers]
   }
   
 }
@@ -613,12 +613,12 @@ if (exists("COR")) {
     
     # subset according to baseline seronegative status
     if (!is.null(config$Bserostatus)) {
-        dat.mock=subset(dat.mock, Bserostatus==config$Bserostatus)
+        dat_proc=subset(dat_proc, Bserostatus==config$Bserostatus)
     }
     
     # for Novavax trial only, subset to US for the correlates modules
     # this is redundant in a way because only US participants have non-NA risk scores, but good to add
-    if (study_name=="PREVENT19") dat.mock=subset(dat.mock, Country==0)
+    if (study_name=="PREVENT19") dat_proc=subset(dat_proc, Country==0)
     
     # formula
     if (TRIAL %in% c("janssen_partA_VL")) {
@@ -641,34 +641,34 @@ if (exists("COR")) {
     # single time point COR config such as D29
     if (is.null(config.cor$tinterm)) {    
     
-        dat.mock$ph1=dat.mock[[config.cor$ph1]]
-        dat.mock$ph2=dat.mock[[config.cor$ph2]]
-        dat.mock$Wstratum=dat.mock[[config.cor$WtStratum]]
-        dat.mock$wt=dat.mock[[config.cor$wt]]
-        dat.mock$EventIndPrimary =dat.mock[[config.cor$EventIndPrimary]]
-        if (!is.null(config.cor$EventTimePrimary)) dat.mock$EventTimePrimary=dat.mock[[config.cor$EventTimePrimary]]
-        if (!is.null(config.cor$tpsStratum)) dat.mock$tps.stratum=dat.mock[[config.cor$tpsStratum]]
-        if (!is.null(config.cor$Earlyendpoint)) dat.mock$Earlyendpoint=dat.mock[[config.cor$Earlyendpoint]]
+        dat_proc$ph1=dat_proc[[config.cor$ph1]]
+        dat_proc$ph2=dat_proc[[config.cor$ph2]]
+        dat_proc$Wstratum=dat_proc[[config.cor$WtStratum]]
+        dat_proc$wt=dat_proc[[config.cor$wt]]
+        dat_proc$EventIndPrimary =dat_proc[[config.cor$EventIndPrimary]]
+        if (!is.null(config.cor$EventTimePrimary)) dat_proc$EventTimePrimary=dat_proc[[config.cor$EventTimePrimary]]
+        if (!is.null(config.cor$tpsStratum)) dat_proc$tps.stratum=dat_proc[[config.cor$tpsStratum]]
+        if (!is.null(config.cor$Earlyendpoint)) dat_proc$Earlyendpoint=dat_proc[[config.cor$Earlyendpoint]]
         
         # subset to require risk_score
         # check to make sure that risk score is not missing in ph1
-        if(!is.null(dat.mock$risk_score) & contain(config$covariates, "risk_score")) {
+        if(!is.null(dat_proc$risk_score) & contain(config$covariates, "risk_score")) {
             if (!TRIAL %in% c("janssen_pooled_EUA","janssen_na_EUA","janssen_na_partA")) { 
                 # check this for backward compatibility
-                stopifnot(nrow(subset(dat.mock, ph1 & is.na(risk_score)))==0)
+                stopifnot(nrow(subset(dat_proc, ph1 & is.na(risk_score)))==0)
             }
-            dat.mock=subset(dat.mock, !is.na(risk_score))
+            dat_proc=subset(dat_proc, !is.na(risk_score))
         }        
     
         # data integrity checks
-        if (!is.null(dat.mock$ph1)) {
+        if (!is.null(dat_proc$ph1)) {
             # missing values in variables that should have no missing values
             variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
-            ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat.mock[dat.mock$ph1==1, a])))
+            ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat_proc[dat_proc$ph1==1, a])))
             if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
             
             # ph1 should not have NA in Wstratum
-            ans=with(subset(dat.mock,ph1==1), all(!is.na(Wstratum)))
+            ans=with(subset(dat_proc,ph1==1), all(!is.na(Wstratum)))
             if(!ans) stop("Some Wstratum in ph1 are NA")
         } else {
             # may not be defined if COR is not provided in command line and used the default value
@@ -683,7 +683,7 @@ if (exists("COR")) {
             tfinal.tpeak = 92 # for comparing with stage 2 
           } else {
             # default rule for followup time is the last case in ph2 in vaccine arm
-            tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+            tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
           }
           
         } else if (TRIAL == "janssen_na_EUA") {
@@ -697,14 +697,14 @@ if (exists("COR")) {
         } else if (startsWith(TRIAL, "janssen_") & endsWith(TRIAL, "partA")) {
           # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
           tfinal.tpeak=min(
-            with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
-            with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+            with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
+            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
           )
           # for moderate, we choose to use the same tfinal.tpeak as the overall COVID
           if (COR=="D29ModerateIncludeNotMolecConfirmed") {
             tfinal.tpeak=min(
-              with(subset(dat.mock, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
-              with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+              with(subset(dat_proc, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
+              with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
             )
           }
         } else if (TRIAL %in% c("janssen_partA_VL")) {
@@ -713,39 +713,39 @@ if (exists("COR")) {
           # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
           tfinal.tpeak.ls=list(
             US=list(
-              # All=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==0), max(EventTimePrimary)),
-              #         with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==0), max(EventTimePrimary)),
+              #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1)),
               
-              Ancestral.Lineage=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==0 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
-                                    with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1))
+              Ancestral.Lineage=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==0 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                                    with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1))
             ),
             
             LatAm=list(
-              # All=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==1), max(EventTimePrimary)),
-              #         with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==1), max(EventTimePrimary)),
+              #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
               
-              Ancestral.Lineage = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
-                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              Ancestral.Lineage = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
               
-              Gamma = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Gamma"), max(EventTimePrimary)),
-                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+              Gamma = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Gamma"), max(EventTimePrimary)),
+                          with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
               
-              Lambda =min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Lambda"), max(EventTimePrimary)),
-                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+              Lambda =min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Lambda"), max(EventTimePrimary)),
+                          with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
               
-              Mu    = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Mu"), max(EventTimePrimary)),
-                        with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              Mu    = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Mu"), max(EventTimePrimary)),
+                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
               
-              Zeta  = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Zeta"), max(EventTimePrimary)),
-                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+              Zeta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Zeta"), max(EventTimePrimary)),
+                          with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
             ),
             
             RSA=list(
-              # All=min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==2), max(EventTimePrimary)),
-              #         with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==2), max(EventTimePrimary)),
+              #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1)),
               
-              Beta  = min(with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary==1 & Region==2 & seq1.variant=="Beta"), max(EventTimePrimary)),
-                          with(subset(dat.mock, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1))
+              Beta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==2 & seq1.variant=="Beta"), max(EventTimePrimary)),
+                          with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1))
             )
           )
           
@@ -778,7 +778,7 @@ if (exists("COR")) {
           
         } else if (TRIAL %in% c("prevent19", "prevent19nvx", "prevent19_stage2", "nvx_uk302", "azd1222_stage2")) {
           # default rule for followup time is the last case in ph2 in vaccine arm
-          tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+          tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
           
         } else {
           stop("unknown study name 11")
@@ -789,14 +789,14 @@ if (exists("COR")) {
         #   janssen_partA_VL because for variants analysis, there is not just one tfinal.tpeak
         #   prevent19_stage2, azd1222_stage2 because CoR only
         if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "prevent19_stage2", "azd1222_stage2")) {
-          prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==1 & ph1), tfinal.tpeak)
-          prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.mock, Trt==0 & ph1), tfinal.tpeak)   
+          prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==1 & ph1), tfinal.tpeak)
+          prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==0 & ph1), tfinal.tpeak)   
           overall.ve = c(1 - prev.vacc/prev.plac) 
           myprint(prev.plac, prev.vacc, overall.ve)
         } 
 
 #        # get VE in the first month or two of followup
-#        dat.tmp=dat.mock
+#        dat.tmp=dat_proc
 #        t.tmp=30
 #        # censor at t.tmp 
 #        dat.tmp$EventIndPrimary =ifelse(dat.tmp$EventTimePrimary<=t.tmp, dat.tmp$EventIndPrimary, 0)
@@ -811,7 +811,7 @@ if (exists("COR")) {
         # note that it is assumed there no risk_score is missing for anyone in the analysis population. 
         # in the case of single time point COR, we do a check for that after definining ph1, 
         # which is why we have to do subset separately here again
-        if(!is.null(dat.mock$risk_score)) dat.mock=subset(dat.mock, !is.na(risk_score))
+        if(!is.null(dat_proc$risk_score)) dat_proc=subset(dat_proc, !is.na(risk_score))
         
     }
     
@@ -819,10 +819,10 @@ if (exists("COR")) {
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
-#wts_table <- dat.mock %>% dplyr::filter(ph1==1) %>% with(table(Wstratum, ph2))
+#wts_table <- dat_proc %>% dplyr::filter(ph1==1) %>% with(table(Wstratum, ph2))
 #wts_norm <- rowSums(wts_table) / wts_table[, 2]
-#dat.mock$wt <- wts_norm[dat.mock$Wstratum %.% ""]
-#dat.mock$wt = ifelse(with(dat.mock, ph1), dat.mock$wt, NA) # the step above assigns weights for some subjects outside ph1. the next step makes them NA
+#dat_proc$wt <- wts_norm[dat_proc$Wstratum %.% ""]
+#dat_proc$wt = ifelse(with(dat_proc, ph1), dat_proc$wt, NA) # the step above assigns weights for some subjects outside ph1. the next step makes them NA
 
 
 # converts discrete markers to factors from strings
@@ -852,13 +852,13 @@ if (!is.null(all.markers1)) {
   marker.cutpoints = list()
   for (a in all.markers1) {
     # get cut points
-    tmpname = names(table(dat.mock[[a%.%"cat"]]))[2]
+    tmpname = names(table(dat_proc[[a%.%"cat"]]))[2]
     tmpname = substr(tmpname, 2, nchar(tmpname)-1)
     tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
     tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
     marker.cutpoints[[a]] <- tmpname
   }
-  attr(dat.mock, "marker.cutpoints")=marker.cutpoints
+  attr(dat_proc, "marker.cutpoints")=marker.cutpoints
 }
 # add imputed copies if needed
 # need to keep pseudoneutid50 and bindSpike b/c there are identical copies of them
@@ -868,7 +868,7 @@ if (TRIAL=="janssen_partA_VL") {
 # turn categorical variables into factors
 if (!is.null(all.markers1)) {
   for (a in all.markers1) {
-    dat.mock[[a%.%"cat"]] = as.factor(dat.mock[[a%.%"cat"]])
+    dat_proc[[a%.%"cat"]] = as.factor(dat_proc[[a%.%"cat"]])
   }
 }
 
@@ -882,26 +882,26 @@ if(config$is_ows_trial & !TRIAL %in% c("janssen_partA_VL")) {
   
     # maxed over Spike, RBD, N, restricting to Day 29 or 57
     if("bindSpike" %in% assays & "bindRBD" %in% assays) {
-        if(has29) MaxbAbDay29 = max(dat.mock[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-        if(has29) MaxbAbDelta29overB = max(dat.mock[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-        if(has57) MaxbAbDay57 = max(dat.mock[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-        if(has57) MaxbAbDelta57overB = max(dat.mock[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has29) MaxbAbDay29 = max(dat_proc[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has29) MaxbAbDelta29overB = max(dat_proc[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has57) MaxbAbDay57 = max(dat_proc[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+        if(has57) MaxbAbDelta57overB = max(dat_proc[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
     }
         
     # maxed over ID50 and ID80, restricting to Day 29 or 57
     if("pseudoneutid50" %in% assays & "pseudoneutid80" %in% assays) {
-        if(has29) MaxID50ID80Day29 = max(dat.mock[,paste0("Day29", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)
-        if(has29) MaxID50ID80Delta29overB = max(dat.mock[,paste0("Delta29overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
-        if(has57) MaxID50ID80Day57 = max(dat.mock[,paste0("Day57", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)        
-        if(has57) MaxID50ID80Delta57overB = max(dat.mock[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
+        if(has29) MaxID50ID80Day29 = max(dat_proc[,paste0("Day29", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)
+        if(has29) MaxID50ID80Delta29overB = max(dat_proc[,paste0("Delta29overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
+        if(has57) MaxID50ID80Day57 = max(dat_proc[,paste0("Day57", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)        
+        if(has57) MaxID50ID80Delta57overB = max(dat_proc[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
     }
     
 }     
 
 
 ## map tps.stratum to stratification variables
-#tps.stratums=sort(unique(dat.mock$tps.stratum)); names(tps.stratums)=tps.stratums
-#decode.tps.stratum=t(sapply(tps.stratums, function(i) unlist(subset(dat.mock, tps.stratum==i)[1,
+#tps.stratums=sort(unique(dat_proc$tps.stratum)); names(tps.stratums)=tps.stratums
+#decode.tps.stratum=t(sapply(tps.stratums, function(i) unlist(subset(dat_proc, tps.stratum==i)[1,
 #    if (study_name=="COVE" | study_name=="MockCOVE" ) {
 #        c("Senior", "HighRiskInd", "URMforsubcohortsampling")
 #    } else if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" ) {

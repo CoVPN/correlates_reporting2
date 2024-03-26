@@ -1,5 +1,5 @@
 
-#fit.ve = coxph(Surv(EventTimePrimary, EventIndPrimary) ~ Trt, subset(dat.mock, ph1==1)) 
+#fit.ve = coxph(Surv(EventTimePrimary, EventIndPrimary) ~ Trt, subset(dat_proc, ph1==1)) 
 #summary(fit.ve)
 
 
@@ -9,7 +9,7 @@
 ## the point estimate matche the results from bootstrap
 ## the variance is asymptotic and still needs to be figured out
 #prevs=sapply (c(placebo=0, vaccine=1), function(i) {
-#    dat.tmp=subset(dat.mock, Trt==i & Bserostatus==0 & ph1)
+#    dat.tmp=subset(dat_proc, Trt==i & Bserostatus==0 & ph1)
 #    fit.tmp = coxph(form.0, dat.tmp, model=T) # model=T to make predict possible
 #    dat.tmp[[config.cor$EventTimePrimary]]=tfinal.tpeak
 #    pred.tmp=predict(fit.tmp, newdata=dat.tmp, type="expected", se.fit=T)    

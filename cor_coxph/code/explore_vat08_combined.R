@@ -23,20 +23,20 @@ table(subset(dat_mapped, Trialstage==1 & Bserostatus==1 & ph1.D43 & EventIndPrim
 # marker distribution to help decide how to create discrete marker variables
 
 par(mfrow=c(3,1))
-hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 2 NN', xlab='Day43pseudoneutid50_BA.1')
-hist(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 1 NN', xlab='Day43pseudoneutid50_BA.1')
-hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 2 Naive', xlab='Day43pseudoneutid50_BA.1')
+hist(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 2 NN', xlab='Day43pseudoneutid50_BA.1')
+hist(subset(dat_proc, Trt==1 & Trialstage==1 & Bserostatus==1, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 1 NN', xlab='Day43pseudoneutid50_BA.1')
+hist(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==0, Day43pseudoneutid50_BA.1, drop=T), main='Day 43 stage 2 Naive', xlab='Day43pseudoneutid50_BA.1')
 
 par(mfrow=c(3,1))
-hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 2 NN', xlab='Day22pseudoneutid50_BA.1')
-hist(subset(dat.mock, Trt==1 & Trialstage==1 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 1 NN', xlab='Day22pseudoneutid50_BA.1')
-hist(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 2 Naive', xlab='Day22pseudoneutid50_BA.1')
+hist(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 2 NN', xlab='Day22pseudoneutid50_BA.1')
+hist(subset(dat_proc, Trt==1 & Trialstage==1 & Bserostatus==1, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 1 NN', xlab='Day22pseudoneutid50_BA.1')
+hist(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==0, Day22pseudoneutid50_BA.1, drop=T), main='Day 22 stage 2 Naive', xlab='Day22pseudoneutid50_BA.1')
 
 for (a in paste0('Day22',assays)) {
-  print(a); print(mean(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0)[[a]]>0.117,na.rm=T))
+  print(a); print(mean(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==0)[[a]]>0.117,na.rm=T))
 }
 for (a in paste0('Day43',assays)) {
-  print(a); print(mean(subset(dat.mock, Trt==1 & Trialstage==2 & Bserostatus==0)[[a]]>0.117,na.rm=T))
+  print(a); print(mean(subset(dat_proc, Trt==1 & Trialstage==2 & Bserostatus==0)[[a]]>0.117,na.rm=T))
 }
 
 
@@ -526,14 +526,14 @@ abline(v=c(2.5),lty=2)
 
 # create a table with one row for each country
 tab = cbind(
-  aggregate(EventIndOmicronD43M6hotdeck1~Country, subset(dat.mock, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), mean),
+  aggregate(EventIndOmicronD43M6hotdeck1~Country, subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), mean),
   id50 = 
-  aggregate(Day43pseudoneutid50*wt.D43.nAb~Country, subset(dat.mock, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), sum)[,2]/
-  aggregate(wt.D43.nAb~Country, subset(dat.mock, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), sum)[,2],
-  ncases=aggregate(EventIndOmicronD43M6hotdeck1~Country, subset(dat.mock, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), sum)[,2],
-  ncases.ph2=aggregate(EventIndOmicronD43M6hotdeck1~Country, subset(dat.mock, Trialstage==2 & Trt==1 & Bserostatus==1 & ph2.D43.nAb), sum)[,2],
-  ncontrols=aggregate(!EventIndOmicronD43M6hotdeck1~Country, subset(dat.mock, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), sum)[,2],
-  ncontrols.ph2=aggregate(!EventIndOmicronD43M6hotdeck1~Country, subset(dat.mock, Trialstage==2 & Trt==1 & Bserostatus==1 & ph2.D43.nAb), sum)[,2]
+  aggregate(Day43pseudoneutid50*wt.D43.nAb~Country, subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), sum)[,2]/
+  aggregate(wt.D43.nAb~Country, subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), sum)[,2],
+  ncases=aggregate(EventIndOmicronD43M6hotdeck1~Country, subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), sum)[,2],
+  ncases.ph2=aggregate(EventIndOmicronD43M6hotdeck1~Country, subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph2.D43.nAb), sum)[,2],
+  ncontrols=aggregate(!EventIndOmicronD43M6hotdeck1~Country, subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43), sum)[,2],
+  ncontrols.ph2=aggregate(!EventIndOmicronD43M6hotdeck1~Country, subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph2.D43.nAb), sum)[,2]
 )
 names(tab)[2]='covid.rate'
 let=ifelse(tab$Country==10,rep('A',nrow(tab)),tab$Country%.%"")
@@ -546,7 +546,7 @@ tab
 ################################################################################
 # auc for risk score after adding country
 
-dat=subset(dat.mock, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43)
+dat=subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==1 & ph1.D43)
 
 trainauc.glm(glm(EventIndOmicronD43M6hotdeck1~as.factor(Country)+Sex, dat, family=binomial))
 

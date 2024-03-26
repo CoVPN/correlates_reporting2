@@ -40,7 +40,7 @@ variants=lapply(tfinal.tpeak.ls, function(x) names(x))
 
 
 {
-marker.cutpoints=attr(dat.mock, "marker.cutpoints"); marker.cutpoints
+marker.cutpoints=attr(dat_proc, "marker.cutpoints"); marker.cutpoints
 for (a in "Day29"%.%assays) {        
   q.a=marker.cutpoints[[a]]
   if (startsWith(a, "Day")) {
@@ -49,8 +49,8 @@ for (a in "Day29"%.%assays) {
 }
 
 # add placebo counterpart
-dat.vac.seroneg.allregions=subset(dat.mock, Trt==1 & ph1)
-dat.pla.seroneg.allregions=subset(dat.mock, Trt==0 & ph1)
+dat.vac.seroneg.allregions=subset(dat_proc, Trt==1 & ph1)
+dat.pla.seroneg.allregions=subset(dat_proc, Trt==0 & ph1)
 
 # for validation use
 rv=list() 

@@ -2,7 +2,7 @@
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "nvx_uk302")
 Sys.setenv(VERBOSE = 1)
-source(here::here("..", "_common.R")) # dat.mock is made
+source(here::here("..", "_common.R")) # dat_proc is made
 
 {
   library(kyotil) # p.adj.perm, getFormattedSummary
@@ -40,24 +40,24 @@ source(here::here("..", "_common.R")) # dat.mock is made
   write(tfinal.tpeak,
         file = paste0(save.results.to, "timepoints_cum_risk_" %.% study_name))
   
-  dat.mock$yy = dat.mock$EventIndPrimary
+  dat_proc$yy = dat_proc$EventIndPrimary
   
   for (a in c("Day35"%.%assays)) {
-    dat.mock[[a%.%"centered"]] = scale(dat.mock[[a]], scale=F)
+    dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
   }
   
-  dat.vac.seroneg = subset(dat.mock, Trt == 1 & ph1)
-  dat.pla.seroneg = subset(dat.mock, Trt == 0 & ph1)
+  dat.vac.seroneg = subset(dat_proc, Trt == 1 & ph1)
+  dat.pla.seroneg = subset(dat_proc, Trt == 0 & ph1)
   dat.vac.seroneg.ph2 = subset(dat.vac.seroneg, ph2)
   
   
   # define trichotomized markers
-  if (is.null(attr(dat.mock, "marker.cutpoints"))) {
+  if (is.null(attr(dat_proc, "marker.cutpoints"))) {
     dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name =
                                                    "wt")
     marker.cutpoints = attr(dat.vac.seroneg, "marker.cutpoints")
   } else {
-    marker.cutpoints = attr(dat.mock, "marker.cutpoints")
+    marker.cutpoints = attr(dat_proc, "marker.cutpoints")
   }
   
   for (a in all.markers) {

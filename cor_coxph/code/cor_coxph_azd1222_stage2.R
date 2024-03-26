@@ -3,7 +3,7 @@
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "azd1222_stage2")
 Sys.setenv(VERBOSE = 1)
-source(here::here("..", "_common.R")) # dat.mock is made
+source(here::here("..", "_common.R")) # dat_proc is made
 
 
 {
@@ -45,14 +45,14 @@ source(here::here("..", "_common.R")) # dat.mock is made
   if (COR == "D57azd1222_stage2_delta_nAb" | COR == "D57azd1222_stage2_delta_bAb") {
     # for use in competing risk estimation
     comp.risk = T
-    dat.mock$EventIndOfInterest = dat.mock$DeltaEventIndD57_120to21Dec10
-    dat.mock$EventIndCompeting  = dat.mock$NonDeltaEventIndD57_120to21Dec10
+    dat_proc$EventIndOfInterest = dat_proc$DeltaEventIndD57_120to21Dec10
+    dat_proc$EventIndCompeting  = dat_proc$NonDeltaEventIndD57_120to21Dec10
     
     form.0 = update(
       Surv(EventTimeD57_to21Dec10, EventIndOfInterest) ~ 1,
       as.formula(config$covariates)
     )
-    dat.mock$yy = dat.mock$EventIndOfInterest
+    dat_proc$yy = dat_proc$EventIndOfInterest
     
   } else if (COR == "D57azd1222_stage2_severe_nAb" | COR == "D57azd1222_stage2_severe_bAb") {
     form.0 = update(
@@ -62,25 +62,25 @@ source(here::here("..", "_common.R")) # dat.mock is made
       ) ~ 1,
       as.formula(config$covariates)
     )
-    dat.mock$yy = dat.mock$SevereEventIndD57_120to21Dec10
+    dat_proc$yy = dat_proc$SevereEventIndD57_120to21Dec10
   }
   
   for (a in c("Day57"%.%assays)) {
-    dat.mock[[a%.%"centered"]] = scale(dat.mock[[a]], scale=F)
+    dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
   }
   
-  dat.vac.seroneg = subset(dat.mock, Trt == 1 & ph1)
-  dat.pla.seroneg = subset(dat.mock, Trt == 0 & ph1)
+  dat.vac.seroneg = subset(dat_proc, Trt == 1 & ph1)
+  dat.pla.seroneg = subset(dat_proc, Trt == 0 & ph1)
   dat.vac.seroneg.ph2 = subset(dat.vac.seroneg, ph2)
   
   
   # define trichotomized markers
-  if (is.null(attr(dat.mock, "marker.cutpoints"))) {
+  if (is.null(attr(dat_proc, "marker.cutpoints"))) {
     dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name =
                                                    "wt")
     marker.cutpoints = attr(dat.vac.seroneg, "marker.cutpoints")
   } else {
-    marker.cutpoints = attr(dat.mock, "marker.cutpoints")
+    marker.cutpoints = attr(dat_proc, "marker.cutpoints")
   }
   
   for (a in all.markers) {

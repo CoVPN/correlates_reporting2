@@ -19,7 +19,7 @@
 #Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 print(date())
 renv::activate(project = here::here(".."))     
-source(here::here("..", "_common.R")) # dat.mock is made
+source(here::here("..", "_common.R")) # dat_proc is made
 if (TRIAL %in% c("janssen_partA_VL")) stop("This TRIAL has its own cor_coxph_TRIAL.R script")    
 
 
@@ -61,25 +61,25 @@ myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
     
 
-dat.mock$EventIndOfInterest = dat.mock$DeltaEventIndD57_120to21Dec10
-dat.mock$EventIndCompeting  = ifelse(dat.mock$COVIDIndD92toD181==1 & !dat.mock$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
-dat.mock$yy=dat.mock$EventIndOfInterest
+dat_proc$EventIndOfInterest = dat_proc$DeltaEventIndD57_120to21Dec10
+dat_proc$EventIndCompeting  = ifelse(dat_proc$COVIDIndD92toD181==1 & !dat_proc$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
+dat_proc$yy=dat_proc$EventIndOfInterest
 
 
 # define an alias for EventIndPrimaryDxx
-dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
+dat_proc$yy=dat_proc[[config.cor$EventIndPrimary]]
 
-dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
-dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
+dat.vac.seroneg=subset(dat_proc, Trt==1 & ph1)
+dat.pla.seroneg=subset(dat_proc, Trt==0 & ph1)
 
 
 
 # define trichotomized markers
-if (is.null(attr(dat.mock, "marker.cutpoints"))) {
+if (is.null(attr(dat_proc, "marker.cutpoints"))) {
     dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
     marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
 } else {
-    marker.cutpoints=attr(dat.mock, "marker.cutpoints")
+    marker.cutpoints=attr(dat_proc, "marker.cutpoints")
 }
 for (a in all.markers) {        
     q.a=marker.cutpoints[[a]]

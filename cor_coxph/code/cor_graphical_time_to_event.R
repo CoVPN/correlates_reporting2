@@ -21,9 +21,9 @@ print(paste0("save.results.to equals ", save.results.to))
 
 
 mypdf (mfrow=c(1,3), file=paste0(save.results.to, "barplot_mixed"))     
-    tmp.1=table(subset(dat.mock, ph1.intercurrent.cases       & Trt==1, "EventTimePrimaryD"%.%tinterm, drop=T))
-    tmp.2=table(subset(dat.mock, dat.mock[["ph1.D"%.%tpeak]] & dat.mock[["EventIndPrimaryD"%.%tpeak]] & Trt==1, "EventTimePrimaryD"%.%tinterm, drop=T))
-    tmp.3=table(subset(dat.mock, dat.mock[["ph1.D"%.%tpeak]] & dat.mock[["EventIndPrimaryD"%.%tpeak]] & Trt==1, "EventTimePrimaryD"%.%tpeak  , drop=T))
+    tmp.1=table(subset(dat_proc, ph1.intercurrent.cases       & Trt==1, "EventTimePrimaryD"%.%tinterm, drop=T))
+    tmp.2=table(subset(dat_proc, dat_proc[["ph1.D"%.%tpeak]] & dat_proc[["EventIndPrimaryD"%.%tpeak]] & Trt==1, "EventTimePrimaryD"%.%tinterm, drop=T))
+    tmp.3=table(subset(dat_proc, dat_proc[["ph1.D"%.%tpeak]] & dat_proc[["EventIndPrimaryD"%.%tpeak]] & Trt==1, "EventTimePrimaryD"%.%tpeak  , drop=T))
     
     minmax=range(as.numeric(names(tmp.1)), as.numeric(names(tmp.2)), as.numeric(names(tmp.3)))
     tmp.4=rep(0, minmax[2]-minmax[1]+1)    

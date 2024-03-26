@@ -35,8 +35,8 @@ source(file.path("tmleThresh.R"))
 #### Data set up
 ####################################################
 # Store the two stage sampling grouping variable at grp
-dat.mock$grp <- dat.mock$Wstratum
-data <- dat.mock
+dat_proc$grp <- dat_proc$Wstratum
+data <- dat_proc
 # Reference time for analysis (170 days default)
 tf <- tf
 # variable name for indicator and time of covid event/censoring

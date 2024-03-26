@@ -119,7 +119,7 @@ saveRDS(cvfits, file = here("output/", Sys.getenv("TRIAL"), paste0("/CVSLfits_va
 # only save these objects once
 if (job_id == 1) {
   saveRDS(ph2_vacc_ptids, file = paste0("output/", Sys.getenv("TRIAL"), "/ph2_vacc_ptids.rds"))
-  save(run_prod, Y, dat.ph1, dat.ph2, weights, dat.mock, briskfactors, endpoint, maxVar,
+  save(run_prod, Y, dat.ph1, dat.ph2, weights, dat_proc, briskfactors, endpoint, maxVar,
        V_outer, varset_names, individualMarkers, SL_library, file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 }
 cat("\n Finished ", varset_names[job_id], "variable set \n") 

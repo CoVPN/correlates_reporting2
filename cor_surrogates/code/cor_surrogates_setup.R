@@ -73,7 +73,7 @@ if (study_name %in% c("ENSEMBLE")) {
   
   # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
   # imputed values for markers (for phase 2 data) from dat.wide.v
-  dat.ph1 <- dat.mock %>%
+  dat.ph1 <- dat_proc %>%
     filter(Perprotocol == 1 & Trt == 1 & Bserostatus == 0) %>%
     mutate(Day29pseudoneutid50minusbindRBD = Day29pseudoneutid50 - Day29bindRBD,
            Day29ADCPminusbindRBD = Day29ADCP - Day29bindRBD,
@@ -208,7 +208,7 @@ if (study_name %in% c("COVE", "MockCOVE")) {
 
   # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
   # imputed values for markers (for phase 2 data) from dat.wide.v
-  dat.ph1 <- dat.mock %>%
+  dat.ph1 <- dat_proc %>%
     filter(Perprotocol == 1 & Trt == 1 & Bserostatus == 0) %>%
     mutate(Delta57overBbindSpike_2fold = ifelse(Day57bindSpike > (BbindSpike + log10(2)), 1, 0),
            Delta57overBbindSpike_4fold = ifelse(Day57bindSpike > (BbindSpike + log10(4)), 1, 0),
@@ -245,7 +245,7 @@ if (study_name %in% c("COVE", "MockCOVE")) {
 # Read in data from HVTN705
 if (study_name == "HVTN705") {
   # Add BAMA antigen data to the original dataset
-  dat.mock <- dat.mock %>%
+  dat_proc <- dat_proc %>%
     select(-matches("Day1")) 
   # baseline risk factors
   briskfactors <- c("RSA", "Age", "BMI", "Riskscore")
@@ -272,7 +272,7 @@ if (study_name == "HVTN705") {
 
   # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
   # imputed values for markers (for phase 2 data) from dat.wide.v
-  dat.ph1 <- dat.mock %>%
+  dat.ph1 <- dat_proc %>%
     rename(Ptid = Subjectid) %>%
     filter(Ph1ptids.D210 == 1 & Trt == 1) %>%
     # Drop any observation with NA values in Ptid, Trt, briskfactors, endpoint and wt.D210
