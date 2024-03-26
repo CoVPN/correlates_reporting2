@@ -101,7 +101,7 @@ for (idx in 1:1) { # 1 with placebo lines, 2 without placebo lines. Implementati
 #hinge.fit.coxph=list()
 #for (a in assays) {
 #    # lots of errors probably due to bootstrap scheme
-#    hinge.fit.coxph[[a]]=   chngptm(form.0, as.formula("~Day"%.%tpeak%.%a),          dat.mock.vacc.seroneg.ph2, type="hinge", family="coxph",    var.type="bootstrap", weights=if(tpeak=="57") dat.vacc.pop.ph2$wt.D57 else dat.vacc.pop.ph2$wt.D29, verbose=0, ci.bootstrap.size=B, ncpu=numCores)
+#    hinge.fit.coxph[[a]]=   chngptm(form.0, as.formula("~Day"%.%tpeak%.%a),          dat_proc.vacc.seroneg.ph2, type="hinge", family="coxph",    var.type="bootstrap", weights=if(tpeak=="57") dat.vacc.pop.ph2$wt.D57 else dat.vacc.pop.ph2$wt.D29, verbose=0, ci.bootstrap.size=B, ncpu=numCores)
 #}
 #save(hinge.fit.logistic, hinge.fit.coxph, file=paste0(save.results.to, "hinge.fits.Rdata"), save2input.only=TRUE)
 #load(file=paste0(save.results.to, "hinge.fits.Rdata"))

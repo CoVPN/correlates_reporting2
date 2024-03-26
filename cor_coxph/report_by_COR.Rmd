@@ -101,9 +101,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 
 ```{r, echo=FALSE, results='asis'}
 
-if (TRIAL=="janssen_partA_VL") {
-  
-} else if(!contain(attr(config,"config"),"senior") & file.exists(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd')))) {
+if(TRIAL %in% c("azd1222")) {
   message ("forest plots")
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')

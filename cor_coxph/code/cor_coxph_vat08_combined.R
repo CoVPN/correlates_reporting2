@@ -47,20 +47,20 @@ myprint(B, numPerm)
 
 ## add trichotomized markers 
 
-dat.vac.seropos.2 = subset(dat.mock, Trt==1 & ph1 & Bserostatus==1 & Trialstage==2)
+dat.vac.seropos.2 = subset(dat_proc, Trt==1 & ph1 & Bserostatus==1 & Trialstage==2)
 dat.vac.seropos.2 = add.trichotomized.markers (dat.vac.seropos.2, all.markers, wt.col.name="wt")
 
 # use the cut points from nnaive stage 2 for nnaive stage 1 
 marker.cutpoints = attr(dat.vac.seropos.2, "marker.cutpoints")
 
-dat.vac.seropos.1 = subset(dat.mock, Trt==1 & ph1 & Trialstage==1 & Bserostatus==1)
+dat.vac.seropos.1 = subset(dat_proc, Trt==1 & ph1 & Trialstage==1 & Bserostatus==1)
 for (a in all.markers) {        
   dat.vac.seropos.1[[a%.%'cat']] = cut(dat.vac.seropos.1[[a]], breaks = c(-Inf, marker.cutpoints[[a]], Inf))
   # attr(dat.vac.seropos.1, "marker.cutpoints")[[a]] = marker.cutpoints[[a]]
   print(table(dat.vac.seropos.1[[a%.%'cat']]))
 }
 
-dat.vac.seroneg.2 = subset(dat.mock, Trt==1 & ph1 & Trialstage==2 & Bserostatus==0)
+dat.vac.seroneg.2 = subset(dat_proc, Trt==1 & ph1 & Trialstage==2 & Bserostatus==0)
 dat.vac.seroneg.2 = add.trichotomized.markers (dat.vac.seroneg.2, all.markers, wt.col.name="wt")
 marker.cutpoints.neg = attr(dat.vac.seroneg.2, "marker.cutpoints")
 
@@ -79,9 +79,9 @@ for (a in all.markers) {
 
 
 # add placebo counterpart
-dat.pla.seropos.1=subset(dat.mock, Trt==0 & ph1 & Trialstage==1 & Bserostatus==1)
-dat.pla.seroneg.2=subset(dat.mock, Trt==0 & ph1 & Trialstage==2 & Bserostatus==0)
-dat.pla.seropos.2=subset(dat.mock, Trt==0 & ph1 & Trialstage==2 & Bserostatus==1)
+dat.pla.seropos.1=subset(dat_proc, Trt==0 & ph1 & Trialstage==1 & Bserostatus==1)
+dat.pla.seroneg.2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==0)
+dat.pla.seropos.2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==1)
 
 # for validation use
 rv=list() 

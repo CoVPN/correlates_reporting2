@@ -70,8 +70,8 @@ if (study_name=="PREVENT19") {
   assay_lim["bindRBD", !grepl("Delta", times), "lb"] <- floor(log10(lloqs["bindSpike"] / 2))
 }
 if (study_name=="VAT08") {
-  assay_lim["bindSpike_mdw", !grepl("Delta", times), "lb"] <- floor(min(dat.mock[, grepl("bindSpike_mdw", colnames(dat.mock)) & !grepl("Delta", colnames(dat.mock))], na.rm=T))
-  assay_lim["pseudoneutid50_mdw", !grepl("Delta", times), "lb"] <- floor(min(dat.mock[, grepl("pseudoneutid50_mdw", colnames(dat.mock)) & !grepl("Delta", colnames(dat.mock))], na.rm=T))
+  assay_lim["bindSpike_mdw", !grepl("Delta", times), "lb"] <- floor(min(dat_proc[, grepl("bindSpike_mdw", colnames(dat_proc)) & !grepl("Delta", colnames(dat_proc))], na.rm=T))
+  assay_lim["pseudoneutid50_mdw", !grepl("Delta", times), "lb"] <- floor(min(dat_proc[, grepl("pseudoneutid50_mdw", colnames(dat_proc)) & !grepl("Delta", colnames(dat_proc))], na.rm=T))
   for (aa in assays[grepl("bind", assays) & !grepl("mdw", assays)]){
     assay_lim[aa, !grepl("Delta", times), "lb"] <- floor(log10(lloqs[aa] / 2))
   }
@@ -81,7 +81,7 @@ assay_lim[assay_immuno %in% bAb_assays, !grepl("Delta", times), "ub"] <-
 assay_lim[assay_immuno %in% nAb_assays, !grepl("Delta", times), "ub"] <-
   ceiling(MaxID50ID80) + ceiling(MaxID50ID80) %% 2
 if (study_name=="VAT08") {
-  assay_lim["pseudoneutid50_mdw", !grepl("Delta", times), "ub"] <- ceiling(max(dat.mock[,"Day22pseudoneutid50_mdw"], na.rm=T))
+  assay_lim["pseudoneutid50_mdw", !grepl("Delta", times), "ub"] <- ceiling(max(dat_proc[,"Day22pseudoneutid50_mdw"], na.rm=T))
 }
 assay_lim[assay_immuno %in% live_assays, !grepl("Delta", times), "ub"] <-
   ceiling(Maxlive50) + ceiling(Maxlive50) %% 2

@@ -21,25 +21,25 @@ config.cor <- config::get(config = COR)
 
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0
-wt.vars <- colnames(dat.mock)[grepl("wt.D", colnames(dat.mock))]
-for (a in wt.vars) dat.mock[a][is.na(dat.mock[a])]<-0
+wt.vars <- colnames(dat_proc)[grepl("wt.D", colnames(dat_proc))]
+for (a in wt.vars) dat_proc[a][is.na(dat_proc[a])]<-0
 
 if(T){ # for ENSEMBLE SA and LA reports only
   # copy Bpseudoneutid50 to Bpseudoneutid50la & calculate delta value if Day29pseudoneutid50la exists and is required for reporting
   # copy Bpseudoneutid50 to Bpseudoneutid50sa & calculate delta value if Day29pseudoneutid50sa exists and is required for reporting
-  if ("Day29pseudoneutid50la" %in% colnames(dat.mock) & "pseudoneutid50la" %in% assays) {
-    dat.mock$Bpseudoneutid50la = dat.mock$Bpseudoneutid50
-    dat.mock$Delta29overBpseudoneutid50la = pmin(log10(uloqs["pseudoneutid50la"]), dat.mock$Day29pseudoneutid50la) - pmin(log10(uloqs["pseudoneutid50la"]), dat.mock$Bpseudoneutid50la)
+  if ("Day29pseudoneutid50la" %in% colnames(dat_proc) & "pseudoneutid50la" %in% assays) {
+    dat_proc$Bpseudoneutid50la = dat_proc$Bpseudoneutid50
+    dat_proc$Delta29overBpseudoneutid50la = pmin(log10(uloqs["pseudoneutid50la"]), dat_proc$Day29pseudoneutid50la) - pmin(log10(uloqs["pseudoneutid50la"]), dat_proc$Bpseudoneutid50la)
     }
-  if ("Day29pseudoneutid50sa" %in% colnames(dat.mock) & "pseudoneutid50sa" %in% assays) {
-    dat.mock$Bpseudoneutid50sa = dat.mock$Bpseudoneutid50
-    dat.mock$Delta29overBpseudoneutid50sa = pmin(log10(uloqs["pseudoneutid50sa"]), dat.mock$Day29pseudoneutid50sa) - pmin(log10(uloqs["pseudoneutid50sa"]), dat.mock$Bpseudoneutid50sa)
+  if ("Day29pseudoneutid50sa" %in% colnames(dat_proc) & "pseudoneutid50sa" %in% assays) {
+    dat_proc$Bpseudoneutid50sa = dat_proc$Bpseudoneutid50
+    dat_proc$Delta29overBpseudoneutid50sa = pmin(log10(uloqs["pseudoneutid50sa"]), dat_proc$Day29pseudoneutid50sa) - pmin(log10(uloqs["pseudoneutid50sa"]), dat_proc$Bpseudoneutid50sa)
     }
 }
 
-if(F){# for simulated figure Peter requested on 8/2/2022, hardly lower the readouts for AZ PsV in dat.mock
+if(F){# for simulated figure Peter requested on 8/2/2022, hardly lower the readouts for AZ PsV in dat_proc
   set.seed(12345)
-  dat.mock <- dat.mock %>%
+  dat_proc <- dat_proc %>%
     mutate(randnum=runif(min=1, max=2, n()),
            Day57pseudoneutid50 = ifelse(ph2.D57==1 & EventIndPrimaryD57==1 & Day57pseudoneutid50>2,  # cases
                                         Day57pseudoneutid50-randnum, 
@@ -61,7 +61,7 @@ source(here("code", "params.R"))
 
 
 ################################################
-dat <- as.data.frame(dat.mock); #dat$ph2.D43 = dat$ph2.D43.original; dat$wt.D22 = dat$wt.D22.original; dat$wt.D43 = dat$wt.D43.original
+dat <- as.data.frame(dat_proc); #dat$ph2.D43 = dat$ph2.D43.original; dat$wt.D22 = dat$wt.D22.original; dat$wt.D43 = dat$wt.D43.original
 
 Args <- commandArgs(trailingOnly=TRUE)
 COR=Args[1]
@@ -436,9 +436,9 @@ if (study_name=="AZD1222") {
 
 # define response rates
 if (attr(config,"config")=="janssen_pooled_partA"){
-  dat.mock$Day71pseudoneutid50uncensored=NA; dat.mock$Mon6pseudoneutid50uncensored=NA;
+  dat_proc$Day71pseudoneutid50uncensored=NA; dat_proc$Mon6pseudoneutid50uncensored=NA;
   labels.time = c("Day 1","Day 29", "Day 71", "Month 6"); names(labels.time) = times_}
-resp <- getResponder(dat.mock, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day|Mon", "M"), times_, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
+resp <- getResponder(dat_proc, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day|Mon", "M"), times_, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
                assays=assays, pos.cutoffs = pos.cutoffs)
 resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
   pivot_longer(!Ptid, names_to = "category", values_to = "response")
