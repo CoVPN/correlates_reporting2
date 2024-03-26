@@ -1,7 +1,7 @@
-# COR="D35prevent19_stage2_severe";
-# COR="D35prevent19_stage2_delta";
+# COR="D57azd1222_stage2_severe_nAb";
+# COR="D57azd1222_stage2_severe_bAb";
 renv::activate(project = here::here(".."))
-Sys.setenv(TRIAL = "prevent19_stage2")
+Sys.setenv(TRIAL = "azd1222_stage2")
 Sys.setenv(VERBOSE = 1)
 source(here::here("..", "_common.R")) # dat.mock is made
 
@@ -42,30 +42,30 @@ source(here::here("..", "_common.R")) # dat.mock is made
         file = paste0(save.results.to, "timepoints_cum_risk_" %.% study_name))
   
   
-  if (COR == "D35prevent19_stage2_delta") {
+  if (COR == "D57azd1222_stage2_delta_nAb" | COR == "D57azd1222_stage2_delta_bAb") {
     # for use in competing risk estimation
     comp.risk = T
-    dat.mock$EventIndOfInterest = dat.mock$DeltaEventIndD35_108to21Dec10
-    dat.mock$EventIndCompeting  = dat.mock$NonDeltaEventIndD35_108to21Dec10
+    dat.mock$EventIndOfInterest = dat.mock$DeltaEventIndD57_120to21Dec10
+    dat.mock$EventIndCompeting  = dat.mock$NonDeltaEventIndD57_120to21Dec10
     
     form.0 = update(
-      Surv(EventTimeD35_to21Dec10, EventIndOfInterest) ~ 1,
+      Surv(EventTimeD57_to21Dec10, EventIndOfInterest) ~ 1,
       as.formula(config$covariates)
     )
     dat.mock$yy = dat.mock$EventIndOfInterest
     
-  } else if (COR == "D35prevent19_stage2_severe") {
+  } else if (COR == "D57azd1222_stage2_severe_nAb" | COR == "D57azd1222_stage2_severe_bAb") {
     form.0 = update(
       Surv(
-        SevereEventTimeD35_to21Dec10,
-        SevereEventIndD35_108to21Dec10
+        SevereEventTimeD57_to21Dec10,
+        SevereEventIndD57_120to21Dec10
       ) ~ 1,
       as.formula(config$covariates)
     )
-    dat.mock$yy = dat.mock$SevereEventIndD35_108to21Dec10
+    dat.mock$yy = dat.mock$SevereEventIndD57_120to21Dec10
   }
   
-  for (a in c("Day35"%.%assays)) {
+  for (a in c("Day57"%.%assays)) {
     dat.mock[[a%.%"centered"]] = scale(dat.mock[[a]], scale=F)
   }
   
@@ -100,12 +100,7 @@ source(here::here("..", "_common.R")) # dat.mock is made
     }
   }
   
-  
-  
-  # some exploratory code
-  if (config$is_ows_trial)
-    source(here::here("code", "cor_coxph_misc.R"))
-  
+
   #create twophase design object
   design.vacc.seroneg <-
     twophase(
@@ -114,7 +109,9 @@ source(here::here("..", "_common.R")) # dat.mock is made
       subset =  ~ ph2,
       data = dat.vac.seroneg
     )
+  # there are only 4 ph2 ptids in non-US, senior population, none of who are cases
   with(dat.vac.seroneg, table(Wstratum, ph2))
+  # subset(dat.vac.seroneg, Country!=2 & Senior & ph2, EventIndPrimary)
   
   # table of ph1 and ph2 cases
   tab = with(dat.vac.seroneg, table(ph2, EventIndPrimary))
@@ -137,8 +134,7 @@ source(here::here("..", "_common.R")) # dat.mock is made
 
 source(here::here("code", "cor_coxph_risk_no_marker.R"))
 
-if (Sys.getenv("COR_COXPH_NO_MARKER_ONLY") == 1)
-  q("no")
+if (Sys.getenv("COR_COXPH_NO_MARKER_ONLY") == 1) q("no")
 
 
 
@@ -161,37 +157,19 @@ cor_coxph_coef_1(
 )
 
 
-
-###################################################################################################
-# Quadratic models
-
-if (COR == "D35prevent19_stage2_severe") {
-  
-  # quadratic models
-  cor_coxph_coef_n (
-    form.0,
-    design_or_dat = design.vacc.seroneg,
-    fname.suffix="Quadratic",
-    save.results.to,
-    config,
-    config.cor,
-    all.markers = sapply(assays, function (a) paste0("Day35",a, "centered + I(Day35",a, "centered^2)")),
-    all.markers.names.short,
-    
-    nCoef=2,
-    col.headers=c("D35","D35**2"),
-    verbose = T)
-  
-}
-
-
 ###################################################################################################
 # marginalized risk and controlled VE
 ###################################################################################################
 
-markers = "Day35" %.% c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "bindSpike_D614", "bindSpike_Delta1") # save time, only need these
+if (endsWith(COR, "nAb")) {
+  markers = all.markers 
+} else {
+  markers = "Day57" %.% c("bindSpike_D614", "bindSpike_Delta1") # save time, only need these
+}
 
-if (COR == "D35prevent19_stage2_severe") {
+
+if (contain(COR, "severe")) {
+  # non-competing risk
   
   cor_coxph_risk_bootstrap(
     form.0,
@@ -202,12 +180,13 @@ if (COR == "D35prevent19_stage2_severe") {
     config.cor,
 
     tfinal.tpeak,
-    all.markers = "Day35" %.% c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "bindSpike_D614", "bindSpike_Delta1"), # save time, only need these
+    all.markers = markers,
 
     comp.risk = F,
     run.Sgts = F # whether to get risk conditional on continuous S>=s
   )
 
+  
   cor_coxph_risk_plotting (
     form.0,
     dat = dat.vac.seroneg,
@@ -240,7 +219,9 @@ if (COR == "D35prevent19_stage2_severe") {
   )
 
 
-} else if (COR == "D35prevent19_stage2_delta") {
+} else if (contain(COR, "delta")) {
+  # competing risk
+  
   cor_coxph_risk_bootstrap(
     form.0 = list(form.0, as.formula(
       sub(
@@ -254,7 +235,7 @@ if (COR == "D35prevent19_stage2_severe") {
     save.results.to,
 
     tfinal.tpeak,
-    all.markers = "Day15" %.% assays,
+    all.markers = markers,
 
     numCores,
     B,
@@ -301,8 +282,6 @@ if (COR == "D35prevent19_stage2_severe") {
   )
 
 }
-
-
 
 
 print(date())

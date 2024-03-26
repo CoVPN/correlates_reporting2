@@ -89,6 +89,7 @@ if (!is.null(config$assay_metadata)) {
   }
   
   if (exists('COR')) {
+    
     if (TRIAL=='vat08_combined') {
       if (contain(COR, "nAb") | endsWith(COR,'original2')) {
         # only keeps ID50 markers
@@ -101,7 +102,15 @@ if (!is.null(config$assay_metadata)) {
           assay_metadata[assay_metadata$panel=='bindSpike' & assay_metadata$assay!="bindSpike_mdw",'lloq'] = lloq_min
         }
       }
-    } 
+      
+    } else if (COR == "D57azd1222_stage2_delta_nAb" | COR == "D57azd1222_stage2_severe_nAb") {
+      assay_metadata = subset(assay_metadata, panel=='id50')
+      
+    } else if (COR == "D57azd1222_stage2_delta_bAb" | COR == "D57azd1222_stage2_severe_bAb") {
+      assay_metadata = subset(assay_metadata, panel=='bindSpike')
+      
+    }
+    
   }  
 
   assays=assay_metadata$assay
@@ -766,11 +775,8 @@ if (exists("COR")) {
             stop("COVAIL, wrong COR")
           }
           
-        } else if (TRIAL=="azd1222_stage2") {
-          stop("todo")
           
-          
-        } else if (TRIAL %in% c("prevent19", "prevent19nvx", "prevent19_stage2", "nvx_uk302")) {
+        } else if (TRIAL %in% c("prevent19", "prevent19nvx", "prevent19_stage2", "nvx_uk302", "azd1222_stage2")) {
           # default rule for followup time is the last case in ph2 in vaccine arm
           tfinal.tpeak=with(subset(dat.mock, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
           
