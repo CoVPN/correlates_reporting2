@@ -26,34 +26,34 @@ if (F){
   # assay_labels: [Binding Antibody to Spike, PsV Neutralization 50% Titer]
   # assay_labels_short: [Anti Spike IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   # 2. create azd1222_all_data_processed_with_riskscore 
-  # by combining azd1222_data_processed_with_riskscore.csv and azd1222_bAb_data_processed_with_riskscore.csv and assign to dat.mock
+  # by combining azd1222_data_processed_with_riskscore.csv and azd1222_bAb_data_processed_with_riskscore.csv and assign to dat_proc
   azd1222_bAb <- read.csv(here("..", "data_clean", "azd1222_bAb_data_processed_with_riskscore.csv"), header = TRUE)
   azd1222 <- read.csv(here("..", "data_clean", "azd1222_data_processed_with_riskscore.csv"), header = TRUE)
   azd1222_bAb$Bpseudoneutid50=NULL
   azd1222_bAb$Day29pseudoneutid50=NULL
   azd1222_bAb$Day57pseudoneutid50=NULL
   azd1222_bAb$wt.subcohort=NULL
-  dat.mock <- azd1222_bAb %>%
+  dat_proc <- azd1222_bAb %>%
     left_join(azd1222[,c("Ptid","Bpseudoneutid50","Day29pseudoneutid50","Day57pseudoneutid50",
                          "Delta29overBpseudoneutid50","Delta57overBpseudoneutid50","Delta57over29pseudoneutid50",
                          "ph2.immuno","wt.subcohort","TwophasesampIndD29","TwophasesampIndD57")], by="Ptid")
   # wt.subcohort is from nAb dataset based on email discussion with Youyi on 7/22/2022:
   # Youyi: one based on ID50 weights because we have less ID50 samples than bAb samples
-  table(dat.mock$ph2.immuno.x, dat.mock$ph2.immuno.y)
-  dat.mock$ph2.immuno = with(dat.mock, ph2.immuno.x==1 & ph2.immuno.y==1, 1, 0) # 628
-  dat.mock$TwophasesampIndD29 = with(dat.mock, TwophasesampIndD29.x==1 & TwophasesampIndD29.y==1, 1, 0) # 828
-  dat.mock$TwophasesampIndD57 = with(dat.mock, TwophasesampIndD57.x==1 & TwophasesampIndD57.y==1, 1, 0) # 659
+  table(dat_proc$ph2.immuno.x, dat_proc$ph2.immuno.y)
+  dat_proc$ph2.immuno = with(dat_proc, ph2.immuno.x==1 & ph2.immuno.y==1, 1, 0) # 628
+  dat_proc$TwophasesampIndD29 = with(dat_proc, TwophasesampIndD29.x==1 & TwophasesampIndD29.y==1, 1, 0) # 828
+  dat_proc$TwophasesampIndD57 = with(dat_proc, TwophasesampIndD57.x==1 & TwophasesampIndD57.y==1, 1, 0) # 659
   
-  dim(subset(dat.mock, EarlyendpointD57==0 & Perprotocol==1 & SubcohortInd==1 & 
+  dim(subset(dat_proc, EarlyendpointD57==0 & Perprotocol==1 & SubcohortInd==1 & 
                !is.na(Bpseudoneutid50) & !is.na(Day29pseudoneutid50) & 
                !is.na(BbindSpike) & !is.na(Day29bindSpike))) # 773, 
   # if change to EarlyendpointD29==0, save three participants by using EarlyendpointD29 instead of EarlyendpointD57 for Day 29 plots
-  dim(subset(dat.mock, EarlyendpointD57==0 & Perprotocol==1 & SubcohortInd==1 & 
+  dim(subset(dat_proc, EarlyendpointD57==0 & Perprotocol==1 & SubcohortInd==1 & 
                !is.na(Bpseudoneutid50) & !is.na(Day29pseudoneutid50) & !is.na(Day57pseudoneutid50) & 
                !is.na(BbindSpike) & !is.na(Day29bindSpike) & !is.na(Day57bindSpike))) # 628
 
   # subsetting on vaccine recipients with ID50 value > LOD and with IgG spike > positivity cut-off at Day 57
-  dat.mock <- subset(dat.mock, Day57bindSpike > log10(pos.cutoffs["bindSpike"]) & Day57pseudoneutid50 > log10(llods["pseudoneutid50"]))
+  dat_proc <- subset(dat_proc, Day57bindSpike > log10(pos.cutoffs["bindSpike"]) & Day57pseudoneutid50 > log10(llods["pseudoneutid50"]))
 }
 
 if (F){
@@ -71,22 +71,22 @@ if (F){
   # assay_labels_short: [Live Virus-mnAb ID50 (IU50/ml), Anti Spike IgG (BAU/ml), Anti Spike B.1.1.7 IgG (BAU/ml), Anti Spike B.1.351 IgG (BAU/ml), Anti Spike P.1 IgG (BAU/ml), Anti RBD IgG (BAU/ml), Anti RBD B.1.1.7 IgG (BAU/ml), Anti RBD B.1.351 IgG (BAU/ml), Anti RBD P.1 IgG (BAU/ml), Anti N IgG (BAU/ml)]
   # llox_label: [LOD,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ,LLOQ]
   # 2. create profiscov_all_data_processed_with_riskscore 
-  # by combining profiscov_data_processed_with_riskscore.csv and profiscov_lvmn_data_processed_with_riskscore.csv and assign to dat.mock
+  # by combining profiscov_data_processed_with_riskscore.csv and profiscov_lvmn_data_processed_with_riskscore.csv and assign to dat_proc
   profiscov <- read.csv(here("..", "data_clean", "profiscov_data_processed_with_riskscore.csv"), header = TRUE)
   profiscov_lvmn <- read.csv(here("..", "data_clean", "profiscov_lvmn_data_processed_with_riskscore.csv"), header = TRUE)
   profiscov$Bliveneutmn50=NULL
   profiscov$Day43liveneutmn50=NULL
   profiscov$wt.subcohort=NULL
-  dat.mock <- profiscov %>%
+  dat_proc <- profiscov %>%
     left_join(profiscov_lvmn[,c("Ptid","Bliveneutmn50","Day43liveneutmn50","Delta43overBliveneutmn50",
                          "ph2.immuno","wt.subcohort","TwophasesampIndD43")], by="Ptid")
   # wt.subcohort is from nAb dataset based on email discussion with Youyi on 7/22/2022:
   # Youyi: one based on ID50 weights because we have less ID50 samples than bAb samples
-  table(dat.mock$ph2.immuno.x, dat.mock$ph2.immuno.y)
-  dat.mock$ph2.immuno = with(dat.mock, ph2.immuno.x==1 & ph2.immuno.y==1, 1, 0) # 240
-  dat.mock$TwophasesampIndD43 = with(dat.mock, TwophasesampIndD43.x==1 & TwophasesampIndD43.y==1, 1, 0) # 564
+  table(dat_proc$ph2.immuno.x, dat_proc$ph2.immuno.y)
+  dat_proc$ph2.immuno = with(dat_proc, ph2.immuno.x==1 & ph2.immuno.y==1, 1, 0) # 240
+  dat_proc$TwophasesampIndD43 = with(dat_proc, TwophasesampIndD43.x==1 & TwophasesampIndD43.y==1, 1, 0) # 564
   
-  dim(subset(dat.mock, EarlyendpointD43==0 & Perprotocol==1 & SubcohortInd==1 & 
+  dim(subset(dat_proc, EarlyendpointD43==0 & Perprotocol==1 & SubcohortInd==1 & 
                !is.na(Bliveneutmn50) & !is.na(Day43liveneutmn50) & 
                !is.na(BbindSpike) & !is.na(Day43bindSpike))) # 344
   
@@ -94,9 +94,9 @@ if (F){
 
 # for unknown reason, there is no pre-set senior and race variables in the PROFISCOV (Butantan, Sinovac) dataset
 if (study_name=="PROFISCOV") {
-  dat.mock$Senior <- as.numeric(with(dat.mock, Age >= age.cutoff, 1, 0))
+  dat_proc$Senior <- as.numeric(with(dat_proc, Age >= age.cutoff, 1, 0))
   
-  dat.mock <- dat.mock %>%
+  dat_proc <- dat_proc %>%
     mutate(
       race = labels.race[1],
       race = case_when(
@@ -116,17 +116,17 @@ if(T){ # for ENSEMBLE SA and LA reports only
   # pseudoneutid50la and pseudoneutid50sa don't have baseline variables, so
   # copy Bpseudoneutid50 to Bpseudoneutid50la & calculate delta value if Day29pseudoneutid50la exists and is required for reporting
   # copy Bpseudoneutid50 to Bpseudoneutid50sa & calculate delta value if Day29pseudoneutid50sa exists and is required for reporting
-  if ("Day29pseudoneutid50la" %in% colnames(dat.mock) & "pseudoneutid50la" %in% assays) {
-    dat.mock$Bpseudoneutid50la = dat.mock$Bpseudoneutid50
-    dat.mock$Delta29overBpseudoneutid50la = pmin(log10(uloqs["pseudoneutid50la"]), dat.mock$Day29pseudoneutid50la) - pmin(log10(uloqs["pseudoneutid50la"]), dat.mock$Bpseudoneutid50la)
+  if ("Day29pseudoneutid50la" %in% colnames(dat_proc) & "pseudoneutid50la" %in% assays) {
+    dat_proc$Bpseudoneutid50la = dat_proc$Bpseudoneutid50
+    dat_proc$Delta29overBpseudoneutid50la = pmin(log10(uloqs["pseudoneutid50la"]), dat_proc$Day29pseudoneutid50la) - pmin(log10(uloqs["pseudoneutid50la"]), dat_proc$Bpseudoneutid50la)
   }
-  if ("Day29pseudoneutid50sa" %in% colnames(dat.mock) & "pseudoneutid50sa" %in% assays) {
-    dat.mock$Bpseudoneutid50sa = dat.mock$Bpseudoneutid50
-    dat.mock$Delta29overBpseudoneutid50sa = pmin(log10(uloqs["pseudoneutid50sa"]), dat.mock$Day29pseudoneutid50sa) - pmin(log10(uloqs["pseudoneutid50sa"]), dat.mock$Bpseudoneutid50sa)
+  if ("Day29pseudoneutid50sa" %in% colnames(dat_proc) & "pseudoneutid50sa" %in% assays) {
+    dat_proc$Bpseudoneutid50sa = dat_proc$Bpseudoneutid50
+    dat_proc$Delta29overBpseudoneutid50sa = pmin(log10(uloqs["pseudoneutid50sa"]), dat_proc$Day29pseudoneutid50sa) - pmin(log10(uloqs["pseudoneutid50sa"]), dat_proc$Bpseudoneutid50sa)
   }
 }
 
-dat <- dat.mock; #dat$ph2.immuno = dat$ph2.D43.original; dat$wt.subcohort = dat$wt.D43.original
+dat <- dat_proc; #dat$ph2.immuno = dat$ph2.D43.original; dat$wt.subcohort = dat$wt.D43.original
 
 print("Data preprocess")
 
