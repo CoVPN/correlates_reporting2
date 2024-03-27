@@ -1,5 +1,5 @@
 ---
-title: "PREVENT-19 Stage 2 Delta Correlates"
+title: "Data Processing for PREVENT-19 Stage 2 Delta Correlates"
 output: html_document
 ---
 
@@ -85,33 +85,7 @@ mytable(dat_mapped$NumberdaysD1toBD1 - dat_mapped$DeltaEventTimeD1 < 0, dat_mapp
 with(subset(dat_mapped, ph1.D35==1 & Country==0 & DeltaEventIndD1==1), mytable(is.na(NumberdaysD1toBD1), !is.na(Day35bindSpike_Delta3)))
 ```
 
-**Stage 2 sampling lists**:
-
-- For the 402 cases,  the time points of interest are D35 (after primary series in initial period),  the acute illness visit associated with the Delta case, and crossover 1 (if applicable for subject).   D35 may or may not be already tested earlier at the USG labs.
-
-- For the 649 non-case, the D35 blood sample should already be at the USG lab from earlier.
-
-  - The list of 279 non-cases is a subset of the list of 649. For the 279 subjects, the time points of interest are D35, crossover 1 and booster D0 - the database says these subjects should have all 3 visits/blood sample.  
-
-
-
-**Number of cases in ph1 and ph2**
-```{r, echo=T}
-with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1), mytable(ph2.D35, DeltaEventIndD35_108to21Dec10))
-
-with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1), mytable(ph2.D35, SevereEventIndD35_108to21Dec10))
-
-with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1 & Severity_first=="SEVERE"), mytable(VARTYPE_first1, ph2.D35))
-
-```
-
-
-Distributions of sampling weights:
-```{r}
-with (subset(dat_proc, ph2.D35==1 & Trt==1 & Bserostatus==0 & Country==0), table(wt.D35, Wstratum))
-```
-
-### Adjusting endpoint period
+### Adjusting endpoint follow-up period
 
 Distribution of variant first (variant of the first COVID event). Not all Delta have markers b/c sampling requires DD1 samples.
 ```{r}
@@ -224,7 +198,7 @@ for (j in 1:2){
 
 
 
-### Batch effect
+#### Batch effect
 
 679 D35 samples (including cases and non-cases) have ID50s measured twice by Monogram, once in Dec 21 in the Stage 1 work and once in July 23 in the Stage 2 work.
 The Pearson correlation is 0.88 between the two. Two-sample test by wilcoxon paired test p value is 6.046e-16. 
@@ -290,6 +264,37 @@ mytable(dat_mapped$D35ancestralnAbBatch)
 ```
 
 
+### Two-phase sampling
+
+Stage 2 sampling lists (Wayne):
+
+- For the 402 cases,  the time points of interest are D35 (after primary series in initial period),  the acute illness visit associated with the Delta case, and crossover 1 (if applicable for subject).   D35 may or may not be already tested earlier at the USG labs.
+
+- For the 649 non-case, the D35 blood sample should already be at the USG lab from earlier.
+
+  - The list of 279 non-cases is a subset of the list of 649. For the 279 subjects, the time points of interest are D35, crossover 1 and booster D0 - the database says these subjects should have all 3 visits/blood sample.  
+
+
+
+Number of cases in ph1 and ph2
+```{r, echo=T}
+with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1), mytable(ph2.D35, DeltaEventIndD35_108to21Dec10))
+
+with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1), mytable(ph2.D35, SevereEventIndD35_108to21Dec10))
+
+with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1 & Severity_first=="SEVERE"), mytable(VARTYPE_first1, ph2.D35))
+
+```
+
+
+Distributions of samples by strata. Stratum 31 is Delta cases and 32 is severe cases. Note that non-Delta, non-severe cases are not sampled, so they are represented by the subcohort.
+```{r}
+with (subset(dat_proc, ph2.D35==1 & Trt==1 & Bserostatus==0 & Country==0), table(ph2.D35, Wstratum))
+```
+
+
+
+
 ### Covariates adjustment
 
 Age affects immune response. 
@@ -301,14 +306,14 @@ myboxplot(Day35pseudoneutid50_D614G~Senior, subset(dat_proc, ph1.D35_108==1 & Co
 
 Age>=65 is a stratification variable of the randomization and adjusted for in the primary efficacy analysis. 
 
-We will **adjust for Age in severe COVID correlates analyses**.
+We will **adjust for Age in severe COVID correlates analyses**. Risk of severe COVID increases with age.
 ```{r}
 coxph(Surv(SevereEventTimeD35_to21Dec10, SevereEventIndD35_108to21Dec10)~Age, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
 coxph(Surv(SevereEventTimeD35_to21Dec10, SevereEventIndD35_108to21Dec10)~Senior, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
 ```
 
 
-We will **adjust for age group in Delta COVID correlates analyses**.
+We will **adjust for age group in Delta COVID correlates analyses**. Risk of Delta COVID decreases with age group.
 ```{r}
 coxph(Surv(DeltaEventTimeD35_to21Dec10, DeltaEventIndD35_108to21Dec10)~Age, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))
 coxph(Surv(DeltaEventTimeD35_to21Dec10, DeltaEventIndD35_108to21Dec10)~Senior, subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1))

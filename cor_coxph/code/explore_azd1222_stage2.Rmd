@@ -1,5 +1,5 @@
 ---
-title: "AZD1222 Stage 2 Correlates"
+title: "Data Processing for AZD1222 Stage 2 Correlates"
 output: html_document
 ---
 
@@ -30,7 +30,7 @@ dat_mapped$col2[dat_mapped$EventIndPrimaryD1==1]=2 # set cases to red
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/azd1222_stage2_assay_metadata.csv')
 assays=assay_metadata$assay
 
-dat_proc = read.csv('/trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_stage2_data_processed_20240322.csv')
+dat_proc = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240322.csv')
 
 times="Day"%.%c(57,90,180,360)
 ```
@@ -43,26 +43,6 @@ The dataset contains both treatment arms and both seropos and seroneg, and has U
 mytable(dat_mapped$Bserostatus)
 mytable(dat_mapped$Country, dat_mapped$Trt)
 mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list, dat_mapped$Trt)
-```
-
-
-
-
-Number of severe cases in ph1 and ph2
-```{r}
-with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_120to21Dec10))
-```
-
-Number of Delta cases in D57_120to21Dec10 in ph1 and ph2
-```{r}
-with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_120to21Dec10))
-```
-
-
-Distributions of sampling weights:
-```{r}
-with (subset(dat_proc, ph2.D57nAb==1 & Trt==1 & Bserostatus==0), table(wt.D57nAb, Wstratum))
-with (subset(dat_proc, ph2.D57bAb==1 & Trt==1 & Bserostatus==0), table(wt.D57bAb, Wstratum))
 ```
 
 
@@ -156,10 +136,29 @@ print(table(dat$tmp, dat$DeltaEventIndD57_120to21Dec10))
 ```
 
 
+### Two-phase sampling
+
+Number of severe cases in ph1 and ph2
+```{r}
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_120to21Dec10))
+```
+
+Number of Delta cases in D57_120to21Dec10 in ph1 and ph2
+```{r}
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_120to21Dec10))
+```
+
+
+Distributions of sampling weights:
+```{r}
+with (subset(dat_proc, ph2.D57nAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57nAb, Wstratum))
+with (subset(dat_proc, ph2.D57bAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57bAb, Wstratum))
+```
+
+
 
 ### Covariates adjustment
 
-Age>=65 is a stratification variable of the randomization and adjusted for in the primary efficacy analysis. 
 
 We will **adjust for Age in severe COVID correlates analyses**.
 ```{r}
@@ -168,7 +167,8 @@ coxph(Surv(SevereEventTimeD57_to21Dec10, SevereEventIndD57_120to21Dec10)~Senior+
 ```
 
 
-We will **adjust for Senior in Delta COVID correlates analyses**.
+We will **adjust for Age>=65 in Delta COVID correlates analyses**. Age group is a stratification variable of the randomization and adjusted for in the primary efficacy analysis. Furthermore, nonparametric risk estimate shows that the risk as a function of age is a step function with change point at 65.
+
 
 ```{r}
 coxph(Surv(DeltaEventTimeD57_to21Dec10, DeltaEventIndD57_120to21Dec10)~Age+risk_score, subset(dat_proc, ph1.D57_120==1 & Bserostatus==0 & Trt==1))
