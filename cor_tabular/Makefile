@@ -12,8 +12,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janss
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_EUA janssen_na_EUA janssen_la_EUA janssen_sa_EUA))
 	Rscript code/make_table_all.R D29IncludeNotMolecConfirmed
 	Rscript code/make_table_all.R D29IncludeNotMolecConfirmedstart1
-else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA  janssen_la_partA ))
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA  janssen_la_partA))
 	Rscript code/make_table_all.R D29IncludeNotMolecConfirmed
+	Rscript code/make_table_all.R D29ModerateIncludeNotMolecConfirmed
 	Rscript code/make_table_all.R D29SevereIncludeNotMolecConfirmed
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partAsenior janssen_pooled_partAnonsenior janssen_na_partA janssen_na_partAsenior janssen_na_partAnonsenior janssen_la_partAsenior janssen_la_partAnonsenior janssen_sa_partA  janssen_sa_partAnonsenior)) # janssen_sa_partAsenior has too few cases
 	Rscript code/make_table_all.R D29IncludeNotMolecConfirmed
@@ -34,6 +35,12 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/make_table_all.R D91
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov_lvmn))
 	Rscript code/make_table_all.R D43	
+else ifeq ($(TRIAL),$(filter $(TRIAL), id27hpv))
+	Rscript code/make_table_all_hpv.R M18	
+else ifeq ($(TRIAL),$(filter $(TRIAL), covail))
+	Rscript code/make_table_all_covail.R D15to91
+	Rscript code/make_table_all_covail.R D92to181
+	Rscript code/make_table_all_covail.R D15to181
 endif
 
 ## clean            : delete contents of data_clean/ and output/ directories
