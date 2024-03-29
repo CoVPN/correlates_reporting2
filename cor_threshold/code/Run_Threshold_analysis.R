@@ -37,7 +37,7 @@ begin=Sys.time()
 
 short_key <- COR
 
-data <- dat.mock
+data <- dat_proc
 data$Ttilde <- data$EventTimePrimary
 data$Delta <- data$EventIndPrimary
 data$TwophasesampInd <- data$ph2

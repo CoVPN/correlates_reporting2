@@ -12,7 +12,7 @@ for (a in assays) {
     fit=svycoxph(update(form.0, as.formula(paste0("~.+Day",tpeak, a))), design=design.vacc.seroneg) 
     fits[[1]]=fit
     
-    for (k in 1:max(dat.mock$Bstratum)) {
+    for (k in 1:max(dat_proc$Bstratum)) {
         if(sum (subset(dat.vac.seroneg, Bstratum==k, yy))<=2) {
             # 0-2 cases
             fits[[k+1]]=NA
@@ -32,7 +32,7 @@ for (a in assays) {
 }
 
 nevents=c(nrow(subset(dat.vac.seroneg, yy==1)),
-          sapply(1:max(dat.mock$Bstratum), function (k) nrow(subset(dat.vac.seroneg, yy==1 & Bstratum==k))) 
+          sapply(1:max(dat_proc$Bstratum), function (k) nrow(subset(dat.vac.seroneg, yy==1 & Bstratum==k))) 
 )
 
 rv$fr.1=list(nevents=nevents)

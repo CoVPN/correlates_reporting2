@@ -12,11 +12,11 @@ source(here::here("code", "params.R"))
 # note that if delta are used, delta needs to be recomputed
 for (a in assays) {
   for (t in "Day"%.%tpeak ) {
-    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
+    dat_proc[[t %.% a]] <- ifelse(dat_proc[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat_proc[[t %.% a]])
   }
 }    
-dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
-dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
+dat.vac.seroneg=subset(dat_proc, Trt==1 & ph1)
+dat.pla.seroneg=subset(dat_proc, Trt==0 & ph1)
 
 
 

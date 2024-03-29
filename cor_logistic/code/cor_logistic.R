@@ -8,7 +8,7 @@
 
 print(paste0("starting time: ", date()))
 renv::activate(project = here::here(".."))     
-source(here::here("..", "_common.R")) # dat.mock is made
+source(here::here("..", "_common.R")) # dat_proc is made
 
 
 {
@@ -48,10 +48,10 @@ myprint(B)
 myprint(numPerm)
 
 # define an alias for EventIndPrimaryDxx
-dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
+dat_proc$yy=dat_proc[[config.cor$EventIndPrimary]]
 
 # there is only one analysis population
-dat.ph1=subset(dat.mock, ph1)
+dat.ph1=subset(dat_proc, ph1)
 
 
 # define trichotomized markers

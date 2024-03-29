@@ -42,7 +42,7 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-marker.cutpoints = attr(dat.mock, "marker.cutpoints")
+marker.cutpoints = attr(dat_proc, "marker.cutpoints")
 # save cut points to files
 for (a in names(marker.cutpoints)) {        
   write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
@@ -51,13 +51,13 @@ for (a in names(marker.cutpoints)) {
 
 # create centered version of markers for later use, which is necessary because we do not want to do scaling within naive and non-naive separately
 for (a in c("Day15"%.%assays, "B"%.%assays, "Delta15overB"%.%assays)) {
-  dat.mock[[a%.%"centered"]] = scale(dat.mock[[a]], scale=F)
+  dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
 }
 
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
-dat.sanofi = subset(dat.mock, ph1.D15 & TrtSanofi==1)
+dat.sanofi = subset(dat_proc, ph1.D15 & TrtSanofi==1)
 dat.sanofi$ph2=1
-dat.onedosemRNA = subset(dat.mock, ph1.D15 & TrtonedosemRNA==1) 
+dat.onedosemRNA = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
 dat.onedosemRNA$ph2=1
 
 dat.onedosemRNA$Day15_MDW_L = dat.onedosemRNA$Day15pseudoneutid50_MDWcat=="(-Inf,3.62]"

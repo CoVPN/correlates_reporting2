@@ -35,10 +35,10 @@ header-includes: \usepackage{caption}
 ```{r dataio, echo=FALSE}
 
 # read in practice data
-dat.mock <- read.csv(here("verification","verification_input", data_in_file), stringsAsFactors = F)
+dat_proc <- read.csv(here("verification","verification_input", data_in_file), stringsAsFactors = F)
 
 # Filter the data to the phase 1 ptids of the immunogenicity cohort, create immuno_ind for phase 2 ptids
-dat <- subset(dat.mock, ph1.immuno==1)
+dat <- subset(dat_proc, ph1.immuno==1)
 dat$immuno_ind <- dat$ph2.immuno
 
 # LLOD truncation being taken care of upstream

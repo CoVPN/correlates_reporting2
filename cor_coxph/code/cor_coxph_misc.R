@@ -1,32 +1,32 @@
-#with(subset(dat.mock, Trt==1 & ph1), table(EventIndPrimary, useNA="ifany"))
-#with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary, useNA="ifany"))
+#with(subset(dat_proc, Trt==1 & ph1), table(EventIndPrimary, useNA="ifany"))
+#with(subset(dat_proc, Trt==1 & ph1), summary(EventTimePrimary, useNA="ifany"))
 
 #par(mfrow=c(2,2))
-#with(subset(dat.mock, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="NA"))
-#with(subset(dat.mock, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="LA"))
-#with(subset(dat.mock, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
-#with(subset(dat.mock, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
+#with(subset(dat_proc, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="NA"))
+#with(subset(dat_proc, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==0], xlim=c(0,100), main="LA"))
+#with(subset(dat_proc, Trt==1 & ph2 & Region==0), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
+#with(subset(dat_proc, Trt==1 & ph2 & Region==1), hist(EventTimePrimary[EventIndPrimary==1], xlim=c(0,100), main=""))
 
-#with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==0], useNA="ifany"))
-#with(subset(dat.mock, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==1], useNA="ifany"))
+#with(subset(dat_proc, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==0], useNA="ifany"))
+#with(subset(dat_proc, Trt==1 & ph1), summary(EventTimePrimary[EventIndPrimary==1], useNA="ifany"))
 
-#with(subset(dat.mock, ph1==1), table(EventIndPrimary, Trt))
-#with(subset(dat.mock, ph2==1), table(EventIndPrimary, Trt))
-#with(subset(dat.mock, Trt==1 & ph1), table(Wstratum, ph2))
-#with(subset(dat.mock, Trt==1 & ph1), table(tps.stratum, ph2))
-#with(subset(dat.mock, Trt==1), table(Wstratum, ph2))
-#with(subset(dat.mock, Trt==1), table(Wstratum, wt.D29))
-#with(subset(dat.mock, ph1==1), table(Delta.D210, Trt))
-#with(subset(dat.mock, ph2==1), corplot(Day210ELCZ,Day210ADCPgp140C97ZAfib))
-#with(subset(dat.mock, ph2==1), corr(cbind(Day210ELCZ,Day210ADCPgp140C97ZAfib), w = wt))
+#with(subset(dat_proc, ph1==1), table(EventIndPrimary, Trt))
+#with(subset(dat_proc, ph2==1), table(EventIndPrimary, Trt))
+#with(subset(dat_proc, Trt==1 & ph1), table(Wstratum, ph2))
+#with(subset(dat_proc, Trt==1 & ph1), table(tps.stratum, ph2))
+#with(subset(dat_proc, Trt==1), table(Wstratum, ph2))
+#with(subset(dat_proc, Trt==1), table(Wstratum, wt.D29))
+#with(subset(dat_proc, ph1==1), table(Delta.D210, Trt))
+#with(subset(dat_proc, ph2==1), corplot(Day210ELCZ,Day210ADCPgp140C97ZAfib))
+#with(subset(dat_proc, ph2==1), corr(cbind(Day210ELCZ,Day210ADCPgp140C97ZAfib), w = wt))
     
-#with(subset(dat.mock, Trt==1 & ph2 & EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
-#with(subset(dat.mock, Trt==1 & ph2 & !EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
+#with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
+#with(subset(dat_proc, Trt==1 & ph2 & !EventIndPrimary), mean(Day29pseudoneutid50>log10(3)) )
 
 
 
 # Average follow-up of vaccine recipients starting at tpeaklag days post visit
-write(round(mean(subset(dat.mock, Trt==1 & ph1, EventTimePrimary, drop=T), na.rm=T)-tpeaklag), file=paste0(save.results.to, "avg_followup_"%.%study_name))
+write(round(mean(subset(dat_proc, Trt==1 & ph1, EventTimePrimary, drop=T), na.rm=T)-tpeaklag), file=paste0(save.results.to, "avg_followup_"%.%study_name))
 
 
 ## experimenting with multitesting
@@ -46,9 +46,9 @@ write(round(mean(subset(dat.mock, Trt==1 & ph1, EventTimePrimary, drop=T), na.rm
 ## do this before uloq censoring
 #if (config$is_ows_trial) {
 #    
-#    if ("Day"%.%tpeak%.%"pseudoneutid50" %in% names(dat.mock)) {    
+#    if ("Day"%.%tpeak%.%"pseudoneutid50" %in% names(dat_proc)) {    
 #        res=lapply (0:1, function(ii) {
-#            dat.immuno.seroneg=subset(dat.mock, Trt==1 & Bserostatus==ii & ph2.immuno)    
+#            dat.immuno.seroneg=subset(dat_proc, Trt==1 & Bserostatus==ii & ph2.immuno)    
 #            ww=sort(unique(dat.immuno.seroneg$demo.stratum))
 #            myprint(ww)
 #            stopifnot(min(ww)==1)
@@ -82,11 +82,11 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
         
     # D1 to tpeak
     tab=sapply(1:4, function (i) {
-        idx=with(dat.mock, {
+        idx=with(dat_proc, {
             tmp = (if(i==1) ph1.immuno else if(i==2) (ph1.immuno & EventIndPrimary) else if(i==3) ph1.intercurrent.cases else if(i==4) (ph1.D57 & EventIndPrimaryD57)) & Trt==1 & Bserostatus==0
             tmp [!is.na(tmp)]
         })
-        res=c(quantile(dat.mock[idx, "NumberdaysD1toD"%.%tpeak], c(0, 1:3/4, 1), na.rm=T))
+        res=c(quantile(dat_proc[idx, "NumberdaysD1toD"%.%tpeak], c(0, 1:3/4, 1), na.rm=T))
         res
     })
     tab=t(tab)
@@ -101,18 +101,18 @@ if (study_name=="COVE" | study_name=="MockCOVE") {
 if ((study_name=="COVE" | study_name=="MockCOVE") & tpeak=="57") {
 
     # Number of breakthrough vaccine cases with Day 57 ID80 > 660 IU
-    res=nrow(subset(dat.mock, Trt==1 & Bserostatus==0 & ph1 & EventIndPrimary & Day57pseudoneutid80>log10(660)))
+    res=nrow(subset(dat_proc, Trt==1 & Bserostatus==0 & ph1 & EventIndPrimary & Day57pseudoneutid80>log10(660)))
     write(res, file=paste0(save.results.to, "num_vacc_cases_highid80_"%.%study_name))
     
-    dat.mock$NumberdaysD29toD57=dat.mock$NumberdaysD1toD57-dat.mock$NumberdaysD1toD29
+    dat_proc$NumberdaysD29toD57=dat_proc$NumberdaysD1toD57-dat_proc$NumberdaysD1toD29
     
     # D29 to D57
     tab=sapply(1:4, function (i) {
-        idx=with(dat.mock, {
+        idx=with(dat_proc, {
             tmp = (if(i==1) ph1.immuno else if(i==2) (ph1.immuno & EventIndPrimary) else if(i==3) ph1.intercurrent.cases else if(i==4) (ph1.D57 & EventIndPrimaryD57)) & Trt==1 & Bserostatus==0
             tmp [!is.na(tmp)]
         })
-        res=c(quantile(dat.mock[idx, "NumberdaysD29toD57"], c(0, 1:3/4, 1), na.rm=T))
+        res=c(quantile(dat_proc[idx, "NumberdaysD29toD57"], c(0, 1:3/4, 1), na.rm=T))
         res
     })
     tab=t(tab)
@@ -128,8 +128,8 @@ if ((study_name=="COVE" | study_name=="MockCOVE") & tpeak=="57") {
     # (4) for Post Day 57 cases number of days from Day 29 to Day 57, 
     # (5) for Post Day 57 cases number of days from Day 57 to COVID endpoint (e.g. with 2 panels on a first row and 3 panels on a bottom row).
     mypdf (mfrow=c(1,2), file=paste0(save.results.to, "barplot_visit_intervals_intercurrentcases"))    
-        tmp.1=table(subset(dat.mock, ph1.intercurrent.cases & Trt==1 & Bserostatus==0, NumberdaysD1toD29, drop=T))
-        tmp.2=table(subset(dat.mock, ph1.intercurrent.cases & Trt==1 & Bserostatus==0, EventTimePrimaryD29, drop=T))
+        tmp.1=table(subset(dat_proc, ph1.intercurrent.cases & Trt==1 & Bserostatus==0, NumberdaysD1toD29, drop=T))
+        tmp.2=table(subset(dat_proc, ph1.intercurrent.cases & Trt==1 & Bserostatus==0, EventTimePrimaryD29, drop=T))
         
         tmp=cbinduneven(list(tmp.1, tmp.2))
         tmp=tmp[order(as.numeric(rownames(tmp))),]
@@ -142,9 +142,9 @@ if ((study_name=="COVE" | study_name=="MockCOVE") & tpeak=="57") {
     
     
     mypdf (mfrow=c(1,3), file=paste0(save.results.to, "barplot_visit_intervals_D57cases"))    
-        tmp.1=table(subset(dat.mock, ph1.D57 & EventIndPrimaryD57 & Trt==1 & Bserostatus==0, NumberdaysD1toD29, drop=T))
-        tmp.2=table(subset(dat.mock, ph1.D57 & EventIndPrimaryD57 & Trt==1 & Bserostatus==0, NumberdaysD29toD57, drop=T))
-        tmp.3=table(subset(dat.mock, ph1.D57 & EventIndPrimaryD57 & Trt==1 & Bserostatus==0, EventTimePrimaryD57, drop=T))
+        tmp.1=table(subset(dat_proc, ph1.D57 & EventIndPrimaryD57 & Trt==1 & Bserostatus==0, NumberdaysD1toD29, drop=T))
+        tmp.2=table(subset(dat_proc, ph1.D57 & EventIndPrimaryD57 & Trt==1 & Bserostatus==0, NumberdaysD29toD57, drop=T))
+        tmp.3=table(subset(dat_proc, ph1.D57 & EventIndPrimaryD57 & Trt==1 & Bserostatus==0, EventTimePrimaryD57, drop=T))
 
         tmp=cbinduneven(list(tmp.1, tmp.2, tmp.3))
         tmp=tmp[order(as.numeric(rownames(tmp))),]
@@ -167,12 +167,12 @@ if (startsWith(attr(config, "config"), "janssen_pooled_")) {
     # the distribution of the number of days from D29 until COVID-19 endpoint occurrence or until right-censoring
     # stratified by COVID-19 endpoint or right-censoring and by geographic region.  Based on this figure,        
 
-    tmp.1=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==1 & Region==0, EventTimePrimary, drop=T))
-    tmp.2=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==1 & Region==1, EventTimePrimary, drop=T))
-    tmp.3=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==1 & Region==2, EventTimePrimary, drop=T))
-    tmp.4=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==0 & Region==0, EventTimePrimary, drop=T))
-    tmp.5=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==0 & Region==1, EventTimePrimary, drop=T))
-    tmp.6=table(subset(dat.mock, ph1.D29start1 & EventIndPrimary==0 & Region==2, EventTimePrimary, drop=T))
+    tmp.1=table(subset(dat_proc, ph1.D29start1 & EventIndPrimary==1 & Region==0, EventTimePrimary, drop=T))
+    tmp.2=table(subset(dat_proc, ph1.D29start1 & EventIndPrimary==1 & Region==1, EventTimePrimary, drop=T))
+    tmp.3=table(subset(dat_proc, ph1.D29start1 & EventIndPrimary==1 & Region==2, EventTimePrimary, drop=T))
+    tmp.4=table(subset(dat_proc, ph1.D29start1 & EventIndPrimary==0 & Region==0, EventTimePrimary, drop=T))
+    tmp.5=table(subset(dat_proc, ph1.D29start1 & EventIndPrimary==0 & Region==1, EventTimePrimary, drop=T))
+    tmp.6=table(subset(dat_proc, ph1.D29start1 & EventIndPrimary==0 & Region==2, EventTimePrimary, drop=T))
     
     minmax=range(c(as.numeric(names(tmp.1)),as.numeric(names(tmp.2)),as.numeric(names(tmp.3)),as.numeric(names(tmp.4)),as.numeric(names(tmp.5)),as.numeric(names(tmp.6))))
     tmp.7=rep(0, minmax[2]-minmax[1]+1)    
@@ -257,8 +257,8 @@ if (tpeak=="57") {
         
     # barplots for number of days from Day 1 to Day 29, and number of days from Day 29 to Day 57 in the immunogenicity subcohort
     mypdf (mfrow=c(1,2), file=paste0(save.results.to, "barplot_visit_intervals_immuno"))    
-        tmp.1=table(subset(dat.mock, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD1toD29,  drop=T))
-        tmp.2=table(subset(dat.mock, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD29toD57, drop=T))
+        tmp.1=table(subset(dat_proc, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD1toD29,  drop=T))
+        tmp.2=table(subset(dat_proc, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD29toD57, drop=T))
         tmp=cbinduneven(list(tmp.1, tmp.2))
         tmp=tmp[order(rownames(tmp)),]
         tmp.1=tmp[,1]; names(tmp.1)=rownames(tmp)
@@ -268,21 +268,21 @@ if (tpeak=="57") {
     dev.off()  
     
     #
-    res=round(quantile(subset(dat.mock, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD1toD29, drop=T), c(1/4,1/2,3/4), na.rm=T)); res
+    res=round(quantile(subset(dat_proc, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD1toD29, drop=T), c(1/4,1/2,3/4), na.rm=T)); res
     write(paste0(res[2], " (", res[1], "-", res[3], ")"), file=paste0(save.results.to, "quartiles_visit_intervals_immuno_1to29"))
     #
-    res=round(quantile(subset(dat.mock, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD29toD57, drop=T), c(1/4,1/2,3/4), na.rm=T)); res
+    res=round(quantile(subset(dat_proc, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD29toD57, drop=T), c(1/4,1/2,3/4), na.rm=T)); res
     write(paste0(res[2], " (", res[1], "-", res[3], ")"), file=paste0(save.results.to, "quartiles_visit_intervals_immuno_29to57"))
         
 } else if (tpeak=="29") {
     
     # barplots for number of days from Day 1 to Day 29 in the immunogenicity subcohort
     mypdf (mfrow=c(1,1), file=paste0(save.results.to, "barplot_visit_intervals_immuno"))    
-        tmp.1=table(subset(dat.mock, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD1toD29,  drop=T))
+        tmp.1=table(subset(dat_proc, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD1toD29,  drop=T))
         barplot(tmp.1, main="D1 to D29",  xlab="Days")# , cex.names=.7
     dev.off()  
     
-    res=round(quantile(subset(dat.mock, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD1toD29, drop=T), c(1/4,1/2,3/4), na.rm=T)); res
+    res=round(quantile(subset(dat_proc, ph1.immuno & Trt==1 & Bserostatus==0, NumberdaysD1toD29, drop=T), c(1/4,1/2,3/4), na.rm=T)); res
     write(paste0(res[2], " (", res[1], "-", res[3], ")"), file=paste0(save.results.to, "quartiles_visit_intervals_immuno_1to29"))
     
 }
@@ -294,10 +294,10 @@ if (attr(config,"config")=="janssen_pooled_EUA") {
     
     par(mfrow=c(1,2))
     
-    km <- survfit(form, subset(dat.mock, Trt==1 & ph1))
+    km <- survfit(form, subset(dat_proc, Trt==1 & ph1))
     plot(km, ylim=c(.96,1), col=1:3, main="ph1", xlim=c(0,100))
     
-    km <- survfit(form, subset(dat.mock, Trt==1 & ph2))
+    km <- survfit(form, subset(dat_proc, Trt==1 & ph2))
     plot(km, ylim=c(0.6,1), col=1:3, main="ph2", xlim=c(0,100))
     
 }
