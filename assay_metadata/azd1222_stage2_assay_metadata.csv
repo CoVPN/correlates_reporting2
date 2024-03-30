@@ -1,11 +1,11 @@
-panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates
-id50,1,pseudoneutid50_D614G,0.653,18388.48,,0.653,PsV Neutralization to D614G,nAb ID50 D614G (AU/ml),lloq,1
-id50,2,pseudoneutid50_Delta,0.5224,1600.046,,0.5224,PsV Neutralization to Delta,nAb DI50 Delta (AU/ml),lloq,1
-bindSpike,1,bindSpike_D614,5.0742,9370.615,,5.0742,Binding Antibody to Spike D614,Anti Spike IgG - Reference (AU/ml),lloq,1
-bindSpike,2,bindSpike_Beta,5.904,6412.008,,5.904,Binding Antibody to Spike Beta,Anti Spike IgG - Beta (AU/ml),lloq,0
-bindSpike,3,bindSpike_Alpha,5.1606,6843.073,,5.1606,Binding Antibody to Spike Alpha,Anti Spike IgG - Alpha (AU/ml),lloq,0
-bindSpike,4,bindSpike_Gamma,4.5333,5433.409,,4.5333,Binding Antibody to Spike Gamma,Anti Spike IgG - Gamma (AU/ml),lloq,0
-bindSpike,5,bindSpike_Delta1,5.5278,6900.02,,5.5278,Binding Antibody to Spike Delta AY.4.2,Anti Spike IgG - Delta AY.4.2 (AU/ml),lloq,1
-bindSpike,6,bindSpike_Delta3,5.0346,7925.164,,5.0346,Binding Antibody to Spike Delta Alt Seq 1,Anti Spike IgG - Delta Alt Seq 1 (AU/ml),lloq,0
-bindSpike,7,bindSpike_Delta2,6.5754,8985.413,,6.5754,Binding Antibody to Spike Delta Alt Seq 2,Anti Spike IgG - Delta Alt Seq 2 (AU/ml),lloq,0
-bindSpike,8,bindSpike_Omicron,5.8428,1884.779,,5.8428,Binding Antibody to Spike Omicron,Anti Spike IgG - Omicron (AU/ml),lloq,0
+panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label
+id50,1,pseudoneutid50_D614G,3.3303,8319.938,2.612,2.612,PsV Neutralization to D614G,nAb ID50 D614G (AU/ml),lod
+id50,2,pseudoneutid50_Delta,3.265,9524.527,2.612,2.612,PsV Neutralization to Delta,nAb DI50 Delta (AU/ml),lod
+bindSpike,1,bindSpike_D614,5.0742,9370.615,,5.0742,Binding Antibody to Spike D614,Anti Spike IgG - Reference (AU/ml),lloq
+bindSpike,2,bindSpike_Beta,5.9040,6412.008,,5.9040,Binding Antibody to Spike Beta,Anti Spike IgG - Beta (AU/ml),lloq
+bindSpike,3,bindSpike_Alpha,5.1606,6843.073,,5.1606,Binding Antibody to Spike Alpha,Anti Spike IgG - Alpha (AU/ml),lloq
+bindSpike,4,bindSpike_Gamma,4.5333,5433.409,,4.5333,Binding Antibody to Spike Gamma,Anti Spike IgG - Gamma (AU/ml),lloq
+bindSpike,5,bindSpike_Delta1,5.5278,6900.020,,5.5278,Binding Antibody to Spike Delta AY.4.2,Anti Spike IgG - Delta AY.4.2 (AU/ml),lloq
+bindSpike,6,bindSpike_Delta3,5.0346,7925.164,,5.0346,Binding Antibody to Spike Delta Alt Seq 1,Anti Spike IgG - Delta Alt Seq 1 (AU/ml),lloq
+bindSpike,7,bindSpike_Delta2,6.5754,8985.413,,6.5754,Binding Antibody to Spike Delta Alt Seq 2,Anti Spike IgG - Delta Alt Seq 2 (AU/ml),lloq
+bindSpike,8,bindSpike_Omicron,5.8428,1884.779,,5.8428,Binding Antibody to Spike Omicron,Anti Spike IgG - Omicron (AU/ml),lloq

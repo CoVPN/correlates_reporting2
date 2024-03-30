@@ -315,8 +315,6 @@ for (t in times_[!grepl("Delta", times_)]) {
 if (study_name!="IARCHPV") { # IARCHPV doesn't have delta assay variables
   for (t in unique(gsub("Day", "", times_[!grepl("Delta|B", times_)]))) {
     tp = ifelse(grepl("[A-Za-z]", t), t, paste0("Day", t))
-    
-    if (attr(config,"config")=="janssen_pooled_partA") {dat.long$Delta6overB = NA} # this variable doesn't exist for janssen_pooled_partA which breaks the code
     dat.long[, "Delta"%.%t%.%"overB"] = dat.long[, tp] - dat.long[, "B"]
   }
 }
