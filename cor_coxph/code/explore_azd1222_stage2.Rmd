@@ -54,14 +54,18 @@ Distribution of event time by variant types. Ph2 cases are colored green and sev
 We chose 119/120 days post D57 to break the follow-up period into two because all Delta cases and all but two severe cases happened after that. 120 days post D57 is the first Delta case, on 2021-07-02.
 
 We censor on 2021-12-10 to avoid the Omicron wave, the same day the PREVENT-19 stage2 data is censored on as well. We lose no severe cases by this censoring.
+
 ```{r, echo=T}
 dat.tmp=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+print(min(subset(dat.tmp,EventIndPrimaryType_short=="Del",EventTimePrimaryD57),na.rm=T))
+subset(dat.tmp,EventIndPrimaryType_short=="Del" & EventTimePrimaryD57==120, EventCalTimePrimaryD57)
+```
 
+
+```{r, echo=T}
 # D57 study day
 myboxplot(EventTimePrimaryD57~EventIndPrimaryType_short, dat.tmp, ylab="EventTimePrimary57", col=dat.tmp$col, cex.axis=0.8)
 abline(h=120, lty=2) 
-print(min(subset(dat.tmp,EventIndPrimaryType_short=="Del",EventTimePrimaryD57),na.rm=T))
-subset(dat.tmp,EventIndPrimaryType_short=="Del" & EventTimePrimaryD57==120, EventCalTimePrimaryD57)
 
 # calendar day
 myboxplot(EventCalTimePrimaryD57~EventIndPrimaryType_short, dat.tmp, ylab="Event Calendar Time", col=dat.tmp$col, cex.axis=0.8)
