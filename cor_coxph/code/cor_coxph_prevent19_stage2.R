@@ -43,26 +43,28 @@ source(here::here("..", "_common.R")) # dat_proc is made
   
   
   if (COR == "D35prevent19_stage2_delta") {
-    # for use in competing risk estimation
-    comp.risk = T
-    dat_proc$EventIndOfInterest = dat_proc$DeltaEventIndD35_108to21Dec10
-    dat_proc$EventIndCompeting  = dat_proc$NonDeltaEventIndD35_108to21Dec10
+    # # if doing competing risk estimation
+    # comp.risk = T
+    # dat_proc$EventIndOfInterest = dat_proc$DeltaCOVIDIndD35_108to21Dec10
+    # dat_proc$EventIndCompeting  = dat_proc$NonDeltaCOVIDIndD35_108to21Dec10
+    # form.0 = update(
+    #   Surv(COVIDTimeD35_to21Dec10, EventIndOfInterest) ~ 1,
+    #   as.formula(config$covariates)
+    # )
+    # dat_proc$yy = dat_proc$EventIndOfInterest
     
     form.0 = update(
-      Surv(EventTimeD35_to21Dec10, EventIndOfInterest) ~ 1,
+      Surv(COVIDTimeD35_to21Dec10, KnownOrImputedDeltaCOVIDIndD35_108to21Dec10) ~ 1,
       as.formula(config$covariates)
     )
-    dat_proc$yy = dat_proc$EventIndOfInterest
+    dat_proc$yy = dat_proc$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10
     
   } else if (COR == "D35prevent19_stage2_severe") {
     form.0 = update(
-      Surv(
-        SevereEventTimeD35_to21Dec10,
-        SevereEventIndD35_108to21Dec10
-      ) ~ 1,
+      Surv(SevereCOVIDTimeD35_to21Dec10, SevereCOVIDIndD35_108to21Dec10) ~ 1,
       as.formula(config$covariates)
     )
-    dat_proc$yy = dat_proc$SevereEventIndD35_108to21Dec10
+    dat_proc$yy = dat_proc$SevereCOVIDIndD35_108to21Dec10
   }
   
   for (a in c("Day35"%.%assays)) {
@@ -82,7 +84,7 @@ source(here::here("..", "_common.R")) # dat_proc is made
   } else {
     marker.cutpoints = attr(dat_proc, "marker.cutpoints")
   }
-  
+  # save cutpoints to files
   for (a in all.markers) {
     q.a = marker.cutpoints[[a]]
     if (startsWith(a, "Day")) {
@@ -99,12 +101,6 @@ source(here::here("..", "_common.R")) # dat_proc is made
       )
     }
   }
-  
-  
-  
-  # some exploratory code
-  if (config$is_ows_trial)
-    source(here::here("code", "cor_coxph_misc.R"))
   
   #create twophase design object
   design.vacc.seroneg <-
@@ -127,7 +123,6 @@ source(here::here("..", "_common.R")) # dat_proc is made
     input.foldername = save.results.to
   )
   
-  
   begin = Sys.time()
 }
 
@@ -137,8 +132,7 @@ source(here::here("..", "_common.R")) # dat_proc is made
 
 source(here::here("code", "cor_coxph_risk_no_marker.R"))
 
-if (Sys.getenv("COR_COXPH_NO_MARKER_ONLY") == 1)
-  q("no")
+if (Sys.getenv("COR_COXPH_NO_MARKER_ONLY") == 1) q("no")
 
 
 
@@ -189,122 +183,66 @@ if (COR == "D35prevent19_stage2_severe") {
 # marginalized risk and controlled VE
 ###################################################################################################
 
+# # if competing risk
+# form.0 = list(form.0, as.formula(
+#   sub(
+#     "EventIndOfInterest",
+#     "EventIndCompeting",
+#     paste0(deparse(form.0, width.cutoff = 500))
+#   )
+# )),
+
 markers = "Day35" %.% c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "bindSpike_D614", "bindSpike_Delta1") # save time, only need these
 
-if (COR == "D35prevent19_stage2_severe") {
+cor_coxph_risk_bootstrap(
+  form.0,
+  dat = dat.vac.seroneg,
+  fname.suffix,
+  save.results.to,
+  config,
+  config.cor,
+
+  tfinal.tpeak,
+  all.markers = markers,
+
+  comp.risk = F,
+  run.Sgts = F # whether to get risk conditional on continuous S>=s
+)
+
+
+cor_coxph_risk_plotting (
+  form.0,
+  dat = dat.vac.seroneg,
+  fname.suffix,
+  save.results.to,
+  config,
+  config.cor,
   
-  cor_coxph_risk_bootstrap(
-    form.0,
-    dat = dat.vac.seroneg,
-    fname.suffix,
-    save.results.to,
-    config,
-    config.cor,
+  assay_metadata,
+  
+  tfinal.tpeak,
+  all.markers = markers,
+  all.markers.names.short[markers],
+  all.markers.names.long[markers],
+  marker.cutpoints,
 
-    tfinal.tpeak,
-    all.markers = "Day35" %.% c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "bindSpike_D614", "bindSpike_Delta1"), # save time, only need these
+  multi.imp = F,
+  comp.risk = F,
 
-    comp.risk = F,
-    run.Sgts = F # whether to get risk conditional on continuous S>=s
-  )
+  dat.pla.seroneg = NULL,
+  res.plac.cont = NULL,
+  prev.plac = NULL,
 
-  cor_coxph_risk_plotting (
-    form.0,
-    dat = dat.vac.seroneg,
-    fname.suffix,
-    save.results.to,
-    config,
-    config.cor,
-    
-    assay_metadata,
-    
-    tfinal.tpeak,
-    all.markers = markers,
-    all.markers.names.short[markers],
-    all.markers.names.long[markers],
-    marker.cutpoints,
+  variant = NULL,
 
-    multi.imp = F,
-    comp.risk = F,
-
-    dat.pla.seroneg = NULL,
-    res.plac.cont = NULL,
-    prev.plac = NULL,
-
-    variant = NULL,
-
-    show.ve.curves = F,
-    plot.geq = F,
-    plot.w.plac = F,
-    for.title = ""
-  )
-
-
-} else if (COR == "D35prevent19_stage2_delta") {
-  cor_coxph_risk_bootstrap(
-    form.0 = list(form.0, as.formula(
-      sub(
-        "EventIndOfInterest",
-        "EventIndCompeting",
-        paste0(deparse(form.0, width.cutoff = 500))
-      )
-    )),
-    dat,
-    fname.suffix,
-    save.results.to,
-
-    tfinal.tpeak,
-    all.markers = "Day15" %.% assays,
-
-    numCores,
-    B,
-
-    comp.risk = T,
-    run.Sgts = F # whether to get risk conditional on continuous S>=s
-  )
-
-  cor_coxph_risk_plotting(
-    form.0 = list(form.0, as.formula(
-      sub(
-        "EventIndOfInterest",
-        "EventIndCompeting",
-        paste0(deparse(form.0, width.cutoff = 500))
-      )
-    )),
-    dat,
-    fname.suffix,
-    save.results.to,
-    config,
-    config.cor,
-    
-    assay_metadata,
-
-    tfinal.tpeak,
-    all.markers = markers,
-    all.markers.names.short[markers],
-    all.markers.names.long[markers],
-    marker.cutpoints,
-
-    multi.imp = F,
-    comp.risk = T,
-
-    dat.pla.seroneg = NULL,
-    res.plac.cont = NULL,
-    prev.plac = NULL,
-
-    variant = NULL,
-
-    show.ve.curves = F,
-    plot.geq = F,
-    plot.w.plac = F,
-    for.title = ""
-  )
-
-}
+  show.ve.curves = F,
+  plot.geq = F,
+  plot.w.plac = F,
+  for.title = ""
+)
 
 
 
-
+################################################################################
 print(date())
-print("cor_coxph run time: " %.% format(Sys.time() - time.start, digits =
-                                          1))
+print("cor_coxph run time: " %.% format(Sys.time() - time.start, digits = 1))

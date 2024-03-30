@@ -1,0 +1,30 @@
+---
+title: "ENSEMBLE Part A Not VL"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(survey)
+library(kyotil)
+
+# dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240318.csv')
+
+dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore_20240226.csv')
+
+```
+
+### Twophase sampling
+
+Distribution of sampling weights looks normal. There is one case stratum and six controls strata formed by Senior x Region.
+```{r}
+with (subset(dat_proc, ph1.D29==1 & Trt==1 & Bserostatus==0 & Region==0), table(EventIndPrimaryIncludeNotMolecConfirmedD29, Wstratum))
+with (subset(dat_proc, ph1.D29==1 & Trt==1 & Bserostatus==0 & Region==0), table(ph2.D29, Wstratum))
+with (subset(dat_proc, ph1.D29==1 & Trt==1 & Bserostatus==0 & Region==1), table(EventIndPrimaryIncludeNotMolecConfirmedD29, Wstratum))
+with (subset(dat_proc, ph1.D29==1 & Trt==1 & Bserostatus==0 & Region==1), table(ph2.D29, Wstratum))
+with (subset(dat_proc, ph1.D29==1 & Trt==1 & Bserostatus==0 & Region==2), table(EventIndPrimaryIncludeNotMolecConfirmedD29, Wstratum))
+with (subset(dat_proc, ph1.D29==1 & Trt==1 & Bserostatus==0 & Region==2), table(ph2.D29, Wstratum))
+```
+
+
