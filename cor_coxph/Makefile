@@ -44,7 +44,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19nvx))
 	Rscript code/cor_coxph_prevent19nvx.R D35prevent19nvx
 else ifeq ($(TRIAL),$(filter $(TRIAL), nvx_uk302))
-	Rscript code/cor_coxph_nvx_uk302.R D35
+	Rscript code/cor_coxph_nvx_uk302.R D35nvx_uk302
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
 	Rscript code/cor_coxph_prevent19_stage2.R D35prevent19_stage2_severe
 	Rscript code/cor_coxph_prevent19_stage2.R D35prevent19_stage2_delta

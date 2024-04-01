@@ -428,7 +428,7 @@ prevent19_stage2: &prevent19_stage2
   timepoints: [35]
   times: [Day35]
   time_labels: [Day 35]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240329.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240401.csv
   assay_metadata: assay_metadata/prevent19_stage2_assay_metadata.csv
   study_name: PREVENT19
   covariates: ~ 1  # to be replaced by COR-specific covariates
@@ -1273,8 +1273,8 @@ D35prevent19_stage2_delta:
   wt: wt.D35_108
   WtStratum: Wstratum
   EventIndPrimary: KnownOrImputedDeltaCOVIDIndD35_108to21Dec10
-  EventTimePrimary: COVIDTimeD35_to21Dec10
-  Earlyendpoint: EarlyendpointD35
+  EventTimePrimary: COVIDTimeD35to21Dec10
+  Earlyendpoint: AnyEndpointD35_108
   covariates: ~.+ Senior
   tpeak: 35
   tpeaklag: 108
@@ -1287,8 +1287,8 @@ D35prevent19_stage2_severe:
   wt: wt.D35_108
   WtStratum: Wstratum
   EventIndPrimary:  SevereCOVIDIndD35_108to21Dec10
-  EventTimePrimary: SevereCOVIDTimeD35_to21Dec10
-  Earlyendpoint: EarlyendpointD35
+  EventTimePrimary: SevereCOVIDTimeD35to21Dec10
+  Earlyendpoint: AnyInfectionD35_108
   covariates: ~.+ Age
   tpeak: 35
   tpeaklag: 108
@@ -1302,8 +1302,8 @@ D57azd1222_stage2_delta_nAb:
   wt: wt.D57_120nAb
   WtStratum: Wstratum
   EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120to21Dec10
-  EventTimePrimary: COVIDTimeD57_to21Dec10
-  Earlyendpoint: EarlyendpointD57
+  EventTimePrimary: COVIDTimeD57to21Dec10
+  Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Senior + risk_score
   tpeak: 57
   tpeaklag: 120
@@ -1316,8 +1316,8 @@ D57azd1222_stage2_delta_bAb:
   wt: wt.D57_120bAb
   WtStratum: Wstratum
   EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120to21Dec10
-  EventTimePrimary: COVIDTimeD57_to21Dec10
-  Earlyendpoint: EarlyendpointD57
+  EventTimePrimary: COVIDTimeD57to21Dec10
+  Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Senior + risk_score
   tpeak: 57
   tpeaklag: 120
@@ -1330,8 +1330,8 @@ D57azd1222_stage2_severe_nAb:
   wt: wt.D57_120nAb
   WtStratum: Wstratum
   EventIndPrimary: SevereCOVIDIndD57_120to21Dec10
-  EventTimePrimary: SevereCOVIDTimeD57_to21Dec10
-  Earlyendpoint: EarlyendpointD57
+  EventTimePrimary: SevereCOVIDTimeD57to21Dec10
+  Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Age + risk_score
   tpeak: 57
   tpeaklag: 120
@@ -1344,8 +1344,8 @@ D57azd1222_stage2_severe_bAb:
   wt: wt.D57_120bAb
   WtStratum: Wstratum
   EventIndPrimary: SevereCOVIDIndD57_120to21Dec10
-  EventTimePrimary: SevereCOVIDTimeD57_to21Dec10
-  Earlyendpoint: EarlyendpointD57
+  EventTimePrimary: SevereCOVIDTimeD57to21Dec10
+  Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Age + risk_score
   tpeak: 57
   tpeaklag: 120

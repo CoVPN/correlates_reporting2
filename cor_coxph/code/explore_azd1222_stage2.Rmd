@@ -1,5 +1,5 @@
 ---
-title: "Data Processing for AZD1222 Stage 2 Correlates"
+title: "AZD1222 Stage 2 Correlates Data Processing"
 output: html_document
 ---
 
@@ -44,6 +44,41 @@ mytable(dat_mapped$Bserostatus)
 mytable(dat_mapped$Country, dat_mapped$Trt)
 mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list, dat_mapped$Trt)
 ```
+
+### Phase 2 sampling design
+
+The sampling design is a stratified case-control study design. Based on the design, the following failure indicator and time variables are needed for computing weights
+
+* Cases are vaccine group participants who contribute primary COVID-19 endpoints, i.e. baseline SARS-CoV-2 negative and SARS-CoV-2 negative for 15 days post-second dose, adjudicated COVID-19) with COVID-19 onset 7+ days post-Day 57 through D360.
+  * COVIDIndD57_7toD360
+* All severe COVID-19 cases satisfying these criteria are sampled.  
+  * SevereCOVIDIndD57_7toD360
+* Sampling of non-severe COVID-19 cases satisfying these criteria is stratified into 6 strata (by baseline age, country, and race/ethnicity) and virus lineage (Delta, ancestral, others). For each baseline stratum, stratified sampling is based on quartiles. 
+  * KnownOrImputedDeltaCOVIDIndD57_7toD360
+  * AncestralCOVIDIndD57_7toD360
+  * MinorVariantsCOVIDIndD57_7toD360
+
+
+``Non-cases" are baseline SARS-CoV-2 negative vaccine group participants without any SARS-CoV-2 infection (no positive serology result or COVID-19) and without documented outside COVID-19 vaccination from Day 1 through D360 or the study termination date, whichever earlier, and with a follow up end date after 7 days post Day 57, sampled from the Stage 1 immunogenicity subcohort, achieving 1:1 case:control ratio overall; no case/control matching is performed due to sample availability.  To ensure complete longitudinal data for exposure-proximal correlates analysis, non-cases are also required to have D57, D90, D180, and D360 visits to be eligible for sampling.   
+
+
+Number of severe cases in ph1 and ph2
+```{r}
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_120to21Dec10))
+```
+
+Number of Delta cases in D57_120to21Dec10 in ph1 and ph2
+```{r}
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_120to21Dec10))
+```
+
+
+Distributions of sampling weights:
+```{r}
+with (subset(dat_proc, ph2.D57nAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57nAb, Wstratum))
+with (subset(dat_proc, ph2.D57bAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57bAb, Wstratum))
+```
+
 
 
 
@@ -137,26 +172,6 @@ dat$tmp1 = !is.na(dat$Day57pseudoneutid50_Delta)
 dat$tmp2 = !is.na(dat$Day57bindSpike_Alpha)
 dat$tmp=with(dat,paste0(as.integer(tmp1),as.integer(tmp2)))
 print(table(dat$tmp, dat$DeltaEventIndD57_120to21Dec10))
-```
-
-
-### Two-phase sampling
-
-Number of severe cases in ph1 and ph2
-```{r}
-with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_120to21Dec10))
-```
-
-Number of Delta cases in D57_120to21Dec10 in ph1 and ph2
-```{r}
-with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_120to21Dec10))
-```
-
-
-Distributions of sampling weights:
-```{r}
-with (subset(dat_proc, ph2.D57nAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57nAb, Wstratum))
-with (subset(dat_proc, ph2.D57bAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57bAb, Wstratum))
 ```
 
 

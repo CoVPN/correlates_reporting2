@@ -172,6 +172,47 @@ pre code {
 <h3>Data descriptives</h3>
 <p>The dataset contains both treatment arms and both seropos and seroneg, and has US, CHL and PERU. Only the vaccine arm is sampled in stage 2.</p>
 </div>
+<div id="phase-2-sampling-design" class="section level3">
+<h3>Phase 2 sampling design</h3>
+<p>The sampling design is a stratified case-control study design (Table ).</p>
+<ul>
+<li>Cases are vaccine group participants who contribute primary COVID-19 endpoints, i.e. baseline SARS-CoV-2 negative and SARS-CoV-2 negative for 15 days post-second dose, adjudicated COVID-19) with COVID-19 onset 7+ days post-Day 57 through D360.
+<ul>
+<li>COVIDIndD57_7toD360</li>
+</ul></li>
+<li>All severe COVID-19 cases satisfying these criteria are sampled.
+<ul>
+<li>SevereCOVIDIndD57_7toD360</li>
+</ul></li>
+<li>Sampling of non-severe COVID-19 cases satisfying these criteria is stratified into 6 strata (by baseline age, country, and race/ethnicity) and virus lineage (Delta, ancestral, others). For each baseline stratum, stratified sampling is based on quartiles.
+<ul>
+<li>KnownOrImputedDeltaCOVIDIndD57_7toD360</li>
+<li>DeltaCOVIDIndD57_7toD360</li>
+</ul></li>
+</ul>
+<p>``Non-cases&quot; are baseline SARS-CoV-2 negative vaccine group participants without any SARS-CoV-2 infection (no positive serology result or COVID-19) and without documented outside COVID-19 vaccination from Day 1 through D360 or the study termination date, whichever earlier, and with a follow up end date after 7 days post Day 57, sampled from the Stage 1 immunogenicity subcohort, achieving 1:1 case:control ratio overall; no case/control matching is performed due to sample availability. To ensure complete longitudinal data for exposure-proximal correlates analysis, non-cases are also required to have D57, D90, D180, and D360 visits to be eligible for sampling.</p>
+<p>Number of severe cases in ph1 and ph2</p>
+<pre class="r"><code>with(subset(dat_mapped, EarlyinfectionD57==0 &amp; Perprotocol==1 &amp; Bserostatus==0 &amp; Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_120to21Dec10))</code></pre>
+<pre><code>##        SevereEventIndD57_120to21Dec10
+##             0     1  &lt;NA&gt;
+##   FALSE 13017     3  3675
+##   TRUE    183    20    32</code></pre>
+<p>Number of Delta cases in D57_120to21Dec10 in ph1 and ph2</p>
+<pre class="r"><code>with(subset(dat_mapped, EarlyinfectionD57==0 &amp; Perprotocol==1 &amp; Bserostatus==0 &amp; Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_120to21Dec10))</code></pre>
+<pre><code>##        DeltaEventIndD57_120to21Dec10
+##             0     1  &lt;NA&gt;
+##   FALSE 12762   258  3675
+##   TRUE    143    60    32</code></pre>
+<p>Distributions of sampling weights:</p>
+<pre class="r"><code>with (subset(dat_proc, ph2.D57nAb==1 &amp; Trt==1 &amp; Bserostatus==0), table(ph2.D57nAb, Wstratum))</code></pre>
+<pre><code>##           Wstratum
+## ph2.D57nAb 13 14 15 16 17 18 19 20
+##       TRUE 42 25 44 21 20  4 46 18</code></pre>
+<pre class="r"><code>with (subset(dat_proc, ph2.D57bAb==1 &amp; Trt==1 &amp; Bserostatus==0), table(ph2.D57bAb, Wstratum))</code></pre>
+<pre><code>##           Wstratum
+## ph2.D57bAb 13 14 15 16 17 18 19 20
+##       TRUE 48 24 41 23 21  4 52 22</code></pre>
+</div>
 <div id="adjusting-endpoint-period" class="section level3">
 <h3>Adjusting endpoint period</h3>
 <p>Distribution of event time by variant types. Ph2 cases are colored green and severe cases are colored red.</p>
@@ -257,30 +298,6 @@ print(table(dat$tmp, dat$DeltaEventIndD57_120to21Dec10))</code></pre>
 ##   01    23    11
 ##   10    17     3
 ##   11   120    49</code></pre>
-</div>
-<div id="two-phase-sampling" class="section level3">
-<h3>Two-phase sampling</h3>
-<p>Number of severe cases in ph1 and ph2</p>
-<pre class="r"><code>with(subset(dat_mapped, EarlyinfectionD57==0 &amp; Perprotocol==1 &amp; Bserostatus==0 &amp; Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_120to21Dec10))</code></pre>
-<pre><code>##        SevereEventIndD57_120to21Dec10
-##             0     1  &lt;NA&gt;
-##   FALSE 13017     3  3675
-##   TRUE    183    20    32</code></pre>
-<p>Number of Delta cases in D57_120to21Dec10 in ph1 and ph2</p>
-<pre class="r"><code>with(subset(dat_mapped, EarlyinfectionD57==0 &amp; Perprotocol==1 &amp; Bserostatus==0 &amp; Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_120to21Dec10))</code></pre>
-<pre><code>##        DeltaEventIndD57_120to21Dec10
-##             0     1  &lt;NA&gt;
-##   FALSE 12762   258  3675
-##   TRUE    143    60    32</code></pre>
-<p>Distributions of sampling weights:</p>
-<pre class="r"><code>with (subset(dat_proc, ph2.D57nAb==1 &amp; Trt==1 &amp; Bserostatus==0), table(ph2.D57nAb, Wstratum))</code></pre>
-<pre><code>##           Wstratum
-## ph2.D57nAb 13 14 15 16 17 18 19 20
-##       TRUE 42 25 44 21 20  4 46 18</code></pre>
-<pre class="r"><code>with (subset(dat_proc, ph2.D57bAb==1 &amp; Trt==1 &amp; Bserostatus==0), table(ph2.D57bAb, Wstratum))</code></pre>
-<pre><code>##           Wstratum
-## ph2.D57bAb 13 14 15 16 17 18 19 20
-##       TRUE 48 24 41 23 21  4 52 22</code></pre>
 </div>
 <div id="covariates-adjustment" class="section level3">
 <h3>Covariates adjustment</h3>
