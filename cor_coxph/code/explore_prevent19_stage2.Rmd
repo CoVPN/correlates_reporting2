@@ -1,5 +1,5 @@
 ---
-title: "Data Processing for PREVENT-19 Stage 2 Delta Correlates"
+title: "PREVENT-19 Stage 2 Delta Correlates Data Processing"
 output: html_document
 ---
 
@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(survey)
 library(kyotil)
 
+# need to use the older version b/c newer versions have different variables
 dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240326.csv')
 
 dat_mapped$VARTYPE_first1 = sapply(strsplit(dat_mapped$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))

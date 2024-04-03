@@ -54,14 +54,14 @@ source(here::here("..", "_common.R")) # dat_proc is made
     # dat_proc$yy = dat_proc$EventIndOfInterest
     
     form.0 = update(
-      Surv(COVIDTimeD35_to21Dec10, KnownOrImputedDeltaCOVIDIndD35_108to21Dec10) ~ 1,
+      Surv(COVIDTimeD35to21Dec10, KnownOrImputedDeltaCOVIDIndD35_108to21Dec10) ~ 1,
       as.formula(config$covariates)
     )
     dat_proc$yy = dat_proc$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10
     
   } else if (COR == "D35prevent19_stage2_severe") {
     form.0 = update(
-      Surv(SevereCOVIDTimeD35_to21Dec10, SevereCOVIDIndD35_108to21Dec10) ~ 1,
+      Surv(SevereCOVIDTimeD35to21Dec10, SevereCOVIDIndD35_108to21Dec10) ~ 1,
       as.formula(config$covariates)
     )
     dat_proc$yy = dat_proc$SevereCOVIDIndD35_108to21Dec10
