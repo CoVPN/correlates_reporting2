@@ -20,7 +20,7 @@ assays=assay_metadata$assay
 
 
 
-### Modeling
+### Risk models
 
 ID50 Score
 ```{r}
