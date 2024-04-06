@@ -363,12 +363,12 @@ with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1 & Severi
 
 Distributions of samples by strata. Stratum 31 is Delta cases and 32 is severe cases. Note that non-Delta, non-severe cases are not sampled, so they are represented by the subcohort.
 ```{r}
-with (subset(dat_proc, ph1.D35==1 & Trt==1 & Bserostatus==0 & Country==0), table(ph2.D35, Wstratum))
+with (subset(dat_proc, ph1.D35==1 & Trt==1 & Bserostatus==0 & Country==0), mytable(ph2.D35, Wstratum))
 ```
 
 Distribution of weights
 ```{r}
-with (subset(dat_proc, ph1.D35_108==1 & Trt==1 & Bserostatus==0 & Country==0), table(wt.D35_108, Wstratum))
+with (subset(dat_proc, ph1.D35_108==1 & Trt==1 & Bserostatus==0 & Country==0), mytable(wt.D35_108, Wstratum))
 ```
 
 Distribution of cases by a trichotomized marker
@@ -447,5 +447,24 @@ plot_ce(ests_cox, ests_np)
 
 
 
+
+```
+
+
+### For manuscript
+
+Numbers for Fig S1
+```{r, include=F}
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240403.csv')
+
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108)
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10)
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$SevereCOVIDIndD35_108to21Dec10)
+```
+
+Are all severe cases Delta? Yes
+```{r}
+with(subset(dat_proc,ph1.D35_108==1), mytable(KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, SevereCOVIDIndD35_108to21Dec10))
+with(subset(dat_proc,ph2.D35_108==1), mytable(KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, SevereCOVIDIndD35_108to21Dec10))
 
 ```
