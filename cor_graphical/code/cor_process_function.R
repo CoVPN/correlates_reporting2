@@ -36,11 +36,11 @@ getResponder <- function(data,
       bl <- paste0("B", j)
       delta <- paste0("Delta", gsub("Day", "", i), "overB", j) 
       
-      # add these two rows for assays only done at certain timepoints, but not baseline
-      if (!bl %in% colnames(data)) {data[, bl] <- 0}
-      if (!delta %in% colnames(data)) {data[, delta] <- data[, post] - data[, bl]}
+      # add these two rows for assays only done at certain timepoints for stage 1 studies, but not baseline
+      if (!bl %in% colnames(data) & !grepl("stage2", COR)) {data[, bl] <- 0}
+      if (!delta %in% colnames(data) & !grepl("stage2", COR)) {data[, delta] <- data[, post] - data[, bl]}
       
-      data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
+      if (bl %in% colnames(data)) {data[, bl] <- pmin(data[, bl], log10(uloqs[j]))}
       data[, post] <- pmin(data[, post], log10(uloqs[j]))
       #data[, delta] <- ifelse(10^data[, post] < cutoff[j], log10(cutoff[j]/2), data[, post])-ifelse(10^data[, bl] < cutoff[j], log10(cutoff[j]/2), data[, bl])
       
@@ -48,14 +48,16 @@ getResponder <- function(data,
       #  data[, paste0(post, k, cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
       #}
       
-      for (k in grtns){
-        data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
+      if (delta %in% colnames(data)) {# this delta only exists for stage 1 studies
+        for (k in grtns){
+          data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
+        }
       }
       
       # if (!is.na(pos.cutoffs[j])
-      if (grepl("bind", j) | COR == "D29VLvariant") {
+      if (grepl("bind", j) | COR == "D29VLvariant" | grepl("stage2", COR)) {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
-        data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
+        if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
       } else {
         data[, paste0(post, "Resp")] <- as.numeric(
           (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > log10(pos.cutoffs[j])) |

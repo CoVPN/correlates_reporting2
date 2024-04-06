@@ -2,6 +2,7 @@
 #Sys.setenv(TRIAL = "id27hpv") id27hpvnAb
 #Sys.setenv(TRIAL = "janssen_partA_VL")
 #Sys.setenv(TRIAL = "janssen_pooled_partA")
+#Sys.setenv(TRIAL = "prevent19_stage2") # D35prevent19_stage2_delta, D35prevent19_stage2_severe
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -88,7 +89,7 @@ if (study_name=="IARCHPV"){
     filter(enrolltype!="Cohort" & !!as.name(config.cor$ph2) == 1) %>%
     mutate(cohort_event = factor(ifelse(enrolltype=="Case", "Any HPV Cases", ifelse(enrolltype=="Control", "Controls", NA)),
       levels = c("Any HPV Cases", "Controls")))
-} else if(length(timepoints)==1)  { # ENSEMBLE, PREVENT19
+} else if(study_name=="ENSEMBLE" | (study_name=="PREVENT19" & COR=="D35"))   { # one timepoint stage 1 studies: ENSEMBLE, PREVENT19 301 stage 1
   
   #intcur2 <- paste0("Day 15-", 28+tpeaklag, " Cases")
   dat = dat %>%
@@ -102,6 +103,16 @@ if (study_name=="IARCHPV"){
                   AnyinfectionD1==0 ~ "Non-Cases"),
       levels = c(#"Day 2-14 Cases", intcur2, 
         "Post-Peak Cases", "Non-Cases"))
+    )
+} else if (study_name=="PREVENT19" & grepl("stage2", COR)) {# one timepoint stage 2 studies: PREVENT19 301 stage 2
+  
+  dat = dat %>%
+    mutate(cohort_event = factor(
+      case_when(!!as.name(config.cor$ph2)==1 &
+                  !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
+                !!as.name(config.cor$ph2)==1 & 
+                  AnyInfectionD1to22Mar26==0 ~ "Non-Cases"),
+      levels = c("Post-Peak Cases", "Non-Cases"))
     )
 } else if (study_name=="COVE" | study_name=="MockCOVE") {
   # for COVE, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29, may replace it with AnyinfectionD1 later
@@ -121,7 +132,7 @@ if (study_name=="IARCHPV"){
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
       )
 } else if (study_name=="AZD1222"){ # for two timepoints studies requiring D29 marker for D29 set, and D57 for D57 set, such as AZ
-  # for AZ, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29
+  # for AZ stage 1, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29
   
   dat <- dat %>%
     mutate(cohort_event = factor(
@@ -216,7 +227,8 @@ dat.long.subject_level <- dat %>%
   replicate(length(assays),., simplify = FALSE) %>%
   bind_rows()
 
-if(attr(config,"config")=="janssen_pooled_partA") {times_ = c("B","Day29","Day71","Mon6")} else {times_ = times}
+if(attr(config,"config")=="janssen_pooled_partA") {times_ = c("B","Day29","Day71","Mon6")
+} else if (attr(config,"config")=="prevent19_stage2") {times_ = c("BD1","Day35","DD1","Delta35overBD1")} else {times_ = times}
 
 dat.long.assay_value.names <- times_
 dat.long.assay_value <- as.data.frame(matrix(
@@ -288,6 +300,9 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
 } else if (study_name=="IARCHPV"){
   dat.long$lb = with(dat.long, "Pos.Cut")
   dat.long$lbval =  with(dat.long, pos.cutoffs)
+} else if (study_name=="PREVENT19" & grepl("stage2", COR)){
+  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoD", "LoQ"))
+  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoD, LLoQ))
 } else {
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
@@ -313,9 +328,12 @@ for (t in times_[!grepl("Delta", times_)]) {
 
 # reset Delta29overB & Delta57overB for response call later using LLoD & ULoQ truncated data at Day 1, Day 29, Day 57
 if (study_name!="IARCHPV") { # IARCHPV doesn't have delta assay variables
-  for (t in unique(gsub("Day", "", times_[!grepl("Delta|B", times_)]))) {
-    tp = ifelse(grepl("[A-Za-z]", t), t, paste0("Day", t))
-    dat.long[, "Delta"%.%t%.%"overB"] = dat.long[, tp] - dat.long[, "B"]
+  for (t in timepoints) { # unique(gsub("Day", "", times_[!grepl("Delta|B", times_)]))
+    tp = paste0("Day", t) # ifelse(grepl("[A-Za-z]", t), t, paste0("Day", t))
+    if (!grepl("stage2", COR)) {dat.long[, "Delta"%.%t%.%"overB"] = dat.long[, tp] - dat.long[, "B"]
+    } else {# for stage 2
+      dat.long[, "Delta"%.%t%.%"overBD1"] = dat.long[, tp] - dat.long[, "BD1"]
+    }
   }
 }
 
@@ -426,7 +444,7 @@ if(length(timepoints)>1) {
     filter(!(time == paste0("Day", tpeak) & (!!as.name(paste0("ph2.D", tpeak)))==0))  # set "Day 57" in the ph2.D57 cohort  
 }
 
-if (study_name=="AZD1222") {
+if (study_name=="AZD1222" & !grepl("stage2", COR)) {
   # for studies like AZ, exclude non-cases with EarlyendpointD57==1 for Day 57 panel
   # non_cases_d57 <- subset(dat.longer.cor.subset, cohort_event=="Non-Cases" & time %in% c("Day57","Delta57over29","Delta57overB"))
   # table(non_cases_d57$time, non_cases_d57$EarlyendpointD57)
@@ -437,8 +455,11 @@ if (study_name=="AZD1222") {
 # define response rates
 if (attr(config,"config")=="janssen_pooled_partA"){
   dat_proc$Day71pseudoneutid50uncensored=NA; dat_proc$Mon6pseudoneutid50uncensored=NA;
-  labels.time = c("Day 1","Day 29", "Day 71", "Month 6"); names(labels.time) = times_}
-resp <- getResponder(dat_proc, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day|Mon", "M"), times_, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
+  labels.time = c("Day 1","Day 29", "Day 71", "Month 6"); names(labels.time) = times_
+} else if (attr(config,"config")=="prevent19_stage2"){
+  labels.time = c("Booster Day 1","Day 35", "Disease Day 1", "D35 fold-rise over BD1"); names(labels.time) = times_
+}
+resp <- getResponder(dat_proc, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day|Mon|^DD|^BD", "M"), times_, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
                assays=assays, pos.cutoffs = pos.cutoffs)
 resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
   pivot_longer(!Ptid, names_to = "category", values_to = "response")
@@ -460,10 +481,12 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
 #           )
 #} else {dat.longer.cor.subset$severe = NA}
 
-# only keep fold change for do.fold.change.overB=1: e.g. vat08
+# only keep fold change over B for do.fold.change.overB=1: e.g. vat08
 if (do.fold.change.overB==1 | study_name %in% c("VAT08")){
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
-} else (
+} else if (grepl("stage2", COR)){ # keep all timepoints in times_ for stage 2 studies, such as prevent19 stage2
+  dat.longer.cor.subset <- dat.longer.cor.subset
+} else ( # exclude delta timepoints
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl(ifelse(study_name!="IARCHPV", "Day|Mon", "M"), time)) # IARCHPV uses "M" instead of "Day" in the assay variables
 )
 
