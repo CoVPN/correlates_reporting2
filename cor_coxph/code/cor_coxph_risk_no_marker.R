@@ -1,8 +1,5 @@
-
 #fit.ve = coxph(Surv(EventTimePrimary, EventIndPrimary) ~ Trt, subset(dat_proc, ph1==1)) 
 #summary(fit.ve)
-
-
 
 ## these results are close to bootstrap results. they are not used later and only for sanity check
 ## compute overall risk regardless of markers in both arms by integrating over form.0. 
