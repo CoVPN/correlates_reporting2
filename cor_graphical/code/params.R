@@ -13,7 +13,7 @@ if (study_name=="IARCHPV") {
   bstatus.labels <- "" # no baseline serostatus for the IARCHPV study
   bstatus.labels.2 <- ""
   
-  } else if (study_name=="VAT08"){
+  } else if (study_name=="VAT08" | grepl("stage2", COR)){
     trt.labels <- c("Placebo", "Vaccine")
     bstatus.labels <-  c("Naive", "Non-naive")
     bstatus.labels.2 <- c("naive", "non-naive")
@@ -24,5 +24,16 @@ if (study_name=="IARCHPV") {
     bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
     
   }
+
+# create a new variables times_ and set it to times unless the study needs plots for timepoint more than what's included in the times
+if(attr(config,"config")=="janssen_pooled_partA") {
+  times_ = c("B","Day29","Day71","Mon6")
+  labels.time = c("Day 1","Day 29", "Day 71", "Month 6"); names(labels.time) = times_
+} else if (attr(config,"config")=="prevent19_stage2") {
+  times_ = c("BD1","Day35","DD1","Delta35overBD1")
+  labels.time = c("Booster Day 1","Day 35", "Disease Day 1", "D35 fold-rise over BD1"); names(labels.time) = times_
+} else {times_ = times}
+
+
 
 

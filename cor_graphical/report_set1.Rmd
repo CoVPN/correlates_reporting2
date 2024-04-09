@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), paste0(a, "_by_case_non_case_at_", tp, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0(a, "_by_case_non_case_at_", tp, ".pdf"))`}
 
-\caption{`r paste0("Distribution of ", a, " at ", tpLabel)`}
+\caption{`r paste0("Distribution of ", a, " at ", tpLabel, COR_postfix_label)`}
 
 \end{figure}
 

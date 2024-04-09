@@ -109,10 +109,10 @@ if (study_name=="IARCHPV"){
   dat = dat %>%
     mutate(cohort_event = factor(
       case_when(!!as.name(config.cor$ph2)==1 &
-                  !!as.name(config.cor$EventIndPrimary)==1 ~ "Post-Peak Cases",
+                  !!as.name(config.cor$EventIndPrimary)==1 ~ paste0(config.cor$txt.endpoint, " Cases"),
                 !!as.name(config.cor$ph2)==1 & 
                   AnyInfectionD1to22Mar26==0 ~ "Non-Cases"),
-      levels = c("Post-Peak Cases", "Non-Cases"))
+      levels = c(paste0(config.cor$txt.endpoint, " Cases"), "Non-Cases"))
     )
 } else if (study_name=="COVE" | study_name=="MockCOVE") {
   # for COVE, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29, may replace it with AnyinfectionD1 later
@@ -227,9 +227,6 @@ dat.long.subject_level <- dat %>%
   replicate(length(assays),., simplify = FALSE) %>%
   bind_rows()
 
-if(attr(config,"config")=="janssen_pooled_partA") {times_ = c("B","Day29","Day71","Mon6")
-} else if (attr(config,"config")=="prevent19_stage2") {times_ = c("BD1","Day35","DD1","Delta35overBD1")} else {times_ = times}
-
 dat.long.assay_value.names <- times_
 dat.long.assay_value <- as.data.frame(matrix(
   nrow = nrow(dat) * length(assays),
@@ -301,8 +298,8 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
   dat.long$lb = with(dat.long, "Pos.Cut")
   dat.long$lbval =  with(dat.long, pos.cutoffs)
 } else if (study_name=="PREVENT19" & grepl("stage2", COR)){
-  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoD", "LoQ"))
-  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoD, LLoQ))
+  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoQ", "LoD"))
+  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoQ, LLoD))
 } else {
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
@@ -455,9 +452,6 @@ if (study_name=="AZD1222" & !grepl("stage2", COR)) {
 # define response rates
 if (attr(config,"config")=="janssen_pooled_partA"){
   dat_proc$Day71pseudoneutid50uncensored=NA; dat_proc$Mon6pseudoneutid50uncensored=NA;
-  labels.time = c("Day 1","Day 29", "Day 71", "Month 6"); names(labels.time) = times_
-} else if (attr(config,"config")=="prevent19_stage2"){
-  labels.time = c("Booster Day 1","Day 35", "Disease Day 1", "D35 fold-rise over BD1"); names(labels.time) = times_
 }
 resp <- getResponder(dat_proc, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day|Mon|^DD|^BD", "M"), times_, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
                assays=assays, pos.cutoffs = pos.cutoffs)

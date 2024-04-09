@@ -52,6 +52,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   if (study_name=="ENSEMBLE" & attr(config,"config") == "janssen_partA_VL") COR_postfix_list <- c("adhoc")
   #if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
   if (study_name=="IARCHPV") COR_postfix_list <- c("", "sus")
+  if (attr(config,"config")=="prevent19_stage2") COR_postfix_list <- c("delta", "severe")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
@@ -104,76 +105,91 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       }
     }
     
-  } else if (study_name == "VAT08"){
+  } else if (study_name == "VAT08" | attr(config,"config")=="prevent19_stage2"){
     
-    # SET 1
-    for (a in c("bindSpike", "pseudoneutid50")){
-  
-      for (tp in tps_no_delta_over_tinterm_lb){
+    for (COR_postfix in COR_postfix_list){
         
-        tpLabel = tolower(tp)
-        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
+      # show in figure title
+      COR_postfix_label = ""
+      if (COR_postfix == "delta") COR_postfix_label=" (Delta Endpoint)"
+      if (COR_postfix == "severe") COR_postfix_label=" (Severe Endpoint)"
+      
+      COR=ifelse(COR_postfix=="", "", 
+                 ifelse(COR_postfix=="delta", "D35prevent19_stage2_delta", 
+                         ifelse(COR_postfix=="severe", "D35prevent19_stage2_severe")))
+      
+      # SET 1
+      for (a in c("bindSpike", "pseudoneutid50", if(attr(config,"config")=="prevent19_stage2") "bindSpike_sub_nvx_stage2")){
+    
+        for (tp in tps_no_delta_over_tinterm_lb){
+          
+          tpLabel = tolower(tp)
+          res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+        }
       }
-    }
-    
-    # SET 2
-    for (assay_grp in c(paste0(assays[!assays=="bindSpike_mdw"][1:2], collapse="_"),
-                        paste0(assays[!assays=="bindSpike_mdw"][3:4], collapse="_"), 
-                        paste0(assays[!assays=="bindSpike_mdw"][5:6], collapse="_"),
-                        paste0(assays[!assays=="bindSpike_mdw"][7:8], collapse="_"),
-                        "bindSpike_mdw",
-                        paste0(assays[!assays=="bindSpike_mdw"][9:10], collapse="_"),
-                        paste0(assays[!assays=="bindSpike_mdw"][11:12], collapse="_"),
-                        paste0(assays[!assays=="bindSpike_mdw"][13:14], collapse="_")
-    )){
-        
-        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
-        
-    }
-    
-    # SET 3
-    for (bsero in c("non_naive")){
-        
-        for (trt in c("vac_pla")){
-            
-            for (tp in tps_no_fold_change){
-                
-                tpLabel = ifelse(tp=="B", "Day1", tp)
-                assay_n = length(assays)
-                res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
-                cat(res, sep = '\n')
-                cat("\\clearpage", sep = '\n')
-            }
-        }
-    }
-    
-    for (bsero in c("naive")){
-        
-        for (trt in c("vac")){
-            
-            for (tp in tps_no_B_and_fold_change){
-                
-                tpLabel = ifelse(tp=="B", "Day1", tp)
-                assay_n = length(assays)
-                res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
-                cat(res, sep = '\n')
-                cat("\\clearpage", sep = '\n')
-            }
-        }
-    }
-    
-    # SET 4
-    for (a in assays){
-        
-        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set4.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
-        
-    }
+      
+      # SET 2
+      assay_grp_list = if(attr(config,"config")=="vat08_combined"){
+        c(paste0(assays[!assays=="bindSpike_mdw"][1:2], collapse="_"),
+                          paste0(assays[!assays=="bindSpike_mdw"][3:4], collapse="_"), 
+                          paste0(assays[!assays=="bindSpike_mdw"][5:6], collapse="_"),
+                          paste0(assays[!assays=="bindSpike_mdw"][7:8], collapse="_"),
+                          "bindSpike_mdw",
+                          paste0(assays[!assays=="bindSpike_mdw"][9:10], collapse="_"),
+                          paste0(assays[!assays=="bindSpike_mdw"][11:12], collapse="_"),
+                          paste0(assays[!assays=="bindSpike_mdw"][13:14], collapse="_")
+        )} else if (attr(config,"config")=="prevent19_stage2"){c("pseudoneutid50_D614G_pseudoneutid50_Delta","bindSpike_D614_bindSpike_Delta1")}
+      
+      for (assay_grp in assay_grp_list){
+          
+          res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+          
+      }
+      
+      # SET 3
+      for (bsero in c("non_naive")){
+          
+          for (trt in c("vac_pla")){
+              
+              for (tp in tps_no_fold_change){
+                  
+                  tpLabel = ifelse(tp=="B", "Day1", tp)
+                  assay_n = length(assays)
+                  res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
+                  cat(res, sep = '\n')
+                  cat("\\clearpage", sep = '\n')
+              }
+          }
+      }
+      
+      for (bsero in c("naive")){
+          
+          for (trt in c("vac")){
+              
+              for (tp in tps_no_B_and_fold_change){
+                  
+                  tpLabel = ifelse(tp=="B", "Day1", tp)
+                  assay_n = length(assays)
+                  res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
+                  cat(res, sep = '\n')
+                  cat("\\clearpage", sep = '\n')
+              }
+          }
+      }
+      
+      # SET 4
+      for (a in assays){
+          
+          res = knitr::knit_child(c(here::here('cor_graphical', 'report_set4.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+          
+      }
+  }
     
     
   } else { # for all other studies but config: janssen_partA_VL and COR: D29VLvariant

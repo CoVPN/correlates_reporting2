@@ -34,34 +34,38 @@ assay_metadata = assay_metadata %>%
 dat.longer.cor.subset.plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds")) # at level of trt and assay
 dat.cor.subset.plot3 <- readRDS(here("data_clean", "cor_data.rds"));dat.cor.subset.plot3$all_one <- 1 # as a placeholder for strata values
 
+cases_lb <- if (attr(config,"config")=="vat08_combined"){c("7-27 days PD2 cases", "28-180 days PD2 cases")
+    } else {paste0(config.cor$txt.endpoint, " Cases")}
+
 # path for figures and tables etc
 save.results.to = here::here("output")
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 save.results.to = paste0(here::here("output"), "/", attr(config,"config"),"/");
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
-#save.results.to = paste0(save.results.to, "/", COR,"/");
-#if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to = paste0(save.results.to, "/", COR,"/");
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
 ###### Set 1 plots: Ab distributions for assays of one panel, at set1_times, by case/non-case (by naive/non-naive, vaccine/placebo)
-set1_times <- time_labels[!grepl(paste0("over D", tinterm), time_labels)] # "Day 1" "Day 22" "Day 43" "D22 fold-rise over D1"  "D43 fold-rise over D1"
+set1_times <- labels.time[!grepl(paste0("over D", tinterm), labels.time)] # "Day 1" "Day 22" "Day 43" "D22 fold-rise over D1"  "D43 fold-rise over D1"
+if(attr(config,"config") == "prevent19_stage2"){set1_times <- set1_times[set1_times!="Disease Day 1"]}
 
-for (panel in c("pseudoneutid50", "bindSpike")){
+for (panel in c("pseudoneutid50", "bindSpike", if(attr(config,"config") == "prevent19_stage2") "bindSpike_sub_nvx_stage2")){
     # by naive/non-naive, vaccine/placebo
     f_1 <- f_case_non_case_by_time_assay(
         dat = dat.longer.cor.subset.plot1,
-        assays = assays[grepl(panel, assays)],
+        assays = if(panel=="bindSpike_sub_nvx_stage2") {c("bindSpike_D614","bindSpike_Delta1")
+            } else {assays[grepl(panel, assays)]},
         times = set1_times,
-        axis.x.text.size = ifelse(length(assays[grepl(panel, assays)]) > 7, 10, 12),
-        strip.x.text.size = ifelse(length(assays[grepl(panel, assays)]) > 7, 15, 16),
-        panel.text.size = ifelse(length(assays[grepl(panel, assays)]) > 7, 5, 6),
-        facet.y.var = vars(Trt_nnaive), 
-        facet.x.var = vars(assay_label_short),
-        pointby = "cohort_col",
-        scale.x.discrete.lb = c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases"),
-        lgdbreaks = c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases", "Non-Responders"),
-        chtcols = setNames(c("#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases", "Non-Responders")),
-        chtpchs = setNames(c(19, 19, 19, 2), c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases", "Non-Responders")))
+        ylim = c(0,4.5), 
+        ybreaks = c(0,1,2,3,4),
+        axis.x.text.size = ifelse(length(assays[grepl(panel, assays)]) > 7, 13, 25),
+        strip.x.text.size = ifelse(length(assays[grepl(panel, assays)]) > 7, 13, 25),
+        panel.text.size = ifelse(length(assays[grepl(panel, assays)]) > 7, 4.5, 8),
+        scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
+        lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
+        chtcols = setNames(c(if(length(cases_lb)==2) "#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
+        chtpchs = setNames(c(if(length(cases_lb)==2) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
     
     for (i in 1:length(set1_times)){
         
@@ -73,6 +77,9 @@ for (panel in c("pseudoneutid50", "bindSpike")){
 
 ###### Set 2 plots: Longitudinal violin plots, by cases and non-cases (by naive/non-naive, vaccine/placebo)
 set2.1_assays = assays[!assays %in% c("bindSpike_mdw")]
+if(attr(config,"config") == "prevent19_stage2"){set2.1_assays <- set2.1_assays[grepl("Delta$|Delta1$|D614", set2.1_assays)]}
+time_cohort.lb = c(paste0(labels.time[!grepl("over", labels.time)], "\n", "Non-Cases"), paste0(labels.time[!grepl("over", labels.time)], "\n", cases_lb[length(cases_lb)]))
+if(attr(config,"config") == "prevent19_stage2"){time_cohort.lb <- time_cohort.lb[time_cohort.lb!="Disease Day 1\nNon-Cases"]}
 
 # two assays per plot
 for (i in 1:length(set2.1_assays)) {
@@ -80,70 +87,74 @@ for (i in 1:length(set2.1_assays)) {
     if (i%%2==0) next     # skip even i
     
     f_2 <- f_longitude_by_assay(
-        dat = dat.longer.cor.subset.plot1,
-        x.var = "time_cohort",
-        x.lb = c("Day 1 Non-Cases","Day 22 Non-Cases","Day 43 Non-Cases","Day 1 28-180 days PD2 cases","Day 22 28-180 days PD2 cases","Day 43 28-180 days PD2 cases"),
+        dat = dat.longer.cor.subset.plot1 %>%
+            filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
+            mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
+                                        levels = time_cohort.lb,
+                                        labels = time_cohort.lb)),
+        x.lb = time_cohort.lb,
         assays = set2.1_assays[c(i,i+1)],
-        times = c("Day 1","Day 22","Day 43"),
         panel.text.size = 6,
-        facet.y.var = vars(Trt_nnaive), 
-        facet.x.var = vars(assay_label_short),
-        split.var = "panel",
-        pointby = "cohort_col",
-        lgdbreaks = c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases", "Non-Responders"),
-        chtcols = setNames(c("#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases", "Non-Responders")),
-        chtpchs = setNames(c(19, 19, 19, 2), c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases", "Non-Responders")))
+        ylim = c(0,4.5), 
+        ybreaks = c(0,2,4),
+        lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
+        chtcols = setNames(c(if(length(cases_lb)==2) "#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
+        chtpchs = setNames(c(if(length(cases_lb)==2) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
     
     file_name <- paste0(paste0(set2.1_assays[c(i,i+1)], collapse="_"), "_longitudinal_by_case_non_case.pdf")
     ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 11)
 }
 
-# one assay per plot
-set2.2_assays = c("bindSpike_mdw")
-
-for (a in set2.2_assays) {
+if (attr(config,"config") == "vat08_combined"){
+    # one assay per plot
+    set2.2_assays = c("bindSpike_mdw")
+    time_cohort.lb = c(paste(labels.time[!grepl("over", labels.time)], "Non-Cases"), paste(labels.time[!grepl("over", labels.time)], cases_lb[length(cases_lb)]))
     
-    f_2 <- f_longitude_by_assay(
-        dat = dat.longer.cor.subset.plot1,
-        x.var = "time_cohort",
-        x.lb = c("Day 1 Non-Cases","Day 22 Non-Cases","Day 43 Non-Cases","Day 1 28-180 days PD2 cases","Day 22 28-180 days PD2 cases","Day 43 28-180 days PD2 cases"),
-        assays = a,
-        times = c("Day 1","Day 22","Day 43"),
-        panel.text.size = 6,
-        facet.y.var = vars(Trt_nnaive), 
-        facet.x.var = vars(assay_label_short),
-        split.var = "panel",
-        pointby = "cohort_col",
-        lgdbreaks = c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases", "Non-Responders"),
-        chtcols = setNames(c("#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases", "Non-Responders")),
-        chtpchs = setNames(c(19, 19, 19, 2), c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases", "Non-Responders")))
-    
-    file_name <- paste0(a, "_longitudinal_by_case_non_case.pdf")
-    ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 8, height = 11)
+    for (a in set2.2_assays) {
+        
+        f_2 <- f_longitude_by_assay(
+            dat = dat.longer.cor.subset.plot1 %>%
+                filter(time %in% labels.time[!grepl("over", labels.time)]) %>%
+                mutate(time_cohort = factor(paste0(time, cohort_event), 
+                                            levels = time_cohort.lb,
+                                            labels = time_cohort.lb)),
+            x.lb = time_cohort.lb,
+            assays = a,
+            panel.text.size = 6,
+            lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
+            chtcols = setNames(c(c("#1749FF","#D92321")[length(cases_lb)],"#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
+            chtpchs = setNames(c(c(19, 19)[length(cases_lb)], 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
+        
+        file_name <- paste0(a, "_longitudinal_by_case_non_case.pdf")
+        ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 8, height = 11)
+    }
 }
 
 ###### Set 3 plots: Correlation plots across markers at a given time point
+set3_times = if (attr(config,"config") == "vat08_combined") {times_[!grepl("Delta", times_)] # B, Day22, Day43
+} else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1", times_)]} # BD1, Day35, Delta35overBD1
+
 for (grp in c("non_naive_vac_pla", "naive_vac")){
-    for (t in c("B", paste0("Day", tinterm), paste0("Day", tpeak))) {
+    for (t in set3_times) {
         
         if (grp == "naive_vac" && t=="B") next # this is not needed for VAT08
         
         if (grp == "non_naive_vac_pla") {
             dat.plot = subset(dat.cor.subset.plot3, Bserostatus==1)
             grp_lb = paste0(gsub("-","",bstatus.labels.2[2]), " participants")
-            assays_sub = assays
         } else if (grp == "naive_vac"){
             dat.plot = subset(dat.cor.subset.plot3, Bserostatus==0 & Trt==1)
             grp_lb = paste0(bstatus.labels.2[1], " vaccine group participants")
-            assays_sub = assays
         }
+        
+        if (nrow(dat.plot)==0) next
         
         covid_corr_pairplots(
             plot_dat = dat.plot,
             time = t,
             assays = assays,
             strata = "all_one",
-            weight = ifelse(grepl(tpeak, t), paste0("wt.D", tpeak), paste0("wt.D", tinterm)),
+            weight = "wt",#ifelse(grepl(tpeak, t), paste0("wt.D", tpeak), paste0("wt.D", tinterm)),
             plot_title = paste0(
                 "Correlations of ", length(assays), " ", t, " antibody markers in ", grp_lb, ", Corr = Weighted Spearman Rank Correlation."
             ),

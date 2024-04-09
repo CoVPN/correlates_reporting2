@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), paste0("pairs_by_time_", tp, "_", assay_n, "_markers_", bsero, "_", trt, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("pairs_by_time_", tp, "_", assay_n, "_markers_", bsero, "_", trt, ".pdf"))`}
 
-\caption{`r paste0("Correlation plots across the markers at ", tpLabel, " in ", gsub("_", " ", bsero), ifelse(trt=="vac", " vaccine group participants", " participants"))`}
+\caption{`r paste0("Correlation plots across the markers at ", tpLabel, " in ", gsub("_", " ", bsero), ifelse(trt=="vac", " vaccine group participants", " participants", COR_postfix_label))`}
 
 \end{figure}
 

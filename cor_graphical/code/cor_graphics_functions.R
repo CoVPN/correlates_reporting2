@@ -29,8 +29,8 @@ f_case_non_case_by_time_assay <-
              panel.text.size = 3.8,
              axis.x.text.size = 18,
              strip.x.text.size = 18,
-             facet.x.var,
-             facet.y.var,
+             facet.x.var = vars(assay_label_short),
+             facet.y.var = vars(Trt_nnaive),
              pointby = "cohort_col",
              scale.x.discrete.lb = c("Omicron Cases", "Non-Cases"),
              lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
@@ -80,8 +80,8 @@ f_case_non_case_by_time_assay <-
                 scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, drop=FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = 6.3), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes(x = cohort_event, label = N_RespRate, y = 6.3), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -105,7 +105,6 @@ f_case_non_case_by_time_assay <-
 #' @param x.var x variable, e.g. time_cohort, time
 #' @param x.lb x variable label
 #' @param assays List of assays for plots
-#' @param times List of times for plots
 #' @param ylim y-axis limit
 #' @param ybreaks y-axis breaks
 #' @param panel.text.size font size for text within panels
@@ -116,21 +115,20 @@ f_case_non_case_by_time_assay <-
 #' @param lgdbreaks breaks for point legend 
 #' @param chtcols color panel for points
 #' @param chtpchs shape panel for points
-#' @param strip.text.y.size strip label size for y-axis, default is 25
-#' @param axis.text.x.size x-axis label size, default is 9.5
+#' @param strip.text.y.size strip label size for y-axis, e.g., assay label, default is 25
+#' @param axis.text.x.size x-axis label size, default is 9.5, e.g., cases, non-cases 
 #' @return A ggplot object list for longitudinal violin + box plot with lines
 f_longitude_by_assay <- function(
     dat,
     x.var = "time_cohort",
     x.lb = c("BD1 Non-Cases","BD29 Non-Cases","BD1 Omicron Cases","BD29 Omicron Cases","DD1 Omicron Cases"),
     assays = assays,
-    times = times,
     ylim = c(0,7.2),
     ybreaks = c(0,2,4,6),
     panel.text.size = 4,
-    facet.x.var,
-    facet.y.var,
-    split.var,
+    facet.x.var = vars(assay_label_short),
+    facet.y.var = vars(Trt_nnaive),
+    split.var = "panel",
     pointby = "cohort_col",
     lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
     chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
@@ -157,20 +155,12 @@ f_longitude_by_assay <- function(
               plot.margin = margin(5.5, 12, 5.5, 5.5, "pt")) 
     
     p2 <- dat %>%
-        filter(assay %in% assays & time %in% times) %>%
+        filter(assay %in% assays) %>%
         left_join(assay_metadata, by="assay") %>%
         mutate(Trt_nnaive = factor(paste(Trt, Bserostatus), 
                                    levels = c("Vaccine Naive", "Vaccine Non-naive", "Placebo Naive", "Placebo Non-naive"),
                                    labels = c("Vaccine\nnaive", "Vaccine\nnon-naive", "Placebo\nnaive", "Placebo\nnon-naive")),
-               Trt_nnaive2 = factor(paste(Bserostatus, cohort_event), 
-                                   levels = c("Naive Omicron Cases", "Naive Non-Cases", "Non-naive Omicron Cases", "Non-naive Non-Cases"),
-                                   labels = c("Naive\nOmicron Cases", "Naive\nNon-Cases", "Non-naive\nOmicron Cases", "Non-naive\nNon-Cases")),
-               cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event)),
-               cohort_col2 = paste(cohort_event, Trt),
-               cohort_col3 = Trt,
-               time_cohort = factor(paste(time, cohort_event),
-                                    levels = c("Day 1 Non-Cases","Day 22 Non-Cases","Day 43 Non-Cases","Day 1 7-27 days PD2 cases", "Day 22 7-27 days PD2 cases", "Day 43 7-27 days PD2 cases", "Day 1 28-180 days PD2 cases","Day 22 28-180 days PD2 cases","Day 43 28-180 days PD2 cases"),
-                                    labels = c("Day 1 Non-Cases","Day 22 Non-Cases","Day 43 Non-Cases","Day 1 7-27 days PD2 cases", "Day 22 7-27 days PD2 cases", "Day 43 7-27 days PD2 cases", "Day 1 28-180 days PD2 cases","Day 22 28-180 days PD2 cases","Day 43 28-180 days PD2 cases"))
+               cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event))
         ) %>%
         ungroup() %>%
         group_split(.[[split.var]]) %>% # e.g., "panel" variable from assay_metadata
@@ -191,8 +181,8 @@ f_longitude_by_assay <- function(
                 scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, drop=FALSE) +
                 scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, drop=FALSE) +
                 
-                geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = 6.5), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes_string(x = x.var, label = "N_RespRate", y = 6.5), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes_string(x = x.var, label = "N_RespRate", y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -236,8 +226,8 @@ f_longitude_by_assay_adhoc <- function(
     assays = assays,
     times = times,
     panel.text.size = 4,
-    facet.x.var,
-    facet.y.var,
+    facet.x.var = vars(assay_label_short),
+    facet.y.var = vars(Trt_nnaive),
     split.var,
     pointby = "cohort_col",
     lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
@@ -270,15 +260,7 @@ f_longitude_by_assay_adhoc <- function(
         mutate(Trt_nnaive = factor(paste(Trt, nnaive), 
                                    levels = c("Vaccine Naive", "Vaccine Non-naive", "Placebo Naive", "Placebo Non-naive"),
                                    labels = c("Vaccine\nnaive", "Vaccine\nnon-naive", "Placebo\nnaive", "Placebo\nnon-naive")),
-               Trt_nnaive2 = factor(paste(nnaive, cohort_event), 
-                                    levels = c("Naive Omicron Cases", "Naive Non-Cases", "Non-naive Omicron Cases", "Non-naive Non-Cases"),
-                                    labels = c("Naive\nOmicron Cases", "Naive\nNon-Cases", "Non-naive\nOmicron Cases", "Non-naive\nNon-Cases")),
-               cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event)),
-               cohort_col2 = paste(cohort_event, Trt),
-               cohort_col3 = Trt,
-               time_cohort = factor(paste(time, cohort_event),
-                                    levels = c("BD1 Non-Cases","BD29 Non-Cases","BD1 Omicron Cases","BD29 Omicron Cases","DD1 Omicron Cases"),
-                                    labels = c("BD1 Non-Cases","BD29 Non-Cases","BD1 Omicron Cases","BD29 Omicron Cases","DD1 Omicron Cases"))
+               cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event))
         ) %>%
         ungroup() %>%
         group_split(.[[split.var]]) %>% # e.g., "panel" variable from assay_metadata
