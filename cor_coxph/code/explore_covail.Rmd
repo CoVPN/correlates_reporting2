@@ -16,11 +16,218 @@ dat = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1)
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
 
+f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
+
+dat.ocp.pfizer=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+    "Wildtype/Prototype (Pfizer 1)"
+  , "Omicron (Pfizer 1)"
+  , "Omicron + Wildtype/Prototype (Pfizer 1)"
+  # , "Omicron BA.4/5 + Prototype (Pfizer 2)"
+  # , "Omicron BA.1 + Prototype (Pfizer 2)"
+  )
+)
+dat.ocp.pfizer$Trt=ifelse(dat.ocp.pfizer$treatment_assigned == "Wildtype/Prototype (Pfizer 1)", 0, 1)
+
+
+dat.ocp.moderna=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+    "1 Dose Prototype (Moderna)"
+  , "1 Dose Omicron (Moderna)"
+  , "1 Dose Omicron + Prototype (Moderna)"
+  )
+)
+dat.ocp.moderna$Trt=ifelse(dat.ocp.moderna$treatment_assigned == "1 Dose Prototype (Moderna)", 0, 1)
+
+dat.ocp=rbind(cbind(dat.ocp.pfizer, company="Pfz"), cbind(dat.ocp.moderna, company="Mdn"))
+
+
 ```
 
 
+### Difference in risk between prototype and Omicon vaccines
 
-### Modeling
+#### Pfizer
+
+OC v P is significant among the naive but not among the non-naive.
+
+```{r}
+
+coxph(update(f, ~. + naive + Trt), dat.ocp.pfizer)
+coxph(update(f, ~. + Trt), subset(dat.ocp.pfizer, naive==0))
+coxph(update(f, ~. + Trt), subset(dat.ocp.pfizer, naive==1))
+
+dat.1=subset(dat.ocp.pfizer, naive==1)
+```
+
+BA4BA5-specific ID50 is significant correlate but not ancestral ID50.
+
+```{r}
+
+coxph(update(f, ~. + Trt * Bpseudoneutid50_BA.4.BA.5), dat.1)
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5), dat.1)
+
+coxph(update(f, ~. + Trt * Day15pseudoneutid50_BA.4.BA.5), dat.1)
+coxph(update(f, ~. + Trt + Day15pseudoneutid50_BA.4.BA.5), dat.1)
+
+
+coxph(update(f, ~. + Trt * Bpseudoneutid50_D614G), dat.1)
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G), dat.1)
+
+coxph(update(f, ~. + Trt * Day15pseudoneutid50_D614G), dat.1)
+coxph(update(f, ~. + Trt + Day15pseudoneutid50_D614G), dat.1)
+
+```
+
+Distribution of D15 BA4BA5-specific ID50 is different between P and OC
+
+```{r}
+par(mfrow=c(1,2))
+myboxplot(Bpseudoneutid50_BA.4.BA.5~Trt, dat.1, test="w")
+myboxplot(Day15pseudoneutid50_BA.4.BA.5~Trt, dat.1, test="w")
+```
+
+Additional marker models
+
+```{r}
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G + Day15pseudoneutid50_D614G + I(Day15pseudoneutid50_D614G^2)), dat.1)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G * Day15pseudoneutid50_D614G), dat.1)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G + Day15pseudoneutid50_D614G), dat.1)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G), dat.1)
+
+coxph(update(f, ~. + Trt + Day15pseudoneutid50_D614G), dat.1)
+
+
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5 + Day15pseudoneutid50_BA.4.BA.5 + I(Day15pseudoneutid50_BA.4.BA.5^2)), dat.1)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5 * Day15pseudoneutid50_BA.4.BA.5), dat.1)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5 + Day15pseudoneutid50_BA.4.BA.5), dat.1)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5), dat.1)
+
+coxph(update(f, ~. + Trt + Day15pseudoneutid50_BA.4.BA.5), dat.1)
+
+
+```
+
+
+#### Moderna
+No treatment effect in either naive or non-naive.
+
+```{r}
+
+coxph(update(f, ~. + naive + Trt), dat.ocp.moderna)
+coxph(update(f, ~. + naive + Trt), subset(dat.ocp.moderna, naive==0))
+coxph(update(f, ~. + naive + Trt), subset(dat.ocp.moderna, naive==1))
+
+dat.1.moderna=subset(dat.ocp.moderna, naive==1)
+```
+
+Distribution of D15 BA4BA5-specific ID50 is different between P and OC
+
+```{r}
+par(mfrow=c(1,2))
+myboxplot(Bpseudoneutid50_BA.4.BA.5~Trt, dat.1.moderna, test="w")
+myboxplot(Day15pseudoneutid50_BA.4.BA.5~Trt, dat.1.moderna, test="w")
+```
+
+Among naive, there is significant interaction between Trt and D1 BA4BA5 ID50
+
+```{r}
+
+coxph(update(f, ~. + Trt * Bpseudoneutid50_BA.4.BA.5), dat.1.moderna)
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5), dat.1.moderna)
+
+coxph(update(f, ~. + Trt * Day15pseudoneutid50_BA.4.BA.5), dat.1.moderna)
+coxph(update(f, ~. + Trt + Day15pseudoneutid50_BA.4.BA.5), dat.1.moderna)
+
+
+coxph(update(f, ~. + Trt * Bpseudoneutid50_D614G), dat.1.moderna)
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G), dat.1.moderna)
+
+coxph(update(f, ~. + Trt * Day15pseudoneutid50_D614G), dat.1.moderna)
+coxph(update(f, ~. + Trt + Day15pseudoneutid50_D614G), dat.1.moderna)
+
+```
+
+
+Additional marker models
+
+```{r}
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G + Day15pseudoneutid50_D614G + I(Day15pseudoneutid50_D614G^2)), dat.1.moderna)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G * Day15pseudoneutid50_D614G), dat.1.moderna)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G + Day15pseudoneutid50_D614G), dat.1.moderna)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_D614G), dat.1.moderna)
+
+coxph(update(f, ~. + Trt + Day15pseudoneutid50_D614G), dat.1.moderna)
+
+
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5 + Day15pseudoneutid50_BA.4.BA.5 + I(Day15pseudoneutid50_BA.4.BA.5^2)), dat.1.moderna)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5 * Day15pseudoneutid50_BA.4.BA.5), dat.1.moderna)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5 + Day15pseudoneutid50_BA.4.BA.5), dat.1.moderna)
+
+coxph(update(f, ~. + Trt + Bpseudoneutid50_BA.4.BA.5), dat.1.moderna)
+
+coxph(update(f, ~. + Trt + Day15pseudoneutid50_BA.4.BA.5), dat.1.moderna)
+
+
+```
+
+
+```{r}
+coxph(update(f, ~.  + Day15pseudoneutid50_D614G), subset(dat.1.moderna, Trt==1))
+coxph(update(f, ~.  + Day15pseudoneutid50_D614G), subset(dat.1.moderna, Trt==0))
+
+```
+
+#### Putting Pfizer and Moderna side by side
+
+Omicron-specific antibodies are similar at D1, rise at D15, and more so when vaccines contain Omicron strains.
+
+```{r}
+par(mfrow=c(1,2))
+myboxplot(Bpseudoneutid50_BA.4.BA.5~Trt+company, subset(dat.ocp, naive==1), cex.axis=.8)
+myboxplot(Day15pseudoneutid50_BA.4.BA.5~Trt+company, subset(dat.ocp, naive==1), cex.axis=.8)
+```
+Ancestral antibodies are not quite similar at D1, rise at D15, but not more so when vaccines contain Omicron strains.
+
+```{r}
+par(mfrow=c(1,2))
+myboxplot(Bpseudoneutid50_D614G~Trt+company, subset(dat.ocp, naive==1), cex.axis=.8)
+myboxplot(Day15pseudoneutid50_D614G~Trt+company, subset(dat.ocp, naive==1), cex.axis=.8)
+```
+
+
+```{r}
+fits=list()
+fits[["Pfz,P"]] = coxph(update(f, ~.  + Day15pseudoneutid50_D614G), subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0))
+fits[["Pfz,O"]] = coxph(update(f, ~.  + Day15pseudoneutid50_D614G), subset(dat.ocp, naive==1 & company=="Pfz" & Trt==1))
+fits[["Mdn,P"]] = coxph(update(f, ~.  + Day15pseudoneutid50_D614G), subset(dat.ocp, naive==1 & company=="Mdn" & Trt==0))
+fits[["Mdn,O"]] = coxph(update(f, ~.  + Day15pseudoneutid50_D614G), subset(dat.ocp, naive==1 & company=="Mdn" & Trt==1))
+tab = getFormattedSummary(fits, robust=F, type=5)
+tab
+```
+Are risk scores distribution different?
+
+```{r}
+myboxplot(standardized_risk_score    ~Trt+company, subset(dat.ocp, naive==1), cex.axis=.8)
+```
+```{r}
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score*Trt, subset(dat.ocp, naive==1 & company=="Mdn"))
+```
+
+### Risk models
 
 ID50 Score
 ```{r}
@@ -63,6 +270,31 @@ myboxplot(standardized_risk_score~I(1-naive)*I(D1_id50 > -1.06), dat, ylab="stan
 fit=lm(standardized_risk_score ~ I(1-naive) * I(D1_id50 > -1.06), dat); summary(fit)
 fit=lm(standardized_risk_score ~ I(1-naive), subset(dat, D1_id50 <= -1.06)); summary(fit)
 ```
+
+
+
+
+```{r}
+f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
+
+dat.ocp=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+    "Wildtype/Prototype (Pfizer 1)"
+  , "Omicron (Pfizer 1)"
+  , "Omicron + Wildtype/Prototype (Pfizer 1)"
+  # , "Omicron BA.4/5 + Prototype (Pfizer 2)"
+  # , "Omicron BA.1 + Prototype (Pfizer 2)"
+  )
+)
+dat.ocp$Trt=ifelse(dat.ocp$treatment_assigned == "Wildtype/Prototype (Pfizer 1)", 0, 1)
+
+coxph(update(f, ~. + naive + Trt), dat.ocp)
+coxph(update(f, ~. + naive + Trt), subset(dat.ocp, naive==0))
+coxph(update(f, ~. + naive + Trt), subset(dat.ocp, naive==1))
+
+dat.1=subset(dat.ocp, naive==1)
+```
+
+
 
 
 ### B and D15 marker
@@ -328,9 +560,6 @@ nrow(subset(dat_proc, kp & Bpseudoneutid50_BA.1>1.5))
 
 nrow(subset(dat_proc, kp & Bpseudoneutid50_BA.1<1.5))
 ```
-
-
-
 
 
 ### Misc

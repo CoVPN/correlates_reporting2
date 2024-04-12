@@ -24,6 +24,7 @@ dat_mapped$EventCalTimeFirstD35 = with(dat_mapped, as.Date(D35Date)+EventTimeFir
 
 
 dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240327.csv')
+#dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240402.csv')
 
 # extract the first variant. empty string to empty string
 dat_proc$VARTYPE_first1 = sapply(strsplit(dat_proc$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
@@ -362,10 +363,18 @@ with(subset(dat_proc, ph1.D35==1 & Country==0 & Bserostatus==0 & Trt==1 & Severi
 
 Distributions of samples by strata. Stratum 31 is Delta cases and 32 is severe cases. Note that non-Delta, non-severe cases are not sampled, so they are represented by the subcohort.
 ```{r}
-with (subset(dat_proc, ph2.D35==1 & Trt==1 & Bserostatus==0 & Country==0), table(ph2.D35, Wstratum))
+with (subset(dat_proc, ph1.D35==1 & Trt==1 & Bserostatus==0 & Country==0), mytable(ph2.D35, Wstratum))
 ```
 
+Distribution of weights
+```{r}
+with (subset(dat_proc, ph1.D35_108==1 & Trt==1 & Bserostatus==0 & Country==0), mytable(wt.D35_108, Wstratum))
+```
 
+Distribution of cases by a trichotomized marker
+```{r}
+with (subset(dat_proc, ph1.D35_108==1 & Trt==1 & Bserostatus==0 & Country==0 & KnownOrImputedDeltaCOVIDIndD35_108to21Dec10==1), mytable(Day35pseudoneutid50_D614Gcat))
+```
 
 
 ### Covariates adjustment
@@ -438,5 +447,24 @@ plot_ce(ests_cox, ests_np)
 
 
 
+
+```
+
+
+### For manuscript
+
+Numbers for Fig S1
+```{r, include=F}
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240403.csv')
+
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108)
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10)
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$SevereCOVIDIndD35_108to21Dec10)
+```
+
+Are all severe cases Delta? Yes
+```{r}
+with(subset(dat_proc,ph1.D35_108==1), mytable(KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, SevereCOVIDIndD35_108to21Dec10))
+with(subset(dat_proc,ph2.D35_108==1), mytable(KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, SevereCOVIDIndD35_108to21Dec10))
 
 ```
