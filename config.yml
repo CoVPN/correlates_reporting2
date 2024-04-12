@@ -428,7 +428,7 @@ prevent19_stage2: &prevent19_stage2
   timepoints: [35]
   times: [Day35]
   time_labels: [Day 35]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240321.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240409.csv
   assay_metadata: assay_metadata/prevent19_stage2_assay_metadata.csv
   study_name: PREVENT19
   covariates: ~ 1  # to be replaced by COR-specific covariates
@@ -1241,6 +1241,20 @@ D35:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
+D35nvx_uk302:
+  ph1: ph1.D35
+  ph2: ph2.D35
+  wt: wt.D35
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndPrimaryD35
+  EventTimePrimary: EventTimePrimaryD35
+  Earlyendpoint: EarlyendpointD35
+  tpeak: 35
+  tpeaklag: 7
+  tfinal.tpeak: 134
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
 D35prevent19nvx:
   ph1: ph1.D35
   ph2: ph2.D35NVX
@@ -1251,6 +1265,7 @@ D35prevent19nvx:
   Earlyendpoint: EarlyendpointD35
   tpeak: 35
   tpeaklag: 7
+  tfinal.tpeak: 59
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 35 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -1259,38 +1274,40 @@ D35prevent19_stage2_delta:
   ph2: ph2.D35_108
   wt: wt.D35_108
   WtStratum: Wstratum
-  EventIndPrimary: DeltaEventIndD35_108to21Dec10
-  EventTimePrimary: EventTimeD35_to21Dec10
-  Earlyendpoint: EarlyendpointD35
+  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD35_108to21Dec10
+  EventTimePrimary: COVIDTimeD35to21Dec10
+  Earlyendpoint: AnyEndpointD35_108
   covariates: ~.+ Senior
   tpeak: 35
   tpeaklag: 108
+  tfinal.tpeak: 305
   txt.endpoint: Delta COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
-
 
 D35prevent19_stage2_severe:
   ph1: ph1.D35_108
   ph2: ph2.D35_108
   wt: wt.D35_108
   WtStratum: Wstratum
-  EventIndPrimary:  SevereEventIndD35_108to21Dec10
-  EventTimePrimary: SevereEventTimeD35_to21Dec10
-  Earlyendpoint: EarlyendpointD35
+  EventIndPrimary:  SevereCOVIDIndD35_108to21Dec10
+  EventTimePrimary: SevereCOVIDTimeD35to21Dec10
+  Earlyendpoint: AnyInfectionD35_108
   covariates: ~.+ Age
   tpeak: 35
   tpeaklag: 108
+  tfinal.tpeak: 305
   txt.endpoint: Severe COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
+
 
 D57azd1222_stage2_delta_nAb:
   ph1: ph1.D57_120
   ph2: ph2.D57_120nAb
   wt: wt.D57_120nAb
   WtStratum: Wstratum
-  EventIndPrimary: DeltaEventIndD57_120to21Dec10
-  EventTimePrimary: EventTimeD57_to21Dec10
-  Earlyendpoint: EarlyendpointD57
+  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120to21Dec10
+  EventTimePrimary: COVIDTimeD57to21Dec10
+  Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Senior + risk_score
   tpeak: 57
   tpeaklag: 120
@@ -1302,9 +1319,9 @@ D57azd1222_stage2_delta_bAb:
   ph2: ph2.D57_120bAb
   wt: wt.D57_120bAb
   WtStratum: Wstratum
-  EventIndPrimary: DeltaEventIndD57_120to21Dec10
-  EventTimePrimary: EventTimeD57_to21Dec10
-  Earlyendpoint: EarlyendpointD57
+  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120to21Dec10
+  EventTimePrimary: COVIDTimeD57to21Dec10
+  Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Senior + risk_score
   tpeak: 57
   tpeaklag: 120
@@ -1316,12 +1333,13 @@ D57azd1222_stage2_severe_nAb:
   ph2: ph2.D57_120nAb
   wt: wt.D57_120nAb
   WtStratum: Wstratum
-  EventIndPrimary: SevereEventIndD57_120to21Dec10
-  EventTimePrimary: SevereEventTimeD57_to21Dec10
-  Earlyendpoint: EarlyendpointD57
+  EventIndPrimary: SevereCOVIDIndD57_120to21Dec10
+  EventTimePrimary: SevereCOVIDTimeD57to21Dec10
+  Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Age + risk_score
   tpeak: 57
   tpeaklag: 120
+  tfinal.tpeak: 304
   txt.endpoint: Severe COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
 
@@ -1330,12 +1348,13 @@ D57azd1222_stage2_severe_bAb:
   ph2: ph2.D57_120bAb
   wt: wt.D57_120bAb
   WtStratum: Wstratum
-  EventIndPrimary: SevereEventIndD57_120to21Dec10
-  EventTimePrimary: SevereEventTimeD57_to21Dec10
-  Earlyendpoint: EarlyendpointD57
+  EventIndPrimary: SevereCOVIDIndD57_120to21Dec10
+  EventTimePrimary: SevereCOVIDTimeD57to21Dec10
+  Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Age + risk_score
   tpeak: 57
   tpeaklag: 120
+  tfinal.tpeak: 304
   txt.endpoint: Severe COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
 

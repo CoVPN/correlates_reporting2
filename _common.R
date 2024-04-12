@@ -675,114 +675,123 @@ if (exists("COR")) {
         }
         
         
-        # define tfinal.tpeak
-        if (TRIAL == "moderna_boost") {
-          tfinal.tpeak = 92 # as computed in reporting3 repo
-        } else if (TRIAL == "moderna_real") {
-          if (COR == "D57a") {
-            tfinal.tpeak = 92 # for comparing with stage 2 
-          } else {
-            # default rule for followup time is the last case in ph2 in vaccine arm
-            tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-          }
+        # compute tfinal.tpeak if it is not defined in the config
+        if (is.null(config.cor$tfinal.tpeak)) {
           
-        } else if (TRIAL == "janssen_na_EUA") {
+          if (TRIAL == "moderna_boost") {
+            tfinal.tpeak = 92 # as computed in reporting3 repo
+          } else if (TRIAL == "moderna_real") {
+            if (COR == "D57a") {
+              tfinal.tpeak = 92 # for comparing with stage 2 
+            } else {
+              # default rule for followup time is the last case in ph2 in vaccine arm
+              tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+            }
+            
+          } else if (TRIAL == "janssen_na_EUA") {
             tfinal.tpeak=53
-        } else if (TRIAL == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
+          } else if (TRIAL == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
             tfinal.tpeak=48 
-        } else if (TRIAL == "janssen_sa_EUA") {
+          } else if (TRIAL == "janssen_sa_EUA") {
             tfinal.tpeak=40            
-        } else if (TRIAL == "janssen_pooled_EUA") {
+          } else if (TRIAL == "janssen_pooled_EUA") {
             tfinal.tpeak=54
-        } else if (startsWith(TRIAL, "janssen_") & endsWith(TRIAL, "partA")) {
-          # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
-          tfinal.tpeak=min(
-            with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
-            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
-          )
-          # for moderate, we choose to use the same tfinal.tpeak as the overall COVID
-          if (COR=="D29ModerateIncludeNotMolecConfirmed") {
+          } else if (startsWith(TRIAL, "janssen_") & endsWith(TRIAL, "partA")) {
+            # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
             tfinal.tpeak=min(
-              with(subset(dat_proc, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
+              with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
               with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
             )
-          }
-        } else if (TRIAL %in% c("janssen_partA_VL")) {
-          # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
-          tfinal.tpeak = NULL 
-          # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
-          tfinal.tpeak.ls=list(
-            US=list(
-              # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==0), max(EventTimePrimary)),
-              #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+            # for moderate, we choose to use the same tfinal.tpeak as the overall COVID
+            if (COR=="D29ModerateIncludeNotMolecConfirmed") {
+              tfinal.tpeak=min(
+                with(subset(dat_proc, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
+                with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+              )
+            }
+          } else if (TRIAL %in% c("janssen_partA_VL")) {
+            # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
+            tfinal.tpeak = NULL 
+            # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+            tfinal.tpeak.ls=list(
+              US=list(
+                # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==0), max(EventTimePrimary)),
+                #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+                
+                Ancestral.Lineage=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==0 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                                      with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1))
+              ),
               
-              Ancestral.Lineage=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==0 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
-                                    with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1))
-            ),
-            
-            LatAm=list(
-              # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==1), max(EventTimePrimary)),
-              #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+              LatAm=list(
+                # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==1), max(EventTimePrimary)),
+                #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+                
+                Ancestral.Lineage = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+                
+                Gamma = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Gamma"), max(EventTimePrimary)),
+                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+                
+                Lambda =min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Lambda"), max(EventTimePrimary)),
+                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+                
+                Mu    = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Mu"), max(EventTimePrimary)),
+                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+                
+                Zeta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Zeta"), max(EventTimePrimary)),
+                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+              ),
               
-              Ancestral.Lineage = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
-                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
-              
-              Gamma = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Gamma"), max(EventTimePrimary)),
-                          with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
-              
-              Lambda =min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Lambda"), max(EventTimePrimary)),
-                          with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
-              
-              Mu    = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Mu"), max(EventTimePrimary)),
-                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
-              
-              Zeta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Zeta"), max(EventTimePrimary)),
-                          with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
-            ),
-            
-            RSA=list(
-              # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==2), max(EventTimePrimary)),
-              #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1)),
-              
-              Beta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==2 & seq1.variant=="Beta"), max(EventTimePrimary)),
-                          with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1))
+              RSA=list(
+                # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==2), max(EventTimePrimary)),
+                #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+                
+                Beta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==2 & seq1.variant=="Beta"), max(EventTimePrimary)),
+                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1))
+              )
             )
-          )
-          
-        } else if (TRIAL %in% c("profiscov", "profiscov_lvmn")) {
+            
+          } else if (TRIAL %in% c("profiscov", "profiscov_lvmn")) {
             if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43 else stop("no tfinal.tpeak")
             
-        } else if (study_name=="HVTN705") {
-          tfinal.tpeak=550
-          
-        } else if (study_name=="VAT08") {
-          # hardcode 180 days post dose 2
-          if (COR=="D22M6omi" | COR=="D22M6ominAb") {
-            tfinal.tpeak=180 # tpeak is dose 2
-          } else if (COR=="D43M6omi" | COR=="D43M6ominAb") {
-            tfinal.tpeak=180-21 # tpeak is 21 days post dose 2
-          } # else is M12
-          
-        } else if (study_name=="IARCHPV") {
-          tfinal.tpeak=NULL
-          
-        } else if (study_name=="COVAIL") {
-          if (COR %in% c("D15to181","D92to181","D15to181BA45","D92to181BA45")) {
-            tfinal.tpeak=188
-          } else if (COR %in% c("D15to91","D15to91BA45")) {
-            tfinal.tpeak=91
+          } else if (study_name=="HVTN705") {
+            tfinal.tpeak=550
+            
+          } else if (study_name=="VAT08") {
+            # hardcode 180 days post dose 2
+            if (COR=="D22M6omi" | COR=="D22M6ominAb") {
+              tfinal.tpeak=180 # tpeak is dose 2
+            } else if (COR=="D43M6omi" | COR=="D43M6ominAb") {
+              tfinal.tpeak=180-21 # tpeak is 21 days post dose 2
+            } # else is M12
+            
+          } else if (study_name=="IARCHPV") {
+            tfinal.tpeak=NULL
+            
+          } else if (study_name=="COVAIL") {
+            if (COR %in% c("D15to181","D92to181","D15to181BA45","D92to181BA45")) {
+              tfinal.tpeak=188
+            } else if (COR %in% c("D15to91","D15to91BA45")) {
+              tfinal.tpeak=91
+            } else {
+              stop("COVAIL, wrong COR")
+            }
+            
+            
+          } else if (TRIAL %in% c("prevent19", "azd1222_stage2")) {
+            # default rule for followup time is the last case in ph2 in vaccine arm
+            tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+            
           } else {
-            stop("COVAIL, wrong COR")
+            stop("unknown study name 11")
           }
           
-          
-        } else if (TRIAL %in% c("prevent19", "prevent19nvx", "prevent19_stage2", "nvx_uk302", "azd1222_stage2")) {
-          # default rule for followup time is the last case in ph2 in vaccine arm
-          tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-          
         } else {
-          stop("unknown study name 11")
+          
+          tfinal.tpeak=config.cor$tfinal.tpeak
+        
         }
+
 
         # compute overall VE
         # except for 

@@ -4,12 +4,14 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = T)
 
 library(survey)
 library(kyotil)
 library(readxl)
 library(vaccine)
+library(ggplot2)
+library(cowplot)
 
 dat_prevent19_stage1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240320.csv')
 dat_azd1222_stage1=read.csv('/trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv')
@@ -20,17 +22,86 @@ dat_unk302 = read.csv('/trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_u
 Age is a potential confounder because immune markers are lower in older people and age is also associated with risk of mild-moderate-severe COVID and severe COVID in complicated ways. 
 
 
+### Age risk curves
 
-## Mild-moderate-severe ancestral COVID risk
+#### Summary
 
-### NVX PREVENT19 stage 1, placebo arm
+In AZ stage 1, the risk is a step function of age with a sudden drop at around 65 in the placebo arm; in the vaccine arm, the risk drops between 50 and 65. 
+
+In NVX US stage 1, the risk shows a gradual drop as age increases in the placebo arm; in the vaccine arm, the risk is very low and mostly flat.
+
+In NVX UK, the risk shows a gradual drop as age increases in the placebo arm; in the vaccine arm, the risk also decreases as age increases.
+
+In NVX US stage 2, the risk of Delta COVID shows a gradual drop as age increases in the vaccine arm; the risk of severe COVID is low under 40, rises from 40 to 50 and stays elevated.
+
+
+
+#### AZ stage 1
+
+```{r}
+load("~/correlates_reporting2/cor_coxph/output/age_risk/azd1222.stage1.Rdata")
+
+plot_grid(
+  p1=with(azd1222.stage1.plac, plot_ce(ests_cox, ests_np)) + coord_cartesian(ylim = c(0, 0.05), xlim = c(20, 95)) + ggtitle("Placebo"),
+  p2=with(azd1222.stage1.vacc, plot_ce(ests_cox, ests_np)) + coord_cartesian(ylim = c(0, 0.05), xlim = c(20, 95)) + ggtitle("Vaccine"), 
+  ncol = 2)
+
+```
+
+
+#### NVX PREVENT19 stage 1
+
+```{r}
+load("~/correlates_reporting2/cor_coxph/output/age_risk/prevent19.stage1.Rdata")
+
+plot_grid(
+  p1=with(prevent19.stage1.plac, plot_ce(ests_cox, ests_np)) + coord_cartesian(ylim = c(0, 0.05), xlim = c(20, 95)) + ggtitle("Placebo"),
+  p2=with(prevent19.stage1.vacc, plot_ce(ests_cox, ests_cox_spline)) + coord_cartesian(ylim = c(0, 0.05), xlim = c(20, 95)) + ggtitle("Vaccine"), 
+  ncol = 2)
+
+```
+
+
+
+#### NVX UK302 stage 1
+
+```{r}
+load("~/correlates_reporting2/cor_coxph/output/age_risk/uk302.Rdata")
+
+plot_grid(
+  p1=with(uk302.plac, plot_ce(ests_cox, ests_np)) + coord_cartesian(ylim = c(0, 0.05), xlim = c(20, 85)) + ggtitle("Placebo"),
+  p2=with(uk302.vacc, plot_ce(ests_cox, ests_np)) + coord_cartesian(ylim = c(0, 0.05), xlim = c(20, 85)) + ggtitle("Vaccine"), 
+  ncol = 2)
+
+```
+
+
+
+#### PREVENT19 stage 2
+
+```{r}
+load("~/correlates_reporting2/cor_coxph/output/age_risk/prevent19.stage2.Rdata")
+
+plot_grid(
+  p1=with(prevent19.stage2.delta,  plot_ce(ests_cox, ests_np)) + coord_cartesian(ylim = c(0, 0.1), xlim = c(20, 95)) + ggtitle("Delta COVID"),
+  p2=with(prevent19.stage2.severe, plot_ce(ests_cox, ests_cox_spline)) + coord_cartesian(ylim = c(0, 0.05), xlim = c(20, 95)) + ggtitle("Severe COVID"), 
+  ncol = 2)
+
+```
+
+
+
+### Cox models
+
+#### NVX PREVENT19 stage 1, placebo arm
 Age (continuous) is a better predictor than age group, log likelihood ratio 1.5.
 ```{r}
 coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Age, subset(dat_prevent19_stage1, ph1.D35==1 & Trt==0 & Bserostatus==0 & Country==0))
 coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Senior, subset(dat_prevent19_stage1, ph1.D35==1 & Trt==0 & Bserostatus==0 & Country==0))
 ```
 
-### NVX UK302, placebo arm
+
+###3 NVX UK302, placebo arm
 Age group is a better predictor than age, log likelihood ratio 2.2.
 ```{r}
 coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Age+Region, subset(dat_unk302, ph1.D35==1 & Trt==0 & Bserostatus==0))
@@ -38,8 +109,7 @@ coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Senior+Region, subset(dat_unk
 ```
 
 
-
-### AZ stage 1, placebo arm
+#### AZ stage 1, placebo arm
 Age group is a better predictor than age, log likelihood ratio 3-4 depending on whether risk score is adjusted.
 ```{r}
 coxph(Surv(EventTimePrimaryD57,EventIndPrimaryD57)~Age+Country, subset(dat_azd1222_stage1, ph1.D57==1 & Trt==0 & Bserostatus==0))
@@ -48,50 +118,3 @@ coxph(Surv(EventTimePrimaryD57,EventIndPrimaryD57)~Age+Country+risk_score, subse
 coxph(Surv(EventTimePrimaryD57,EventIndPrimaryD57)~Senior+Country+risk_score, subset(dat_azd1222_stage1, ph1.D57==1 & Trt==0 & Bserostatus==0))
 ```
 
-
-Non-parametric estimation
-```{r}
-# takes about 10 min to run
-
-library(kyotil)
-library(vaccine)
-
-time.start = Sys.time()
-
-dat_azd1222_stage1=read.csv('/trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv')
-
-dat=subset(dat_azd1222_stage1, ph1.D57==1 & Trt==0 & Bserostatus==0)
-dat$wt=1
-dat$Trt=1 # pretend to be vacc so that the code will work
-dat <- load_data(time="EventTimePrimaryD57", event="EventIndPrimaryD57", vacc="Trt",
-                 marker="Age", covariates=c("Country","risk_score"),
-                 weights="wt", ph2="wt", data=dat)
-
-# may get error about rlang being too old
-
-# non-monotone fit
-p=params_ce_np()
-p$mono_cis=F
-ests_np_2 <- est_ce(dat=dat, type="NP", t_0=92, params_np=p)
-# monotone fit
-ests_np <- est_ce(dat=dat, type="NP", t_0=92)
-
-ests_cox <- est_ce(dat=dat, type="Cox", t_0=92)
-
-save(ests_np, ests_cox, file="../../tmp_non_mono.Rdata")
-save(ests_np_2, file="../../tmp_non_mono.Rdata")
-
-```
-
-
-```{r}
-load("~/tmp.Rdata")
-load("~/tmp_non_mono.Rdata")
-# cut off risk above 0.25 for plotting
-ests_np_2$cr$ci_upper[ests_np_2$cr$ci_upper>0.1]=0.1
-plot_ce(ests_cox, ests_np_2)
-
-# ub not so wild, but otherwise similar to np estimates
-plot_ce(ests_cox, ests_np)
-
-```
