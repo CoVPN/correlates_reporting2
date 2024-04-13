@@ -58,7 +58,7 @@ if (endsWith(TRIAL,"EUA") | endsWith(TRIAL,"partA")) {
     region=regions[iRegion]
     for (variant in variants[[iRegion]]) {
       fname.suffix = paste0(region, "_", variant)
-      cat("# Objective in ", fname.suffix, " COVID", sep="")
+      cat("# ", fname.suffix, sep="")
       
       # the markers to study depend on region and COVID lineage
       if (iRegion==1) {
@@ -106,9 +106,24 @@ if (endsWith(TRIAL,"EUA") | endsWith(TRIAL,"partA")) {
                                 "bindSpike_B.1.351+pseudoneutid50_Beta",
                                 "pseudoneutid50+pseudoneutid50_Beta")
       }
-    
+      
+      level=2
+      
       res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
+      
+      # risks curves
+      cat("## Risk curves\n\n")
+      level=level+1
+      plot.geq=F
+      has.plac=F
+      show.ve.curves=T
+      for (a in all.markers) {
+        assay=marker.name.to.assay(a)
+        res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+      }
+      
     }
     
   }

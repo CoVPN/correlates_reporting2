@@ -141,6 +141,24 @@ if(TRIAL %in% c("azd1222")) {
 
 
 
+<!-- \clearpage -->
+
+
+```{r, echo=FALSE, results='asis'}
+
+if (show.risk.curves) {
+  for (a in all.markers) {
+    assay=marker.name.to.assay(a)
+    res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+  
+}
+```
+
+
+
+
 <!-- ## Marginalized risk and controlled vaccine efficacy plots -->
 
 <!-- \setlength{\tabcolsep}{.5ex} -->
@@ -162,23 +180,6 @@ if(TRIAL %in% c("azd1222")) {
 
 <!-- $^2$E-values are computed for upper tertile ($s=1$) vs. lower tertile ($s=0$) biomarker subgroups after controlling for `r covariates_adjusted`; UL = upper limit. -->
 
-
-
-
-<!-- \clearpage -->
-
-
-```{r, echo=FALSE, results='asis'}
-
-if (show.risk.curves) {
-  for (a in all.markers) {
-    assay=marker.name.to.assay(a)
-    res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
-  }
-  
-}
-```
 
 
 

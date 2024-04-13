@@ -147,7 +147,6 @@ for (iAna in 3:3) {
   # source(here::here("code", "cor_coxph_risk_bootstrap.R"))
   # 
   # # make tables and figures
-  # source(here::here("code", "cor_coxph_risk_plotting.R"))
   # 
 
 } # for iRegion

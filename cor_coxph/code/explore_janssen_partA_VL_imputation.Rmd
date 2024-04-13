@@ -1,5 +1,5 @@
 ---
-title: "Imputation Check"
+title: "EMSEMBLE Stage 1 Variants-Invariant Correlates Imputation Check"
 output: html_document
 ---
 
@@ -73,7 +73,6 @@ for (r in 0:2) {
     print(aa)
 
     cat("\nbefore imputation")
-    # for hard imputed markers
     dat=subset(dat_mapped, Trt == 1 & Bserostatus==0 & Region==r & ph2.D29==1) # use ph2.D29==1 to focus on the ph2 b/c there are ptids outside subcohort who have anc bAb but not anc nAb
     aaa = c(aa[1], aa[-1])
     dat$tmp=NULL
@@ -82,6 +81,19 @@ for (r in 0:2) {
     }
     print(table(dat$tmp, dat$EventIndPrimaryIncludeNotMolecConfirmedD1))
 
+    cat("\nnot restricted to ph2.D29")
+    dat=subset(dat_mapped, Trt == 1 & Bserostatus==0 & Region==r) # use ph2.D29==1 to focus on the ph2 b/c there are ptids outside subcohort who have anc bAb but not anc nAb
+    aaa = c(aa[1], aa[-1])
+    dat$tmp=NULL
+    for (i in 1:length(aaa)) { 
+      dat$tmp = paste0(dat$tmp, ifelse(is.na(dat[["Day29"%.%aaa[i]]]), 0, 1))
+    }
+    print(table(dat$tmp, dat$EventIndPrimaryIncludeNotMolecConfirmedD1))
+    # print(table(dat$tmp, dat$seq1.variant.hotdeck1))
+    # # many ptid with lineage not classified as case
+    # print(table(dat$seq1.variant.hotdeck1, dat$EventIndPrimaryIncludeNotMolecConfirmedD1))
+
+    
     cat("\nafter imputation")
     # for hard imputed markers
     dat=subset(dat_proc, Trt == 1 & Bserostatus==0 & Region==r & ph2.D29==1) # use ph2.D29==1 to focus on the ph2 b/c there are ptids outside subcohort who have anc bAb but not anc nAb

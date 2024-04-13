@@ -1,9 +1,5 @@
 ```{r, echo=FALSE, results='asis'}
-if (TRIAL=="janssen_partA_VL") {
-    cat("\\subsubsection{",a,"}")
-} else {
-  cat  (concatList(rep('#',level)), " ", a," curves\n")
-}
+cat(concatList(rep('#',level)), " ", a," curves\n")
 
 assay=marker.name.to.assay(a)
 ```  

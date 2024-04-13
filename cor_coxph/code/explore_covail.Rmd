@@ -39,11 +39,31 @@ dat.ocp.moderna$Trt=ifelse(dat.ocp.moderna$treatment_assigned == "1 Dose Prototy
 
 dat.ocp=rbind(cbind(dat.ocp.pfizer, company="Pfz"), cbind(dat.ocp.moderna, company="Mdn"))
 
+dat.1=subset(dat.ocp.pfizer, naive==1)
+dat.1.moderna=subset(dat.ocp.moderna, naive==1)
 
 ```
 
 
 ### Difference in risk between prototype and Omicon vaccines
+
+Summary: Between Pfz Prototype, Pfz Omicron, Mdn P, and Mdn O,
+
+* Pfizer O has lower risk than the other three arms.
+* Moderna P is the only arm in terms of BA4BA5 ID50 not being a correlate.
+
+
+
+Risk is similar between Pfizer and Moderna in the prototype arms. Moderna P and O have similar risks, but Pfizer O has lower risk than P. 
+```{r}
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ company, subset(dat.ocp,naive==1 & Trt==0))
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score + company + Day15pseudoneutid50_BA.4.BA.5 + FOIstandardized, subset(dat.ocp,naive==1 & Trt==1))
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Trt, subset(dat.ocp,naive==1 & company=="Pfz"))
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Trt, subset(dat.ocp,naive==1 & company=="Mdn"))
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Trt * company, subset(dat.ocp, naive==1))
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(1-Trt) * company, subset(dat.ocp, naive==1))
+```
+
 
 #### Pfizer
 
@@ -55,7 +75,36 @@ coxph(update(f, ~. + naive + Trt), dat.ocp.pfizer)
 coxph(update(f, ~. + Trt), subset(dat.ocp.pfizer, naive==0))
 coxph(update(f, ~. + Trt), subset(dat.ocp.pfizer, naive==1))
 
-dat.1=subset(dat.ocp.pfizer, naive==1)
+coxph(update(f, ~. + naive + Trt), dat.ocp.moderna)
+coxph(update(f, ~. + Trt), subset(dat.ocp.moderna, naive==0))
+coxph(update(f, ~. + Trt), subset(dat.ocp.moderna, naive==1))
+
+coxph(update(f, ~. + Trt), subset(dat.ocp.moderna, naive==1))
+coxph(update(f, ~. + Trt), subset(dat.ocp.pfizer, naive==1))
+
+
+```
+
+
+
+
+```{r}
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(1-Trt)*scale(standardized_risk_score), subset(dat.ocp.moderna, naive==1))
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(1-Trt)*scale(standardized_risk_score), subset(dat.ocp.pfizer, naive==1))
+
+```
+
+D15 marker 
+
+```{r}
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(1-Trt)*scale(standardized_risk_score) + I(1-Trt)*scale(Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp.moderna, naive==1))
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(1-Trt)*scale(standardized_risk_score) + I(1-Trt)*scale(Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp.pfizer, naive==1))
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Trt*scale(standardized_risk_score) + Trt*scale(Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp.moderna, naive==1))
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Trt*scale(standardized_risk_score) + Trt*scale(Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp.pfizer, naive==1))
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Trt*scale(standardized_risk_score) + scale(Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp.moderna, naive==1))
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Trt+scale(standardized_risk_score) + scale(Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp.pfizer, naive==1))
 ```
 
 BA4BA5-specific ID50 is significant correlate but not ancestral ID50.
@@ -119,12 +168,9 @@ coxph(update(f, ~. + Trt + Day15pseudoneutid50_BA.4.BA.5), dat.1)
 No treatment effect in either naive or non-naive.
 
 ```{r}
-
 coxph(update(f, ~. + naive + Trt), dat.ocp.moderna)
 coxph(update(f, ~. + naive + Trt), subset(dat.ocp.moderna, naive==0))
 coxph(update(f, ~. + naive + Trt), subset(dat.ocp.moderna, naive==1))
-
-dat.1.moderna=subset(dat.ocp.moderna, naive==1)
 ```
 
 Distribution of D15 BA4BA5-specific ID50 is different between P and OC
@@ -186,9 +232,8 @@ coxph(update(f, ~. + Trt + Day15pseudoneutid50_BA.4.BA.5), dat.1.moderna)
 
 
 ```{r}
+coxph(update(f, ~.  + Day15pseudoneutid50_BA.4.BA.5), subset(dat.1.moderna, Trt==1))
 coxph(update(f, ~.  + Day15pseudoneutid50_D614G), subset(dat.1.moderna, Trt==1))
-coxph(update(f, ~.  + Day15pseudoneutid50_D614G), subset(dat.1.moderna, Trt==0))
-
 ```
 
 #### Putting Pfizer and Moderna side by side
@@ -200,6 +245,7 @@ par(mfrow=c(1,2))
 myboxplot(Bpseudoneutid50_BA.4.BA.5~Trt+company, subset(dat.ocp, naive==1), cex.axis=.8)
 myboxplot(Day15pseudoneutid50_BA.4.BA.5~Trt+company, subset(dat.ocp, naive==1), cex.axis=.8)
 ```
+
 Ancestral antibodies are not quite similar at D1, rise at D15, but not more so when vaccines contain Omicron strains.
 
 ```{r}
@@ -218,6 +264,7 @@ fits[["Mdn,O"]] = coxph(update(f, ~.  + Day15pseudoneutid50_D614G), subset(dat.o
 tab = getFormattedSummary(fits, robust=F, type=5)
 tab
 ```
+
 Are risk scores distribution different?
 
 ```{r}
@@ -225,6 +272,26 @@ myboxplot(standardized_risk_score    ~Trt+company, subset(dat.ocp, naive==1), ce
 ```
 ```{r}
 coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ standardized_risk_score*Trt, subset(dat.ocp, naive==1 & company=="Mdn"))
+```
+
+BA4BA5 marker. Three out of the four effect sizes are comparable to each other, but in the Moderna prototype arm there is no association between BA4BA5 marker and risk. This is quite intriguing - if we view each column above as a correlates analysis, we have three positive results and one negative result. 
+
+```{r}
+fits=list()
+fits[["Pfz,P"]] = coxph(update(f, ~.  + Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0))
+fits[["Pfz,O"]] = coxph(update(f, ~.  + Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp, naive==1 & company=="Pfz" & Trt==1))
+fits[["Mdn,P"]] = coxph(update(f, ~.  + Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp, naive==1 & company=="Mdn" & Trt==0))
+fits[["Mdn,O"]] = coxph(update(f, ~.  + Day15pseudoneutid50_BA.4.BA.5), subset(dat.ocp, naive==1 & company=="Mdn" & Trt==1))
+tab = getFormattedSummary(fits, robust=F, type=5)
+tab
+```
+
+Correlation between ancestral and BA4BA5 ID50s in Pfz,P and Pfz,O separately
+```{r}
+par(mfrow=c(1,2))
+lim=c(2.5,5.3)
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0), asp=1, xlim=lim, ylim=lim, main="Pfz, Prototype")
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.ocp, naive==1 & company=="Pfz" & Trt==1), asp=1, xlim=lim, ylim=lim, main="Pfz, Omicron")
 ```
 
 ### Risk models
@@ -409,14 +476,17 @@ mypairs(dat[,paste0(c("B","Day15", "Delta15overB"),assays[1])])
 ```{r}
 table(dat_proc$AsympInfectIndD15to29, dat_proc$ph1.D15)
 
-
-
 table(dat_proc$arm, dat_proc$ph1.D15)
 
 table(dat_mapped$ph1.D15, dat_mapped$Immunemarkerset, dat_mapped$arm==3)
 
 
 # across assays, all or none
+summary(subset(dat_mapped, ph1.D15==1)["Day15"%.%assays[1:5]])
+summary(subset(dat_mapped, ph1.D15==1)["Day29"%.%assays[1:5]])
+summary(subset(dat_mapped, ph1.D15==1)["Day91"%.%assays[1:5]])
+summary(subset(dat_mapped, ph1.D15==1)["Day181"%.%assays[1:5]])
+
 summary(subset(dat_proc, ph1.D15 & is.na(Day29pseudoneutid50_D614G))["Day29"%.%assays[1:5]])
 summary(subset(dat_proc, ph1.D15 & is.na(Day91pseudoneutid50_D614G))["Day91"%.%assays[1:5]])
 summary(subset(dat_proc, ph1.D15 & is.na(Day181pseudoneutid50_D614G))["Day181"%.%assays[1:5]])

@@ -30,7 +30,19 @@ dat_mapped$col2[dat_mapped$EventIndPrimaryD1==1]=2 # set cases to red
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/azd1222_stage2_assay_metadata.csv')
 assays=assay_metadata$assay
 
-dat_proc = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240322.csv')
+dat_proc = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240409.csv')
+
+dat_proc$EventIndPrimaryType_short=substr(dat_proc$COVIDIndType,1,3)
+dat_proc$EventIndPrimaryType_short=ifelse(dat_proc$EventIndPrimaryType_short=="", NA,dat_proc$EventIndPrimaryType_short)
+dat_proc$EventIndPrimaryType_short=ifelse(is.na(dat_proc$EventIndPrimaryType_short) & dat_proc$COVIDIndD1toD360                           ==1, "Unk",dat_proc$EventIndPrimaryType_short)
+dat_proc$EventCalTimePrimaryD57 = with(dat_proc, as.Date(D57Date)+COVIDTimeD57toD360)
+# color coding
+dat_proc$col=1
+dat_proc$col[!is.na(dat_proc$Day57bindSpike_Delta3)]=3 # set ph2 ptids to green
+dat_proc$col[dat_proc$SevereEventIndD57_120to21Dec10==1]=2 # set severe cases to red
+dat_proc$col2=1
+dat_proc$col2[dat_proc$EventIndPrimaryD1==1]=2 # set cases to red
+
 
 times="Day"%.%c(57,90,180,360)
 ```
@@ -108,6 +120,32 @@ abline(h=120, lty=2)
 abline(h=as.Date("2021-12-10"), lty=2) 
 
 # subset(dat_mapped,EventIndPrimaryType_short=="Del" & as.Date(DateDD1)<as.Date("2021-01-01"), c(Subjectid, EventTimePrimaryDate, DateDD1))
+```
+
+
+```{r, echo=T}
+
+# use dat_proc
+dat.tmp = subset(dat_proc, Bserostatus==0 & Trt==1 & ph1.D57_120)
+
+# D57 study day
+myboxplot(COVIDTimeD57toD360~EventIndPrimaryType_short, dat.tmp, ylab="EventTimePrimary57", col=dat.tmp$col, cex.axis=0.8)
+abline(h=120, lty=2) 
+abline(h=180, lty=2) 
+
+
+
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<120 , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<150 , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<180 , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<304 , c(Ptid), drop=T))
+
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<120 & ph2.D57_120nAb, c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<150 & ph2.D57_120nAb , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<180 & ph2.D57_120nAb , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<304 & ph2.D57_120nAb , c(Ptid), drop=T))
+
+
 ```
 
 

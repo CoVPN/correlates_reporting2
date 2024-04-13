@@ -1,9 +1,11 @@
 # COR="D57azd1222_stage2_severe_nAb";
 # COR="D57azd1222_stage2_severe_bAb";
+# COR="D57azd1222_stage2_delta_nAb";
+# COR="D57azd1222_stage2_delta_bAb";
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "azd1222_stage2")
 Sys.setenv(VERBOSE = 1)
-source(here::here("..", "_common.R")) # dat_proc is made
+source(here::here("..", "_common.R")) 
 
 
 {
@@ -37,33 +39,12 @@ source(here::here("..", "_common.R")) # dat_proc is made
   # append to file names for figures and tables
   fname.suffix = ""
   
-  myprint(tfinal.tpeak)
-  write(tfinal.tpeak,
-        file = paste0(save.results.to, "timepoints_cum_risk_" %.% study_name))
+  form.0 = update(
+    as.formula(paste0("Surv(",config.cor$EventTimePrimary,", ",config.cor$EventIndPrimary,") ~ 1")),
+    as.formula(config.cor$covariates)
+  )
   
-  
-  if (COR == "D57azd1222_stage2_delta_nAb" | COR == "D57azd1222_stage2_delta_bAb") {
-    # for use in competing risk estimation
-    comp.risk = T
-    dat_proc$EventIndOfInterest = dat_proc$DeltaEventIndD57_120to21Dec10
-    dat_proc$EventIndCompeting  = dat_proc$NonDeltaEventIndD57_120to21Dec10
-    
-    form.0 = update(
-      Surv(EventTimeD57_to21Dec10, EventIndOfInterest) ~ 1,
-      as.formula(config$covariates)
-    )
-    dat_proc$yy = dat_proc$EventIndOfInterest
-    
-  } else if (COR == "D57azd1222_stage2_severe_nAb" | COR == "D57azd1222_stage2_severe_bAb") {
-    form.0 = update(
-      Surv(
-        SevereEventTimeD57_to21Dec10,
-        SevereEventIndD57_120to21Dec10
-      ) ~ 1,
-      as.formula(config$covariates)
-    )
-    dat_proc$yy = dat_proc$SevereEventIndD57_120to21Dec10
-  }
+  dat_proc$yy = dat_proc[[config.cor$EventIndPrimary]]
   
   for (a in c("Day57"%.%assays)) {
     dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
@@ -74,15 +55,7 @@ source(here::here("..", "_common.R")) # dat_proc is made
   dat.vac.seroneg.ph2 = subset(dat.vac.seroneg, ph2)
   
   
-  # define trichotomized markers
-  if (is.null(attr(dat_proc, "marker.cutpoints"))) {
-    dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name =
-                                                   "wt")
-    marker.cutpoints = attr(dat.vac.seroneg, "marker.cutpoints")
-  } else {
-    marker.cutpoints = attr(dat_proc, "marker.cutpoints")
-  }
-  
+  marker.cutpoints = attr(dat_proc, "marker.cutpoints")
   for (a in all.markers) {
     q.a = marker.cutpoints[[a]]
     if (startsWith(a, "Day")) {
@@ -132,10 +105,18 @@ source(here::here("..", "_common.R")) # dat_proc is made
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
 
-source(here::here("code", "cor_coxph_risk_no_marker.R"))
-
-if (Sys.getenv("COR_COXPH_NO_MARKER_ONLY") == 1) q("no")
-
+cor_coxph_risk_no_marker (
+  form.0,
+  dat=dat.vac.seroneg,
+  fname.suffix, 
+  save.results.to,
+  config,
+  config.cor,
+  
+  tfinal.tpeak,
+  dat.pla.seroneg = NULL,
+  verbose=FALSE
+) 
 
 
 ###################################################################################################
@@ -159,7 +140,6 @@ cor_coxph_coef_1(
 
 ###################################################################################################
 # marginalized risk and controlled VE
-###################################################################################################
 
 if (endsWith(COR, "nAb")) {
   markers = all.markers 
@@ -169,8 +149,7 @@ if (endsWith(COR, "nAb")) {
 
 
 if (contain(COR, "severe")) {
-  # non-competing risk
-  
+
   cor_coxph_risk_bootstrap(
     form.0,
     dat = dat.vac.seroneg,
@@ -179,10 +158,9 @@ if (contain(COR, "severe")) {
     config,
     config.cor,
 
-    tfinal.tpeak,
     all.markers = markers,
 
-    comp.risk = F,
+    tfinal.tpeak,
     run.Sgts = F # whether to get risk conditional on continuous S>=s
   )
 
@@ -194,24 +172,19 @@ if (contain(COR, "severe")) {
     save.results.to,
     config,
     config.cor,
-    
-    assay_metadata,
-    
-    tfinal.tpeak,
     all.markers = markers,
     all.markers.names.short[markers],
+    tfinal.tpeak,
+    
     all.markers.names.long[markers],
     marker.cutpoints,
-
-    multi.imp = F,
-    comp.risk = F,
-
+    assay_metadata,
+    
     dat.pla.seroneg = NULL,
     res.plac.cont = NULL,
     prev.plac = NULL,
-
-    variant = NULL,
-
+    overall.ve=NULL,
+    
     show.ve.curves = F,
     plot.geq = F,
     plot.w.plac = F,
@@ -223,58 +196,39 @@ if (contain(COR, "severe")) {
   # competing risk
   
   cor_coxph_risk_bootstrap(
-    form.0 = list(form.0, as.formula(
-      sub(
-        "EventIndOfInterest",
-        "EventIndCompeting",
-        paste0(deparse(form.0, width.cutoff = 500))
-      )
-    )),
-    dat,
-    fname.suffix,
-    save.results.to,
-
-    tfinal.tpeak,
-    all.markers = markers,
-
-    numCores,
-    B,
-
-    comp.risk = T,
-    run.Sgts = F # whether to get risk conditional on continuous S>=s
-  )
-
-  cor_coxph_risk_plotting(
-    form.0 = list(form.0, as.formula(
-      sub(
-        "EventIndOfInterest",
-        "EventIndCompeting",
-        paste0(deparse(form.0, width.cutoff = 500))
-      )
-    )),
-    dat,
+    form.0,
+    dat = dat.vac.seroneg,
     fname.suffix,
     save.results.to,
     config,
     config.cor,
     
-    assay_metadata,
+    all.markers = markers,
 
     tfinal.tpeak,
+    run.Sgts = F # whether to get risk conditional on continuous S>=s
+  )
+
+  cor_coxph_risk_plotting(
+    form.0,
+    dat = dat.vac.seroneg,
+    fname.suffix,
+    save.results.to,
+    config,
+    config.cor,
     all.markers = markers,
     all.markers.names.short[markers],
+    tfinal.tpeak,
+    
     all.markers.names.long[markers],
     marker.cutpoints,
-
-    multi.imp = F,
-    comp.risk = T,
-
+    assay_metadata,
+    
     dat.pla.seroneg = NULL,
     res.plac.cont = NULL,
     prev.plac = NULL,
-
-    variant = NULL,
-
+    overall.ve=NULL,
+    
     show.ve.curves = F,
     plot.geq = F,
     plot.w.plac = F,

@@ -11,8 +11,12 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
   for (a in all.markers) {
     
     models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
-      # imp=1
+      
+      if (TRIAL=="janssen_partA_VL") {
       f = update(form.0, as.formula(paste0("~.+", if(i==2) "scale", "(", a, if(TRIAL=="janssen_partA_VL") "_"%.%imp, ")"))); f
+      } else{
+        
+      }
       
       # set event indicator and time
       if (TRIAL=="janssen_partA_VL") {
