@@ -134,6 +134,13 @@ if (attr(config,"config") == "vat08_combined"){
 set3_times = if (attr(config,"config") == "vat08_combined") {times_[!grepl("Delta", times_)] # B, Day22, Day43
 } else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1", times_)]} # BD1, Day35, Delta35overBD1
 
+# add delta values for prevent19_stage2
+if (attr(config,"config") == "prevent19_stage2"){
+    for (a in assays) {
+        dat.cor.subset.plot3[, paste0("Delta35overBD1",a)] = dat.cor.subset.plot3[, paste0("Day35", a)] - dat.cor.subset.plot3[, paste0("BD1", a)]
+    }
+}
+
 for (grp in c("non_naive_vac_pla", "naive_vac")){
     for (t in set3_times) {
         
@@ -178,14 +185,17 @@ for (a in assays){
     
     for (trt in c(1, 0)){
         for (bsero in c(0, 1)){
-            times_sub = c("B",paste0("Day", tinterm), paste0("Day", tpeak))
+            times_sub = if (attr(config,"config") == "prevent19_stage2") {c("BD1","Day35","DD1")
+                } else {c("B",paste0("Day", tinterm), paste0("Day", tpeak))}
+            
+            if(nrow(dat.cor.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero))==0) next
             
             panels_set[[i]] = covid_corr_pairplots(
                 plot_dat = dat.cor.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero),
                 time = times_sub,
                 assays = a,
                 strata = "all_one",
-                weight = paste0("wt.D", tpeak),
+                weight = "wt",#paste0("wt.D", tpeak),
                 plot_title = "",
                 column_labels = times_sub,
                 height = 5.5,
@@ -203,16 +213,18 @@ for (a in assays){
     y.grob.4 <- textGrob("Non-naive", gp=gpar(fontface="bold", col="black", fontsize=9))
     
     #add to plot
-    combined_p <- grid.arrange(
-        grid.arrange(arrangeGrob(plot_grid(
-            arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.3), arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.4)), left = y.grob.1), nrow=1),
-        grid.arrange(arrangeGrob(plot_grid(
-            ggmatrix_gtable(panels_set[[3]]), ggmatrix_gtable(panels_set[[4]])), left = y.grob.2), nrow=1),
-        #bottom = x.grob,
-        ncol = 1
-    )
-    
+    if (i == 4){
+        combined_p <- grid.arrange(
+            grid.arrange(arrangeGrob(plot_grid(
+                arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.3), arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.4)), left = y.grob.1), nrow=1),
+            grid.arrange(arrangeGrob(plot_grid(
+                ggmatrix_gtable(panels_set[[3]]), ggmatrix_gtable(panels_set[[4]])), left = y.grob.2), nrow=1),
+            #bottom = x.grob,
+            ncol = 1
+        )
+    } else {
+        combined_p = arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.3, left = y.grob.1)
+    }
     ggsave(filename = paste0(
         save.results.to, "/pairs_across_timepoints_", a, ".pdf"), plot = combined_p, width = 8, height = 10, units="in")
 }
-
