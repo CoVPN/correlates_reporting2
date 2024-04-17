@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("pairs_across_timepoints_", a, ".pdf"))`}
 
-\caption{`r paste0("Correlation plots for ", gsub("_", " ", a), " across time points", COR_postfix_label)`}
+\caption{`r paste0("Correlation plots for ", gsub("_", " ", a), " across time points. Corr = weighted Spearman rank correlation", COR_postfix_label)`}
 
 \end{figure}
 

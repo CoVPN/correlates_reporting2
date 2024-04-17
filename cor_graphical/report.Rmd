@@ -27,6 +27,10 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
 
 # temporary setting due to unknown reason for assays including bAb for id27hpvnAb
 if (attr(config,"config")=="id27hpvnAb") {assays = assays[!grepl("bind", assays)]}
+if (attr(config,"config")=="prevent19_stage2") {
+  times = c("BD1","Day35","Delta35overBD1")
+  time_labels = c("Booster Day 1","Day 35", "D35 fold-rise over BD1")
+}
 
 tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
 tps_no_delta_over_tinterm_lb <-  time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]
@@ -119,11 +123,12 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                          ifelse(COR_postfix=="severe", "D35prevent19_stage2_severe")))
       
       # SET 1
-      for (a in c("bindSpike", "pseudoneutid50", if(attr(config,"config")=="prevent19_stage2") "bindSpike_sub_nvx_stage2")){
+      for (a in c("pseudoneutid50", "bindSpike", if(attr(config,"config")=="prevent19_stage2") "bindSpike_sub_nvx_stage2")){
     
         for (tp in tps_no_delta_over_tinterm_lb){
           
           tpLabel = tolower(tp)
+          aLabel = gsub("_sub_nvx_stage2", " subset", a)
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
           cat("\\clearpage", sep = '\n')

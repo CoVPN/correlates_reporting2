@@ -518,7 +518,7 @@ ggally_statistic_resample <- function(
 #' a sub-function called by function: covid_corr_pairplots
 #' 
 #' when B > 1, resamping-based correlation, used in ggplots, allowing for strata (if no strata, need to input all 1's as strata)
-#' when B = 0, weighted correlation, used in ggplots, allowing for strata (if no strata, need to input all 1's as strata)
+#' when B = 0, weighted correlation, used in ggplots (need to input all 1's as strata)
 ggally_cor_resample <- function(
     data,
     mapping,
