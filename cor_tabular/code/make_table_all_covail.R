@@ -32,7 +32,8 @@ tlf <-
       pack_row = "subgroup",
       col1="7cm"
     ),
-
+  
+    tab_strtm1 = NULL,
     tab_case = list(
       table_header = "Antibody levels in the per-protocol cohort",
       table_footer =c(),
@@ -69,6 +70,48 @@ tlf <-
       col_name = c("Visit", "Marker", "N", "Resp rate", "GMT/GMC", "N",
                    "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/GMCR"),
       header_above1 = c(" "=2, "Non-Naive Cases" = 3, "Non-Naive Non-Cases/Control" = 3,
+                        "Comparison" = 2),
+      # header_above2 = c(" "=2,
+      #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
+      font_size=9,
+      col1="1cm"),
+    
+    tab_case_nevercase = list(
+      table_header = "Antibody levels by Case and Never-Case in the per-protocol cohort",
+      table_footer =c("Never-Case are participants who were never identified as cases at any timepoints."),
+      loop="Arms",
+      deselect = c("Arms"),
+      col_name = c("Visit", "Marker", "N", "Resp rate", "GMT/GMC", "N",
+                   "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/GMCR"),
+      header_above1 = c(" "=2, "Cases" = 3, "Never-Cases/Control" = 3,
+                        "Comparison" = 2),
+      # header_above2 = c(" "=2,
+      #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
+      font_size=9,
+      col1="1cm"),
+    
+    tab_case_naive_nevercase = list(
+      table_header = "Antibody levels by Case and Never-Case in the naive per-protocol cohort",
+      table_footer =c("Never-Case are participants who were never identified as cases at any timepoints."),
+      loop="Arms",
+      deselect = c("Arms"),
+      col_name = c("Visit", "Marker", "N", "Resp rate", "GMT/GMC", "N",
+                   "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/GMCR"),
+      header_above1 = c(" "=2, "Naive Cases" = 3, "Naive Never-Cases/Control" = 3,
+                        "Comparison" = 2),
+      # header_above2 = c(" "=2,
+      #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
+      font_size=9,
+      col1="1cm"),
+    
+    tab_case_nnaive_nevercase = list(
+      table_header = "Antibody levels by Case and Never-Case in the non-naive per-protocol cohort",
+      table_footer =c("Never-Case are participants who were never identified as cases at any timepoints."),
+      loop="Arms",
+      deselect = c("Arms"),
+      col_name = c("Visit", "Marker", "N", "Resp rate", "GMT/GMC", "N",
+                   "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/GMCR"),
+      header_above1 = c(" "=2, "Non-Naive Cases" = 3, "Never-Naive Non-Cases/Control" = 3,
                         "Comparison" = 2),
       # header_above2 = c(" "=2,
       #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
@@ -184,7 +227,7 @@ labels_all <- full_join(labels.assays, resp.lb, by = c("time", "marker")) %>%
 
 
 # dat.mock was made in _common.R
-dat <- dat.mock
+dat <- dat_proc
 
 
 # The stratified random cohort for immunogenicity
@@ -378,22 +421,14 @@ print("Done with table 1")
 
 ds <- ds %>%
   mutate(
-    # EventIndPrimaryD1 = ifelse(study_name=="VAT08m" & grepl("omi", COR), EventIndOmicronD1, EventIndPrimaryD1),
     Case = case_when(Perprotocol==1 &
-                            # Immunemarkerset==1 &
-                            # !!as.name(config.cor$Earlyendpoint)==0 &
                             !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
-                    Perprotocol==1 &
-                            # NAntibody=="NEGATIVE" &
-                            !!as.name(config.cor$EventIndPrimary)==0 ~ "Non-Cases")
+                     Perprotocol==1 &
+                            !!as.name(config.cor$EventIndPrimary)==0 ~ "Non-Cases"), 
+    CaseNevercase = case_when(Perprotocol==1 &
+                                !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+                              Perprotocol==1 & COVIDIndD22toD181==0 ~ "Never-Cases"), 
     )
-
-if (any(grepl("SevereEventIndPrimary", names(ds)))) {
-  ds <- ds %>%
-    mutate(Case = case_when(Case=="Cases" & !!as.name(paste0("SevereEventIndPrimaryIncludeNotMolecConfirmedD", config.cor$tpeak))==1 ~ "Severe Cases",
-                            Case=="Cases" & !!as.name(paste0("SevereEventIndPrimaryIncludeNotMolecConfirmedD", config.cor$tpeak))==0 ~ "Non-Cases",
-                            Case=="Non-Cases" ~ "Non-Cases"))
-}
 
 
 # Generate a full table with all the estimates: response rates, GMT, GMTR, etc.
@@ -401,11 +436,7 @@ if (any(grepl("SevereEventIndPrimary", names(ds)))) {
 # Cases vs Non-cases
 
   sub.by <- c("All")
-  comp.i <- c("Non-Cases", "Cases")
-  # resp.v <- intersect(grep("Resp", names(ds), value = T),
-  #                     grep(config.cor$tpeak, names(ds), value = T))
-  # mag.v <- intersect(assays_col, grep(config.cor$tpeak, names(ds), value = T))
-  
+
   resp.v <- grep("Resp", names(ds), value = T)
   mag.v <- intersect(assays_col, names(ds))
   
@@ -414,13 +445,14 @@ if (any(grepl("SevereEventIndPrimary", names(ds)))) {
     mutate(assay=gsub("Resp", "", resp_cat))
   
   ds.l.mag <- filter(ds, !!as.name(config.cor$ph1)==1) %>% 
+    select_at(c("Ptid", mag.v)) %>% 
     pivot_longer(cols=all_of(mag.v), names_to = "mag_cat", values_to = "mag_value") %>% 
     mutate(assay=mag_cat)
   
   ds.l <- full_join(ds.l.mag, ds.l.resp)
     
 
-tab_assay <- lapply(1:Trtn, function(x, dat=ds.l){
+tab_assay <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Non-Cases", "Cases")){
   Trti <- paste0("Trt",x)
   ds.i <- dat %>% dplyr::filter(!!as.name(Trti)!="")
   rpcnt_case <- ds.i %>% 
@@ -518,6 +550,7 @@ tab_case <- tab_case %>%
 return(list(tab_case=tab_case, tab_gmtr=tab_gmtr))
 })
 
+
 tab_case <- tab_assay %>% 
   map("tab_case") %>% 
   bind_rows()
@@ -527,8 +560,7 @@ tab_gmtr <- tab_assay %>%
   bind_rows()
 
 
-
-tab_assay_status <- lapply(1:Trtn, function(x, dat=ds.l){
+tab_assay_status <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Non-Cases", "Cases")){
   Trti <- paste0("Trt",x)
   ds.i <- dat %>% dplyr::filter(!!as.name(Trti)!="")
   rpcnt_case <- ds.i %>% 
@@ -639,6 +671,7 @@ tab_assay_status <- lapply(1:Trtn, function(x, dat=ds.l){
               tab_gmtr_naive=tab_gmtr_naive, tab_gmtr_nnaive=tab_gmtr_nnaive))
 })
 
+
 tab_case_naive <- tab_assay_status %>% 
   map("tab_case_naive") %>% 
   bind_rows()
@@ -654,6 +687,232 @@ tab_gmtr_naive <- tab_assay_status %>%
 tab_gmtr_nnaive <- tab_assay_status %>% 
   map("tab_gmtr_nnaive") %>% 
   bind_rows()
+
+
+if (config.cor$EventIndPrimary!="COVIDIndD22toD181"){
+ 
+  tab_assay_nevercase <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Never-Cases", "Cases")){
+    Trti <- paste0("Trt",x)
+    ds.i <- dat %>% dplyr::filter(!!as.name(Trti)!="")
+    rpcnt_case <- ds.i %>% 
+      group_by(!!as.name(Trti), resp_cat, CaseNevercase) %>% 
+      summarise(N=sum(!is.na(resp_value)), Pos=sum(resp_value, na.rm = T), .groups="drop") %>% 
+      rowwise() %>% 
+      mutate(response=Pos/N, ci_l=exactci(Pos, N, .95)$conf.int[1], ci_u=exactci(Pos, N, .95)$conf.int[2], 
+             rslt=sprintf("%s/%s = %.1f%%\n(%.1f%%, %.1f%%)", Pos, N, response*100, ci_l*100, ci_u*100)) %>% 
+      inner_join(distinct(labels_all, resp_cat, Visit, Marker, Ind), by = "resp_cat") %>% 
+      filter(N!=0)
+    
+    rgm_case <- ds.i %>% 
+      group_by(!!as.name(Trti), mag_cat, CaseNevercase) %>% 
+      summarise(N=sum(!is.na(mag_value)), lgmt=mean(mag_value, na.rm=T), lsd=sd(mag_value, na.rm=T), .groups="drop") %>% 
+      rowwise() %>% 
+      mutate(gmt=10^lgmt, ci_l=10^(lgmt+qt(.025, N-1)*lsd/sqrt(N)), ci_u=10^(lgmt+qt(.975, N-1)*lsd/sqrt(N)), 
+             `GMT/GMC`=sprintf("%.1f\n(%.1f, %.1f)", gmt, ci_l, ci_u)) %>% 
+      inner_join(distinct(labels_all, mag_cat, Visit, Marker), by = "mag_cat") 
+    # filter(N!=0)
+    
+    rgmt_excl <- rgm_case %>% 
+      filter(N==0) %>% 
+      select(!!as.name(Trti), mag_cat)
+    
+    rgmt_case <- ds.i %>% 
+      anti_join(rgmt_excl) %>% 
+      mutate(CaseNevercase=relevel(factor(CaseNevercase), ref="Cases")) %>%
+      filter(!is.na(mag_value)) %>% 
+      group_by(!!as.name(Trti), mag_cat) %>% 
+      summarise(N=sum(!is.na(mag_value)), 
+                est=glm(mag_value~CaseNevercase)$coefficients[2], 
+                ci_l=confint(glm(mag_value~CaseNevercase))[2,1], 
+                ci_u=confint(glm(mag_value~CaseNevercase))[2,2], .groups="drop") %>% 
+      mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Never-Cases vs Cases") %>% 
+      inner_join(distinct(labels_all, mag_cat, Visit, Marker))
+    
+    
+    rrdiff_case <- rpcnt_case %>%
+      # dplyr::filter(subgroup %in% subs & grepl("Resp",resp_cat)) %>%
+      mutate(groupn = 2-match(CaseNevercase, comp.i)%%2) %>%
+      pivot_wider(id_cols = c(Trti, Visit, Marker, Ind),
+                  names_from = groupn, values_from = c(response, ci_l, ci_u), names_sep = "")
+    
+    responseNA <- setdiff(as.vector(outer(c("response", "ci_l", "ci_u"), 1:2, paste0)), names(rrdiff_case))
+    rrdiff_case[, responseNA] <- NA
+    
+    rrdiff_case <- rrdiff_case %>%
+      mutate(Estimate = response1-response2,
+             ci_l = Estimate-sqrt((response1-ci_l1)^2+(response2-ci_u2)^2),
+             ci_u = Estimate+sqrt((response1-ci_u1)^2+(response2-ci_l2)^2),
+             rrdiff = ifelse(!is.na(Estimate),
+                             sprintf("%s\n(%s, %s)", round(Estimate, 3), round(ci_l, 3), round(ci_u, 3)),
+                             "-"))
+    
+    tab_case <- full_join(rpcnt_case, rgm_case,
+                          by = c(Trti, "CaseNevercase", "N", "Marker", "Visit")) %>%
+      filter(N!=0) %>% 
+      pivot_wider(id_cols = c(!!as.name(Trti), Marker, Visit),
+                  names_from = CaseNevercase,
+                  values_from = c(N, rslt, `GMT/GMC`)) %>%
+      full_join(rrdiff_case, by = c(Trti, "Marker", "Visit")) %>%
+      full_join(rgmt_case, by = c(Trti, "Marker", "Visit"))
+    
+    
+    if(length(comp_NA <- setdiff(comp.i, rpcnt_case$CaseNevercase))!=0){
+      tab_case <- tab_case %>%
+        mutate(!!paste0("N_", comp_NA) := 0,
+               !!paste0("rslt_", comp_NA) := "-",
+               !!paste0("GMT/GMC_", comp_NA) :="-",
+               `Ratios of GMT/GMC`=replace_na(`Ratios of GMT/GMC`, "-"))
+    }else{
+      tab_case <- tab_case %>%
+        mutate_at(vars(starts_with("N_")), replace_na, replace=0) %>%
+        mutate_at(vars(starts_with("rslt_")), replace_na, replace="-") %>%
+        mutate_at(vars(starts_with("GMT/GMC_")), replace_na, replace="-") %>%
+        mutate(`Ratios of GMT/GMC`=replace_na(`Ratios of GMT/GMC`, "-")) %>% 
+        mutate(rrdiff=replace_na(rrdiff, "-")) 
+    }
+    
+    tab_case <- tab_case %>%
+      select(Arms=Trti, Visit, Marker, `N_Cases`, `rslt_Cases`,
+             `GMT/GMC_Cases`, `N_Never-Cases`, `rslt_Never-Cases`, `GMT/GMC_Never-Cases`,
+             rrdiff, `Ratios of GMT/GMC`) 
+    
+    tab_gmtr <- tab_case %>% 
+      filter(grepl("over", Visit)) %>% 
+      select(Arms, Visit, Marker, `N_Cases`, `GMT/GMC_Cases`, `N_Never-Cases`, `GMT/GMC_Never-Cases`,`Ratios of GMT/GMC`) %>% 
+      arrange(Arms, Visit, Marker)
+    
+    tab_case <- tab_case %>% 
+      filter(!grepl("over", Visit)) %>% 
+      arrange(Arms, Visit, Marker)
+    
+    
+    return(list(tab_case=tab_case, tab_gmtr=tab_gmtr))
+  })
+  
+  tab_case_nevercase <- tab_assay_nevercase %>% 
+    map("tab_case") %>% 
+    bind_rows()
+  
+tab_assay_status_nevercase <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Never-Cases", "Cases")){
+  Trti <- paste0("Trt",x)
+  ds.i <- dat %>% dplyr::filter(!!as.name(Trti)!="")
+  rpcnt_case <- ds.i %>% 
+    group_by(!!as.name(Trti), resp_cat, Naive, CaseNevercase) %>% 
+    summarise(N=sum(!is.na(resp_value)), Pos=sum(resp_value, na.rm = T), .groups="drop") %>% 
+    rowwise() %>% 
+    mutate(response=Pos/N, ci_l=exactci(Pos, N, .95)$conf.int[1], ci_u=exactci(Pos, N, .95)$conf.int[2], 
+           rslt=sprintf("%s/%s = %.1f%%\n(%.1f%%, %.1f%%)", Pos, N, response*100, ci_l*100, ci_u*100)) %>% 
+    inner_join(distinct(labels_all, resp_cat, Visit, Marker, Ind), by = "resp_cat") %>% 
+    filter(N!=0)
+  
+  rgm_case <- ds.i %>% 
+    mutate(CaseNevercase=factor(CaseNevercase), Naive=factor(Naive)) %>% 
+    group_by(!!as.name(Trti), mag_cat, Naive, CaseNevercase, .drop = F) %>% 
+    summarise(N=sum(!is.na(mag_value)), lgmt=mean(mag_value, na.rm=T), lsd=sd(mag_value, na.rm=T), .groups="drop") %>% 
+    rowwise() %>% 
+    mutate(gmt=10^lgmt, ci_l=10^(lgmt+qt(.025, N-1)*lsd/sqrt(N)), ci_u=10^(lgmt+qt(.975, N-1)*lsd/sqrt(N)), 
+           `GMT/GMC`=sprintf("%.1f\n(%.1f, %.1f)", gmt, ci_l, ci_u)) %>% 
+    inner_join(distinct(labels_all, mag_cat, Visit, Marker), by = "mag_cat") #%>% 
+  # filter(N!=0)
+  
+  rgmt_excl <- rgm_case %>% 
+    filter(N==0) %>% 
+    select(!!as.name(Trti), mag_cat, Naive)
+  
+  rgmt_case <- ds.i %>% 
+    anti_join(rgmt_excl) %>% 
+    mutate(CaseNevercase=relevel(factor(CaseNevercase), ref="Cases")) %>%
+    filter(!is.na(mag_value)) %>% 
+    # filter(mag_cat%in%c('Bpseudoneutid50_BA.1')) %>% 
+    group_by(!!as.name(Trti), Naive, mag_cat) %>% 
+    summarise(N=sum(!is.na(mag_value)), 
+              est=glm(mag_value~CaseNevercase)$coefficients[2], 
+              ci_l=confint(glm(mag_value~CaseNevercase))[2,1], 
+              ci_u=confint(glm(mag_value~CaseNevercase))[2,2], .groups="drop") %>% 
+    mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Never-Cases vs Cases") %>% 
+    inner_join(distinct(labels_all, mag_cat, Visit, Marker))
+  
+  
+  rrdiff_case <- rpcnt_case %>%
+    # dplyr::filter(subgroup %in% subs & grepl("Resp",resp_cat)) %>%
+    mutate(groupn = 2-match(CaseNevercase, comp.i)%%2) %>%
+    pivot_wider(id_cols = c(Trti, Visit, Marker, Ind, Naive),
+                names_from = groupn, values_from = c(response, ci_l, ci_u), names_sep = "")
+  
+  responseNA <- setdiff(as.vector(outer(c("response", "ci_l", "ci_u"), 1:2, paste0)), names(rrdiff_case))
+  rrdiff_case[, responseNA] <- NA
+  
+  rrdiff_case <- rrdiff_case %>%
+    mutate(Estimate = response1-response2,
+           ci_l = Estimate-sqrt((response1-ci_l1)^2+(response2-ci_u2)^2),
+           ci_u = Estimate+sqrt((response1-ci_u1)^2+(response2-ci_l2)^2),
+           rrdiff = ifelse(!is.na(Estimate),
+                           sprintf("%s\n(%s, %s)", round(Estimate, 3), round(ci_l, 3), round(ci_u, 3)),
+                           "-"))
+  
+  tab_case <- full_join(rpcnt_case, rgm_case,
+                        by = c(Trti, "CaseNevercase", "N", "Marker", "Visit", "Naive")) %>%
+    filter(N!=0) %>% 
+    pivot_wider(id_cols = c(!!as.name(Trti), Marker, Visit, Naive),
+                names_from = CaseNevercase,
+                values_from = c(N, rslt, `GMT/GMC`)) %>%
+    full_join(rrdiff_case, by = c(Trti, "Marker", "Visit", "Naive")) %>%
+    full_join(rgmt_case, by = c(Trti, "Marker", "Visit", "Naive"))
+  
+  
+  if(length(comp_NA <- setdiff(comp.i, rpcnt_case$CaseNevercase))!=0){
+    tab_case <- tab_case %>%
+      mutate(!!paste0("N_", comp_NA) := 0,
+             !!paste0("rslt_", comp_NA) := "-",
+             !!paste0("GMT/GMC_", comp_NA) :="-",
+             `Ratios of GMT/GMC`=replace_na(`Ratios of GMT/GMC`, "-"))
+  }else{
+    tab_case <- tab_case %>%
+      mutate_at(vars(starts_with("N_")), replace_na, replace=0) %>%
+      mutate_at(vars(starts_with("rslt_")), replace_na, replace="-") %>%
+      mutate_at(vars(starts_with("GMT/GMC_")), replace_na, replace="-") %>%
+      mutate(`Ratios of GMT/GMC`=replace_na(`Ratios of GMT/GMC`, "-")) %>% 
+      mutate(rrdiff=replace_na(rrdiff, "-")) 
+  }
+  
+  tab_case_naive <- tab_case %>%
+    filter(Naive=="Naive", !grepl("over", Visit)) %>% 
+    select(Arms=Trti, Visit, Marker, `N_Cases`, `rslt_Cases`,
+           `GMT/GMC_Cases`, `N_Never-Cases`, `rslt_Never-Cases`, `GMT/GMC_Never-Cases`,
+           rrdiff, `Ratios of GMT/GMC`) %>% 
+    arrange(Arms, Visit, Marker)
+  
+  tab_case_nnaive <- tab_case %>%
+    filter(Naive=="Non-naive", !grepl("over", Visit)) %>% 
+    select(Arms=Trti, Visit, Marker, `N_Cases`, `rslt_Cases`,
+           `GMT/GMC_Cases`, `N_Never-Cases`, `rslt_Never-Cases`, `GMT/GMC_Never-Cases`,
+           rrdiff, `Ratios of GMT/GMC`)  %>% 
+    arrange(Arms, Visit, Marker)
+  
+  tab_gmtr_naive <- tab_case %>% 
+    filter(Naive=="Naive", grepl("over", Visit)) %>% 
+    select(Arms=Trti, Visit, Marker, `N_Cases`, `GMT/GMC_Cases`, `N_Never-Cases`, `GMT/GMC_Never-Cases`,`Ratios of GMT/GMC`) %>% 
+    arrange(Arms, Visit, Marker)
+  
+  
+  tab_gmtr_nnaive <- tab_case %>% 
+    filter(Naive=="Non-naive", grepl("over", Visit)) %>% 
+    select(Arms=Trti, Visit, Marker, `N_Cases`, `GMT/GMC_Cases`, `N_Never-Cases`, `GMT/GMC_Never-Cases`,`Ratios of GMT/GMC`) %>% 
+    arrange(Arms, Visit, Marker)
+  
+  return(list(tab_case_naive=tab_case_naive, tab_case_nnaive=tab_case_nnaive, 
+              tab_gmtr_naive=tab_gmtr_naive, tab_gmtr_nnaive=tab_gmtr_nnaive))
+})
+
+tab_case_naive_nevercase <- tab_assay_status_nevercase %>% 
+  map("tab_case_naive") %>% 
+  bind_rows()
+
+tab_case_nnaive_nevercase <- tab_assay_status_nevercase %>% 
+  map("tab_case_nnaive") %>% 
+  bind_rows()
+
+}
 
 print("Done with all tables")
 

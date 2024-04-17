@@ -37,6 +37,10 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov_lvmn))
 	Rscript code/make_table_all.R D43	
 else ifeq ($(TRIAL),$(filter $(TRIAL), id27hpv))
 	Rscript code/make_table_all_hpv.R M18	
+	Rscript code/make_table_all_hpv.R M18sus
+else ifeq ($(TRIAL),$(filter $(TRIAL), id27hpvnAb))
+	Rscript code/make_table_all_hpv.R M18nAb	
+	Rscript code/make_table_all_hpv.R M18susnAb	
 else ifeq ($(TRIAL),$(filter $(TRIAL), covail))
 	Rscript code/make_table_all_covail.R D15to91
 	Rscript code/make_table_all_covail.R D92to181
