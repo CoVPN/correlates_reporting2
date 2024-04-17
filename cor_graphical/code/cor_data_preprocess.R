@@ -3,6 +3,7 @@
 #Sys.setenv(TRIAL = "janssen_partA_VL")
 #Sys.setenv(TRIAL = "janssen_pooled_partA")
 #Sys.setenv(TRIAL = "prevent19_stage2") # D35prevent19_stage2_delta, D35prevent19_stage2_severe
+#Sys.setenv(TRIAL = "azd1222_stage2") # D57azd1222_stage2_delta_nAb, D57azd1222_stage2_delta_bAb, D57azd1222_stage2_severe_nAb, D57azd1222_stage2_severe_bAb
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -114,7 +115,17 @@ if (study_name=="IARCHPV"){
                   AnyInfectionD1to22Mar26==0 ~ "Non-Cases"),
       levels = c(paste0(config.cor$txt.endpoint, " Cases"), "Non-Cases"))
     )
-} else if (study_name=="COVE" | study_name=="MockCOVE") {
+} else if (study_name=="AZD1222" & grepl("stage2", COR)) {# one timepoint stage 2 studies: AZD1222 stage2
+  
+  dat = dat %>%
+    mutate(cohort_event = factor(
+      case_when(!!as.name(config.cor$ph2)==1 &
+                  !!as.name(config.cor$EventIndPrimary)==1 ~ paste0(config.cor$txt.endpoint, " Cases"),
+                !!as.name(config.cor$ph2)==1 & 
+                  AnyInfectionD1toD360==0 ~ "Non-Cases"),
+      levels = c(paste0(config.cor$txt.endpoint, " Cases"), "Non-Cases"))
+    )
+}else if (study_name=="COVE" | study_name=="MockCOVE") {
   # for COVE, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29, may replace it with AnyinfectionD1 later
   
   dat <- dat %>%
@@ -131,7 +142,7 @@ if (study_name=="IARCHPV"){
                   EventIndPrimaryD1==0 ~ "Non-Cases"),
       levels = c("Intercurrent Cases", "Post-Peak Cases", "Non-Cases"))
       )
-} else if (study_name=="AZD1222"){ # for two timepoints studies requiring D29 marker for D29 set, and D57 for D57 set, such as AZ
+} else if (study_name=="AZD1222" & !grepl("stage2", COR)){ # for two timepoints studies requiring D29 marker for D29 set, and D57 for D57 set, such as AZ
   # for AZ stage 1, can't use ph2.tinterm=1 for now because non-case requires EarlyendpointD57==0 instead of EarlyendpointD29
   
   dat <- dat %>%
@@ -297,7 +308,7 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
 } else if (study_name=="IARCHPV"){
   dat.long$lb = with(dat.long, "Pos.Cut")
   dat.long$lbval =  with(dat.long, pos.cutoffs)
-} else if (study_name=="PREVENT19" & grepl("stage2", COR)){
+} else if (study_name %in% c("PREVENT19","AZD1222") & grepl("stage2", COR)){
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoQ", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoQ, LLoD))
 } else {
@@ -328,8 +339,8 @@ if (study_name!="IARCHPV") { # IARCHPV doesn't have delta assay variables
   for (t in timepoints) { # unique(gsub("Day", "", times_[!grepl("Delta|B", times_)]))
     tp = paste0("Day", t) # ifelse(grepl("[A-Za-z]", t), t, paste0("Day", t))
     if (!grepl("stage2", COR)) {dat.long[, "Delta"%.%t%.%"overB"] = dat.long[, tp] - dat.long[, "B"]
-    } else {# for stage 2
-      dat.long[, "Delta"%.%t%.%"overBD1"] = dat.long[, tp] - dat.long[, "BD1"]
+    } else {# only for NVX 301 stage 2
+    if (study_name=="PREVENT19") dat.long[, "Delta"%.%t%.%"overBD1"] = dat.long[, tp] - dat.long[, "BD1"]
     }
   }
 }

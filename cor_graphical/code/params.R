@@ -32,7 +32,10 @@ if(attr(config,"config")=="janssen_pooled_partA") {
 } else if (attr(config,"config")=="prevent19_stage2") {
   times_ = c("BD1","Day35","DD1","Delta35overBD1")
   labels.time = c("Booster Day 1","Day 35", "Disease Day 1", "D35 fold-rise over BD1"); names(labels.time) = times_
-} else {times_ = times}
+} else if (attr(config,"config")=="azd1222_stage2") {
+  times_ = c("Day57","Day90","Day180","Day360")
+  labels.time = c("Day 57","Day 90", "Day 180", "Day 360"); names(labels.time) = times_
+}else {times_ = times}
 
 
 
