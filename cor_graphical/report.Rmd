@@ -126,8 +126,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                     COR_postfix=="severe" ~ "D35prevent19_stage2_severe",
                     COR_postfix=="delta nab" ~ "D57azd1222_stage2_delta_nAb", 
                     COR_postfix=="delta bab" ~ "D57azd1222_stage2_delta_bAb", 
-                    COR_postfix=="severe nab " ~ "D57azd1222_stage2_severe_nAb", 
-                    COR_postfix=="severe bab " ~ "D57azd1222_stage2_severe_bAb"
+                    COR_postfix=="severe nab" ~ "D57azd1222_stage2_severe_nAb", 
+                    COR_postfix=="severe bab" ~ "D57azd1222_stage2_severe_bAb"
                     )
       
       # SET 1
@@ -187,17 +187,15 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       }
       
       for (bsero in c("naive")){
-                #delete############ below
-        if (attr(config,"config") %in% c("azd1222_stage2")) next
           
           for (trt in c("vac")){
               
               for (tp in if (attr(config,"config")=="prevent19_stage2") {c("BD1","Day35","Delta35overBD1")} else {tps_no_B_and_fold_change}){
                   
                   tpLabel = ifelse(tp=="B", "Day1", tp)
-                  assay_n = case_when(COR %in% c("D57azd1222_stage2_delta_nAb", "D57azd1222_stage2_severe_nAb") ~ 2,
-                                      COR %in% c("D57azd1222_stage2_delta_bAb", "D57azd1222_stage2_severe_bAb") ~ 8,
-                                      TRUE ~ length(assays))
+                  assay_n = ifelse(COR %in% c("D57azd1222_stage2_delta_nAb", "D57azd1222_stage2_severe_nAb"), 2,
+                                   ifelse(COR %in% c("D57azd1222_stage2_delta_bAb", "D57azd1222_stage2_severe_bAb"), 8,
+                                      length(assays)))
                   res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
                   cat(res, sep = '\n')
                   cat("\\clearpage", sep = '\n')
