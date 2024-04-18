@@ -48,9 +48,14 @@ print(paste0("save.results.to equals ", save.results.to))
 
 ###### Set 1 plots: Ab distributions for assays of one panel, at set1_times, by case/non-case (by naive/non-naive, vaccine/placebo)
 set1_times <- labels.time[!grepl(paste0("over D", tinterm), labels.time)] # "Day 1" "Day 22" "Day 43" "D22 fold-rise over D1"  "D43 fold-rise over D1"
-if(attr(config,"config") == "prevent19_stage2"){set1_times <- set1_times[set1_times!="Disease Day 1"]}
+if (attr(config,"config") == "prevent19_stage2"){
+    set1_times <- set1_times[set1_times!="Disease Day 1"]
+} else if (attr(config,"config") == "azd1222_stage2") {set1_times <- set1_times[set1_times!="Day 360"]}
 
-for (panel in c("pseudoneutid50", "bindSpike", if(attr(config,"config") == "prevent19_stage2") "bindSpike_sub_nvx_stage2")){
+for (panel in c("pseudoneutid50", "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_nvx_stage2")){
+    
+    if (sum(grepl(substr(panel, 1, 5), assay_metadata$assay))==0) next
+    
     # by naive/non-naive, vaccine/placebo
     f_1 <- f_case_non_case_by_time_assay(
         dat = dat.longer.cor.subset.plot1,
@@ -84,7 +89,7 @@ if(attr(config,"config") == "prevent19_stage2"){time_cohort.lb <- time_cohort.lb
 # two assays per plot
 for (i in 1:length(set2.1_assays)) {
     
-    if (i%%2==0) next     # skip even i
+    if (i%%2==0 & attr(config,"config") != "azd1222_stage2") next     # skip even i for all studies but AZ stage 2
     
     f_2 <- f_longitude_by_assay(
         dat = dat.longer.cor.subset.plot1 %>%
@@ -93,7 +98,7 @@ for (i in 1:length(set2.1_assays)) {
                                         levels = time_cohort.lb,
                                         labels = time_cohort.lb)),
         x.lb = time_cohort.lb,
-        assays = set2.1_assays[c(i,i+1)],
+        assays = if(attr(config,"config") == "azd1222_stage2"){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]},
         panel.text.size = 6,
         ylim = c(0,4.5), 
         ybreaks = c(0,2,4),
@@ -101,7 +106,9 @@ for (i in 1:length(set2.1_assays)) {
         chtcols = setNames(c(if(length(cases_lb)==2) "#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
         chtpchs = setNames(c(if(length(cases_lb)==2) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
     
-    file_name <- paste0(paste0(set2.1_assays[c(i,i+1)], collapse="_"), "_longitudinal_by_case_non_case.pdf")
+    file_name <- paste0(paste0(if(attr(config,"config") == "azd1222_stage2"){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]}, 
+                               collapse="_"), 
+                        "_longitudinal_by_case_non_case.pdf")
     ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 11)
 }
 
@@ -132,7 +139,8 @@ if (attr(config,"config") == "vat08_combined"){
 
 ###### Set 3 plots: Correlation plots across markers at a given time point
 set3_times = if (attr(config,"config") == "vat08_combined") {times_[!grepl("Delta", times_)] # B, Day22, Day43
-} else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1", times_)]} # BD1, Day35, Delta35overBD1
+} else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1", times_)] # BD1, Day35, Delta35overBD1
+} else {times_}
 
 # add delta values for prevent19_stage2
 if (attr(config,"config") == "prevent19_stage2"){
@@ -226,7 +234,7 @@ if (attr(config,"config") == "vat08_combined") {
     }
 }
 
-if (attr(config,"config") == "prevent19_stage2") {
+if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {
     for (a in assays){
         panels_set <- list()
         i <- 1
@@ -234,7 +242,8 @@ if (attr(config,"config") == "prevent19_stage2") {
         
         for (tn in c("Vaccine Naive")){
             for (ce in c("Non-Cases", cases_lb)){
-                times_sub = c("BD1","Day35",if(ce==cases_lb) "DD1")
+                times_sub = if (attr(config,"config") == "prevent19_stage2") {c("BD1","Day35",if(ce==cases_lb) "DD1")
+                    } else if (attr(config,"config") == "azd1222_stage2") {c("Day57","Day90","Day180", if(ce=="Non-Cases") "Day360")}
                 
                 panels_set[[i]] = covid_corr_pairplots(
                     plot_dat = dat.cor.subset.plot3 %>% filter(Trt_nnaive == tn & cohort_event == ce),
