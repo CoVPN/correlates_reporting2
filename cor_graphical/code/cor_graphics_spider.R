@@ -98,7 +98,8 @@ for (ab in c("bAb", "nAb")) {
                     filter(Region %in% reg)
             ) %>%
             mutate(Region = NULL) %>%
-            select(if(ab=="bAb" && reg!=0) {starts_with("bindSpike")
+            select(if(ab=="bAb" && reg==1) {matches("bindSpike$|bindSpike_B.1.621$|bindSpike_P.1$|bindSpike_C.37$")
+            } else if(ab=="bAb" && reg==2) {starts_with("bindSpike")
             } else if (ab=="bAb" && reg==0) {matches("bindSpike$|bindSpike_P.1")
             } else if (ab=="nAb" && reg==1) {matches("pseudoneutid50$|pseudoneutid50_Zeta|pseudoneutid50_Mu|pseudoneutid50_Gamma|pseudoneutid50_Lambda")
             } else if (ab=="nAb" && reg==2) {matches("pseudoneutid50$|pseudoneutid50_Delta|pseudoneutid50_Beta")

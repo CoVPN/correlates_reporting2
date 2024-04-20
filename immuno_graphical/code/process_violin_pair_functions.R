@@ -71,11 +71,11 @@ get_desc_by_group <- function(data,
                denom = sum(wt, na.rm=T),
                #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
                RespRate = ifelse(denom!=0 && !is.na(pos.cutoffs), paste0(round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
-               min = min(value),
+               min = min(value, na.rm=T),
                q1 = quantile(value, 0.25, na.rm=T),
                median = median(value, na.rm=T),
                q3 = quantile(value, 0.75, na.rm=T),
-               max= max(value))
+               max= max(value, na.rm=T))
     
     return(dat_stats)
 }
@@ -237,7 +237,7 @@ f_longitude_by_assay <- function(
                 geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
-                scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], 2), labels = scales::math_format(10^.x)) +
+                scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], 1), labels = scales::math_format(10^.x)) +
                 labs(x = "Assay", y = unique(panel), title = paste(unique(panel), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))

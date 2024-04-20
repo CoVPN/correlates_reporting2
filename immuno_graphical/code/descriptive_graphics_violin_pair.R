@@ -20,11 +20,13 @@ source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 
 # for the order of figure panels
-assay_order = assay_metadata %>% dplyr::arrange(panel, order_in_panel) %>% select(assay_label_short) %>% pull()
-assay_metadata = assay_metadata %>%
-    mutate(assay_label_short = factor(assay_label_short,
-                                      levels = assay_order
-    ))
+if ("order_in_panel" %in% colnames(assay_metadata)){
+    assay_order = assay_metadata %>% dplyr::arrange(panel, order_in_panel) %>% select(assay_label_short) %>% pull()
+    assay_metadata = assay_metadata %>%
+        mutate(assay_label_short = factor(assay_label_short,
+                                          levels = assay_order
+        ))
+}
 
 dat.longer.immuno.subset.plot1 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.rds"))
 if(attr(config,"config")=="janssen_partA_VL") {
@@ -43,7 +45,7 @@ set1_times <- times[1:5]
 for (panel in c("pseudoneutid50", "bindSpike")){
     # by naive/non-naive, vaccine/placebo
     
-    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
     f_1 <- f_by_time_assay(
         dat = dat.longer.immuno.subset.plot1 %>% mutate(x="1"),
@@ -114,7 +116,7 @@ set2_assays = assays
 for (panel in c("pseudoneutid50", "bindSpike")){
     # by naive/non-naive, vaccine/placebo
     
-    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
     f_2 <- f_longitude_by_assay(
         dat = dat.longer.immuno.subset.plot1,
@@ -133,6 +135,52 @@ for (panel in c("pseudoneutid50", "bindSpike")){
     ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
 }
 
+# adhoc figure needed for the severe manuscript reviewer
+if (attr(config,"config") == "janssen_pooled_partA"){
+    assay_metadata$assay_label = labels.assays[match(assay_metadata$assay, names(labels.assays))]
+    assay_metadata$assay_label = case_when(assay_metadata$assay_label=="Binding Antibody to Spike" ~ "Binding Antibody to Spike\nBAU/mL",
+                                           assay_metadata$assay_label=="Binding Antibody to RBD" ~ "Binding Antibody to RBD\nBAU/mL",
+                                           assay_metadata$assay_label=="PsV Neutralization 50% Titer" ~ "PsV Neutralization 50% Titer\nIU/mL",
+                                           TRUE ~ assay_metadata$assay_label)
+    panel=""
+    
+    dat_plot_ = subset(dat.longer.immuno.subset.plot1, 
+                      Trt=="Vaccine" & nnaive=="Baseline Neg" & time %in% c("Day29","Day71") & assay %in% c("bindSpike","bindRBD","pseudoneutid50")) %>% 
+        filter(!is.na(value))
+    # only 104 ptids have id50 data at Day 71
+    ids_id50_day71 <- subset(dat_plot_, time=="Day71" & assay=="pseudoneutid50")$Ptid %>% unique()
+    stopifnot(length(ids_id50_day71) == 104)
+    
+    # 2 of 104 do not have day 71 bindRBD and bindSpike
+    ids_day71 <- ids_id50_day71[ids_id50_day71 %in% subset(dat_plot_, time=="Day71" & assay=="bindRBD")$Ptid]
+    stopifnot(length(ids_day71) == 102)
+    
+    all(ids_day71 %in% subset(dat_plot_, time=="Day29" & assay=="pseudoneutid50")$Ptid)
+    all(ids_day71 %in% subset(dat_plot_, time=="Day29" & assay=="bindRBD")$Ptid)
+    all(ids_day71 %in% subset(dat_plot_, time=="Day29" & assay=="bindSpike")$Ptid)
+    all(ids_day71 %in% subset(dat_plot_, time=="Day71" & assay=="bindRBD")$Ptid)
+    all(ids_day71 %in% subset(dat_plot_, time=="Day71" & assay=="bindSpike")$Ptid)
+
+    set.seed(20240320)
+    random25 <- sample(ids_day71, 25)
+    dat_plot = dat_plot_ %>% filter(Ptid %in% random25) %>% mutate(RespRate=" ")
+    
+    f_2 <- f_longitude_by_assay(
+        dat = dat_plot,
+        x.var = "time",
+        x.lb = c("D29","D71"),
+        assays = c("bindSpike","bindRBD","pseudoneutid50"),
+        ylim = c(0, 3),
+        times = c("Day29","Day71"),
+        strip.text.x.size = 25,
+        panel.text.size = 6,
+        facet.y.var = NULL, 
+        facet.x.var = vars(assay_label)
+    )
+    
+    file_name <- paste0("/adhoc_longitudinal_vaccine_baselineneg_random25.pdf")
+    ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
+}
 #f_2 <- f_longitude_by_assay(
 #    dat = dat.longer.immuno.subset.plot1,
 #    x.var = "time",
@@ -156,7 +204,7 @@ for (panel in c("pseudoneutid50", "bindSpike")){
 # 15 markers, naive vaccine, three timepoints
 for (grp in c("non_naive_vac_pla", "naive_vac")){
     
-    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
     for (t in c("B","Day22","Day43")) {
         
@@ -198,7 +246,7 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
 # all markers, by naive/non-naive, vaccine/placebo, pooling cases and non-cases
 for (a in assays){
     
-    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
     panels_set <- list()
     i <- 1
