@@ -1,9 +1,3 @@
-```{r, echo=FALSE, results='asis'}
-if(!exists("fname.suffix")) fname.suffix = ''
-if(!exists("show.risk.curves")) show.risk.curves = F
-```
-
-
 `r paste(concatList(rep('#',level)), COR, fname.suffix)`  Univariate
 
 The main regression model is the Cox proportional hazards model. Each row represents results from one model. All plots are made with Cox models fit unless specified otherwise. 
@@ -46,7 +40,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \vspace{30pt}
 
 
-<!-- only for two TRIALs -->
+<!-- Follmann sample size ratio. Only for two TRIALs -->
 `r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA")) '<!--'`
 \begin{table}[H]
 \caption{The ratio of sample sizes required to power a future trial for the column marker compared to the row marker (Follmann 2018). Confidence intervals are based on $10^3$ bootstrap replicates. }
@@ -64,7 +58,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 <!-- Table 1, commented out for covail -->
 `r if (attr(config,"config") %in% c("covail")) '<!--'`
 \begin{table}[H]
-\caption{Number of cases and non-cases in ph2 or not}
+\caption{Number of cases and non-cases by ph2}
 \begin{center}
   \input{`r pathCoRoutput`/tab1_`r fname.suffix`}\\
 \end{center}
@@ -76,7 +70,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 `r if (!TRIAL %in% c("janssen_partA_VL")) '<!--'`
 
 \begin{table}[H]
-\caption{Number of cases and non-cases in ph2 (with ancestral Abs measured) or not. The previous table is for ph2 subjects with variants Abs measured}
+\caption{Number of cases and non-cases by ph2 (with ancestral Abs measured). There are more non-cases in ph2 than the previous table, which is for ph2 subjects with variants Abs measured.}
 \begin{center}
   \input{`r pathCoRoutput`/tab1_`r fname.suffix`_ancestral}\\
 \end{center}
@@ -84,7 +78,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 
 
 \begin{table}[H]
-\caption{Number of competing cases in ph2 or not}
+\caption{Number of competing cases by ph2}
 \begin{center}
   \input{`r pathCoRoutput`/tab1_competing_`r fname.suffix`}\\
 \end{center}
@@ -121,7 +115,7 @@ if(TRIAL %in% c("azd1222")) {
 
 
 
-
+<!-- multiple_regression -->
 
 ```{r, echo=FALSE, results='asis'}
 
@@ -141,25 +135,9 @@ if(TRIAL %in% c("azd1222")) {
 
 
 
-<!-- \clearpage -->
 
 
-```{r, echo=FALSE, results='asis'}
-
-if (show.risk.curves) {
-  for (a in all.markers) {
-    assay=marker.name.to.assay(a)
-    res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
-  }
-  
-}
-```
-
-
-
-
-<!-- ## Marginalized risk and controlled vaccine efficacy plots -->
+<!-- ## Additional content -->
 
 <!-- \setlength{\tabcolsep}{.5ex} -->
 

@@ -9,7 +9,6 @@ show.q=F
 fname.suffix=""
 
 for (COR in c("D57azd1222_stage2_severe_nAb", "D57azd1222_stage2_severe_bAb", "D57azd1222_stage2_delta_nAb", "D57azd1222_stage2_delta_bAb")) {
-  
   if (COR=="D57azd1222_stage2_severe_nAb") cat("# Severe COVID\n\n")
   if (COR=="D57azd1222_stage2_delta_nAb") cat("# Delta COVID\n\n")
   

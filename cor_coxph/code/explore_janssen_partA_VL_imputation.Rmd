@@ -90,8 +90,10 @@ for (r in 0:2) {
     }
     print(table(dat$tmp, dat$EventIndPrimaryIncludeNotMolecConfirmedD1))
     # print(table(dat$tmp, dat$seq1.variant.hotdeck1))
-    # # many ptid with lineage not classified as case
-    # print(table(dat$seq1.variant.hotdeck1, dat$EventIndPrimaryIncludeNotMolecConfirmedD1))
+    
+    # many ptid with lineage not classified as case
+    print(with(subset(dat_proc, Trt == 1 & Bserostatus==0 & Region==2 & ph1.D29) , 
+               table(seq1.variant.hotdeck1, EventIndPrimaryIncludeNotMolecConfirmedD1)))
 
     
     cat("\nafter imputation")

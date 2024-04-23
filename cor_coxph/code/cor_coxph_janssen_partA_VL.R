@@ -50,8 +50,8 @@ for (a in "Day29"%.%assays) {
 }
 
 # add placebo counterpart
-dat.vac.seroneg.allregions=subset(dat_proc, Trt==1 & ph1)
-dat.pla.seroneg.allregions=subset(dat_proc, Trt==0 & ph1)
+dat.vacc.seroneg.allregions=subset(dat_proc, Trt==1 & ph1)
+dat.plac.seroneg.allregions=subset(dat_proc, Trt==0 & ph1)
 
 # for validation use
 rv=list() 
@@ -80,20 +80,18 @@ cox.df=data.frame(
 # loop through regions. 1: US, 2: LatAm, 3: RSA
 # saves nevents.df and cox.df
 
-iRegion=2;   
-# for (iRegion in c(1,2,3)) { 
+for (iRegion in c(1,2,3)) {
 # iRegion=1; variant="Ancestral.Lineage"
-# iRegion=2; variant="Ancestral.Lineage" # Lambda Ancestral.Lineage
+# iRegion=2; variant="Gamma" # Lambda Ancestral.Lineage
 # iRegion=3; variant="Beta"
   
   region=regions[iRegion]
-  dat.vac=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
-  dat.pla=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
+  dat.vacc=subset(dat.vacc.seroneg.allregions, Region==iRegion-1)
+  dat.plac=subset(dat.plac.seroneg.allregions, Region==iRegion-1)
   
   
   # loop through COVID lineage variants within this region
-  # for (variant in variants[[iRegion]]) {
-  for(variant in c("Ancestral.Lineage", "Gamma",             "Lambda" )) {
+  for (variant in variants[[iRegion]]) {
     cat("==============================  "); myprint(region, variant, newline=F); cat("  ==============================\n")
     
     # append to file names for figures and tables
@@ -109,8 +107,8 @@ iRegion=2;
     {
     # imputed events of interest and ph1/ph2 for variants Ab ph2
     tabs=sapply(1:10, simplify="array", function (imp) {
-      dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      with(dat.vac, table(ph2, EventIndOfInterest))
+      dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      with(dat.vacc, table(ph2, EventIndOfInterest))
     })
     tab =apply(tabs, c(1,2), mean)
     names(dimnames(tab))[2]="Event Indicator"
@@ -122,8 +120,8 @@ iRegion=2;
     
     # imputed events of interest and ph1/ph2 for ancestral Ab ph2
     tabs=sapply(1:10, simplify="array", function (imp) {
-      dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      with(dat.vac, table(ph2.D29, EventIndOfInterest))
+      dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      with(dat.vacc, table(ph2.D29, EventIndOfInterest))
     })
     tab =apply(tabs, c(1,2), mean)
     names(dimnames(tab))[2]="Event Indicator"
@@ -131,10 +129,11 @@ iRegion=2;
     mytex(tab, file.name=paste0("tab1_",fname.suffix,"_ancestral"), save2input.only=T, input.foldername=save.results.to, digits=1)
     # does not have different nevents.df, so not saved 
     
+    
     # imputed competing events
     tabs=sapply(1:10, simplify="array", function (imp) {
-      dat.vac$EventIndCompeting = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
-      with(dat.vac, table(ph2, EventIndCompeting))
+      dat.vacc$EventIndCompeting = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]!=variant, 1, 0)
+      with(dat.vacc, table(ph2, EventIndCompeting))
     })
     tab =apply(tabs, c(1,2), mean)
     names(dimnames(tab))[2]="Event Indicator"
@@ -144,8 +143,8 @@ iRegion=2;
     
     
     # non-imputed events of interest
-    dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant"]]==variant, 1, 0)
-    tab = with(dat.vac, table(ph2, EventIndOfInterest)) # NA not counted, which is what we want
+    dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant"]]==variant, 1, 0)
+    tab = with(dat.vacc, table(ph2, EventIndOfInterest)) # NA not counted, which is what we want
     names(dimnames(tab))[2]="Event Indicator"
     mytex(tab, file.name=paste0("tab1_nonimputed_",fname.suffix), save2input.only=T, input.foldername=save.results.to, digits=0)
     
@@ -208,7 +207,7 @@ iRegion=2;
     names(all.markers.names.short) = all.markers
     names(all.markers.names.long) = all.markers
     
-    # source(here::here("code", "cor_coxph_ph_MI.R"))
+    source(here::here("code", "cor_coxph_ph_MI.R"))
     
     
     #####################################
@@ -223,62 +222,62 @@ iRegion=2;
     
     cor_coxph_risk_no_marker (
       form.0,
-      dat=dat.vac,
+      dat=dat.vacc,
       fname.suffix, 
       save.results.to,
       config,
       config.cor,
       tfinal.tpeak,
       
-      dat.pla.seroneg = dat.pla,
+      dat.plac,
       verbose=FALSE
     ) 
     
-    
+
     cor_coxph_risk_bootstrap (
       form.0,
-      dat = dat.vac,
+      dat = dat.vacc,
       fname.suffix,
       save.results.to,
       config,
       config.cor,
-      all.markers,
       tfinal.tpeak,
-      
+
+      markers=all.markers,
+
       run.Sgts = F # whether to get risk conditional on continuous S>=s
     )
-    
-    
+
     cor_coxph_risk_plotting (
       form.0,
-      dat = dat.vac,
+      dat = dat.vacc,
       fname.suffix,
       save.results.to,
       config,
       config.cor,
-      all.markers = all.markers,
-      all.markers.names.short,
       tfinal.tpeak,
-      
-      all.markers.names.long,
+
+      markers = all.markers,
+      markers.names.short = all.markers.names.short,
+      markers.names.long = all.markers.names.long,
       marker.cutpoints,
       assay_metadata,
-      
-      dat.pla.seroneg = dat.pla,
+
+      dat.plac,
       res.plac.cont,
       prev.plac,
       overall.ve,
-      
+
       show.ve.curves = T,
       plot.geq = F,
       plot.w.plac = T,
-      for.title = ""
+      for.title = for.title
     )
-    
+
 
   } # variant for loop
   
-# } # iRegion for loop
+} # iRegion for loop
 
 save(nevents.df, cox.df, file=paste0(save.results.to, "cox_results.Rdata"))
 
@@ -299,11 +298,11 @@ save(nevents.df, cox.df, file=paste0(save.results.to, "cox_results.Rdata"))
 #     region=regions[iRegion]
 #   
 #     # subset dataset to region
-#     dat.vac=subset(dat.vac.seroneg.allregions, Region==iRegion-1)
-#     dat.pla=subset(dat.pla.seroneg.allregions, Region==iRegion-1)
+#     dat.vacc=subset(dat.vacc.seroneg.allregions, Region==iRegion-1)
+#     dat.plac=subset(dat.plac.seroneg.allregions, Region==iRegion-1)
 #   
 #     # ph1 case count
-#     nevents.df=rbind(nevents.df, list(region = region, variant = "All", nevents=sum(dat.vac$EventIndPrimaryIncludeNotMolecConfirmedD29) ))
+#     nevents.df=rbind(nevents.df, list(region = region, variant = "All", nevents=sum(dat.vacc$EventIndPrimaryIncludeNotMolecConfirmedD29) ))
 #   
 #     # load coxph results from regional analyses
 #     # the coxph results from analysis ready dataset for janssen_partA_VL are different
@@ -383,12 +382,187 @@ save(nevents.df, cox.df, file=paste0(save.results.to, "cox_results.Rdata"))
 # }
 
 
-# ###################################################################################################
-# if(verbose) print("differences in risk curves")
-# 
-# load(paste0("/home/yfong/dev/correlates_reporting2-2/cor_coxph/output/janssen_partA_VL/D29VL/risks.all.1.LatAm.Gamma.Rdata"))
-# risks.gamma.covid = risks.all.1$Day29bindSpike
-# risks.gamma.covid = risks.all.1$Day29bindSpike
+###################################################################################################
+if(verbose) print("differences in risk curves")
+
+# load risk bootstrap results
+
+{
+# LatAm Ancestral
+# vaccine risk
+load(paste0(save.results.to, "/risks.all.1_LatAm_Ancestral.Lineage.Rdata"))
+LA_AncestralCOVID.AncestralbAb = risks.all.1[["Day29bindSpike"]]
+LA_AncestralCOVID.AncestralnAb = risks.all.1[["Day29pseudoneutid50"]]
+# placebo risk
+load(paste0(save.results.to, "/marginalized.risk.no.marker.LatAm_Ancestral.Lineage.Rdata"))
+LA_AncestralCOVID.plac = res.plac.cont
+# VE
+bAb.est.Ancestral = 1 - LA_AncestralCOVID.AncestralbAb$prob / LA_AncestralCOVID.plac["est"]
+bAb.boot.Ancestral = 1 - t( t(LA_AncestralCOVID.AncestralbAb$boot) / LA_AncestralCOVID.plac[2:(1+B)] )
+nAb.est.Ancestral = 1 - LA_AncestralCOVID.AncestralnAb$prob / LA_AncestralCOVID.plac["est"]
+nAb.boot.Ancestral = 1 - t( t(LA_AncestralCOVID.AncestralnAb$boot) / LA_AncestralCOVID.plac[2:(1+B)] )
+
+# LatAm Gamma
+# vaccine risk
+load(paste0(save.results.to, "/risks.all.1_LatAm_Gamma.Rdata"))
+LA_GammaCOVID.GammabAb = risks.all.1[["Day29bindSpike_P.1"]]
+LA_GammaCOVID.GammanAb = risks.all.1[["Day29pseudoneutid50_Gamma"]]
+# placebo risk
+load(paste0(save.results.to, "/marginalized.risk.no.marker.LatAm_Gamma.Rdata"))
+LA_GammaCOVID.plac = res.plac.cont
+# VE
+bAb.est.Gamma = 1 - LA_GammaCOVID.GammabAb$prob / LA_GammaCOVID.plac["est"]
+bAb.boot.Gamma = 1 - t( t(LA_GammaCOVID.GammabAb$boot) / LA_GammaCOVID.plac[2:(1+B)] )
+nAb.est.Gamma = 1 - LA_GammaCOVID.GammanAb$prob / LA_GammaCOVID.plac["est"]
+nAb.boot.Gamma = 1 - t( t(LA_GammaCOVID.GammanAb$boot) / LA_GammaCOVID.plac[2:(1+B)] )
+
+# LatAm Lambda
+# vaccine risk
+load(paste0(save.results.to, "/risks.all.1_LatAm_Lambda.Rdata"))
+LA_LambdaCOVID.LambdabAb = risks.all.1[["Day29bindSpike_C.37"]]
+LA_LambdaCOVID.LambdanAb = risks.all.1[["Day29pseudoneutid50_Lambda"]]
+# placebo risk
+load(paste0(save.results.to, "/marginalized.risk.no.marker.LatAm_Lambda.Rdata"))
+LA_LambdaCOVID.plac = res.plac.cont
+# VE
+bAb.est.Lambda = 1 - LA_LambdaCOVID.LambdabAb$prob / LA_LambdaCOVID.plac["est"]
+bAb.boot.Lambda = 1 - t( t(LA_LambdaCOVID.LambdabAb$boot) / LA_LambdaCOVID.plac[2:(1+B)] )
+nAb.est.Lambda = 1 - LA_LambdaCOVID.LambdanAb$prob / LA_LambdaCOVID.plac["est"]
+nAb.boot.Lambda = 1 - t( t(LA_LambdaCOVID.LambdanAb$boot) / LA_LambdaCOVID.plac[2:(1+B)] )
+
+# LatAm Mu
+# vaccine risk
+load(paste0(save.results.to, "/risks.all.1_LatAm_Mu.Rdata"))
+LA_MuCOVID.MubAb = risks.all.1[["Day29bindSpike_B.1.621"]]
+LA_MuCOVID.MunAb = risks.all.1[["Day29pseudoneutid50_Mu"]]
+# placebo risk
+load(paste0(save.results.to, "/marginalized.risk.no.marker.LatAm_Mu.Rdata"))
+LA_MuCOVID.plac = res.plac.cont
+# VE
+bAb.est.Mu = 1 - LA_MuCOVID.MubAb$prob / LA_MuCOVID.plac["est"]
+bAb.boot.Mu = 1 - t( t(LA_MuCOVID.MubAb$boot) / LA_MuCOVID.plac[2:(1+B)] )
+nAb.est.Mu = 1 - LA_MuCOVID.MunAb$prob / LA_MuCOVID.plac["est"]
+nAb.boot.Mu = 1 - t( t(LA_MuCOVID.MunAb$boot) / LA_MuCOVID.plac[2:(1+B)] )
+
+# LatAm Zeta, no Zeta-specific bAb
+# vaccine risk
+load(paste0(save.results.to, "/risks.all.1_LatAm_Zeta.Rdata"))
+LA_ZetaCOVID.ZetanAb = risks.all.1[["Day29pseudoneutid50_Zeta"]]
+# placebo risk
+load(paste0(save.results.to, "/marginalized.risk.no.marker.LatAm_Zeta.Rdata"))
+LA_ZetaCOVID.plac = res.plac.cont
+# VE
+nAb.est.Zeta = 1 - LA_ZetaCOVID.ZetanAb$prob / LA_ZetaCOVID.plac["est"]
+nAb.boot.Zeta = 1 - t( t(LA_ZetaCOVID.ZetanAb$boot) / LA_ZetaCOVID.plac[2:(1+B)] )
+
+}
+
+
+plot.diff = function(marker.a, est.a, boot.a, label.a, 
+                     marker.b, est.b, boot.b, label.b,
+                     xlab
+                     ) {
+  
+  # find common support, overlap between two [5% percentile, 95% percentile]
+  n=100 # a grid of size n
+  min = max(marker.a[" 5.0%"], marker.b[" 5.0%"])
+  max = min(marker.a["95.0%"], marker.b["95.0%"])
+  seq = seq(min, max, len=n)
+  
+  # interpolate values on the same grid
+  # There may be some NAs in y.imputed (out of range of x), it is okay
+  
+  # curve 1
+  select = marker.a>=min & marker.a<=max
+  x= c(seq, marker.a[select])
+  # impute point est
+  est.a.seq = zoo::na.approx(c(rep(NA,n), est.a[select]), x = x, na.rm = FALSE)
+  # impute bootstrap values
+  boot.a.seq = sapply(1:500, function(i) zoo::na.approx(c(rep(NA,n), boot.a[select,i]), x = x, na.rm = FALSE))
+  
+  # curve 2
+  select = marker.b>=min & marker.b<=max
+  x = c(seq, marker.b[select])
+  # impute point est
+  est.b.seq = zoo::na.approx(c(rep(NA,n), est.b[select]), x = x, na.rm = FALSE)
+  # impute bootstrap values
+  boot.b.seq = sapply(1:500, function(i) zoo::na.approx(c(rep(NA,n), boot.b[select,i]), x = x, na.rm = FALSE))
+  
+  # diff
+  ve.diff = est.a.seq[1:n] - est.b.seq[1:n]
+  ve.diff.boot = boot.a.seq[1:n,] - boot.b.seq[1:n,]
+  # pointwise CI
+  ci.band=apply(ve.diff.boot, 1, function (x) quantile(x, c(.025,.975), na.rm=T))
+  
+  # plot
+  plot(seq, ve.diff, type="l", xlab=xlab, ylab=paste0("VE Difference"), main=paste0(label.a, " - ", label.b), ylim=c(-1,1), col=4, xaxt="n")
+  axis(1, at = seq[seq(1,100,length=6)], labels = round(10**seq[seq(1,100,length=6)]))
+  
+  lines(seq, ci.band[1,], lty=2, col=4)
+  lines(seq, ci.band[2,], lty=2, col=4)
+  abline(h=0)
+}
+
+# nAb
+mypdf(file=paste0(save.results.to, "VE_diff_nAb_anc_lambda"))
+plot.diff (
+  LA_AncestralCOVID.AncestralnAb$marker, nAb.est.Ancestral, nAb.boot.Ancestral, "Ancestral",
+  LA_LambdaCOVID.LambdanAb$marker, nAb.est.Lambda, nAb.boot.Lambda, "Lambda",
+  xlab="Lineage-Specific PsV Neutralization"
+) 
+dev.off()
+
+# bAb
+mypdf(file=paste0(save.results.to, "VE_diff_bAb_anc_gamma"))
+  plot.diff (
+  LA_AncestralCOVID.AncestralbAb$marker, bAb.est.Ancestral, bAb.boot.Ancestral, "Ancestral",
+  LA_GammaCOVID.GammabAb$marker, bAb.est.Gamma, bAb.boot.Gamma, "Gamma",
+  xlab="Binding Antibody to Lineage-Specific Spike"
+) 
+dev.off()
+  
+mypdf(file=paste0(save.results.to, "VE_diff_bAb_anc_lambda"))
+plot.diff (
+  LA_AncestralCOVID.AncestralbAb$marker, bAb.est.Ancestral, bAb.boot.Ancestral, "Ancestral",
+  LA_LambdaCOVID.LambdabAb$marker, bAb.est.Lambda, bAb.boot.Lambda, "Lambda",
+  xlab="Binding Antibody to Lineage-Specific Spike"
+) 
+dev.off()
+
+mypdf(file=paste0(save.results.to, "VE_diff_bAb_anc_mu"))
+  plot.diff (
+  LA_AncestralCOVID.AncestralbAb$marker, bAb.est.Ancestral, bAb.boot.Ancestral, "Ancestral",
+  LA_MuCOVID.MubAb$marker, bAb.est.Mu, bAb.boot.Mu, "Mu",
+  xlab="Binding Antibody to Lineage-Specific Spike"
+) 
+dev.off()
+  
+mypdf(file=paste0(save.results.to, "VE_diff_bAb_gamma_lambda"))
+  plot.diff (
+  LA_GammaCOVID.GammabAb$marker, bAb.est.Gamma, bAb.boot.Gamma, "Gamma",
+  LA_LambdaCOVID.LambdabAb$marker, bAb.est.Lambda, bAb.boot.Lambda, "Lambda",
+  xlab="Binding Antibody to Lineage-Specific Spike"
+) 
+dev.off()
+  
+mypdf(file=paste0(save.results.to, "VE_diff_bAb_gamma_mu"))
+  plot.diff (
+  LA_GammaCOVID.GammabAb$marker, bAb.est.Gamma, bAb.boot.Gamma, "Gamma",
+  LA_MuCOVID.MubAb$marker, bAb.est.Mu, bAb.boot.Mu, "Mu",
+  xlab="Binding Antibody to Lineage-Specific Spike"
+) 
+dev.off()
+  
+mypdf(file=paste0(save.results.to, "VE_diff_bAb_lambda_mu"))
+  plot.diff (
+  LA_LambdaCOVID.LambdabAb$marker, bAb.est.Lambda, bAb.boot.Lambda, "Lambda",
+  LA_MuCOVID.MubAb$marker, bAb.est.Mu, bAb.boot.Mu, "Mu",
+  xlab="Binding Antibody to Strain-Specific Spike"
+) 
+dev.off()
+  
+
+################################################################################
 
 
 print(date())

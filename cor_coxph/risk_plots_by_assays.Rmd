@@ -4,50 +4,54 @@ cat(concatList(rep('#',level)), " ", a," curves\n")
 assay=marker.name.to.assay(a)
 ```  
 
-
-\begin{figure}
-\center
-  \subfloat[][Marginalized cumulative incidence rate curves for trichotomized Day `r tpeak` markers among vaccine recipients. The gray line is the overall cumulative incidence rate curve in the placebo arm.]{\includegraphics
-  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_cat_`r fname.suffix`.pdf}}
-  \hspace{10pt}
-  \subfloat[][Marginalized cumulative risk as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). The horizontal lines indicate the overall cumulative risk of the placebo and vaccine arms and its 95\% point-wise confidence interval. Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
-  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_eq_`r if(!has.plac) "woplacebo_"``r fname.suffix`.pdf}}
-\caption{Marginalized cumulative risk curves (=s). Case counting starts `r tpeaklag` days post Day `r tpeak`.}
-\end{figure}
-\clearpage
-
-
-
-`r if (!show.ve.curves) '<!--'`
-\begin{figure}
-\center
-  \subfloat[][Controlled VE as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
-  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_eq_manus_`r fname.suffix`}}
-  \hspace{10pt}
-  \subfloat[][Controlled VE as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
-  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves4_`r fname.suffix`}}
-\caption{Controlled VE curves (=s). Case counting starts `r tpeaklag` days post Day `r tpeak`.}
-\end{figure}
-\clearpage
-
+\newif\ifshowvecurves
+\showvecurves`r ifelse(show.ve.curves, 'true', 'false')`
 
 \newif\ifshowsen
-\showsen`r ifelse(study_name=="HVTN705" & a!="IgG340mdw_V1V2", 'false', 'true')`
-\ifshowsen
+\showsen`r ifelse(!show.ve.curves | (study_name=="HVTN705" & a!="IgG340mdw_V1V2"), 'false', 'true')`
 
-\begin{figure}
+
+\begin{figure}[H]
 \center
-  \subfloat[][Controlled VE curves (=s) with sensitivity analysis as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")` ]{\includegraphics
-  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_eq_`r fname.suffix`}}
+  \subfloat[][Marginalized cumulative incidence rate curves for trichotomized Day `r tpeak` markers among vaccine recipients. The gray line is the overall cumulative incidence rate curve in the placebo arm.]{\includegraphics
+  [width=.44\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_cat_`r fname.suffix`.pdf}}
   \hspace{10pt}
-  \subfloat[][Controlled VE curves (=s) with sensitivity analysis as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")` ]{\includegraphics
-  [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves5_`r fname.suffix`}}
-\caption{More plots. Case counting starts `r tpeaklag` days post Day `r tpeak`.}
-\end{figure}
-\clearpage
+  \subfloat[][Marginalized cumulative risk as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). The horizontal lines indicate the overall cumulative risk of the placebo and vaccine arms and its 95\% point-wise confidence interval. Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
+  [width=.44\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`marginalized_risks_eq_`r if(!has.plac) "woplacebo_"``r fname.suffix`.pdf}}
+
+
+\ifshowvecurves
+
+  \subfloat[][Controlled VE as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
+  [width=.44\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_eq_manus_`r fname.suffix`}}
+  \hspace{10pt}
+  \subfloat[][Controlled VE as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")`]{\includegraphics
+  [width=.44\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves4_`r fname.suffix`}}
 
 \fi
-`r if (!show.ve.curves) '-->'`
+
+\caption{Marginalized cumulative risk curves and VE curves (=s). Case counting starts `r tpeaklag` days post Day `r tpeak`.}
+\end{figure}
+
+\clearpage
+
+
+
+\ifshowsen
+
+  \begin{figure}
+  \center
+    \subfloat[][Controlled VE curves (=s) with sensitivity analysis as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")` ]{\includegraphics
+    [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves_eq_`r fname.suffix`}}
+    \hspace{10pt}
+    \subfloat[][Controlled VE curves (=s) with sensitivity analysis as functions of Day `r tpeak` markers (=s) among vaccine recipients with 95\% bootstrap point-wise confidence bands (\protect\input{`r pathCoRoutput`/bootstrap_replicates} replicates). Histograms of the immunological markers in the vaccine arm are overlaid. `r if(!startsWith(a,"Delta")) paste0(llox_labels[assay], "=", lloxs[assay], ".")` ]{\includegraphics
+    [width=.48\textwidth,keepaspectratio]{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_curves5_`r fname.suffix`}}
+  \caption{More plots. Case counting starts `r tpeaklag` days post Day `r tpeak`.}
+  \end{figure}
+  
+  \clearpage
+
+\fi
 
 
 
@@ -84,20 +88,18 @@ assay=marker.name.to.assay(a)
 \clearpage
 
 
-`r if (!show.ve.curves) '<!--'`
-\clearpage
-\setlength{\tabcolsep}{.5ex}
-\input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_eq_`r fname.suffix`}
-
-\newif\ifshowsen
-\showsen`r ifelse(study_name=="HVTN705" & a!="IgG340mdw_V1V2", 'false', 'true')`
-\ifshowsen
-\clearpage
-\setlength{\tabcolsep}{.5ex}
-\input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_sens_eq_`r fname.suffix`}
+\ifshowvecurves
+  \clearpage
+  \setlength{\tabcolsep}{.5ex}
+  \input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_eq_`r fname.suffix`}
 \fi
 
-\clearpage
-`r if (!show.ve.curves) '-->'`
+
+\ifshowsen
+  \clearpage
+  \setlength{\tabcolsep}{.5ex}
+  \input{`r paste0(pathCoRoutput, "/", a, "_")`controlled_ve_sens_eq_`r fname.suffix`}
+\fi
+
 
 

@@ -116,7 +116,7 @@ if (endsWith(TRIAL,"EUA") | endsWith(TRIAL,"partA")) {
       cat("## Risk curves\n\n")
       level=level+1
       plot.geq=F
-      has.plac=F
+      has.plac=T
       show.ve.curves=T
       for (a in all.markers) {
         assay=marker.name.to.assay(a)
@@ -127,6 +127,13 @@ if (endsWith(TRIAL,"EUA") | endsWith(TRIAL,"partA")) {
     }
     
   }
+  
+  
+  level=1
+  res = knitr::knit_child(c(here::here('cor_coxph', 'diff_VE_janssen_partA_VL.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+  
+  
   
   
   

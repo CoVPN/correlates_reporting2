@@ -112,9 +112,9 @@ cor_coxph_risk_no_marker (
   save.results.to,
   config,
   config.cor,
-  
   tfinal.tpeak,
-  dat.pla.seroneg = NULL,
+  
+  dat.plac = NULL,
   verbose=FALSE
 ) 
 
@@ -157,10 +157,10 @@ if (contain(COR, "severe")) {
     save.results.to,
     config,
     config.cor,
-
-    all.markers = markers,
-
     tfinal.tpeak,
+    
+    markers=all.markers,
+
     run.Sgts = F # whether to get risk conditional on continuous S>=s
   )
 
@@ -172,15 +172,15 @@ if (contain(COR, "severe")) {
     save.results.to,
     config,
     config.cor,
-    all.markers = markers,
-    all.markers.names.short[markers],
     tfinal.tpeak,
     
-    all.markers.names.long[markers],
+    markers = all.markers,
+    markers.names.short = all.markers.names.short[markers],
+    markers.names.long = all.markers.names.long[markers],
     marker.cutpoints,
     assay_metadata,
     
-    dat.pla.seroneg = NULL,
+    dat.plac = NULL,
     res.plac.cont = NULL,
     prev.plac = NULL,
     overall.ve=NULL,
@@ -202,10 +202,10 @@ if (contain(COR, "severe")) {
     save.results.to,
     config,
     config.cor,
-    
-    all.markers = markers,
-
     tfinal.tpeak,
+    
+    markers = all.markers,
+
     run.Sgts = F # whether to get risk conditional on continuous S>=s
   )
 
@@ -216,15 +216,15 @@ if (contain(COR, "severe")) {
     save.results.to,
     config,
     config.cor,
-    all.markers = markers,
-    all.markers.names.short[markers],
     tfinal.tpeak,
     
-    all.markers.names.long[markers],
+    markers = all.markers,
+    markers.names.short = all.markers.names.short[markers],
+    markers.names.long = all.markers.names.long[markers],
     marker.cutpoints,
     assay_metadata,
     
-    dat.pla.seroneg = NULL,
+    dat.plac = NULL,
     res.plac.cont = NULL,
     prev.plac = NULL,
     overall.ve=NULL,

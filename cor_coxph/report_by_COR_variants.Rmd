@@ -1,3 +1,5 @@
+<!-- not actually used, but useful to keep around -->
+
 # `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
 
 The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise.

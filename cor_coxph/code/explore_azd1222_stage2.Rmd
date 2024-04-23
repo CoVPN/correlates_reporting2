@@ -10,6 +10,7 @@ library(survey)
 library(kyotil)
 
 dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240322.csv')
+dat_mapped_new=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240418.csv')
 dat_mapped_stage1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage1/adata/COVID_AstraZeneca_realdata_20221208.csv')
  
 dat_mapped$EarlyendpointD57 <- with(dat_mapped, EarlyinfectionD57==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD57 + 7),1,0)
@@ -31,6 +32,7 @@ assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/azd1222_stage2_a
 assays=assay_metadata$assay
 
 dat_proc = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240409.csv')
+dat_proc_new = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240418.csv')
 
 dat_proc$EventIndPrimaryType_short=substr(dat_proc$COVIDIndType,1,3)
 dat_proc$EventIndPrimaryType_short=ifelse(dat_proc$EventIndPrimaryType_short=="", NA,dat_proc$EventIndPrimaryType_short)
@@ -61,7 +63,7 @@ mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list, dat_mapped$Tr
 
 The sampling design is a stratified case-control study design. Based on the design, the following failure indicator and time variables are needed for computing weights
 
-* Cases are vaccine group participants who contribute primary COVID-19 endpoints, i.e. baseline SARS-CoV-2 negative and SARS-CoV-2 negative for 15 days post-second dose, adjudicated COVID-19) with COVID-19 onset 7+ days post-Day 57 through D360.
+* Cases are vaccine group participants who contribute primary COVID-19 endpoints, i.e. baseline SARS-CoV-2 negative and SARS-CoV-2 negative for 15 days post-second dose, adjudicated COVID-19) with COVID-19 onset 7+ days post-Day 57 through D360.  To ensure complete longitudinal data, non-severe COVID-19 cases are required to have D57, D90, and D180 visits that occur before COVID-19 onset to be eligible for sampling.
   * COVIDIndD57_7toD360
 * All severe COVID-19 cases satisfying these criteria are sampled.  
   * SevereCOVIDIndD57_7toD360
@@ -91,8 +93,27 @@ with (subset(dat_proc, ph2.D57nAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57nA
 with (subset(dat_proc, ph2.D57bAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57bAb, Wstratum))
 ```
 
+Number of ph2 cases before 180 days post D57 and their distribution
+```{r}
+with (subset(dat_proc, ph2.D57_120nAb==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180), 
+      mytable(SevereCOVIDIndD57_120to21Dec10, KnownOrImputedDeltaCOVIDIndD57_120to21Dec10))
 
+with (subset(dat_proc, ph2.D57_120nAb==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180), 
+      mytable(wt.D57_120nAb, KnownOrImputedDeltaCOVIDIndD57_120to21Dec10))
 
+with (subset(dat_proc, ph1.D57_120==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180), 
+      mytable(wt.D57_120nAb, KnownOrImputedDeltaCOVIDIndD57_120to21Dec10))
+
+with (subset(dat_proc, ph1.D57_120==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180 & abs(wt.D57_120nAb-52)<1),
+      mytable(Wstratum))
+
+with (subset(dat_proc, ph1.D57_120==1 & Trt==1 & Bserostatus==0 & abs(wt.D57_120nAb-52)<1),
+      mytable(Wstratum))
+
+with (subset(dat_proc, ph1.D57_120==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180 & abs(wt.D57_120nAb-14)<1),
+      mytable(Wstratum))
+
+```
 
 ### Adjusting endpoint period
 

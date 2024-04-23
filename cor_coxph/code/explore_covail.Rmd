@@ -453,9 +453,157 @@ summary(dat.sanofi[,c("Day15"%.%assays[1:5])])
 
 with(subset(dat_mapped, TrtSanofi==1), mytable(naive, COVIDIndD36toD181))
 with(subset(dat_mapped, TrtSanofi==1), mytable(naive, COVIDIndD22toD181))
+
+```
+
+Correlation is high between BA4BA5 ID50 and ancestral ID50 in both naive and nnaive (higher in the latter)
+
+```{r}
+par(mfrow=c(1,2))
+lim=c(2.5,5.3)
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.sanofi, naive==1), asp=1, xlim=lim, ylim=lim, main="COVAIL Sanofi Naive")
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, dat.sanofi, asp=1, xlim=lim, ylim=lim, main="COVAIL Sanofi")
+# corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.sanofi, naive==0), asp=1, xlim=lim, ylim=lim)
+```
+
+Comparing with Pfz,P in the naive
+```{r}
+par(mfrow=c(2,2))
+lim=c(1.2,5.5)
+myboxplot(list(subset(dat.sanofi, naive==1, Day15pseudoneutid50_D614G, drop=T),
+               subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0,Day15pseudoneutid50_D614G, drop=T)), test="w", main="D15 Ancestral ID50", ylim=lim, names=c("Sanofi, naive", "Pfz,P, naive"), ylab="")
+myboxplot(list(subset(dat.sanofi, naive==1, Day15pseudoneutid50_BA.4.BA.5, drop=T),
+               subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0,Day15pseudoneutid50_BA.4.BA.5, drop=T)), test="w", main="D15 BA4BA5 ID50", ylim=lim, names=c("Sanofi, naive", "Pfz,P, naive"), ylab="")
+
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.sanofi, naive==1), asp=1, xlim=lim, ylim=lim, main="Sanofi Naive")
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0, c(Day15pseudoneutid50_D614G, Day15pseudoneutid50_BA.4.BA.5)), asp=1, xlim=lim, ylim=lim, main="Pfz,P Naive")
+
 ```
 
 
+Comparing with Pfz,P in the naive, separately by Sanofi,P and Sanofi,NP
+```{r}
+par(mfrow=c(1,3))
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.sanofi, naive==1 & treatment_actual=="Prototype (Sanofi)"), asp=1, xlim=lim, ylim=lim, main="Sanofi,P Naive")
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.sanofi, naive==1 & treatment_actual!="Prototype (Sanofi)"), asp=1, xlim=lim, ylim=lim, main="Sanofi,NP Naive")
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0, c(Day15pseudoneutid50_D614G, Day15pseudoneutid50_BA.4.BA.5)), asp=1, xlim=lim, ylim=lim, main="Pfz,P Naive")
+
+```
+
+
+Comparing with Pfz,P in the non-naive
+```{r}
+par(mfrow=c(2,2))
+lim=c(1.2,5.5)
+myboxplot(list(subset(dat.sanofi, naive==0, Day15pseudoneutid50_D614G, drop=T),
+               subset(dat.ocp, naive==0 & company=="Pfz" & Trt==0,Day15pseudoneutid50_D614G, drop=T)), test="w", main="D15 Ancestral ID50", ylim=lim, names=c("Sanofi, Non-naive", "Pfz,P, Non-naive"), ylab="")
+myboxplot(list(subset(dat.sanofi, naive==0, Day15pseudoneutid50_BA.4.BA.5, drop=T),
+               subset(dat.ocp, naive==0 & company=="Pfz" & Trt==0,Day15pseudoneutid50_BA.4.BA.5, drop=T)), test="w", main="D15 BA4BA5 ID50", ylim=lim, names=c("Sanofi, Non-naive", "Pfz,P, Non-naive"), ylab="")
+
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.sanofi, naive==0), asp=1, xlim=lim, ylim=lim, main="Sanofi Non-naive")
+corplot(Day15pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_D614G, subset(dat.ocp, naive==0 & company=="Pfz" & Trt==0, c(Day15pseudoneutid50_D614G, Day15pseudoneutid50_BA.4.BA.5)), asp=1, xlim=lim, ylim=lim, main="Pfz,P Non-naive")
+
+```
+
+Baseline correlation, in the naive
+
+```{r}
+par(mfrow=c(2,2))
+lim=c(1.2,5.5)
+myboxplot(list(subset(dat.sanofi, naive==1, Bpseudoneutid50_D614G, drop=T),
+               subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0,Bpseudoneutid50_D614G, drop=T)), test="w", main="D1 Ancestral ID50", ylim=lim, names=c("Sanofi, naive", "Pfz,P, naive"), ylab="")
+myboxplot(list(subset(dat.sanofi, naive==1, Bpseudoneutid50_BA.4.BA.5, drop=T),
+               subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0,Bpseudoneutid50_BA.4.BA.5, drop=T)), test="w", main="D1 BA4BA5 ID50", ylim=lim, names=c("Sanofi, naive", "Pfz,P, naive"), ylab="")
+
+corplot(Bpseudoneutid50_BA.4.BA.5~Bpseudoneutid50_D614G, subset(dat.sanofi, naive==1), asp=1, xlim=lim, ylim=lim, main="Sanofi Naive")
+corplot(Bpseudoneutid50_BA.4.BA.5~Bpseudoneutid50_D614G, subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0, c(Bpseudoneutid50_D614G, Bpseudoneutid50_BA.4.BA.5)), asp=1, xlim=lim, ylim=lim, main="Pfz,P Naive")
+
+```
+
+
+Baseline correlation, in the non-naive
+```{r}
+par(mfrow=c(2,2))
+lim=c(1.2,5.5)
+myboxplot(list(subset(dat.sanofi, naive==0, Bpseudoneutid50_D614G, drop=T),
+               subset(dat.ocp, naive==0 & company=="Pfz" & Trt==0,Bpseudoneutid50_D614G, drop=T)), test="w", main="D1 Ancestral ID50", ylim=lim, names=c("Sanofi, Non-naive", "Pfz,P, Non-naive"), ylab="")
+myboxplot(list(subset(dat.sanofi, naive==0, Bpseudoneutid50_BA.4.BA.5, drop=T),
+               subset(dat.ocp, naive==0 & company=="Pfz" & Trt==0,Bpseudoneutid50_BA.4.BA.5, drop=T)), test="w", main="D1 BA4BA5 ID50", ylim=lim, names=c("Sanofi, Non-naive", "Pfz,P, Non-naive"), ylab="")
+
+corplot(Bpseudoneutid50_BA.4.BA.5~Bpseudoneutid50_D614G, subset(dat.sanofi, naive==0), asp=1, xlim=lim, ylim=lim, main="Sanofi Non-naive")
+corplot(Bpseudoneutid50_BA.4.BA.5~Bpseudoneutid50_D614G, subset(dat.ocp, naive==0 & company=="Pfz" & Trt==0, c(Bpseudoneutid50_D614G, Bpseudoneutid50_BA.4.BA.5)), asp=1, xlim=lim, ylim=lim, main="Pfz,P Non-naive")
+
+```
+
+
+Interaction plot, naive
+```{r}
+par(mfrow=c(1,2))
+lim=c(1.2,4.8)
+myboxplot(subset(dat.sanofi, naive==1, c(Day15pseudoneutid50_D614G, Day15pseudoneutid50_BA.4.BA.5)), names=c("ancestral", "BA4BA5"), main="Sanofi, naive", add.interaction=T)
+myboxplot(subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0, c(Day15pseudoneutid50_D614G, Day15pseudoneutid50_BA.4.BA.5)), names=c("ancestral", "BA4BA5"), main="Pfz,P, naive", add.interaction=T)
+
+```
+
+Correlation of fold change between ancestral and BA4BA5
+
+```{r}
+dat.sanofi$Day15overBpseudoneutid50_BA.4.BA.5 = dat.sanofi$Day15pseudoneutid50_BA.4.BA.5 - dat.sanofi$Bpseudoneutid50_BA.4.BA.5
+dat.sanofi$Day15overBpseudoneutid50_D614G = dat.sanofi$Day15pseudoneutid50_D614G - dat.sanofi$Bpseudoneutid50_D614G
+dat.ocp$Day15overBpseudoneutid50_BA.4.BA.5 = dat.ocp$Day15pseudoneutid50_BA.4.BA.5 - dat.ocp$Bpseudoneutid50_BA.4.BA.5
+dat.ocp$Day15overBpseudoneutid50_D614G = dat.ocp$Day15pseudoneutid50_D614G - dat.ocp$Bpseudoneutid50_D614G
+dat.sanofi$Day29overBpseudoneutid50_BA.4.BA.5 = dat.sanofi$Day29pseudoneutid50_BA.4.BA.5 - dat.sanofi$Bpseudoneutid50_BA.4.BA.5
+dat.sanofi$Day29overBpseudoneutid50_D614G = dat.sanofi$Day29pseudoneutid50_D614G - dat.sanofi$Bpseudoneutid50_D614G
+dat.ocp$Day29overBpseudoneutid50_BA.4.BA.5 = dat.ocp$Day29pseudoneutid50_BA.4.BA.5 - dat.ocp$Bpseudoneutid50_BA.4.BA.5
+dat.ocp$Day29overBpseudoneutid50_D614G = dat.ocp$Day29pseudoneutid50_D614G - dat.ocp$Bpseudoneutid50_D614G
+```
+
+Correlation between D15 over D1 fold change in ancestral and BA4BA5 ID50.
+
+```{r}
+par(mfrow=c(1,3))
+lim1=c(0,3.3)
+corplot(Day15overBpseudoneutid50_BA.4.BA.5~Day15overBpseudoneutid50_D614G, subset(dat.sanofi, naive==1 & treatment_actual=="Prototype (Sanofi)"), asp=1, xlim=lim1, ylim=lim1, main="Sanofi Prototype Naive")
+corplot(Day15overBpseudoneutid50_BA.4.BA.5~Day15overBpseudoneutid50_D614G, subset(dat.sanofi, naive==1 & treatment_actual!="Prototype (Sanofi)" & Day15overBpseudoneutid50_D614G<3), asp=1, xlim=lim1, ylim=lim1, main="Sanofi Beta-containing Naive")
+corplot(Day15overBpseudoneutid50_BA.4.BA.5~Day15overBpseudoneutid50_D614G, subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0), asp=1, xlim=lim1, ylim=lim1, main="Pfz,P, naive")
+
+```
+
+D29 over D1
+
+```{r}
+par(mfrow=c(1,3))
+lim1=c(0,3.3)
+corplot(Day29overBpseudoneutid50_BA.4.BA.5~Day29overBpseudoneutid50_D614G, subset(dat.sanofi, naive==1 & treatment_actual=="Prototype (Sanofi)"), asp=1, xlim=lim1, ylim=lim1, main="Sanofi Prototype Naive")
+corplot(Day29overBpseudoneutid50_BA.4.BA.5~Day29overBpseudoneutid50_D614G, subset(dat.sanofi, naive==1 & treatment_actual!="Prototype (Sanofi)" & Day29overBpseudoneutid50_D614G<3), asp=1, xlim=lim1, ylim=lim1, main="Sanofi Beta-containing Naive")
+corplot(Day29overBpseudoneutid50_BA.4.BA.5~Day29overBpseudoneutid50_D614G, subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0), asp=1, xlim=lim1, ylim=lim1, main="Pfz,P, naive")
+
+```
+
+
+comparing fold change between different Sanofi arms
+```{r}
+par(mfrow=c(1,2))
+myboxplot(list(
+  subset(dat.sanofi, naive==1 & treatment_actual=="Prototype (Sanofi)", Day15overBpseudoneutid50_BA.4.BA.5, drop=T),
+  subset(dat.sanofi, naive==1 & treatment_actual!="Prototype (Sanofi)", Day15overBpseudoneutid50_BA.4.BA.5, drop=T)), test="w", names=c("Prototype", "Non-prototype"))
+
+myboxplot(list(
+  subset(dat.sanofi, naive==1 & treatment_actual=="Prototype (Sanofi)", Day15overBpseudoneutid50_D614G, drop=T),
+  subset(dat.sanofi, naive==1 & treatment_actual!="Prototype (Sanofi)", Day15overBpseudoneutid50_D614G, drop=T)), test="w", names=c("Prototype", "Non-prototype"))
+
+
+```
+
+Comparing D29 and D15. Quite comparable
+
+```{r}
+par(mfrow=c(1,2))
+lim1=NULL
+corplot(Day29pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_BA.4.BA.5, subset(dat.sanofi, naive==1 & treatment_actual=="Prototype (Sanofi)"), asp=1, xlim=lim1, ylim=lim1, main="Sanofi,P Naive")
+corplot(Day29pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_BA.4.BA.5, subset(dat.sanofi, naive==1 & treatment_actual!="Prototype (Sanofi)"), asp=1, xlim=lim1, ylim=lim1, main="Sanofi,NP Naive")
+
+```
 
 
 ### correlation between m15 and baseline markers

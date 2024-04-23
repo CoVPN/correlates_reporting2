@@ -153,10 +153,10 @@ cor_coxph_risk_bootstrap(
   save.results.to,
   config,
   config.cor,
-
-  all.markers,
-
   tfinal.tpeak,
+  
+  markers = all.markers,
+
   run.Sgts = F # whether to get risk conditional on continuous S>=s
 )
 
@@ -167,17 +167,17 @@ cor_coxph_risk_plotting (
   save.results.to,
   config,
   config.cor,
-  all.markers,
-  all.markers.names.short,
   tfinal.tpeak,
   
-  all.markers.names.long,
+  markers = all.markers,
+  markers.names.short = all.markers.names.short,
+  markers.names.long = all.markers.names.long,
   marker.cutpoints,
   assay_metadata,
   
-  dat.pla.seroneg = dat.pla.seroneg,
-  res.plac.cont = res.plac.cont,
-  prev.plac = prev.plac,
+  dat.plac = dat.pla.seroneg,
+  res.plac.cont,
+  prev.plac,
   overall.ve=NULL,
   
   show.ve.curves = T,

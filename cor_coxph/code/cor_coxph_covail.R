@@ -301,10 +301,10 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
           save.results.to,
           config,
           config.cor,
-          
-          all.markers = "Day15"%.%assays,
-          
           tfinal.tpeak,
+          
+          markers = "Day15"%.%assays,
+          
           run.Sgts=F # whether to get risk conditional on continuous S>=s
         )
         
@@ -315,15 +315,15 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
           save.results.to,
           config,
           config.cor,
-          all.markers = "Day15"%.%assays,
-          all.markers.names.short,
           tfinal.tpeak,
           
-          all.markers.names.long,
+          markers = "Day15"%.%assays,
+          markers.names.short = all.markers.names.short,
+          markers.names.long = all.markers.names.long,
           marker.cutpoints,
           assay_metadata,
           
-          dat.pla.seroneg = NULL,
+          dat.plac = NULL,
           res.plac.cont = NULL,
           prev.plac=NULL,
           overall.ve=NULL,
