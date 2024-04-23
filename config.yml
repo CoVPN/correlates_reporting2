@@ -431,11 +431,11 @@ prevent19_stage2: &prevent19_stage2
   data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240409.csv
   assay_metadata: assay_metadata/prevent19_stage2_assay_metadata.csv
   study_name: PREVENT19
-  covariates: ~ 1  # to be replaced by COR-specific covariates
+  covariates: ~ 1  # to be replaced by COR-specific covariates in _common.R
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]
   low_efficacy: no
-  num_boot_replicates: 50
+  num_boot_replicates: 1000
   num_perm_replicates: 10000
   
 
@@ -495,14 +495,14 @@ azd1222_stage2: &azd1222_stage2
   timepoints: [57]
   times: [Day57]
   time_labels: [Day 57]
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240411.csv
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240422.csv
   assay_metadata: assay_metadata/azd1222_stage2_assay_metadata.csv
   study_name: AZD1222
   covariates: ~ 1 # to be replaced by COR-specific covariates
   ve_ylim: [0,1]
   ve_ylim_log: [0.0,0.98]
   low_efficacy: no
-  num_boot_replicates: 50
+  num_boot_replicates: 1000
   num_perm_replicates: 10
 
 
@@ -1299,18 +1299,19 @@ D35prevent19_stage2_severe:
   txt.endpoint: Severe COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
 
-
+# delta
 D57azd1222_stage2_delta_nAb:
   ph1: ph1.D57_120
   ph2: ph2.D57_120nAb
   wt: wt.D57_120nAb
   WtStratum: Wstratum
-  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120to21Dec10
-  EventTimePrimary: COVIDTimeD57to21Dec10
+  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_270
+  EventTimePrimary: COVIDTimeD57toD57_270
   Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Senior + risk_score
   tpeak: 57
   tpeaklag: 120
+  tfinal.tpeak: 270
   txt.endpoint: Delta COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
 
@@ -1319,15 +1320,17 @@ D57azd1222_stage2_delta_bAb:
   ph2: ph2.D57_120bAb
   wt: wt.D57_120bAb
   WtStratum: Wstratum
-  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120to21Dec10
-  EventTimePrimary: COVIDTimeD57to21Dec10
+  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_270
+  EventTimePrimary: COVIDTimeD57toD57_270
   Earlyendpoint: AnyInfectionD57_120
   covariates: ~.+ Senior + risk_score
   tpeak: 57
   tpeaklag: 120
+  tfinal.tpeak: 270
   txt.endpoint: Delta COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
 
+# severe
 D57azd1222_stage2_severe_nAb:
   ph1: ph1.D57_120
   ph2: ph2.D57_120nAb
@@ -1428,24 +1431,14 @@ D29IncludeNotMolecConfirmedstart1:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
-# VL
+# VL, ph2/wt for ancestral antibodies do have variant in the end
+# We don't keep a separate label for ancestral ph2 and weights and rely on hard coding to change them 
+# b/c it is a lot better to keep reults for ancestral and variant antibodies together for easier read
+# the hard coding happens in cor_coxph_ph_MI.R and in copcor::marginalized.risk.svycoxph.boot.R
 D29VLvariant:
   ph1: ph1.D29
   ph2: ph2.D29variant
   wt: wt.D29variant
-  WtStratum: Wstratum
-  EventIndPrimary: EventIndPrimaryD29
-  EventTimePrimary: EventTimePrimaryD29
-  Earlyendpoint: EarlyendpointD29
-  tpeak: 29
-  tpeaklag: 7
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
-
-D29VLancestral:
-  ph1: ph1.D29
-  ph2: ph2.D29
-  wt: wt.D29
   WtStratum: Wstratum
   EventIndPrimary: EventIndPrimaryD29
   EventTimePrimary: EventTimePrimaryD29
@@ -1625,6 +1618,7 @@ D15to181BA45:
   Earlyendpoint: EarlyendpointD15
   tpeak: 15
   tpeaklag: 7
+  tfinal.tpeak: 188
   torigin: 15
   txt.endpoint: BA4BA5 COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.

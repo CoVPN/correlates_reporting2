@@ -130,9 +130,18 @@ source(here::here("..", "_common.R")) # dat_proc is made
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
 
-source(here::here("code", "cor_coxph_risk_no_marker.R"))
-
-if (Sys.getenv("COR_COXPH_NO_MARKER_ONLY") == 1) q("no")
+cor_coxph_risk_no_marker (
+  form.0,
+  dat=dat.vac.seroneg,
+  fname.suffix, 
+  save.results.to,
+  config,
+  config.cor,
+  tfinal.tpeak,
+  
+  dat.plac = NULL,
+  verbose=FALSE
+) 
 
 
 
@@ -201,11 +210,10 @@ cor_coxph_risk_bootstrap(
   save.results.to,
   config,
   config.cor,
-
   tfinal.tpeak,
-  all.markers = markers,
+  
+  markers = markers,
 
-  comp.risk = F,
   run.Sgts = F # whether to get risk conditional on continuous S>=s
 )
 
@@ -217,24 +225,19 @@ cor_coxph_risk_plotting (
   save.results.to,
   config,
   config.cor,
+  tfinal.tpeak,
   
+  markers = all.markers,
+  markers.names.short = all.markers.names.short[markers],
+  markers.names.long = all.markers.names.long[markers],
+  marker.cutpoints,
   assay_metadata,
   
-  tfinal.tpeak,
-  all.markers = markers,
-  all.markers.names.short[markers],
-  all.markers.names.long[markers],
-  marker.cutpoints,
-
-  multi.imp = F,
-  comp.risk = F,
-
-  dat.pla.seroneg = NULL,
+  dat.plac = NULL,
   res.plac.cont = NULL,
   prev.plac = NULL,
-
-  variant = NULL,
-
+  overall.ve=NULL,
+  
   show.ve.curves = F,
   plot.geq = F,
   plot.w.plac = F,

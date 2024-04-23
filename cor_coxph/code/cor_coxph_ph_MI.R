@@ -11,25 +11,38 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
   for (a in all.markers) {
     
     models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
-      # imp=1
-      f = update(form.0, as.formula(paste0("~.+", if(i==2) "scale", "(", a, if(TRIAL=="janssen_partA_VL") "_"%.%imp, ")"))); f
+      
+      # form.0 is not a list because this is for Cox regression and not risk
+      if (TRIAL=="janssen_partA_VL") {
+        f = update(form.0, 
+                   as.formula(paste0("~.+", if(i==2) "scale", "(", a, "_"%.%imp, ")"))
+                   )
+      } else if (study_name=="VAT08") {
+        f = update(form.0, 
+                   as.formula(paste0("~.+", if(i==2) "scale", "(", a, ")"))
+                   )
+      } else {
+        stop("wrong TRIAL")
+      }
       
       # set event indicator and time
       if (TRIAL=="janssen_partA_VL") {
-        dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
       } else if (study_name=="VAT08") {
-        dat.vac$EventIndOfInterest  = dat.vac[[config.cor$EventIndPrimary  %.% imp]]
-        dat.vac$EventTimeOfInterest = dat.vac[[config.cor$EventTimePrimary %.% imp]]
+        dat.vacc$EventIndOfInterest  = dat.vacc[[config.cor$EventIndPrimary  %.% imp]]
+        dat.vacc$EventTimeOfInterest = dat.vacc[[config.cor$EventTimePrimary %.% imp]]
       } else stop('wrong TRIAL: '%.%TRIAL)
       
       if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
-        dat.vac$ph2a = dat.vac$ph2.D29
+        dat.vacc$ph2a = dat.vacc$ph2.D29
       } else {
-        dat.vac$ph2a = dat.vac$ph2
+        dat.vacc$ph2a = dat.vacc$ph2
       }
-      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vac)
+      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vacc)
       svycoxph(f, design=design.vac) 
+    
     })
+    
     betas<-MIextract(models, fun=coef)
     vars<- MIextract(models, fun=vcov)
     res<-summary(MIcombine(betas,vars)) # MIcombine prints the results, there is no way to silent it
@@ -59,7 +72,7 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
 # i=1
 # a="Day29pseudoneutid50"
 # # remove cases with missing variants info and cases with competing types
-# dat.tmp=dat.vac
+# dat.tmp=dat.vacc
 # dat.tmp=subset(dat.tmp, !(EventIndPrimary==1 & (is.na(seq1.variant) | seq1.variant!=variant)))
 # design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.tmp)
 # svycoxph(Surv(EventTimePrimaryD29, EventIndPrimary) ~ risk_score + Day29pseudoneutid50, design=design.vac) 
@@ -103,7 +116,7 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
 ###################################################################################################
 if(verbose) print("regression for trichotomized markers")
 
-marker.levels = sapply(all.markers, function(a) length(table(dat.vac[[a%.%"cat"]])))
+marker.levels = sapply(all.markers, function(a) length(table(dat.vacc[[a%.%"cat"]])))
 
 fits.tri=list()
 overall.p.tri=c()
@@ -116,18 +129,18 @@ for (a in all.markers) {
     f
 
     if (TRIAL=="janssen_partA_VL") {
-      dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
     } else if (TRIAL=="vat08_combined") {
-      dat.vac$EventIndOfInterest  = dat.vac[[config.cor$EventIndPrimary %.% imp]]
-      dat.vac$EventTimeOfInterest = dat.vac[[config.cor$EventTimePrimary %.% imp]]
+      dat.vacc$EventIndOfInterest  = dat.vacc[[config.cor$EventIndPrimary %.% imp]]
+      dat.vacc$EventTimeOfInterest = dat.vacc[[config.cor$EventTimePrimary %.% imp]]
     } else stop('wrong TRIAL: '%.%TRIAL)
     
     if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
-      dat.vac$ph2a = dat.vac$ph2.D29
+      dat.vacc$ph2a = dat.vacc$ph2.D29
     } else {
-      dat.vac$ph2a = dat.vac$ph2
+      dat.vacc$ph2a = dat.vacc$ph2
     }
-    design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vac)
+    design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vacc)
     svycoxph(f, design=design.vac) 
   })
   
@@ -240,14 +253,14 @@ for (a in multivariate_assays) {
     }
     
     models = lapply(1:10, function (imp) {
-      dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
       
       if (TRIAL=="janssen_partA_VL" & a=="bindSpike+pseudoneutid50") {
-        dat.vac$ph2a = dat.vac$ph2.D29
+        dat.vacc$ph2a = dat.vacc$ph2.D29
       } else {
-        dat.vac$ph2a = dat.vac$ph2
+        dat.vacc$ph2a = dat.vacc$ph2
       }
-      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vac)
+      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vacc)
       svycoxph(get.f(i, imp), design=design.vac) 
     })
     betas<-MIextract(models, fun=coef)

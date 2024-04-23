@@ -1,0 +1,32 @@
+```{r, echo=FALSE, results='asis'}
+cat(concatList(rep('#',level)), " Differece in VE curves\n")
+```  
+
+
+
+\begin{figure}[H]
+\center
+  \subfloat[][]{\includegraphics[width=.44\textwidth,keepaspectratio]{`r pathCoRoutput`/VE_diff_nAb_anc_lambda.pdf}}
+\caption{Difference in VE curve with pointwise bootstrap confidence band.}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+\center
+
+  \subfloat[][]{\includegraphics[width=.36\textwidth,keepaspectratio]{`r pathCoRoutput`/VE_diff_bAb_anc_gamma.pdf}}
+  \hspace{10pt}
+  \subfloat[][]{\includegraphics[width=.36\textwidth,keepaspectratio]{`r pathCoRoutput`/VE_diff_bAb_anc_lambda.pdf}}
+
+  \subfloat[][]{\includegraphics[width=.36\textwidth,keepaspectratio]{`r pathCoRoutput`/VE_diff_bAb_anc_mu.pdf}}
+  \hspace{10pt}
+  \subfloat[][]{\includegraphics[width=.36\textwidth,keepaspectratio]{`r pathCoRoutput`/VE_diff_bAb_gamma_lambda.pdf}}
+
+  \subfloat[][]{\includegraphics[width=.36\textwidth,keepaspectratio]{`r pathCoRoutput`/VE_diff_bAb_gamma_mu.pdf}}
+  \hspace{10pt}
+  \subfloat[][]{\includegraphics[width=.36\textwidth,keepaspectratio]{`r pathCoRoutput`/VE_diff_bAb_lambda_mu.pdf}}
+
+\caption{Difference in VE curve with pointwise bootstrap confidence band.}
+\end{figure}
+
