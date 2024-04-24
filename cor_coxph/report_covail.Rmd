@@ -160,7 +160,19 @@ dat.nn=subset(dat, naive==0)
 ```{r, echo=FALSE, results='asis'}
 
 # tables made in iObj 21 is part of the 2
-for (iObj in c(1,11,12,2,3,31)) { 
+for (iObj in c(4,5,1,11,12,2,3,31)) { 
+  
+  cat("# Objective Peak ", 
+      switch(iObj%.%"", 
+             "1"=1, 
+             "2"=2, 
+             "3"=3, 
+             "31"="3 discrete baseline", 
+             "11"="1 baseline+D15/B", 
+             "12"="1 baseline+D15+D15^2",
+             "4"="1, naive", 
+             "5"="1, non-naive"
+             ), "\n\n", sep="")
   
   for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
     
@@ -172,15 +184,9 @@ for (iObj in c(1,11,12,2,3,31)) {
     COR = sub("D15to", "D22to", COR) 
     # COR = sub("to181", "to188", COR) 
     
-    cat("# Objective Peak ", 
-        switch(iObj%.%"", 
-               "1"=1, 
-               "2"=2, 
-               "3"=3, 
-               "31"="3 discrete baseline", 
-               "11"="1 baseline+D15/B", 
-               "12"="1 baseline+D15+D15^2"), 
-        ", ", COR, sep="")
+    cat("## ", COR, sep="")
+    
+    level=3 # section title indent
     
     for (iPop in 1:7) {
       fname.suffix = switch (iPop,
@@ -223,11 +229,27 @@ for (iObj in c(1,11,12,2,3,31)) {
         has.alt = T
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         
+      } else if (iObj==4) {
+        fname.suffix = fname.suffix %.% "_N"
+        has.alt = F
+        show.ve.curves = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==5) {
+        fname.suffix = fname.suffix %.% "_NN"
+        has.alt = F
+        show.ve.curves = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
       }
+      
+      
       cat(res, sep = '\n')
       
       # select risk curves
       if (iObj==1 & COR=="D22to181BA45" & iPop==1) {
+        plot.geq=F
+        has.plac=F
         show.ve.curves=F
         for (a in "Day15"%.%assays) {
           assay=marker.name.to.assay(a)
@@ -243,10 +265,11 @@ for (iObj in c(1,11,12,2,3,31)) {
 }
 ```
 
-
+  
 <!-- Objective 4 -->
 ```{r, echo=FALSE, results='asis'}
 
+cat("# Objective Peak 4 \n\n", sep="")
 
 for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {
   
@@ -258,7 +281,9 @@ for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", 
   COR = sub("D15to", "D22to", COR) 
   # COR = sub("to181", "to188", COR) 
   
-  cat("# Objective Peak ", 4, ", ", sub("D15", "D22", COR), sep="")
+  cat("## ", sub("D15", "D22", COR), sep="")
+  
+  level=3
 
   for (iPop in 1:3) {
     fname.suffix = switch (iPop,
@@ -273,21 +298,21 @@ for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", 
 }
 ```
 
+
 <!-- Separate analyses within naive and non-naive -->
 ```{r, echo=FALSE, results='asis'}
 
 # Obj 1 in naive and non-naive
-for (iObj in c(1,11,12)) { 
+for (iObj in c(11,12)) { 
   
   for (iPop in 1:2) {
-    cat("# Objective Peak ", 
-        switch(iPop%.%"", 
-               "1"="1 naive", 
-               "2"="1 nnaive"), 
+    cat("# Objective Peak ", iPop,
         switch(iObj%.%"", 
-               "1"="", 
-               "11"=", baseline+D15/B", 
-               "12"=", baseline+D15^2"), 
+               "11"=" baseline+D15/B", 
+               "12"=" baseline+D15^2"), 
+        switch(iPop%.%"", 
+               "1"=", naive", 
+               "2"=", nnaive"), 
         sep="")
   
     for (COR in c("D15to181", "D15to91", "D92to181", "D15to181BA45", "D15to91BA45", "D92to181BA45")) {

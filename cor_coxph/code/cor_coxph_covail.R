@@ -7,8 +7,6 @@ renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "covail")
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
-source(here::here("code", "cor_coxph_risk_bootstrap.R"))
-source(here::here("code", "cor_coxph_risk_plotting.R"))
 
 
 {
@@ -131,15 +129,17 @@ has.plac = F
 # Peak Obj 1-3 for mRNA vaccines
 
 # 1, 11 and 12 are main effects models
-# 2 and 21 are itxn by naive
-# 3 and 31 are itxn by baseline markers
-for (iObj in c(1,11,12,2,21,3,31)) {
-# iObj=1; iPop=1  
+# 2 and 21 are itxn models: marker * naive
+# 3 and 31 are itxn models: D15 marker * baseline marker
+# 4: like 1, but subset to naive
+# 5: like 1, but subset to nnaive
+for (iObj in c(1,11,12,2,21,3,31,4,5)) {
+    # iObj=1; iPop=1  
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
 
-  if(iObj==1) {
+  if(iObj %in% c(1,4,5)) {
     all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
     all.markers.names.short = assay_metadata$assay_label_short[match(assays,assay_metadata$assay)]
     all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
@@ -209,6 +209,7 @@ for (iObj in c(1,11,12,2,21,3,31)) {
   # repeat all objectives over several subpopulations, save results with different fname.suffix
   
   for (iPop in 1:7) {
+    myprint(iObj, iPop)
     
     if (iPop==1) {
       dat=dat.onedosemRNA
@@ -236,9 +237,55 @@ for (iObj in c(1,11,12,2,21,3,31)) {
       fname.suffix = 'mRNA_Monovalent'
     } 
     
-    if(iObj==1) {
+    if(iObj==4) dat=subset(dat, naive==1)
+    if(iObj==5) dat=subset(dat, naive==0)
+    
+    if(iObj==4) {
+      cor_coxph_coef_n(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=fname.suffix%.%"_N",
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        nCoef=1,
+        col.headers=""
+      )
+    
+    } else if(iObj==5) {
+      cor_coxph_coef_n(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=fname.suffix%.%"_NN",
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        nCoef=1,
+        col.headers=""
+      )
       
-      source(here::here("code", "cor_coxph_ph.R"))
+      
+    } else if(iObj==1) {
+      
+      cor_coxph_coef_1 (
+        form.0,
+        design_or_dat = dat,
+        fname.suffix,
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        dat.pla.seroneg = NULL,
+        show.q=F, # whether to show fwer and q values in tables
+        verbose = T)
       
       # forest plot
       fits = lapply ("Day15"%.%assays, function (a) coxph(update(form.0, as.formula(paste0("~.+", a))), dat) )
@@ -252,14 +299,12 @@ for (iObj in c(1,11,12,2,21,3,31)) {
           dat, 
           fname.suffix, 
           save.results.to,
-          
           config,
           config.cor,
-          
           tfinal.tpeak,
-          all.markers = "Day15"%.%assays,
           
-          comp.risk=T, 
+          markers = "Day15"%.%assays,
+          
           run.Sgts=F # whether to get risk conditional on continuous S>=s
         )
         
@@ -270,36 +315,41 @@ for (iObj in c(1,11,12,2,21,3,31)) {
           save.results.to,
           config,
           config.cor,
+          tfinal.tpeak,
           
+          markers = "Day15"%.%assays,
+          markers.names.short = all.markers.names.short,
+          markers.names.long = all.markers.names.long,
+          marker.cutpoints,
           assay_metadata,
           
-          tfinal.tpeak,
-          all.markers = "Day15"%.%assays,
-          all.markers.names.short,
-          all.markers.names.long,
-          marker.cutpoints,
-
-          multi.imp=F,
-          comp.risk=T, 
-          
-          dat.pla.seroneg = NULL,
+          dat.plac = NULL,
           res.plac.cont = NULL,
           prev.plac=NULL,
-          
-          variant=NULL,
+          overall.ve=NULL,
           
           show.ve.curves=F,
           plot.geq = F,
-          plot.no.plac = F,
+          plot.w.plac = F,
           for.title=""
         )
         
       }
       
     } else if(iObj==11) {
-      
-      fname.suffix = paste0(fname.suffix, "_B+D15overB")
-      source(here::here("code", "cor_coxph_ph_coef.R"))
+      pvals.cont=cor_coxph_coef_n(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=paste0(fname.suffix, "_B+D15overB"),
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        nCoef,
+        col.headers
+      )
       
       # unit testing 
       if (iPop==1 & COR=="D15to181") {
@@ -312,23 +362,82 @@ for (iObj in c(1,11,12,2,21,3,31)) {
       
     } else if(iObj==12) {
       fname.suffix = paste0(fname.suffix, "_B+D15^2")
-      source(here::here("code", "cor_coxph_ph_coef.R"))
-      
+      cor_coxph_coef_n(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=fname.suffix,
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        nCoef,
+        col.headers
+      )
+
     } else if(iObj==2) {
       fname.suffix = paste0(fname.suffix, "_NxD15")
-      source(here::here("code", "cor_coxph_ph_coef.R"))
+      cor_coxph_coef_n(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=fname.suffix,
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        nCoef,
+        col.headers
+      )
       
     } else if(iObj==21) {
       fname.suffix = paste0(fname.suffix, "_NxD15_2")
-      source(here::here("code", "cor_coxph_ph_coef.R"))
+      cor_coxph_coef_n(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=fname.suffix,
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        nCoef,
+        col.headers
+      )
       
     } else if(iObj==3) {
       fname.suffix = paste0(fname.suffix, "_BxD15")
-      source(here::here("code", "cor_coxph_ph_coef.R"))
+      cor_coxph_coef_n(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=fname.suffix,
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        nCoef,
+        col.headers
+      )
       
     } else if(iObj==31) {
       fname.suffix = paste0(fname.suffix, "_BxD15_cat")
-      source(here::here("code", "cor_coxph_ph_coef_itxn3.R"))
+      cor_coxph_coef_itxn3(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=fname.suffix,
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        col.headers
+      )
     }
   }
   
@@ -346,19 +455,55 @@ for (iObj in c(1,11,12,2,21,3,31)) {
     } 
     
     if(iObj==1) {
-      source(here::here("code", "cor_coxph_ph.R"))
-      
+      cor_coxph_coef_1 (
+        form.0,
+        design_or_dat = dat,
+        fname.suffix,
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        dat.pla.seroneg = NULL,
+        show.q=F, # whether to show fwer and q values in tables
+        verbose = T)
+
       # forest plot
       fits = lapply ("Day15"%.%assays, function (a) coxph(update(form.0, as.formula(paste0("~.+", a))), dat) )
       forest.covail (fits, names=assays, fname.suffix, save.results.to)
       
     } else if(iObj==11) {
       fname.suffix = paste0(fname.suffix, "_B+D15overB")
-      source(here::here("code", "cor_coxph_ph_coef.R"))
+      cor_coxph_coef_n(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=fname.suffix,
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        nCoef,
+        col.headers
+      )
       
     } else if(iObj==12) {
       fname.suffix = paste0(fname.suffix, "_B+D15^2")
-      source(here::here("code", "cor_coxph_ph_coef.R"))
+      cor_coxph_coef_n(
+        form.0,
+        design_or_dat = dat,
+        fname.suffix=fname.suffix,
+        save.results.to,
+        config,
+        config.cor,
+        all.markers,
+        all.markers.names.short,
+        
+        nCoef,
+        col.headers
+      )
     }
   }
   
@@ -402,8 +547,19 @@ for (iPop in 1:3) {
     col.headers=c("TrtC Biv~Monovalent", "center(D15)", "TrtC:center(D15)")
   } 
   
-  source(here::here("code", "cor_coxph_ph_coef.R"))
-
+  cor_coxph_coef_n (
+    form.0,
+    design_or_dat = dat,
+    fname.suffix,
+    save.results.to,
+    config,
+    config.cor,
+    all.markers,
+    all.markers.names.short,
+    
+    nCoef,
+    col.headers,
+    verbose = T)
 }
   
 

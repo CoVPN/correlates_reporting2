@@ -51,6 +51,8 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
 else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_stage2))
 	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_severe_nAb
 	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_severe_bAb
+	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_delta_nAb
+	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_delta_bAb
 else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222))
 	Rscript code/cor_coxph.R D29
 	Rscript code/cor_coxph.R D57
