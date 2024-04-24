@@ -161,7 +161,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       
       for (assay_grp in assay_grp_list){
         
-        if ((grepl("nab", COR_postfix) & sum(grepl("pseudoneutid50", assay_grp)))==0 | (grepl("bab", COR_postfix) & sum(grepl("bindSpike", assay_grp)))==0 | attr(config,"config")!="azd1222_stage2") next # for AZ stage 2
+        if (((grepl("nab", COR_postfix) & sum(grepl("pseudoneutid50", assay_grp)))==0 | (grepl("bab", COR_postfix) & sum(grepl("bindSpike", assay_grp)))==0) & attr(config,"config")=="azd1222_stage2") next # for AZ stage 2
           
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
