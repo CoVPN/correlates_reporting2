@@ -574,7 +574,7 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
                            ll.cex=6.5,
                            pt.size=1.5,
                            group.num=2,
-                           rate.y.pos=3,
+                           rate.y.pos=2.8,
                            axis.text.x.cex=20,
                            col=c("#0AB7C9", "#FF6F1B"),
                            shape=c(17, 17),

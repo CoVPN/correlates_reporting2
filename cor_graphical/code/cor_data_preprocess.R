@@ -325,8 +325,10 @@ if (study_name=="IARCHPV") {
 } else {
   dat.long$ULoQ = with(dat.long, log10(uloqs[as.character(assay)]))
   
-  dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), "ULoQ", ""))
-  dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), ULoQ, -99))
+  #dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), "ULoQ", ""))
+  #dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), ULoQ, -99))
+  dat.long$lb2 = "ULoQ"
+  dat.long$lbval2 =  with(dat.long, ifelse(!is.na(ULoQ), ULoQ, -99))
 }
 
 # assign values above the uloq to the uloq
