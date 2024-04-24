@@ -339,8 +339,6 @@ if (study_name!="IARCHPV") { # IARCHPV doesn't have delta assay variables
   for (t in timepoints) { # unique(gsub("Day", "", times_[!grepl("Delta|B", times_)]))
     tp = paste0("Day", t) # ifelse(grepl("[A-Za-z]", t), t, paste0("Day", t))
     if (!grepl("stage2", COR)) {dat.long[, "Delta"%.%t%.%"overB"] = dat.long[, tp] - dat.long[, "B"]
-    } else {# only for NVX 301 stage 2
-    if (study_name=="PREVENT19") dat.long[, "Delta"%.%t%.%"overBD1"] = dat.long[, tp] - dat.long[, "BD1"]
     }
   }
 }
@@ -464,7 +462,7 @@ if (study_name=="AZD1222" & !grepl("stage2", COR)) {
 if (attr(config,"config")=="janssen_pooled_partA"){
   dat_proc$Day71pseudoneutid50uncensored=NA; dat_proc$Mon6pseudoneutid50uncensored=NA;
 }
-resp <- getResponder(dat_proc, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day|Mon|^DD|^BD", "M"), times_, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
+resp <- getResponder(dat_proc, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day|Mon|^DD|^C", "M"), times_, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
                assays=assays, pos.cutoffs = pos.cutoffs)
 resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
   pivot_longer(!Ptid, names_to = "category", values_to = "response")

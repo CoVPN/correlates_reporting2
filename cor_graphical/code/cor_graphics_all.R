@@ -1,12 +1,12 @@
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
-library(GGally)
+library(GGally) # ggpairs
 library(stringr)
 require(devtools)
 install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
-library(cowplot) # for function plot_grid
-library(grid)
+library(cowplot) # plot_grid
+library(grid) # textGrob
 library(gridExtra)
 install.packages("wCorr", repos = "http://cran.us.r-project.org") # weighted correlation
 library(wCorr)
@@ -52,7 +52,7 @@ if (attr(config,"config") == "prevent19_stage2"){
     set1_times <- set1_times[set1_times!="Disease Day 1"]
 } else if (attr(config,"config") == "azd1222_stage2") {set1_times <- set1_times[set1_times!="Day 360"]}
 
-for (panel in c("pseudoneutid50", "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_nvx_stage2")){
+for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_nvx_stage2")){
     
     if (sum(grepl(substr(panel, 1, 5), assay_metadata$assay))==0) next
     
@@ -83,7 +83,7 @@ for (panel in c("pseudoneutid50", "bindSpike", if(attr(config,"config") %in% c("
 ###### Set 2 plots: Longitudinal violin plots, by cases and non-cases (by naive/non-naive, vaccine/placebo)
 set2.1_assays = assays[!assays %in% c("bindSpike_mdw")]
 if(attr(config,"config") == "prevent19_stage2"){set2.1_assays <- set2.1_assays[grepl("Delta$|Delta1$|D614", set2.1_assays)]}
-time_cohort.lb = c(paste0(labels.time[!grepl("over", labels.time)], "\n", "Non-Cases"), paste0(labels.time[!grepl("over", labels.time)], "\n", cases_lb[length(cases_lb)]))
+time_cohort.lb = c(paste0(labels.time, "\n", "Non-Cases"), paste0(labels.time, "\n", cases_lb[length(cases_lb)]))
 if(attr(config,"config") == "prevent19_stage2"){time_cohort.lb <- time_cohort.lb[time_cohort.lb!="Disease Day 1\nNon-Cases"]}
 
 # two assays per plot
@@ -139,15 +139,8 @@ if (attr(config,"config") == "vat08_combined"){
 
 ###### Set 3 plots: Correlation plots across markers at a given time point
 set3_times = if (attr(config,"config") == "vat08_combined") {times_[!grepl("Delta", times_)] # B, Day22, Day43
-} else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1", times_)] # BD1, Day35, Delta35overBD1
+} else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1|C1", times_)] # Day35
 } else {times_}
-
-# add delta values for prevent19_stage2
-if (attr(config,"config") == "prevent19_stage2"){
-    for (a in assays) {
-        dat.cor.subset.plot3[, paste0("Delta35overBD1",a)] = dat.cor.subset.plot3[, paste0("Day35", a)] - dat.cor.subset.plot3[, paste0("BD1", a)]
-    }
-}
 
 for (grp in c("non_naive_vac_pla", "naive_vac")){
     for (t in set3_times) {
@@ -164,24 +157,31 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
         
         if (nrow(dat.plot)==0) next
         
-        covid_corr_pairplots(
-            plot_dat = dat.plot,
-            time = t,
-            assays = assays,
-            strata = "all_one",
-            weight = "wt",#ifelse(grepl(tpeak, t), paste0("wt.D", tpeak), paste0("wt.D", tinterm)),
-            plot_title = paste0(
-                "Correlations of ", length(assays), " ", t, " antibody markers in ", grp_lb, ", Corr = Weighted Spearman Rank Correlation."
-            ),
-            column_labels = paste(t, assay_metadata$assay_label_short),
-            height = max(1.3 * length(assays) + 0.1, 5.5),
-            width = max(1.3 * length(assays), 5.5),
-            column_label_size = ifelse(max(nchar(paste(t, assay_metadata$assay_label_short)))>40, 3.3, 3.8),
-            filename = paste0(
-                save.results.to, "/pairs_by_time_", t,
-                "_", length(assays), "_markers_", grp, ".pdf"
+        for (assay_list in c(1, if (attr(config,"config") == "prevent19_stage2") 2)){
+        
+            if (attr(config,"config") == "prevent19_stage2" & assay_list==2) {
+                assay_metadata_ = assay_metadata %>% filter(assay %in% c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "bindSpike_D614", "bindSpike_Delta1"))
+            } else {assay_metadata_ = assay_metadata}
+            
+            covid_corr_pairplots(
+                plot_dat = dat.plot,
+                time = t,
+                assays = assay_metadata_$assay,
+                strata = "all_one",
+                weight = "wt",#ifelse(grepl(tpeak, t), paste0("wt.D", tpeak), paste0("wt.D", tinterm)),
+                plot_title = paste0(
+                    "Correlations of ", length(assay_metadata_$assay), " ", t, " antibody markers in ", grp_lb, ", Corr = Weighted Spearman Rank Correlation."
+                ),
+                column_labels = paste(t, assay_metadata_$assay_label_short),
+                height = max(1.3 * length(assay_metadata_$assay) + 0.1, 5.5),
+                width = max(1.3 * length(assay_metadata_$assay), 5.5),
+                column_label_size = ifelse(max(nchar(paste(t, assay_metadata_$assay_label_short)))>40, 3.4, 3.8),
+                filename = paste0(
+                    save.results.to, "/pairs_by_time_", t,
+                    "_", length(assay_metadata_$assay), "_markers_", grp, ".pdf"
+                )
             )
-        )
+        }
     }
 }
 
@@ -242,7 +242,7 @@ if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {
         
         for (tn in c("Vaccine Naive")){
             for (ce in c("Non-Cases", cases_lb)){
-                times_sub = if (attr(config,"config") == "prevent19_stage2") {c("BD1","Day35",if(ce==cases_lb) "DD1")
+                times_sub = if (attr(config,"config") == "prevent19_stage2") {c("Day35","C1",if(ce==cases_lb) "DD1")
                     } else if (attr(config,"config") == "azd1222_stage2") {c("Day57","Day90","Day180", if(ce=="Non-Cases") "Day360")}
                 
                 panels_set[[i]] = covid_corr_pairplots(
