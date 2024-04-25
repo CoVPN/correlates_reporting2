@@ -31,6 +31,10 @@ if (attr(config,"config")=="prevent19_stage2") {
   times = c("Day35")
   time_labels = c("Day 35")
 }
+if (attr(config,"config")=="azd1222_stage2") {
+  times = c("Day57","Day90","Day180","Day360")
+  time_labels = c("Day 57", "Day 90","Day 180","Day 360")
+}
 
 tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
 tps_no_delta_over_tinterm_lb <-  time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]
@@ -137,6 +141,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
     
         for (tp in tps_no_delta_over_tinterm_lb){
           
+          if(attr(config,"config")=="azd1222_stage2" & tp=="Day 360") next # do not have this for azd1222_stage2
+          
           tpLabel = tolower(tp)
           aLabel = gsub("_sub_nvx_stage2", " subset", a)
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
@@ -157,11 +163,13 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                           paste0(assays[!assays=="bindSpike_mdw"][13:14], collapse="_")
         )} else if (attr(config,"config")=="prevent19_stage2"){
           c("pseudoneutid50_D614G_pseudoneutid50_Delta","bindSpike_D614_bindSpike_Delta1")
-         } else {assays}
+        } else if (grepl("bab", COR_postfix)){ # for azd1222_stage2
+          assays[grepl("bindSpike", assays)]
+        } else if (grepl("nab", COR_postfix)){ # for azd1222_stage2
+          assays[grepl("pseudoneutid50", assays)]
+        } else {assays}
       
       for (assay_grp in assay_grp_list){
-        
-        if (((grepl("nab", COR_postfix) & sum(grepl("pseudoneutid50", assay_grp)))==0 | (grepl("bab", COR_postfix) & sum(grepl("bindSpike", assay_grp)))==0) & attr(config,"config")=="azd1222_stage2") next # for AZ stage 2
           
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
@@ -193,8 +201,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
               for (tp in if (attr(config,"config")=="prevent19_stage2") {c("Day35","Day35_sub")} else {tps_no_B_and_fold_change}){
                   
                   
-                  assay_n = ifelse(COR %in% c("D57azd1222_stage2_delta_nAb", "D57azd1222_stage2_severe_nAb"), 2,
-                                   ifelse(COR %in% c("D57azd1222_stage2_delta_bAb", "D57azd1222_stage2_severe_bAb"), 8,
+                  assay_n = ifelse(COR %in% c("D57azd1222_stage2_delta_nAb", "D57azd1222_stage2_severe_nAb"), sum(grepl("pseudoneutid50", assays)),
+                                   ifelse(COR %in% c("D57azd1222_stage2_delta_bAb", "D57azd1222_stage2_severe_bAb"), sum(grepl("bindSpike", assays)),
                                       length(assays)))
                   if (tp == "Day35_sub"){assay_n = 4; tp = "Day35"} # hard code to pool a subset pair plot for prevent19_stage2
                   tpLabel = ifelse(tp=="B", "Day1", tp)
