@@ -343,6 +343,9 @@ if(study_name %in% c("AZD1222")){
 
 # Step2: Responders
 # Post baseline visits
+pos.cutoffs <- assay_metadata$pos.cutoff
+names(pos.cutoffs) <- assay_metadata$assay
+
 ds <- getResponder(ds_s, times=grep("Day", times, value=T), 
                    assays=assays, pos.cutoffs = pos.cutoffs)
 
@@ -730,6 +733,9 @@ if (study_name %in% c("COVE", "MockCOVE")){
                       grep(config.cor$tpeak, names(ds), value = T))
   gm.v <- intersect(assays_col, grep(config.cor$tpeak, names(ds), value = T))
   
+  resp.v <- resp.v[sapply(resp.v, function(x)any(!is.na(ds.i[,x])))]
+  gm.v <- gm.v[sapply(gm.v, function(x)any(!is.na(ds.i[,x])))]
+  
   subs <- "Case"
   comp.i <- c("Cases", "Non-Cases")
   
@@ -833,3 +839,4 @@ save(tlf, tab_dm_neg, tab_dm_pos, tab_dm_neg_ph1, tab_dm_pos_ph1,
      case_vacc_neg, case_plcb_neg,
      case_vacc_pos, case_plcb_pos,
      file = file.path(save.results.to, sprintf("Tables%s.Rdata", ifelse(exists("COR"), COR, ""))))
+
