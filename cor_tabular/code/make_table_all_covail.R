@@ -278,7 +278,7 @@ ds_s <- dat %>%
 # Post baseline visits
 pos.cutoffs <- assay_metadata$pos.cutoff
 names(pos.cutoffs) <- assay_metadata$assay
-ds <- getResponder(ds_s, times=c("Day15", "Day29", "Day91"), 
+ds <- getResponder(ds_s, times=c("B","Day15", "Day29", "Day91"), 
                    assays=assays, pos.cutoffs = pos.cutoffs)
 
 
@@ -335,7 +335,7 @@ tab_dm_ph1 <- lapply(1:Trtn, function(x){
   Trti <- paste0("Trt",x)
   
   ds_long_ttl_ph1 <- ds %>%
-    dplyr::filter(Perprotocol==1, !!as.name(config.cor$ph1)==1) %>%
+    dplyr::filter(ph1.D15==1) %>%
     dplyr::filter(!!as.name(Trti)!="") %>%
     bind_rows(mutate(., Naive:="Total")) %>% 
     mutate_all(as.character) %>% 
@@ -418,16 +418,16 @@ print("Done with table 1")
 # Cases & Non-cases
 
 
-
+# Per-protocol is defined by ph1.D15
 ds <- ds %>%
   mutate(
-    Case = case_when(Perprotocol==1 &
+    Case = case_when(ph1.D15==1 &
                             !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
-                     Perprotocol==1 &
+                     ph1.D15==1 &
                             !!as.name(config.cor$EventIndPrimary)==0 ~ "Non-Cases"), 
-    CaseNevercase = case_when(Perprotocol==1 &
+    CaseNevercase = case_when(ph1.D15==1 &
                                 !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
-                              Perprotocol==1 & COVIDIndD22toD181==0 ~ "Never-Cases"), 
+                              ph1.D15==1 & COVIDIndD22toD181==0 ~ "Never-Cases")
     )
 
 
@@ -440,11 +440,11 @@ ds <- ds %>%
   resp.v <- grep("Resp", names(ds), value = T)
   mag.v <- intersect(assays_col, names(ds))
   
-  ds.l.resp <- filter(ds, !!as.name(config.cor$ph1)==1) %>% 
+  ds.l.resp <- filter(ds, ph1.D15==1) %>% 
     pivot_longer(cols=all_of(resp.v), names_to = "resp_cat", values_to = "resp_value") %>% 
     mutate(assay=gsub("Resp", "", resp_cat))
   
-  ds.l.mag <- filter(ds, !!as.name(config.cor$ph1)==1) %>% 
+  ds.l.mag <- filter(ds, ph1.D15==1) %>% 
     select_at(c("Ptid", mag.v)) %>% 
     pivot_longer(cols=all_of(mag.v), names_to = "mag_cat", values_to = "mag_value") %>% 
     mutate(assay=mag_cat)
