@@ -22,7 +22,7 @@ getResponder <- function(data,
                          grtns=c(2, 4),
                          responderFR = 4,
                          pos.cutoffs = pos.cutoffs) {
-  
+
   # cutoff <- get(paste0("l", cutoff.name, "s"))
   for (i in times){
     for (j in assays){
@@ -30,21 +30,18 @@ getResponder <- function(data,
       bl <- paste0("B", j)
       delta <- paste0("Delta", gsub("Day", "", i), "overB", j)
       cutoff <- pos.cutoffs[j]
-      
-      data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
+
       data[, post] <- pmin(data[, post], log10(uloqs[j]))
-      data[, delta] <- ifelse(10^data[, post] < cutoff, log10(cutoff/2), data[, post])-ifelse(10^data[, bl] < cutoff, log10(cutoff/2), data[, bl])
-      
-      # for (k in folds){
-        # data[, paste0(post, k, "l", cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff)
-      # }
-      
-      for (k in grtns){
-        data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
+   
+      if (bl %in% names(data)){
+        data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
+        data[, delta] <- ifelse(10^data[, post] < cutoff, log10(cutoff/2), data[, post])-ifelse(10^data[, bl] < cutoff, log10(cutoff/2), data[, bl])
+        for (k in grtns){
+          data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
+        }
       }
       
-      # if (!is.na(pos.cutoffs[j])) {
-      if(grepl("bind", j)){
+      if(grepl("bind", j) | COR == "D29VLvariant" | grepl("stage2", COR)){
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(cutoff))
       } else {
       data[, paste0(post, "Resp")] <- as.numeric(
