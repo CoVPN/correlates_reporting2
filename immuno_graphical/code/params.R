@@ -35,8 +35,8 @@ if(attr(config,"config")=="janssen_pooled_partA") {
   labels.time = c("Day 1", "Day 29","D29 fold-rise over D1", "Day 71"); names(labels.time) = times_
   timepoints_= timepoints
 } else if (attr(config,"config")=="prevent19_stage2") {
-  times_ = c("Day35","C1") 
-  labels.time = c("Day 35", "Crossover Day 1"); names(labels.time) = times_
+  times_ = c("Day35", "C1", "BD1") 
+  labels.time = c("Day 35", "Crossover Day 1", "Booster Day 1"); names(labels.time) = times_
   timepoints_= timepoints
 } else {times_ = times; timepoints_=timepoints}
 

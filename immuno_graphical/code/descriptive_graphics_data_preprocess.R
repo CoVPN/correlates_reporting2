@@ -12,6 +12,11 @@ source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
+
+if(attr(config,"config")=="prevent19_stage2" & !"wt.immuno.BD1" %in% colnames(dat_proc)) {
+  dat_proc$wt.immuno.BD1 = dat_proc$wt.immuno.C1
+  dat_proc$ph2.immuno.BD1 = dat_proc$ph2.immuno.C1
+}
 #-----------------------------------------------
 
 library(here)
@@ -147,6 +152,10 @@ important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex"
   "Bserostatus", "Senior", "Bstratum", if(attr(config,"config")!="prevent19_stage2") "wt.subcohort", 
   if(attr(config,"config")=="prevent19_stage2") "wt.immuno.D35",
   if(attr(config,"config")=="prevent19_stage2") "wt.immuno.C1",
+  if(attr(config,"config")=="prevent19_stage2") "wt.immuno.BD1",
+  if(attr(config,"config")=="prevent19_stage2") "ph2.immuno.D35",
+  if(attr(config,"config")=="prevent19_stage2") "ph2.immuno.C1",
+  if(attr(config,"config")=="prevent19_stage2") "ph2.immuno.BD1",
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
   if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV") "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")

@@ -132,7 +132,7 @@ if (F){
 #   stratified by treatment group and baseline serostatus
 # - Pairs plots/scatterplots and simple spearman rank correlations (or resampling-based strata-adjusted partial spearman rank correlation) are used.
 #-----------------------------------------------
-for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (attr(config,"config")=="janssen_partA_VL") {c(1,2)} else {c("all")}) { 
+for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")} else if (attr(config,"config")=="janssen_partA_VL") {c(1,2)} else {c("all")}) { 
   # this loop is for prevent19 and janssen_partA_VL, prevent19 needs to be looped through all people (US+Mex) and US only, janssen_partA_VL needs to be looped through regions
     
   if (length(assay_immuno)==1) next # AZ two datasets only have one marker in each as of 5/13/2022, can't do pair 
@@ -146,14 +146,14 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
     
         for (bserostatus in bstatus.range) {
           if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
-          if (attr(config,"config")=="janssen_partA_VL" & bserostatus==1) next # skip baseline positive for janssen_partA_VL
+          if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2") & bserostatus==1) next # skip baseline positive for janssen_partA_VL, prevent19_stage2
           
           tt=match(tp, times_)
           
           subdat <- dat.twophase.sample %>%
             dplyr::filter(Bserostatus == bserostatus & Trt == trt)
           
-          if(study_name=="PREVENT19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
+          if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
           if(attr(config,"config")=="janssen_partA_VL") {subdat=subset(subdat, Region==country)} # janssen_partA_VL Region: (Northern America = 0, Latin America = 1, Southern Africa = 2)
           country_lb = case_when(country=="Nvx_US" ~ "US_only_", 
                                  country==0 ~ "NAM_",
@@ -187,6 +187,11 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
             
             if (sum(complete.cases(subdat[, paste0(tp, assay_immuno_)]))==0) next # skip if no assay data available
             
+            # subset for prevent19_stage2
+            if(attr(config,"config")=="prevent19_stage2") {
+              subdat = subdat[which(subdat[, paste0("ph2.immuno.",gsub("ay","",tp))]==1), ]
+            }
+            
             covid_corr_pairplots(
               plot_dat = subdat,
               time = tp,
@@ -195,7 +200,8 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
               strata = "all_one",
               weight = ifelse(attr(config,"config")=="prevent19_stage2" & tp=="Day35", "wt.immuno.D35",
                               ifelse(attr(config,"config")=="prevent19_stage2" & tp=="C1", "wt.immuno.C1",
-                              "wt.subcohort")),
+                                     ifelse(attr(config,"config")=="prevent19_stage2" & tp=="BD1", "wt.immuno.BD1",
+                              "wt.subcohort"))),
               plot_title = paste0(
                 gsub("ay ","", labels.time)[tt],
                 ifelse(assay_lb=="*"," Ab", paste0(" ", gsub("_", "", assay_lb))), " markers: ",
@@ -241,12 +247,17 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
         for (aa in assay_immuno) {
           if (study_name=="VAT08" && aa=="pseudoneutid50_mdw" && bserostatus==0) next # psv_mdw doesn't have any value for naive at baseline
           
+          # subset for prevent19_stage2
+          if(attr(config,"config")=="prevent19_stage2") {
+            subdat = subdat[which(subdat[, "ph2.immuno.BD1"]==1), ]
+          }
+          
           covid_corr_pairplots_by_time(
             plot_dat = subdat,
             times = times_selected,
             assay = aa,
             strata = "all_one",
-            weight = ifelse(attr(config,"config")=="prevent19_stage2", "wt.immuno.C1",
+            weight = ifelse(attr(config,"config")=="prevent19_stage2", "wt.immuno.BD1",
                             "wt.subcohort"),
             plot_title = paste0(
               labels.assays[aa], ": ",
@@ -322,8 +333,13 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
   
   if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
   
+  # subset for prevent19_stage2
+  if(attr(config,"config")=="prevent19_stage2") {
+    subdat_rcdf1 = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.",gsub("ay","",tp))]==1), ]
+  } else {subdat_rcdf1 = dat.long.twophase.sample}
+  
   covid_corr_rcdf_facets(
-    plot_dat = dat.long.twophase.sample,
+    plot_dat = subdat_rcdf1,
     x = tp,
     facet_by = "assay",
     color = "trt_bstatus_label",
@@ -331,7 +347,8 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
     legend = c("Placebo, Baseline Neg" = "Placebo, Baseline Neg", "Placebo, Baseline Pos" = "Placebo, Baseline Pos", "Vaccine, Baseline Neg" = "Vaccine, Baseline Neg", "Vaccine, Baseline Pos" = "Vaccine, Baseline Pos"),
     weight = ifelse(attr(config,"config")=="prevent19_stage2" & tp=="Day35", "wt.immuno.D35",
                     ifelse(attr(config,"config")=="prevent19_stage2" & tp=="C1", "wt.immuno.C1",
-                           "wt.subcohort")),
+                           ifelse(attr(config,"config")=="prevent19_stage2" & tp=="BD1", "wt.immuno.BD1",
+                                  "wt.subcohort"))),
     xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
     arrange_ncol = 3,
     arrange_nrow = ceiling(length(assay_immuno) / 3),
@@ -341,6 +358,7 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
     axis_title_size = 10,
     axis_size = 10,
     panel_title_size = ifelse(study_name=="VAT08", 8, 10),
+    height = ifelse(attr(config,"config")=="prevent19_stage2", 10, 3 * arrange_nrow + 0.5),
     filename = paste0(
       save.results.to, "/Marker_Rcdf_", tp,
       "_trt_both_bstatus_both_", study_name, ".pdf"
@@ -510,9 +528,13 @@ for (bstatus in 1:2) {
   
   for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
     
+    # subset for prevent19_stage2
+    if(attr(config,"config")=="prevent19_stage2") {
+      subdat_box1 = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.",gsub("ay","",tp))]==1), ]
+    } else {subdat_box1 = dat.long.twophase.sample}
+    
     covid_corr_boxplot_facets(
-      plot_dat = subset(
-        dat.long.twophase.sample,
+      plot_dat = subset(subdat_box1,
         Bserostatus == bstatus.labels[bstatus]
       ),
       x = "Trt",
@@ -526,11 +548,13 @@ for (bstatus in 1:2) {
       ULOQ = log10(uloqs[assay_immuno]),
       arrange_ncol = 3,
       arrange_nrow = ceiling(length(assay_immuno) / 3),
-      legend = c("Placebo", "Vaccine"),
+      legend = c("Placebo"="Placebo", "Vaccine"="Vaccine"),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
-      height = ifelse(study_name=="VAT08", 11, 3 * ceiling(length(assay_immuno) / 3) + 0.5),
+      height = ifelse(study_name=="VAT08", 11, 
+                      ifelse(attr(config,"config")=="prevent19_stage2", 10, 
+                             3 * ceiling(length(assay_immuno) / 3) + 0.5)),
       filename = paste0(
         save.results.to, "/boxplots_", tp, "_x_trt_", bstatus.labels.2[bstatus],
         "_", study_name, ".pdf"
