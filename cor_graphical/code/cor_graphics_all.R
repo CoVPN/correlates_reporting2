@@ -49,7 +49,7 @@ print(paste0("save.results.to equals ", save.results.to))
 ###### Set 1 plots: Ab distributions for assays of one panel, at set1_times, by case/non-case (by naive/non-naive, vaccine/placebo)
 set1_times <- labels.time[!grepl(paste0("over D", tinterm), labels.time)] # "Day 1" "Day 22" "Day 43" "D22 fold-rise over D1"  "D43 fold-rise over D1"
 if (attr(config,"config") == "prevent19_stage2"){
-    set1_times <- set1_times[set1_times!="Disease Day 1"]
+    set1_times <- set1_times[!set1_times %in% c("Booster Day 1", "Disease Day 1")]
 } else if (attr(config,"config") == "azd1222_stage2") {set1_times <- set1_times[set1_times!="Day 360"]}
 
 for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_nvx_stage2")){
@@ -84,7 +84,7 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
 set2.1_assays = assays[!assays %in% c("bindSpike_mdw")]
 if(attr(config,"config") == "prevent19_stage2"){set2.1_assays <- set2.1_assays[grepl("Delta$|Delta1$|D614", set2.1_assays)]}
 time_cohort.lb = c(paste0(labels.time, "\n", "Non-Cases"), paste0(labels.time, "\n", cases_lb[length(cases_lb)]))
-if(attr(config,"config") == "prevent19_stage2"){time_cohort.lb <- time_cohort.lb[time_cohort.lb!="Disease Day 1\nNon-Cases"]}
+if(attr(config,"config") == "prevent19_stage2"){time_cohort.lb <- time_cohort.lb[!time_cohort.lb %in% c("Booster Day 1\nDelta COVID Cases", "Disease Day 1\nNon-Cases")]}
 
 # two assays per plot
 for (i in 1:length(set2.1_assays)) {
@@ -99,9 +99,10 @@ for (i in 1:length(set2.1_assays)) {
                                         labels = time_cohort.lb)),
         x.lb = time_cohort.lb,
         assays = if(attr(config,"config") == "azd1222_stage2"){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]},
-        panel.text.size = 6,
+        panel.text.size = 5.8,
         ylim = c(0,4.5), 
-        ybreaks = c(0,2,4),
+        ybreaks = c(0,1,2,3,4),
+        axis.text.x.size = 9,
         lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
         chtcols = setNames(c(if(length(cases_lb)==2) "#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
         chtpchs = setNames(c(if(length(cases_lb)==2) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
@@ -139,7 +140,7 @@ if (attr(config,"config") == "vat08_combined"){
 
 ###### Set 3 plots: Correlation plots across markers at a given time point
 set3_times = if (attr(config,"config") == "vat08_combined") {times_[!grepl("Delta", times_)] # B, Day22, Day43
-} else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1|C1", times_)] # Day35
+} else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1|C1|BD1", times_)] # Day35
 } else {times_}
 
 for (grp in c("non_naive_vac_pla", "naive_vac")){
@@ -242,7 +243,7 @@ if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {
         
         for (tn in c("Vaccine Naive")){
             for (ce in c("Non-Cases", cases_lb)){
-                times_sub = if (attr(config,"config") == "prevent19_stage2") {c("Day35","C1",if(ce==cases_lb) "DD1")
+                times_sub = if (attr(config,"config") == "prevent19_stage2") {c("Day35","C1",if(ce=="Non-Cases") "BD1", if(ce==cases_lb) "DD1")
                     } else if (attr(config,"config") == "azd1222_stage2") {c("Day57","Day90","Day180", if(ce=="Non-Cases") "Day360")}
                 
                 panels_set[[i]] = covid_corr_pairplots(
@@ -266,8 +267,8 @@ if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {
         #y.grob.2 <- textGrob("Vaccine   \nNon-naive", gp=gpar(fontface="bold", col="black", fontsize=9))
         #y.grob.3 <- textGrob("Placebo     \nNaive", gp=gpar(fontface="bold", col="black", fontsize=9))
         #y.grob.4 <- textGrob("Placebo   \nNon-naive", gp=gpar(fontface="bold", col="black", fontsize=9))
-        y.grob.5 <- textGrob(cases_lb, gp=gpar(fontface="bold", col="black", fontsize=9))
-        y.grob.6 <- textGrob("Non-cases", gp=gpar(fontface="bold", col="black", fontsize=9))
+        y.grob.5 <- textGrob("Non-cases", gp=gpar(fontface="bold", col="black", fontsize=9))
+        y.grob.6 <- textGrob(cases_lb, gp=gpar(fontface="bold", col="black", fontsize=9))
         
         #add to plot
         combined_p <- grid.arrange(
