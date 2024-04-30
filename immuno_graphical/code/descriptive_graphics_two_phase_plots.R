@@ -6,6 +6,7 @@ renv::activate(project = here::here(".."))
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
+if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 #-----------------------------------------------
 
 library(here)
@@ -31,7 +32,7 @@ library(wCorr)
 
 source(here("code", "params.R"))
 assay_lim <- readRDS(here("data_clean", "assay_lim.rds"))
-if (study_name %in% c("VAT08","ENSEMBLE")){
+if (study_name %in% c("VAT08","ENSEMBLE") | attr(config,"config")=="prevent19_stage2"){
   source(here("code", "covid_corr_plot_functions.R"))
   source(here("code", "process_violin_pair_functions.R")) # pair plot functions in this program are overwritten by those in the second program
   # pairplots are non-stratum-adjusted, no resampling, IPS-weighted spearman correlation
@@ -50,11 +51,11 @@ dat.long.twophase.sample <- readRDS(here(
 dat.twophase.sample <- readRDS(here("data_clean", "twophase_data.rds")); dat.twophase.sample$all_one <- 1 # as a placeholder for strata values
 dat.spider <- readRDS(here::here("data_clean", "twophase_data.rds"))
 
-tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
-tps_no_B_and_delta_over_tinterm <-  times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("Day29", "Delta29overB", "Day57", "Delta57overB")
-tps_no_fold_change <- times[!grepl("Delta", times)]
-tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
-tps_delta_over_B <- times[grepl("overB",times)]
+tps_no_delta_over_tinterm <-  times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
+tps_no_B_and_delta_over_tinterm <-  times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))] #c("Day29", "Delta29overB", "Day57", "Delta57overB")
+tps_no_fold_change <- times_[!grepl("Delta", times_)]
+tps_no_B_and_fold_change <- times_[!grepl("Delta", times_) & times_!="B"]
+tps_delta_over_B <- times_[grepl("overB",times_)]
 
 # adhoc request for profiscov
 if (F){
@@ -138,7 +139,7 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
     
     print("Pair plots 1:")
     
-    for (tp in if(study_name=="VAT08") {tps_no_fold_change} else if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints)} else {tps_no_B_and_delta_over_tinterm}) { # "B", "Day29", "Day57", "Day29overB", "Day57overB"
+    for (tp in if(study_name=="VAT08") {tps_no_fold_change} else if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints_)} else {tps_no_B_and_delta_over_tinterm}) { # "B", "Day29", "Day57", "Day29overB", "Day57overB"
       for (trt in 0:1) {
         # Don't produce figures for placebo baseline negative to improve build time
         if(trt==0 & study_name!="VAT08" & attr(config,"config")!="janssen_partA_VL") {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
@@ -147,7 +148,7 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
           if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
           if (attr(config,"config")=="janssen_partA_VL" & bserostatus==1) next # skip baseline positive for janssen_partA_VL
           
-          tt=match(tp, times)
+          tt=match(tp, times_)
           
           subdat <- dat.twophase.sample %>%
             dplyr::filter(Bserostatus == bserostatus & Trt == trt)
@@ -192,7 +193,9 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
               assays = assay_immuno_, # adhoc request by David: assay_immuno = c("bindSpike", "bindSpike_P.1", "bindRBD", "bindRBD_P.1", "bindN")
                                      # adhoc request 2 by David: assay_immuno = c("liveneutmn50", "bindSpike_P.1", "bindRBD_P.1", "bindN")
               strata = "all_one",
-              weight = "wt.subcohort",
+              weight = ifelse(attr(config,"config")=="prevent19_stage2" & tp=="Day35", "wt.immuno.D35",
+                              ifelse(attr(config,"config")=="prevent19_stage2" & tp=="C1", "wt.immuno.C1",
+                              "wt.subcohort")),
               plot_title = paste0(
                 gsub("ay ","", labels.time)[tt],
                 ifelse(assay_lb=="*"," Ab", paste0(" ", gsub("_", "", assay_lb))), " markers: ",
@@ -243,7 +246,8 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
             times = times_selected,
             assay = aa,
             strata = "all_one",
-            weight = "wt.subcohort",
+            weight = ifelse(attr(config,"config")=="prevent19_stage2", "wt.immuno.C1",
+                            "wt.subcohort"),
             plot_title = paste0(
               labels.assays[aa], ": ",
               bstatus.labels.3[bserostatus + 1], " ",
@@ -277,7 +281,7 @@ for (country in if(study_name=="PREVENT19") {c("Nvx_US_Mex","Nvx_US")} else if (
       
         if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
         
-        tt=match(tp, times)
+        tt=match(tp, times_)
         
         subdat <- dat.twophase.sample %>%
           dplyr::filter(Bserostatus == bserostatus)
@@ -325,7 +329,9 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
     color = "trt_bstatus_label",
     palette = c("Placebo, Baseline Neg" = "#1749FF", "Placebo, Baseline Pos" = "#D92321", "Vaccine, Baseline Neg" = "#0AB7C9", "Vaccine, Baseline Pos" = "#FF6F1B"),
     legend = c("Placebo, Baseline Neg" = "Placebo, Baseline Neg", "Placebo, Baseline Pos" = "Placebo, Baseline Pos", "Vaccine, Baseline Neg" = "Vaccine, Baseline Neg", "Vaccine, Baseline Pos" = "Vaccine, Baseline Pos"),
-    weight = "wt.subcohort",
+    weight = ifelse(attr(config,"config")=="prevent19_stage2" & tp=="Day35", "wt.immuno.D35",
+                    ifelse(attr(config,"config")=="prevent19_stage2" & tp=="C1", "wt.immuno.C1",
+                           "wt.subcohort")),
     xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
     arrange_ncol = 3,
     arrange_nrow = ceiling(length(assay_immuno) / 3),
@@ -367,7 +373,7 @@ for (Ab in c("bind", "pseudo", "ADCP")) {
   print("RCDF 2:")
   for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
       
-    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2")) next # janssen_partA_VL, prevent19_stage2 doesn't need these plots
     
     for (trt in c("Vaccine", if(study_name=="VAT08") "Placebo")){
       covid_corr_rcdf(
@@ -398,12 +404,12 @@ for (Ab in c("bind", "pseudo", "ADCP")) {
   #-----------------------------------------------
   print("RCDF 3:")
   for (bstatus in 1:2) {
-    if (study_name=="VAT08") next # VAT08 doesn't need these plots
+    if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")) next # vat08_combined, prevent19_stage2 doesn't need these plots
     
     if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next
     if (attr(config,"config")=="janssen_partA_VL" && bstatus==2) next # do not plot baseline positive for janssen_partA_VL
     
-    for (tp in if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints)} else {tps_no_B_and_delta_over_tinterm}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
+    for (tp in if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints_)} else {tps_no_B_and_delta_over_tinterm}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
       
       for (country in if (attr(config,"config")=="janssen_partA_VL") {c(1,2)} else {"all"}) { # loop through regions for janssen_partA_VL
       
@@ -539,7 +545,7 @@ for (bstatus in 1:2) {
 #-----------------------------------------------
 for (trt in 1:2) {
   
-  if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+  if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2")) next # janssen_partA_VL, prevent19_stage2 doesn't need these plots
   
   for (tp in if (study_name!="VAT08") {tps_no_delta_over_tinterm} else {tps_no_fold_change}) {
     
@@ -649,7 +655,7 @@ if (study_name=="VAT08") {# this is only reported for VAT08
 #-----------------------------------------------
 # - Spaghetti plots of antibody marker change over time
 #-----------------------------------------------
-if (study_name!="VAT08"){ # no spaghetti plots for VAT08
+if (study_name!="VAT08" & attr(config,"config")!="prevent19_stage2"){ # no spaghetti plots for VAT08, prevent19_stage2
 
   print("Spaghetti plots:")
   ## in each baseline serostatus group, randomly select 10 placebo recipients and 20 vaccine recipients
@@ -672,7 +678,7 @@ if (study_name!="VAT08"){ # no spaghetti plots for VAT08
       
       } else {
       
-      times_ = times
+      times_ = times_
       
       assay_immuno_ = assay_immuno
       
@@ -839,7 +845,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             if (attr(config,"config")=="janssen_partA_VL") {dat.spider = subset(dat.spider, Trt==1 & Bserostatus==0)}
             
             # calculate geometric mean of IPS weighted readouts
-            times_spider = if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints)} else {times}
+            times_spider = if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints_)} else {times}
             
             if (!"Region" %in% colnames(dat.spider)) {dat.spider$Region=reg}
             dat.spider.by.time <- dat.spider %>%
