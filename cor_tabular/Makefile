@@ -45,6 +45,8 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail))
 	Rscript code/make_table_all_covail.R D15to91
 	Rscript code/make_table_all_covail.R D92to181
 	Rscript code/make_table_all_covail.R D15to181
+else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
+	Rscript code/make_table_all_VL.R D29VLvariant
 endif
 
 ## clean            : delete contents of data_clean/ and output/ directories
