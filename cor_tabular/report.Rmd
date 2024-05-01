@@ -91,8 +91,8 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
 
       tab.j <- mutate_all(tab.j, linebreak, align = "l")
       caption.j <- ifelse(!is.na(loop), sprintf("%s (%s)", title_i, j), title_i)
-      col_name.j <- if(is.list(col_name)) {
-        col_name[[match(j, jloop)]]
+      col_name.j <- if(is.data.frame(col_name)) {
+        col_name[,j]
         } else col_name
       col_name.j <- col_name.j[!col_name.j %in% deselect]
       
