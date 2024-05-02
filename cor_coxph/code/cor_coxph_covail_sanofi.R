@@ -8,8 +8,6 @@ renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "covail_sanofi")
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
-source(here::here("code", "cor_coxph_risk_bootstrap.R"))
-source(here::here("code", "cor_coxph_risk_plotting.R"))
 
 
 {

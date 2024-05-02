@@ -696,6 +696,7 @@ if (exists("COR")) {
             tfinal.tpeak=40            
           } else if (TRIAL == "janssen_pooled_EUA") {
             tfinal.tpeak=54
+            
           } else if (startsWith(TRIAL, "janssen_") & endsWith(TRIAL, "partA")) {
             # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
             tfinal.tpeak=min(
@@ -709,6 +710,7 @@ if (exists("COR")) {
                 with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
               )
             }
+            
           } else if (TRIAL %in% c("janssen_partA_VL")) {
             # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
             tfinal.tpeak = NULL 
@@ -785,6 +787,8 @@ if (exists("COR")) {
           } else {
             stop("unknown study name 11")
           }
+          
+          myprint(tfinal.tpeak)
           
         } else {
           
