@@ -146,7 +146,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
     
         for (bserostatus in bstatus.range) {
           if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
-          if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2") & bserostatus==1) next # skip baseline positive for janssen_partA_VL, prevent19_stage2
+          if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2") & (bserostatus==1|trt==0)) next # skip baseline positive and placebo for janssen_partA_VL, prevent19_stage2
           
           tt=match(tp, times_)
           
@@ -166,26 +166,47 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                                  country==2 ~ "Southern Africa",
                                  TRUE ~ "")
           
-          for (asy in c("*", if (attr(config,"config")=="janssen_partA_VL") "bind", if (attr(config,"config")=="janssen_partA_VL") "pseudo")){
-          # this loop is only for janssen_partA_VL becasue it needs to be looped through all, bAb and nAb
+          for (asy in c("*", 
+                        if (attr(config,"config")=="janssen_partA_VL") "bind", 
+                        if (attr(config,"config")=="janssen_partA_VL") "pseudo",
+                        
+                        ## janssen_partA_VL needs some Spike-ID50 paired results
+                        
+                        # for Latin America, Reference|Mu|Gamma|Lambda
+                        if (attr(config,"config")=="janssen_partA_VL") "Reference",#"bindSpike$|pseudoneutid50$", 
+                        if (attr(config,"config")=="janssen_partA_VL") "Mu",#"bindSpike_B.1.621$|pseudoneutid50_Mu$",
+                        if (attr(config,"config")=="janssen_partA_VL") "Gamma",#"bindSpike_P.1$|pseudoneutid50_Gamma$",
+                        if (attr(config,"config")=="janssen_partA_VL") "Lambda",#"bindSpike_C.37$|pseudoneutid50_Lambda$",
+                        
+                        # for South Africa, Index/Reference, Delta-Score/Delta, Beta
+                        #if (attr(config,"config")=="janssen_partA_VL") "bindSpike$|pseudoneutid50$",
+                        if (attr(config,"config")=="janssen_partA_VL") "Delta",#"bindSpike_DeltaMDW$|pseudoneutid50_Delta$",
+                        if (attr(config,"config")=="janssen_partA_VL") "Beta"#"bindSpike_B.1.351$|pseudoneutid50_Beta$"
+                        
+                        )){
+            # this loop is only for janssen_partA_VL becasue it needs to be looped through all, bAb and nAb
             assay_lb = case_when(asy=="*" ~ "",
                                  asy=="bind" ~ "bAb_",
-                                 asy=="pseudo" ~ "nAb_")
-            
-            if (attr(config,"config")=="janssen_partA_VL" & asy %in% c("*", "pseudo") & country==0) next # skip NAM for janssen_partA_VL plots involving pseudo
+                                 asy=="pseudo" ~ "nAb_",
+                                 TRUE ~ paste0(asy, "_"))
             
             if (study_name=="VAT08" && bserostatus==0 && tp=="B") { # psv_mdw doesn't have any value for naive at baseline
               assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
               } else if (asy=="bind") {assay_immuno_ = subset(assay_immuno, grepl(asy, assay_immuno))
               } else if (asy %in% c("*", "pseudo") & country == 1) { # Latin America = 1
-                selected = assay_immuno[grepl("Reference|Zeta|Mu|Gamma|Lambda", assay_metadata$assay_label_short)]
-                assay_immuno_ = subset(selected, grepl(asy, selected))
+                selected_latam = assay_immuno[grepl("Reference|Zeta|Mu|Gamma|Lambda", assay_metadata$assay_label_short)]
+                assay_immuno_ = subset(selected_latam, grepl(asy, selected_latam))
               } else if (asy %in% c("*", "pseudo") & country == 2) { # Southern Africa = 2
-                selected = assay_immuno[grepl("Reference|Beta|Delta", assay_metadata$assay_label_short)]
-                assay_immuno_ = subset(selected, grepl(asy, selected))
+                selected_za = assay_immuno[grepl("Reference|Beta|Delta", assay_metadata$assay_label_short)]
+                assay_immuno_ = subset(selected_za, grepl(asy, selected_za))
+              } else if (asy %in% c("Reference","Mu","Gamma","Lambda","Delta","Beta")) {
+                assay_immuno_ = assay_immuno[grepl(asy, assay_metadata$assay_label_short)]
               } else {assay_immuno_ = assay_immuno}
             
             if (sum(complete.cases(subdat[, paste0(tp, assay_immuno_)]))==0) next # skip if no assay data available
+            
+            if (asy %in% c("Mu","Gamma","Lambda") & country == 2) next # don't need these figures for janssen_partA_VL
+            if (asy %in% c("Delta","Beta") & country == 1) next # don't need these figures for janssen_partA_VL
             
             # subset for prevent19_stage2
             if(attr(config,"config")=="prevent19_stage2") {
@@ -211,7 +232,8 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
               column_labels = labels.axis[tp, assay_immuno_] %>% unlist(), # adhoc request by David: labels.axis[tp, match(assay_immuno, colnames(labels.axis))]
               height = max(1.3 * length(assay_immuno_) + 0.1, 5.5),
               width = max(1.3 * length(assay_immuno_), 5.5),
-              column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5),
+              column_label_size = ifelse(length(assay_immuno_) <= 2, 8,
+                                         ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5)),
               filename = paste0(
                 save.results.to, "/pairs_", tp,
                 "_Markers_", bstatus.labels.2[bserostatus + 1],
@@ -242,7 +264,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
           # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
           } else {tps_no_fold_change} # "B", "Day29", "Day57"
         
-        if(study_name=="PREVENT19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
+        if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
         
         for (aa in assay_immuno) {
           if (study_name=="VAT08" && aa=="pseudoneutid50_mdw" && bserostatus==0) next # psv_mdw doesn't have any value for naive at baseline

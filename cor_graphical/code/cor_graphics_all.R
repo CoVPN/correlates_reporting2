@@ -102,7 +102,7 @@ for (i in 1:length(set2.1_assays)) {
         panel.text.size = 5.8,
         ylim = c(0,4.5), 
         ybreaks = c(0,1,2,3,4),
-        axis.text.x.size = 9,
+        axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2", 8.4, 9.5),
         lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
         chtcols = setNames(c(if(length(cases_lb)==2) "#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
         chtpchs = setNames(c(if(length(cases_lb)==2) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
