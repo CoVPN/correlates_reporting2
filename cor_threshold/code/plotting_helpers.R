@@ -66,7 +66,19 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
   a <- marker_to_assay[[marker]]
   print(marker)
   print(a)
-  if (!is.delta) xlim=get.range.cor(data, a,   tpeak) else xlim=range(data[[marker]], na.rm=T)
+  if (!is.delta) {
+    xlim=get.range.cor(data, a, tpeak)
+    
+    # hack
+    if (TRIAL=="moderna_boost" & COR=="BD29nnaive") {
+      # use naive data to set xlim
+      data1 <- read.csv(here::here("output", TRIAL, "BD29naive", "data_clean", paste0("data_secondstage.csv")))
+      xlim=get.range.cor(data1, a, tpeak)
+    }
+  } else {
+    xlim=range(data[[marker]], na.rm=T)
+  }
+  
   
   print(quantile(data[[marker]]))
   print(xlim)

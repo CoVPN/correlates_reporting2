@@ -1,5 +1,6 @@
-# COR="D43M6omioriginal2"
-# COR="D22M6ominAb"
+# COR="D43vat08_combined_M12_nAb"
+# COR="D22vat08_combined_M12_nAb"
+# COR="D43vat08_combined_M6_nAb.st2.sen"
 
 Sys.setenv(TRIAL = "vat08_combined")
 Sys.setenv(VERBOSE = 1) 
@@ -8,6 +9,7 @@ source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
 
 
+{
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(xtable) # this is a dependency of kyotil
 library(marginalizedRisk)
@@ -22,8 +24,12 @@ library(glue)
 
 time.start=Sys.time()
 print(date())
+}
 
 
+{
+tp = substr(COR,2,3) 
+    
 # path for figures and tables etc
 save.results.to.0 = here::here("output"); if (!dir.exists(save.results.to.0))  dir.create(save.results.to.0)
 save.results.to.0 = paste0(save.results.to.0, "/", attr(config,"config")); if (!dir.exists(save.results.to.0))  dir.create(save.results.to.0)
@@ -45,60 +51,84 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-## add trichotomized markers 
+dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==1 & ph1)
+dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2 & ph1)
+dat.vac.seroneg.st2 = subset(dat_proc, Trt==1 & Bserostatus==0 & Trialstage==2 & ph1)
 
-dat.vac.seropos.2 = subset(dat_proc, Trt==1 & ph1 & Bserostatus==1 & Trialstage==2)
-dat.vac.seropos.2 = add.trichotomized.markers (dat.vac.seropos.2, all.markers, wt.col.name="wt")
-
-# use the cut points from nnaive stage 2 for nnaive stage 1 
-marker.cutpoints = attr(dat.vac.seropos.2, "marker.cutpoints")
-
-dat.vac.seropos.1 = subset(dat_proc, Trt==1 & ph1 & Trialstage==1 & Bserostatus==1)
-for (a in all.markers) {        
-  dat.vac.seropos.1[[a%.%'cat']] = cut(dat.vac.seropos.1[[a]], breaks = c(-Inf, marker.cutpoints[[a]], Inf))
-  # attr(dat.vac.seropos.1, "marker.cutpoints")[[a]] = marker.cutpoints[[a]]
-  print(table(dat.vac.seropos.1[[a%.%'cat']]))
+## get cutpoints and turn trichotomized markers into factors
+if(!contain(COR, "st2.sen")) {
+  marker.cutpoints = list()
+  for (a in all.markers) {
+    # get cut points
+    tmpname = names(table(dat.vac.seropos.st1[[a%.%"cat"]]))[2]
+    tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+    tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
+    tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
+    marker.cutpoints[[a]] <- tmpname
+    
+    dat.vac.seropos.st1[[a%.%"cat"]] = as.factor(dat.vac.seropos.st1[[a%.%"cat"]])
+    
+    write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
+          file=paste0(save.results.to.0%.%"/stage1nnaive/", "cutpoints_", a))
+  }
 }
 
-dat.vac.seroneg.2 = subset(dat_proc, Trt==1 & ph1 & Trialstage==2 & Bserostatus==0)
-dat.vac.seroneg.2 = add.trichotomized.markers (dat.vac.seroneg.2, all.markers, wt.col.name="wt")
-marker.cutpoints.neg = attr(dat.vac.seroneg.2, "marker.cutpoints")
-
-
-# save cut points to files
-for (a in all.markers) {        
-  write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
-        file=paste0(save.results.to.0%.%"/stage1nnaive/", "cutpoints_", a, "_"%.%study_name))
+marker.cutpoints = list()
+for (a in all.markers) {
+  # get cut points
+  tmpname = names(table(dat.vac.seropos.st2[[a%.%"cat"]]))[2]
+  tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+  tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
+  tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
+  marker.cutpoints[[a]] <- tmpname
+  
+  dat.vac.seropos.st2[[a%.%"cat"]] = as.factor(dat.vac.seropos.st2[[a%.%"cat"]])
   
   write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
-        file=paste0(save.results.to.0%.%"/stage2nnaive/", "cutpoints_", a, "_"%.%study_name))
-  
-  write(paste0(escape(a),     " [", concatList(round(marker.cutpoints.neg[[a]], 2), ", "), ")%"), 
-        file=paste0(save.results.to.0%.%"/stage2naive/", "cutpoints_", a, "_"%.%study_name))
+        file=paste0(save.results.to.0%.%"/stage2nnaive/", "cutpoints_", a))
 }
+
+marker.cutpoints = list()
+for (a in all.markers) {
+  # get cut points
+  tmpname = names(table(dat.vac.seroneg.st2[[a%.%"cat"]]))[2]
+  tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+  tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
+  tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
+  marker.cutpoints[[a]] <- tmpname
+  
+  dat.vac.seroneg.st2[[a%.%"cat"]] = as.factor(dat.vac.seroneg.st2[[a%.%"cat"]])
+  
+  write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
+        file=paste0(save.results.to.0%.%"/stage2naive/", "cutpoints_", a))
+}
+
 
 
 # add placebo counterpart
-dat.pla.seropos.1=subset(dat_proc, Trt==0 & ph1 & Trialstage==1 & Bserostatus==1)
-dat.pla.seroneg.2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==0)
-dat.pla.seropos.2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==1)
+dat.pla.seropos.st1=subset(dat_proc, Trt==0 & ph1 & Trialstage==1 & Bserostatus==1)
+dat.pla.seropos.st2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==1)
+dat.pla.seroneg.st2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==0)
 
 # for validation use
 rv=list() 
 
-
+}
 
 ################################################################################
 # loop through 3 analyses
 
-for (iAna in 3:3) {
+for (iAna in 1:3) {
   # iAna=3
   cat("\n\n\n\n")
   myprint(iAna)
   
-  if (iAna==1) {dat.vac=dat.vac.seropos.1; dat.pla=dat.pla.seropos.1; save.results.to=save.results.to.0%.%"stage1nnaive/"}
-  if (iAna==2) {dat.vac=dat.vac.seroneg.2; dat.pla=dat.pla.seroneg.2; save.results.to=save.results.to.0%.%"stage2naive/"}
-  if (iAna==3) {dat.vac=dat.vac.seropos.2; dat.pla=dat.pla.seropos.2; save.results.to=save.results.to.0%.%"stage2nnaive/"}
+  # st2.sen 
+  if (iAna==1 & contain(COR,"st2.sen")) next
+    
+  if (iAna==1) {dat.vacc=dat.vac.seropos.st1; dat.plac=dat.pla.seropos.st1; save.results.to=save.results.to.0%.%"stage1nnaive/"}
+  if (iAna==2) {dat.vacc=dat.vac.seropos.st2; dat.plac=dat.pla.seropos.st2; save.results.to=save.results.to.0%.%"stage2nnaive/"}
+  if (iAna==3) {dat.vacc=dat.vac.seroneg.st2; dat.plac=dat.pla.seroneg.st2; save.results.to=save.results.to.0%.%"stage2naive/"}
 
   fname.suffix = study_name
   
@@ -107,49 +137,35 @@ for (iAna in 3:3) {
   
   # imputed events of interest
   tabs=sapply(1:10, simplify="array", function (imp) {
-    dat.vac$EventIndOfInterest = dat.vac[[config.cor$EventIndPrimary%.%imp]]
-    with(dat.vac, table(ph2, EventIndOfInterest))
+    dat.vacc$EventIndOfInterest = dat.vacc[[config.cor$EventIndPrimary%.%imp]]
+    with(dat.vacc, table(ph2, EventIndOfInterest))
   })
   tab =apply(tabs, c(1,2), mean)
   names(dimnames(tab))[2]="Event Indicator"
   tab
-  mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to, digits=1)
+  mytex(tab,     
+        file.name = "tab1_" %.% fname.suffix, 
+        save2input.only=T, 
+        input.foldername=save.results.to, 
+        digits=1)
   
   
   ############################
-  # formula for coxph
-  
-  if (iAna==3) dat.vac=subset(dat.vac, !(Country %in% c(10 ) & Trialstage==2 & Bserostatus==1 & Age<60))
 
   form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates))
 
   multivariate_assays = config$multivariate_assays
   
+  all.markers.names.short = assay_metadata$assay_label_short[match(sub("Day"%.%tp,"",all.markers),assays)]
+  all.markers.names.long  = assay_metadata$assay_label[match(sub("Day"%.%tp,"",all.markers),assays)]
+  names(all.markers.names.short) = all.markers
+  names(all.markers.names.long) = all.markers
+  
   source(here::here("code", "cor_coxph_ph_MI.R"))
   
-  
-  
-  # #####################################
-  # # formula for competing risk analysis
-  # 
-  # # if there are very few competing events, the coxph for competing event may throw warnings
-  # 
-  # form.0=list(
-  #   update(Surv(EventTimePrimaryD29, EventIndOfInterest) ~ 1, as.formula(config$covariates)),
-  #   update(Surv(EventTimePrimaryD29, EventIndCompeting)  ~ 1, as.formula(config$covariates))
-  # )
-  # 
-  # tfinal.tpeak = tfinal.tpeak.ls[[region]][[variant]]
-  # write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_", fname.suffix))
-  # 
-  # # run analyses
-  # source(here::here("code", "cor_coxph_risk_no_marker.R"))
-  # source(here::here("code", "cor_coxph_risk_bootstrap.R"))
-  # 
-  # # make tables and figures
-  # 
 
-} # for iRegion
+
+} # iAna loop
 
 
 

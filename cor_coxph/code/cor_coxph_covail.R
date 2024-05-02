@@ -134,7 +134,7 @@ has.plac = F
 # 4: like 1, but subset to naive
 # 5: like 1, but subset to nnaive
 for (iObj in c(1,11,12,2,21,3,31,4,5)) {
-    # iObj=1; iPop=1  
+    # iObj=5; iPop=1  
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
