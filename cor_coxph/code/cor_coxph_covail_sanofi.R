@@ -148,7 +148,24 @@ for (iObj in c(1,11)) {
   fname.suffix = 'sanofi'
   
   if(iObj==1) {
-    source(here::here("code", "cor_coxph_ph.R"))
+    
+    
+    cor_coxph_coef_1 (
+      form.0,
+      design_or_dat=dat, # either design when tps is T, or data frame otherwise
+      fname.suffix, #used in the file names to save results
+      save.results.to,
+      config,
+      config.cor,
+      all.markers,
+      all.markers.names.short,
+      
+      dat.pla.seroneg = NULL,
+      show.q=TRUE, # whether to show fwer and q values in tables
+      verbose=FALSE
+      
+    ) 
+    # source(here::here("code", "cor_coxph_ph.R"))
     
     # forest plot
     fits = lapply ("Day15"%.%assays, function (a) coxph(update(form.0, as.formula(paste0("~.+", a))), dat) )

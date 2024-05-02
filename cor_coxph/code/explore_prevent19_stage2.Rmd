@@ -64,11 +64,33 @@ dat_proc_stage1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded
 ```
 
 
+
+
+### For manuscript
+
+Numbers for Fig S1
+```{r, include=F}
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240403.csv')
+
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108)
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10)
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$SevereCOVIDIndD35_108to21Dec10)
+```
+
+Are all severe cases Delta? Yes
+```{r}
+with(subset(dat_proc,ph1.D35_108==1), mytable(KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, SevereCOVIDIndD35_108to21Dec10))
+with(subset(dat_proc,ph2.D35_108==1), mytable(KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, SevereCOVIDIndD35_108to21Dec10))
+
+```
+
+
+
 ### Data descriptives
 
 This dataset uses the updated clinical database, which is slightly different from the Stage 1 dataset. 
 
-The dataset contains vaccine arm only and seroneg only, but has both US and MEX.
+The dataset contains vaccine arm only and seroneg only, but has both US and MEX. For correlates analyses, we subset to US only.
 ```{r, include=F}
 mytable(dat_mapped$Trt)
 mytable(dat_mapped$Bserostatus)
@@ -489,24 +511,5 @@ coxph(Surv(DeltaEventTimeD35_to21Dec10, DeltaEventIndD35_108to21Dec10)~Senior, s
 
 
 
-
-```
-
-
-### For manuscript
-
-Numbers for Fig S1
-```{r, include=F}
-dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240403.csv')
-
-mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108)
-mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10)
-mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$SevereCOVIDIndD35_108to21Dec10)
-```
-
-Are all severe cases Delta? Yes
-```{r}
-with(subset(dat_proc,ph1.D35_108==1), mytable(KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, SevereCOVIDIndD35_108to21Dec10))
-with(subset(dat_proc,ph2.D35_108==1), mytable(KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, SevereCOVIDIndD35_108to21Dec10))
 
 ```
