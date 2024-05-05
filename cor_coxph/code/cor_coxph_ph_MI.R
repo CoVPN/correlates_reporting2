@@ -11,13 +11,14 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
   for (a in all.markers) {
     
     models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
+      # imp=1
       
       # form.0 is not a list because this is for Cox regression and not risk
       if (TRIAL=="janssen_partA_VL") {
         f = update(form.0, 
                    as.formula(paste0("~.+", if(i==2) "scale", "(", a, "_"%.%imp, ")"))
                    )
-      } else if (study_name=="VAT08") {
+      } else if (TRIAL=="vat08_combined") {
         f = update(form.0, 
                    as.formula(paste0("~.+", if(i==2) "scale", "(", a, ")"))
                    )
@@ -25,19 +26,29 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
         stop("wrong TRIAL")
       }
       
+      
       # set event indicator and time
       if (TRIAL=="janssen_partA_VL") {
         dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      } else if (study_name=="VAT08") {
+        
+      } else if (TRIAL=="vat08_combined") {
+        # not competing risk, imputation only
         dat.vacc$EventIndOfInterest  = dat.vacc[[config.cor$EventIndPrimary  %.% imp]]
         dat.vacc$EventTimeOfInterest = dat.vacc[[config.cor$EventTimePrimary %.% imp]]
+        
       } else stop('wrong TRIAL: '%.%TRIAL)
+      
       
       if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
         dat.vacc$ph2a = dat.vacc$ph2.D29
+        
+      } else if (TRIAL=="vat08_combined" & endsWith(a, "pseudoneutid50") & iAna==1) {
+        dat.vacc$ph2a = dat.vacc[["ph2.D"%.%tp%.%".nAb.st1.anc"]]
+        
       } else {
         dat.vacc$ph2a = dat.vacc$ph2
       }
+      
       design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vacc)
       svycoxph(f, design=design.vac) 
     
@@ -125,21 +136,28 @@ for (a in all.markers) {
   
   models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
     # imp=1
-    f = update(form.0, as.formula(paste0("~.+", a, if(TRIAL=="janssen_partA_VL") "_"%.%imp, "cat")))
-    f
+    f = update(form.0, as.formula(paste0("~.+", a, if(TRIAL=="janssen_partA_VL") "_"%.%imp, "cat"))); f
 
     if (TRIAL=="janssen_partA_VL") {
       dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      
     } else if (TRIAL=="vat08_combined") {
       dat.vacc$EventIndOfInterest  = dat.vacc[[config.cor$EventIndPrimary %.% imp]]
       dat.vacc$EventTimeOfInterest = dat.vacc[[config.cor$EventTimePrimary %.% imp]]
+      
     } else stop('wrong TRIAL: '%.%TRIAL)
+    
     
     if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
       dat.vacc$ph2a = dat.vacc$ph2.D29
+    
+    } else if (TRIAL=="vat08_combined" & endsWith(a, "pseudoneutid50") & iAna==1) {
+      dat.vacc$ph2a = dat.vacc[["ph2.D"%.%tp%.%".nAb.st1.anc"]]
+      
     } else {
       dat.vacc$ph2a = dat.vacc$ph2
     }
+    
     design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vacc)
     svycoxph(f, design=design.vac) 
   })
@@ -226,7 +244,7 @@ mytex(tab[1:(nrow(tab)),], file.name=paste0("CoR_univariable_svycoxph_cat_pretty
 ###################################################################################################
 # multivariate_assays models
 
-if (is.null(multivariate_assays)) stop("multivariate_assays needs to be defined for cor_coxph_ph_MI.R")
+if (!is.null(multivariate_assays)) {
 
 for (a in multivariate_assays) {
   aa=trim(strsplit(a, "\\+")[[1]])
@@ -294,6 +312,7 @@ for (a in multivariate_assays) {
   }
 }
 
+}
 
 
 write(NA, file=paste0(save.results.to, "permutation_replicates_"%.%study_name))     # so the rmd file can compile
