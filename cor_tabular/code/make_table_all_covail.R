@@ -376,19 +376,20 @@ tab_dm_ph1 <- lapply(1:Trtn, function(x){
                                     subgroup %in% num_v2 ~ "Mean $\\pm$ SD"),
            subgroup=ifelse(subgroup=="Age", "AgeC", subgroup))
   
-  
+
   tab_dm_ph1 <- bind_rows(dm_cat_ph1, dm_num_ph1) %>%
     mutate(rslt = case_when(subgroup %in% cat_v ~ rslt1,
                             subgroup %in% num_v1 ~ rslt1,
                             subgroup %in% num_v2 ~ rslt2)) %>%
-    mutate(subgroup=ifelse(subgroup %in% c("MinorityC", "raceC"), "RaceEthC", subgroup)) %>% 
+    mutate(subgroup=ifelse(subgroup %in% c("MinorityC", "raceC"), "RaceEthC", subgroup),
+           subgroup=subgrp[subgroup]) %>% 
     dplyr::filter(subgroup_cat %in% char_lev) %>% 
-    inner_join(ds_long_ttl_ph1 %>% 
-                 distinct(!!as.name(Trti), Naive, Ptid) %>% 
+    inner_join(ds_long_ttl_ph1 %>%
+                 distinct(!!as.name(Trti), Naive, Ptid) %>%
                  group_by(!!as.name(Trti), Naive) %>%
                  summarise(tot = n()),
-               by = c(Trti, "Naive")) %>% 
-    mutate(Naive = paste0(Naive, "\n(N = ", tot, ")"), subgroup=subgrp[subgroup]) %>%
+               by = c(Trti, "Naive")) %>%
+    mutate(Naive = paste0(Naive, "\n(N = ", tot, ")")) %>%
     pivot_wider(c(!!as.name(Trti), subgroup, subgroup_cat, rslt),
                 names_from = Naive,
                 names_sort = T,
@@ -401,11 +402,15 @@ tab_dm_ph1 <- lapply(1:Trtn, function(x){
   cols <- names(tab_dm_ph1)
   names(tab_dm_ph1) <- str_split(cols, "\n", simplify = T)[,1]
   
-  return(list(tab=tab_dm_ph1, col=cols))
+  return(list(tab=tab_dm_ph1, col=c(tab_dm_ph1$Arms[1], cols)))
 })
 
 tab_demo_col <- tab_dm_ph1 %>% 
-  map("col")
+  map("col") %>% 
+  bind_cols()
+
+tab_demo_col <- structure(tab_demo_col[2:nrow(tab_demo_col), ], .Names=tab_demo_col[1,]) %>% 
+  data.frame(check.names = F)
 
 tab_demo <- tab_dm_ph1 %>% 
   map("tab") %>% 
