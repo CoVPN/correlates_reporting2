@@ -303,8 +303,8 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", ifelse(assay=="ADCP", "LoD", "LoQ"))) 
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, ifelse(assay=="ADCP", LLoD, LLoQ))) 
 } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant"){
-  dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoQ", "LoD")) 
-  dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoQ, LLoD))
+  dat.long$lb = with(dat.long, ifelse(assay=="bindSpike", "Pos.Cut", ifelse(grepl("bind", assay), "LoQ", "LoD"))) 
+  dat.long$lbval =  with(dat.long, ifelse(assay=="bindSpike", pos.cutoffs, ifelse(grepl("bind", assay), LLoQ, LLoD)))
 } else if (study_name=="IARCHPV"){
   dat.long$lb = with(dat.long, "Pos.Cut")
   dat.long$lbval =  with(dat.long, pos.cutoffs)
