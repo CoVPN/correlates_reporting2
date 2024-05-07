@@ -19,15 +19,10 @@ library(GGally)
 library(spatstat.geom)
 library(scales)
 library(grid) # textGrob
-#library(dummies) # this package got archived on 2022-04-29
-require(devtools)
-install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
 library(gridExtra)
 library(PResiduals)
-install.packages("fmsb", repos = "http://cran.us.r-project.org") # radar plot
 library(fmsb) # radarchart()
-install.packages("wCorr", repos = "http://cran.us.r-project.org") # weighted correlation
-library(wCorr)
+library(wCorr) # weighted correlation
 
 
 source(here("code", "params.R"))
