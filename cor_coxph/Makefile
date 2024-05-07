@@ -66,18 +66,21 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_bAb)) ## for some reason if this 
 	Rscript code/cor_coxph.R D29start28
 	Rscript code/cor_graphical_time_to_event.R D29D57
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined ))
-	#Rscript code/cor_coxph_vat08_combined.R D22M6omibAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M6omibAb
-	#Rscript code/cor_coxph_vat08_combined.R D22M12omibAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M12omibAb
-	#Rscript code/cor_coxph_vat08_combined.R D22M6ominAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M6ominAb
-	#Rscript code/cor_coxph_vat08_combined.R D22M12ominAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M12ominAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M12omioriginal
-	#Rscript code/cor_coxph_vat08_combined.R D43M6omioriginal
-	#Rscript code/cor_coxph_vat08_combined.R D43M6omioriginal2
-	Rscript code/cor_coxph_vat08_combined.R D43M12omioriginal2
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_bAb 
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_bAb
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_nAb 
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_nAb
+	
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_bAb 
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_bAb
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_nAb 
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_nAb
+
+	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_nAb.st2.sen 
+	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_nAb.st2.sen
+	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_nAb.st2.sen
+	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_nAb.st2.sen
+
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D43
 	Rscript code/cor_coxph.R D43start48

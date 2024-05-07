@@ -91,11 +91,11 @@ if (!is.null(config$assay_metadata)) {
   if (exists('COR')) {
     
     if (TRIAL=='vat08_combined') {
-      if (contain(COR, "nAb") | endsWith(COR,'original2')) {
-        # only keeps ID50 markers
+      if (contain(COR, "_nAb")) {
         assay_metadata = subset(assay_metadata, panel=='id50')
-      } else {
-        # assay_metadata = subset(assay_metadata, panel=='bindSpike')
+        
+      } else if (contain(COR, "_bAb")) {
+        assay_metadata = subset(assay_metadata, panel=='bindSpike')
         if (!DESCRIPTIVE) {
           # change lloq for bAb to min(...) 
           lloq_min = min (subset(assay_metadata, panel=='bindSpike' & assay!="bindSpike_mdw", lloq))
@@ -535,7 +535,7 @@ if (startsWith(tolower(study_name), "mock")) {
 }
 cat("Analysis-ready data: ", path_to_data, "\n")
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
-if (!file.exists(path_to_data)) stop ("_common.R: dataset with risk score not available ===========================================")
+if (!file.exists(path_to_data)) stop ("_common.R: dataset not available ===========================================")
 
 dat_proc <- read.csv(path_to_data)
 
@@ -559,7 +559,7 @@ if (!DESCRIPTIVE & !EXPOSUREPROXIMAL) {
     if ('B'%.%a %in% names(dat_proc)) {
       dat_proc[['B' %.% a]] <- ifelse(dat_proc[['B' %.% a]] > log10(uloq), log10(uloq), dat_proc[['B' %.% a]])
     }
-  }    
+  }
 }
 
 
@@ -759,14 +759,6 @@ if (exists("COR")) {
           } else if (study_name=="HVTN705") {
             tfinal.tpeak=550
             
-          } else if (study_name=="VAT08") {
-            # hardcode 180 days post dose 2
-            if (COR=="D22M6omi" | COR=="D22M6ominAb") {
-              tfinal.tpeak=180 # tpeak is dose 2
-            } else if (COR=="D43M6omi" | COR=="D43M6ominAb") {
-              tfinal.tpeak=180-21 # tpeak is 21 days post dose 2
-            } # else is M12
-            
           } else if (study_name=="IARCHPV") {
             tfinal.tpeak=NULL
             
@@ -860,8 +852,8 @@ if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
 } 
 
 # set marker cutpoints attr first b/c we don't need to do it for imputed copies
-cat("set marker.cutpoints attribute\n")
 if (!is.null(all.markers1)) {
+  cat("set marker.cutpoints attribute\n")
   marker.cutpoints = list()
   for (a in all.markers1) {
     # get cut points
@@ -1042,7 +1034,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age <= 14"
   )
   
-} else if (TRIAL %in% c("covail")) {
+} else if (TRIAL %in% c("covail", "covail_sanofi")) {
   # do nothing
   
 } else stop("unknown study_name 2")
@@ -1124,7 +1116,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name=="HVTN705") {
   # do nothing
   
-} else if (TRIAL %in% c("covail")) {
+} else if (TRIAL %in% c("covail", "covail_sanofi")) {
   # do nothing
   
 } else if (TRIAL == "nvx_uk302") {

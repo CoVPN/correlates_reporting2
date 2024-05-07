@@ -21,7 +21,7 @@ region.2 = c( # stage 2
   "Nepal" = 3, "India" = 3)
 
 
-dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240117.csv')
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240117_hotdeck.csv')
 # dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240111.csv')
 dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240117.csv')
 
@@ -47,68 +47,50 @@ dat_mapped$SUBJID = gsub("-","",dat_mapped$SUBJID,)
 dat_proc$SUBJID = sub("VAT00008-","",dat_proc$Ptid)
 dat_proc$SUBJID = gsub("-","",dat_proc$SUBJID,)
 
-```
+assays0=assays
 
-### nAb immunogenicity and imputation
-Note that the marker level in the NN, placebo is higher in Stage 2 than in Stage 1, probably reflecting different countries.
-```{r}
-myboxplot(Day43bindSpike~Trt+Bserostatus+Trialstage, dat_mapped, ylab="D43 bAb Spike",
-  names=rep(c("N,pla", "N,vac", "NN,pla", "NN,vac"),2),
-  main="Stage 1                                        Stage 2",
-  cex.axis=0.8)
-abline(v=4.5)
-```
+bassays=assays0[startsWith(assays0,"bindSpike")][1:8]
+print(bassays)
 
-There are five different ID50s and one score.
-```{r}
-assays=assays[startsWith(assays,"pseudoneutid50")]
-print(assays)
-```
-
-Correlation is high between variant markers in Stage 2 non-naive, vaccine arm at both baseline
-```{r}
-mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"B"%.%assays[1:5]])
-```
-
-and D43 
-
-```{r}
-mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"Day43"%.%assays[1:5]])
-```
- 
-Correlation is medium between variant markers at D43 in Stage 2 naive, vaccine arm. (The correlation between the ancestral marker and the other markers range between 0.63 and 0.67.)
-```{r}
-mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==0 & Trt==1 & ph1.D43)[,"Day43"%.%assays[1:5]])
-```
-
-Correlation is low between baseline and D22 or D43 in Stage 2 non-naive, vaccine arm.
-```{r}
-mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,c("B","Day22","Day43")%.%assays[1]])
+nassays=assays0[startsWith(assays0,"pseudoneutid50")][1:5]
+print(nassays)
 ```
 
 
-A closer look at the relationship between baseline and Day 43 markers in the baseline positive. Note that the D43 markers appear saturated since level seems flat across different baseline marker levels.
-```{r}
-par(mfrow=c(2,4))
-  # ancestral marker
-  corplot(Day43pseudoneutid50~Bpseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
-  myboxplot(Day43pseudoneutid50~I(Bpseudoneutid50>0.2), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
-  my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50), c(Bpseudoneutid50, Day43pseudoneutid50)), 
-                      x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
-  corplot(Delta43overBpseudoneutid50~Bpseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
-  
-  # BA.1
-  corplot(Day43pseudoneutid50_BA.1~Bpseudoneutid50_BA.1, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
-  myboxplot(Day43pseudoneutid50_BA.1~I(Bpseudoneutid50_BA.1>0.2), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
-  my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50_BA.1) & !is.na(Day43pseudoneutid50_BA.1), c(Bpseudoneutid50_BA.1, Day43pseudoneutid50_BA.1)), 
-                      x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
-  corplot(Delta43overBpseudoneutid50_BA.1~Bpseudoneutid50_BA.1, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
-```
- 
+### nAb missingness
+
+Missingness across variants. Some ptids only have the ancestral marker measured. The missingness pattern is explained by the fact that samples from different steps have different set of markers measured. We decide to impute all variants if one variant marker exists.
+
 
 Overall, "because the correlation among variants is pretty good for the non-naives and really the analysis focuses on the non-naives" (Peter), we decide to **impute variants for those who have data for at least one variant to make the complexity of data processing more manageable**. 
 
+
+```{r}
+dat1=dat_mapped
+# the pattern in cases is un-remarkable
+# dat1=subset(dat_mapped, 1==EventIndPrimaryD1)
+for (t in 2:1) {
+  cat(paste0("stage ", t, '\n'))
+  for (tp in c("B", "Day22", "Day43")) {
+    # placebo has a similar pattern
+    for(trt in 1) {
+      myprint(tp, trt)
+      dat=subset(dat1, Trialstage==t & ph1.D43 & Trt==trt) # pattern is independent of Bserostatus
+      for (i in 1:5) {
+        dat[['tmp'%.%i]]=ifelse(is.na(dat[[tp%.%assays[i]]]), 0, 1)
+      }
+      dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5))
+      print(table(dat$tmp))
+      cat("\n")
+    }
+  }
+}
+```
+
+
 Missingness across baseline, d22 and d43, for the ancestral markers in the vaccine arms. The results support the decision "**to keep it simple and require for RIS membership availability of data at all 3 time points**" (Peter).
+
+
 ```{r}
 for(trt in 1:0) {
   myprint(trt)
@@ -125,41 +107,6 @@ for(trt in 1:0) {
   }
 }
 ```
-
-Missingness across variants. Some ptids only have the ancestral marker measured. The missingness pattern is explained by the fact that samples from different steps have different set of markers measured. We decide to impute all variants if one variant marker exists.
-
-```{r}
-# for (tp in c("B")) {
-for (tp in c("B", "Day22", "Day43")) {
-  # before imputation
-  dat1=dat_mapped
-  # after imputation
-  # dat1=dat_proc
-  
-  for(trt in 1) {
-    myprint(tp, trt)
-    for (i in 2:1) {
-      cat(paste0("stage ", i, '\n'))
-      if (trt==2) {
-        # pool over arms
-        dat=subset(dat1, Trialstage==i & ph1.D43)
-      } else {
-        dat=subset(dat1, Trialstage==i & ph1.D43 & Trt==trt)
-      }
-      for (i in 1:5) {
-        dat[['tmp'%.%i]]=ifelse(is.na(dat[[tp%.%assays[i]]]), 0, 1)
-      }
-      dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5))
-      print(table(dat$tmp))
-      cat("\n")
-      # print(table(dat$EventIndPrimaryD43, dat$tmp, dat$Bserostatus))
-    }
-  }
-
-}
-```
-
-
 
 
 ```{r}
@@ -216,10 +163,227 @@ for (i in 2:1) {
 ```
 
 
+### nAb correlation
+
+
+Correlation is high between variant markers in Stage 2 non-naive, vaccine arm at both baseline and D43 
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"B"%.%nassays])
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"Day43"%.%nassays])
+```
+
+
+Correlation is medium between variant markers at D43 in Stage 2 naive, vaccine arm. (The correlation between the ancestral marker and the other markers range between 0.63 and 0.67.)
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==0 & Trt==1 & ph1.D43)[,"Day43"%.%nassays])
+```
+
+Correlation is low between baseline and D22 or D43 in Stage 2 non-naive, vaccine arm.
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,c("B","Day22","Day43")%.%assays[1]])
+```
+
+In stage 1, correlation is medium between ancestral markers and other markers. Correlation is high between BA4BA5 and BA1 among non-naive, but medium among naive. 
+```{r}
+mypairs(subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1 & ph1.D43)[,"Day22"%.%nassays])
+mypairs(subset(dat_proc, Trialstage==1 & Bserostatus==0 & Trt==1 & ph1.D43)[,"Day22"%.%nassays])
+```
+
+
+A closer look at the relationship between baseline and Day 43 markers in the baseline positive. Note that the D43 markers appear saturated since level seems flat across different baseline marker levels.
+
+```{r}
+par(mfrow=c(2,4))
+  # ancestral marker
+  corplot(Day43pseudoneutid50~Bpseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
+  myboxplot(Day43pseudoneutid50~I(Bpseudoneutid50>0.2), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
+  my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50) & !is.na(Day43pseudoneutid50), c(Bpseudoneutid50, Day43pseudoneutid50)), 
+                      x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+  corplot(Delta43overBpseudoneutid50~Bpseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
+  
+  # BA.1
+  corplot(Day43pseudoneutid50_BA.1~Bpseudoneutid50_BA.1, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
+  myboxplot(Day43pseudoneutid50_BA.1~I(Bpseudoneutid50_BA.1>0.2), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
+  my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(Bpseudoneutid50_BA.1) & !is.na(Day43pseudoneutid50_BA.1), c(Bpseudoneutid50_BA.1, Day43pseudoneutid50_BA.1)), 
+                      x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+  corplot(Delta43overBpseudoneutid50_BA.1~Bpseudoneutid50_BA.1, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
+```
+ 
+
+
+
+### bAb missingness
+Missingness across variants is mostly all or none. We decide to impute all variants if one variant marker exists.
+
+```{r}
+# before imputation
+dat1=dat_mapped
+# after imputation
+# dat1=dat_proc
+for (t in 2:1) {
+  cat(paste0("stage ", t, '\n'))
+  # for (tp in c("B")) {
+  for (tp in c("B", "Day22", "Day43")) {
+    
+    # placebo has a similar patten
+    for(trt in 1) {
+      myprint(tp, trt)
+      if (trt==2) {
+        # pool over arms
+        dat=subset(dat1, Trialstage==t & ph1.D43)
+      } else {
+        dat=subset(dat1, Trialstage==t & ph1.D43 & Trt==trt)
+      }
+      for (i in 1:8) {
+        dat[['tmp'%.%i]]=ifelse(is.na(dat[[tp%.%assays[i]]]), 0, 1)
+      }
+      dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8))
+      print(table(dat$tmp))
+      cat("\n")
+      # print(table(dat$EventIndPrimaryD43, dat$tmp, dat$Bserostatus))
+    }
+  }
+
+}
+```  
+  
+Missingness across baseline, d22 and d43, for the ancestral markers in the vaccine arms. 
+
+```{r}
+for(trt in 1:0) {
+  myprint(trt)
+  for (i in 2:1) {
+    cat(paste0("stage ", i, '\n'))
+    dat=subset(dat_proc, Trialstage==i & Trt==trt & ph1.D43)
+    times=c("B","Day22","Day43")
+    for (i in 1:3) {
+      dat[['tmp'%.%i]]=ifelse(is.na(dat[[times[i]%.%'bindSpike']]), 0, 1)
+    }
+    dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3))
+    print(table(dat$tmp))
+    cat("\n")
+  }
+}
+```
+  
+
+
+### bAb correlation
+
+
+Correlation is high between variant markers in Stage 2 non-naive, vaccine arm at baseline
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"B"%.%bassays])
+```
+
+and D43 
+
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,"Day43"%.%bassays])
+```
+ 
+Correlation is still high between variant markers at D43 in Stage 2 naive, vaccine arm. (The correlation between the ancestral marker and the other markers range between 0.63 and 0.67.)
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==0 & Trt==1 & ph1.D43)[,"Day43"%.%bassays])
+```
+
+Correlation is low between baseline and D22 or D43 in Stage 2 non-naive, vaccine arm.
+```{r}
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,c("B","Day22","Day43")%.%assays[1]])
+mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,c("B","Day22","Day43")%.%assays[8]])
+```
+
+A closer look at the relationship between baseline and Day 43 markers in the baseline positive. Note that the D43 markers appear saturated since level seems flat across different baseline marker levels.
+
+```{r}
+par(mfrow=c(2,4))
+  # ancestral marker
+  corplot(Day43bindSpike~BbindSpike, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
+  myboxplot(Day43bindSpike~I(BbindSpike>0.5), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
+  my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(BbindSpike) & !is.na(Day43bindSpike), c(BbindSpike, Day43bindSpike)), 
+                      x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+  corplot(Delta43overBbindSpike~BbindSpike, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
+  
+  # omicron
+  corplot(Day43bindSpike_omicron~BbindSpike_omicron, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), ylim=c(0,4))
+  myboxplot(Day43bindSpike_omicron~I(BbindSpike_omicron>0.5), subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), names=c("Undetectable at B","Detectable at B"), ylab="D43", ylim=c(0,4))
+  my.interaction.plot(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43 & !is.na(BbindSpike_omicron) & !is.na(Day43bindSpike_omicron), c(BbindSpike_omicron, Day43bindSpike_omicron)), 
+                      x.ori = 0, xaxislabels = c("B", "D43"), cex.axis = 1, add = FALSE, xlab = "", ylab = "", pcol = NULL, lcol = NULL)  
+  corplot(Delta43overBbindSpike_omicron~BbindSpike_omicron, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43))
+```  
+  
+
+
+### Misc
+
+missingness pattern across nAb and bAb markers shows that there is no overlap in pattern between nAb and nAb in stage 1 or 2. 
+```{r}
+dat1=dat_mapped
+for (t in 2:1) {
+  cat(paste0("stage ", t, '\n'))
+  for (tp in c("Day43")) {
+
+    # placebo has a similar pattern
+    for(trt in 1) {
+      myprint(tp, trt)
+      dat=subset(dat1, Trialstage==t & ph1.D43 & Trt==trt)
+      
+      dat$tmp1 = ifelse(is.na(dat$Day43pseudoneutid50), 0, 1)
+      dat$tmp2 = ifelse(is.na(dat$Day43pseudoneutid50_B.1.351), 0, 1)
+      dat$tmp3 = ifelse(is.na(dat$Day43bindSpike), 0, 1)
+      
+      dat$tmp=with(dat,paste0(tmp1,tmp2))
+      print(table(dat$tmp))
+      dat$tmp=with(dat,paste0(tmp1,tmp3))
+      print(table(dat$tmp))
+      dat$tmp=with(dat,paste0(tmp2,tmp3))
+      print(table(dat$tmp))
+      cat("\n")
+    }
+  }
+}
+```
+
+
+
+Omicron bAb ULOQ may be too low.
+
+```{r}
+corplot(Day43bindSpike_omicron~Day43bindSpike, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), add.diagonal.line = F, method="pearson")
+corplot(Day43pseudoneutid50_BA.4.5~Day43pseudoneutid50, subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43), add.diagonal.line = F, method="pearson")
+```
+
+correlation and missingness across bAb and nAb
+
+```{r}
+  for (sero in c(0,1)) {    
+    for (trt in c(0,1)) {
+      for (stage in c(1,2)) {
+        myprint(stage, trt, sero)
+        dat=subset(dat_mapped, Trialstage==stage & Trt==trt & Bserostatus==sero)
+        corplot(Day43bindSpike~Day43pseudoneutid50, dat)
+        print(table(!is.na(dat$Day43bindSpike), !is.na(dat$Day43pseudoneutid50), dat$EventIndPrimaryD43))
+      }
+    }
+}
+```
+
+
+
+Note that the marker level in the NN, placebo is higher in Stage 2 than in Stage 1, probably reflecting different countries.
+```{r}
+myboxplot(Day43bindSpike~Trt+Bserostatus+Trialstage, dat_mapped, ylab="D43 bAb Spike",
+  names=rep(c("N,pla", "N,vac", "NN,pla", "NN,vac"),2),
+  main="Stage 1                                        Stage 2",
+  cex.axis=0.8)
+abline(v=4.5)
+```
+
+
   
 ### Check which ptids are in which batch
 
-We have list of ptids sampled in step 2 in both stages of the trial.
+We have lists of ptids sampled in step 2 in both stages of the trial.
 ```{r, include=T}
 stage2step2=read.csv("~/Aiying700.csv")
 dat_mapped$stage2step2 = dat_mapped$Subjectid %in% stage2step2$Unique.Subject.Identifier
@@ -232,11 +396,15 @@ dat_proc$stage1step2 = dat_proc$SUBJID %in% stage1step2$SUBJID
 
 Stage 2, nAb. batch 1 = step2 for both cases and noncases
 ```{r}
-with(subset(dat_proc, Trt==1 & Trialstage==2 & ph2.D43.nAb), table(stage2step2, EventIndPrimaryD1, nAbBatch))
-with(subset(dat_proc, Trt==0 & Trialstage==2 & ph2.D43.nAb), table(stage2step2, EventIndPrimaryD1, nAbBatch))
-with(subset(dat_proc, Trt==1 & Trialstage==2 & ph2.D22.nAb), table(stage2step2, EventIndPrimaryD1, nAbBatch))
-with(subset(dat_proc, Trt==0 & Trialstage==2 & ph2.D22.nAb), table(stage2step2, EventIndPrimaryD1, nAbBatch))
+with(subset(dat_proc, Trt==1 & Trialstage==2 & ph2.D43.nAb & EventIndPrimaryD1==1), table(stage2step2, nAbBatch, Bserostatus))
 ```
+
+Check timing of cases in the two batches
+```{r}
+myboxplot(EventTimePrimaryD1~nAbBatch+Trt, subset(dat_proc, Trialstage==2 & EventIndPrimaryD1==1 & ph2.D43.nAb & Bserostatus==1), 
+          names=c(outer(c("Batch 1,","Batch 2,"), c("Plac","Vacc"), paste)), main="Stage 2 Non-Naive Ph2.D43 Cases")
+```
+
 
 Stage 1, nAb. Most non-cases are done in batch 2, most cases are done in batch 1. Step 1 and 2 are spread mostly equally between batches.
 ```{r}
