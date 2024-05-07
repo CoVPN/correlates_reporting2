@@ -412,7 +412,7 @@ prevent19_stage2: &prevent19_stage2
   timepoints: [35]
   times: [Day35]
   time_labels: [Day 35]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240409.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240502.csv
   assay_metadata: assay_metadata/prevent19_stage2_assay_metadata.csv
   study_name: PREVENT19
   covariates: ~ 1  # to be replaced by COR-specific covariates in _common.R

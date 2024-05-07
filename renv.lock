@@ -205,6 +205,13 @@
       "Repository": "CRAN",
       "Hash": "0cf10dab0d023d5b46a5a14387556891"
     },
+    "SWIM": {
+      "Package": "SWIM",
+      "Version": "1.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f0a3388bd58bdc077cd1419f598c8672"
+    },
     "SparseM": {
       "Package": "SparseM",
       "Version": "1.81",
@@ -667,6 +674,13 @@
       "Repository": "CRAN",
       "Hash": "fedd9d00c2944ff00a0e2696ccf048ec"
     },
+    "dummies": {
+      "Package": "dummies",
+      "Version": "1.5.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d0f036a9fcc127e756f5c61eefd76279"
+    },
     "e1071": {
       "Package": "e1071",
       "Version": "1.7-14",
@@ -729,6 +743,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "73cb09f8220dfed388bd89d180f0b922"
+    },
+    "fmsb": {
+      "Package": "fmsb",
+      "Version": "0.7.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "ae86be3ba73c049e4edb8218677e7503"
     },
     "forcats": {
       "Package": "forcats",
@@ -820,6 +841,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "ceabdf54e1cf26e30f99f43bad146acc"
+    },
+    "ggnewscale": {
+      "Package": "ggnewscale",
+      "Version": "0.4.10",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2fb8808f9b9b750371b6bfc4cc9f2939"
     },
     "ggplot2": {
       "Package": "ggplot2",
@@ -970,7 +998,7 @@
       "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "16350cc39b68e61566f03a11f633e08073405355",
-      "Hash": "1b5958df7bd05b48da50266f92a1d327"
+      "Hash": "47c34f41535fb9c16bd44e760d61cb67"
     },
     "haven": {
       "Package": "haven",
@@ -1390,6 +1418,13 @@
       "RemoteRef": "HEAD",
       "RemoteSha": "158509db7e25e9b43b37f346fba29ad9df4d4ad3",
       "Hash": "c6efffe9591b4db85d7ef315f8de3aa9"
+    },
+    "nleqslv": {
+      "Package": "nleqslv",
+      "Version": "3.3.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bd75967ceed04d03511691bc0a3c73ee"
     },
     "nlme": {
       "Package": "nlme",
@@ -2028,6 +2063,13 @@
       "Repository": "CRAN",
       "Hash": "72200a58cae0d7046e416e6be6d9d322"
     },
+    "speedglm": {
+      "Package": "speedglm",
+      "Version": "0.3-3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5955a9bd4ed0275ad45596a49d75946f"
+    },
     "stringi": {
       "Package": "stringi",
       "Version": "1.7.4",
@@ -2179,7 +2221,7 @@
       "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "c0f572a638b019c057aee83c9f59f56acf1398db",
-      "Hash": "362ae555812ded051554a1136577d20f"
+      "Hash": "154f62a760f3f43838ea629efec3e5ae"
     },
     "usethis": {
       "Package": "usethis",
@@ -2253,6 +2295,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "12545f2acf49d1d346d075580122d89c"
+    },
+    "wCorr": {
+      "Package": "wCorr",
+      "Version": "1.9.8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "25b6ec4a3939ff975105fa2f8b12c411"
     },
     "waldo": {
       "Package": "waldo",
