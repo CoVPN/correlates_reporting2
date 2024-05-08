@@ -16,7 +16,7 @@ library(knitr)
 library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
 
-if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08")) & !grepl("stage2", attr(config,"config"))) {
+if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
 
@@ -27,7 +27,7 @@ bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive",
 
 # temporary setting due to unknown reason for assays including bAb for id27hpvnAb
 if (attr(config,"config")=="id27hpvnAb") {assays = assays[!grepl("bind", assays)]}
-if (attr(config,"config")=="prevent19_stage2") {
+if (attr(config,"config") %in% c("prevent19_stage2","prevent19nvx")) {
   times = c("Day35")
   time_labels = c("Day 35")
 }
@@ -64,6 +64,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   if (attr(config,"config")=="azd1222_stage2") COR_postfix_list <- c("delta nab", "delta bab",
                                                                      "severe nab", "severe bab"
                                                                      )
+  if (attr(config,"config") == "nvx_uk302") COR_postfix_list <- c("D35nvx_uk302")
+  if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
@@ -116,7 +118,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       }
     }
     
-  } else if (study_name == "VAT08" | attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")){
+  } else if (study_name == "VAT08" | attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","nvx_uk302","prevent19nvx")){
     
     for (COR_postfix in COR_postfix_list){
         
@@ -131,13 +133,15 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                     COR_postfix=="delta nab" ~ "D57azd1222_stage2_delta_nAb", 
                     COR_postfix=="delta bab" ~ "D57azd1222_stage2_delta_bAb", 
                     COR_postfix=="severe nab" ~ "D57azd1222_stage2_severe_nAb", 
-                    COR_postfix=="severe bab" ~ "D57azd1222_stage2_severe_bAb"
+                    COR_postfix=="severe bab" ~ "D57azd1222_stage2_severe_bAb",
+                    !is.na(COR_postfix) ~ COR_postfix
                     )
       
       # SET 1
       for (a in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_nvx_stage2")){
              
         if ((grepl("nab", COR_postfix) & !grepl("pseudoneutid50", a)) | (grepl("bab", COR_postfix) & !grepl("bindSpike", a))) next # for AZ stage 2
+        if (a == "pseudoneutid50" & attr(config,"config") %in% c("nvx_uk302","prevent19nvx")) next # no id50 for nvx_uk302, prevent19nvx
     
         for (tp in tps_no_delta_over_tinterm_lb){
           
@@ -150,6 +154,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           cat("\\clearpage", sep = '\n')
         }
       }
+      
+      if (attr(config,"config") == "nvx_uk302") next # break the loop for nvx_uk302
       
       # SET 2
       assay_grp_list = if(attr(config,"config")=="vat08_combined"){
@@ -171,6 +177,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       
       for (assay_grp in assay_grp_list){
           
+          if (attr(config,"config") == "prevent19nvx") next # no need for prevent19nvx
+        
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
           cat("\\clearpage", sep = '\n')
@@ -179,7 +187,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       
       # SET 3
       for (bsero in c("non_naive")){
-        if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) next # prevent19_stage2 and azd1222_stage2 doesn't have non_naive
+        if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","prevent19nvx")) next # prevent19_stage2, azd1222_stage2, prevent19nvx don't have non_naive
         
           for (trt in c("vac_pla")){
               
@@ -213,6 +221,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
               }
           }
       }
+      
+      if (attr(config,"config") == "prevent19nvx") next # break the loop for prevent19nvx
       
       # SET 4
       for (a in assays){

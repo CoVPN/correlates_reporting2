@@ -4,6 +4,8 @@
 #Sys.setenv(TRIAL = "janssen_pooled_partA")
 #Sys.setenv(TRIAL = "prevent19_stage2") # D35prevent19_stage2_delta, D35prevent19_stage2_severe
 #Sys.setenv(TRIAL = "azd1222_stage2") # D57azd1222_stage2_delta_nAb, D57azd1222_stage2_delta_bAb, D57azd1222_stage2_severe_nAb, D57azd1222_stage2_severe_bAb
+#Sys.setenv(TRIAL = "nvx_uk302") # D35nvx_uk302
+#Sys.setenv(TRIAL = "prevent19nvx") # D35prevent19nvx
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -71,7 +73,7 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 } else {incNotMol <- ""}
 
 # set EventIndTimePrimary to EventIndTimeOmicron if study_name=="VAT08_combined" & COR=="D22D43omi"
-if (study_name=="VAT08_combined" & grepl("omi", COR)){
+if (study_name=="VAT08" & grepl("omi", COR)){
   # All COVID endpoint cases of observed non-Omicron lineages, or with unknown lineage before January 17, 2022, are excluded
   dat$EventIndPrimaryD1 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD1 & dat$Omi_or_NA_after_cutoff==1) # used by cohort_event def
   dat$EventIndPrimaryD22 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD22 & dat$Omi_or_NA_after_cutoff==1) 
@@ -90,7 +92,7 @@ if (study_name=="IARCHPV"){
     filter(enrolltype!="Cohort" & !!as.name(config.cor$ph2) == 1) %>%
     mutate(cohort_event = factor(ifelse(enrolltype=="Case", "Any HPV Cases", ifelse(enrolltype=="Control", "Controls", NA)),
       levels = c("Any HPV Cases", "Controls")))
-} else if(study_name=="ENSEMBLE" | (study_name=="PREVENT19" & COR=="D35"))   { # one timepoint stage 1 studies: ENSEMBLE, PREVENT19 301 stage 1
+} else if(study_name=="ENSEMBLE" | (study_name=="PREVENT19" & COR %in% c("D35","D35prevent19nvx")) | study_name=="UK302")   { # one timepoint stage 1 studies: ENSEMBLE, PREVENT19 301 stage 1, UK302, PREVENT 301 NVX
   
   #intcur2 <- paste0("Day 15-", 28+tpeaklag, " Cases")
   dat = dat %>%
@@ -305,13 +307,13 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
 } else if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant"){
   dat.long$lb = with(dat.long, ifelse(assay=="bindSpike", "Pos.Cut", ifelse(grepl("bind", assay), "LoQ", "LoD"))) 
   dat.long$lbval =  with(dat.long, ifelse(assay=="bindSpike", pos.cutoffs, ifelse(grepl("bind", assay), LLoQ, LLoD)))
-} else if (study_name=="IARCHPV"){
+} else if (study_name=="IARCHPV" | study_name=="UK302"){
   dat.long$lb = with(dat.long, "Pos.Cut")
   dat.long$lbval =  with(dat.long, pos.cutoffs)
 } else if (study_name %in% c("PREVENT19","AZD1222") & grepl("stage2", COR)){
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoQ", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoQ, LLoD))
-} else {
+} else { # e.g. prevent19nvx
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
 }
@@ -328,7 +330,7 @@ if (study_name=="IARCHPV") {
   #dat.long$lb2 = with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), "ULoQ", ""))
   #dat.long$lbval2 =  with(dat.long, ifelse(grepl("bind", assay) | !study_name %in% c("COVE","MockCOVE","ENSEMBLE","MockENSEMBLE"), ULoQ, -99))
   dat.long$lb2 = "ULoQ"
-  dat.long$lbval2 =  with(dat.long, ifelse(!is.na(ULoQ), ULoQ, -99))
+  dat.long$lbval2 =  with(dat.long, ifelse(!is.na(ULoQ) & ULoQ!="Inf", ULoQ, -99))
 }
 
 # assign values above the uloq to the uloq
@@ -340,7 +342,7 @@ for (t in times_[!grepl("Delta", times_)]) {
 if (study_name!="IARCHPV") { # IARCHPV doesn't have delta assay variables
   for (t in timepoints) { # unique(gsub("Day", "", times_[!grepl("Delta|B", times_)]))
     tp = paste0("Day", t) # ifelse(grepl("[A-Za-z]", t), t, paste0("Day", t))
-    if (!grepl("stage2", COR)) {dat.long[, "Delta"%.%t%.%"overB"] = dat.long[, tp] - dat.long[, "B"]
+    if (!grepl("stage2", COR) & !study_name %in% c("UK302")) {dat.long[, "Delta"%.%t%.%"overB"] = dat.long[, tp] - dat.long[, "B"]
     }
   }
 }
@@ -360,7 +362,7 @@ dat.long$age_geq_65_label <-
     )
   )
 
-if (study_name!="IARCHPV") { # IARCHPV doesn't have the high risk, sex, ethnicity variable
+if (!study_name %in% c("IARCHPV","UK302")) { # IARCHPV doesn't have the high risk, sex, ethnicity variable, UK302 doesn't need these
   dat.long$highrisk_label <-
     with(
       dat.long,
@@ -618,7 +620,7 @@ if (attr(config,"config")=="janssen_pooled_partA") {
 }
 
 #### for Figure 3. intercurrent vs pp, case vs non-case, (Day 1) Day 29 Day 57, by if Age >=65 and if at risk
-if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
+if (!study_name %in% c("IARCHPV","UK302")) { # IARCHPV, UK302 doesn't have high risk variable
   
   if (attr(config,"config")=="janssen_pooled_partA"){ # remove day 71 and mon 6 for this set of figures 1 of janssen_pooled_partA
     dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(time %in% c("Day 1","Day 29"))
