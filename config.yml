@@ -479,7 +479,7 @@ azd1222_stage2: &azd1222_stage2
   timepoints: [57]
   times: [Day57]
   time_labels: [Day 57]
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240422.csv
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240507.csv
   assay_metadata: assay_metadata/azd1222_stage2_assay_metadata.csv
   study_name: AZD1222
   covariates: ~ 1 # to be replaced by COR-specific covariates
@@ -1373,6 +1373,36 @@ D57azd1222_stage2_delta_bAb:
   tpeak: 57
   tpeaklag: 120
   tfinal.tpeak: 270
+  txt.endpoint: Delta COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
+
+D57azd1222_stage2_delta_nAb_sens:
+  ph1: ph1.D57_120
+  ph2: ph2.D57_120nAb
+  wt: wt.D57_120nAb
+  WtStratum: Wstratum
+  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_180
+  EventTimePrimary: COVIDTimeD57toD57_180
+  Earlyendpoint: AnyInfectionD57_120
+  covariates: ~.+ Senior + risk_score
+  tpeak: 57
+  tpeaklag: 120
+  tfinal.tpeak: 180
+  txt.endpoint: Delta COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
+
+D57azd1222_stage2_delta_bAb_sens:
+  ph1: ph1.D57_120
+  ph2: ph2.D57_120bAb
+  wt: wt.D57_120bAb
+  WtStratum: Wstratum
+  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_180
+  EventTimePrimary: COVIDTimeD57toD57_180
+  Earlyendpoint: AnyInfectionD57_120
+  covariates: ~.+ Senior + risk_score
+  tpeak: 57
+  tpeaklag: 120
+  tfinal.tpeak: 180
   txt.endpoint: Delta COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
 
