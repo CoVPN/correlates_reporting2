@@ -2,6 +2,8 @@
 # COR="D57azd1222_stage2_severe_bAb";
 # COR="D57azd1222_stage2_delta_nAb";
 # COR="D57azd1222_stage2_delta_bAb";
+# COR="D57azd1222_stage2_delta_nAb_sens";
+# COR="D57azd1222_stage2_delta_bAb_sens";
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "azd1222_stage2")
 Sys.setenv(VERBOSE = 1)
