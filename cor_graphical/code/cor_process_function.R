@@ -55,7 +55,7 @@ getResponder <- function(data,
       }
       
       # if (!is.na(pos.cutoffs[j])
-      if (grepl("bind", j) | COR == "D29VLvariant" | grepl("stage2", COR)) {
+      if (grepl("bind|ACE2", j) | COR == "D29VLvariant" | grepl("stage2", COR)) {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
         if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
       } else {
