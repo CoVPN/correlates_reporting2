@@ -55,6 +55,7 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
     if (sum(grepl(substr(panel, 1, 4), assay_metadata$assay))==0) next
     
     assay_num = length(assays[grepl(substr(panel,1,4), assays)])
+    if (panel=="bindSpike_sub_nvx_stage2") assay_num==2
     
     # by naive/non-naive, vaccine/placebo
     f_1 <- f_case_non_case_by_time_assay(
