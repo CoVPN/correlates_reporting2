@@ -82,7 +82,7 @@ cox.df=data.frame(
 
 for (iRegion in c(1,2,3)) {
 # iRegion=1; variant="Ancestral.Lineage"
-# iRegion=2; variant="Gamma" # Lambda Ancestral.Lineage
+# iRegion=2; variant="Ancestral.Lineage" # Lambda Ancestral.Lineage Gamma
 # iRegion=3; variant="Beta"
   
   region=regions[iRegion]

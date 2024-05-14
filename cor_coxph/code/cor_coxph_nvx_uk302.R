@@ -1,8 +1,9 @@
-# COR="D35";
+# COR="D35nvx_uk302";
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "nvx_uk302")
 Sys.setenv(VERBOSE = 1)
 source(here::here("..", "_common.R")) # dat_proc is made
+
 
 {
   library(kyotil) # p.adj.perm, getFormattedSummary
@@ -124,8 +125,7 @@ cor_coxph_risk_no_marker (
   verbose=FALSE
 ) 
 
-if (Sys.getenv("COR_COXPH_NO_MARKER_ONLY") == 1)
-  q("no")
+if (Sys.getenv("COR_COXPH_NO_MARKER_ONLY") == 1)  q("no")
 
 
 
@@ -185,9 +185,9 @@ cor_coxph_risk_plotting (
   assay_metadata,
 
   dat.plac = dat.pla.seroneg,
-  res.plac.cont = res.plac.cont,
-  prev.plac = prev.plac,
-  overall.ve=NULL,
+  res.plac.cont,
+  prev.plac,
+  overall.ve,
   
   show.ve.curves = T,
   plot.geq = F,

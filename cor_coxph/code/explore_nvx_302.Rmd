@@ -41,6 +41,14 @@ In the analysis data, the one ptid within 3.case and with EventIndPrimaryD35==0 
 with(subset(dat_proc, ph1.D35 & Bserostatus==0 & Trt==1), mytable(SampleSet, EventIndPrimaryD35))
 ```
 
+Distribution of followup time
+```{r}
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), hist(EventTimePrimaryD35))
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), sort(EventTimePrimaryD35, de=T)[1:500])
+```
+
+
+
 ### Marker data
 
 Before censoring with pos cutoff, the minimum marker value is 100 on the antilog scale, which suggests that the lower limit is 200. After censoring at 500, the min is 500 on the antilog scale.
