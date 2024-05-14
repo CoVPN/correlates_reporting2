@@ -178,7 +178,7 @@ cor_coxph_risk_plotting (
   dat.plac = dat.pla.seroneg,
   res.plac.cont,
   prev.plac,
-  overall.ve=NULL,
+  overall.ve,
   
   show.ve.curves = T,
   plot.geq = F,

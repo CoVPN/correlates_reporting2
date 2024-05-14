@@ -123,8 +123,9 @@ if (!is.null(config$assay_metadata)) {
   uloqs=assay_metadata$uloq; names(uloqs)=assays
   llox_labels=assay_metadata$llox_label; names(llox_labels)=assays
   lloxs=sapply(assays, function (a) assay_metadata[[llox_labels[a]]][assay_metadata$assay==a])
-
   
+  
+
 } else {
   
   lloxs=NULL

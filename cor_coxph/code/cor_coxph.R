@@ -36,7 +36,6 @@ library(forestplot)
 library(Hmisc) # wtd.quantile, cut2
 library(xtable) # this is a dependency of kyotil
 source(here::here("code", "params.R"))
-source(here::here("code", "cor_coxph_ph.R"))
 time.start=Sys.time()
 myprint(study_name)
 myprint(verbose)
@@ -62,11 +61,6 @@ myprint(numPerm)
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
     
-
-dat_proc$EventIndOfInterest = dat_proc$DeltaEventIndD57_120to21Dec10
-dat_proc$EventIndCompeting  = ifelse(dat_proc$COVIDIndD92toD181==1 & !dat_proc$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
-dat_proc$yy=dat_proc$EventIndOfInterest
-
 
 # define an alias for EventIndPrimaryDxx
 dat_proc$yy=dat_proc[[config.cor$EventIndPrimary]]
@@ -129,7 +123,18 @@ begin=Sys.time()
 # estimate overall VE in the placebo and vaccine arms
 ###################################################################################################
 
-source(here::here("code", "cor_coxph_risk_no_marker.R"))
+cor_coxph_risk_no_marker (
+    form.0,
+    dat=dat.vac.seroneg,
+    fname.suffix, 
+    save.results.to,
+    config,
+    config.cor,
+    tfinal.tpeak,
+    
+    dat.plac = dat.pla.seroneg,
+    verbose=FALSE
+) 
 
 if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 
