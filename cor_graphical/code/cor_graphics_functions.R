@@ -30,7 +30,7 @@ f_case_non_case_by_time_assay <-
              axis.x.text.size = 18,
              strip.x.text.size = 18,
              facet.x.var = vars(assay_label_short),
-             facet.y.var = vars(Trt_nnaive),
+             facet.y.var, # = vars(Trt_nnaive),
              pointby = "cohort_col",
              scale.x.discrete.lb = c("Omicron Cases", "Non-Cases"),
              lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
@@ -48,7 +48,7 @@ f_case_non_case_by_time_assay <-
               strip.background = element_rect(fill=NA,colour=NA),
               strip.placement = "outside",
               legend.position = "bottom", 
-              legend.text = element_text(size = 16, face="plain"),
+              legend.text = element_text(size = 26, face="plain"),
               legend.key = element_blank(), # remove square outside legend key
               plot.caption = element_text(size = 26, hjust=0, face="plain"), 
               panel.grid.major = element_blank(), 
@@ -58,10 +58,7 @@ f_case_non_case_by_time_assay <-
     p1 <- dat %>%
         filter(assay %in% assays & time %in% times) %>%
         left_join(assay_metadata, by="assay") %>%
-        mutate(Trt_nnaive = factor(paste(Trt, Bserostatus), 
-                                   levels = c("Vaccine Naive", "Vaccine Non-naive", "Placebo Naive", "Placebo Non-naive"),
-                                   labels = c("Vaccine\nnaive", "Vaccine\nnon-naive", "Placebo\nnaive", "Placebo\nnon-naive")),
-               cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event)),
+        mutate(cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event)),
                cohort_col2 = paste(cohort_event, Trt),
                time = factor(time, levels=times)
                ) %>%
@@ -127,7 +124,7 @@ f_longitude_by_assay <- function(
     ybreaks = c(0,2,4,6),
     panel.text.size = 4,
     facet.x.var = vars(assay_label_short),
-    facet.y.var = vars(Trt_nnaive),
+    facet.y.var, #= vars(Trt_nnaive),
     split.var = "panel",
     pointby = "cohort_col",
     lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
@@ -157,10 +154,7 @@ f_longitude_by_assay <- function(
     p2 <- dat %>%
         filter(assay %in% assays) %>%
         left_join(assay_metadata, by="assay") %>%
-        mutate(Trt_nnaive = factor(paste(Trt, Bserostatus), 
-                                   levels = c("Vaccine Naive", "Vaccine Non-naive", "Placebo Naive", "Placebo Non-naive"),
-                                   labels = c("Vaccine\nnaive", "Vaccine\nnon-naive", "Placebo\nnaive", "Placebo\nnon-naive")),
-               cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event))
+        mutate(cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event))
         ) %>%
         ungroup() %>%
         group_split(.[[split.var]]) %>% # e.g., "panel" variable from assay_metadata

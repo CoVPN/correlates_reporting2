@@ -28,33 +28,33 @@ if (study_name !="VAT08"){
 bAb_assays <- assays[grepl("bind", assays)]
 nAb_assays <- assays[grepl("pseudoneut", assays)]
 live_assays <- assays[grepl("liveneut", assays)]
-names(labels.assays.short) <- assays
 
-times <- c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
+times = c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
+if(attr(config,"config")=="janssen_pooled_partA") {
+  times_ = c("B","Day29","Delta29overB","Day71"); timepoints_=c(29,71)
+  labels.time = c("Day 1", "Day 29","D29 fold-rise over D1", "Day 71"); names(labels.time) = times_
+  timepoints_= timepoints
+} else if (attr(config,"config")=="prevent19_stage2") {
+  times_ = c("Day35", "C1", "BD1") 
+  labels.time = c("Day 35", "Crossover Day 1", "Booster Day 1"); names(labels.time) = times_
+  timepoints_= timepoints
+} else {times_ = times; timepoints_=timepoints}
 
-# Depends on the incoming data
-if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config"))){
-  assay_immuno <- assays[assays %in% c(assays, "bindN")]
-  labels.assays.all <- c("Binding Antibody to N", labels.assays)
-  names(labels.assays.all)[1] <- "bindN"
-  labels.assays <- labels.assays.all[assay_immuno]
-} else {
-  assay_immuno <- assays
-}
+
 
 # rerun the definitions in _common.R below based on assay_immuno
 # axis labeling
-labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
+labels.axis <- outer(rep("", length(times_)), labels.assays.short[assays], "%.%")
 labels.axis <- as.data.frame(labels.axis)
-rownames(labels.axis) <- times
+rownames(labels.axis) <- times_
 
-# short labels
-labels.assays.short <- labels.axis[1, ]
+
+
 
 # title labeling
 labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
 labels.title <- as.data.frame(labels.title)
-colnames(labels.title) <- times
+colnames(labels.title) <- times_
 # NOTE: hacky solution to deal with changes in the number of markers
 rownames(labels.title)[seq_along(assays)] <- assays
 labels.title <- as.data.frame(t(labels.title))
@@ -75,4 +75,15 @@ if (is.null(uloqs)) {
   lods=assay_metadata$lod; names(lods)=assays
   lloxs=ifelse(llox_labels=="lloq", lloqs, lods)
   lloxs=ifelse(llox_labels=="pos", assay_metadata$pos.cutoff, lloxs)
+}
+
+
+# Depends on the incoming data
+if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config"))){
+  assay_immuno <- assays[assays %in% c(assays, "bindN")]
+  labels.assays.all <- c("Binding Antibody to N", labels.assays)
+  names(labels.assays.all)[1] <- "bindN"
+  labels.assays <- labels.assays.all[assay_immuno]
+} else {
+  assay_immuno <- assays
 }

@@ -3,6 +3,7 @@
 #Sys.setenv(TRIAL = "vat08_combined");
 #Sys.setenv(TRIAL = "janssen_partA_VL");
 #Sys.setenv(TRIAL = "janssen_pooled_partA")
+#Sys.setenv(TRIAL = "prevent19_stage2")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -134,12 +135,18 @@ print("Data preprocess")
 # vs. non-cases.  The goal is to characterize immunogenicity in the random
 # subcohort, which is a stratified sample of enrolled participants. So,
 # immunogenicity analysis is always done in ppts that meet all of the criteria.
-dat.twophase.sample <- dat %>%
+if (attr(config,"config")=="prevent19_stage2") {
+  dat.twophase.sample <- dat %>%
+    filter(ph2.immuno.D35 == 1) #| ph2.immuno.BD1 | ph2.immuno.C1 == 1) # ph2 D35 covers ph2 BD1 and ph2 C1
+} else {dat.twophase.sample <- dat %>%
   filter(ph2.immuno == 1)
+}
 twophase_sample_id <- dat.twophase.sample$Ptid
 
 important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex",
-  "Bserostatus", "Senior", "Bstratum", "wt.subcohort", 
+  "Bserostatus", "Senior", "Bstratum", 
+  colnames(dat)[grepl("wt.subcohort|wt.immuno", colnames(dat))], # e.g. wt.subcohort, wt.immuno.C1, wt.immuno.D35, wt.immuno.BD1
+  if(attr(config,"config")=="prevent19_stage2") colnames(dat)[grepl("ph2.immuno", colnames(dat))], # e.g.ph2.immuno.D35, ph2.immuno.C1, ph2.immuno.BD1
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
   if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV") "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
@@ -151,7 +158,7 @@ dat.long.subject_level <- dat[, important.columns] %>%
   replicate(length(assay_immuno), ., simplify = FALSE) %>%
   bind_rows()
 
-if(attr(config,"config")=="janssen_pooled_partA") {times_ = c("B","Day29","Delta29overB","Day71"); timepoints_=c(29,71)} else {times_ = times; timepoints_=timepoints}
+## times_ is defined in param.R
 
 dat.long.assay_value.names <- c(times_, if(attr(config,"config")=="janssen_partA_VL") "Day71", if(attr(config,"config")=="janssen_partA_VL") "Mon6")
 dat.long.assay_value <- as.data.frame(matrix(
@@ -376,74 +383,75 @@ saveRDS(as.data.frame(dat.twophase.sample),
 
 ###################################################################### 
 # prepare datasets for violin plots, required for janssen_partA_VL, janssen_pooled_partA
-
-# longer format by assay and time
-dat.longer.immuno.subset <- dat.twophase.sample %>%
-  tidyr::pivot_longer(cols = all_of(c(outer(times_, assays, "%.%")))[all_of(c(outer(times_, assays, "%.%"))) %in% colnames(dat.twophase.sample)], names_to = "time_assay", values_to = "value") %>%
-  mutate(time = gsub(paste0(assays, collapse = "|"), "", time_assay),
-         assay = gsub(paste0("^", times_, collapse = "|"), "", time_assay))
-
-# define response rates
-if (attr(config,"config")=="janssen_pooled_partA" & !any(grepl("Delta71", colnames(dat.mock)))){
-  dat.mock$Delta71overBbindSpike = dat.mock$Day71bindSpike - dat.mock$BbindSpike
-  dat.mock$Delta71overBbindRBD = dat.mock$Day71bindRBD - dat.mock$BbindRBD
-  dat.mock$Delta71overBpseudoneutid50 = dat.mock$Day71pseudoneutid50 - dat.mock$Bpseudoneutid50
-  dat.mock$Delta71overBADCP = dat.mock$Day71ADCP - dat.mock$BADCP
-  dat.mock$Day71pseudoneutid50uncensored=NA; dat.mock$Delta71overBpseudoneutid50uncensored=NA
-}
-resp <- getResponder(dat.mock, post_times = timepoints_, 
-                     assays=assays, pos.cutoffs = pos.cutoffs)
-
-resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
-  tidyr::pivot_longer(!Ptid, names_to = "category", values_to = "response")
-
-# add label = LLoQ, uloq values to show in the plot
-dat.longer.immuno.subset$LLoD = with(dat.longer.immuno.subset, log10(lods[as.character(assay)]))
-dat.longer.immuno.subset$pos.cutoffs = with(dat.longer.immuno.subset, log10(pos.cutoffs[as.character(assay)]))
-dat.longer.immuno.subset$LLoQ = with(dat.longer.immuno.subset, log10(lloqs[as.character(assay)]))
-if (attr(config,"config")=="janssen_pooled_partA"){
-  dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "Pos.Cut", "LoQ"))
-  dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), pos.cutoffs, LLoQ))
-} else {
-  dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "LoQ", "LoD"))
-  dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), LLoQ, LLoD))
-}
-dat.longer.immuno.subset$ULoQ = with(dat.longer.immuno.subset, log10(uloqs[as.character(assay)]))
-dat.longer.immuno.subset$lb2 = "ULoQ"
-dat.longer.immuno.subset$lbval2 =  dat.longer.immuno.subset$ULoQ
-
-# derive variables for the figures
-dat.longer.immuno.subset <- dat.longer.immuno.subset %>%
-  mutate(category=paste0(time, assay, "Resp")) %>%
-  left_join(resp_by_time_assay, by=c("Ptid", "category"))
-
-dat.longer.immuno.subset <- dat.longer.immuno.subset[,c("Ptid", "time", "assay", "category", "Trt", "Bserostatus", 
-                                                        "value", "wt.subcohort", "pos.cutoffs","lbval","lbval2", 
-                                                        "lb","lb2",if(attr(config,"config")=="janssen_partA_VL") "Region", 
-                                                        if(study_name=="VAT08") "nnaive", "response")]
-
-dat.longer.immuno.subset$nnaive <- with(dat.longer.immuno.subset, factor(Bserostatus, levels = c(0, 1), labels = bstatus.labels))
-dat.longer.immuno.subset$Trt <- with(dat.longer.immuno.subset, factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")))
-dat.longer.immuno.subset$Trt_nnaive = with(dat.longer.immuno.subset, 
-                                             factor(paste(Trt, nnaive), 
-                    levels = paste(rep(c("Vaccine", "Placebo"), each=2), rep(bstatus.labels, each=2)),
-                    labels = paste0(rep(c("Vaccine", "Placebo"), each=2), "\n", rep(bstatus.labels, each=2))))
-
-# subsets for violin/line plots
-#### figure specific data prep
-# define response rate:
-
-#### for figures 1
-groupby_vars1=c("Trt", "Bserostatus", "time", "assay")
-
-# define response rate
-dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1)
-saveRDS(dat.longer.immuno.subset.plot1, file = here::here("data_clean", "longer_immuno_data_plot1.rds"))
-
-if(attr(config,"config")=="janssen_partA_VL") {
-  groupby_vars1.2=c("Trt", "Bserostatus", "Region", "time", "assay")
+if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA")){
+  # longer format by assay and time
+  dat.longer.immuno.subset <- dat.twophase.sample %>%
+    tidyr::pivot_longer(cols = all_of(c(outer(times_, assays, "%.%")))[all_of(c(outer(times_, assays, "%.%"))) %in% colnames(dat.twophase.sample)], names_to = "time_assay", values_to = "value") %>%
+    mutate(time = gsub(paste0(assays, collapse = "|"), "", time_assay),
+           assay = gsub(paste0("^", times_, collapse = "|"), "", time_assay))
+  
+  # define response rates
+  if (attr(config,"config")=="janssen_pooled_partA" & !any(grepl("Delta71", colnames(dat_proc)))){
+    dat_proc$Delta71overBbindSpike = dat_proc$Day71bindSpike - dat_proc$BbindSpike
+    dat_proc$Delta71overBbindRBD = dat_proc$Day71bindRBD - dat_proc$BbindRBD
+    dat_proc$Delta71overBpseudoneutid50 = dat_proc$Day71pseudoneutid50 - dat_proc$Bpseudoneutid50
+    dat_proc$Delta71overBADCP = dat_proc$Day71ADCP - dat_proc$BADCP
+    dat_proc$Day71pseudoneutid50uncensored=NA; dat_proc$Delta71overBpseudoneutid50uncensored=NA
+  }
+  resp <- getResponder(dat_proc, post_times = timepoints_, 
+                       assays=assays, pos.cutoffs = pos.cutoffs)
+  
+  resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
+    tidyr::pivot_longer(!Ptid, names_to = "category", values_to = "response")
+  
+  # add label = LLoQ, uloq values to show in the plot
+  dat.longer.immuno.subset$LLoD = with(dat.longer.immuno.subset, log10(lods[as.character(assay)]))
+  dat.longer.immuno.subset$pos.cutoffs = with(dat.longer.immuno.subset, log10(pos.cutoffs[as.character(assay)]))
+  dat.longer.immuno.subset$LLoQ = with(dat.longer.immuno.subset, log10(lloqs[as.character(assay)]))
+  if (attr(config,"config")=="janssen_pooled_partA"){
+    dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "Pos.Cut", "LoQ"))
+    dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), pos.cutoffs, LLoQ))
+  } else {
+    dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "LoQ", "LoD"))
+    dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), LLoQ, LLoD))
+  }
+  dat.longer.immuno.subset$ULoQ = with(dat.longer.immuno.subset, log10(uloqs[as.character(assay)]))
+  dat.longer.immuno.subset$lb2 = "ULoQ"
+  dat.longer.immuno.subset$lbval2 =  dat.longer.immuno.subset$ULoQ
+  
+  # derive variables for the figures
+  dat.longer.immuno.subset <- dat.longer.immuno.subset %>%
+    mutate(category=paste0(time, assay, "Resp")) %>%
+    left_join(resp_by_time_assay, by=c("Ptid", "category"))
+  
+  dat.longer.immuno.subset <- dat.longer.immuno.subset[,c("Ptid", "time", "assay", "category", "Trt", "Bserostatus", 
+                                                          "value", "wt.subcohort", "pos.cutoffs","lbval","lbval2", 
+                                                          "lb","lb2",if(attr(config,"config")=="janssen_partA_VL") "Region", 
+                                                          if(study_name=="VAT08") "nnaive", "response")]
+  
+  dat.longer.immuno.subset$nnaive <- with(dat.longer.immuno.subset, factor(Bserostatus, levels = c(0, 1), labels = bstatus.labels))
+  dat.longer.immuno.subset$Trt <- with(dat.longer.immuno.subset, factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")))
+  dat.longer.immuno.subset$Trt_nnaive = with(dat.longer.immuno.subset, 
+                                               factor(paste(Trt, nnaive), 
+                      levels = paste(rep(c("Vaccine", "Placebo"), each=2), rep(bstatus.labels, each=2)),
+                      labels = paste0(rep(c("Vaccine", "Placebo"), each=2), "\n", rep(bstatus.labels, each=2))))
+  
+  # subsets for violin/line plots
+  #### figure specific data prep
+  # define response rate:
+  
+  #### for figures 1
+  groupby_vars1=c("Trt", "Bserostatus", "time", "assay")
   
   # define response rate
-  dat.longer.immuno.subset.plot1.2 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1.2)
-  saveRDS(dat.longer.immuno.subset.plot1.2, file = here::here("data_clean", "longer_immuno_data_plot1.2.rds"))
+  dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1)
+  saveRDS(dat.longer.immuno.subset.plot1, file = here::here("data_clean", "longer_immuno_data_plot1.rds"))
+  
+  if(attr(config,"config")=="janssen_partA_VL") {
+    groupby_vars1.2=c("Trt", "Bserostatus", "Region", "time", "assay")
+    
+    # define response rate
+    dat.longer.immuno.subset.plot1.2 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1.2)
+    saveRDS(dat.longer.immuno.subset.plot1.2, file = here::here("data_clean", "longer_immuno_data_plot1.2.rds"))
+  }
 }
