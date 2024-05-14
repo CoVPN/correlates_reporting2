@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_", asy, "_by_times_", bsero, "_", trt, "_", ifelse(study_name=="PREVENT19" & country=="Nvx_US", "US_only_", ""), study_name, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_", asy, "_by_times_", bsero, "_", trt, "_", ifelse(attr(config,"config")=="prevent19" & country=="Nvx_US", "US_only_", ""), study_name, ".pdf"))`}
 
-\caption{`r paste0("Pair plots of D1", if (study_name!="VAT08") paste0(", D",timepoints, collapse = " and "), ifelse(study_name=="VAT08", " and fold-change of ", " "), asyLabel, ": ", bseroLabel, " ", trt, " arm", ifelse(study_name=="PREVENT19" & country=="Nvx_US", " (US only)", ""))`}
+\caption{`r paste0("Pair plots of D1", if (study_name!="VAT08") paste0(", D",timepoints, collapse = " and "), ifelse(study_name=="VAT08", " and fold-change of ", " "), asyLabel, ": ", bseroLabel, " ", trt, " arm", ifelse(attr(config,"config")=="prevent19" & country=="Nvx_US", " (US only)", ""))`}
 
 \end{figure}
 

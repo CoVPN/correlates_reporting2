@@ -3,13 +3,10 @@
 renv::activate(project = here::here(".."))
 library(GGally)
 library(stringr)
-require(devtools)
-install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
 library(cowplot) # for function plot_grid
 library(grid)
 library(gridExtra)
-install.packages("wCorr", repos = "http://cran.us.r-project.org") # weighted correlation
-library(wCorr)
+library(wCorr) # weighted correlation
 #library(ggnewscale) # for new_scale_color() 
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:

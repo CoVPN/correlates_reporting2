@@ -373,10 +373,10 @@ prevent19: &prevent19
   times: [B, Day35, Delta35overB]
   time_labels: [Day 1, Day 35, D35 fold-rise over D1]
   data_cleaned: /trials/covpn/p3004/analysis/correlates/Part_A_Blinded_Phase_Data/adata/prevent19_data_processed_20240325.csv
-  assays: [bindSpike, bindRBD, pseudoneutid50, bindNVXIgG, bindNVXIgGIU, ACE2]
-  llox_label: [LLOQ, LLOQ, LOD, POS, POS, LOD]
-  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, NVX Binding Assay, NVX Binding Assay, NVX ACE2]
-  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), NVX IgG (EU), NVX IgG (IU), NVX ACE2]
+  assays: [bindSpike, bindRBD, pseudoneutid50]
+  llox_label: [LLOQ, LLOQ, LOD]
+  assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer]
+  assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml)]
   study_name: PREVENT19
   covariates: ~.+ risk_score
   ve_ylim: [0,1]
@@ -412,7 +412,7 @@ prevent19_stage2: &prevent19_stage2
   timepoints: [35]
   times: [Day35]
   time_labels: [Day 35]
-  data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240409.csv
+  data_cleaned: /trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240502.csv
   assay_metadata: assay_metadata/prevent19_stage2_assay_metadata.csv
   study_name: PREVENT19
   covariates: ~ 1  # to be replaced by COR-specific covariates in _common.R
@@ -479,7 +479,7 @@ azd1222_stage2: &azd1222_stage2
   timepoints: [57]
   times: [Day57]
   time_labels: [Day 57]
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240507.csv
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240513.csv
   assay_metadata: assay_metadata/azd1222_stage2_assay_metadata.csv
   study_name: AZD1222
   covariates: ~ 1 # to be replaced by COR-specific covariates

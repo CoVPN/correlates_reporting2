@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_", tp, "_Markers_", bsero, "_", trt, "_arm_", ifelse(study_name=="PREVENT19" & country=="Nvx_US", "US_only_", ""), reg, ab, study_name, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_", tp, "_Markers_", bsero, "_", trt, "_arm_", ifelse(attr(config,"config")=="prevent19" & country=="Nvx_US", "US_only_", ""), reg, ab, study_name, ".pdf"))`}
 
-\caption{`r paste0("Pair plots of ",  tpLabel, " ", abLabel, " markers: ",  bseroLabel," ", trt, " arm", ifelse(study_name=="PREVENT19" & country=="Nvx_US", " (US only)", ""), ifelse(regLabel!="", paste0(", ", regLabel), ""))`}
+\caption{`r paste0("Pair plots of ",  tpLabel, " ", abLabel, " markers: ",  bseroLabel," ", trt, " arm", ifelse(attr(config,"config")=="prevent19" & country=="Nvx_US", " (US only)", ""), ifelse(regLabel!="", paste0(", ", regLabel), ""))`}
 
 \end{figure}
 
