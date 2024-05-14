@@ -50,12 +50,12 @@ if (attr(config,"config") == "prevent19_stage2"){
 } else if (attr(config,"config") == "azd1222_stage2") {set1_times <- set1_times[set1_times!="Day 360"]
 } else if (attr(config,"config") == "prevent19nvx") {set1_times <- set1_times[set1_times!="Day 1"]}
 
-for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_nvx_stage2")){
+for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")){
     
     if (sum(grepl(substr(panel, 1, 4), assay_metadata$assay))==0) next
     
     assay_num = length(assays[grepl(substr(panel,1,4), assays)])
-    if (panel=="bindSpike_sub_nvx_stage2") assay_num==2
+    if (panel=="bindSpike_sub_stage2") assay_num = 2
     
     # by naive/non-naive, vaccine/placebo
     f_1 <- f_case_non_case_by_time_assay(
@@ -65,7 +65,7 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
                                        labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))),
         
         facet.y.var = vars(Trt_nnaive),
-        assays = if(panel=="bindSpike_sub_nvx_stage2") {c("bindSpike_D614","bindSpike_Delta1")
+        assays = if(panel=="bindSpike_sub_stage2") {c("bindSpike_D614","bindSpike_Delta1")
             } else if (attr(config,"config")=="prevent19nvx") {assays} else {assays[grepl(substr(panel, 1, 4), assays)]},
         times = set1_times,
         ylim = if (attr(config,"config")=="nvx_uk302") {c(1, 6)} else if (attr(config,"config")=="prevent19nvx") {c(0,6.6)} else {c(0, 5.5)}, 

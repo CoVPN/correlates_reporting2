@@ -138,7 +138,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                     )
       
       # SET 1
-      for (a in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_nvx_stage2")){
+      for (a in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")){
              
         if ((grepl("nab", COR_postfix) & !grepl("pseudoneutid50", a)) | (grepl("bab", COR_postfix) & !grepl("bindSpike", a))) next # for AZ stage 2
         if (a == "pseudoneutid50" & attr(config,"config") %in% c("nvx_uk302","prevent19nvx")) next # no id50 for nvx_uk302, prevent19nvx
@@ -148,7 +148,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           if(attr(config,"config")=="azd1222_stage2" & tp=="Day 360") next # do not have this for azd1222_stage2
           
           tpLabel = tolower(tp)
-          aLabel = gsub("_sub_nvx_stage2", " subset", a)
+          aLabel = gsub("_sub_stage2", " subset", a)
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
           cat("\\clearpage", sep = '\n')
