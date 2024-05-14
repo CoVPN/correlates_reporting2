@@ -47,6 +47,18 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail))
 	Rscript code/make_table_all_covail.R D15to181
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
 	Rscript code/make_table_all_VL.R D29VLvariant
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
+	Rscript code/make_table_all_stg2.R D35prevent19_stage2_delta 
+	Rscript code/make_table_all_stg2.R D35prevent19_stage2_severe
+else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_stage2))
+	Rscript code/make_table_all_stg2_azd.R D57azd1222_stage2_delta_nAb 
+	Rscript code/make_table_all_stg2_azd.R D57azd1222_stage2_delta_bAb 
+	Rscript code/make_table_all_stg2_azd.R D57azd1222_stage2_severe_nAb
+	Rscript code/make_table_all_stg2_azd.R D57azd1222_stage2_severe_bAb
+else ifeq ($(TRIAL),$(filter $(TRIAL), nvx_uk302))
+	Rscript code/make_table_all.R D35nvx_uk302
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19nvx))
+	Rscript code/make_table_all.R D35prevent19nvx
 endif
 
 ## clean            : delete contents of data_clean/ and output/ directories

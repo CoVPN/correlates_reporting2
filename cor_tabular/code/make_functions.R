@@ -41,7 +41,7 @@ getResponder <- function(data,
         }
       }
       
-      if(grepl("bind", j) | COR == "D29VLvariant" | grepl("stage2", COR)){
+      if(grepl("bind|ACE", j) | COR == "D29VLvariant" | grepl("stage2", COR)){
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(cutoff))
       } else {
       data[, paste0(post, "Resp")] <- as.numeric(

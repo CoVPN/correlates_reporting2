@@ -11,7 +11,7 @@ library(dplyr, warn.conflicts = FALSE)
 options(dplyr.summarise.inform = FALSE)
 # For stratum with 1 ppt
 options(survey.lonely.psu="adjust")
-source(here::here("code", "make_functions.R"))
+source(here::here("code", "make_functions_VL.R"))
 
 
 ###################################################
@@ -113,8 +113,7 @@ tlf <-
       loop ="RegionC",
       deselect = c("Arm","RegionC"), 
       pack_row = "Arm",
-      col1="9cm"
-    ),
+      col1="9cm"),
 
     case_vacc_neg = list(
       table_header = "Antibody levels in the baseline SARS-CoV-2 negative
@@ -228,12 +227,13 @@ labels.BMI <- c("Underweight BMI < 18.5", "Normal 18.5 $\\leq$ BMI < 25",
 
 labels.time <- labels.time[times]
 
-if ("BbindN" %in% names(dat_proc) & any(grepl("bind", assays))) assays <- union(assays, "bindN")
+# if ("BbindN" %in% names(dat_proc) & any(grepl("bind", assays))) assays <- union(assays, "bindN")
+# 
+# 
+# bindN <- "Anti N IgG (BAU/ml)"
+# names(bindN) <- "bindN"
 
-
-bindN <- "Anti N IgG (BAU/ml)"
-names(bindN) <- "bindN"
-labels.assays.short.tabular <- c(labels.assays.short.tabular, bindN)
+labels.assays.short.tabular <- c(labels.assays.short.tabular)
 
 labels.assays.short <- labels.assays.short.tabular[assays]
 
@@ -273,7 +273,12 @@ resp.lb <- expand.grid(
   )) 
 
 labels_all <- full_join(labels.assays, resp.lb, by = c("time", "marker")) %>% 
-  mutate(mag_cat = colname, resp_cat = paste0(colname, ind))
+  mutate(mag_cat = colname, resp_cat = paste0(colname, ind),
+         variant=gsub(" (AU/ml)", "", label.short, fixed=T),
+         variant=str_split(variant, " - ", simplify = T)[2],
+         variant=ifelse(grepl(".", variant, fixed=T), str_split(variant, " ", simplify = T)[2], variant),
+         variant=ifelse(variant=="Reference", "Anc", variant))
+  
 
 
 
@@ -524,7 +529,7 @@ tab_dm <- bind_rows(dm_cat, dm_num) %>%
   #              summarise(tot = n()),
   #            by = c("RegionC","Baseline SARS-CoV-2", "Arm")) %>% 
   mutate(subgroup=subgrp[subgroup]) %>% #Arm = paste0(Arm, "\n(N = ", tot, ")"),
-  pivot_wider(c(Arm, RegionC, `Baseline SARS-CoV-2`, Arm, subgroup, subgroup_cat, rslt),
+  pivot_wider(id_cols=c(RegionC, `Baseline SARS-CoV-2`, subgroup, subgroup_cat),
               names_from = Arm, 
               names_sort = T,
               values_from = c(rslt)) %>%
@@ -544,7 +549,7 @@ tab_dm_ph1 <- bind_rows(dm_cat_ph1, dm_num_ph1) %>%
   #              summarise(tot = n()),
   #            by = c("RegionC","Baseline SARS-CoV-2", "Arm")) %>% 
   mutate(subgroup=subgrp[subgroup]) %>% # Arm = paste0(Arm, "\n(N = ", tot, ")"), 
-  pivot_wider(c(RegionC, `Baseline SARS-CoV-2`, Arm, subgroup, subgroup_cat, rslt),
+  pivot_wider(id_cols=c(RegionC, `Baseline SARS-CoV-2`, subgroup, subgroup_cat),
               names_from = Arm, 
               names_sort = T,
               values_from = c(rslt)) %>%
@@ -810,7 +815,7 @@ if (study_name %in% c("COVE", "MockCOVE")){
 
 rrdiff_case <- rpcnt_case %>% 
   # dplyr::filter(subgroup %in% subs & grepl("Resp",resp_cat)) %>% 
-  mutate(groupn = 2-match(Group, comp.i)%%2) %>%
+  mutate(groupn = match(Group, comp.i)%%2+1) %>%
   pivot_wider(id_cols = c(RegionC, subgroup, `Baseline SARS-CoV-2`, Arm, Visit, Marker, Ind),
               names_from = groupn, values_from = c(response, ci_l, ci_u), names_sep = "") 
 
@@ -871,8 +876,8 @@ tab_case <- full_join(rpcnt_case, rgm_case,
   pivot_wider(id_cols = c(RegionC, Arm, `Baseline SARS-CoV-2`, Marker, Visit, includeCase),
               names_from = Group, 
               values_from = c(N, rslt, `GMT/GMC`)) %>% 
-  full_join(rrdiff_case, by = c("RegionC", "Arm", "Baseline SARS-CoV-2", "Marker", "Visit")) %>% 
-  full_join(rgmt_case, by = c("RegionC", "Arm", "Baseline SARS-CoV-2", "Marker", "Visit")) 
+  left_join(rrdiff_case, by = c("RegionC", "Arm", "Baseline SARS-CoV-2", "Marker", "Visit")) %>% 
+  left_join(rgmt_case, by = c("RegionC", "Arm", "Baseline SARS-CoV-2", "Marker", "Visit")) 
 
 if(length(comp_NA <- setdiff(comp.i, rpcnt_case$Group))!=0){
   tab_case <- tab_case %>% 
@@ -900,7 +905,7 @@ tab_case <- tab_case %>%
   select(RegionC, Arm, `Baseline SARS-CoV-2`, Visit, Marker, `N_Cases`, `rslt_Cases`, 
          `GMT/GMC_Cases`, `N_Non-Cases`, `rslt_Non-Cases`, `GMT/GMC_Non-Cases`,  
          rrdiff, `Ratios of GMT/GMC`) %>% 
-  arrange(Arm, `Baseline SARS-CoV-2`, Visit) 
+  arrange(RegionC, Arm, `Baseline SARS-CoV-2`, Visit) 
   
 case_vacc_neg <- tab_case %>% 
   dplyr::filter(Arm == "Vaccine" & `Baseline SARS-CoV-2` == "Negative") %>% 

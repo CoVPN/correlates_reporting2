@@ -29,6 +29,7 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
   tlf_labels <- tlf[[i]]
   title_i <- tlf_labels[["table_header"]]
   title_i <- ifelse(substr(title_i, 1, 11)=="Demographic", title_i, paste(tlf_labels[["table_header"]], d_lab))
+  title_i <- gsub("_", "\\\\_",title_i)
 
   if (names(tlf)[i] == "tab_strtm1") {
     cat("\n\n\\newgeometry{top=0.1in, bottom=0.1in, left=1in, right=1in}")
@@ -78,7 +79,7 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
     tlf_labels[["col_name"]]
   } else setdiff(names(tab), deselect)
 
-  cat(sprintf("\\section{%s}", title_i))
+  # cat(sprintf("\\section{%s}", title_i))
   jloop <- if (!is.na(loop)) pull(tab, !!as.name(loop)) %>% unique() else 1
   for (j in jloop) {
       subnum <- subnum + 1
@@ -103,7 +104,8 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
                      longtable = TRUE,
                      escape = FALSE,
                      col.names = linebreak(col_name.j, align="l"),
-                     caption = caption.j) %>%
+                    caption = caption.j
+                     ) %>%
         column_spec(1, width = ifelse("col1"%in%tlf_args, tlf_labels[["col1"]],"2.7cm")) %>% 
         kable_styling(latex_options = c("repeat_header", "scale_down"), 
                       repeat_header_method = "replace") %>%
@@ -113,7 +115,7 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
         if ("header_above1" %in% tlf_args) {
           tabjk <-add_header_above(tabjk, tlf_labels[["header_above1"]])
           }
-        
+
         if ("header_above2" %in% tlf_args) {
           tabjk <-add_header_above(tabjk, tlf_labels[["header_above2"]])
           }
