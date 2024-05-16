@@ -9,8 +9,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(survey)
 library(kyotil)
 
+dat_mapped_new=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240514.csv')
+# dat_mapped is  useful for data processing
 dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240322.csv')
-dat_mapped_new=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240418.csv')
 dat_mapped_stage1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage1/adata/COVID_AstraZeneca_realdata_20221208.csv')
  
 dat_mapped$EarlyendpointD57 <- with(dat_mapped, EarlyinfectionD57==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD57 + 7),1,0)
@@ -31,8 +32,7 @@ dat_mapped$col2[dat_mapped$EventIndPrimaryD1==1]=2 # set cases to red
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/azd1222_stage2_assay_metadata.csv')
 assays=assay_metadata$assay
 
-dat_proc = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240409.csv')
-dat_proc_new = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240418.csv')
+dat_proc = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240514.csv')
 
 dat_proc$EventIndPrimaryType_short=substr(dat_proc$COVIDIndType,1,3)
 dat_proc$EventIndPrimaryType_short=ifelse(dat_proc$EventIndPrimaryType_short=="", NA,dat_proc$EventIndPrimaryType_short)
@@ -179,14 +179,13 @@ print(sort(unique(dat_mapped$Day57pseudoneutid50_Delta))[1:5])
 ```
 
 
-The following plot shows that Delta ID50 readouts are lower than ancestral ID50 and that marker level drops from over time. All cases are colored red.
+Delta ID50 readouts are lower than ancestral ID50 and that marker level drops from over time. All cases are colored red.
 ```{r}
 dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
 names(dat)=sub("pseudoneutid50","",names(dat))
 names(dat)=sub("Day","D",names(dat))
 myboxplot(dat, cex.axis=0.6, col=dat_mapped$col2)
 ```
-
 
 
 Correlation is high between bAb markers (0.99 between the three Delta bAb markers), but moderate between the two nAb markers.
@@ -198,33 +197,37 @@ names(dat)=sub("Day57bindSpike_","",names(dat))
 mypairs(dat)
 ```
 
+
 A closer look at the correlation between ancestral ID50 and Delta ID50
 
 ```{r}
 corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped, asp=1)
 ```
 
-bAb markers are all-or-none. 
 
-For nAb, we will require Delta nAb to be present. For the 9 ptids without ancestral nAb but with Delta nAb, we will impute the ancestral nAb. There are a lot more ptids with just ancestral nAb but we won't use them in the correlates study to allow comparison between Delta and ancestral nAb.
+bAb markers are all-or-none. 
 ```{r}
 dat=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
-for (i in 1:length(assays)) {
+for (i in 3:10) {
   dat[['tmp'%.%i]]=ifelse(is.na(dat[['Day57'%.%assays[i]]]), 0, 1)
 }
-dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10))
+dat$tmp=with(dat,paste0(tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10))
 print(table(dat$tmp, dat$DeltaEventIndD57_120to21Dec10))
 ```
 
-We will only impute ancestral ID50 using Delta ID50. We will have two sets of weights, one for bAb and one for nAb. 
+
+For nAb, we will require Delta nAb to be present. For the 12 ptids without ancestral nAb but with Delta nAb, we will impute the ancestral nAb. There are a lot more ptids with just ancestral nAb but we won't use them in the correlates study to allow comparison between Delta and ancestral nAb.
 ```{r}
-dat=subset(dat_mapped)
-dat$tmp1 = !is.na(dat$Day57pseudoneutid50_Delta)
-dat$tmp2 = !is.na(dat$Day57bindSpike_Alpha)
-dat$tmp=with(dat,paste0(as.integer(tmp1),as.integer(tmp2)))
-print(table(dat$tmp, dat$DeltaEventIndD57_120to21Dec10))
+dat=subset(dat_mapped_new, AnyInfectionD1toD57_120==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+for (i in 1:2) {
+  dat[['tmp'%.%i]]=ifelse(is.na(dat[['Day57'%.%assays[i]]]), 0, 1)
+}
+dat$tmp=with(dat,paste0(tmp1,tmp2))
+print(table(dat$tmp, dat$KnownOrImputedDeltaCOVIDIndD57_120toD57_270))
+print(table(dat$tmp, dat$SevereCOVIDIndD57_120to21Dec10))
 ```
 
+We will have two sets of weights, one for bAb and one for nAb. 
 ```{r}
 dat=subset(dat_mapped, ph1.D57==1)
 dat$tmp1 = !is.na(dat$Day57pseudoneutid50_Delta)
@@ -251,4 +254,18 @@ We will **adjust for Age>=65 in Delta COVID correlates analyses**. Age group is 
 ```{r}
 coxph(Surv(DeltaEventTimeD57_to21Dec10, DeltaEventIndD57_120to21Dec10)~Age+risk_score, subset(dat_proc, ph1.D57_120==1 & Bserostatus==0 & Trt==1))
 coxph(Surv(DeltaEventTimeD57_to21Dec10, DeltaEventIndD57_120to21Dec10)~Senior+risk_score, subset(dat_proc, ph1.D57_120==1 & Bserostatus==0 & Trt==1))
+```
+
+### Misc
+
+Ptid D8110C00001/E20053360157 is a severe case censored by outside vaccination contamination,  SevereCOVIDTimeD57to21Dec10_raw and SevereCOVIDTimeD57to21Dec10 are 292 and 34, respectively; contamination_Day180 is 1.
+
+```{r}
+dat_mapped_new1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240507.csv')
+dat_mapped_new=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240514.csv')
+tmp1=subset(dat_mapped_new1, AnyInfectionD1toD57_120==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 )
+tmp=subset(dat_mapped_new, AnyInfectionD1toD57_120==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 )
+mytable(tmp1$SevereCOVIDIndD57_120to21Dec10, tmp$SevereCOVIDIndD57_120to21Dec10)
+
+tmp[which(tmp1$SevereCOVIDIndD57_120to21Dec10==1 & tmp$SevereCOVIDIndD57_120to21Dec10==0),]
 ```

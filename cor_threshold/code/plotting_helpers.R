@@ -75,8 +75,16 @@ get_plot <- function(marker, simultaneous_CI = F, monotone = T, above = TRUE) {
       data1 <- read.csv(here::here("output", TRIAL, "BD29naive", "data_clean", paste0("data_secondstage.csv")))
       xlim=get.range.cor(data1, a, tpeak)
     }
+    
   } else {
     xlim=range(data[[marker]], na.rm=T)
+    
+    # hack
+    if (TRIAL=="moderna_boost" & COR=="BD29nnaive") {
+      # use naive data to set xlim
+      data1 <- read.csv(here::here("output", TRIAL, "BD29naive", "data_clean", paste0("data_secondstage.csv")))
+      xlim=range(data1[[marker]], na.rm=T)
+    }
   }
   
   
