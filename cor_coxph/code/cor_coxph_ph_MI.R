@@ -42,8 +42,8 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
       if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
         dat.vacc$ph2a = dat.vacc$ph2.D29
         
-      } else if (TRIAL=="vat08_combined" & endsWith(a, "pseudoneutid50") & iAna==1) {
-        dat.vacc$ph2a = dat.vacc[["ph2.D"%.%tp%.%".nAb.st1.anc"]]
+      # } else if (TRIAL=="vat08_combined" & endsWith(a, "pseudoneutid50") & iAna==1) {
+      #   dat.vacc$ph2a = dat.vacc[["ph2.D"%.%tp%.%".nAb.st1.anc"]]
         
       } else {
         dat.vacc$ph2a = dat.vacc$ph2
@@ -116,7 +116,7 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
         longtable=T, 
         label=paste0("tab:CoR_univariable_svycoxph_pretty",ifelse(i==1,"","_scaled")), 
         caption.placement = "top", 
-        caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", 
+        caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", 
                        config.cor$txt.endpoint, 
                        " in the vaccine group: Hazard ratios per ",ifelse(i==1,"10-fold","SD")," increment in the marker*")
   )
@@ -151,8 +151,8 @@ for (a in all.markers) {
     if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
       dat.vacc$ph2a = dat.vacc$ph2.D29
     
-    } else if (TRIAL=="vat08_combined" & endsWith(a, "pseudoneutid50") & iAna==1) {
-      dat.vacc$ph2a = dat.vacc[["ph2.D"%.%tp%.%".nAb.st1.anc"]]
+    # } else if (TRIAL=="vat08_combined" & endsWith(a, "pseudoneutid50") & iAna==1) {
+    #   dat.vacc$ph2a = dat.vacc[["ph2.D"%.%tp%.%".nAb.st1.anc"]]
       
     } else {
       dat.vacc$ph2a = dat.vacc$ph2
@@ -233,7 +233,7 @@ mytex(tab[1:(nrow(tab)),], file.name=paste0("CoR_univariable_svycoxph_cat_pretty
       longtable=T, 
       label=paste0("tab:CoR_univariable_svycoxph_cat_pretty_", study_name), 
       caption.placement = "top", 
-      caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", 
+      caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", 
                      config.cor$txt.endpoint, 
                      " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*")
 )
