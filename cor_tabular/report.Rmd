@@ -49,35 +49,16 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
     tlf_labels[["group_table_col"]] 
     } else NA 
 
-  if ("pack_row" %in% tlf_args) {
-    pack_row <- tlf_labels[["pack_row"]]
-    if (!is.na(loop)) { 
-      pack_row_ind <- by(tab, 
-                         tab[, loop], 
-                         function(x)table(droplevels(x[, pack_row])))
-      } else {
-      pack_row_ind <- table(droplevels(tab[, pack_row]))
-      }
-    } else NA
-
-  if (nrow(tab)==1){
-    tab <- data.frame(t(sapply(tab,function(x)gsub("%", "\\\\%", x))),
-                    check.names = FALSE)
-  }else{
-    tab <- data.frame(sapply(tab,function(x)gsub("%", "\\\\%", x)),
-                    check.names = FALSE)
-  }
-  
   rownames(tab) <- NULL
   colnames(tab) <- gsub("%", "\\\\%", colnames(tab))
   colnames(tab) <- gsub("Baseline SARS-CoV-2", "Baseline\nSARS\\-CoV\\-2",
                         colnames(tab))
   colnames(tab) <- gsub("% Greater than 2xLLO", "% Greater than\n2 $\\\\times$ LLO", colnames(tab))
   colnames(tab) <- gsub("% Greater than 4xLLO", "% Greater than\n4 $\\\\times$ LLO", colnames(tab))                        
-
-  col_name <- if ("col_name" %in% tlf_args) {
-    tlf_labels[["col_name"]]
-  } else setdiff(names(tab), deselect)
+  
+  line_sep <- if ("line_sep" %in% tlf_args) {
+    tlf_labels[["line_sep"]]
+  } else " "
 
   # cat(sprintf("\\section{%s}", title_i))
   jloop <- if (!is.na(loop)) pull(tab, !!as.name(loop)) %>% unique() else 1
@@ -89,13 +70,35 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
       } else {
         dplyr::filter(tab, !!as.name(loop) == j)
       }
+      
+      tab.j <- tab.j %>% select_if(~ !all(is.na(.)))
+      
+      if ("pack_row" %in% tlf_args) {
+        pack_row_ind <- table(droplevels(tab.j[, tlf_labels[["pack_row"]]]))  
+      }
 
       tab.j <- mutate_all(tab.j, linebreak, align = "l")
+      
+      if (nrow(tab.j)==1){
+        tab.j <- data.frame(t(sapply(tab.j, function(x)gsub("%", "\\\\%", x))),
+                        check.names = FALSE)
+      }else{
+        tab.j <- data.frame(sapply(tab.j, function(x)gsub("%", "\\\\%", x)),
+                        check.names = FALSE)
+      }
+      
       caption.j <- ifelse(!is.na(loop), sprintf("%s (%s)", title_i, j), title_i)
+      
+      col_name <- if ("col_name" %in% tlf_args) {
+        tlf_labels[["col_name"]]
+      } else setdiff(names(tab.j), deselect)
+
+      
       col_name.j <- if(is.data.frame(col_name)) {
         col_name[,j]
         } else col_name
       col_name.j <- col_name.j[!col_name.j %in% deselect]
+      
       
       tabjk <- kable(if (is.na(deselect)) {tab.j} else {tab.j %>% select(-!!deselect)},
                      align = "l",
@@ -103,6 +106,7 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
                      booktabs = TRUE,
                      longtable = TRUE,
                      escape = FALSE,
+                     linesep=line_sep,
                      col.names = linebreak(col_name.j, align="l"),
                     caption = caption.j
                      ) %>%
@@ -111,18 +115,28 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
                       repeat_header_method = "replace") %>%
         footnote(general_title = "", general = footer_i, threeparttable = TRUE,
         escape = FALSE)
+      
+      if ("pack_row" %in% tlf_args) {
+          tabjk <- pack_rows(tabjk, index = pack_row_ind, escape = FALSE)
+        }
 
         if ("header_above1" %in% tlf_args) {
-          tabjk <-add_header_above(tabjk, tlf_labels[["header_above1"]])
+          # This might cause issues, check when debugging
+          header_above1 <- if(is.list(tlf_labels[["header_above1"]])) {
+            tlf_labels[["header_above1"]][[match(j, jloop)]]
+            } else tlf_labels[["header_above1"]]
+      
+          tabjk <-add_header_above(tabjk, header_above1)
           }
 
         if ("header_above2" %in% tlf_args) {
-          tabjk <-add_header_above(tabjk, tlf_labels[["header_above2"]])
-          }
+          # This might cause issues, check when debugging
+          header_above2 <- if(is.list(tlf_labels[["header_above2"]])) {
+            tlf_labels[["header_above2"]][[match(j, jloop)]]
+            } else tlf_labels[["header_above2"]]
       
-        if ("pack_row" %in% tlf_args) {
-          tabjk <- pack_rows(tabjk, index = if(is.na(loop))pack_row_ind else pack_row_ind[[j]], escape = FALSE)
-        }
+          tabjk <-add_header_above(tabjk, header_above2)
+          }
       
         if ("font_size" %in% tlf_args) {
           tabjk <- tabjk %>% kable_styling(font_size = tlf_labels[["font_size"]])
