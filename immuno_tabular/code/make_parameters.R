@@ -37,8 +37,7 @@ randomsubcohort <- case_when(study_name=="COVE" ~ "This table summarizes the
       
       TRUE~ "This table summarizes characteristics of 
       per-protocol participants in the immunogenicity subcohort, which was randomly 
-      sampled from the study cohort."
-      )
+      sampled from the study cohort.")
 
 tlf <-
   list(
@@ -78,9 +77,10 @@ tlf <-
       markers",
       table_footer = c(
         sprintf("Binding Antibody Responders are defined as participants with concentration 
-        above the specified positivity cut-off, with a separate cut-off for each 
-        antigen Spike, RBD, N (%s, %s, and %s respectively, in IU/ml).", 
-                pos.cutoffs["bindSpike"], pos.cutoffs["bindRBD"], pos.cutoffs["bindN"]),
+        above the specified positivity cut-off."),
+        # with a separate cut-off for each 
+        # antigen Spike, RBD, N (%s, %s, and %s respectively, in IU/ml).", 
+        #         pos.cutoffs["bindSpike"], pos.cutoffs["bindRBD"], pos.cutoffs["bindN"]),
         "Percentages are calculated for the whole per-protocol group/subgroup, 
         using inverse probability weighting."),
       loop = "subgroup",
@@ -95,16 +95,16 @@ tlf <-
       markers",
       table_footer = c(
         sprintf("Binding Antibody Responders are defined as participants with concentration 
-        above the specified positivity cut-off, with a separate cut-off for each 
-        antigen Spike, RBD, N (%s, %s, and %s respectively, in IU/ml).", 
-                pos.cutoffs["bindSpike"], pos.cutoffs["bindRBD"], pos.cutoffs["bindN"]), 
+        above the specified positivity cut-off"),
+        #         with a separate cut-off for each 
+        # antigen Spike, RBD, N (%s, %s, and %s respectively, in IU/ml).", 
+        #         pos.cutoffs["bindSpike"], pos.cutoffs["bindRBD"], pos.cutoffs["bindN"]), 
         "Percentages are calculated for the whole per-protocol group/subgroup, 
         using inverse probability weighting."),
       loop = "subgroup",
       group_table_col = c("Rx", "Group", "Baseline", "Visit", "N", "Marker"),
       deselect = "subgroup",
-      pack_row = "subgroup"
-    ),
+      pack_row = "subgroup"),
     
     tab_pseudo = list(
       table_header = "Percentage of responders, and participants
@@ -116,14 +116,14 @@ tlf <-
         ID50 neutralization titer above the assay LLOQ, or as participants with
         baseline values above the LLOQ with a 4-fold increase in ID50.",
         "Percentages are calculated for the whole per-protocol group/subgroup, 
-        using inverse probability weighting.",
-        sprintf("LLOQ = %.2f, %.2f for pseudovirus-nAb ID50, ID80, respectively.", 
-                lloqs["pseudoneutid50"], lloqs["pseudoneutid80"])),
+        using inverse probability weighting."
+        # sprintf("LLOQ = %.2f, %.2f for pseudovirus-nAb ID50, ID80, respectively.", 
+        #         lloqs["pseudoneutid50"], lloqs["pseudoneutid80"])
+        ),
       loop = "subgroup",
       group_table_col = c("Rx", "Group", "Baseline", "Visit", "N", "Marker"),
       deselect = "subgroup",
-      pack_row = "subgroup"
-    ),
+      pack_row = "subgroup"),
     
     tab_wt = list(
       table_header = "Percentage of responders, and participants
@@ -140,8 +140,7 @@ tlf <-
       loop = "subgroup",
       group_table_col = c("Rx", "Group", "Baseline", "Visit", "N", "Marker"),
       deselect = "subgroup",
-      pack_row = "subgroup"
-    ),
+      pack_row = "subgroup"),
     
     tab_gm = list(
       table_header = "Geometric mean titers (GMTs) and geometric mean
@@ -151,8 +150,7 @@ tlf <-
       group_table_col = c("Rx", "Group", "Baseline", "Visit", "N", "Marker"),
       deselect = "subgroup",
       pack_row = "subgroup",
-      col1="7cm"
-    ),
+      col1="7cm"),
     
     tab_gmr = list(
       table_header = "Geometric mean titer ratios (GMTRs) or geometric mean
@@ -162,8 +160,7 @@ tlf <-
       group_table_col = c("Rx", "Group", "Baseline", "Visit", "N", "Marker"),
       deselect = "subgroup",
       pack_row = "subgroup",
-      col1="4cm"
-    ),
+      col1="4cm"),
     
     tab_rgmt = list(
       table_header = "The ratios of GMTs/GMCs between groups",
@@ -172,8 +169,7 @@ tlf <-
       pack_row = "subgroup",
       deselect = "subgroup",
       group_table_col = c("subgroup","Rx", "Baseline", "Visit"),
-      col1="4cm"
-    ),
+      col1="4cm"),
     
     tab_rrdiff = list(
       table_header = "Differences in the responder rates, 2FRs, 4FRs between 
@@ -184,8 +180,7 @@ tlf <-
       pack_row = "subgroup",
       group_table_col = c( "Group", "Baseline","Visit", "Marker"),
       deselect = "subgroup",
-      col1="4cm"
-    ),
+      col1="4cm"),
     
     
     tab_neg = list(
@@ -197,8 +192,7 @@ tlf <-
                    "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/\nGMCR"),
       header_above1 = c(" "=2, "Vaccine" = 3, "Placebo" = 3, "Comparison" = 2),
       header_above2 = c(" "=2, "Baseline SARS-CoV-2 Negative" = 8),
-      col1="1cm"
-    ),
+      col1="1cm"),
     
     tab_pos = list(
       table_header = "Antibody levels in the baseline SARS-CoV-2
@@ -209,8 +203,7 @@ tlf <-
                    "Resp rate", "GMT/GMC", "Resp Rate\nDifference", "GMTR/\nGMCR"),
       header_above1 = c(" "=2, "Vaccine" = 3, "Placebo" = 3, "Comparison" = 2),
       header_above2 = c(" "=2, "Baseline SARS-CoV-2 Positive" = 8),
-      col1="1cm"
-    ),
+      col1="1cm"),
     
     tab_vacc = list(
       table_header = "Antibody levels in the per-protocol cohort
@@ -222,8 +215,7 @@ tlf <-
       header_above1 = c(" "=2, "Baseline SARS-CoV-2 Positive" = 3,
                         "Baseline SARS-CoV-2 Negative" = 3, "Comparison" = 2),
       header_above2 = c(" "=2, "Vaccine Recipients" = 8),
-      col1="1cm"
-    ),
+      col1="1cm"),
     
     tab_plcb = list(
       table_header = "Antibody levels in the per-protocol cohort
@@ -235,9 +227,7 @@ tlf <-
       header_above1 = c(" "=2, "Baseline SARS-CoV-2 Positive" = 3, 
                         "Baseline SARS-CoV-2 Negative" = 3, "Comparison" = 2),
       header_above2 = c(" "=2, "Placebo Recipients" = 8),
-      col1="1cm"
-    )
-  )
+      col1="1cm")  )
 
 # Depends on the Incoming data
 if(include_bindN & !"bindN" %in% assays & study_name!="PROFISCOV"){
@@ -294,5 +284,13 @@ resp.lb <- expand.grid(
 labels_all <- full_join(labels.assays, resp.lb, by = c("time", "marker")) %>% 
   mutate(mag_cat = colname, resp_cat = paste0(colname, ind))
 
-save.image(file = here::here("data_clean", "params.Rdata"))
+# path for tables
+save.results.to <- here::here("data_clean")
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to <- paste0(here::here("data_clean"), "/", attr(config,"config"))
+
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
+print(paste0("save.results.to equals ", save.results.to))
+
+save.image(file = file.path(save.results.to, "params.Rdata"))
 

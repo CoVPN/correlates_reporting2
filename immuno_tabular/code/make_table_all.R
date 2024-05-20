@@ -7,8 +7,8 @@ source(here::here("..", "_common.R")) #
 # Immunogenicity Tables
 
 # Reload clean_data
-base::load(here::here("data_clean", "params.Rdata"))
-base::load(here::here("data_clean", "ds_all.Rdata"))
+base::load(here::here("data_clean", attr(config,"config"), "params.Rdata"))
+base::load(here::here("data_clean", attr(config,"config"), "ds_all.Rdata"))
 source(here::here("code", "make_functions.R"))
 library(survey)
 library(tidyverse)
