@@ -185,7 +185,15 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           
       }
       
+      
       # SET 3
+      if (COR=="D57azd1222_stage2_delta_bAb") {
+        # adhoc figure
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3_az_adhoc.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+      }
+      
       for (bsero in c("non_naive")){
         if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","prevent19nvx")) next # prevent19_stage2, azd1222_stage2, prevent19nvx don't have non_naive
         

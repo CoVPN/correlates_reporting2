@@ -570,9 +570,9 @@ if (study_name=="IARCHPV") {
     mutate(Trt="pooled") %>%
     bind_rows(dat.longer.cor.subset)
 } else if (attr(config,"config")=="janssen_pooled_partA"){ # remove day 71 and mon 6 for this set of figures 1 of janssen_pooled_partA
-  dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(time %in% c("Day 1","Day 29"))
+  dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(time %in% c("Day 1","Day 29") & !is.na(value))
 } else {
-  dat.longer.cor.subset_ = dat.longer.cor.subset
+  dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(!is.na(value))
 }
 
 dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset_, groupby_vars1)
@@ -608,6 +608,7 @@ if (attr(config,"config")=="janssen_pooled_partA") {
   
   #table(unique(dat.longer.cor.subset.adhoc[,c("Ptid","cohort_event_adhoc")])$cohort_event_adhoc)
   #table(unique(dat.longer.cor.subset[,c("Ptid","cohort_event")])$cohort_event)
+  dat.longer.cor.subset.adhoc = dat.longer.cor.subset.adhoc %>% filter(!is.na(value))
   
   dat.longer.cor.subset.plot1_adhoc <- get_resp_by_group(dat.longer.cor.subset.adhoc, groupby_vars1_adhoc)
   dat.longer.cor.subset.plot1_adhoc <- dat.longer.cor.subset.plot1_adhoc %>%
@@ -623,9 +624,9 @@ if (attr(config,"config")=="janssen_pooled_partA") {
 if (!study_name %in% c("IARCHPV","UK302")) { # IARCHPV, UK302 doesn't have high risk variable
   
   if (attr(config,"config")=="janssen_pooled_partA"){ # remove day 71 and mon 6 for this set of figures 1 of janssen_pooled_partA
-    dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(time %in% c("Day 1","Day 29"))
+    dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(time %in% c("Day 1","Day 29") & !is.na(value))
   } else {
-    dat.longer.cor.subset_ = dat.longer.cor.subset
+    dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(!is.na(value))
   }
   
   groupby_vars3 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", "age_geq_65_label", "highrisk_label")
@@ -653,6 +654,8 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
   groupby_vars_variant=c("Trt", "Bserostatus", "cohort_event2", "time", "assay", "Region") # diff from figure 1, uses cohort_event2 instead of cohort_event, add region
   
   # define response rate
+  dat.longer.cor.subset = dat.longer.cor.subset %>% filter(!is.na(value))
+  
   dat.longer.cor.subset.plot.variant <- get_resp_by_group(dat.longer.cor.subset, groupby_vars_variant)
   dat.longer.cor.subset.plot.variant <- dat.longer.cor.subset.plot.variant %>%
     mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),

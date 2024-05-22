@@ -206,6 +206,40 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
                     "_", length(assay_metadata_$assay), "_markers_", grp, ".pdf"
                 )
             )
+            
+            # adhoc for azd1222_stage2: day 57, a pairwise scatterplot of D57 binding Abs (Reference and Delta) vs. neutralizing antibodies (Reference and Delta)
+            #                           we use the bAb weights and we can note in the caption that this is the case
+            if (attr(config,"config") == "azd1222_stage2" & COR %in% c("D57azd1222_stage2_delta_bAb") & t=="Day57"){
+                
+                assay_metadata_adhoc = data.frame(assays = c("bindSpike_D614",
+                                                             "bindSpike_Delta1",
+                                                             "pseudoneutid50_D614G",
+                                                             "pseudoneutid50_Delta"),
+                                                  assay_label_short = c("Day57 Anti Spike IgG - Reference (AU/ml)",
+                                                                        "Day57 Anti Spike IgG - Delta AY.4.2 (AU/ml)",
+                                                                        "Day57 nAb ID50 D614G (AU/ml)",
+                                                                        "Day57 nAb DI50 Delta (AU/ml)"))
+                
+                covid_corr_pairplots(
+                    plot_dat = dat.plot,
+                    time = t,
+                    assays = assay_metadata_adhoc$assays,
+                    strata = "all_one",
+                    weight = "wt",#ifelse(grepl(tpeak, t), paste0("wt.D", tpeak), paste0("wt.D", tinterm)),
+                    plot_title = paste0(
+                        "Correlations of 4 ", t, " antibody markers in ", grp_lb, ",\nCorr = Weighted Spearman Rank Correlation. (bAb weights are used)"
+                    ),
+                    column_labels = assay_metadata_adhoc$assay_label_short,
+                    height = max(1.3 * 4 + 0.1, 5.5),
+                    width = max(1.3 * 4, 5.5),
+                    column_label_size = 3.4,
+                    filename = paste0(
+                        save.results.to, "/pairs_by_time_", t,
+                        "_4_markers_", grp, "_adhoc.pdf"
+                    )
+                )
+                
+            }
         }
     }
 }
