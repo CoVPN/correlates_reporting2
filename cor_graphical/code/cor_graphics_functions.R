@@ -66,6 +66,7 @@ f_case_non_case_by_time_assay <-
         group_split(time) %>%
         purrr::map(function(d){
             ggplot(data = d, aes(x = cohort_event, y = value)) +
+                #facet_rep_wrap(Trt_nnaive ~ assay_label_short, repeat.tick.labels = TRUE) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
                 geom_violin(aes(color = cohort_event), scale = "width", na.rm = TRUE, show.legend = FALSE) +
                 geom_boxplot(aes(color = cohort_event), width = 0.25, lwd = 1.5, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +

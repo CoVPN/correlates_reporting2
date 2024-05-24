@@ -8,6 +8,8 @@ library(grid) # textGrob
 library(gridExtra)
 library(wCorr) # weighted correlation
 library(ggnewscale) # for new_scale_color() 
+#install.packages("lemon", repos="http://cran.us.r-project.org")
+#library(lemon)
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 #if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
