@@ -248,6 +248,7 @@ for (iObj in c(4,5,1,11,12,2,3,31)) {
       
       # select risk curves
       if (iObj==1 & COR=="D22to181BA45" & iPop==1) {
+        
         plot.geq=F
         has.plac=F
         show.ve.curves=F
@@ -256,6 +257,27 @@ for (iObj in c(4,5,1,11,12,2,3,31)) {
           res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
         }
+        
+      } else if (iObj==1 & COR=="D22to181" & iPop==1) {
+        
+        # include trichotomized risk curves
+        for (a in "Day15"%.%assays) {
+          assay=marker.name.to.assay(a)
+          res = paste0('
+\\begin{figure}[H]
+\\center
+\\includegraphics[width=.44\\textwidth,keepaspectratio]{', pathCoRoutput, '/', a, '_', 'marginalized_risks_cat_',  fname.suffix, '.pdf}', 
+'\\caption{Marginalized cumulative incidence rate curves for trichotomized Day ', tpeak, ' markers among vaccine recipients. The gray line is the overall cumulative incidence rate curve in the placebo arm.}
+\\end{figure}
+')
+          cat(res, sep = '\n')
+        }
+        # new page
+        res='
+\\clearpage
+'
+          cat(res, sep = '\n')
+        
       }
 
     }

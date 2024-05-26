@@ -134,7 +134,7 @@ has.plac = F
 # 4: like 1, but subset to naive
 # 5: like 1, but subset to nnaive
 for (iObj in c(1,11,12,2,21,3,31,4,5)) {
-    # iObj=5; iPop=1  
+    # iObj=1; iPop=1  
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
@@ -334,7 +334,38 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
           for.title=""
         )
         
+      } else if (COR=="D15to181" & iPop==1) {
+        
+        cor_coxph_risk_plotting(
+          form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+          dat,
+          fname.suffix,
+          save.results.to,
+          config,
+          config.cor,
+          tfinal.tpeak,
+          
+          markers = "Day15"%.%assays,
+          markers.names.short = all.markers.names.short,
+          markers.names.long = all.markers.names.long,
+          marker.cutpoints,
+          assay_metadata,
+          
+          dat.plac = NULL,
+          res.plac.cont = NULL,
+          prev.plac=NULL,
+          overall.ve=NULL,
+          
+          show.ve.curves=F,
+          plot.geq = F,
+          plot.w.plac = F,
+          for.title="",
+          
+          trichotomized.only=T
+        )
+        
       }
+      
       
     } else if(iObj==11) {
       pvals.cont=cor_coxph_coef_n(
