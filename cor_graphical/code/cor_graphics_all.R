@@ -88,6 +88,39 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
 
 }
 
+# adhoc for prevent19_stage2: show y-axis variable in percentile
+if(attr(config,"config") == "prevent19_stage2" & COR=="D35prevent19_stage2_severe"){
+    
+    panel = "pseudoneutid50"
+    
+    # by naive/non-naive, vaccine/placebo
+    f_1 <- f_case_non_case_by_time_assay(
+        dat = dat.longer.cor.subset.plot1 %>%
+            mutate(value = round((value - min) / (max - min), 2),
+                   Trt_nnaive = factor(paste(Trt, Bserostatus), 
+                                       levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
+                                       labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))),
+        
+        facet.y.var = vars(Trt_nnaive),
+        assays = assays[grepl(substr(panel, 1, 4), assays)],
+        times = set1_times,
+        ylim = c(0, 1.2), 
+        ybreaks = c(0,0.2,0.4,0.6,0.8,1),
+        axis.x.text.size = 32,
+        strip.x.text.size = 32,
+        panel.text.size = 12,
+        scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
+        lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
+        chtcols = setNames(c(if(length(cases_lb)==2) "#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
+        chtpchs = setNames(c(if(length(cases_lb)==2) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
+    
+    for (i in 1:length(set1_times)){
+        
+        file_name <- paste0(panel, "_by_case_non_case_at_", set1_times[i], "_percentile.pdf")
+        ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 30, height = 16)
+    }
+}
+
 ###### Set 2 plots: Longitudinal violin plots, by cases and non-cases (by naive/non-naive, vaccine/placebo)
 set2.1_assays = assays[!assays %in% c("bindSpike_mdw")]
 if(attr(config,"config") == "prevent19_stage2"){set2.1_assays <- set2.1_assays[grepl("Delta$|Delta1$|D614", set2.1_assays)]}
