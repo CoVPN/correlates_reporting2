@@ -258,7 +258,7 @@ for (iObj in c(4,5,1,11,12,2,3,31)) {
           cat(res, sep = '\n')
         }
         
-      } else if (iObj==1 & COR=="D22to181" & iPop==1) {
+      } else if (iObj %in% c(1,4,5) & COR=="D22to181" & iPop==1) {
         
         # include trichotomized risk curves
         for (a in "Day15"%.%assays) {

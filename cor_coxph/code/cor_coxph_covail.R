@@ -254,6 +254,42 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         nCoef=1,
         col.headers=""
       )
+      
+      if (COR=="D15to181" & iPop==1) {
+        
+        # trichotomitized curves
+        cor_coxph_risk_plotting(
+          # need to remove naive from formula. otherwise risk will be NA
+          form.0 = as.formula(
+            sub("\\+ naive", "", paste0(deparse(form.0,width.cutoff=500)))
+          ),
+          dat,
+          fname.suffix%.%"_N",
+          save.results.to,
+          config,
+          config.cor,
+          tfinal.tpeak,
+          
+          markers = "Day15"%.%assays,
+          markers.names.short = all.markers.names.short,
+          markers.names.long = all.markers.names.long,
+          marker.cutpoints,
+          assay_metadata,
+          
+          dat.plac = NULL,
+          res.plac.cont = NULL,
+          prev.plac=NULL,
+          overall.ve=NULL,
+          
+          show.ve.curves=F,
+          plot.geq = F,
+          plot.w.plac = F,
+          for.title="",
+          
+          trichotomized.only=T
+        )
+        
+      }
     
     } else if(iObj==5) {
       cor_coxph_coef_n(
@@ -270,6 +306,40 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         col.headers=""
       )
       
+      if (COR=="D15to181" & iPop==1) {
+        
+        # trichotomitized curves
+        cor_coxph_risk_plotting(
+          form.0 = as.formula(
+            sub("\\+ naive", "", paste0(deparse(form.0,width.cutoff=500)))
+          ),
+          dat,
+          fname.suffix%.%"_NN",
+          save.results.to,
+          config,
+          config.cor,
+          tfinal.tpeak,
+          
+          markers = "Day15"%.%assays,
+          markers.names.short = all.markers.names.short,
+          markers.names.long = all.markers.names.long,
+          marker.cutpoints,
+          assay_metadata,
+          
+          dat.plac = NULL,
+          res.plac.cont = NULL,
+          prev.plac=NULL,
+          overall.ve=NULL,
+          
+          show.ve.curves=F,
+          plot.geq = F,
+          plot.w.plac = F,
+          for.title="",
+          
+          trichotomized.only=T
+        )
+        
+      }
       
     } else if(iObj==1) {
       
@@ -336,8 +406,9 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         
       } else if (COR=="D15to181" & iPop==1) {
         
+        # trichotomized curves
         cor_coxph_risk_plotting(
-          form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+          form.0,
           dat,
           fname.suffix,
           save.results.to,

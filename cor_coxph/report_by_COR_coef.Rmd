@@ -3,11 +3,12 @@
 The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise. One model per row.
 
 <!-- ### Hazard ratios -->
+<!-- has.alt is for interaction models -->
+
 \setlength{\tabcolsep}{.5ex}
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}
 `r if (!has.alt) '<!--'`
-<!-- for interaction model -->
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`_2}
 `r if (!has.alt)'-->'`
 \normalsize
