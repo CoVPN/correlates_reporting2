@@ -89,17 +89,21 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
 }
 
 # adhoc for prevent19_stage2: show y-axis variable in percentile
-if(attr(config,"config") == "prevent19_stage2" & COR=="D35prevent19_stage2_severe"){
+if(attr(config,"config") == "prevent19_stage2"){
     
     panel = "pseudoneutid50"
     
     # by naive/non-naive, vaccine/placebo
     f_1 <- f_case_non_case_by_time_assay(
         dat = dat.longer.cor.subset.plot1 %>%
-            mutate(value = round((value - min) / (max - min), 2),
-                   Trt_nnaive = factor(paste(Trt, Bserostatus), 
+            mutate(Trt_nnaive = factor(paste(Trt, Bserostatus), 
                                        levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
-                                       labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))),
+                                       labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))) %>%
+            group_by(Trt, Bserostatus, time, assay) %>%
+            mutate(min = min(value, na.rm = T),
+                   max = max(value, na.rm = T),
+                   value = round((value - min) / (max - min), 2)) %>%
+            ungroup(),
         
         facet.y.var = vars(Trt_nnaive),
         assays = assays[grepl(substr(panel, 1, 4), assays)],

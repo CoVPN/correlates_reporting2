@@ -87,9 +87,9 @@ f_case_non_case_by_time_assay <-
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval2,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                 
-                scale_x_discrete(labels = scale.x.discrete.lb, drop=FALSE) +
+                #scale_x_discrete(labels = scale.x.discrete.lb, drop=FALSE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scales::math_format(10^.x)) +
-                #scale_y_continuous(limits = ylim, breaks = ybreaks) + # for prevent19_stage2 percentile figure (adhoc)
+                scale_y_continuous(limits = ylim, breaks = ybreaks) + # for prevent19_stage2 percentile figure (adhoc)
                 labs(x = "Cohort", y = unique(d$panel), title = paste(unique(d$panel), "distributions by case/non-case at", unique(d$time)), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
