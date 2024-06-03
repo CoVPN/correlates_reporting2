@@ -8,6 +8,7 @@ library(grid) # textGrob
 library(gridExtra)
 library(wCorr) # weighted correlation
 library(ggnewscale) # for new_scale_color() 
+library(spatstat.geom) # for ewcdf
 #install.packages("lemon", repos="http://cran.us.r-project.org")
 #library(lemon)
 
@@ -100,9 +101,9 @@ if(attr(config,"config") == "prevent19_stage2"){
                                        levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
                                        labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))) %>%
             group_by(Trt, Bserostatus, time, assay) %>%
-            mutate(min = min(value, na.rm = T),
-                   max = max(value, na.rm = T),
-                   value = round((value - min) / (max - min), 2)) %>%
+            mutate(lbval = ewcdf(value, wt)(lbval),
+                   lbval2 = ewcdf(value, wt)(lbval2),
+                   value = ewcdf(value, wt)(value)) %>%
             ungroup(),
         
         facet.y.var = vars(Trt_nnaive),
