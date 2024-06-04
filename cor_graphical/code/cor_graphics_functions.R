@@ -89,12 +89,120 @@ f_case_non_case_by_time_assay <-
                 
                 #scale_x_discrete(labels = scale.x.discrete.lb, drop=FALSE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scales::math_format(10^.x)) +
-                scale_y_continuous(limits = ylim, breaks = ybreaks) + # for prevent19_stage2 percentile figure (adhoc)
                 labs(x = "Cohort", y = unique(d$panel), title = paste(unique(d$panel), "distributions by case/non-case at", unique(d$time)), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
         })
     return(p1)
+    }
+
+
+# requested by Youyi for prevent19_stage2
+weighted_percentile <- function(x, weights, percentile) {
+    # Check if percentile is between 0 and 1
+    if (percentile < 0 || percentile > 1) {
+        stop("Percentile must be between 0 and 1.")
+    }
+    
+    # Check if lengths of x and weights match
+    if (length(x) != length(weights)) {
+        stop("Lengths of x and weights must be the same.")
+    }
+    
+    # Sort x and weights by x
+    sorted_indices <- order(x)
+    x_sorted <- x[sorted_indices]
+    weights_sorted <- weights[sorted_indices]
+    
+    # Calculate cumulative weights
+    cum_weights <- cumsum(weights_sorted)
+    total_weight <- sum(weights_sorted)
+    
+    # Calculate the target weight for the desired percentile
+    target_weight <- percentile * total_weight
+    
+    # Find the index where the cumulative weight exceeds the target weight
+    percentile_index <- which(cum_weights >= target_weight)[1]
+    
+    # Return the corresponding value in x
+    return(x_sorted[percentile_index])
+}
+
+f_case_non_case_by_time_assay_adhoc <- 
+    function(dat,
+             assays = assays,
+             times = times,
+             ylim = c(0,7.2), 
+             ybreaks = c(0,2,4,6),
+             panel.text.size = 3.8,
+             axis.x.text.size = 18,
+             strip.x.text.size = 18,
+             #facet.x.var = vars(assay_label_short),
+             #facet.y.var, # = vars(Trt_nnaive),
+             pointby = "cohort_col",
+             scale.x.discrete.lb = c("Omicron Cases", "Non-Cases"),
+             lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+             chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
+             chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders"))
+    ) {
+        
+        plot_theme <- theme_bw(base_size = 25) +
+            theme(plot.title = element_text(hjust = 0.5),
+                  axis.text.x = element_text(size = axis.x.text.size),
+                  axis.text.y = element_text(size = 25),
+                  axis.title = element_text(size = 24, face="bold"),
+                  strip.text.x = element_text(size = strip.x.text.size), # facet label size
+                  strip.text.y = element_text(size = 25),
+                  strip.background = element_rect(fill=NA,colour=NA),
+                  strip.placement = "outside",
+                  legend.position = "bottom", 
+                  legend.text = element_text(size = 26, face="plain"),
+                  legend.key = element_blank(), # remove square outside legend key
+                  plot.caption = element_text(size = 26, hjust=0, face="plain"), 
+                  panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank(),
+                  plot.margin = margin(5.5, 12, 5.5, 5.5, "pt")) 
+        
+        p1 <- dat %>%
+            filter(assay %in% assays & time %in% times) %>%
+            left_join(assay_metadata, by="assay") %>%
+            mutate(cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event)),
+                   cohort_col2 = paste(cohort_event, Trt),
+                   time = factor(time, levels=times)
+            ) %>%
+            ungroup() %>%
+            group_split(time) %>%
+            purrr::map(function(d){
+                
+                ggplot(data = d, aes(x = cohort_event, color = cohort_event)) +
+                    facet_grid(facet.y.var ~ facet.x.var) +
+                    #stat_boxplot(aes(color = cohort_event), geom ='errorbar', width = 0.13, lwd = 1.5) + 
+                    geom_errorbar(data = d %>% distinct(cohort_event, facet.y.var, facet.x.var, time, lower, upper, middle, ymax, ymin), 
+                                  aes(group = cohort_event, ymin = ymin, ymax = ymax), width = 0.13, lwd=1.5, position = position_dodge(width = 0.9)) +
+                    geom_boxplot(data = d %>% distinct(cohort_event, facet.y.var, facet.x.var, time, lower, upper, middle, ymax, ymin), 
+                                 aes(group = cohort_event, lower = lower, upper = upper, middle = middle, ymin = ymin, ymax = ymax),
+                                 stat = "identity", width = 0.25, lwd = 1.5, outlier.shape = NA, show.legend = FALSE) +
+                    scale_color_manual(name = "", values = chtcols[1:2], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                    # geoms below will use another color scale
+                    new_scale_color() +
+                    geom_jitter(aes(y = value, color = .data[[pointby]], shape = .data[[pointby]]), width = 0.1, height = 0, size = 2, show.legend = TRUE) +
+                    scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, drop=FALSE) +
+                    scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, drop=FALSE) +
+                    # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
+                    # Whisker: Q3 + 1.5 IQR
+                    geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    
+                    geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
+                    geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
+                    # only plot uloq for ID50
+                    geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval2,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
+                    scale_y_continuous(limits = ylim, breaks = ybreaks) + # for prevent19_stage2 percentile figure (adhoc)
+                    labs(x = "Cohort", y = "marker percentile", title = paste(unique(d$panel), "distributions by case/non-case at", unique(d$time)), color = "Category", shape = "Category") +
+                    plot_theme +
+                    guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
+            })
+        return(p1)
     }
 
 

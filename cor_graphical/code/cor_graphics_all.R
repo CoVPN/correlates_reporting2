@@ -9,6 +9,8 @@ library(gridExtra)
 library(wCorr) # weighted correlation
 library(ggnewscale) # for new_scale_color() 
 library(spatstat.geom) # for ewcdf
+#install.packages("reldist", repos="http://cran.us.r-project.org")
+#library(reldist) # for wtd.quantile
 #install.packages("lemon", repos="http://cran.us.r-project.org")
 #library(lemon)
 
@@ -95,18 +97,30 @@ if(attr(config,"config") == "prevent19_stage2"){
     panel = "pseudoneutid50"
     
     # by naive/non-naive, vaccine/placebo
-    f_1 <- f_case_non_case_by_time_assay(
+    f_1 <- f_case_non_case_by_time_assay_adhoc(
         dat = dat.longer.cor.subset.plot1 %>%
             mutate(Trt_nnaive = factor(paste(Trt, Bserostatus), 
                                        levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
                                        labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))) %>%
             group_by(Trt, Bserostatus, time, assay) %>%
-            mutate(lbval = ewcdf(value, wt)(lbval),
-                   lbval2 = ewcdf(value, wt)(lbval2),
-                   value = ewcdf(value, wt)(value)) %>%
-            ungroup(),
+            mutate(lb = "",
+                   lb2 = "",
+                   lbval = 1/3,
+                   lbval2 = 2/3,
+                   value = ewcdf(value, wt)(value)
+                   ) %>%
+            group_by(Trt, Bserostatus, time, assay, cohort_event) %>%
+            mutate(lower = weighted_percentile(x=value, percentile=0.25, weights=wt),
+                   middle = weighted_percentile(x=value, percentile=0.5, weights=wt),
+                   upper = weighted_percentile(x=value, percentile=0.75, weights=wt),
+                   IQR = upper - lower, 
+                   ymax = min(weighted_percentile(x=value, percentile=1, weights=wt), upper + 1.5*IQR),
+                   ymin = max(weighted_percentile(x=value, percentile=0, weights=wt), lower - 1.5*IQR)) %>%
+            ungroup() %>%
+            mutate(facet.y.var = Trt_nnaive, 
+                   facet.x.var = assay),
         
-        facet.y.var = vars(Trt_nnaive),
+        #facet.y.var = vars(Trt_nnaive),
         assays = assays[grepl(substr(panel, 1, 4), assays)],
         times = set1_times,
         ylim = c(0, 1.2), 
