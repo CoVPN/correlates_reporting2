@@ -438,19 +438,30 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
   
     for (asy in c("bAb" ,"nAb")){
       
-      for (reg in if(attr(config,"config")=="janssen_partA_VL") {c("LATAM_","ZA_")} else {""}){
-      
-        tpLabel <- case_when(tp=="day1day22day43" ~ "Day 1, Day 22, Day 43", 
-                             tp=="delta" ~"fold-rise (D01 to D22, D1 to D43)", 
-                             TRUE ~ paste0("Day", timepoints_))
+      for (bsero in c("Neg", "Pos")) {
         
-        regLabel <- case_when(reg=="LATAM_" ~ "Latin America",
-                                reg=="ZA_" ~ "Southern Africa",
-                                TRUE ~ "")
-  
-        res = knitr::knit_child(c(here::here('immuno_graphical', 'report_spider.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
+        for (trt in c("placebo", "vaccine")) {
+      
+          for (reg in if(attr(config,"config")=="janssen_partA_VL") {c("LATAM_","ZA_")} else {""}){
+            
+            if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
+          
+            tpLabel <- case_when(tp=="day1day22day43" ~ "Day 1, Day 22, Day 43", 
+                                 tp=="delta" ~"fold-rise (D01 to D22, D1 to D43)", 
+                                 TRUE ~ paste0("Day", timepoints_))
+            
+            regLabel <- case_when(reg=="LATAM_" ~ "Latin America",
+                                  reg=="ZA_" ~ "Southern Africa",
+                                  TRUE ~ "")
+            baseLabel <- case_when(bsero=="Neg" ~ bstatus.labels.3[1],
+                                   bsero=="Pos" ~ bstatus.labels.3[2],
+                                   TRUE ~ "")
+      
+            res = knitr::knit_child(c(here::here('immuno_graphical', 'report_spider.Rmd')), quiet = TRUE)
+            cat(res, sep = '\n')
+            cat("\\clearpage", sep = '\n')
+          }
+        }
       }
     }
   }

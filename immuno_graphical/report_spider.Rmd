@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("radar_plot_weighted_geomean_", tp, "_", reg, asy, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("radar_plot_weighted_geomean_", tp, "_", reg, asy, "_", tolower(bsero), "_", trt, ".pdf"))`}
 
-\caption{`r paste0("Spider plots for ", tpLabel, " ", asy, " markers", ifelse(regLabel!="", paste0(", ", regLabel), ""))`}
+\caption{`r paste0("Spider plots for ", tpLabel, " ", asy, " markers", baseLabel, " ", trt, " arm", ifelse(regLabel!="", paste0(", ", regLabel), ""))`}
 
 \end{figure}
 

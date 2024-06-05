@@ -882,7 +882,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
   # setup pdf file
   for (ab in c("bAb", "nAb")) {
     
-    for (tm in c("Day", "Delta")) {
+    for (tm in c("Day", if(study_name!="VAT08") "Delta")) {
       
       for (bsero in c("Neg", "Pos")) {
         
@@ -900,10 +900,10 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
                                     reg==2 ~ "Southern Africa",
                                     TRUE ~ "")
             
-            if (attr(config,"config")=="janssen_partA_VL") {dat.spider = subset(dat.spider, Trt==1 & Bserostatus==0)}
+            if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
             
             # calculate geometric mean of IPS weighted readouts
-            times_spider = if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints_)} else {times}
+            times_spider = if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints_)} else if (attr(config,"config")=="vat08_combined") {tps_no_fold_change} else {times}
             
             if (!"Region" %in% colnames(dat.spider)) {dat.spider$Region=reg}
             dat.spider.by.time <- dat.spider %>%
@@ -947,9 +947,11 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             if (nrow(dat.plot)==2) next
             
             ############# figure start here
-            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", ifelse(study_name=="VAT08", "day1day22day43", tolower(tm)), "_", ifelse(reg!="all", reg_lb, ""), ab, ".pdf")
+            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", ifelse(study_name=="VAT08", "day1day22day43", tolower(tm)), "_", ifelse(reg!="all", reg_lb, ""), ab, "_", tolower(bsero), "_", trt, ".pdf")
             pdf(filename, width=5.5, height=6.5)
-            par(mfrow=if (study_name=="VAT08") {c(2,2)} else {c(1,1)}, mar=c(0.1,0.1,1,0.1))
+            par(mfrow=#if (study_name=="VAT08") {c(2,2)} else {
+                  c(1,1)#}
+                , mar=c(0.1,0.1,1,0.1))
             
             colnames(dat.plot) <- assay_metadata$assay_label[match( colnames(dat.plot) , assay_metadata$assay)]
             
@@ -975,19 +977,19 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
                        #title size
                        cex.main=0.7)
             
-            #par(xpd=NA)
+            par(xpd=NA)
             
             #legend
             legend("bottom", legend=legend_lb, lty=5, pch=c(15),
                    col=color, bty="n", ncol=3, cex=0.7,
                    inset=c(-0.25,0))
             
-            #dev.off()
+            dev.off()
             }
         }
       }
-      par(xpd=NA)
-      dev.off()
+      #par(xpd=NA)
+      #dev.off()
     }
   }
   
