@@ -136,7 +136,8 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
     
     for (tp in if(study_name=="VAT08") {tps_no_fold_change} else if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints_)} else {tps_no_B_and_delta_over_tinterm}) { # "B", "Day29", "Day57", "Day29overB", "Day57overB"
       for (trt in 0:1) {
-        # Don't produce figures for placebo baseline negative to improve build time
+        
+        # Don't produce figures for placebo baseline negative except for VAT08 to improve build time
         if(trt==0 & study_name!="VAT08" & attr(config,"config")!="janssen_partA_VL") {bstatus.range <- 1} else {bstatus.range <- unique(dat.twophase.sample$Bserostatus)}
     
         for (bserostatus in bstatus.range) {
@@ -185,9 +186,10 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                                  asy=="pseudo" ~ "nAb_",
                                  TRUE ~ paste0(asy, "_"))
             
-            if (study_name=="VAT08" && bserostatus==0 && tp=="B") { # psv_mdw doesn't have any value for naive at baseline
-              assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
-              } else if (asy=="bind") {assay_immuno_ = subset(assay_immuno, grepl(asy, assay_immuno))
+            #if (study_name=="VAT08" && bserostatus==0 && tp=="B") { # psv_mdw doesn't have any value for naive at baseline
+              #assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
+              #} else 
+            if (asy=="bind") {assay_immuno_ = subset(assay_immuno, grepl(asy, assay_immuno))
               } else if (asy %in% c("*", "pseudo") & country == 1) { # Latin America = 1
                 selected_latam = assay_immuno[grepl("Reference|Zeta|Mu|Gamma|Lambda", assay_metadata$assay_label_short)]
                 assay_immuno_ = subset(selected_latam, grepl(asy, selected_latam))
@@ -240,9 +242,9 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
         }
       }
     }
+  
     
   ## pairplots of assay readouts for multiple timepoints
-  ## pairplots by baseline serostatus
   print("Pair plots 2:")
   if (study_name != "ENSEMBLE"){
     for (trt in 0:1) {
@@ -262,7 +264,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
         if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
         
         for (aa in assay_immuno) {
-          if (study_name=="VAT08" && aa=="pseudoneutid50_mdw" && bserostatus==0) next # psv_mdw doesn't have any value for naive at baseline
+          #if (study_name=="VAT08" && aa=="pseudoneutid50_mdw" && bserostatus==0) next # psv_mdw doesn't have any value for naive at baseline
           
           # subset for prevent19_stage2
           if(attr(config,"config")=="prevent19_stage2") {
@@ -298,14 +300,14 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
   }
   
   print("Pair plots 3:")
-  
-  if (study_name=="VAT08") { # request only for this study, at day 1, pool over vaccine and placebo
+  if (study_name=="VAT08") { # request only for this study, at day 1, pooling over vaccine and placebo
     tp = "B"
     for (bserostatus in bstatus.range) {
       
-        if (bserostatus==0) { # VAT08 psv_mdw doesn't have any value for naive at baseline
-          assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
-        } else {assay_immuno_ = assay_immuno}
+        #if (bserostatus==0) { # VAT08 psv_mdw doesn't have any value for naive at baseline
+        #  assay_immuno_ = assay_immuno[assay_immuno!="pseudoneutid50_mdw"]
+        #} else {
+        assay_immuno_ = assay_immuno#}
       
         if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
         
@@ -355,19 +357,25 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
     subdat_rcdf1 = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.",gsub("ay","",tp))]==1), ]
   } else {subdat_rcdf1 = dat.long.twophase.sample}
   
+  categories = c(paste0("Placebo, ", bstatus.labels[1]), 
+                 paste0("Placebo, ", bstatus.labels[2]), 
+                 paste0("Vaccine, ", bstatus.labels[1]),
+                 paste0("Vaccine, ", bstatus.labels[2]))
+  colors = c("#1749FF", "#D92321", "#0AB7C9", "#FF6F1B")
+  
   covid_corr_rcdf_facets(
     plot_dat = subdat_rcdf1,
     x = tp,
     facet_by = "assay",
     color = "trt_bstatus_label",
-    palette = c("Placebo, Baseline Neg" = "#1749FF", "Placebo, Baseline Pos" = "#D92321", "Vaccine, Baseline Neg" = "#0AB7C9", "Vaccine, Baseline Pos" = "#FF6F1B"),
-    legend = c("Placebo, Baseline Neg" = "Placebo, Baseline Neg", "Placebo, Baseline Pos" = "Placebo, Baseline Pos", "Vaccine, Baseline Neg" = "Vaccine, Baseline Neg", "Vaccine, Baseline Pos" = "Vaccine, Baseline Pos"),
+    palette = setNames(colors, categories),
+    legend = setNames(categories, categories),
     weight = ifelse(attr(config,"config")=="prevent19_stage2" & tp=="Day35", "wt.immuno.D35",
                     ifelse(attr(config,"config")=="prevent19_stage2" & tp=="C1", "wt.immuno.C1",
                            ifelse(attr(config,"config")=="prevent19_stage2" & tp=="BD1", "wt.immuno.BD1",
                                   "wt.subcohort"))),
     xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
-    arrange_ncol = 3,
+    arrange_ncol = ifelse(study_name=="VAT08", 4, 3),
     arrange_nrow = ceiling(length(assay_immuno) / 3),
     panel_titles = labels.title2[tp, ] %>% unlist(),
     axis_titles = labels.axis[tp, ] %>% unlist(),
@@ -375,7 +383,7 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
     axis_title_size = 10,
     axis_size = 10,
     panel_title_size = ifelse(study_name=="VAT08", 8, 10),
-    height = ifelse(attr(config,"config")=="prevent19_stage2", 10, 3 * arrange_nrow + 0.5),
+    height = ifelse(attr(config,"config")=="prevent19_stage2", 10, 3 * ceiling(length(assay_immuno) / 3) + 0.5),
     filename = paste0(
       save.results.to, "/Marker_Rcdf_", tp,
       "_trt_both_bstatus_both_", study_name, ".pdf"
@@ -405,6 +413,10 @@ for (Ab in c("bind", "pseudo", "ADCP")) {
   
   if (length(rcdf_assays) == 0) next
     
+  #-----------------------------------------------
+  # RCDF plot 
+  # one treatment arm and two baseline status per plot
+  #-----------------------------------------------
   print("RCDF 2:")
   for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
       
@@ -435,7 +447,7 @@ for (Ab in c("bind", "pseudo", "ADCP")) {
     
   #-----------------------------------------------
   # RCDF plot 
-  # different baseline serostatus in different plot, one treatment arm per plot
+  # one treatment arm and one baseline status per plot, in vaccine arm
   #-----------------------------------------------
   print("RCDF 3:")
   for (bstatus in 1:2) {
@@ -496,7 +508,7 @@ for (Ab in c("bind", "pseudo", "ADCP")) {
     
   #-----------------------------------------------
   # RCDF plot 
-  # different treatment arm in different plot, one baseline status per plot
+  # two treatment arms, one baseline status per plot
   #-----------------------------------------------
   if (study_name=="VAT08"){
     print("RCDF 4:")
@@ -536,6 +548,11 @@ for (Ab in c("bind", "pseudo", "ADCP")) {
 # - boxplots of assay readouts at Day 1, Day tinterm and Day tpeak, 
 # - by treatment groups or by baseline serostatus
 #-----------------------------------------------
+
+#-----------------------------------------------
+# box plot 
+# two treatment arms, one baseline status per plot
+#-----------------------------------------------
 print("Boxplots 1:")
 for (bstatus in 1:2) {
   
@@ -563,8 +580,8 @@ for (bstatus in 1:2) {
       POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
       LLOX = log10(lloxs[assay_immuno]),
       ULOQ = log10(uloqs[assay_immuno]),
-      arrange_ncol = 3,
-      arrange_nrow = ceiling(length(assay_immuno) / 3),
+      arrange_ncol = ifelse(study_name=="VAT08", 4, 3),
+      arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
       legend = c("Placebo"="Placebo", "Vaccine"="Vaccine"),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
@@ -581,8 +598,8 @@ for (bstatus in 1:2) {
 }
 
 #-----------------------------------------------
-# - Box plots of the assay readouts versus baseline sero-status, stratified by treatment groups
-# - Make separate plots for Placebo and Vaccine arms
+# box plot 
+# one treatment arm, two baseline status per plot
 #-----------------------------------------------
 for (trt in 1:2) {
   
@@ -601,8 +618,8 @@ for (trt in 1:2) {
       POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
       LLOX = log10(lloxs[assay_immuno]),
       ULOQ = log10(uloqs[assay_immuno]),
-      arrange_ncol = 3,
-      arrange_nrow = ceiling(length(assay_immuno) / 3),
+      arrange_ncol = ifelse(study_name=="VAT08", 4, 3),
+      arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
       legend = stringr::str_to_title(bstatus.labels.3),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
@@ -619,8 +636,8 @@ for (trt in 1:2) {
 
 
 #-----------------------------------------------
-# - Box plots of the assay readouts, stratified by baseline sero-status and treatment groups
-# - One plot for Placebo and Vaccine arms, Baseline Neg and Pos
+# box plot 
+# one treatment arm, one baseline status per plot
 #-----------------------------------------------
 if (study_name=="VAT08") {# this is only reported for VAT08
   for (tp in tps_no_fold_change) {
@@ -638,8 +655,8 @@ if (study_name=="VAT08") {# this is only reported for VAT08
       POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
       LLOX = log10(lloxs[assay_immuno]),
       ULOQ = log10(uloqs[assay_immuno]),
-      arrange_ncol = 3,
-      arrange_nrow = ceiling(length(assay_immuno) / 3),
+      arrange_ncol = ifelse(study_name=="VAT08", 4, 3),
+      arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
       legend = paste0(rep(stringr::str_to_title(bstatus.labels.3), 2), ", ", rep(c("Vaccine", "Placebo"), each=2)),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
@@ -659,7 +676,7 @@ if (study_name=="VAT08") {# this is only reported for VAT08
 # - Box plots of the assay readouts, stratified by baseline sero-status, treatment groups and sex at birth
 # - One plot for Placebo and Vaccine arms, Baseline Neg and Pos, Females and Males
 #-----------------------------------------------
-if (study_name=="VAT08") {# this is only reported for VAT08
+if (study_name=="VAT08" & F) {# this is only reported for VAT08
   for (tp in tps_no_fold_change) {
     
     covid_corr_boxplot_facets(
@@ -675,8 +692,8 @@ if (study_name=="VAT08") {# this is only reported for VAT08
       POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
       LLOX = log10(lloxs[assay_immuno]),
       ULOQ = log10(uloqs[assay_immuno]),
-      arrange_ncol = 3,
-      arrange_nrow = ceiling(length(assay_immuno) / 3),
+      arrange_ncol = ifelse(study_name=="VAT08", 4, 3),
+      arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
       legend = paste0(rep(stringr::str_to_title(bstatus.labels.3), 2), ", ", rep(c("Vaccine", "Placebo"), each=2) , ", ", rep(c("Female", "Male"), each=4)),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
