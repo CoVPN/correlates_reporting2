@@ -94,49 +94,51 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
 # adhoc for prevent19_stage2: show y-axis variable in percentile
 if(attr(config,"config") == "prevent19_stage2"){
     
-    panel = "pseudoneutid50"
-    
-    # by naive/non-naive, vaccine/placebo
-    f_1 <- f_case_non_case_by_time_assay_adhoc(
-        dat = dat.longer.cor.subset.plot1 %>%
-            mutate(Trt_nnaive = factor(paste(Trt, Bserostatus), 
-                                       levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
-                                       labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))) %>%
-            group_by(Trt, Bserostatus, time, assay) %>%
-            mutate(lb = "",
-                   lb2 = "",
-                   lbval = 1/3,
-                   lbval2 = 2/3,
-                   value = ewcdf(value, wt)(value)
-                   ) %>%
-            group_by(Trt, Bserostatus, time, assay, cohort_event) %>%
-            mutate(lower = weighted_percentile(x=value, percentile=0.25, weights=wt),
-                   middle = weighted_percentile(x=value, percentile=0.5, weights=wt),
-                   upper = weighted_percentile(x=value, percentile=0.75, weights=wt),
-                   IQR = upper - lower, 
-                   ymax = min(weighted_percentile(x=value, percentile=1, weights=wt), upper + 1.5*IQR),
-                   ymin = max(weighted_percentile(x=value, percentile=0, weights=wt), lower - 1.5*IQR)) %>%
-            ungroup() %>%
-            mutate(facet.y.var = Trt_nnaive, 
-                   facet.x.var = assay),
+    for (panel in c("pseudoneutid50","bindSpike_sub_stage2")){
         
-        #facet.y.var = vars(Trt_nnaive),
-        assays = assays[grepl(substr(panel, 1, 4), assays)],
-        times = set1_times,
-        ylim = c(0, 1.2), 
-        ybreaks = c(0,0.2,0.4,0.6,0.8,1),
-        axis.x.text.size = 32,
-        strip.x.text.size = 32,
-        panel.text.size = 12,
-        scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
-        lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
-        chtcols = setNames(c(if(length(cases_lb)==2) "#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
-        chtpchs = setNames(c(if(length(cases_lb)==2) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
-    
-    for (i in 1:length(set1_times)){
+        # by naive/non-naive, vaccine/placebo
+        f_1 <- f_case_non_case_by_time_assay_adhoc(
+            dat = dat.longer.cor.subset.plot1 %>%
+                mutate(Trt_nnaive = factor(paste(Trt, Bserostatus), 
+                                           levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
+                                           labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))) %>%
+                group_by(Trt, Bserostatus, time, assay) %>%
+                mutate(lb = "",
+                       lb2 = "",
+                       lbval = 1/3,
+                       lbval2 = 2/3,
+                       value = ewcdf(value, wt)(value)
+                       ) %>%
+                group_by(Trt, Bserostatus, time, assay, cohort_event) %>%
+                mutate(lower = weighted_percentile(x=value, percentile=0.25, weights=wt),
+                       middle = weighted_percentile(x=value, percentile=0.5, weights=wt),
+                       upper = weighted_percentile(x=value, percentile=0.75, weights=wt),
+                       IQR = upper - lower, 
+                       ymax = min(weighted_percentile(x=value, percentile=1, weights=wt), upper + 1.5*IQR),
+                       ymin = max(weighted_percentile(x=value, percentile=0, weights=wt), lower - 1.5*IQR)) %>%
+                ungroup() %>%
+                mutate(facet.y.var = Trt_nnaive, 
+                       facet.x.var = assay),
+            
+            #facet.y.var = vars(Trt_nnaive),
+            assays = if(panel=="bindSpike_sub_stage2") {c("bindSpike_D614","bindSpike_Delta1")
+            } else {assays[grepl(substr(panel, 1, 4), assays)]},
+            times = set1_times,
+            ylim = c(0, 1.2), 
+            ybreaks = c(0,0.2,0.4,0.6,0.8,1),
+            axis.x.text.size = 32,
+            strip.x.text.size = 32,
+            panel.text.size = 12,
+            scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
+            lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
+            chtcols = setNames(c(if(length(cases_lb)==2) "#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
+            chtpchs = setNames(c(if(length(cases_lb)==2) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
         
-        file_name <- paste0(panel, "_by_case_non_case_at_", set1_times[i], "_percentile.pdf")
-        ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 30, height = 16)
+        for (i in 1:length(set1_times)){
+            
+            file_name <- paste0(panel, "_by_case_non_case_at_", set1_times[i], "_percentile.pdf")
+            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 30, height = 16)
+        }
     }
 }
 
