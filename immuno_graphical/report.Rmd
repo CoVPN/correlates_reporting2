@@ -217,7 +217,7 @@ for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo"))
 }
 ```
 
- 
+  
 \clearpage
 ## Violin plots of antibody markers for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
@@ -237,9 +237,9 @@ if (attr(config,"config")=="janssen_partA_VL"){
   }
 }
 ```
-<!-- 
+
 \clearpage
-## Scatter plots of antibody markers versus age for overall per-protocol cohort
+<!-- ## Scatter plots of antibody markers versus age for overall per-protocol cohort -->
 
 ```{r, echo=FALSE, results='asis'}
 
@@ -418,7 +418,7 @@ if (study_name!="VAT08") {
     
 ```
 
--->
+
 ## Spaghetti plots of antibody markers over time for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
 if (attr(config,"config")=="janssen_partA_VL"){
@@ -434,7 +434,9 @@ if (attr(config,"config")=="janssen_partA_VL"){
 ## Spider plot of antibody markers for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
 if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
-  for (tp in if(study_name=="VAT08") {c("day1day22day43", "delta")} else {"day"}) {
+  for (tp in #if(study_name=="VAT08") {c("day", "delta")} else {
+       "day"#}
+       ) {
   
     for (asy in c("bAb" ,"nAb")){
       
@@ -467,9 +469,8 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
   }
 }
 ```
--->
 
-<!-- 
+
 \clearpage
 ## Set 1 plots: D01, D22, D43 Ab distributions
 ```{r, echo=FALSE, results='asis', eval=study_name=="VAT08"}
@@ -549,4 +550,3 @@ for (a in assays){
 }
 
 ```
--->

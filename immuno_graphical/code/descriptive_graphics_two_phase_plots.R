@@ -882,7 +882,8 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
   # setup pdf file
   for (ab in c("bAb", "nAb")) {
     
-    for (tm in c("Day", if(study_name!="VAT08") "Delta")) {
+    for (tm in c("Day"#, if (attr(config,"config")!="janssen_partA_VL") "Delta"
+                 )) {
       
       for (bsero in c("Neg", "Pos")) {
         
@@ -903,7 +904,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
             
             # calculate geometric mean of IPS weighted readouts
-            times_spider = if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints_)} else if (attr(config,"config")=="vat08_combined") {tps_no_fold_change} else {times}
+            times_spider = if (tm=="Day") {times_[!grepl("Delta", times_)]} else{times_[grepl("Delta", times_)]}
             
             if (!"Region" %in% colnames(dat.spider)) {dat.spider$Region=reg}
             dat.spider.by.time <- dat.spider %>%
@@ -947,7 +948,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             if (nrow(dat.plot)==2) next
             
             ############# figure start here
-            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", ifelse(study_name=="VAT08", "day1day22day43", tolower(tm)), "_", ifelse(reg!="all", reg_lb, ""), ab, "_", tolower(bsero), "_", trt, ".pdf")
+            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(tm), "_", ifelse(reg!="all", reg_lb, ""), ab, "_", tolower(bsero), "_", trt, ".pdf")
             pdf(filename, width=5.5, height=6.5)
             par(mfrow=#if (study_name=="VAT08") {c(2,2)} else {
                   c(1,1)#}
