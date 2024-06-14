@@ -35,27 +35,31 @@ assay_metadata = assay_metadata %>%
 dat.longer.cor.subset.plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds")) # at level of trt and assay
 dat.cor.subset.plot3 <- readRDS(here("data_clean", "cor_data.rds"));dat.cor.subset.plot3$all_one <- 1 # as a placeholder for strata values
 
-# reformat case labels
-if (study_name=="VAT08"){
-    dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>% 
-        mutate(cohort_event = factor(cohort_event,
-                                     levels = c("7-27 days PD2 cases","28-180 days PD2 cases","7-180 days PD2 cases", "Non-Cases"),
-                                     labels = c("C1","C2","C3","Non-Cases")))
-}
-
-cases_lb <- if (study_name=="VAT08"){c("C1", "C2", "C3")
+cases_lb <- if (study_name=="VAT08"){ 
+     
+    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="7-27 days PD2 cases"))!=0) {c("C1", "C2", "C3")
+    } else {c("C2")}
+    
     } else if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {paste0(config.cor$txt.endpoint, " Cases")
     } else {"Post-Peak Cases"}
+
+cases_lb2 <- if (study_name=="VAT08"){ 
+    
+    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="7-27 days PD2 cases"))!=0) {c("C1"="C1: 7-27 days PD2 cases", "C2"="C2: 28-180 days PD2 cases", "C3"="C3: 7-180 days PD2 cases")
+    } else {c("C2"="C2: 28-180 days PD2 cases")}
+    
+    } else {cases_lb}
 
 # path for figures and tables etc
 save.results.to = here::here("output")
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 save.results.to = paste0(here::here("output"), "/", attr(config,"config"),"/");
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
-save.results.to = paste0(save.results.to, "/", COR,"/");
-if (!dir.exists(save.results.to))  dir.create(save.results.to)
 if (study_name=="VAT08") {
-    save.results.to = paste0(save.results.to, "/", COR, "_stage", unique(dat.longer.cor.subset.plot1$Trialstage));
+    save.results.to = paste0(save.results.to, "/", COR, "_stage", unique(dat.longer.cor.subset.plot1$Trialstage), "/");
+    if (!dir.exists(save.results.to))  dir.create(save.results.to)
+} else {
+    save.results.to = paste0(save.results.to, "/", COR,"/");
     if (!dir.exists(save.results.to))  dir.create(save.results.to)
 }
 print(paste0("save.results.to equals ", save.results.to))
@@ -91,14 +95,14 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
             times = set1_times_sub,
             ylim = if (attr(config,"config") == "nvx_uk302") {c(1, 6)} else if (attr(config,"config") == "prevent19nvx") {c(0,6.6)} else if (study_name == "VAT08" & tm_subset == "Day") {c(0, 4.2)} else if (study_name == "VAT08" & tm_subset == "fold") {c(-3, 4.2)} else {c(0, 5.5)}, 
             ybreaks = if (attr(config,"config") == "nvx_uk302") {c(1,2,3,4,5)} else if (attr(config,"config") == "prevent19nvx") {c(0,1,2,3,4,5,6)} else if (study_name == "VAT08" & tm_subset == "Day") {c(0, 1, 2, 3, 4)} else if (study_name == "VAT08" & tm_subset == "fold") {c(-3, -2, -1, 0, 1, 2, 3, 4)} else {c(0,1,2,3,4,5)},
-            axis.x.text.size = ifelse(assay_num > 7, 13, ifelse(assay_num > 5, 20, ifelse(assay_num > 3, 25, 32))),
+            axis.x.text.size = ifelse(assay_num > 7 & length(cases_lb)==3, 13, ifelse(assay_num > 5, 20, ifelse(assay_num > 3, 25, 32))),
             strip.x.text.size = ifelse(assay_num > 7, 10, ifelse(assay_num > 5, 18, ifelse(assay_num > 3, 25, 32))),
-            panel.text.size = ifelse(assay_num > 7, 3, ifelse(assay_num > 5, 4, ifelse(assay_num > 3, 6, 12))),
+            panel.text.size = ifelse(assay_num > 7 && length(cases_lb)==3, 3, ifelse(assay_num > 5, 5, ifelse(assay_num > 3, 6, 12))),
             scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
             lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
-            lgdlabels = if (study_name=="VAT08") {c("C1"="C1: 7-27 days PD2 cases", "C2"="C2: 28-180 days PD2 cases", "C3"="C3: 7-180 days PD2 cases", "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
-            chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", if(length(cases_lb)==3) "#FF6F1B", "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")), # BLUE, RED, LIGHT BLUE, GRAY
-            chtpchs = setNames(c(if(length(cases_lb)==3) 19, if(length(cases_lb)==3) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
+            lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
+            chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+            chtpchs = setNames(c(if(length(cases_lb)==3) 19, 19, if(length(cases_lb)==3) 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
         
         for (i in 1:length(set1_times_sub)){
             
@@ -166,7 +170,10 @@ if(attr(config,"config") == "prevent19_stage2"){set2.1_assays <- set2.1_assays[g
 if(study_name=="VAT08"){
     
     stopifnot(nrow(subset(dat.longer.cor.subset.plot1, time=="Day 43" & cohort_event=="C1"))==0)
-    time_cohort.lb <- c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:2], "\n", cases_lb[1]), paste0(labels.time[1:3], "\n", cases_lb[2]), paste0(labels.time[1:2], "\n", cases_lb[3]))
+    
+    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="7-27 days PD2 cases"))!=0){
+        time_cohort.lb <- c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:2], "\n", cases_lb[1]), paste0(labels.time[1:3], "\n", cases_lb[2]), paste0(labels.time[1:2], "\n", cases_lb[3]))
+    } else {time_cohort.lb <- c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:3], "\n", cases_lb))}
 
 } else if(attr(config,"config") == "prevent19_stage2"){
     
@@ -204,14 +211,14 @@ for (i in 1:length(set2.1_assays)) {
         facet.y.var = vars(Trt_nnaive),
         
         assays = if(attr(config,"config") == "azd1222_stage2"){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]},
-        panel.text.size = ifelse(study_name=="VAT08", 2, 5.8),
+        panel.text.size = ifelse(study_name=="VAT08" & length(cases_lb)==3, 2, ifelse(study_name=="VAT08" & length(cases_lb)==1, 4, 5.8)),
         ylim = c(0,4.5), 
         ybreaks = c(0,1,2,3,4),
-        axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2" | study_name=="VAT08", 8.4, 9.5),
+        axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2" | (study_name=="VAT08" & length(cases_lb)==3), 8.4, 9.5),
         lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
-        lgdlabels = if (study_name=="VAT08") {c("C1"="C1: 7-27 days PD2 cases", "C2"="C2: 28-180 days PD2 cases", "C3"="C3: 7-180 days PD2 cases", "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
-        chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", if(length(cases_lb)==3) "#FF6F1B", "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")), # BLUE, RED, LIGHT BLUE, GRAY
-        chtpchs = setNames(c(if(length(cases_lb)==3) 19, if(length(cases_lb)==3) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
+        lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
+        chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+        chtpchs = setNames(c(if(length(cases_lb)==3) 19, 19, if(length(cases_lb)==3) 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
     
     file_name <- paste0(paste0(if(attr(config,"config") == "azd1222_stage2"){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]}, 
                                collapse="_"), 
@@ -243,14 +250,14 @@ if (study_name=="VAT08"){
             facet.y.var = vars(Trt_nnaive),
             
             assays = a,
-            panel.text.size = ifelse(study_name=="VAT08", 2, 5.8),
+            panel.text.size = ifelse(study_name=="VAT08" & length(cases_lb)==3, 2, ifelse(study_name=="VAT08" & length(cases_lb)==1, 4, 5.8)),
             ylim = c(0,4.5), 
             ybreaks = c(0,1,2,3,4),
-            axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2" | study_name=="VAT08", 8.4, 9.5),
+            axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2" | (study_name=="VAT08" & length(cases_lb)==3), 8.4, 9.5),
             lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
-            lgdlabels = if (study_name=="VAT08") {c("C1"="C1: 7-27 days PD2 cases", "C2"="C2: 28-180 days PD2 cases", "C3"="C3: 7-180 days PD2 cases", "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
-            chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", if(length(cases_lb)==3) "#FF6F1B", "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")), # BLUE, RED, LIGHT BLUE, GRAY
-            chtpchs = setNames(c(if(length(cases_lb)==3) 19, if(length(cases_lb)==3) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
+            lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
+            chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+            chtpchs = setNames(c(if(length(cases_lb)==3) 19, 19, if(length(cases_lb)==3) 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
         
         file_name <- paste0(a, "_longitudinal_by_case_non_case.pdf")
         ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 8, height = 11)

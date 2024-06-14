@@ -282,7 +282,7 @@ f_longitude_by_assay <- function(
                 geom_boxplot(width = 0.25, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                scale_color_manual(name = "", values = c(if(length(cases_lb)==3) "#1749FF", if(length(cases_lb)==3) "#FF6F1B", "#D92321", "#0AB7C9"), guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
 
