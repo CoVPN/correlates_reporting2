@@ -97,7 +97,7 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
             ybreaks = if (attr(config,"config") == "nvx_uk302") {c(1,2,3,4,5)} else if (attr(config,"config") == "prevent19nvx") {c(0,1,2,3,4,5,6)} else if (study_name == "VAT08" & tm_subset == "Day") {c(0, 1, 2, 3, 4)} else if (study_name == "VAT08" & tm_subset == "fold") {c(-3, -2, -1, 0, 1, 2, 3, 4)} else {c(0,1,2,3,4,5)},
             axis.x.text.size = ifelse(assay_num > 7 & length(cases_lb)==3, 13, ifelse(assay_num > 5, 20, ifelse(assay_num > 3, 25, 32))),
             strip.x.text.size = ifelse(assay_num > 7, 10, ifelse(assay_num > 5, 18, ifelse(assay_num > 3, 25, 32))),
-            panel.text.size = ifelse(assay_num > 7 && length(cases_lb)==3, 3, ifelse(assay_num > 5, 5, ifelse(assay_num > 3, 6, 12))),
+            panel.text.size = ifelse(assay_num > 7 && length(cases_lb)==3, 3, ifelse(assay_num > 5, 4.5, ifelse(assay_num > 3, 6, 12))),
             scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
             lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
             lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
