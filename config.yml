@@ -1354,7 +1354,7 @@ D57azd1222_stage2_delta_nAb:
   EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_270
   EventTimePrimary: COVIDTimeD57toD57_270
   Earlyendpoint: AnyInfectionD1toD57_120
-  covariates: ~.+ Senior + risk_score
+  covariates: ~.+ Senior + risk_score + strata(CalendarGrp)
   tpeak: 57
   tpeaklag: 120
   tfinal.tpeak: 270
@@ -1369,25 +1369,10 @@ D57azd1222_stage2_delta_bAb:
   EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_270
   EventTimePrimary: COVIDTimeD57toD57_270
   Earlyendpoint: AnyInfectionD1toD57_120
-  covariates: ~.+ Senior + risk_score
+  covariates: ~.+ Senior + risk_score + strata(CalendarGrp)
   tpeak: 57
   tpeaklag: 120
   tfinal.tpeak: 270
-  txt.endpoint: Delta COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
-
-D57azd1222_stage2_delta_nAb_sens:
-  ph1: ph1.D57_120
-  ph2: ph2.D57_120nAb
-  wt: wt.D57_120nAb
-  WtStratum: Wstratum
-  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_180
-  EventTimePrimary: COVIDTimeD57toD57_180
-  Earlyendpoint: AnyInfectionD1toD57_120
-  covariates: ~.+ Senior + risk_score
-  tpeak: 57
-  tpeaklag: 120
-  tfinal.tpeak: 180
   txt.endpoint: Delta COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
 
