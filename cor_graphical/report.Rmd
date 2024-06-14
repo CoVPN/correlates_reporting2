@@ -58,7 +58,6 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   if (study_name=="ENSEMBLE" & grepl("EUA", attr(config,"config"))) COR_postfix_list <- c("IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1")
   if (study_name=="ENSEMBLE" & grepl("partA$", attr(config,"config"))) COR_postfix_list <- c("IncludeNotMolecConfirmed") # ModerateIncludeNotMolecConfirmed SevereIncludeNotMolecConfirmed
   if (study_name=="ENSEMBLE" & attr(config,"config") == "janssen_partA_VL") COR_postfix_list <- c("adhoc")
-  #if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
   if (study_name=="IARCHPV") COR_postfix_list <- c("", "sus")
   if (attr(config,"config")=="prevent19_stage2") COR_postfix_list <- c("delta", "severe")
   if (attr(config,"config")=="azd1222_stage2") COR_postfix_list <- c("delta nab", "delta bab",
@@ -66,6 +65,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                                                                      )
   if (attr(config,"config") == "nvx_uk302") COR_postfix_list <- c("D35nvx_uk302")
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
+  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
@@ -126,6 +126,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       COR_postfix_label = ""
       if (grepl("delta", COR_postfix)) COR_postfix_label=" (Delta Endpoint)"
       if (grepl("severe", COR_postfix)) COR_postfix_label=" (Severe Endpoint)"
+      if (COR_postfix=="D22D43omi") COR_postfix_label= paste0(" (Stage", unique(dat.longer.cor.subset.plot1$Trialstage), ")")
       
       COR=case_when(COR_postfix=="" ~ "", 
                     COR_postfix=="delta" ~ "D35prevent19_stage2_delta", 

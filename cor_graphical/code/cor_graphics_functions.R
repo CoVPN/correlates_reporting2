@@ -18,6 +18,7 @@
 #' @param chtcols color panel for points
 #' @param chtpchs shape panel for points
 #' @param lgdbreaks breaks for point legend
+#' @param lgdlabels labels for point legend
 #' @param scale.x.discrete.lb label for x axis categories
 #' @return A ggplot object list for violin + box plot without lines
 f_case_non_case_by_time_assay <- 
@@ -34,6 +35,7 @@ f_case_non_case_by_time_assay <-
              pointby = "cohort_col",
              scale.x.discrete.lb = c("Omicron Cases", "Non-Cases"),
              lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+             lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
              chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
              chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders"))
              ) {
@@ -70,16 +72,16 @@ f_case_non_case_by_time_assay <-
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
                 geom_violin(aes(color = cohort_event), scale = "width", na.rm = TRUE, show.legend = FALSE) +
                 geom_boxplot(aes(color = cohort_event), width = 0.25, lwd = 1.5, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
-                scale_color_manual(name = "", values = chtcols[1:2], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
                 geom_jitter(aes(color = .data[[pointby]], shape = .data[[pointby]]), width = 0.1, height = 0, size = 2, show.legend = TRUE) +
-                scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, drop=FALSE) +
-                scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, drop=FALSE) +
+                scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -142,6 +144,7 @@ f_case_non_case_by_time_assay_adhoc <-
              pointby = "cohort_col",
              scale.x.discrete.lb = c("Omicron Cases", "Non-Cases"),
              lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+             lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
              chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
              chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders"))
     ) {
@@ -186,8 +189,8 @@ f_case_non_case_by_time_assay_adhoc <-
                     # geoms below will use another color scale
                     new_scale_color() +
                     geom_jitter(aes(y = value, color = .data[[pointby]], shape = .data[[pointby]]), width = 0.1, height = 0, size = 2, show.legend = TRUE) +
-                    scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, drop=FALSE) +
-                    scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, drop=FALSE) +
+                    scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                    scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
                     geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
@@ -220,6 +223,7 @@ f_case_non_case_by_time_assay_adhoc <-
 #' @param split.var group split variable in string, e.g., "panel", "assay_variant"
 #' @param pointby a variable name by which different color and shape of point will be drawn, e.g, "cohort_col", "cohort_col2"
 #' @param lgdbreaks breaks for point legend 
+#' @param lgdlabels labels for point legend 
 #' @param chtcols color panel for points
 #' @param chtpchs shape panel for points
 #' @param strip.text.y.size strip label size for y-axis, e.g., assay label, default is 25
@@ -238,6 +242,7 @@ f_longitude_by_assay <- function(
     split.var = "panel",
     pointby = "cohort_col",
     lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+    lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
     chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     strip.text.y.size = 25,
@@ -277,13 +282,13 @@ f_longitude_by_assay <- function(
                 geom_boxplot(width = 0.25, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                scale_color_manual(name = "", values = c("#FF6F1B", "#0AB7C9"), guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                scale_color_manual(name = "", values = c(if(length(cases_lb)==3) "#1749FF", if(length(cases_lb)==3) "#FF6F1B", "#D92321", "#0AB7C9"), guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
 
                 geom_point(aes(color = .data[[pointby]], shape = .data[[pointby]]), size = 3, alpha = 0.6, show.legend = TRUE) +
-                scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, drop=FALSE) +
-                scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, drop=FALSE) +
+                scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                 
                 geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes_string(x = x.var, label = "N_RespRate", y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +

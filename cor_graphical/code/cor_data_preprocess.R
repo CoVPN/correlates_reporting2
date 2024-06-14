@@ -1,4 +1,5 @@
-#Sys.setenv(TRIAL = "vat08_combined")
+#Sys.setenv(TRIAL = "vat08_combined") D22D43omi
+#D22vat08_combined_M12_bAb, D22vat08_combined_M12_nAb, D43vat08_combined_M12_bA, D43vat08_combined_M12_nAb
 #Sys.setenv(TRIAL = "id27hpv") id27hpvnAb
 #Sys.setenv(TRIAL = "janssen_partA_VL")
 #Sys.setenv(TRIAL = "janssen_pooled_partA")
@@ -12,6 +13,7 @@ renv::activate(project = here::here(".."))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
+if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)}
 
 source(here::here("code", "cor_process_function.R"))
 library(here)
@@ -169,19 +171,28 @@ if (study_name=="IARCHPV"){
   
   dat <- dat %>%
     mutate(cohort_event = factor(
-      case_when(Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
-                  (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
-                  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 & EventTimePrimaryD22 <= 27 ~ "7-27 days PD2 cases",
-                Perprotocol==1 & (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
-                  (!!as.name(paste0("TwophasesampIndD", tinterm)))==1 & 
-                  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 ~ "28-180 days PD2 cases", 
+      case_when(Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tinterm)))==0 & 
+                  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
+                  (!!as.name(paste0("EventIndPrimaryD", tinterm)))==1 & 
+                  (!!as.name(paste0("EventTimePrimaryD", tinterm))) >= 7 &
+                  (!!as.name(paste0("EventTimePrimaryD", tpeak))) < 7 ~ "7-27 days PD2 cases",
+                Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
+                  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
+                  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 &
+                  (!!as.name(paste0("EventTimePrimaryD", tpeak))) >= 7 &
+                  (!!as.name(paste0("EventTimePrimaryD", tpeak))) <= 180 ~ "28-180 days PD2 cases", 
+                #Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
+                #  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
+                #  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 &
+                #  (!!as.name(paste0("EventTimePrimaryD", tpeak))) >= 181 &
+                #  (!!as.name(paste0("EventTimePrimaryD", tpeak))) <= 365 ~ "181-365 days PD2 cases", 
                 # definition for post-peak cases include people with and without D57 marker data for downstream plotting
                 # will filter out those without D57 marker data in the D57 panels
-                Perprotocol==1 & 
-                  (!!as.name(paste0("EarlyendpointD", tpeak)))==0 & 
-                  (!!as.name(paste0("TwophasesampIndD", tpeak)))==1 & 
+                Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
+                  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
                   EventIndPrimaryD1==0 ~ "Non-Cases"),
-      levels = c("7-27 days PD2 cases", "28-180 days PD2 cases", "Non-Cases"))
+      levels = c("7-27 days PD2 cases", "28-180 days PD2 cases", #"181-365 days PD2 cases", 
+                 "Non-Cases"))
     )
   
   } else {# keep other two timepoint studies except for Moderna, AZ and Sanofi here
@@ -224,11 +235,16 @@ dat <- dat[!is.na(dat$cohort_event),]
 
 if (length(timepoints)==1) {
   ph2.indicator = config.cor$ph2
-} else {
+} else if (study_name != "VAT08"){
   ph2.indicator = paste0("ph2.D", tpeak) # for example: no config.cor$ph2 when COR=D29D57
 }
-dat.cor.subset <- dat %>%
-  dplyr::filter(!!as.name(ph2.indicator)==1)
+
+if (study_name == "VAT08"){
+  dat.cor.subset <- dat
+} else {
+  dat.cor.subset <- dat %>%
+    dplyr::filter(!!as.name(ph2.indicator)==1)
+}
 
 write.csv(dat.cor.subset, file = here::here("data_clean", "cor_data.csv"), row.names=F)
 saveRDS(dat.cor.subset, file = here::here("data_clean", "cor_data.rds"))
@@ -310,7 +326,7 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
 } else if (study_name=="IARCHPV" | study_name=="UK302"){
   dat.long$lb = with(dat.long, "Pos.Cut")
   dat.long$lbval =  with(dat.long, pos.cutoffs)
-} else if (study_name %in% c("PREVENT19","AZD1222") & grepl("stage2", COR)){
+} else if ((study_name %in% c("PREVENT19","AZD1222") & grepl("stage2", COR)) | study_name == "VAT08"){
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoQ", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoQ, LLoD))
 } else { # e.g. prevent19nvx
@@ -429,7 +445,7 @@ if (study_name!="IARCHPV") { # IARCHPV doesn't have the minority variable
 
 # Here, only filter based on ph2.D29==1. Filtering by ph2.D57 will occur downstream,
 # since it should only happen for D57-related figures.
-if(length(timepoints)==1){ # one timepoint study: ph2.tpeak
+if(length(timepoints)==1 | study_name == "VAT08"){ # one timepoint study: ph2.tpeak
   dat.long.cor.subset <- dat.long #%>%
     #dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1","")))==1)
 } else {
@@ -437,8 +453,10 @@ if(length(timepoints)==1){ # one timepoint study: ph2.tpeak
     dplyr::filter(!!as.name(paste0("ph2.D", tpeak, ifelse(grepl("start1", COR), "start1", ifelse(grepl("variant", COR), "variant",""))))==1)
 }
 
-write.csv(dat.long.cor.subset, file = here::here("data_clean", "long_cor_data.csv"), row.names=F)
-saveRDS(dat.long.cor.subset, file = here::here("data_clean", "long_cor_data.rds"))
+if (study_name !="VAT08") {
+  write.csv(dat.long.cor.subset, file = here::here("data_clean", "long_cor_data.csv"), row.names=F)
+  saveRDS(dat.long.cor.subset, file = here::here("data_clean", "long_cor_data.rds"))
+}
 
 # long to longer format by time
 dat.longer.cor.subset <- dat.long.cor.subset %>%
@@ -449,9 +467,29 @@ dat.longer.cor.subset <- dat.long.cor.subset %>%
 #    include only +++ at D57 for Post-Peak Cases
 #    non-cases is defined as +++ only for Moderna, but ++-/+++ at D29/57 for AZ and Sanofi
 #    for intercurrent cases at D57, Day 2-14 Cases & Day 15-35 Cases at D29, can't use ph2.D57/ph2.D29 because they are before D57/D29
-if(length(timepoints)>1) {
+if(length(timepoints) > 1 & study_name !="VAT08") {
   dat.longer.cor.subset <- dat.longer.cor.subset %>% 
     filter(!(time == paste0("Day", tpeak) & (!!as.name(paste0("ph2.D", tpeak)))==0))  # set "Day 57" in the ph2.D57 cohort  
+}
+
+if(study_name =="VAT08") {
+  
+  # append with a pooled case group: union of 7-27 days PD2 cases, 28-180 days PD2 cases at both day 1 and day 22 as cases for D22 marker correlates analyses
+  dat.longer.cor.subset <- dat.longer.cor.subset %>%
+    bind_rows(dat.longer.cor.subset %>% 
+                filter(cohort_event %in% c("7-27 days PD2 cases","28-180 days PD2 cases") & time %in% c("B", "Day22", "Delta22overB")) %>%
+                mutate(cohort_event = "7-180 days PD2 cases")) %>%
+    mutate(cohort_event = factor(cohort_event, levels = c("7-27 days PD2 cases","28-180 days PD2 cases","7-180 days PD2 cases", "Non-Cases")))
+  
+  dat.longer.cor.subset <- dat.longer.cor.subset %>% 
+    filter(!(time %in% c("B", "Day22", "Delta22overB") & grepl("bind", assay) & ph2.D22.bAb == 0)) %>%
+    filter(!(time %in% c("B", "Day22", "Delta22overB") & grepl("pseudoneutid50", assay) & ph2.D22.nAb == 0)) %>%
+    filter(!(time %in% c("Day43", "Delta43overB", "Delta43over22") & grepl("bind", assay) & ph2.D43.bAb == 0)) %>%
+    filter(!(time %in% c("Day43", "Delta43overB", "Delta43over22") & grepl("pseudoneutid50", assay) & ph2.D43.nAb == 0))
+  
+  # exclude EarlyinfectionD43==1 at Day 43 and D43 fold-rise over D1 for all case groups
+  stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event %in% c("7-27 days PD2 cases","28-180 days PD2 cases","7-180 days PD2 cases") & time %in% c("Day43", "Delta43overB", "Delta43over22") & EarlyinfectionD43==1))==0)
+  
 }
 
 if (study_name=="AZD1222" & !grepl("stage2", COR)) {
@@ -466,6 +504,7 @@ if (study_name=="AZD1222" & !grepl("stage2", COR)) {
 if (attr(config,"config")=="janssen_pooled_partA"){
   dat_proc$Day71pseudoneutid50uncensored=NA; dat_proc$Mon6pseudoneutid50uncensored=NA;
 }
+
 resp <- getResponder(dat_proc, cutoff.name="llox", times=grep(ifelse(study_name!="IARCHPV", "Day|Mon|^DD|^C", "M"), times_, value=T), # IARCHPV uses "M" instead of "Day" in the assay variables
                assays=assays, pos.cutoffs = pos.cutoffs)
 resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
