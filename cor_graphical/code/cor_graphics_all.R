@@ -37,7 +37,7 @@ dat.cor.subset.plot3 <- readRDS(here("data_clean", "cor_data.rds"));dat.cor.subs
 
 cases_lb <- if (study_name=="VAT08"){ 
      
-    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="7-27 days PD2 cases"))!=0) {c("C1", "C2", "C3")
+    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="C1"))!=0) {c("C1", "C2", "C3")
     } else {c("C2")}
     
     } else if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {paste0(config.cor$txt.endpoint, " Cases")
@@ -45,7 +45,7 @@ cases_lb <- if (study_name=="VAT08"){
 
 cases_lb2 <- if (study_name=="VAT08"){ 
     
-    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="7-27 days PD2 cases"))!=0) {c("C1"="C1: 7-27 days PD2 cases", "C2"="C2: 28-180 days PD2 cases", "C3"="C3: 7-180 days PD2 cases")
+    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="C1"))!=0) {c("C1"="C1: 7-27 days PD2 cases", "C2"="C2: 28-180 days PD2 cases", "C3"="C3: 7-180 days PD2 cases")
     } else {c("C2"="C2: 28-180 days PD2 cases")}
     
     } else {cases_lb}
@@ -171,7 +171,7 @@ if(study_name=="VAT08"){
     
     stopifnot(nrow(subset(dat.longer.cor.subset.plot1, time=="Day 43" & cohort_event=="C1"))==0)
     
-    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="7-27 days PD2 cases"))!=0){
+    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="C1"))!=0){
         time_cohort.lb <- c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:2], "\n", cases_lb[1]), paste0(labels.time[1:3], "\n", cases_lb[2]), paste0(labels.time[1:2], "\n", cases_lb[3]))
     } else {time_cohort.lb <- c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:3], "\n", cases_lb))}
 
