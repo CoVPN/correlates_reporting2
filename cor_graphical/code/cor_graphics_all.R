@@ -54,6 +54,10 @@ save.results.to = paste0(here::here("output"), "/", attr(config,"config"),"/");
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
 save.results.to = paste0(save.results.to, "/", COR,"/");
 if (!dir.exists(save.results.to))  dir.create(save.results.to)
+if (study_name=="VAT08") {
+    save.results.to = paste0(save.results.to, "/", COR,"_stage1", unique(dat.longer.cor.subset.plot1$Trialstage));
+    if (!dir.exists(save.results.to))  dir.create(save.results.to)
+}
 print(paste0("save.results.to equals ", save.results.to))
 
 ###### Set 1 plots: Ab distributions for assays of one panel, at set1_times, by case/non-case (by naive/non-naive, vaccine/placebo)

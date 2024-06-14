@@ -13,7 +13,6 @@ renv::activate(project = here::here(".."))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
-if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)}
 
 source(here::here("code", "cor_process_function.R"))
 library(here)
@@ -24,6 +23,7 @@ if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; n
 
 ## COR has a set of analysis-specific parameters defined in the config file
 config.cor <- config::get(config = COR)
+if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)}
 
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0
