@@ -5,7 +5,7 @@ The main regression model is the Cox proportional hazards model. Each row repres
 <!-- Hazard ratios -->
 \setlength{\tabcolsep}{.5ex}
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}
-  
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r fname.suffix`}
 \vspace{-15pt}
 
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
@@ -16,7 +16,6 @@ $\ast$`r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpe
 $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
 `r if (!show.q)'-->'`
 
-  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r fname.suffix`}
 
 
 

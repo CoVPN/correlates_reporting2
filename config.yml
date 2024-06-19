@@ -458,7 +458,7 @@ azd1222_base: &azd1222_base
   
 azd1222: &azd1222
   <<: *azd1222_base
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv.csv
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv
   assays: [pseudoneutid50]
   llox_label: [LOD]
   assay_labels: [PsV Neutralization 50% Titer]
@@ -479,6 +479,7 @@ azd1222_stage2: &azd1222_stage2
   timepoints: [57]
   times: [Day57]
   time_labels: [Day 57]
+  # data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240509.csv # before de-contamination
   data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240515.csv
   assay_metadata: assay_metadata/azd1222_stage2_assay_metadata.csv
   study_name: AZD1222
@@ -1354,7 +1355,7 @@ D57azd1222_stage2_delta_nAb:
   EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_270
   EventTimePrimary: COVIDTimeD57toD57_270
   Earlyendpoint: AnyInfectionD1toD57_120
-  covariates: ~.+ Senior + risk_score
+  covariates: ~.+ Senior + risk_score + strata(CalendarGrp)
   tpeak: 57
   tpeaklag: 120
   tfinal.tpeak: 270
@@ -1369,25 +1370,10 @@ D57azd1222_stage2_delta_bAb:
   EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_270
   EventTimePrimary: COVIDTimeD57toD57_270
   Earlyendpoint: AnyInfectionD1toD57_120
-  covariates: ~.+ Senior + risk_score
+  covariates: ~.+ Senior + risk_score + strata(CalendarGrp)
   tpeak: 57
   tpeaklag: 120
   tfinal.tpeak: 270
-  txt.endpoint: Delta COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
-
-D57azd1222_stage2_delta_nAb_sens:
-  ph1: ph1.D57_120
-  ph2: ph2.D57_120nAb
-  wt: wt.D57_120nAb
-  WtStratum: Wstratum
-  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_180
-  EventTimePrimary: COVIDTimeD57toD57_180
-  Earlyendpoint: AnyInfectionD1toD57_120
-  covariates: ~.+ Senior + risk_score
-  tpeak: 57
-  tpeaklag: 120
-  tfinal.tpeak: 180
   txt.endpoint: Delta COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
 
@@ -1507,8 +1493,8 @@ D29IncludeNotMolecConfirmedstart1:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
-# VL, ph2/wt for ancestral antibodies do have variant in the end
-# We don't keep a separate label for ancestral ph2 and weights and rely on hard coding to change them 
+# VL
+# We don't keep a separate label for ancestral ph2 and weights and rely on hard coding to change them (ph2.D29 and wt.D29)
 # b/c it is a lot better to keep reults for ancestral and variant antibodies together for easier read
 # the hard coding happens in cor_coxph_ph_MI.R and in copcor::marginalized.risk.svycoxph.boot.R
 D29VLvariant:

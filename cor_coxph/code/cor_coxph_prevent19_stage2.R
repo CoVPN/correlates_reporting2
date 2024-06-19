@@ -38,8 +38,7 @@ source(here::here("..", "_common.R")) # dat_proc is made
   fname.suffix = ""
   
   myprint(tfinal.tpeak)
-  write(tfinal.tpeak,
-        file = paste0(save.results.to, "timepoints_cum_risk_" %.% study_name))
+  write(tfinal.tpeak, file = paste0(save.results.to, "timepoints_cum_risk_" %.% study_name))
   
   
   if (COR == "D35prevent19_stage2_delta") {
@@ -227,7 +226,7 @@ cor_coxph_risk_plotting (
   config.cor,
   tfinal.tpeak,
   
-  markers = all.markers,
+  markers = markers,
   markers.names.short = all.markers.names.short[markers],
   markers.names.long = all.markers.names.long[markers],
   marker.cutpoints,
