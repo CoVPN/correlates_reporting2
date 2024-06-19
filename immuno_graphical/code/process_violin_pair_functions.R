@@ -814,7 +814,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
             panel.grid.minor = element_blank()
         )
     pairplots[1, 1] <- pairplots[1, 1] +
-        scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.2)
+        scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.3)
     for (j in 2:pairplots$nrow) {
         for (k in 1:(j - 1)) {
             pairplots[j, k] <- pairplots[j, k] +
@@ -835,7 +835,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
             scale_x_continuous(
                 limits = rr, breaks = breaks,
                 labels = label_math(10^.x)
-            ) + ylim(0, 1.2)
+            ) + ylim(0, 1.3)
     }
     
     ggsave(

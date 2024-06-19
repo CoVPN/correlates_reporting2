@@ -39,6 +39,14 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_stage2))
 	Rscript code/cor_data_preprocess.R D57azd1222_stage2_severe_bAb # Yiwen's
 	Rscript code/cor_graphics_all.R D57azd1222_stage2_severe_bAb
 	
+else ifeq ($(TRIAL),$(filter $(TRIAL), nvx_uk302))
+	Rscript code/cor_data_preprocess.R D35nvx_uk302 # Yiwen's
+	Rscript code/cor_graphics_all.R D35nvx_uk302
+
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19nvx))
+	Rscript code/cor_data_preprocess.R D35prevent19nvx # Yiwen's
+	Rscript code/cor_graphics_all.R D35prevent19nvx
+	
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_mock janssen_na_mock janssen_la_mock janssen_sa_mock))
 	Rscript code/cor_data_preprocess.R D29 # Yiwen's
 	Rscript code/cor_graphics_violin_scatter.R D29
