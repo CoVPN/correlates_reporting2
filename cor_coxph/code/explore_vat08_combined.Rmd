@@ -33,6 +33,7 @@ dat_mapped$EventIndPrimaryD43= dat_mapped$EventIndFirstInfectionD43
 dat_mapped$EventTimePrimaryD43= dat_mapped$EventTimeFirstInfectionD43
 dat_mapped$EarlyendpointD43 <- with(dat_mapped, EarlyinfectionD43==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD43 + 7),1,0)
 dat_mapped$ph1.D43= with(dat_mapped, EarlyendpointD43==0 & Perprotocol==1 & EventTimePrimaryD43 >= 7)
+dat_mapped$ph1.D22= with(dat_mapped, EarlyinfectionD22==0 & Perprotocol==1 & EventTimeFirstInfectionD22 >= 7)
 dat_mapped$Senior=ifelse(dat_mapped$Age>=60,1,0)
 dat_mapped$cc = country.codes[dat_mapped$Country]
 # first set it to stage 1 region, then change the region for stage 2 countries
@@ -53,10 +54,101 @@ print(bassays)
 
 nassays=assays0[startsWith(assays0,"pseudoneutid50")][1:5]
 print(nassays)
+
+# add batch 0
+dat_mapped$nAbBatch1=dat_mapped$nAbBatch
+dat_mapped$nAbBatch1[is.na(dat_mapped$Day43pseudoneutid50_B.1.351) & !is.na(dat_mapped$Day43pseudoneutid50)]=0
+
+
+stage1step1=read.csv("~/JinStage1Step1.csv")
+stage1step2=read.csv("~/JinStage1Step2.csv")
+stage2700=read.csv("~/Aiying700.csv") # many rows for many markers
+stage2step2=read.csv("/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/qdata/nab/Stage2CorrelatesListsandData/immunosubset.csv")
+stage2cases=read.csv("/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/qdata/nab/Stage2CorrelatesListsandData/confirmed_cases_list.csv")
+
+stage2step2$SUBJID = sub("VAT00008-","",stage2step2$USUBJID)
+stage2step2$SUBJID = gsub("-","",stage2step2$SUBJID,)
+stage2cases$SUBJID = sub("VAT00008-","",stage2cases$USUBJID)
+stage2cases$SUBJID = gsub("-","",stage2cases$SUBJID,)
+
+
+dat_mapped$stage1step1 = dat_mapped$SUBJID %in% stage1step1$SUBJID
+dat_mapped$stage1step2 = dat_mapped$SUBJID %in% stage1step2$SUBJID
+
+dat_proc$stage1step1 = dat_proc$SUBJID %in% stage1step1$SUBJID
+dat_proc$stage1step2 = dat_proc$SUBJID %in% stage1step2$SUBJID
+dat_proc$stage1step = NA
+dat_proc$stage1step[dat_proc$stage1step1] = 1
+dat_proc$stage1step[dat_proc$stage1step2] = 2
+
+
+dat_mapped$stage2step2 = dat_mapped$Subjectid %in% stage2step2$USUBJID
+dat_mapped$SubcohortInd[dat_mapped$Subjectid %in% stage2cases$USUBJID] = 0
+dat_mapped$stage2step = NA
+dat_mapped$stage2step[dat_mapped$SubcohortInd==1 & dat_mapped$Trialstage==2] = 1
+dat_mapped$stage2step[dat_mapped$stage2step2 & dat_mapped$Trialstage==2] = 2
+
+
+dat_proc$stage2step2 = dat_proc$SUBJID %in% stage2step2$SUBJID
+dat_proc$SubcohortInd[dat_proc$SUBJID %in% stage2cases$SUBJID] = 0
+dat_proc$stage2step = NA
+dat_proc$stage2step[dat_proc$SubcohortInd==1 & dat_proc$Trialstage==2] = 1
+dat_proc$stage2step[dat_proc$stage2step2 & dat_proc$Trialstage==2] = 2
+mytable(dat_proc$stage2step)
+
+
+dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDateEnrollment)
+
 ```
 
 
-### Meaning of stage 1 trial SubcohortInd
+### Reverse-engineer SubcohortInd for stage 1
+
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Trt==1 & ph1.D43 & Bserostatus==1)
+```
+
+All bAb and all variants ID50 data are in the two nAbBatch. Some ancestral ID50 are in batch 0 only, but we won't use them since they are from another study, has its own batch effect.
+```{r}
+mytable(!is.na(tmp$Day43pseudoneutid50_B.1.351), tmp$nAbBatch)
+mytable(!is.na(tmp$Day43bindSpike), tmp$nAbBatch)
+```
+
+A subset of ptids with ID50 has bAb. Most ptids with bAb have ID50.
+```{r}
+mytable(!is.na(tmp$Day43bindSpike), !is.na(tmp$Day43pseudoneutid50_B.1.351), tmp$EventIndFirstInfectionD1)
+```
+Expand to both arms and both NN and N
+```{r}
+mytable(!is.na(subset(dat_proc, Trialstage==1)$Day43bindSpike), !is.na(subset(dat_proc, Trialstage==1)$Day43pseudoneutid50_B.1.351), subset(dat_proc, Trialstage==1)$Trt, subset(dat_proc, Trialstage==1)$Bserostatus)
+```
+
+
+A total of 69 cases were assayed across the two batches, and a total of 207 non-cases were sampled.
+```{r}
+mytable(tmp$EventIndFirstInfectionD1, tmp$nAbBatch)
+```
+Most of the assayed ptids are not on the pick list (step 1+2), and most of the pick list were not assayed.
+```{r}
+mytable(tmp$stage1step, tmp$nAbBatch)
+```
+
+
+
+```{r}
+mytable(tmp$EventIndFirstInfectionD1, tmp$tps.stratum)
+mytable(tmp$nAbBatch, tmp$tps.stratum)
+mytable(tmp$nAbBatch[tmp$EventIndFirstInfectionD1==1], tmp$tps.stratum[tmp$EventIndFirstInfectionD1==1])
+mytable(!is.na(tmp$nAbBatch), tmp$tps.stratum, tmp$EventIndFirstInfectionD1)
+```
+
+
+```{r}
+mytable(!is.na(tmp$Day43bindSpike), tmp$tps.stratum, tmp$EventIndFirstInfectionD1)
+```
+
+
+
 
 ```{r}
 
@@ -64,8 +156,6 @@ tmp=subset(dat_mapped, Trialstage==1 & Trt==1 & ph1.D43 & Bserostatus==1)
 tmp$SubcohortInd1=tmp$SubcohortInd
 tmp$SubcohortInd1[tmp$cc=="Japan" | tmp$cc=="United States"]=1
 
-stage1step2=read.csv("~/JinStage1Step2.csv")
-tmp$stage1step2 = tmp$SUBJID %in% stage1step2$SUBJID
 
 tmp$tmp = is.na(tmp$Day43pseudoneutid50_B.1.351) & !is.na(tmp$Day43pseudoneutid50)
 tmp$nAbBatch1=tmp$nAbBatch
@@ -142,52 +232,71 @@ mytable(!is.na(tmp$Day43pseudoneutid50), tmp$SubcohortInd)
 
 
 
-### Meaning of stage 2 trial SubcohortInd
+
+
+Stage 1: Is it reasonable to assume that the cases in the subcohortid are subchort? 
 
 ```{r}
+tmp=subset(dat_proc, Trialstage==1 & Trt==1 & ph1.D43 & Bserostatus==1)
 
+table.prop(tmp$EventIndFirstInfectionD1, tmp$SubcohortInd)
+fisher.test(table(tmp$EventIndFirstInfectionD1, tmp$SubcohortInd))
+
+table.prop(tmp$EventIndFirstInfectionD1[tmp$region==1], tmp$SubcohortInd[tmp$region==1])
+table.prop(tmp$EventIndFirstInfectionD1[tmp$region!=1], tmp$SubcohortInd[tmp$region!=1])
+
+mytable(tmp$SubcohortInd, !is.na(tmp$Day43pseudoneutid50_B.1.351), tmp$EventIndFirstInfectionD1)
+```
+
+
+
+### Reverse-engineer SubcohortInd for Stage 2
+
+```{r}
 tmp=subset(dat_mapped, Trialstage==2 & Trt==1 & ph1.D43 & Bserostatus==1)
-tmp$SubcohortInd1=tmp$SubcohortInd
-
-tmp$tmp = is.na(tmp$Day43pseudoneutid50_B.1.351) & !is.na(tmp$Day43pseudoneutid50)
-tmp$nAbBatch1=tmp$nAbBatch
-tmp$nAbBatch1[tmp$tmp]=0
 ```
 
+In stage 2, Batch 1 perfectly corresponds to the step 2 pick list, which is a good news. If we have the step 1 pick list, we can compare it to batch 2. If batch 2 turns out to the sum of step 1 pick list and cases, then we know the subcohort = step 1 + step 2.
+```{r}
+mytable(tmp$stage2step, tmp$nAbBatch, tmp$EventIndFirstInfectionD1)
+# D22
+tmp1=subset(dat_mapped, Trialstage==2 & Trt==1 & ph1.D22 & Bserostatus==1)
+mytable(tmp1$stage2step, tmp1$nAbBatch, tmp1$EventIndFirstInfectionD1)
+```
+
+One puzzling observation is that step 2 case rate is 4.6%, while outside of step 2, it is 1.3% (Fisher test p value <0.001). Could this be explained by, e.g., the sampling plan favors senior?
+
+Another observation is that step 2 sampling doc indicates 500 ptids, but the csv file has ~700 ptids. I recall there was an explanation for that, but I cannot remember now.
 
 ```{r}
+table.prop(tmp$EventIndFirstInfectionD1, tmp$stage2step2)
+fisher.test(table(tmp$EventIndFirstInfectionD1, tmp$stage2step2))
+```
 
-mytable(!is.na(tmp$Day43bindSpike_beta), !is.na(tmp$Day43bindSpike), tmp$nAbBatch, tmp$SubcohortInd1)
+About half of the ptids with nAb also has bAb. The ptids with bAb mostly have nAb as well.
 
-mytable(!is.na(tmp$Day43pseudoneutid50_B.1.351), !is.na(tmp$Day43pseudoneutid50), tmp$nAbBatch, tmp$SubcohortInd1)
-
-mytable(!is.na(tmp$Day43pseudoneutid50_B.1.351), !is.na(tmp$Day43pseudoneutid50), tmp$nAbBatch, tmp$SubcohortInd1, tmp$EventIndFirstInfectionD1)
-
-
-mytable(tmp$SubcohortInd, tmp$nAbBatch)
-
-mytable(tmp$SubcohortInd, tmp$nAbBatch, tmp$EventIndFirstInfectionD1)
-
-
-mytable(tmp$SubcohortInd1, tmp$nAbBatch)
-
-mytable(tmp$SubcohortInd1, tmp$nAbBatch1, tmp$EventIndFirstInfectionD1)
-
+```{r}
+mytable(!is.na(tmp$Day43bindSpike_omicron), !is.na(tmp$Day43pseudoneutid50_BA.4.5), tmp$nAbBatch)
 
 
 ```
 
 
 
-### Investigating batch effects
 
-The nAbBatch 0 should not be used - they most likely come from separate immunogenicity studies run by Sanofi. 
+
+### Stage 1 batch effects
 
 ```{r}
 tmp=subset(dat_proc, Trialstage==1 & Trt==1 & ph1.D43 & Bserostatus==1)
 tmp$nAbBatch1=tmp$nAbBatch
 tmp$nAbBatch1[is.na(tmp$Day43pseudoneutid50_B.1.351)]=0
+```
 
+The nAbBatch 0 should not be used - they most likely come from separate immunogenicity studies run by Sanofi. 
+
+
+```{r}
 # mytable(tmp$tmp, tmp$nAbBatch)
 mytable(!is.na(tmp$Day43pseudoneutid50_B.1.351), !is.na(tmp$Day43pseudoneutid50))
 
@@ -229,18 +338,39 @@ mytable(!is.na(tmp$Day43pseudoneutid50_B.1.351), tmp$nAbBatch1)
 
 ```
 
+Repeat boxplots for different variants
 ```{r}
-tmp=subset(dat_proc, Trialstage==1 & Trt==1)
-mytable(tmp$ph2.D43.nAb, tmp$ph2.D43.nAb.st1.anc)
-mytable(is.na(tmp$Day43pseudoneutid50_B.1.351), is.na(tmp$Day43pseudoneutid50))
+par(mfrow=c(1,5), mar=c(4,1,4,1))
+myboxplot(Day43pseudoneutid50~nAbBatch, tmp, col=ifelse(tmp$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5), main="")
+myboxplot(Day43pseudoneutid50_B.1.351~nAbBatch, tmp, col=ifelse(tmp$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5), main="")
+myboxplot(Day43pseudoneutid50_BA.1~nAbBatch, tmp, col=ifelse(tmp$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5), main="")
+myboxplot(Day43pseudoneutid50_BA.2~nAbBatch, tmp, col=ifelse(tmp$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5), main="")
+myboxplot(Day43pseudoneutid50_BA.4.5~nAbBatch, tmp, col=ifelse(tmp$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5), main="")
+title(out=T, main="ID50 by Batch in Mono NN: Anc, Beta, BA1, BA2, BA4.5", line=-2)
+```
 
+
+Define a calendar period of enrollment indicator that approximately or fully separates batch 1 vs. batch 2 for Stage 1 Columbia + Honduras, and then adjust for that calendar time variable.  This could be a way to adjust for potential bias without mentioning a potential batch effect
+
+```{r}
+x1=tmp[tmp$region==2 & tmp$nAbBatch==1 & tmp$EventIndOmicronD43M6hotdeck1==1, "EnrollmentDate"]
+x2=tmp[tmp$region==2 & tmp$nAbBatch==1 & tmp$EventIndOmicronD43M6hotdeck1==0, "EnrollmentDate"]
+x3=tmp[tmp$region==2 & tmp$nAbBatch==2 & tmp$EventIndOmicronD43M6hotdeck1==1, "EnrollmentDate"]
+x4=tmp[tmp$region==2 & tmp$nAbBatch==2 & tmp$EventIndOmicronD43M6hotdeck1==0, "EnrollmentDate"]
+tab=data.frame(
+  n=c(sum(!is.na(x1)), sum(!is.na(x2)), sum(!is.na(x3)), sum(!is.na(x4))),
+  "min EnrollmentDate"=c(min(x1), min(x2,na.rm=T), min(x3,na.rm=T), min(x4,na.rm=T)),
+  "median EnrollmentDate"=c(median(x1), median(x2,na.rm=T), median(x3,na.rm=T), median(x4,na.rm=T)),
+  "max EnrollmentDate"=c(max(x1), max(x2,na.rm=T), max(x3,na.rm=T), max(x4,na.rm=T))
+)
+rownames(tab)=c("batch 1 cases", "batch 1 non-cases", "batch 2 cases", "batch 2 non-cases")
+tab
 ```
 
 
 
 
-
-Stage 2
+### Stage 2 batch effects
 
 ```{r}
 tmp=subset(dat_proc, Trialstage==2 & Trt==1 & ph1.D43 & Bserostatus==1)
@@ -252,6 +382,9 @@ myboxplot(Day43pseudoneutid50~nAbBatch, tmp[!is.na(tmp$Day43pseudoneutid50),], c
 # myboxplot(Day43pseudoneutid50_B.1.351~nAbBatch, tmp[!is.na(tmp$Day43pseudoneutid50_B.1.351),], col=ifelse(tmp[!is.na(tmp$Day43pseudoneutid50_B.1.351),]$EventIndFirstInfectionD1==1, 2, 1), ylim=c(0,4.5), main="B.1 ID50 by Batch in Bi NN")
 myboxplot(Day43bindSpike~nAbBatch, tmp[!is.na(tmp$Day43pseudoneutid50),], col=ifelse(tmp[!is.na(tmp$Day43pseudoneutid50),]$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5), main="Anc Spike by Batch in Bi NN") 
 
+
+par(mfrow=c(1,1))
+myboxplot(Day43pseudoneutid50~region+nAbBatch, tmp[!is.na(tmp$Day43pseudoneutid50),], col=ifelse(tmp[!is.na(tmp$Day43pseudoneutid50),]$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5), main="Anc ID50 by Batch in Bi NN")
 
 ```
 
@@ -613,15 +746,6 @@ abline(v=4.5)
 ### Check which ptids are in which batch
 
 We have lists of ptids sampled in step 2 in both stages of the trial.
-```{r, include=T}
-stage2step2=read.csv("~/Aiying700.csv")
-dat_mapped$stage2step2 = dat_mapped$Subjectid %in% stage2step2$Unique.Subject.Identifier
-dat_proc$stage2step2 = dat_proc$Ptid %in% stage2step2$Unique.Subject.Identifier
-
-stage1step2=read.csv("~/JinStage1Step2.csv")
-dat_mapped$stage1step2 = dat_mapped$SUBJID %in% stage1step2$SUBJID
-dat_proc$stage1step2 = dat_proc$SUBJID %in% stage1step2$SUBJID
-```
 
 Stage 2, nAb. batch 1 = step2 for both cases and noncases
 ```{r}
