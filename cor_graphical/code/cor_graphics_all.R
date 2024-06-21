@@ -113,9 +113,11 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
 }
 
 # adhoc for prevent19_stage2: show y-axis variable in percentile
-if(attr(config,"config") == "prevent19_stage2"){
+if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")){
     
     for (panel in c("pseudoneutid50","bindSpike_sub_stage2")){
+        
+        if(sum(grepl(substr(panel, 1, 4), assays)) == 0) next # for azd1222_stage2
         
         # by naive/non-naive, vaccine/placebo
         f_1 <- f_case_non_case_by_time_assay_adhoc(
@@ -124,13 +126,15 @@ if(attr(config,"config") == "prevent19_stage2"){
                                            levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
                                            labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))) %>%
                 group_by(Trt, Bserostatus, time, assay) %>%
+                # fit wcdf across cases and non-cases
                 mutate(lb = "",
                        lb2 = "",
                        lbval = 1/3,
                        lbval2 = 2/3,
-                       value = ewcdf(value, wt)(value)
+                       value = ewcdf(value, wt)(value) 
                        ) %>%
                 group_by(Trt, Bserostatus, time, assay, cohort_event) %>%
+                # calculated weighted percentile for cases and non-cases, separately
                 mutate(lower = weighted_percentile(x=value, percentile=0.25, weights=wt),
                        middle = weighted_percentile(x=value, percentile=0.5, weights=wt),
                        upper = weighted_percentile(x=value, percentile=0.75, weights=wt),
@@ -152,8 +156,8 @@ if(attr(config,"config") == "prevent19_stage2"){
             panel.text.size = 12,
             scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
             lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
-            chtcols = setNames(c(if(length(cases_lb)==2) "#1749FF","#D92321","#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")),
-            chtpchs = setNames(c(if(length(cases_lb)==2) 19, 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
+            chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+            chtpchs = setNames(c(if(length(cases_lb)==3) 19, 19, if(length(cases_lb)==3) 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
         
         for (i in 1:length(set1_times)){
             
