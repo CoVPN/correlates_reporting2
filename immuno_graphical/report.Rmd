@@ -22,11 +22,24 @@ if (study_name !="VAT08"){
   bstatus.labels.2 <- bstatus.labels.3 <- c("naive", "non-naive")
 }
 
-tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
-tps_no_B_and_delta_over_tinterm <-  times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("Day29", "Delta29overB", "Day57", "Delta57overB")
-tps_no_fold_change <- times[!grepl("Delta", times)]
-tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
-tps_delta_over_B <- times[grepl("overB",times)]
+# repeat whatever in param.R here
+times = c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
+if(attr(config,"config")=="janssen_pooled_partA") {
+  times_ = c("B","Day29","Delta29overB","Day71"); timepoints_=c(29,71)
+  labels.time = c("Day 1", "Day 29","D29 fold-rise over D1", "Day 71"); names(labels.time) = times_
+  timepoints_=timepoints
+} else if (attr(config,"config")=="prevent19_stage2") {
+  times_ = c("Day35","C1","BD1") 
+  labels.time = c("Day 35", "Crossover Day 1", "Booster Day 1"); names(labels.time) = times_
+  timepoints_=timepoints
+} else {times_ = times; timepoints_=timepoints}
+
+# set time vectors based on times_ and timepoints_
+tps_no_delta_over_tinterm <-  times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
+tps_no_B_and_delta_over_tinterm <-  times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))] #c("Day29", "Delta29overB", "Day57", "Delta57overB")
+tps_no_fold_change <- times_[!grepl("Delta", times_)]
+tps_no_B_and_fold_change <- times_[!grepl("Delta", times_) & times_!="B"]
+tps_delta_over_B <- times_[grepl("overB",times_)]
 
 
 
@@ -63,8 +76,8 @@ neut.marker.captions <- switch(study_name,
                                "MockCOVE"="The dashed lines in each figure are ULOQ, LLOQ, and positivity cutoffs for binding antibody assays, or ULOQ, LLOQ, and LLOD for neutralizing antibody assays, from top to bottom respectively.",
                                "ENSEMBLE"="The dashed lines in each figure are ULOQ and positivity cut-off from top to bottom for binding antibody assays, or ULOQ and LLOQ for neutralizing antibody assays, from top to bottom respectively.",
                                "MockENSEMBLE"="The dashed lines in each figure are ULOQ and positivity cut-off for binding antibody assays, or ULOQ and LLOQ for neutralizing antibody assays, from top to bottom respectively.",
-                               "PREVENT19"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
-                               
+                               #"PREVENT19"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               "PREVENT19"="The dashed lines in each figure are ULOQ and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
                                "AZD1222"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
                                
                                "VAT08"="The dashed lines in each figure are ULOQ and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
@@ -86,13 +99,13 @@ for (bsero in bstatus.labels.2) {
   for (trt in c("vaccine","placebo", if(study_name=="VAT08") "pooled")) {  
     
     if (study_name!="VAT08" && trt=="placebo" && bsero==bstatus.labels.2[1]) next # only report for placebo baseline neg for VAT08
-    if (attr(config,"config")=="janssen_partA_VL" && !(trt=="vaccine" && bsero==bstatus.labels.2[1])) next # only report for vaccine baseline neg for janssan_partA_VL
+    if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2") && !(trt=="vaccine" && bsero==bstatus.labels.2[1])) next # only report for vaccine baseline neg for janssan_partA_VL
     
-    for (country in c("Nvx_US_Mex", if(study_name=="PREVENT19") "Nvx_US")){
+    for (country in c("Nvx_US_Mex", if(attr(config,"config")=="prevent19") "Nvx_US")){
       # only doable when there are >1 assays
       if (if.pair==1){
         
-        for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+        for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
           
           if (study_name=="VAT08" && grepl("Delta", tp)) next # do not report delta timepoints for VAT08
           if (study_name=="VAT08" && trt=="pooled" && tp!="B") next # only report pooled at baseline for VAT08
@@ -100,15 +113,22 @@ for (bsero in bstatus.labels.2) {
           
           for (reg in if (attr(config,"config")=="janssen_partA_VL") {c("LATAM_","ZA_")} else {""}) {
             
-            for (ab in if (attr(config,"config")=="janssen_partA_VL") {c("bAb_","nAb_","")} else {""}) {
+            for (ab in if (attr(config,"config")=="janssen_partA_VL") {c("bAb_","nAb_","",
+                                                                         "Reference_","Mu_","Gamma_","Lambda_",
+                                                                         "Delta_","Beta_")} else {""}) {
             
+              if (ab %in% c("Mu_","Gamma_","Lambda_") & reg == "ZA_") next # no these plots
+              if (ab %in% c("Delta_","Beta_") & reg == "LATAM_") next # no these plots
+                
               tpLabel <- gsub("ay ", "", labels.time[tp])
               regLabel <- case_when(reg=="LATAM_" ~ "Latin America",
                                     reg=="ZA_" ~ "Southern Africa",
                                     TRUE ~ "")
               abLabel <- case_when(ab=="bAb_" ~ "bAb",
-                                    ab=="nAb_" ~ "nAb",
-                                    TRUE ~ "Ab")
+                                   ab=="nAb_" ~ "nAb",
+                                   ab=="" ~ "Ab",
+                                   TRUE ~ paste0("bAb ", gsub("_", "", ab), " and nAb ", gsub("_", "", ab))
+                                   )
               
               res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_time.Rmd')), quiet = TRUE)
               cat(res, sep = '\n')
@@ -123,7 +143,7 @@ for (bsero in bstatus.labels.2) {
         
         if (study_name=="VAT08" && trt=="pooled") next # do not report "pooled" for across timepoint plots
         if (study_name=="VAT08" && asy=="pseudoneutid50_mdw" && bsero=="naive") next # psv_mdw doesn't have any value for naive at baseline
-        if (attr(config,"config")=="janssen_partA_VL") next # no figure for janssen_partA_VL
+        if (attr(config,"config") %in% c("janssen_partA_VL")) next # no figure for janssen_partA_VL
         
         asyLabel <- gsub("%","\\\\%", labels.assays[asy])
         
@@ -142,7 +162,7 @@ for (bsero in bstatus.labels.2) {
 ## RCDF plots of antibody markers for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
 
-if (study_name=="VAT08"){
+if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
   for (tp in tps_no_fold_change){
     
     tp_lb = ifelse(tp=="B", "Day1", tp)
@@ -155,6 +175,9 @@ if (study_name=="VAT08"){
 
   
 for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo")){
+  
+  if (attr(config,"config")=="prevent19_stage2") next # no these figures for prevent19_stage2
+  
   trtLabel <- ifelse(trt=="trt_both", "x randomization arm", paste0(gsub("trt_","", trt), " arm"))
   
   for (bsero in c("bstatus_both", "bstatus_Neg", "bstatus_Pos")){
@@ -164,7 +187,7 @@ for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo"))
     
     bseroLabel <- ifelse(bsero=="bstatus_both", "by serostatus", ifelse(bsero=="bstatus_Neg", bstatus.labels.3[1], bstatus.labels.3[2]))
     
-    for(tp in times[!times %in% c("B",paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+    for(tp in times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
             
       if (study_name=="VAT08" && grepl("Delta", tp)) next # only report main timepoints for VAT08
       if (attr(config,"config")=="janssen_partA_VL" && !grepl("Day", tp)) next # only report peak timepoint for janssen_partA_VL
@@ -194,6 +217,7 @@ for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo"))
 }
 ```
 
+  
 \clearpage
 ## Violin plots of antibody markers for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
@@ -215,11 +239,11 @@ if (attr(config,"config")=="janssen_partA_VL"){
 ```
 
 \clearpage
-<!-- ## Scatter plots of antibody markers versus age for overall per-protocol cohort
+<!-- ## Scatter plots of antibody markers versus age for overall per-protocol cohort -->
 
 ```{r, echo=FALSE, results='asis'}
 
-if (study_name != "VAT08") { # VAT08 doesn't repor this
+if (study_name != "VAT08") { # VAT08 doesn't report this
   for (bsero in bstatus.labels.2){
   
     bseroLabel <- gsub("baseline ", "", bstatus.labels.3[match(bsero, bstatus.labels.2)])
@@ -242,6 +266,7 @@ if (study_name != "VAT08") { # VAT08 doesn't repor this
     
 ```
 
+
 ## Box plots of antibody markers for overall per-protocol cohort
 
 ```{r, echo=FALSE, results='asis'}
@@ -253,13 +278,14 @@ if (study_name != "VAT08") { # VAT08 doesn't repor this
 for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus", "bstatus_gender") )) { # only VAT08 report 2 extra kind of plots
   
   if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL do not report this
+  if (attr(config,"config")=="prevent19_stage2" & bsero==bstatus.labels.2[2]) next # prevent19_stage2 only has baseline neg
   
   bseroLabel <- c(bstatus.labels.3, if(study_name=="VAT08") c("naive + non-naive", "naive + non-naive") )[match(bsero, c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus", "bstatus_gender")))]
   
   if (bsero=="bstatus_gender") {gender_lb = " females + males"
   } else {gender_lb=""}
   
-  for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
+  for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
     
     if (study_name=="VAT08" && grepl("Delta", tp)) next # only report main timepoints for VAT08
     
@@ -275,7 +301,7 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus", "bstatus_
 
 for (trt in c("vaccine_arm","placebo_arm")) {
   
-  if (attr(config,"config")=="janssen_partA_VL") # janssen_partA_VL do not report this
+  if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2")) next # janssen_partA_VL and prevent19_stage2 do not report this
     
   for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
     
@@ -292,10 +318,9 @@ for (trt in c("vaccine_arm","placebo_arm")) {
 ```
 
 
-\clearpage
-<!-- ## Spaghetti plots of antibody markers over time for overall per-protocol cohort
+## Spaghetti plots of antibody markers over time for overall per-protocol cohort
 
-```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline negative vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & study_name!="VAT08" & study_name!="ENSEMBLE")}
+```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline negative vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & study_name!="VAT08" & study_name!="ENSEMBLE" & study_name!="PREVENT19")}
 include_graphics(here(
   "immuno_graphical", "output", attr(config,"config"), 
   paste0("spaghetti_plot_BaselineNeg_", study_name, ".pdf")
@@ -303,7 +328,7 @@ include_graphics(here(
 ```
 
 
-```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline positive vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & if.pos.exist==1 & study_name!="VAT08" & study_name!="ENSEMBLE")}
+```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline positive vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & if.pos.exist==1 & study_name!="VAT08" & study_name!="ENSEMBLE" & study_name!="PREVENT19")}
 include_graphics(here(
   "immuno_graphical", "output", attr(config,"config"),
   paste0("spaghetti_plot_BaselinePos_", study_name, ".pdf")
@@ -392,7 +417,7 @@ if (study_name!="VAT08") {
 
     
 ```
--->
+
 
 ## Spaghetti plots of antibody markers over time for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
@@ -408,30 +433,44 @@ if (attr(config,"config")=="janssen_partA_VL"){
 
 ## Spider plot of antibody markers for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
-
-for (tp in if(study_name=="VAT08") {c("day1day22day43", "delta")} else {"day"}) {
-
-  for (asy in c("bAb" ,"nAb")){
-    
-    for (reg in if(attr(config,"config")=="janssen_partA_VL") {c("LATAM_","ZA_")} else {""}){
-    
-      tpLabel <- case_when(tp=="day1day22day43" ~ "Day 1, Day 22, Day 43", 
-                           tp=="delta" ~"fold-rise (D01 to D22, D1 to D43)", 
-                           TRUE ~ paste0("Day", timepoints))
+if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
+  for (tp in #if(study_name=="VAT08") {c("day", "delta")} else {
+       "day"#}
+       ) {
+  
+    for (asy in c("bAb" ,"nAb")){
       
-      regLabel <- case_when(reg=="LATAM_" ~ "Latin America",
-                              reg=="ZA_" ~ "Southern Africa",
-                              TRUE ~ "")
-
-      res = knitr::knit_child(c(here::here('immuno_graphical', 'report_spider.Rmd')), quiet = TRUE)
-      cat(res, sep = '\n')
-      cat("\\clearpage", sep = '\n')
+      for (bsero in c("Neg", "Pos")) {
+        
+        for (trt in c("placebo", "vaccine")) {
+      
+          for (reg in if(attr(config,"config")=="janssen_partA_VL") {c("LATAM_","ZA_")} else {""}){
+            
+            if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
+          
+            tpLabel <- case_when(tp=="day1day22day43" ~ "Day 1, Day 22, Day 43", 
+                                 tp=="delta" ~"fold-rise (D01 to D22, D1 to D43)", 
+                                 TRUE ~ paste0("Day", timepoints_))
+            
+            regLabel <- case_when(reg=="LATAM_" ~ "Latin America",
+                                  reg=="ZA_" ~ "Southern Africa",
+                                  TRUE ~ "")
+            baseLabel <- case_when(bsero=="Neg" ~ bstatus.labels.3[1],
+                                   bsero=="Pos" ~ bstatus.labels.3[2],
+                                   TRUE ~ "")
+      
+            res = knitr::knit_child(c(here::here('immuno_graphical', 'report_spider.Rmd')), quiet = TRUE)
+            cat(res, sep = '\n')
+            cat("\\clearpage", sep = '\n')
+          }
+        }
+      }
     }
   }
 }
 ```
 
-<!-- 
+
 \clearpage
 ## Set 1 plots: D01, D22, D43 Ab distributions
 ```{r, echo=FALSE, results='asis', eval=study_name=="VAT08"}
@@ -511,4 +550,3 @@ for (a in assays){
 }
 
 ```
--->

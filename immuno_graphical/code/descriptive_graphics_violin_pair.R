@@ -3,13 +3,10 @@
 renv::activate(project = here::here(".."))
 library(GGally)
 library(stringr)
-require(devtools)
-install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
 library(cowplot) # for function plot_grid
 library(grid)
 library(gridExtra)
-install.packages("wCorr", repos = "http://cran.us.r-project.org") # weighted correlation
-library(wCorr)
+library(wCorr) # weighted correlation
 #library(ggnewscale) # for new_scale_color() 
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
@@ -51,7 +48,7 @@ for (panel in c("pseudoneutid50", "bindSpike")){
         dat = dat.longer.immuno.subset.plot1 %>% mutate(x="1"),
         assays = assays[grepl(panel, assays)],
         times = set1_times,
-        ylim = c(ifelse(panel=="pseudoneutid50", -5, -6), ifelse(panel=="pseudoneutid50", 6, 11)),
+        ylim = c(-3, 4.5), #c(ifelse(panel=="pseudoneutid50", -5, -6), ifelse(panel=="pseudoneutid50", 6, 11)),
         axis.x.text.size = 20,
         strip.x.text.size = ifelse(panel=="pseudoneutid50", 25, 10),
         panel.text.size = ifelse(panel=="pseudoneutid50", 7, 4.5),
@@ -123,7 +120,7 @@ for (panel in c("pseudoneutid50", "bindSpike")){
         x.var = "time",
         x.lb = c("D1","D22","D43"),
         assays = set2_assays[grepl(panel, set2_assays) & !grepl("mdw", set2_assays)],
-        ylim = c(0, 5.2),
+        ylim = c(0, 4.5), #c(0, 5.2),
         times = c("B","Day22","Day43"),
         strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, 12),
         panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
@@ -133,6 +130,30 @@ for (panel in c("pseudoneutid50", "bindSpike")){
     
     file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", "")), "_longitudinal.pdf")
     ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
+}
+
+if (attr(config,"config") == "vat08_combined"){
+    for (panel in c("pseudoneutid50", "bindSpike")){
+        # by naive/non-naive, vaccine/placebo
+        
+        if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
+        
+        f_2 <- f_longitude_by_assay(
+            dat = dat.longer.immuno.subset.plot1,
+            x.var = "time",
+            x.lb = c("D1","D22","D43"),
+            assays = set2_assays[grepl(panel, set2_assays) & grepl("mdw", set2_assays)],
+            ylim = c(0, 4.5), #c(0, 5.2),
+            times = c("B","Day22","Day43"),
+            strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, 12),
+            panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
+            facet.y.var = vars(Trt_nnaive), 
+            facet.x.var = vars(assay_label_short)
+        )
+        
+        file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", "")), "_mdw_longitudinal.pdf")
+        ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 11, height = 11)
+    }
 }
 
 # adhoc figure needed for the severe manuscript reviewer
