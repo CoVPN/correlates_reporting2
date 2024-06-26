@@ -14,7 +14,7 @@ source(here::here("code", "process_violin_pair_functions.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 #-----------------------------------------------
 
-if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)} # need manually update "Trialstage" and in report.Rmd
+if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)} # need manually update "Trialstage" and line 89 in report.Rmd
 
 library(here)
 library(dplyr)

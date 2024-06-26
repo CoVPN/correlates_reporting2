@@ -407,7 +407,9 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
     axis_title_size = 10,
     axis_size = 10,
     panel_title_size = ifelse(study_name=="VAT08", 8, 10),
-    height = ifelse(attr(config,"config")=="prevent19_stage2", 10, 3 * ceiling(length(assay_immuno) / 3) + 0.5),
+    height = ifelse(attr(config,"config")=="prevent19_stage2", 10, 
+                    ifelse(study_name=="VAT08", 3 * ceiling(length(assay_immuno) / 4) + 0.5,
+                           3 * ceiling(length(assay_immuno) / 3) + 0.5)),
     filename = paste0(
       save.results.to, "/Marker_Rcdf_", tp,
       "_trt_both_bstatus_both_", study_name, ".pdf"

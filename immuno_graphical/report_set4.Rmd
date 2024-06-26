@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_across_timepoints_", a, ".pdf"))`}
 
-\caption{`r paste0("Correlation plots for ", gsub("_", " ", a), " across time points")`}
+\caption{`r paste0("Correlation plots for ", gsub("_", " ", a), " across time points", immuno_postfix_label)`}
 
 \end{figure}
 
