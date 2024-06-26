@@ -14,6 +14,8 @@ source(here::here("code", "process_violin_pair_functions.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 #-----------------------------------------------
 
+if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)} # need manually update "Trialstage" and in report.Rmd
+
 library(here)
 library(dplyr)
 library(stringr)
@@ -140,7 +142,7 @@ if (attr(config,"config")=="prevent19_stage2") {
     filter(ph2.immuno.D35 == 1) #| ph2.immuno.BD1 | ph2.immuno.C1 == 1) # ph2 D35 covers ph2 BD1 and ph2 C1
 } else if (attr(config,"config")=="vat08_combined") {
   dat.twophase.sample <- dat %>%
-    filter(ph2.D43.nAb == 1)
+    filter(ph2.immuno.nAb == 1 | ph2.immuno.bAb == 1)
 } else {dat.twophase.sample <- dat %>%
   filter(ph2.immuno == 1)
 }
@@ -148,11 +150,12 @@ twophase_sample_id <- dat.twophase.sample$Ptid
 
 important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex",
   "Bserostatus", "Senior", "Bstratum", 
-  colnames(dat)[grepl("wt.subcohort|wt.immuno", colnames(dat))], # e.g. wt.subcohort, wt.immuno.C1, wt.immuno.D35, wt.immuno.BD1
-  if(attr(config,"config")=="prevent19_stage2") colnames(dat)[grepl("ph2.immuno", colnames(dat))], # e.g. ph2.immuno.D35, ph2.immuno.C1, ph2.immuno.BD1
-  
-  if(attr(config,"config")=="vat08_combined") colnames(dat)[grepl("wt.D43.|wt.D22.", colnames(dat))], # e.g. wt.D22.bAb, wt.D22.both, wt.D22.nAb
-  if(attr(config,"config")=="vat08_combined") colnames(dat)[grepl("wt.D43.|wt.D22.", colnames(dat))], # e.g. ph2.D22.bAb, ph2.D22.both, ph2.D22.nAb
+  colnames(dat)[grepl("wt.subcohort|wt.immuno", colnames(dat))], 
+  # e.g. wt.subcohort, wt.immuno.C1, wt.immuno.D35, wt.immuno.BD1
+  #      wt.immuno.nAb, wt.immuno.bAb for vat08_combined
+  if(attr(config,"config") %in% c("prevent19_stage2","vat08_combined")) colnames(dat)[grepl("ph2.immuno", colnames(dat))], 
+  # e.g. ph2.immuno.D35, ph2.immuno.C1, ph2.immuno.BD1 for prevent19_stage2 
+  #      ph2.immuno.bAb, ph2.immuno.nAb for vat08_combined
   
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
@@ -432,7 +435,9 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
     left_join(resp_by_time_assay, by=c("Ptid", "category"))
   
   dat.longer.immuno.subset <- dat.longer.immuno.subset[,c("Ptid", "time", "assay", "category", "Trt", "Bserostatus", 
-                                                          "value", "wt.subcohort", "pos.cutoffs","lbval","lbval2", 
+                                                          "value", if(attr(config,"config")=="janssen_partA_VL") "wt.subcohort",
+                                                          if(attr(config,"config")=="vat08_combined") c("wt.immuno.nAb", "wt.immuno.bAb", "ph2.immuno.nAb", "ph2.immuno.bAb"), 
+                                                          "pos.cutoffs","lbval","lbval2", 
                                                           "lb","lb2",if(attr(config,"config")=="janssen_partA_VL") "Region", 
                                                           "response")]
   
@@ -448,7 +453,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
   # define response rate:
   
   #### for figures 1
-  groupby_vars1=c("Trt", "Bserostatus", "time", "assay")
+  groupby_vars1 = c("Trt", "Bserostatus", "time", "assay")
   
   # define response rate
   dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1)
