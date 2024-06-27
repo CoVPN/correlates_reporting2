@@ -118,7 +118,8 @@ rv=list()
 ################################################################################
 # loop through 3 analyses
 
-for (iAna in 1:3) {
+# forgo the naive populations from mono- and bi-valent trials
+for (iAna in 1:2) {
   # iAna=3
   cat("\n\n\n\n")
   myprint(iAna)

@@ -1,15 +1,9 @@
-```{r, echo=FALSE, results='asis'}
-if(is.null(fname.suffix)) fname.suffix = ''
-```
-
-
-
 `r paste(concatList(rep('#',level)), COR, fname.suffix)` 
-
 
 The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise. One model per row.
 
 <!-- ### Hazard ratios -->
+<!-- has.alt is for interaction models -->
 
 \setlength{\tabcolsep}{.5ex}
 \small
@@ -18,6 +12,7 @@ The main regression model is the Cox proportional hazards model. All plots are m
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`_2}
 `r if (!has.alt)'-->'`
 \normalsize
+
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
 
 $\ast$`r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.

@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(survey)
 library(kyotil)
+library(Hmisc)  
 
 # need to use the older version b/c newer versions have different variables
 dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/stage2/adata/COVID_Novavax_stage2_mapped_20240326.csv')
@@ -84,7 +85,36 @@ with(subset(dat_proc,ph2.D35_108==1), mytable(KnownOrImputedDeltaCOVIDIndD35_108
 
 ```
 
+nAb-ID50 titers were lower against Delta than D614G with geometric mean ratio xx (95% CI xx to xx, paired t-test p=xx); similarly for Spike IgG (Wilcoxon signed rank p = xx) with geometric mean ratio xx (95% CI xx to xx, paired t-test p=xx). 
+```{r}
+m=with(subset(dat_proc,ph2.D35_108==1), wtd.mean(Day35pseudoneutid50_D614G-Day35pseudoneutid50_Delta,weights=wt.D35_108))
+sd=with(subset(dat_proc,ph2.D35_108==1),sqrt(1/nrow(subset(dat_proc,ph2.D35_108==1))*wtd.var(Day35pseudoneutid50_D614G-Day35pseudoneutid50_Delta,weights=wt.D35_108)))
+1/(10**c(m, m-1.96*sd, m+1.96*sd))
 
+m=with(subset(dat_proc,ph2.D35_108==1), wtd.mean(Day35bindSpike_D614-Day35bindSpike_Delta1,weights=wt.D35_108))
+sd=with(subset(dat_proc,ph2.D35_108==1),sqrt(1/nrow(subset(dat_proc,ph2.D35_108==1))*wtd.var(Day35bindSpike_D614-Day35bindSpike_Delta1,weights=wt.D35_108)))
+1/(10**c(m, m-1.96*sd, m+1.96*sd))
+
+with(subset(dat_proc,ph1.D35_108==1 & Trt==1), table(ph2.D35_108, KnownOrImputedDeltaCOVIDIndD35_108to21Dec10))
+
+sort(with(subset(dat_proc,ph1.D35_108==1 & Trt==1 & VARTYPE_first1=="Unk" & KnownOrImputedDeltaCOVIDIndD35_108to21Dec10==1), EventCalTimeFirstD35))[1:5]
+sort(with(subset(dat_proc,ph1.D35_108==1 & Trt==1 & VARTYPE_first1=="Delta" & KnownOrImputedDeltaCOVIDIndD35_108to21Dec10==1), EventCalTimeFirstD35, drop=T))[1:5]
+sort(with(subset(dat_proc,ph1.D35_108==1 & Trt==1), EventCalTimeFirstD35, drop=T))[1:5]
+
+subset(dat_proc,ph1.D35_108==1 & Trt==1 & VARTYPE_first1=="Unk" & KnownOrImputedDeltaCOVIDIndD35_108to21Dec10==1 & EventCalTimeFirstD35=="2021-06-21")
+
+```
+
+ 
+how many evaluable Mexico severe cases and Delta cases were there?
+```{r}
+with(subset(dat_proc, ph1.D35_108==1), mytable(Country, SevereCOVIDIndD35_108to21Dec10))
+with(subset(dat_proc, ph2.D35_108==1), mytable(Country, SevereCOVIDIndD35_108to21Dec10))
+with(subset(dat_proc, ph1.D35_108==1), mytable(Country, KnownOrImputedDeltaCOVIDIndD35_108to21Dec10)) 
+with(subset(dat_proc, ph2.D35_108==1), mytable(Country, KnownOrImputedDeltaCOVIDIndD35_108to21Dec10))
+
+```
+ 
 
 ### Data descriptives
 

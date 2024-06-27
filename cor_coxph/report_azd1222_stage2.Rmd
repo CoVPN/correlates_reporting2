@@ -14,6 +14,10 @@ for (COR in c("D57azd1222_stage2_severe_nAb", "D57azd1222_stage2_severe_bAb", "D
   
   pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
   config.cor <- config::get(config = COR); for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  # need to redefine covariates_adjusted based on COR
+  covariates_adjusted = config.cor$covariates
+  covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
+  covariates_adjusted = sub("_","",covariates_adjusted)
   
   # save time, only need these
   if (endsWith(COR, "nAb")) all.markers = "Day57" %.% c("pseudoneutid50_D614G", "pseudoneutid50_Delta") 

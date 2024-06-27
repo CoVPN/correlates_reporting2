@@ -1,8 +1,8 @@
 # primary_assays: optional. 
 #       If not defined, multitesting adjustment is over all assays. If defined, multitesting adjustment is only over this subset. If this set is empty, then no multitesting adjustment is done
 
-# multivariate_assays and additional_models are nAb.st2.sen optional. 
-#       The difference between the two is that in multivariate_assays for each formula, nAb.st2.sen models are fit, once scaled and once non-scaled 
+# multivariate_assays and additional_models are optional. 
+#       The difference between the two is that in multivariate_assays for each formula, two models are fit, once scaled and once non-scaled 
 #           and that in multivariate_assays, a generalized wald test p value is computed over all markers
 #       another difference is that covariates is automatically adjusted in multivariate but not in additional
 
@@ -332,7 +332,7 @@ janssen_sa_mock:
 
 # not extending ows trial b/c don't want Bserostatus defined, which affects subset in _common.R
 vat08_combined: &vat08_combined
-  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240620.csv
+  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240626.csv
   sampling_scheme: case_cohort
   two_marker_timepoints: yes
   timepoints: [22, 43]
@@ -458,7 +458,7 @@ azd1222_base: &azd1222_base
   
 azd1222: &azd1222
   <<: *azd1222_base
-  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv.csv
+  data_cleaned: /trials/covpn/p3002/analysis/correlates/Part_A_Blinded_Phase_Data/adata/azd1222_data_processed_with_riskscore.csv
   assays: [pseudoneutid50]
   llox_label: [LOD]
   assay_labels: [PsV Neutralization 50% Titer]
@@ -479,6 +479,7 @@ azd1222_stage2: &azd1222_stage2
   timepoints: [57]
   times: [Day57]
   time_labels: [Day 57]
+  # data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240509.csv # before de-contamination
   data_cleaned: /trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240515.csv
   assay_metadata: assay_metadata/azd1222_stage2_assay_metadata.csv
   study_name: AZD1222
@@ -985,7 +986,7 @@ D22vat08_combined_M6_bAb:
   ph1: ph1.D22
   ph2: ph2.D22.bAb
   wt: wt.D22.bAb
-  WtStratum: Wstratum.bAb
+  WtStratum: Wstratum
   EventIndPrimary:  EventIndOmicronD22M6hotdeck
   EventTimePrimary: EventTimeOmicronD22M6hotdeck
   Earlyendpoint: EarlyendpointD22
@@ -994,11 +995,12 @@ D22vat08_combined_M6_bAb:
   tfinal.tpeak: 180
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
 D43vat08_combined_M6_bAb:
   ph1: ph1.D43
   ph2: ph2.D43.bAb
   wt: wt.D43.bAb
-  WtStratum: Wstratum.bAb
+  WtStratum: Wstratum
   EventIndPrimary:  EventIndOmicronD43M6hotdeck
   EventTimePrimary: EventTimeOmicronD43M6hotdeck
   Earlyendpoint: EarlyendpointD43
@@ -1007,43 +1009,19 @@ D43vat08_combined_M6_bAb:
   tfinal.tpeak: 159
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D22vat08_combined_M12_bAb:
-  ph1: ph1.D22
-  ph2: ph2.D22.bAb
-  wt: wt.D22.bAb
-  WtStratum: Wstratum.bAb
-  EventIndPrimary:  EventIndOmicronD22M12hotdeck
-  EventTimePrimary: EventTimeOmicronD22M12hotdeck
-  Earlyendpoint: EarlyendpointD22
-  tpeak: 22
-  tpeaklag: 7
-  tfinal.tpeak: 360
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D43vat08_combined_M12_bAb:
-  ph1: ph1.D43
-  ph2: ph2.D43.bAb
-  wt: wt.D43.bAb
-  WtStratum: Wstratum.bAb
-  EventIndPrimary:  EventIndOmicronD43M12hotdeck
-  EventTimePrimary: EventTimeOmicronD43M12hotdeck
-  Earlyendpoint: EarlyendpointD43
-  tpeak: 43
-  tpeaklag: 7
-  tfinal.tpeak: 339
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
+Immunovat08_combined_bAb:
+  ph1: ph1.immuno
+  ph2: ph2.immuno.bAb
+  wt: wt.immuno.bAb
+  WtStratum: tps.stratum
 
 # for nAb markers
-# note that the ph2 variable is overloaded
-# it means the availaiblility of variant nAbs and all nAbs in stage 1 and 2, respectively
-# for stage 1 ancestral nAb, use wt.Dxx.nAb.st1.anc/ph2.Dxx.nAb.st1.anc (Wstratum.nAb is the same as other nAb markers)
 D22vat08_combined_M6_nAb:
   ph1: ph1.D22
   ph2: ph2.D22.nAb
   wt: wt.D22.nAb
-  WtStratum: Wstratum.nAb
+  WtStratum: Wstratum
   EventIndPrimary:  EventIndOmicronD22M6hotdeck
   EventTimePrimary: EventTimeOmicronD22M6hotdeck
   Earlyendpoint: EarlyendpointD22
@@ -1052,11 +1030,12 @@ D22vat08_combined_M6_nAb:
   tfinal.tpeak: 180
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
 D43vat08_combined_M6_nAb:
   ph1: ph1.D43
   ph2: ph2.D43.nAb
   wt: wt.D43.nAb
-  WtStratum: Wstratum.nAb
+  WtStratum: Wstratum
   EventIndPrimary:  EventIndOmicronD43M6hotdeck
   EventTimePrimary: EventTimeOmicronD43M6hotdeck
   Earlyendpoint: EarlyendpointD43
@@ -1065,95 +1044,20 @@ D43vat08_combined_M6_nAb:
   tfinal.tpeak: 159
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D22vat08_combined_M12_nAb:
-  ph1: ph1.D22
-  ph2: ph2.D22.nAb
-  wt: wt.D22.nAb
-  WtStratum: Wstratum.nAb
-  EventIndPrimary:  EventIndOmicronD22M12hotdeck
-  EventTimePrimary: EventTimeOmicronD22M12hotdeck
-  Earlyendpoint: EarlyendpointD22
-  tpeak: 22
-  tpeaklag: 7
-  tfinal.tpeak: 360
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D43vat08_combined_M12_nAb:
-  ph1: ph1.D43
-  ph2: ph2.D43.nAb
-  wt: wt.D43.nAb
-  WtStratum: Wstratum.nAb
-  EventIndPrimary:  EventIndOmicronD43M12hotdeck
-  EventTimePrimary: EventTimeOmicronD43M12hotdeck
-  Earlyendpoint: EarlyendpointD43
-  tpeak: 43
-  tpeaklag: 7
-  tfinal.tpeak: 339
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
-
-# for inferences requiring all markers, including nAb and bAb, ancestral and variant
-D22vat08_combined_M6_both:
-  ph1: ph1.D22
-  ph2: ph2.D22.both
-  wt: wt.D22.both
-  WtStratum: Wstratum.both
-  EventIndPrimary:  EventIndOmicronD22M6hotdeck
-  EventTimePrimary: EventTimeOmicronD22M6hotdeck
-  Earlyendpoint: EarlyendpointD22
-  tpeak: 22
-  tpeaklag: 7
-  tfinal.tpeak: 180
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D43vat08_combined_M6_both:
-  ph1: ph1.D43
-  ph2: ph2.D43.both
-  wt: wt.D43.both
-  WtStratum: Wstratum.both
-  EventIndPrimary:  EventIndOmicronD43M6hotdeck
-  EventTimePrimary: EventTimeOmicronD43M6hotdeck
-  Earlyendpoint: EarlyendpointD43
-  tpeak: 43
-  tpeaklag: 7
-  tfinal.tpeak: 159
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D22vat08_combined_M12_both:
-  ph1: ph1.D22
-  ph2: ph2.D22.both
-  wt: wt.D22.both
-  WtStratum: Wstratum.both
-  EventIndPrimary:  EventIndOmicronD22M12hotdeck
-  EventTimePrimary: EventTimeOmicronD22M12hotdeck
-  Earlyendpoint: EarlyendpointD22
-  tpeak: 22
-  tpeaklag: 7
-  tfinal.tpeak: 360
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D43vat08_combined_M12_both:
-  ph1: ph1.D43
-  ph2: ph2.D43.both
-  wt: wt.D43.both
-  WtStratum: Wstratum.both
-  EventIndPrimary:  EventIndOmicronD43M12hotdeck
-  EventTimePrimary: EventTimeOmicronD43M12hotdeck
-  Earlyendpoint: EarlyendpointD43
-  tpeak: 43
-  tpeaklag: 7
-  tfinal.tpeak: 339
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
+Immunovat08_combined_nAb:
+  ph1: ph1.immuno
+  ph2: ph2.immuno.nAb
+  wt: wt.immuno.nAb
+  WtStratum: tps.stratum
 
 
 # for nAb markers sensitivity analysis in stage 2 non-naive, using batch 2 data only
-D22vat08_combined_M6_nAb.st2.sen:
+D22vat08_combined_M6_st2.nAb.sen:
   ph1: ph1.D22.st2
-  ph2: ph2.D22.nAb.st2.sen
-  wt: wt.D22.nAb.st2.sen
-  WtStratum: Wstratum.nAb.st2.sen
+  ph2: ph2.D22.st2.nAb.sen
+  wt: wt.D22.st2.nAb.sen
+  WtStratum: Wstratum
   EventIndPrimary:  EventIndOmicronD22M6hotdeck
   EventTimePrimary: EventTimeOmicronD22M6hotdeck
   Earlyendpoint: EarlyendpointD22
@@ -1162,43 +1066,17 @@ D22vat08_combined_M6_nAb.st2.sen:
   tfinal.tpeak: 180
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D43vat08_combined_M6_nAb.st2.sen:
+D43vat08_combined_M6_st2.nAb.sen:
   ph1: ph1.D43.st2
-  ph2: ph2.D43.nAb.st2.sen
-  wt: wt.D43.nAb.st2.sen
-  WtStratum: Wstratum.nAb.st2.sen
+  ph2: ph2.D43.st2.nAb.sen
+  wt: wt.D43.st2.nAb.sen
+  WtStratum: Wstratum
   EventIndPrimary:  EventIndOmicronD43M6hotdeck
   EventTimePrimary: EventTimeOmicronD43M6hotdeck
   Earlyendpoint: EarlyendpointD43
   tpeak: 43
   tpeaklag: 7
   tfinal.tpeak: 159
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D22vat08_combined_M12_nAb.st2.sen:
-  ph1: ph1.D22.st2
-  ph2: ph2.D22.nAb.st2.sen
-  wt: wt.D22.nAb.st2.sen
-  WtStratum: Wstratum.nAb.st2.sen
-  EventIndPrimary:  EventIndOmicronD22M12hotdeck
-  EventTimePrimary: EventTimeOmicronD22M12hotdeck
-  Earlyendpoint: EarlyendpointD22
-  tpeak: 22
-  tpeaklag: 7
-  tfinal.tpeak: 360
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 22 visit; no. cases = number of this cohort with an observed COVID endpoint.
-D43vat08_combined_M12_nAb.st2.sen:
-  ph1: ph1.D43.st2
-  ph2: ph2.D43.nAb.st2.sen
-  wt: wt.D43.nAb.st2.sen
-  WtStratum: Wstratum.nAb.st2.sen
-  EventIndPrimary:  EventIndOmicronD43M12hotdeck
-  EventTimePrimary: EventTimeOmicronD43M12hotdeck
-  Earlyendpoint: EarlyendpointD43
-  tpeak: 43
-  tpeaklag: 7
-  tfinal.tpeak: 339
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 43 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
@@ -1354,7 +1232,7 @@ D57azd1222_stage2_delta_nAb:
   EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_270
   EventTimePrimary: COVIDTimeD57toD57_270
   Earlyendpoint: AnyInfectionD1toD57_120
-  covariates: ~.+ Senior + risk_score
+  covariates: ~.+ Senior + risk_score + strata(CalendarGrp)
   tpeak: 57
   tpeaklag: 120
   tfinal.tpeak: 270
@@ -1369,25 +1247,10 @@ D57azd1222_stage2_delta_bAb:
   EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_270
   EventTimePrimary: COVIDTimeD57toD57_270
   Earlyendpoint: AnyInfectionD1toD57_120
-  covariates: ~.+ Senior + risk_score
+  covariates: ~.+ Senior + risk_score + strata(CalendarGrp)
   tpeak: 57
   tpeaklag: 120
   tfinal.tpeak: 270
-  txt.endpoint: Delta COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
-
-D57azd1222_stage2_delta_nAb_sens:
-  ph1: ph1.D57_120
-  ph2: ph2.D57_120nAb
-  wt: wt.D57_120nAb
-  WtStratum: Wstratum
-  EventIndPrimary: KnownOrImputedDeltaCOVIDIndD57_120toD57_180
-  EventTimePrimary: COVIDTimeD57toD57_180
-  Earlyendpoint: AnyInfectionD1toD57_120
-  covariates: ~.+ Senior + risk_score
-  tpeak: 57
-  tpeaklag: 120
-  tfinal.tpeak: 180
   txt.endpoint: Delta COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients without evidence for symptomatic or asymptomatic COVID.
 
@@ -1507,8 +1370,8 @@ D29IncludeNotMolecConfirmedstart1:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through Day 29 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
-# VL, ph2/wt for ancestral antibodies do have variant in the end
-# We don't keep a separate label for ancestral ph2 and weights and rely on hard coding to change them 
+# VL
+# We don't keep a separate label for ancestral ph2 and weights and rely on hard coding to change them (ph2.D29 and wt.D29)
 # b/c it is a lot better to keep reults for ancestral and variant antibodies together for easier read
 # the hard coding happens in cor_coxph_ph_MI.R and in copcor::marginalized.risk.svycoxph.boot.R
 D29VLvariant:
