@@ -1010,7 +1010,10 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
               as.data.frame()
             
             # stack with max and min values
-            max_min <- rbind(rep(1.8,ncol(dat.spider.by.time)), 
+            find_max = round(max(dat.spider.by.time %>% summarize(across(where(is.numeric), max, na.rm = TRUE))), 1)
+            
+            max_min <- rbind(rep(find_max,
+                                 ncol(dat.spider.by.time)), 
                              rep(0,ncol(dat.spider.by.time)))
             colnames(max_min) <- colnames(dat.spider.by.time)
             rownames(max_min) <- c("max", "min")
@@ -1048,7 +1051,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             color = c(if(study_name=="VAT08")"#0AB7C9","#FF6F1B","#FF5EBF","dodgerblue","chartreuse3")[1:length(times_spider)]
             legend_lb = times_spider
           
-            spider_range = if(attr(config,"config")=="janssen_partA_VL") {seq(1, 1.2, (1.2-1)/4)} else {seq(0.1, 1.7, (1.7-0.1)/4)}
+            spider_range = if(attr(config,"config")=="janssen_partA_VL") {seq(1, 1.2, (1.2-1)/4)} else {seq(0.1, find_max, (find_max-0.1)/4)}
             radarchart(dat.plot, 
                        axistype=1 , 
                        # Customize the polygon
