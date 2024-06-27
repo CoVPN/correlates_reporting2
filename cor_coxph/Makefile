@@ -76,10 +76,8 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined ))
 	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_nAb 
 	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_nAb
 
-	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_nAb.st2.sen 
-	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_nAb.st2.sen
-	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_nAb.st2.sen
-	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_nAb.st2.sen
+	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_st2.nAb.sen 
+	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_st2.nAb.sen
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D43

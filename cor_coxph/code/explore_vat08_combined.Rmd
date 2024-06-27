@@ -22,7 +22,7 @@ region.2 = c( # stage 2
 
 
 dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240620_hotdeck.csv')
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240625.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240626.csv')
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -65,6 +65,30 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDateEnrollment)
 
 ```
+
+
+### Cox models
+
+The scatterplot of the D43 and B titers show that no matter what the baseline titer is, titer after vaccination is about the same.
+
+```{r}
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43.st2)
+
+plot(Day43pseudoneutid50_mdw~Bpseudoneutid50_mdw, dat, col=dat$EventIndOmicronD43M6hotdeck1+1, pch=ifelse(dat$EventIndOmicronD43M6hotdeck1==1, 2, 1))        
+
+design<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.st2.nAb.sen, data=dat)
+
+svycoxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1)~ FOI + risk_score + Sex + strata(Country) + scale(Bpseudoneutid50_mdw,scale=FALSE)*scale(Delta43overBpseudoneutid50_mdw,scale=FALSE), design=design) 
+
+svycoxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1)~ FOI + risk_score + Sex + strata(Country) + Bpseudoneutid50_mdw*Delta43overBpseudoneutid50_mdw, design=design) 
+
+svycoxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1)~ FOI + risk_score + Sex + strata(Country) + scale(Bpseudoneutid50_mdw,scale=FALSE)*scale(Day43pseudoneutid50_mdw,scale=FALSE), design=design) 
+
+svycoxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1)~ FOI + risk_score + Sex + strata(Country) + Bpseudoneutid50_mdw*Day43pseudoneutid50_mdw, design=design) 
+
+        
+```
+
 
 ### Make tables for SAP
 
