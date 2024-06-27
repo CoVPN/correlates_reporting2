@@ -65,7 +65,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                                                                      )
   if (attr(config,"config") == "nvx_uk302") COR_postfix_list <- c("D35nvx_uk302")
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
-  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage1")
+  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage2")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     

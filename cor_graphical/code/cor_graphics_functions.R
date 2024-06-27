@@ -185,7 +185,7 @@ f_case_non_case_by_time_assay_adhoc <-
                     geom_boxplot(data = d %>% distinct(cohort_event, facet.y.var, facet.x.var, time, lower, upper, middle, ymax, ymin), 
                                  aes(group = cohort_event, lower = lower, upper = upper, middle = middle, ymin = ymin, ymax = ymax),
                                  stat = "identity", width = 0.25, lwd = 1.5, outlier.shape = NA, show.legend = FALSE) +
-                    scale_color_manual(name = "", values = chtcols[1:2], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                    scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                     # geoms below will use another color scale
                     new_scale_color() +
                     geom_jitter(aes(y = value, color = .data[[pointby]], shape = .data[[pointby]]), width = 0.1, height = 0, size = 2, show.legend = TRUE) +

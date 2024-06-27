@@ -30,7 +30,7 @@ getResponder <- function(data,
             bl <- paste0("B", j)
             delta <- paste0("Delta", i, "overB", j)
             
-            if (grepl("bind", j) | attr(config,"config")=="janssen_partA_VL") {
+            if ((grepl("bind", j) & study_name!="VAT08") | attr(config,"config")=="janssen_partA_VL") {
                 
             data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
             if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
@@ -57,9 +57,13 @@ getResponder <- function(data,
 #' @return summary statistics and response rate by group
 # 
 get_desc_by_group <- function(data, 
-                              group=group){
+                              group = group){
     
-    data$wt = data$wt.subcohort
+    if (study_name=="VAT08"){
+        data[which(grepl("bind", data$assay)), "wt"] = data[which(grepl("bind", data$assay)), "wt.immuno.bAb"]
+        data[which(grepl("pseudoneutid", data$assay)), "wt"] = data[which(grepl("pseudoneutid", data$assay)), "wt.immuno.nAb"]
+        
+    } else {data$wt = data$wt.subcohort}
     
     complete <- complete.cases(data[, group])
     
