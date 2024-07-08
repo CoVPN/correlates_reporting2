@@ -149,6 +149,16 @@ title(main=main, outer=T, line=0)
 ```
 
 
+
+### For manuscript revision
+
+Relationship between risk score and age
+
+```{r}
+plot(dat_proc$Age, dat_proc$risk_score)
+
+```
+
 ### Difference in risk between prototype and Omicon vaccines
 
 Summary: Between Pfz Prototype, Pfz Omicron, Mdn P, and Mdn O,

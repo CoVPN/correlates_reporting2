@@ -219,20 +219,20 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
 
   # vaccine arm
   
-  # cor_coxph_coef_1_mi (
-  #   form.0,
-  #   dat=dat.vacc,
-  #   fname.suffix="D"%.%tpeak,
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   all.markers,
-  #   all.markers.names.short,
-  # 
-  #   dat.pla.seroneg = dat.plac,
-  #   show.q=FALSE,
-  #   verbose=FALSE
-  # )
+  cor_coxph_coef_1_mi (
+    form.0,
+    dat=dat.vacc,
+    fname.suffix="D"%.%tpeak,
+    save.results.to,
+    config,
+    config.cor,
+    all.markers,
+    all.markers.names.short,
+
+    dat.pla.seroneg = dat.plac,
+    show.q=FALSE,
+    verbose=FALSE
+  )
   
   # placebo arm
 
@@ -243,20 +243,20 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   names(all.markers.names.short) = all.markers
   multivariate_assays = config$multivariate_assays
 
-  # cor_coxph_coef_1_mi (
-  #   form.0,
-  #   dat=dat.plac,
-  #   fname.suffix="D"%.%tpeak%.%"_plac",
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   all.markers,
-  #   all.markers.names.short,
-  # 
-  #   dat.pla.seroneg = NULL,
-  #   show.q=FALSE,
-  #   verbose=FALSE
-  # )
+  cor_coxph_coef_1_mi (
+    form.0,
+    dat=dat.plac,
+    fname.suffix="D"%.%tpeak%.%"_plac",
+    save.results.to,
+    config,
+    config.cor,
+    all.markers,
+    all.markers.names.short,
+
+    dat.pla.seroneg = NULL,
+    show.q=FALSE,
+    verbose=FALSE
+  )
   
   # repeat stage 1 placebo removing region 1
   if(iSt==1) {
@@ -295,19 +295,19 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   
   # vaccine arm
   
-  # cor_coxph_coef_n_mi (
-  #   form.0,
-  #   dat=dat.vacc,
-  #   fname.suffix="B+D"%.%tpeak,
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   all.markers,
-  #   all.markers.names.short,
-  # 
-  #   nCoef,
-  #   col.headers
-  # )
+  cor_coxph_coef_n_mi (
+    form.0,
+    dat=dat.vacc,
+    fname.suffix="B+D"%.%tpeak,
+    save.results.to,
+    config,
+    config.cor,
+    all.markers,
+    all.markers.names.short,
+
+    nCoef,
+    col.headers
+  )
   
 
   ###################################
@@ -329,19 +329,19 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   
   # vaccine arm
   
-  # cor_coxph_coef_n_mi (
-  #   form.0,
-  #   dat=dat.vacc,
-  #   fname.suffix="B*D"%.%tpeak,
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   all.markers,
-  #   all.markers.names.short,
-  # 
-  #   nCoef,
-  #   col.headers
-  # )
+  cor_coxph_coef_n_mi (
+    form.0,
+    dat=dat.vacc,
+    fname.suffix="B*D"%.%tpeak,
+    save.results.to,
+    config,
+    config.cor,
+    all.markers,
+    all.markers.names.short,
+
+    nCoef,
+    col.headers
+  )
   
 
 
