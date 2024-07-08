@@ -5,6 +5,7 @@ The main regression model is the Cox proportional hazards model. All plots are m
 <!-- ### Hazard ratios -->
 <!-- has.alt is for interaction models -->
 
+
 \setlength{\tabcolsep}{.5ex}
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}

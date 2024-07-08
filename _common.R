@@ -91,7 +91,7 @@ if (!is.null(config$assay_metadata)) {
   if (exists('COR')) {
     
     if (TRIAL=='vat08_combined') {
-      if (contain(COR, "_nAb")) {
+      if (contain(COR, "nAb")) { # _nAb fails for the sensitivity analysis
         assay_metadata = subset(assay_metadata, panel=='id50')
         
       } else if (contain(COR, "_bAb")) {

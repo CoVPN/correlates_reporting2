@@ -1,6 +1,6 @@
-# COR="D43vat08_combined_M12_nAb"
-# COR="D22vat08_combined_M12_nAb"
-# COR="D43vat08_combined_M6_nAb.st2.sen"
+# COR="D43vat08_combined_M6_bAb"
+# COR="D43vat08_combined_M6_nAb"
+# COR="D43vat08_combined_M6_st2.nAb.sen"
 
 Sys.setenv(TRIAL = "vat08_combined")
 Sys.setenv(VERBOSE = 1) 
@@ -24,6 +24,7 @@ library(glue)
 
 time.start=Sys.time()
 print(date())
+for (i in 1:5) cat(COR, " "); cat("\n")
 }
 
 
@@ -56,7 +57,7 @@ dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2 &
 dat.vac.seroneg.st2 = subset(dat_proc, Trt==1 & Bserostatus==0 & Trialstage==2 & ph1)
 
 ## get cutpoints and turn trichotomized markers into factors
-if(!contain(COR, "st2.sen")) {
+if(!contain(COR, "st2.nAb.sen")) {
   marker.cutpoints = list()
   for (a in all.markers) {
     # get cut points
@@ -110,37 +111,50 @@ dat.pla.seropos.st1=subset(dat_proc, Trt==0 & ph1 & Trialstage==1 & Bserostatus=
 dat.pla.seropos.st2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==1)
 dat.pla.seroneg.st2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==0)
 
-# for validation use
-rv=list() 
+
+for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%assays)) {
+  dat.vac.seropos.st1[[a%.%"centered"]] = scale(dat.vac.seropos.st1[[a]], scale=F)
+  dat.vac.seropos.st2[[a%.%"centered"]] = scale(dat.vac.seropos.st2[[a]], scale=F)
+  dat.pla.seropos.st1[[a%.%"centered"]] = scale(dat.pla.seropos.st1[[a]], scale=F)
+  dat.pla.seropos.st2[[a%.%"centered"]] = scale(dat.pla.seropos.st2[[a]], scale=F)
+}
+
 
 }
 
+
+
 ################################################################################
-# loop through 3 analyses
+# loop through stage 1 and 2 non-naive
 
 # forgo the naive populations from mono- and bi-valent trials
-for (iAna in 1:2) {
-  # iAna=3
-  cat("\n\n\n\n")
-  myprint(iAna)
-  
-  # st2.sen 
-  if (iAna==1 & contain(COR,"st2.sen")) next
-    
-  if (iAna==1) {dat.vacc=dat.vac.seropos.st1; dat.plac=dat.pla.seropos.st1; save.results.to=save.results.to.0%.%"stage1nnaive/"}
-  if (iAna==2) {dat.vacc=dat.vac.seropos.st2; dat.plac=dat.pla.seropos.st2; save.results.to=save.results.to.0%.%"stage2nnaive/"}
-  if (iAna==3) {dat.vacc=dat.vac.seroneg.st2; dat.plac=dat.pla.seroneg.st2; save.results.to=save.results.to.0%.%"stage2naive/"}
 
-  fname.suffix = study_name
+for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
+  # iSt=1
+  
+  cat("\n\n\n\n")
+  myprint(iSt)
+  
+  if (iSt==1) {dat.vacc=dat.vac.seropos.st1; dat.plac=dat.pla.seropos.st1; save.results.to=save.results.to.0%.%"stage1nnaive/"}
+  if (iSt==2) {dat.vacc=dat.vac.seropos.st2; dat.plac=dat.pla.seropos.st2; save.results.to=save.results.to.0%.%"stage2nnaive/"}
+  # if (iSt==3) {dat.vacc=dat.vac.seroneg.st2; dat.plac=dat.pla.seroneg.st2; save.results.to=save.results.to.0%.%"stage2naive/"}
+
+  
+  form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates))
+  
+  
   
   ############################
   # count ph1 and ph2 cases
+  
+  # vaccine arm
+  fname.suffix = "D"%.%tpeak
   
   # imputed events of interest
   tabs=sapply(1:10, simplify="array", function (imp) {
     dat.vacc$EventIndOfInterest = dat.vacc[[config.cor$EventIndPrimary%.%imp]]
     with(dat.vacc, table(ph2, EventIndOfInterest))
-  })
+  }) 
   tab =apply(tabs, c(1,2), mean)
   names(dimnames(tab))[2]="Event Indicator"
   tab
@@ -151,26 +165,192 @@ for (iAna in 1:2) {
         digits=1)
   
   
-  ############################
+  # placebo arm
+  fname.suffix = "D"%.%tpeak%.%"_plac"
+  
+  # imputed events of interest
+  tabs=sapply(1:10, simplify="array", function (imp) {
+    dat.plac$EventIndOfInterest = dat.plac[[config.cor$EventIndPrimary%.%imp]]
+    with(dat.plac, table(ph2, EventIndOfInterest))
+  }) 
+  tab =apply(tabs, c(1,2), mean)
+  names(dimnames(tab))[2]="Event Indicator"
+  tab
+  mytex(tab,     
+        file.name = "tab1_" %.% fname.suffix, 
+        save2input.only=T, 
+        input.foldername=save.results.to, 
+        digits=1)
+  
+  if(iSt==1) {
+    # placebo arm stage 1 without region 1
+    fname.suffix = "D"%.%tpeak%.%"_plac_alt"
+    
+    # imputed events of interest
+    tabs=sapply(1:10, simplify="array", function (imp) {
+      dat.plac$EventIndOfInterest = dat.plac[[config.cor$EventIndPrimary%.%imp]]
+      with(dat.plac[dat.plac$region!=1,], table(ph2, EventIndOfInterest))
+    }) 
+    tab =apply(tabs, c(1,2), mean)
+    names(dimnames(tab))[2]="Event Indicator"
+    tab
+    mytex(tab,     
+          file.name = "tab1_" %.% fname.suffix, 
+          save2input.only=T, 
+          input.foldername=save.results.to, 
+          digits=1)
+  }
+  
+  ###################################
+  # Univariate: Dxx, B, Dxx/B
+  
+  all.markers=c(paste0("Day", tpeak, assays),
+               paste0("B", assays),
+               paste0("Delta", tpeak, "overB", assays))
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short,
+                             "B "%.%all.markers.names.short,
+                             "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
+  names(all.markers.names.short) = all.markers
 
-  form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates))
+  # all.markers.names.long  = assay_metadata$assay_label[match(sub("Day"%.%tp,"",all.markers),assays)]
 
   multivariate_assays = config$multivariate_assays
+
+  # vaccine arm
   
-  all.markers.names.short = assay_metadata$assay_label_short[match(sub("Day"%.%tp,"",all.markers),assays)]
-  all.markers.names.long  = assay_metadata$assay_label[match(sub("Day"%.%tp,"",all.markers),assays)]
+  # cor_coxph_coef_1_mi (
+  #   form.0,
+  #   dat=dat.vacc,
+  #   fname.suffix="D"%.%tpeak,
+  #   save.results.to,
+  #   config,
+  #   config.cor,
+  #   all.markers,
+  #   all.markers.names.short,
+  # 
+  #   dat.pla.seroneg = dat.plac,
+  #   show.q=FALSE,
+  #   verbose=FALSE
+  # )
+  
+  # placebo arm
+
+  all.markers=c(paste0("Day", tpeak, assays))
+
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
-  names(all.markers.names.long) = all.markers
+  multivariate_assays = config$multivariate_assays
+
+  # cor_coxph_coef_1_mi (
+  #   form.0,
+  #   dat=dat.plac,
+  #   fname.suffix="D"%.%tpeak%.%"_plac",
+  #   save.results.to,
+  #   config,
+  #   config.cor,
+  #   all.markers,
+  #   all.markers.names.short,
+  # 
+  #   dat.pla.seroneg = NULL,
+  #   show.q=FALSE,
+  #   verbose=FALSE
+  # )
   
-  source(here::here("code", "cor_coxph_ph_MI.R"))
+  # repeat stage 1 placebo removing region 1
+  if(iSt==1) {
+    cor_coxph_coef_1_mi (
+      form.0,
+      dat=subset(dat.plac, region!=1),
+      fname.suffix="D"%.%tpeak%.%"_plac_alt",
+      save.results.to,
+      config,
+      config.cor,
+      all.markers,
+      all.markers.names.short,
+      
+      dat.pla.seroneg = NULL,
+      show.q=FALSE,
+      verbose=FALSE
+    )
+    
+  }
+  
+  
+  ###################################
+  # B + Dxx (Dxx/B)
+  
+  all.markers = c(sapply(assays, function (a) paste0("B",a, "centered + Day"%.%tpeak%.%"",a, "centered")),
+                  sapply(assays, function (a) paste0("B",a, "centered + Delta"%.%tpeak%.%"overB",a, "centered"))
+  )
+  
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
+  names(all.markers.names.short) = all.markers
+  
+  # parameters for R script
+  nCoef=2
+  col.headers=c("center(B)", "center(D"%.%tpeak%.%" or fold)")
+  
+  # vaccine arm
+  
+  # cor_coxph_coef_n_mi (
+  #   form.0,
+  #   dat=dat.vacc,
+  #   fname.suffix="B+D"%.%tpeak,
+  #   save.results.to,
+  #   config,
+  #   config.cor,
+  #   all.markers,
+  #   all.markers.names.short,
+  # 
+  #   nCoef,
+  #   col.headers
+  # )
+  
+
+  ###################################
+  # B x D15 (D15/B)
+  
+  all.markers = c(sapply(assays, function (a) paste0("B",a, "centered * Day"%.%tpeak%.%"",a, "centered")),
+                  sapply(assays, function (a) paste0("B",a, "centered * Delta"%.%tpeak%.%"overB",a, "centered"))
+  )
+    
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = sub("IgG ", "", all.markers.names.short)
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", all.markers.names.short)
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
+  names(all.markers.names.short) = all.markers
+  
+  # parameters for R script
+  nCoef=3
+  col.headers=c("center(B)", "center(D"%.%tpeak%.%" or fold)", "center(B):center(D"%.%tpeak%.%" or fold)")
+  
+  # vaccine arm
+  
+  # cor_coxph_coef_n_mi (
+  #   form.0,
+  #   dat=dat.vacc,
+  #   fname.suffix="B*D"%.%tpeak,
+  #   save.results.to,
+  #   config,
+  #   config.cor,
+  #   all.markers,
+  #   all.markers.names.short,
+  # 
+  #   nCoef,
+  #   col.headers
+  # )
   
 
 
-} # iAna loop
+} # iSt loop
 
 
 
 
 
 print(date())
-print("cor_coxph run time: "%.%format(Sys.time()-time.start, digits=1))
+
+print("cor_coxph run time: " %.% format(Sys.time()-time.start, digits=1) )
