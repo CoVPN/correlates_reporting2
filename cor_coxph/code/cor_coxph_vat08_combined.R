@@ -1,4 +1,4 @@
-# COR="D43vat08_combined_M6_nAb"
+# COR="D43vat08_combined_M6_bAb"
 # COR="D43vat08_combined_M6_nAb"
 # COR="D43vat08_combined_M6_st2.nAb.sen"
 
@@ -147,6 +147,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   ############################
   # count ph1 and ph2 cases
   
+  # vaccine arm
   fname.suffix = "D"%.%tpeak
   
   # imputed events of interest
@@ -164,6 +165,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
         digits=1)
   
   
+  # placebo arm
   fname.suffix = "D"%.%tpeak%.%"_plac"
   
   # imputed events of interest
@@ -180,26 +182,43 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
         input.foldername=save.results.to, 
         digits=1)
   
-  
+  if(iSt==1) {
+    # placebo arm stage 1 without region 1
+    fname.suffix = "D"%.%tpeak%.%"_plac_alt"
+    
+    # imputed events of interest
+    tabs=sapply(1:10, simplify="array", function (imp) {
+      dat.plac$EventIndOfInterest = dat.plac[[config.cor$EventIndPrimary%.%imp]]
+      with(dat.plac[dat.plac$region!=1,], table(ph2, EventIndOfInterest))
+    }) 
+    tab =apply(tabs, c(1,2), mean)
+    names(dimnames(tab))[2]="Event Indicator"
+    tab
+    mytex(tab,     
+          file.name = "tab1_" %.% fname.suffix, 
+          save2input.only=T, 
+          input.foldername=save.results.to, 
+          digits=1)
+  }
   
   ###################################
   # Univariate: Dxx, B, Dxx/B
   
-  # all.markers=c(paste0("Day", tpeak, assays),
-  #               paste0("B", assays),
-  #               paste0("Delta", tpeak, "overB", assays))
-  # 
-  # all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-  # all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, 
-  #                             "B "%.%all.markers.names.short, 
-  #                             "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
-  # names(all.markers.names.short) = all.markers
-  # 
-  # # all.markers.names.long  = assay_metadata$assay_label[match(sub("Day"%.%tp,"",all.markers),assays)]
-  # 
-  # multivariate_assays = config$multivariate_assays
-  
+  all.markers=c(paste0("Day", tpeak, assays),
+               paste0("B", assays),
+               paste0("Delta", tpeak, "overB", assays))
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short,
+                             "B "%.%all.markers.names.short,
+                             "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
+  names(all.markers.names.short) = all.markers
+
+  # all.markers.names.long  = assay_metadata$assay_label[match(sub("Day"%.%tp,"",all.markers),assays)]
+
+  multivariate_assays = config$multivariate_assays
+
   # vaccine arm
+  
   # cor_coxph_coef_1_mi (
   #   form.0,
   #   dat=dat.vacc,
@@ -209,9 +228,9 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   #   config.cor,
   #   all.markers,
   #   all.markers.names.short,
-  #   
+  # 
   #   dat.pla.seroneg = dat.plac,
-  #   show.q=FALSE, 
+  #   show.q=FALSE,
   #   verbose=FALSE
   # )
   
@@ -224,20 +243,39 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   names(all.markers.names.short) = all.markers
   multivariate_assays = config$multivariate_assays
 
-  cor_coxph_coef_1_mi (
-    form.0,
-    dat=dat.plac,
-    fname.suffix="D"%.%tpeak%.%"_plac",
-    save.results.to,
-    config,
-    config.cor,
-    all.markers,
-    all.markers.names.short,
-
-    dat.pla.seroneg = NULL,
-    show.q=FALSE,
-    verbose=FALSE
-  )
+  # cor_coxph_coef_1_mi (
+  #   form.0,
+  #   dat=dat.plac,
+  #   fname.suffix="D"%.%tpeak%.%"_plac",
+  #   save.results.to,
+  #   config,
+  #   config.cor,
+  #   all.markers,
+  #   all.markers.names.short,
+  # 
+  #   dat.pla.seroneg = NULL,
+  #   show.q=FALSE,
+  #   verbose=FALSE
+  # )
+  
+  # repeat stage 1 placebo removing region 1
+  if(iSt==1) {
+    cor_coxph_coef_1_mi (
+      form.0,
+      dat=subset(dat.plac, region!=1),
+      fname.suffix="D"%.%tpeak%.%"_plac_alt",
+      save.results.to,
+      config,
+      config.cor,
+      all.markers,
+      all.markers.names.short,
+      
+      dat.pla.seroneg = NULL,
+      show.q=FALSE,
+      verbose=FALSE
+    )
+    
+  }
   
   
   ###################################
@@ -256,6 +294,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   col.headers=c("center(B)", "center(D"%.%tpeak%.%" or fold)")
   
   # vaccine arm
+  
   # cor_coxph_coef_n_mi (
   #   form.0,
   #   dat=dat.vacc,
@@ -265,7 +304,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   #   config.cor,
   #   all.markers,
   #   all.markers.names.short,
-  #   
+  # 
   #   nCoef,
   #   col.headers
   # )
@@ -289,6 +328,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   col.headers=c("center(B)", "center(D"%.%tpeak%.%" or fold)", "center(B):center(D"%.%tpeak%.%" or fold)")
   
   # vaccine arm
+  
   # cor_coxph_coef_n_mi (
   #   form.0,
   #   dat=dat.vacc,
@@ -298,7 +338,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   #   config.cor,
   #   all.markers,
   #   all.markers.names.short,
-  #   
+  # 
   #   nCoef,
   #   col.headers
   # )

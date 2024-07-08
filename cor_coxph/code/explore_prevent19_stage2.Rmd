@@ -69,13 +69,36 @@ dat_proc_stage1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded
 
 ### For manuscript
 
+Table s2
+```{r}
+tmp=subset(dat_proc, ph2.D35_108 & Country==0 & Trt==1 & Bserostatus==0)
+mytable(tmp$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, tmp$tps.stratum)
+
+# replace URM with Hispanic
+tmp$H = ifelse(tmp$ethnicity=="Hispanic or Latino", 1, 0)
+tmp$demo.stratum = with(tmp, strtoi(paste0(H, Senior, HighRiskInd), base = 2)) + 1
+tmp$demo.stratum = with(tmp, ifelse(Country==0, demo.stratum, ifelse(!Senior, 9, 10))) # 0 is US
+
+tmp$tps.stratum.1 = with(tmp, demo.stratum + strtoi(paste0(Trt, Bserostatus), base = 2) * 10) 
+mytable(tmp$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, tmp$tps.stratum.1)
+
+```
+
+Death. only 1 covid related
+```{r}
+deaths=c("2019nCoV-301-MX009-0033","2019nCoV-301-US049-0275","2019nCoV-301-US053-0060","2019nCoV-301-US073-0044","2019nCoV-301-US074-0186","2019nCoV-301-US081-0004","2019nCoV-301-US081-0033","2019nCoV-301-US101-0033","2019nCoV-301-US104-0362","2019nCoV-301-US142-0216","2019nCoV-301-US144-0038","2019nCoV-301-US147-0061","2019nCoV-301-US149-0230","2019nCoV-301-US152-0024","2019nCoV-301-US159-0073","2019nCoV-301-US161-0282","2019nCoV-301-US162-0363","2019nCoV-301-US164-0056","2019nCoV-301-US170-0025","2019nCoV-301-US172-0283","2019nCoV-301-US178-0252","2019nCoV-301-US179-0132","2019nCoV-301-US179-0227","2019nCoV-301-US179-0392","2019nCoV-301-US191-0266","2019nCoV-301-US194-0404","2019nCoV-301-US201-0044","2019nCoV-301-US204-0137","2019nCoV-301-US206-0063","2019nCoV-301-US208-0259","2019nCoV-301-US216-0206","2019nCoV-301-US232-0324","2019nCoV-301-US239-0246","2019nCoV-301-US240-0006","2019nCoV-301-US247-0022","2019nCoV-301-US248-0075","2019nCoV-301-US249-0050")
+dat_proc$death = ifelse(dat_proc$Ptid %in% deaths, 1, 0)
+mytable(dat_proc$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, dat_proc$death, dat_proc$Trt, dat_proc$Bserostatus)
+```
+
 Numbers for Fig S1
 ```{r, include=F}
 dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240403.csv')
 
 mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108)
 mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10)
-mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$SevereCOVIDIndD35_108to21Dec10)
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, dat_proc$Country)
+mytable(dat_proc$SubcohortInd, dat_proc$ph2.D35_108, dat_proc$SevereCOVIDIndD35_108to21Dec10, dat_proc$Country)
 ```
 
 Are all severe cases Delta? Yes

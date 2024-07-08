@@ -22,7 +22,7 @@ region.2 = c( # stage 2
 
 
 dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240620_hotdeck.csv')
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240626.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240706.csv')
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -67,7 +67,122 @@ dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDa
 ```
 
 
+### Can a panel of markers predict variants?
+
+Not likely 
+
+```{r}
+
+dat_proc$Day43pseudoneutid50_1 = rowMeans(dat_proc[,"Day43"%.%nassays[1:2]])
+dat_proc$Day43pseudoneutid50_2 = rowMeans(dat_proc[,"Day43"%.%nassays[3:5]])
+
+tmp=subset(dat_proc, Bserostatus==1 & Trt==0)
+plot(Day43pseudoneutid50_1~Day43pseudoneutid50_2, tmp, col=tmp$Trialstage); abline(0,1)
+
+lim=c(0,3.5)
+
+par(mfrow=c(1,2))
+plot(Day43pseudoneutid50_1~Day43pseudoneutid50_2, tmp[tmp$Trialstage==1,], main="Stage 1", xlim=lim, ylim=lim, asp=1); abline(0,1)
+plot(Day43pseudoneutid50_1~Day43pseudoneutid50_2, tmp[tmp$Trialstage==2,], main="Stage 2", xlim=lim, ylim=lim, asp=1); abline(0,1)
+
+mypairs(subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0)[,"Day43"%.%nassays])
+            
+```
+
+
+
+
+### Number of cases in between d22 and d43
+
+```{r}
+
+nrow(subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1 & EventIndFirstInfectionD22==1 & is.na(EventIndFirstInfectionD43)))
+nrow(subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0 & EventIndFirstInfectionD22==1 & is.na(EventIndFirstInfectionD43)))
+nrow(subset(dat_proc, Trialstage==1 & Bserostatus==0 & Trt==1 & EventIndFirstInfectionD22==1 & is.na(EventIndFirstInfectionD43)))
+nrow(subset(dat_proc, Trialstage==1 & Bserostatus==0 & Trt==0 & EventIndFirstInfectionD22==1 & is.na(EventIndFirstInfectionD43)))
+
+# mytable(subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1, EventIndFirstInfectionD43, drop=T))
+# mytable(subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1, EventIndFirstInfectionD22, drop=T))
+
+
+```
+
+
+### Comparing correlates in placebo in the two trials
+
+D43 is direct correlate in stage 1 and inverse correlate in stage 2 in each region
+
+```{r}
+
+tab=sapply (1:3, function (iReg) {
+  myprint(iReg)
+  # stage 1
+  fit.1 = svycoxph(Surv(EventTimeOmicronD43M6hotdeck1,EventIndOmicronD43M6hotdeck1) ~ Day43bindSpike + FOI + risk_score + Sex + strata(Country), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==0 & region==iReg+1)))
+  # stage 2
+  fit.2 = svycoxph(Surv(EventTimeOmicronD43M6hotdeck1,EventIndOmicronD43M6hotdeck1) ~ Day43bindSpike + FOI + risk_score + Sex + strata(Country), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0 & region==iReg)))
+
+  print(fit.1)
+  print(fit.2)
+  getFormattedSummary(list(fit.1, fit.2), robust=T ) [1,]
+  
+})
+t(tab)
+```
+
+
+Compare followup time
+
+```{r}
+
+for (iReg in 1:3) {
+  myprint(iReg)
+  print(summary(with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==0 & region==iReg+1 & EventIndOmicronD43M6hotdeck1==1), as.Date(EnrollmentDate)+EventTimeOmicronD1M6hotdeck1)))
+  print(summary(with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0 & region==iReg   & EventIndOmicronD43M6hotdeck1==1), as.Date(EnrollmentDate)+EventTimeOmicronD1M6hotdeck1)))
+}
+
+```
+
 ### Cox models
+
+crude VE
+```{r}
+
+with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43), table.prop(EventIndOmicronD43M6hotdeck1, Trt))
+with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43), table.prop(EventIndOmicronD43M6hotdeck1, Trt))
+with(subset(dat_proc, Trialstage==2 & Bserostatus==0 & ph1.D43), table.prop(EventIndOmicronD43M6hotdeck1, Trt))
+with(subset(dat_proc, Trialstage==1 & Bserostatus==0 & ph1.D43), table.prop(EventIndOmicronD43M6hotdeck1, Trt))
+
+```
+
+```{r}
+coxph(Surv(EventTimeOmicronD22M6hotdeck1,EventIndOmicronD22M6hotdeck1) ~ Trt, subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43))
+```
+
+Baseline spike as correlates in stage 1 NN placebo
+```{r}
+svycoxph(Surv(EventTimeOmicronD22M6hotdeck1,EventIndOmicronD22M6hotdeck1) ~ BbindSpike, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==0)))
+
+svycoxph(Surv(EventTimeOmicronD22M6hotdeck1,EventIndOmicronD22M6hotdeck1) ~ BbindSpike, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==0 & region==1)))
+
+svycoxph(Surv(EventTimeOmicronD22M6hotdeck1,EventIndOmicronD22M6hotdeck1) ~ BbindSpike, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==0 & region==2)))
+
+svycoxph(Surv(EventTimeOmicronD22M6hotdeck1,EventIndOmicronD22M6hotdeck1) ~ BbindSpike, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==0 & region==3)))
+
+svycoxph(Surv(EventTimeOmicronD22M6hotdeck1,EventIndOmicronD22M6hotdeck1) ~ BbindSpike, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==0 & region==4)))
+
+```
+
+
+Baseline titer by country in stage 1
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43)
+myboxplot(BbindSpike~region, tmp, col=tmp$EventIndOmicronD22M6hotdeck1+1)
+
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43)
+myboxplot(BbindSpike~region, tmp, col=tmp$EventIndOmicronD22M6hotdeck1+1)
+
+```
+
 
 The scatterplot of the D43 and B titers show that no matter what the baseline titer is, titer after vaccination is about the same.
 
@@ -87,6 +202,228 @@ svycoxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1)~ FOI 
 svycoxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1)~ FOI + risk_score + Sex + strata(Country) + Bpseudoneutid50_mdw*Day43pseudoneutid50_mdw, design=design) 
 
         
+```
+
+
+Stage 1 region x b marker interaction model
+
+```{r}
+dat=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1 & ph1.D43)
+
+design<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=dat)
+
+svycoxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1)~ FOI + risk_score + Sex + strata(Country) + BbindSpike, design=design) 
+
+svycoxph(Surv(EventTimeOmicronD43M6hotdeck1, EventIndOmicronD43M6hotdeck1)~ FOI + risk_score + Sex + BbindSpike*region, design=design) 
+
+        
+```
+
+
+
+
+#### Titers at baseline, D22 and D43
+
+Stage 2 NN Vac. 
+D22 titer is inversely correlated with baseline titer among those with detectable baseline titers.
+
+```{r}
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph2.D43.nAb)
+tmp$b_detectable = ifelse (tmp$Bpseudoneutid50<0.2, 0, 1)
+
+mytable(tmp$b_detectable)
+
+mypairs(tmp[,c("B","Day22","Day43")%.%nassays[1]])
+
+plot(tmp$Day22pseudoneutid50, tmp$Day43pseudoneutid50, col=ifelse(tmp$b_detectable, 1, 2)); abline(0,1)
+
+# nAb
+par(mfrow=c(1,2))
+lim=c(0,4)
+plot(tmp$Bpseudoneutid50, tmp$Day22pseudoneutid50, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day22pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+plot(tmp$Bpseudoneutid50, tmp$Day43pseudoneutid50, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day43pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+
+
+# bAb
+par(mfrow=c(1,2))
+lim=c(0,4)
+plot(tmp$BbindSpike, tmp$Day22bindSpike, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+# abline(lm(Day22bindSpike~BbindSpike, tmp[tmp$b_detectable==1,]), lty=2)
+plot(tmp$BbindSpike, tmp$Day43bindSpike, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+# abline(lm(Day43bindSpike~BbindSpike, tmp[tmp$b_detectable==1,]), lty=2)
+
+```
+
+
+
+Stage 2 NN Pla.
+
+```{r}
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==0 & ph2.D43.bAb)
+tmp$b_detectable = ifelse (tmp$Bpseudoneutid50<0.2, 0, 1)
+
+mytable(tmp$b_detectable)
+
+mypairs(tmp[,c("B","Day22","Day43")%.%nassays[1]])
+
+
+
+# bAb
+par(mfrow=c(1,2))
+lim=c(0,4)
+plot(tmp$BbindSpike, tmp$Day22bindSpike, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+# abline(lm(Day22bindSpike~BbindSpike, tmp[tmp$b_detectable==1,]), lty=2)
+plot(tmp$BbindSpike, tmp$Day43bindSpike, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+# abline(lm(Day43bindSpike~BbindSpike, tmp[tmp$b_detectable==1,]), lty=2)
+
+```
+
+
+
+
+Stage 1 NN Vac
+
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1 & ph2.D43.nAb)
+tmp$b_detectable = ifelse (tmp$Bpseudoneutid50<0.2, 0, 1)
+
+mytable(tmp$b_detectable)
+
+mypairs(tmp[,c("B","Day22","Day43")%.%nassays[1]])
+
+plot(tmp$Day22pseudoneutid50, tmp$Day43pseudoneutid50, col=ifelse(tmp$b_detectable, 1, 2)); abline(0,1)
+
+# nAb
+par(mfrow=c(1,2))
+lim=c(0,4)
+plot(tmp$Bpseudoneutid50, tmp$Day22pseudoneutid50, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day22pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+plot(tmp$Bpseudoneutid50, tmp$Day43pseudoneutid50, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day43pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+
+
+
+# nAb, color code nAb detectable
+par(mfrow=c(1,2))
+lim=c(0,4)
+plot(tmp$Bpseudoneutid50, tmp$Day22pseudoneutid50, col=ifelse(tmp$b_detectable, 1, 2), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day22pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+plot(tmp$Bpseudoneutid50, tmp$Day43pseudoneutid50, col=ifelse(tmp$b_detectable, 1, 2), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day43pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+
+
+
+# bAb
+par(mfrow=c(1,2))
+lim=c(0,4)
+plot(tmp$BbindSpike, tmp$Day22bindSpike, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+# abline(lm(Day22bindSpike~BbindSpike+I(BbindSpike^2), tmp[tmp$b_detectable==1,]), lty=2)
+plot(tmp$BbindSpike, tmp$Day43bindSpike, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+# abline(lm(Day43bindSpike~BbindSpike+I(BbindSpike^2), tmp[tmp$b_detectable==1,]), lty=2)
+
+```
+
+
+Stage 1 NN Pla
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0 & ph2.D43.nAb)
+tmp$b_detectable = ifelse (tmp$Bpseudoneutid50<0.2, 0, 1)
+
+mytable(tmp$b_detectable)
+
+mypairs(tmp[,c("B","Day22","Day43")%.%nassays[1]])
+
+plot(tmp$Day22pseudoneutid50, tmp$Day43pseudoneutid50, col=ifelse(tmp$b_detectable, 1, 2)); abline(0,1)
+
+# nAb
+par(mfrow=c(1,2))
+lim=c(0,4)
+plot(tmp$Bpseudoneutid50, tmp$Day22pseudoneutid50, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day22pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+plot(tmp$Bpseudoneutid50, tmp$Day43pseudoneutid50, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day43pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+
+
+
+# nAb, color code nAb detectable
+par(mfrow=c(1,2))
+lim=c(0,4)
+plot(tmp$Bpseudoneutid50, tmp$Day22pseudoneutid50, col=ifelse(tmp$b_detectable, 1, 2), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day22pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+plot(tmp$Bpseudoneutid50, tmp$Day43pseudoneutid50, col=ifelse(tmp$b_detectable, 1, 2), xlim=lim, ylim=lim); abline(0,1)
+abline(lm(Day43pseudoneutid50~Bpseudoneutid50, tmp[tmp$b_detectable==1,]), lty=2)
+
+
+
+# bAb
+par(mfrow=c(1,2))
+lim=c(0,4)
+plot(tmp$BbindSpike, tmp$Day22bindSpike, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+# abline(lm(Day22bindSpike~BbindSpike+I(BbindSpike^2), tmp[tmp$b_detectable==1,]), lty=2)
+plot(tmp$BbindSpike, tmp$Day43bindSpike, col=ifelse(tmp$EventIndFirstInfectionD1, 2, 1), xlim=lim, ylim=lim); abline(0,1)
+# abline(lm(Day43bindSpike~BbindSpike+I(BbindSpike^2), tmp[tmp$b_detectable==1,]), lty=2)
+
+```
+
+
+### Fold rise from baseline to D22
+
+
+Stage 1 NN Vac
+
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1 & ph1.D43)
+col=1
+# nAb
+par(mfrow=c(2,2), oma=c(0,.5,3,.5), mar=c(2.1, 0.1, 2.1, 0.1), mgp = c(2, 1, 0))
+lim=c(0,4)
+plot(tmp$Bpseudoneutid50, tmp$Day22pseudoneutid50, col=col, xlim=lim, ylim=lim, main="Anc ID50", asp=1); abline(0,1)
+plot(tmp$Bpseudoneutid50, tmp$Day43pseudoneutid50_BA.4.5, col=col, xlim=lim, ylim=lim, main="Omi ID50", asp=1); abline(0,1)
+# bAb
+lim=c(0,4)
+plot(tmp$BbindSpike, tmp$Day22bindSpike, col=col, xlim=lim, ylim=lim, main="Anc bAb", asp=1); abline(0,1)
+plot(tmp$BbindSpike, tmp$Day22bindSpike_omicron, col=col, xlim=lim, ylim=lim, main="Omi bAb", asp=1); abline(0,1)
+#
+title(main="VAT08 Monovalent Non-Naive", outer=T, line=0)
+```
+
+
+Stage 2 NN Vac
+
+```{r}
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)
+col=1
+# nAb
+par(mfrow=c(2,2), oma=c(0,0.5,3,0.5), mar=c(2.1, 0.1, 2.1, 0.1), mgp = c(2, 1, 0))
+lim=c(0,4)
+plot(tmp$Bpseudoneutid50_save, tmp$Day22pseudoneutid50_save, col=col, xlim=lim, ylim=lim, main="Ancestral ID50", asp=1); abline(0,1)
+plot(tmp$Bpseudoneutid50_save, tmp$Day43pseudoneutid50_BA.4.5_save, col=col, xlim=lim, ylim=lim, main="Omicron ID50", asp=1); abline(0,1)
+# bAb
+lim=c(0,4)
+plot(tmp$BbindSpike, tmp$Day22bindSpike, col=col, xlim=lim, ylim=lim, main="Ancestral bAb", asp=1); abline(0,1)
+plot(tmp$BbindSpike, tmp$Day22bindSpike_omicron, col=col, xlim=lim, ylim=lim, main="Omicron bAb", asp=1); abline(0,1)
+#
+title(main="VAT08 Bivalent Non-Naive", outer=T, line=0)
+```
+
+Stage 2 NN Vac, using nAbBatch 2 only
+
+```{r}
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph2.D22.st2.nAb.sen)
+col=1
+# nAb
+par(mfrow=c(2,2), oma=c(0,0.5,3,0.5), mar=c(2.1, 0.1, 2.1, 0.1), mgp = c(2, 1, 0))
+lim=c(0,4)
+plot(tmp$Bpseudoneutid50_save, tmp$Day22pseudoneutid50_save, col=col, xlim=lim, ylim=lim, main="Ancestral ID50", asp=1); abline(0,1)
+plot(tmp$Bpseudoneutid50_save, tmp$Day43pseudoneutid50_BA.4.5_save, col=col, xlim=lim, ylim=lim, main="Omicron ID50", asp=1); abline(0,1)
+# bAb
+lim=c(0,4)
+plot(tmp$BbindSpike, tmp$Day22bindSpike, col=col, xlim=lim, ylim=lim, main="Ancestral bAb", asp=1); abline(0,1)
+plot(tmp$BbindSpike, tmp$Day22bindSpike_omicron, col=col, xlim=lim, ylim=lim, main="Omicron bAb", asp=1); abline(0,1)
+#
+title(main="VAT08 Bivalent Non-Naive", outer=T, line=0)
 ```
 
 
@@ -523,11 +860,6 @@ mypairs(subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1 & ph1.D43)[,"Da
 Correlation is medium between variant markers at D43 in Stage 2 naive, vaccine arm. (The correlation between the ancestral marker and the other markers range between 0.63 and 0.67.)
 ```{r}
 mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==0 & Trt==1 & ph1.D43)[,"Day43"%.%nassays])
-```
-
-Correlation is low between baseline and D22 or D43 in Stage 2 non-naive, vaccine arm.
-```{r}
-mypairs(subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)[,c("B","Day22","Day43")%.%nassays[1]])
 ```
 
 In stage 1, correlation is medium between ancestral markers and other markers. Correlation is high between BA4BA5 and BA1 among non-naive, but medium among naive. 
