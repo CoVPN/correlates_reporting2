@@ -76,11 +76,10 @@ mytable(dat_proc$treatment_assigned)
 
 ### scatterplot of D15 and B 
 
-Make all plots in IU.
+- Make all plots in IU.
+- COVAIL is dose 4. COVE booster is dose 3.
 
-COVAIL is dose 4. COVE booster is dose 3.
-
-```{r}
+```{r helper functions}
 plot_anc_BA1=function(tmp, main) {
   par(mfrow=c(1,2), oma=c(0,2.5,3,0.5), mar=c(3,0,2,0), mgp = c(2, .5, 0))
   lim=c(0,4.5)
@@ -93,6 +92,34 @@ plot_anc_BA1=function(tmp, main) {
 }
 ```
 
+
+BA1 DI50 in one row and Ancestral ID50 in second row, three columns for three vaccines
+```{r}
+tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+    "1 Dose Prototype (Moderna)" # 50 ug
+ ,  "1 Dose Omicron (Moderna)" # BA1
+ , "Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"
+  )
+))
+tmp$col=ifelse(tmp$naive==1,1,2); lim=c(0,4.5)
+par(mfrow=c(2,3), oma=c(2.5,3.5,3,0.5), mar=c(0,0,2,0), mgp = c(2, .5, 0))
+
+kp=tmp$treatment_assigned=="1 Dose Prototype (Moderna)";                                              plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Moderna Prototype", line=1)
+kp=tmp$treatment_assigned=="1 Dose Omicron (Moderna)";                                                plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Moderna BA.1", line=1)
+kp=tmp$treatment_assigned %in% c("Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"); plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Sanofi", line=1)
+
+par(mar=c(0,0,0,0))
+kp=tmp$treatment_assigned=="1 Dose Prototype (Moderna)";                                              plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+kp=tmp$treatment_assigned=="1 Dose Omicron (Moderna)";                                                plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+kp=tmp$treatment_assigned %in% c("Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"); plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+
+title(ylab="Ancestral ID50                              BA.1 ID50", outer=T, line=2.5, font.lab=2)
+title(ylab="D15 (IU/ml)", outer=T, line=1.5)
+title(xlab="D1 (IU/ml)", outer=T, line=1.5) 
+
+```
+
+
 COVAIL Sanofi 
 ```{r}
 tmp=convert2IU(dat.sanofi)
@@ -100,13 +127,30 @@ plot_anc_BA1(tmp, main="COVAIL Sanofi")
 ```
 
 
-
-COVAIL mRNA 
+Three Sanofi arms plotted separately
 ```{r}
-tmp=convert2IU(dat.ocp)
-plot_anc_BA1(tmp, main="COVAIL Omi/Prot 1 dose mRNA")
-```
+tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+ "Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"
+  )
+))
+tmp$col=ifelse(tmp$naive==1,1,2); lim=c(0,4.5)
+par(mfrow=c(2,3), oma=c(2.5,3.5,3,0.5), mar=c(0,0,2,0), mgp = c(2, .5, 0))
 
+kp=tmp$treatment_assigned %in% c("Prototype (Sanofi)"); plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Prototype", line=1)
+kp=tmp$treatment_assigned=="Beta (Sanofi)";             plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Beta", line=1)
+kp=tmp$treatment_assigned=="Beta + Prototype (Sanofi)"; plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Prototype + Beta", line=1)
+
+par(mar=c(0,0,0,0))
+kp=tmp$treatment_assigned %in% c("Prototype (Sanofi)"); plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+kp=tmp$treatment_assigned=="Beta (Sanofi)";             plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+kp=tmp$treatment_assigned=="Beta + Prototype (Sanofi)"; plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+
+title(ylab="Ancestral ID50                              BA.1 ID50", outer=T, line=2.5, font.lab=2)
+title(ylab="D15 (IU/ml)", outer=T, line=1.5)
+title(xlab="D1 (IU/ml)", outer=T, line=1.5) 
+title(main="Sanoifi", outer=T, line=1.5) 
+
+```
 
 COVAIL moderna prototype 
 ```{r}
@@ -148,6 +192,15 @@ title(ylab="D15 (IU/ml)", outer=T, line=1.5)
 title(main=main, outer=T, line=0)
 ```
 
+
+
+
+
+COVAIL mRNA 
+```{r}
+tmp=convert2IU(dat.ocp)
+plot_anc_BA1(tmp, main="COVAIL Omi/Prot 1 dose mRNA")
+```
 
 
 ### For manuscript revision

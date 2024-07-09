@@ -1,4 +1,10 @@
+# Notes
+
 Due to missing variant types, analysis combines ten copies of hotdeck imputed datasets. Events are not considered competing risk.
+
+
+Analyses in stage 1 M6_bAb D43_plac_alt use all but region 1. Analyses in stage 1 M6_bAb D43_plac_alt2 use countries Columbia, Ghana, Kenya, Nepal, India only.
+
 
 ```{r, echo=FALSE, results='asis'}
 
@@ -70,6 +76,12 @@ for (iAna in 1:2) {
           fname.suffix="D" %.% tpeak %.% "_plac_alt"
           res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
+          
+          # placebo Dxx with a subset of countries for stage 1
+          fname.suffix="D" %.% tpeak %.% "_plac_alt2"
+          res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          
         }
         
       }
