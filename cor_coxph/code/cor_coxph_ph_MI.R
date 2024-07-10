@@ -13,8 +13,8 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
     models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
       # imp=1
       
-      # form.0 is not a list because this is for Cox regression and not risk
       if (TRIAL=="janssen_partA_VL") {
+        # form.0 is not a list because this is for Cox regression and not risk
         f = update(form.0, 
                    as.formula(paste0("~.+", if(i==2) "scale", "(", a, "_"%.%imp, ")"))
                    )
@@ -29,9 +29,11 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
       
       # set event indicator and time
       if (TRIAL=="janssen_partA_VL") {
+        
         dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
         
       } else if (TRIAL=="vat08_combined") {
+        
         # not competing risk, imputation only
         dat.vacc$EventIndOfInterest  = dat.vacc[[config.cor$EventIndPrimary  %.% imp]]
         dat.vacc$EventTimeOfInterest = dat.vacc[[config.cor$EventTimePrimary %.% imp]]
@@ -41,9 +43,6 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
       
       if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
         dat.vacc$ph2a = dat.vacc$ph2.D29
-        
-      # } else if (TRIAL=="vat08_combined" & endsWith(a, "pseudoneutid50") & iAna==1) {
-      #   dat.vacc$ph2a = dat.vacc[["ph2.D"%.%tp%.%".nAb.st1.anc"]]
         
       } else {
         dat.vacc$ph2a = dat.vacc$ph2

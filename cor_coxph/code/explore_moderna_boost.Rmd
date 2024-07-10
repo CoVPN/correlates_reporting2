@@ -1,0 +1,65 @@
+---
+title: "Covail"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(survey)
+library(copcor)
+library(kyotil)
+
+dat_mapped=read.csv('/trials/covpn/p3001/analysis/mapping_immune_correlates/Part_C_Unblinded_Phase_Data/adata/COVID_Moderna_stage2_mapped_20230912.csv')
+dat_proc=read.csv('/trials/covpn/p3001/analysis/correlates/Part_C_Unblinded_Phase_Data/adata/moderna_boost_data_processed_20230912.csv')
+assay_metadata=read.csv('~/archive/correlates_reporting3/assay_metadata/moderna_boost_assay_metadata.csv')
+
+assays=assay_metadata$assay
+
+f=Surv(EventTimePrimary, EventIndPrimary) ~ MinorityInd + HighRiskInd + risk_score
+
+
+
+```
+
+
+### study fold rise from B to D15
+
+scatterplot of D15 and B for different markers
+
+```{r}
+tmp=subset(dat_proc, Trt==1 & ph1.BD29)
+
+par(mfrow=c(1,2), oma=c(0,2.5,3,0.5), mar=c(3,0,2,0), mgp = c(2, .5, 0))
+lim=c(log10(8/2),5)
+
+plot(BD29pseudoneutid50~BD1pseudoneutid50,           tmp, col=ifelse(tmp$naive==1,1,2), main="Ancestral ID50", xlim=lim, ylim=lim, asp=1, xlab="BD1 (AU/ml)"); abline(0,1); 
+plot(BD29pseudoneutid50_BA.1~BD1pseudoneutid50_BA.1, tmp, col=ifelse(tmp$naive==1,1,2), main="BA1 ID50",   xlim=lim, ylim=lim, asp=1, xlab="BD1 (AU/ml)", ylab=""); abline(0,1); 
+
+title(main="COVE Dose 3 (PPD)", outer=T, line=0)
+title(ylab="BD29", outer=T, line=1.5)
+```
+
+Convert to IU
+
+```{r}
+tmp=subset(dat_proc, Trt==1 & ph1.BD29)
+
+# convert
+tmp$BD29pseudoneutid50 = copcor::DKE2IU_pseudoneutid50_D614G( copcor::PPD2DKE_pseudoneutid50_D614G(tmp$BD29pseudoneutid50) )
+tmp$BD1pseudoneutid50  = copcor::DKE2IU_pseudoneutid50_D614G( copcor::PPD2DKE_pseudoneutid50_D614G(tmp$BD1pseudoneutid50) )
+
+tmp$BD29pseudoneutid50_BA.1 = copcor::DKE2imputedIU_pseudoneutid50_BA1( copcor::PPD2DKE_pseudoneutid50_BA1(tmp$BD29pseudoneutid50_BA.1) )
+tmp$BD1pseudoneutid50_BA.1  = copcor::DKE2imputedIU_pseudoneutid50_BA1( copcor::PPD2DKE_pseudoneutid50_BA1(tmp$BD1pseudoneutid50_BA.1) )
+
+
+par(mfrow=c(1,2), oma=c(0,2.5,3,0.5), mar=c(3,0,2,0), mgp = c(2, .5, 0))
+lim=c(0,4.5)
+
+plot(BD29pseudoneutid50~BD1pseudoneutid50,           tmp, col=ifelse(tmp$naive==1,1,2), main="Ancestral ID50", xlim=lim, ylim=lim, asp=1, xlab="BD1 (IU/ml)"); abline(0,1); 
+plot(BD29pseudoneutid50_BA.1~BD1pseudoneutid50_BA.1, tmp, col=ifelse(tmp$naive==1,1,2), main="BA1 ID50",   xlim=lim, ylim=lim, asp=1, xlab="BD1 (IU/ml)", ylab=""); abline(0,1); 
+
+title(main="COVE Dose 3", outer=T, line=0)
+title(ylab="BD29 (IU/ml)", outer=T, line=1.5)
+```
+

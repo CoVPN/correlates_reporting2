@@ -2,7 +2,6 @@ Due to missing variant types, analysis combines ten copies of hotdeck imputed da
 
 ```{r, echo=FALSE, results='asis'}
 
-fname.suffix="VAT08"
 show.q=F
 
 # forgo naive population
@@ -20,12 +19,11 @@ for (iAna in 1:2) {
     for (j in 2:2) { # 1 is for M12 and 2 is for M6
       
       ii=1:2 #  # 1 is for bAb and 2 is for nAb 
-      # add a sensitivity study for stage 2, non-naive, nAb
-      if (iAna==2) ii=1:3
+      if (iAna==2) ii=1:3 # add a sensitivity study for stage 2, non-naive, nAb
       
       for (i in ii) {
         # D43vat08_combined_M12_bAb
-        COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='nAb.st2.sen'))
+        COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
         
         config.cor <- config::get(config = COR0)
         for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
@@ -39,7 +37,7 @@ for (iAna in 1:2) {
     
         # modify pathCoRoutput and COR to include subfolder name. 
         # Changes to COR will also show up in Section title in report_by_COR.Rmd
-        COR <- paste0(COR0, " ", subfolder)
+        COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
         pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
       
         all.markers=paste0("Day", tpeak, assays1)
@@ -47,8 +45,32 @@ for (iAna in 1:2) {
         names(all.markers)=all.markers
       
         level=3 # section title indent
+        
+        fname.suffix="D" %.% tpeak
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
         cat(res, sep = '\n')
+        
+        fname.suffix = "B+D" %.% tpeak
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        
+        fname.suffix = "B*D" %.% tpeak
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        
+        # placebo Dxx
+        fname.suffix="D" %.% tpeak %.% "_plac"
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        
+        if (iAna==1) {
+          # placebo Dxx without region 1 for stage 1
+          fname.suffix="D" %.% tpeak %.% "_plac_alt"
+          res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+        }
         
       }
       
