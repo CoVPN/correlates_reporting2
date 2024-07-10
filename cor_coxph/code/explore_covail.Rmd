@@ -205,6 +205,17 @@ plot_anc_BA1(tmp, main="COVAIL Omi/Prot 1 dose mRNA")
 
 ### For manuscript revision
 
+compute median value for each category 
+```{r}
+tmp=subset(dat_proc, ph1.D15==1 & TrtonedosemRNA==1 & Day15pseudoneutid50_BA.1 <= 3.44762) # naive==1 & 
+10**(wtd.quantile(tmp$Day15pseudoneutid50_BA.1, weights = tmp$wt.D15, probs = c(1/2)))
+tmp=subset(dat_proc, ph1.D15==1 & TrtonedosemRNA==1 & Day15pseudoneutid50_BA.1 > 3.44762 & Day15pseudoneutid50_BA.1 <= 3.95012) # & naive==1 
+10**(wtd.quantile(tmp$Day15pseudoneutid50_BA.1, weights = tmp$wt.D15, probs = c(1/2)))
+tmp=subset(dat_proc, ph1.D15==1 & TrtonedosemRNA==1 & Day15pseudoneutid50_BA.1 > 3.95012) # & naive==1 
+10**(wtd.quantile(tmp$Day15pseudoneutid50_BA.1, weights = tmp$wt.D15, probs = c(1/2)))
+```
+
+
 Relationship between risk score and age
 
 ```{r}

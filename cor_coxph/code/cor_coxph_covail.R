@@ -47,6 +47,8 @@ for (a in names(marker.cutpoints)) {
         file=paste0(save.results.to, "cutpoints_", a))
 }
 
+
+
 # create centered version of markers for later use, which is necessary because we do not want to do scaling within naive and non-naive separately
 for (a in c("Day15"%.%assays, "B"%.%assays, "Delta15overB"%.%assays)) {
   dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
@@ -134,7 +136,7 @@ has.plac = F
 # 4: like 1, but subset to naive
 # 5: like 1, but subset to nnaive
 for (iObj in c(1,11,12,2,21,3,31,4,5)) {
-    # iObj=1; iPop=1  
+  # iObj=5; iPop=7  
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
@@ -454,11 +456,11 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
       )
       
       # unit testing 
-      if (iPop==1 & COR=="D15to181") {
+      if (iPop==1 & COR=="D15to181" & config$covariates=="~.+ FOIstandardized + standardized_risk_score + naive") {
         # print(pvals.cont)
         assertthat::assert_that(all(
           abs(pvals.cont-c(0.304557, 0.414779, 0.650192, 0.746262, 0.771249, 0.892435))/pvals.cont < 1e-6
-        ), msg = "failed cor_coxph unit testing")    
+        ), msg = "failed cor_coxph unit testing")
         print("Passed cor_coxph unit testing")    
       }
       

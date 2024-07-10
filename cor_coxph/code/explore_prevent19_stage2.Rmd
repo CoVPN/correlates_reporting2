@@ -69,6 +69,13 @@ dat_proc_stage1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded
 
 ### For manuscript
 
+immuno has MEX?
+```{r}
+mytable(subset(dat_proc, ph2.immuno.D35 & ph2.D35_108==1)$Country)
+```
+
+
+
 Table s2
 ```{r}
 tmp=subset(dat_proc, ph2.D35_108 & Country==0 & Trt==1 & Bserostatus==0)
