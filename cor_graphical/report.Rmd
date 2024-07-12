@@ -37,7 +37,8 @@ if (attr(config,"config")=="azd1222_stage2") {
 }
 
 tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
-tps_no_delta_over_tinterm_lb <-  time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]
+tps_no_delta_over_tinterm_lb <- if(attr(config,"config")=="vat08_combined") {c("Day 1_n","Day 1_nn", "Day 22_n", "Day 22_nn", "Day 43", "D22 fold-rise over D1_n", "D22 fold-rise over D1_nn", "D43 fold-rise over D1")
+  } else {time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]}
 tps_no_fold_change <- times[!grepl("Delta", times)]
 tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
 
@@ -149,7 +150,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           
           if(attr(config,"config")=="azd1222_stage2" & tp=="Day 360") next # do not have this for azd1222_stage2
           
-          tpLabel = tolower(tp)
+          tpLabel = gsub("_n", " naive", gsub("_nn", " non naive", tolower(tp)))
           aLabel = gsub("_sub_stage2", " subset", a)
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
