@@ -390,7 +390,7 @@ tab_dm_ph1 <- lapply(1:Trtn, function(x){
                  summarise(tot = n()),
                by = c(Trti, "Naive")) %>%
     mutate(Naive = paste0(Naive, "\n(N = ", tot, ")")) %>%
-    pivot_wider(c(!!as.name(Trti), subgroup, subgroup_cat, rslt),
+    pivot_wider(c(!!as.name(Trti), subgroup, subgroup_cat),
                 names_from = Naive,
                 names_sort = T,
                 values_from = c(rslt)) %>%
