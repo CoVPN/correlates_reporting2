@@ -77,7 +77,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
     }
     
     write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
-          file=paste0(save.results.to.0%.%"/stage",iSt,"nnaive/", "cutpoints_", a))
+          file=paste0(save.results.to.0%.%"/stage",iSt,"nnaive/", "cutpoints_", a, ".txt"))
   }
   
 }
@@ -110,8 +110,8 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
       dat.vac.seropos.st2[[a%.%"dich"]]  = factor(get("dat.vac.seropos.st"%.%iSt)[[a%.%"dich"]], levels=levels)
     }
     
-    write(paste0(escape(a),     " [", concatList(round(marker.cutpoints.dich[[a]], 2), ", "), ")%"), 
-          file=paste0(save.results.to.0%.%"/stage",iSt,"nnaive/", "dichcutpoints_", a))
+    write(paste0(escape(a), " ", concatList(round(marker.cutpoints.dich[[a]], 2), ", "), "%"), 
+          file=paste0(save.results.to.0%.%"/stage",iSt,"nnaive/", "dichcutpoints_", a, ".txt"))
   }
   
 }
@@ -130,10 +130,9 @@ for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%as
   dat.pla.seropos.st2[[a%.%"centered"]] = scale(dat.pla.seropos.st2[[a]], scale=F)
 }
 
-
 }
 
-
+quit(save = "no", status = 0)
 
 # loop through stage 1 and 2 non-naive
 # for st2 sensitivity analysis, only do stage 2
@@ -141,7 +140,7 @@ for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%as
 # forgo the naive populations from mono- and bi-valent trials
 
 for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
-  # iSt=1
+  # iSt=2
   
   cat("\n\n\n\n")
   myprint(iSt)
@@ -152,11 +151,6 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
 
   form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates))
   
-  
-  # prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==1 & ph1), tfinal.tpeak)
-  # prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==0 & ph1), tfinal.tpeak)   
-  # overall.ve = c(1 - prev.vacc/prev.plac) 
-  # myprint(prev.plac, prev.vacc, overall.ve)
   
   
   ############################
@@ -236,6 +230,8 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
     
   }
   
+  
+  
   ###################################
   # Univariate: Dxx, B, Dxx/B
   
@@ -253,81 +249,81 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
 
   # vaccine arm
   
-  # cor_coxph_coef_1_mi (
-  #   form.0,
-  #   dat=dat.vacc,
-  #   fname.suffix="D"%.%tpeak,
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   markers=all.markers,
-  #   markers.names.short=all.markers.names.short,
-  # 
-  #   dat.pla.seroneg = dat.plac,
-  #   show.q=FALSE,
-  #   verbose=FALSE
-  # )
+  cor_coxph_coef_1_mi (
+    form.0,
+    dat=dat.vacc,
+    fname.suffix="D"%.%tpeak,
+    save.results.to,
+    config,
+    config.cor,
+    markers=all.markers,
+    markers.names.short=all.markers.names.short,
+
+    dat.pla.seroneg = dat.plac,
+    show.q=FALSE,
+    verbose=FALSE
+  )
   
   
   # placebo arm
   
-  # all.markers=c(paste0("Day", tpeak, assays))
-  # 
-  # all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-  # all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
-  # names(all.markers.names.short) = all.markers
-  # multivariate_assays = config$multivariate_assays
-  # 
-  # cor_coxph_coef_1_mi (
-  #   form.0,
-  #   dat=dat.plac,
-  #   fname.suffix="D"%.%tpeak%.%"_plac",
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   markers=all.markers,
-  #   markers.names.short=all.markers.names.short,
-  #   
-  #   dat.pla.seroneg = NULL,
-  #   show.q=FALSE,
-  #   verbose=FALSE
-  # )
-  # 
-  # # repeat stage 1 placebo removing region 1, and additional countries
-  # 
-  # if(iSt==1) {
-  #   cor_coxph_coef_1_mi (
-  #     form.0,
-  #     dat=subset(dat.plac, region!=1),
-  #     fname.suffix="D"%.%tpeak%.%"_plac_alt",
-  #     save.results.to,
-  #     config,
-  #     config.cor,
-  #     markers=all.markers,
-  #     markers.names.short=all.markers.names.short,
-  #     
-  #     dat.pla.seroneg = NULL,
-  #     show.q=FALSE,
-  #     verbose=FALSE
-  #   )
-  # 
-  # 
-  #   cor_coxph_coef_1_mi (
-  #     form.0,
-  #     dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
-  #     fname.suffix="D"%.%tpeak%.%"_plac_alt2",
-  #     save.results.to,
-  #     config,
-  #     config.cor,
-  #     markers=all.markers,
-  #     markers.names.short=all.markers.names.short,
-  #     
-  #     dat.pla.seroneg = NULL,
-  #     show.q=FALSE,
-  #     verbose=FALSE
-  #   )
-  # 
-  # }
+  all.markers=c(paste0("Day", tpeak, assays))
+
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
+  names(all.markers.names.short) = all.markers
+  multivariate_assays = config$multivariate_assays
+
+  cor_coxph_coef_1_mi (
+    form.0,
+    dat=dat.plac,
+    fname.suffix="D"%.%tpeak%.%"_plac",
+    save.results.to,
+    config,
+    config.cor,
+    markers=all.markers,
+    markers.names.short=all.markers.names.short,
+
+    dat.pla.seroneg = NULL,
+    show.q=FALSE,
+    verbose=FALSE
+  )
+
+  # repeat stage 1 placebo removing region 1, and additional countries
+
+  if(iSt==1) {
+    cor_coxph_coef_1_mi (
+      form.0,
+      dat=subset(dat.plac, region!=1),
+      fname.suffix="D"%.%tpeak%.%"_plac_alt",
+      save.results.to,
+      config,
+      config.cor,
+      markers=all.markers,
+      markers.names.short=all.markers.names.short,
+
+      dat.pla.seroneg = NULL,
+      show.q=FALSE,
+      verbose=FALSE
+    )
+
+
+    cor_coxph_coef_1_mi (
+      form.0,
+      dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
+      fname.suffix="D"%.%tpeak%.%"_plac_alt2",
+      save.results.to,
+      config,
+      config.cor,
+      markers=all.markers,
+      markers.names.short=all.markers.names.short,
+
+      dat.pla.seroneg = NULL,
+      show.q=FALSE,
+      verbose=FALSE
+    )
+
+  }
   
   
   
@@ -384,19 +380,19 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   
   # vaccine arm
 
-  # cor_coxph_coef_n_mi (
-  #   form.0,
-  #   dat=dat.vacc,
-  #   fname.suffix="B+D"%.%tpeak,
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   all.markers,
-  #   all.markers.names.short,
-  # 
-  #   nCoef,
-  #   col.headers
-  # )
+  cor_coxph_coef_n_mi (
+    form.0,
+    dat=dat.vacc,
+    fname.suffix="B+D"%.%tpeak,
+    save.results.to,
+    config,
+    config.cor,
+    all.markers,
+    all.markers.names.short,
+
+    nCoef,
+    col.headers
+  )
 
 
   ###################################
@@ -418,19 +414,19 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   
   # vaccine arm
   
-  # cor_coxph_coef_n_mi (
-  #   form.0,
-  #   dat=dat.vacc,
-  #   fname.suffix="B*D"%.%tpeak,
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   all.markers,
-  #   all.markers.names.short,
-  # 
-  #   nCoef,
-  #   col.headers
-  # )
+  cor_coxph_coef_n_mi (
+    form.0,
+    dat=dat.vacc,
+    fname.suffix="B*D"%.%tpeak,
+    save.results.to,
+    config,
+    config.cor,
+    all.markers,
+    all.markers.names.short,
+
+    nCoef,
+    col.headers
+  )
 
 
 
@@ -451,24 +447,24 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   
   # parameters for R script
   nCoef=3
-  col.headers=c("dich(B)", "D"%.%tpeak%.%" or fold", "dich(B):D"%.%tpeak%.%" or fold")
+  col.headers=c("dich(B)", "center(D"%.%tpeak%.%" or fold)", "dich(B):center(D"%.%tpeak%.%" or fold)")
   
   # vaccine arm
   
-  # cor_coxph_coef_n_mi (
-  #   form.0,
-  #   dat=dat.vacc,
-  #   fname.suffix="dichB*D"%.%tpeak,
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   all.markers,
-  #   all.markers.names.short,
-  # 
-  #   nCoef,
-  #   col.headers,
-  #   verbose=verbose
-  # )
+  cor_coxph_coef_n_mi (
+    form.0,
+    dat=dat.vacc,
+    fname.suffix="dichB*D"%.%tpeak,
+    save.results.to,
+    config,
+    config.cor,
+    all.markers,
+    all.markers.names.short,
+
+    nCoef,
+    col.headers,
+    verbose=verbose
+  )
 
   
   # repeat the analysis and flip the dichotomized variables
@@ -485,24 +481,24 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   
   # parameters for R script
   nCoef=3
-  col.headers=c("1-dich(B)", "D"%.%tpeak%.%" or fold", "(1-dich(B)):D"%.%tpeak%.%" or fold")
+  col.headers=c("1-dich(B)", "center(D"%.%tpeak%.%" or fold)", "(1-dich(B)):center(D"%.%tpeak%.%" or fold)")
   
   # vaccine arm
   
-  # cor_coxph_coef_n_mi (
-  #   form.0,
-  #   dat=dat.vacc,
-  #   fname.suffix="1-dichB*D"%.%tpeak,
-  #   save.results.to,
-  #   config,
-  #   config.cor,
-  #   all.markers,
-  #   all.markers.names.short,
-  #   
-  #   nCoef,
-  #   col.headers,
-  #   verbose=verbose
-  # )
+  cor_coxph_coef_n_mi (
+    form.0,
+    dat=dat.vacc,
+    fname.suffix="1-dichB*D"%.%tpeak,
+    save.results.to,
+    config,
+    config.cor,
+    all.markers,
+    all.markers.names.short,
+
+    nCoef,
+    col.headers,
+    verbose=verbose
+  )
   
   
   

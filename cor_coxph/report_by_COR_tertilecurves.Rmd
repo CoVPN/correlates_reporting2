@@ -17,7 +17,7 @@ for (a in all.markers) {
 \\begin{figure}
 \\center
 \\includegraphics[width=.75\\textwidth,keepaspectratio]{', pathCoRoutput, '/', a, '_', 'marginalized_risks_cat_',  fname.suffix, '.pdf} 
-\\caption{Marginalized cumulative incidence rate curves for trichotomized Day ', tpeak, ' markers among vaccine recipients. The gray line, if present, is the overall cumulative incidence rate curve in the placebo arm. Final incidences in the tertiled groups (and in the placebo, if present): \\protect\\input{',  pathCoRoutput, '/', a, '_tertile_incidences_',  fname.suffix, '}. }
+\\caption{Marginalized cumulative incidence rate curves for trichotomized Day ', tpeak, ' markers among vaccine recipients. The gray line, if present, is the overall cumulative incidence rate curve in the placebo arm. Final incidences in the tertiled groups and in the placebo, if present: \\protect\\input{',  pathCoRoutput, '/', a, '_tertile_incidences_',  fname.suffix, '}. }
 \\end{figure}
 ')
 

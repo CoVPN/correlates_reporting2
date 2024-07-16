@@ -68,14 +68,14 @@ for (iAna in 1:2) {
         
         fname.suffix = "dichB*D" %.% tpeak
         has.alt = F
-        coef_page_notes = "dich(B) = 1 if baseline marker is high, 0 if baseline marker is low. The threshold is set to the weighted median unless the negative response rate at baseline exceeds 40% or more than 40% of the values are above the Upper Limit of Quantification (ULOQ). In these cases, the threshold is adjusted to the detection limit or ULOQ, respectively. The second parameter is the effect of the continuous marker in the low baseline group."
+        coef_page_notes = paste0("dich(B) = 1 if baseline marker is high, 0 if baseline marker is low; thus the second parameter is the effect of the continuous marker in the low baseline group. The cutpoint is set to the weighted median unless the negative response rate at baseline exceeds 40% or more than 40% of the values are above the Upper Limit of Quantification (ULOQ). In these cases, the cutpoint is adjusted to the detection limit or ULOQ, respectively. Cutpoints (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/dichcutpoints_B", assays1, ".txt}"), sep=", "), ".")
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         coef_page_notes = "" # reset 
         cat(res, sep = '\n')
         
         fname.suffix = "1-dichB*D" %.% tpeak
         has.alt = F
-        coef_page_notes = "dich(B) = 1 if baseline marker is high, 0 if baseline marker is low. The threshold is set to the weighted median unless the negative response rate at baseline exceeds 40% or more than 40% of the values are above the Upper Limit of Quantification (ULOQ). In these cases, the threshold is adjusted to the detection limit or ULOQ, respectively. The second parameter is the effect of the continuous marker in the high baseline group."
+        coef_page_notes = paste0("dich(B) = 1 if baseline marker is high, 0 if baseline marker is low; thus the second parameter is the effect of the continuous marker in the high baseline group. The cutpooint is set to the weighted median unless the negative response rate at baseline exceeds 40% or more than 40% of the values are above the Upper Limit of Quantification (ULOQ). In these cases, the cutpoint is adjusted to the detection limit or ULOQ, respectively. Cutpoints (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/dichcutpoints_B", assays1, ".txt}"), sep=", "), ".")
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
         coef_page_notes = ""
         cat(res, sep = '\n')

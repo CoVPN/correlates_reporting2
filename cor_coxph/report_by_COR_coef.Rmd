@@ -2,9 +2,9 @@
 
 Each row represents results from one model. 
 
+`r if (exists("coef_page_notes")) if(coef_page_notes!="") coef_page_notes`
 
-<!-- ### Hazard ratios -->
-<!-- has.alt is for interaction models -->
+<!-- `r if (exists("coef_page_notes")) if(coef_page_notes!="") paste0("$\\ast$ ", coef_page_notes)` -->
 
 
 \setlength{\tabcolsep}{.5ex}
@@ -18,8 +18,6 @@ Each row represents results from one model.
 $\ast$ Baseline covariates adjusted for: `r covariates_adjusted`.
 
 $\ast$ `r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
-
-`r if (exists("coef_page_notes")) if(coef_page_notes!="") paste0("$\\ast$ ", coef_page_notes)`
 
 `r if (!show.q) '<!--'`
 $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).

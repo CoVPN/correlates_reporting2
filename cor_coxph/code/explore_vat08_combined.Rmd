@@ -22,7 +22,7 @@ region.2 = c( # stage 2
 
 
 dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240620_hotdeck.csv')
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240706.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240711.csv')
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -1016,6 +1016,16 @@ par(mfrow=c(2,4))
 
 missingness pattern across nAb and bAb markers shows that there is no overlap in pattern between nAb and nAb in stage 1 or 2. 
 ```{r}
+
+
+  
+  # prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==1 & ph1), tfinal.tpeak)
+  # prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==0 & ph1), tfinal.tpeak)   
+  # overall.ve = c(1 - prev.vacc/prev.plac) 
+  # myprint(prev.plac, prev.vacc, overall.ve)
+
+
+
 dat1=dat_mapped
 for (t in 2:1) {
   cat(paste0("stage ", t, '\n'))
@@ -1041,6 +1051,9 @@ for (t in 2:1) {
   }
 }
 ```
+
+
+
 
 
 
@@ -1135,5 +1148,12 @@ with(subset(dat_proc, Trialstage==1 & ph2.D22.bAb), table(SamplingStep, EventInd
 with(subset(dat_proc, Trialstage==2 & ph2.D22.bAb), table(SamplingStep, EventIndPrimaryD1))
 ```
 
+Some ptids have samples assayed in different batches.
+```{r}
+subset(dat_proc, Ptid=="VAT00008-170-0003-11007", c(Trialstage, Bserostatus)) # naive
+subset(dat_proc, Ptid=="VAT00008-840-0011-10001", c(Trialstage, Bserostatus)) # naive
+subset(dat_proc, Ptid=="VAT00008-840-0012-16001", c(Trialstage, Bserostatus)) # naive
 
+
+```
 
