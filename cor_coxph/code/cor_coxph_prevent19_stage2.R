@@ -216,7 +216,6 @@ cor_coxph_risk_bootstrap(
   run.Sgts = F # whether to get risk conditional on continuous S>=s
 )
 
-
 cor_coxph_risk_plotting (
   form.0,
   dat = dat.vac.seroneg,
@@ -240,6 +239,25 @@ cor_coxph_risk_plotting (
   show.ve.curves = F,
   plot.geq = F,
   plot.w.plac = F,
+  for.title = ""
+)
+
+cor_coxph_risk_tertile_incidence_curves (
+  form.0,
+  dat = dat.vac.seroneg,
+  fname.suffix,
+  save.results.to,
+  config,
+  config.cor,
+  tfinal.tpeak,
+  
+  markers = markers,
+  markers.names.short = all.markers.names.short[markers],
+  markers.names.long = all.markers.names.long[markers],
+  marker.cutpoints,
+  assay_metadata,
+  
+  dat.plac = NULL,
   for.title = ""
 )
 

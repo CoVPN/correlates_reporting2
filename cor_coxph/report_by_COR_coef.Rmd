@@ -1,6 +1,7 @@
 `r paste(concatList(rep('#',level)), COR, fname.suffix)` 
 
-The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise. One model per row.
+Each row represents results from one model. 
+
 
 <!-- ### Hazard ratios -->
 <!-- has.alt is for interaction models -->
@@ -14,9 +15,11 @@ The main regression model is the Cox proportional hazards model. All plots are m
 `r if (!has.alt)'-->'`
 \normalsize
 
-$\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
+$\ast$ Baseline covariates adjusted for: `r covariates_adjusted`.
 
-$\ast$`r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
+$\ast$ `r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
+
+`r if (exists("coef_page_notes")) if(coef_page_notes!="") paste0("$\\ast$ ", coef_page_notes)`
 
 `r if (!show.q) '<!--'`
 $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).

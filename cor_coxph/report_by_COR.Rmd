@@ -1,6 +1,10 @@
 `r paste(concatList(rep('#',level)), COR, fname.suffix)`  Univariate
 
-The main regression model is the Cox proportional hazards model. Each row represents results from one model. All plots are made with Cox models fit unless specified otherwise. 
+Each row represents results from one model. 
+
+`r if (exists("COR_page_notes")) if(COR_page_notes!="") COR_page_notes`
+
+
 
 <!-- Hazard ratios -->
 \setlength{\tabcolsep}{.5ex}

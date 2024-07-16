@@ -247,7 +247,7 @@ for (iRegion in c(1,2,3)) {
 
       run.Sgts = F # whether to get risk conditional on continuous S>=s
     )
-
+    
     cor_coxph_risk_plotting (
       form.0,
       dat = dat.vacc,
@@ -256,24 +256,43 @@ for (iRegion in c(1,2,3)) {
       config,
       config.cor,
       tfinal.tpeak,
-
+      
       markers = all.markers,
       markers.names.short = all.markers.names.short,
       markers.names.long = all.markers.names.long,
       marker.cutpoints,
       assay_metadata,
-
+      
       dat.plac,
       res.plac.cont,
       prev.plac,
       overall.ve,
-
+      
       show.ve.curves = T,
       plot.geq = F,
       plot.w.plac = T,
       for.title = for.title
     )
-
+    
+    cor_coxph_risk_tertile_incidence_curves (
+      form.0,
+      dat = dat.vacc,
+      fname.suffix,
+      save.results.to,
+      config,
+      config.cor,
+      tfinal.tpeak,
+      
+      markers = all.markers,
+      markers.names.short = all.markers.names.short,
+      markers.names.long = all.markers.names.long,
+      marker.cutpoints,
+      assay_metadata,
+      
+      dat.plac,
+      for.title = for.title
+    )
+    
 
   } # variant for loop
   

@@ -67,6 +67,22 @@ dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDa
 ```
 
 
+### Should baseline be dichotomized for interaction analysis?
+
+The reason to dichotomize instead of trichotomize baseline markers for interaction analysis is for the small number of endpoints.
+
+```{r}
+
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43)
+
+par(mfrow=c(1,2))
+hist(tmp$BbindSpike, main="Stage 1 NN, Both Arms")
+hist(tmp$Bpseudoneutid50, main="Stage 1 NN, Both Arms")
+
+
+```
+
+
 ### Can a panel of markers predict variants?
 
 Not likely 
