@@ -1,6 +1,9 @@
 `r paste(concatList(rep('#',level+1)))` Tertiles cumulative incidence plots 
 
-The incidence curves are estimated based on a Cox model. The data ribbon is estimated based on survfit separately within each tertile using ph2 data only, without any covariates (thus possible to have blanks when a strata is depleted after a time point).
+The vaccine arm incidence curves are estimated by marginalizing over a Cox model. The placebo arm incidence curve is estimated based on a null Cox model. The placebo curve may not go all the way to tfinal.tpeak because the last point shown is the last event time in the placebo arm.
+
+
+The data ribbon is estimated based on survfit separately within each tertile using ph2 data only, without any covariates. Thus, blanks occur when a strata is depleted after a time point.
 
 
 `r if (exists("tertilecurves_page_notes")) if(tertilecurves_page_notes!="") tertilecurves_page_notes`
@@ -17,7 +20,7 @@ for (a in all.markers) {
 \\begin{figure}
 \\center
 \\includegraphics[width=.75\\textwidth,keepaspectratio]{', pathCoRoutput, '/', a, '_', 'marginalized_risks_cat_',  fname.suffix, '.pdf} 
-\\caption{Marginalized cumulative incidence rate curves for trichotomized Day ', tpeak, ' markers among vaccine recipients. The gray line, if present, is the overall cumulative incidence rate curve in the placebo arm. Final incidences in the tertiled groups and in the placebo, if present: \\protect\\input{',  pathCoRoutput, '/', a, '_tertile_incidences_',  fname.suffix, '}. }
+\\caption{Marginalized cumulative incidence rate curves for trichotomized Day ', tpeak, ' markers among vaccine recipients. The gray line, if present, is the overall cumulative incidence rate curve in the placebo arm. Final incidences in the tertiled groups and in the placebo, if present: \\protect\\input{',  pathCoRoutput, '/', a, '_tertile_incidences_',  fname.suffix, '.txt}. }
 \\end{figure}
 ')
 

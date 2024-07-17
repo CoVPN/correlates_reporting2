@@ -38,11 +38,9 @@ save.results.to.0 = paste0(save.results.to.0, "/", COR, "/"); if (!dir.exists(sa
 
 # There are 3 analyses
 # Stage 1 trial Non-naives: Omicron COVID-19 14 days post D22 (or post D43) through to 180 days post dose 2;
-# Stage 2 trial Naives: Same as above;
 # Stage 2 trial Non-naives: Same as above.
 # save results in separate folders
 save.results.to = paste0(save.results.to.0, "/stage1nnaive/"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
-save.results.to = paste0(save.results.to.0, "/stage2naive/");  if (!dir.exists(save.results.to))  dir.create(save.results.to)
 save.results.to = paste0(save.results.to.0, "/stage2nnaive/"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
 
 
@@ -54,7 +52,6 @@ myprint(B, numPerm)
 
 dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==1 & ph1)
 dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2 & ph1)
-dat.vac.seroneg.st2 = subset(dat_proc, Trt==1 & Bserostatus==0 & Trialstage==2 & ph1)
 
 ## get cutpoints and turn trichotomized markers into factors
 
@@ -132,13 +129,10 @@ for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%as
 
 }
 
-quit(save = "no", status = 0)
 
 # loop through stage 1 and 2 non-naive
 # for st2 sensitivity analysis, only do stage 2
-
 # forgo the naive populations from mono- and bi-valent trials
-
 for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   # iSt=2
   
@@ -429,7 +423,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   )
 
 
-
+  
   
   
   ###################################
@@ -467,7 +461,8 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   )
 
   
-  # repeat the analysis and flip the dichotomized variables
+  ###################################
+  # (1 - dich_B) x D15 (D15/B)
   
   all.markers = c(sapply(assays, function (a) paste0("B",a, "dich1 * Day"%.%tpeak%.%"",a,"centered")),
                   sapply(assays, function (a) paste0("B",a, "dich1 * Delta"%.%tpeak%.%"overB",a,"centered"))
@@ -488,7 +483,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   cor_coxph_coef_n_mi (
     form.0,
     dat=dat.vacc,
-    fname.suffix="1-dichB*D"%.%tpeak,
+    fname.suffix="(1-dichB)*D"%.%tpeak,
     save.results.to,
     config,
     config.cor,
