@@ -8,9 +8,9 @@ bindSpike,6,bindSpike_delta3,5.0346,7925.164,NA,5.0346,Binding Antibody to Spike
 bindSpike,7,bindSpike_delta2,6.5754,8985.413,NA,6.5754,Binding Antibody to Spike Delta-B.1.617.2/AY.4,Anti Spike IgG Delta-B.1.617.2/AY.4 (AU/ml),lloq,1
 bindSpike,8,bindSpike_omicron,5.8428,1884.779,NA,5.8428,Binding Antibody to Spike BA.1,Anti Spike IgG BA.1 (AU/ml),lloq,1
 bindSpike,9,bindSpike_mdw,0,Inf,0,NA,Binding Antibody to Spike crossreactivity score,Anti Spike IgG crossreactivity score,lloq,1
-id50,1,pseudoneutid50,3.0691,12988.43,2.612,2.612,PsV Neutralization to D614G,Pseudovirus-nAb D614G (IU50/ml),lod,1
-id50,2,pseudoneutid50_B.1.351,2.8732,2342.899,2.612,2.612,PsV Neutralization to Beta,Pseudovirus-nAb Beta (IU50/ml),lod,1
-id50,3,pseudoneutid50_BA.1,4.3098,1769.891,2.612,2.612,PsV Neutralization to BA.1,Pseudovirus-nAb BA.1 (IU50/ml),lod,1
-id50,4,pseudoneutid50_BA.2,3.7874,2960.245,2.612,2.612,PsV Neutralization to BA.2,Pseudovirus-nAb BA.2 (IU50/ml),lod,1
-id50,5,pseudoneutid50_BA.4.5,3.7221,3806.533,2.612,2.612,PsV Neutralization to BA.4/BA.5,Pseudovirus-nAb BA.4/BA.5 (IU50/ml),lod,1
+id50,1,pseudoneutid50,3.0691,12988.43,2.612,2.612,PsV Neutralization to D614G,Pseudovirus-nAb D614G (AU/ml),lod,1
+id50,2,pseudoneutid50_B.1.351,2.8732,2342.899,2.612,2.612,PsV Neutralization to Beta,Pseudovirus-nAb Beta (AU/ml),lod,1
+id50,3,pseudoneutid50_BA.1,4.3098,1769.891,2.612,2.612,PsV Neutralization to BA.1,Pseudovirus-nAb BA.1 (AU/ml),lod,1
+id50,4,pseudoneutid50_BA.2,3.7874,2960.245,2.612,2.612,PsV Neutralization to BA.2,Pseudovirus-nAb BA.2 (AU/ml),lod,1
+id50,5,pseudoneutid50_BA.4.5,3.7221,3806.533,2.612,2.612,PsV Neutralization to BA.4/BA.5,Pseudovirus-nAb BA.4/BA.5 (AU/ml),lod,1
 id50,6,pseudoneutid50_mdw,0,Inf,0,NA,PsV Neutralization breadth score,Pseudovirus-nAb ID50 breadth score,lod,1
