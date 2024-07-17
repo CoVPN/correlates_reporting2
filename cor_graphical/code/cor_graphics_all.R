@@ -20,6 +20,7 @@ library(spatstat.geom) # for ewcdf
 
 source(here::here("..", "_common.R"))
 source(here::here("code", "cor_graphics_functions.R"))
+source(here::here("code", "cor_process_function.R"))
 source(here::here("code", "params.R"))
 #colnames(assay_metadata) = gsub("X[.]+","", colnames(assay_metadata))
 # add panel for bindN in assay_metadata
@@ -81,8 +82,9 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
     
     for (tm_subset in c("Day", if(sum(grepl("fold", set1_times))>0) "fold")){
         
+        set1_times_sub = set1_times[grepl(tm_subset, set1_times)]
         # only plot day 43 and day 43 over d1 in this format for vat08
-        set1_times_sub = set1_times[grepl(tm_subset, if (attr(config,"config") == "vat08_combined") {c("Day 43", "D43 fold-rise over D1")} else {set1_times})]
+        if (attr(config,"config") == "vat08_combined") {set1_times_sub = set1_times_sub[set1_times_sub %in% c("Day 43", "D43 fold-rise over D1")]
         
         # by naive/non-naive, vaccine/placebo
         f_1 <- f_case_non_case_by_time_assay(
@@ -99,7 +101,7 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
             ybreaks = if (attr(config,"config") == "nvx_uk302") {c(1,2,3,4,5)} else if (attr(config,"config") == "prevent19nvx") {c(0,1,2,3,4,5,6)} else if (study_name == "VAT08" & tm_subset == "Day") {c(0, 1, 2, 3, 4)} else if (study_name == "VAT08" & tm_subset == "fold") {c(-3, -2, -1, 0, 1, 2, 3, 4)} else {c(0,1,2,3,4,5)},
             axis.x.text.size = ifelse(assay_num > 7 & length(cases_lb)==3, 13, ifelse(assay_num > 5, 20, ifelse(assay_num > 3, 25, 32))),
             strip.x.text.size = ifelse(assay_num > 7, 10, ifelse(assay_num > 5, 18, ifelse(assay_num > 3, 25, 32))),
-            panel.text.size = ifelse(assay_num > 7 && length(cases_lb)==3, 3, ifelse(assay_num > 5, 4.5, ifelse(assay_num > 3, 6, 12))),
+            panel.text.size = ifelse(assay_num > 7 && length(cases_lb)==3, 4.5, ifelse(assay_num > 5, 6, ifelse(assay_num > 3, 7, 12))),
             scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
             lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
             lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
@@ -109,7 +111,17 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
         for (i in 1:length(set1_times_sub)){
             
             file_name <- paste0(panel, "_by_case_non_case_at_", set1_times_sub[i], ".pdf")
-            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 30, height = 16)
+            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 30, height = 22)
+        }
+        
+        # adhoc output for prevent19_stage2
+        #write.csv(dat.longer.cor.subset.plot1 %>% ungroup() %>% 
+        #              mutate(N_RespRate = gsub("\n", " ", N_RespRate)) %>%
+        #              dplyr::select(Trt, Bserostatus, assay, time, cohort_event, counts, N_RespRate, min, q1, median, q3, max) %>% 
+        #              filter(time=="Day 35" & assay %in% c("pseudoneutid50_D614G","pseudoneutid50_Delta",
+        #                                                   "bindSpike_D614","bindSpike_Delta1")) %>% 
+        #              unique(),
+        #      paste0(save.results.to, "by_case_non_case_summary.csv"), row.names = F)
         }
     }
 }
@@ -139,11 +151,11 @@ if (attr(config,"config") == "vat08_combined"){
                     facet.y.var = "Trt_nnaive",
                     assays = assays[grepl(substr(panel, 1, 4), assays)],
                     times = tm_subset,
-                    ylim = c(0, 5.5), 
-                    ybreaks = c(0, 1, 2, 3, 4),
-                    axis.x.text.size = ifelse(assay_num > 7 & length(cases_lb)==3, 13, ifelse(assay_num > 5, 20, ifelse(assay_num > 3, 25, 32))),
-                    strip.x.text.size = ifelse(assay_num > 7, 10, ifelse(assay_num > 5, 18, ifelse(assay_num > 3, 25, 32))),
-                    panel.text.size = ifelse(assay_num > 7 && length(cases_lb)==3, 3, ifelse(assay_num > 5, 4.5, ifelse(assay_num > 3, 6, 12))),
+                    ylim = if (grepl("Day", tm_subset)) {c(0, 4.2)} else if (grepl("fold", tm_subset)) {c(-3, 4.2)}, 
+                    ybreaks = if (grepl("Day", tm_subset)) {c(0, 1, 2, 3, 4)} else if (grepl("fold", tm_subset)) {c(-3, -2, -1, 0, 1, 2, 3, 4)},
+                    axis.x.text.size = ifelse(assay_num > 7, 25, ifelse(assay_num > 5, 28, 32)),
+                    strip.x.text.size = ifelse(assay_num > 7, 18, ifelse(assay_num > 5, 28)),
+                    panel.text.size = ifelse(assay_num > 7, 8, ifelse(assay_num > 5, 11, 14)),
                     scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
                     lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
                     lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
@@ -153,7 +165,7 @@ if (attr(config,"config") == "vat08_combined"){
                 for (i in 1:length(tm_subset)){
                     
                     file_name <- paste0(panel, "_by_case_non_case_at_", tm_subset, ifelse(na=="Naive", "_n", "_nn"), ".pdf")
-                    ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 30, height = 16)
+                    ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 30, height = 28)
                 }
             }
         }
@@ -265,7 +277,7 @@ for (i in 1:length(set2.1_assays)) {
         facet.y.var = vars(Trt_nnaive),
         
         assays = if(attr(config,"config") == "azd1222_stage2"){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]},
-        panel.text.size = ifelse(study_name=="VAT08" & length(cases_lb)==3, 2, ifelse(study_name=="VAT08" & length(cases_lb)==1, 4, 5.8)),
+        panel.text.size = ifelse(study_name=="VAT08" & length(cases_lb)==3, 4, ifelse(study_name=="VAT08" & length(cases_lb)==1, 4, 5.8)),
         ylim = c(0,4.5), 
         ybreaks = c(0,1,2,3,4),
         axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2" | (study_name=="VAT08" & length(cases_lb)==3), 8.4, 9.5),
@@ -277,7 +289,7 @@ for (i in 1:length(set2.1_assays)) {
     file_name <- paste0(paste0(if(attr(config,"config") == "azd1222_stage2"){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]}, 
                                collapse="_"), 
                         "_longitudinal_by_case_non_case.pdf")
-    ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 11)
+    ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 12)
 }
 
 if (study_name=="VAT08"){
@@ -314,7 +326,7 @@ if (study_name=="VAT08"){
             chtpchs = setNames(c(if(length(cases_lb)==3) 19, 19, if(length(cases_lb)==3) 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
         
         file_name <- paste0(a, "_longitudinal_by_case_non_case.pdf")
-        ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 8, height = 11)
+        ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 8, height = 9.5)
     }
 }
 
@@ -323,6 +335,10 @@ set3_times = if (attr(config,"config") == "vat08_combined") {times_[!grepl("Delt
 } else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1|C1|BD1", times_)] # Day35
 } else if (attr(config,"config") == "prevent19nvx") {"Day35"
 } else {times_}
+
+if (attr(config,"config") == "vat08_combined"){
+    assay_metadata$assay_label_short = gsub("Pseudovirus-", "", gsub("Anti Spike ", "", assay_metadata$assay_label_short))
+}
 
 for (grp in c("non_naive_vac_pla", "naive_vac")){
     for (t in set3_times) {
@@ -341,17 +357,26 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
         
         if (nrow(dat.plot)==0) next
         
-        for (assay_list in c(1, if (attr(config,"config") == "prevent19_stage2") 2)){
+        for (assay_list in c(1, if (attr(config,"config") %in% c("prevent19_stage2", "vat08_combined")) 2, if (attr(config,"config") == "vat08_combined") 3)){
         
             if (attr(config,"config") == "prevent19_stage2" & assay_list==2) {
                 assay_metadata_ = assay_metadata %>% filter(assay %in% c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "bindSpike_D614", "bindSpike_Delta1"))
+            } else if (attr(config,"config") == "vat08_combined" & assay_list==2) {
+                assay_metadata_ = subset(assay_metadata, grepl("bindSpike", assay))
+            } else if (attr(config,"config") == "vat08_combined" & assay_list==3) {
+                assay_metadata_ = subset(assay_metadata, grepl("pseudoneutid50", assay))
+                
             } else {assay_metadata_ = assay_metadata}
             
-            if (study_name=="VAT08" & t %in% c("B","Day22")){
+            if (study_name=="VAT08" & t %in% c("B","Day22") & assay_list %in% c(1, 2)){
                 dat.plot_ = dat.plot %>% filter(ph2.D22.bAb == 1) %>% mutate(wt = wt.D22.bAb)
-            } else if (study_name=="VAT08" & t %in% c("Day43")){
+            } else if (study_name=="VAT08" & t %in% c("Day43") & assay_list %in% c(1, 2)){
                 dat.plot_ = dat.plot %>% filter(ph2.D43.bAb == 1 & EarlyinfectionD43==0) %>% mutate(wt = wt.D43.bAb)
-            }else {dat.plot_ = dat.plot}
+            } else if (study_name=="VAT08" & t %in% c("B","Day22") & assay_list==3){
+                dat.plot_ = dat.plot %>% filter(ph2.D22.nAb == 1) %>% mutate(wt = wt.D22.nAb)
+            } else if (study_name=="VAT08" & t %in% c("Day43") & assay_list==3){
+                dat.plot_ = dat.plot %>% filter(ph2.D43.nAb == 1 & EarlyinfectionD43==0) %>% mutate(wt = wt.D43.nAb)
+            } else {dat.plot_ = dat.plot}
             
             covid_corr_pairplots(
                 plot_dat = dat.plot_,
@@ -362,11 +387,13 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
                 plot_title = paste0(
                     "Correlations of ", length(assay_metadata_$assay), " ", t, " antibody markers in ", grp_lb, ",\nCorr = Weighted Spearman Rank Correlation."
                 ),
-                column_labels = paste(t, assay_metadata_$assay_label_short),
+                column_labels = paste(gsub("B","D01", gsub("ay", "", t)), 
+                                           assay_metadata_$assay_label_short),
                 height = max(1.3 * length(assay_metadata_$assay) + 0.1, 5.5),
                 width = max(1.3 * length(assay_metadata_$assay), 5.5),
                 column_label_size = ifelse(max(nchar(paste(t, assay_metadata_$assay_label_short)))>40, 3.4, 
-                                           ifelse(length(assay_metadata_$assay)<=3, 6, 3.8)),
+                                           ifelse(length(assay_metadata_$assay)<=3, 6, 
+                                                  ifelse(length(assay_metadata_$assay)<=6, 5, 4.4))),
                 filename = paste0(
                     save.results.to, "/pairs_by_time_", t,
                     "_", length(assay_metadata_$assay), "_markers_", grp, ".pdf"
@@ -436,7 +463,7 @@ if (study_name == "VAT08") {
                     strata = "all_one",
                     weight = "wt",#paste0("wt.D", tpeak),
                     plot_title = "",
-                    column_labels = times_sub,
+                    column_labels = gsub("^B", "Day01", times_sub),
                     height = 5.5,
                     width = 5.5,
                     column_label_size = 10,
@@ -452,16 +479,17 @@ if (study_name == "VAT08") {
         y.grob.4 <- textGrob("Non-naive", gp=gpar(fontface="bold", col="black", fontsize=9))
         
         #add to plot
-        combined_p <- grid.arrange(
+        combined_p <- grid.arrange(arrangeGrob(
             grid.arrange(arrangeGrob(plot_grid(
                 arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.3), arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.4)), left = y.grob.1), nrow=1),
             grid.arrange(arrangeGrob(plot_grid(
                 ggmatrix_gtable(panels_set[[3]]), ggmatrix_gtable(panels_set[[4]])), left = y.grob.2), nrow=1),
+            top = subset(assay_metadata, assay==a)$assay_label_short),
             #bottom = x.grob,
             ncol = 1
         )
         ggsave(filename = paste0(
-            save.results.to, "/pairs_across_timepoints_", a, ".pdf"), plot = combined_p, width = 8, height = 10, units="in")
+            save.results.to, "/pairs_across_timepoints_", a, ".pdf"), plot = combined_p, width = 8, height = 8, units="in")
     }
 }
 
@@ -504,6 +532,7 @@ if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {
         combined_p <- grid.arrange(
             grid.arrange(arrangeGrob(plot_grid(
                 arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.5), arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.6)), left = y.grob.1), nrow=1),
+            
             #grid.arrange(arrangeGrob(plot_grid(
             #    ggmatrix_gtable(panels_set[[3]]), ggmatrix_gtable(panels_set[[4]])), left = y.grob.2), nrow=1),
             #grid.arrange(arrangeGrob(plot_grid(
@@ -517,4 +546,169 @@ if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {
         ggsave(filename = paste0(
             save.results.to, "/pairs_across_timepoints_", a, ".pdf"), plot = combined_p, width = 8, height = 5, units="in")
     }
+}
+
+
+# adhoc for vat08: compare vat08 vs. covail
+if (study_name == "VAT08") {
+    # Stage 1 VAT008 D43 vs. COVAIL D15 vs.COVAIL D29, stratified by COVID-19 case vs. non-case for #1 and #2
+    # Stage 2 VAT008 D43 vs. COVAIL D15 vs.COVAIL D29, stratified by COVID-19 case vs. non-case for #3 and #4
+    
+    adhoc_assays = c("pseudoneutid50", "pseudoneutid50_B.1.351", "pseudoneutid50_BA.1",
+                     "pseudoneutid50_BA.2", "pseudoneutid50_BA.4.5", "pseudoneutid50_mdw")
+    
+    ###################### covail:
+    covail <- read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240313.csv", stringsAsFactors = F)
+    covail_sub = covail %>% 
+        filter(treatment_assigned %in% c("Beta + Prototype (Sanofi)","Prototype (Sanofi)") & ph1.D29 == 1) %>%
+        mutate(Trt = ifelse(treatment_assigned == "Prototype (Sanofi)", "Ancestral\nVaccine", "Ancestral + Beta\nVaccine"),
+               Bserostatus = 1 - naive,
+               cohort_event = case_when(COVIDIndD22toD181==1 ~ "D22-D91 Cases",
+                                        COVIDIndD22toD181==0 ~ "Non-Cases"),
+               Day29pseudoneutid50Duke_BA.2.12.1 = NA,
+               wt = wt.D29
+        ) %>%
+        dplyr::select(Ptid, Trt, Bserostatus, cohort_event, wt,
+                      Day15pseudoneutid50_D614G, Day15pseudoneutid50_Beta, Day15pseudoneutid50_BA.1, 
+                      Day15pseudoneutid50Duke_BA.2.12.1, Day15pseudoneutid50_BA.4.BA.5, Day15pseudoneutid50_MDW,
+                      Day29pseudoneutid50_D614G, Day29pseudoneutid50_Beta, Day29pseudoneutid50_BA.1, 
+                      Day29pseudoneutid50Duke_BA.2.12.1, Day29pseudoneutid50_BA.4.BA.5, Day29pseudoneutid50_MDW) %>%
+        filter(cohort_event != "")
+    dim(covail_sub) # 90
+    colnames(covail_sub) <- c(colnames(covail_sub)[1:5], paste0("Day15", adhoc_assays), paste0("Day29", adhoc_assays))
+    
+    covail_assay_metadata = read.csv("../assay_metadata/covail_assay_metadata.csv", stringsAsFactors = F)
+    assays = covail_assay_metadata$assay
+    timepoints = c(15,29) #,85,91,147,181)
+    times = c("Day15","Day29")
+    uloqs = covail_assay_metadata$uloq; names(uloqs) = assays
+    pos.cutoffs = covail_assay_metadata$pos.cutoff; names(pos.cutoffs) = assays
+    covail_resp = getResponder(covail %>% mutate(Day29pseudoneutid50Duke_BA.2.12.1 = NA), # this assay doesn't have value at day29
+                               cutoff.name = "llox", 
+                               times = times,
+                               assays = assays, 
+                               pos.cutoffs = pos.cutoffs)
+    covail_resp_by_time_assay <- covail_resp[, c("Ptid", colnames(covail_resp)[grepl("Resp", colnames(covail_resp))])] %>%
+        pivot_longer(!Ptid, names_to = "category", values_to = "response") %>%
+        mutate(time = ifelse(grepl("^B", category),  substr(category, 1, 1), substr(category, 1, 5))) %>%
+        filter(time %in% c("Day15","Day29"))
+    
+    covail_long = covail_sub %>% 
+        pivot_longer(Day15pseudoneutid50:Day29pseudoneutid50_mdw, names_to = "time_assay", values_to = "value") %>%
+        mutate(assay = gsub("Day15|Day29","", time_assay),
+               time = paste0(substr(time_assay, 1, 1), substr(time_assay, 4, 5)), 
+               Trt_nnaive = paste0(Trt, ifelse(Bserostatus==1, "\nnon-naive","\nnaive")),
+               study_time_cohort = paste0("COVAIL\n", time, " Titer\n", ifelse(cohort_event == "D22-D91 Cases", "Cases", "Non-Cases"))) %>%
+        mutate(category = paste0("Day43", assay, "Resp")) %>%
+        left_join(covail_resp_by_time_assay, by=c("Ptid", "category")) %>%
+        dplyr::select(Ptid, Trt_nnaive, study_time_cohort, assay, value, response, wt) %>% # n=1080 = 90*6*2
+        filter(!is.na(value)) %>% # 900
+        group_by(Trt_nnaive, study_time_cohort, assay) %>%
+        mutate(counts = n(),
+               num = sum(response * wt, na.rm=T), 
+               denom = sum(wt, na.rm=T),
+               N_RespRate = ifelse(!grepl("mdw", assay), paste0(counts, "\n",round(num/denom*100, 1),"%"), ""),
+               min = min(value),
+               q1 = quantile(value, 0.25, na.rm=T),
+               median = median(value, na.rm=T),
+               q3 = quantile(value, 0.75, na.rm=T),
+               max= max(value))
+    
+    ###################### sanofi:        
+    sanofi <- read.csv("/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240706.csv", stringsAsFactors = F)
+    sanofi_sub = sanofi %>%
+        filter(Country == 8 & Trt == 1) %>% # U.S only, only stage 1
+        mutate(cohort_event = case_when(Perprotocol==1 & EarlyinfectionD43==0 & ph2.D43.nAb & 
+                                            EventIndPrimaryD43==1 &
+                                            EventTimePrimaryD43 >= 7 &
+                                            EventTimePrimaryD43 <= 180 ~ "28-180 days PD2 cases", 
+                                        Perprotocol==1 & EarlyinfectionD43==0 & ph2.D43.nAb & 
+                                            EventIndPrimaryD1==0 ~ "Non-Cases"),
+               Trt = ifelse(Trialstage == 1, "Ancestral\nVaccine", "Ancestral + Beta\nVaccine"),
+               wt = wt.D43.nAb) %>%
+        dplyr::select(Ptid, Trt, Bserostatus, cohort_event, wt,
+                      Day43pseudoneutid50, Day43pseudoneutid50_B.1.351, Day43pseudoneutid50_BA.1,
+                      Day43pseudoneutid50_BA.2, Day43pseudoneutid50_BA.4.5, Day43pseudoneutid50_mdw) %>%
+        filter(cohort_event != "")
+    dim(sanofi_sub) # 43
+    
+    sanofi_assay_metadata = read.csv("../assay_metadata/vat08_combined_assay_metadata.csv", stringsAsFactors = F)
+    assays = sanofi_assay_metadata$assay
+    timepoints = c(22, 43)
+    times = c("Day22", "Day43")
+    uloqs = sanofi_assay_metadata$uloq; names(uloqs) = assays
+    pos.cutoffs = sanofi_assay_metadata$pos.cutoff; names(pos.cutoffs) = assays
+    sanofi_resp = getResponder(sanofi, 
+                               cutoff.name = "llox", 
+                               times = times,
+                               assays = assays, 
+                               pos.cutoffs = pos.cutoffs)
+    sanofi_resp_by_time_assay <- sanofi_resp[, c("Ptid", colnames(sanofi_resp)[grepl("Resp", colnames(sanofi_resp))])] %>%
+        pivot_longer(!Ptid, names_to = "category", values_to = "response") %>%
+        mutate(time = ifelse(grepl("^B", category),  substr(category, 1, 1), substr(category, 1, 5))) %>%
+        filter(time == "Day43")
+    
+    sanofi_long = sanofi_sub %>% 
+        pivot_longer(Day43pseudoneutid50:Day43pseudoneutid50_mdw, names_to = "time_assay", values_to = "value") %>%
+        mutate(assay = gsub("Day43","", time_assay),
+               Trt_nnaive = paste0(Trt, ifelse(Bserostatus==1, "\nnon-naive","\nnaive")),
+               study_time_cohort = paste0("Sanofi\n", ifelse(cohort_event == "28-180 days PD2 cases", "D43 Titer\nCases", "D43 Titer\nNon-Cases"))) %>%
+        mutate(category = paste0("Day43", assay, "Resp")) %>%
+        left_join(sanofi_resp_by_time_assay, by=c("Ptid", "category")) %>%
+        dplyr::select(Ptid, Trt_nnaive, study_time_cohort, assay, value, response, wt) %>% # n=258 = 43*6
+        filter(!is.na(value)) %>%
+        group_by(Trt_nnaive, study_time_cohort, assay) %>%
+        mutate(counts = n(),
+               num = sum(response * wt, na.rm=T), 
+               denom = sum(wt, na.rm=T),
+               N_RespRate = ifelse(!grepl("mdw", assay), paste0(counts, "\n",round(num/denom*100, 1),"%"), ""),
+               min = min(value),
+               q1 = quantile(value, 0.25, na.rm=T),
+               median = median(value, na.rm=T),
+               q3 = quantile(value, 0.75, na.rm=T),
+               max= max(value))
+    
+    two_studies = sanofi_long %>% 
+        bind_rows(covail_long) %>%
+        mutate(time = "",
+               cohort_event = factor(study_time_cohort,
+                                     levels = c("Sanofi\nD43 Titer\nCases","Sanofi\nD43 Titer\nNon-Cases",
+                                                "COVAIL\nD15 Titer\nCases","COVAIL\nD15 Titer\nNon-Cases",
+                                                "COVAIL\nD29 Titer\nCases","COVAIL\nD29 Titer\nNon-Cases")),
+               Trt = "",
+               lbval = -99,
+               lbval2 = -99,
+               lb = "",
+               lb2 = "") # n = 1158
+    
+    for (a in adhoc_assays){
+        
+        case_noncase_groups = c("Sanofi\nD43 Titer\nCases","Sanofi\nD43 Titer\nNon-Cases",
+                                "COVAIL\nD15 Titer\nCases","COVAIL\nD15 Titer\nNon-Cases",
+                                "COVAIL\nD29 Titer\nCases","COVAIL\nD29 Titer\nNon-Cases")
+        assay_metadata = sanofi_assay_metadata
+        
+        # by naive/non-naive, vaccine arm
+        f_1 <- f_case_non_case_by_time_assay(
+            dat = two_studies,
+            facet.y.var = vars(Trt_nnaive),
+            assays = a,
+            times = "",
+            ylim = c(0, 5.5), 
+            ybreaks = c(0,1,2,3,4,5),
+            axis.x.text.size = 25,
+            strip.x.text.size = 25,
+            panel.text.size = 10,
+            scale.x.discrete.lb = case_noncase_groups,
+            lgdbreaks = c(case_noncase_groups, "Non-Responders"),
+            lgdlabels = c(case_noncase_groups, "Non-Responders"),
+            chtcols = setNames(c("#1749FF", "#FF6F1B", "#D92321", "#0AB7C9", "#378252", "#FF5EBF", "#8F8F8F"), c(case_noncase_groups, "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GREEN, PINK, GRAY
+            chtpchs = setNames(c(19, 19, 19, 19, 19, 19, 2), c(case_noncase_groups, "Non-Responders")),
+            guide_legend_ncol = 7)
+            
+            file_name <- paste0("two_studies_by_case_non_case_", a, ".pdf")
+            ggsave(plot = f_1[[1]], filename = paste0(save.results.to, file_name), width = 25, height = 20)
+        
+    }
+    
 }
