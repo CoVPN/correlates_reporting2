@@ -155,7 +155,10 @@ if (attr(config,"config") == "vat08_combined"){
                     ybreaks = if (grepl("Day", tm_subset)) {c(0, 1, 2, 3, 4)} else if (grepl("fold", tm_subset)) {c(-3, -2, -1, 0, 1, 2, 3, 4)},
                     axis.x.text.size = ifelse(assay_num > 7, 25, ifelse(assay_num > 5, 28, 32)),
                     strip.x.text.size = ifelse(assay_num > 7, 18, ifelse(assay_num > 5, 28)),
-                    panel.text.size = ifelse(assay_num > 7, 8, ifelse(assay_num > 5, 11, 14)),
+                    panel.text.size = ifelse(assay_num > 7 && length(cases_lb)==3, 7.5,
+                                             ifelse(assay_num > 7 && length(cases_lb)==1, 8,
+                                                    ifelse(assay_num > 5 && length(cases_lb)==3, 9.5,
+                                                           ifelse(assay_num > 5 && length(cases_lb)==1, 11, 14)))),
                     scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
                     lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
                     lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
@@ -615,7 +618,7 @@ if (study_name == "VAT08") {
                max= max(value))
     
     ###################### sanofi:        
-    sanofi <- read.csv("/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240706.csv", stringsAsFactors = F)
+    sanofi <- read.csv(config$data_cleaned, stringsAsFactors = F)
     sanofi_sub = sanofi %>%
         filter(Country == 8 & Trt == 1) %>% # U.S only, only stage 1
         mutate(cohort_event = case_when(Perprotocol==1 & EarlyinfectionD43==0 & ph2.D43.nAb & 
