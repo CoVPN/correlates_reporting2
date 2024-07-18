@@ -1,6 +1,10 @@
 `r paste(concatList(rep('#',level)), COR, fname.suffix)`  Univariate
 
-The main regression model is the Cox proportional hazards model. Each row represents results from one model. All plots are made with Cox models fit unless specified otherwise. 
+Each row represents results from one model. 
+
+`r if (exists("COR_page_notes")) if(COR_page_notes!="") COR_page_notes`
+
+
 
 <!-- Hazard ratios -->
 \setlength{\tabcolsep}{.5ex}
@@ -25,7 +29,7 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 \input{`r paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", fname.suffix)`}
 \normalsize
 \vspace{-15pt}
-$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, "}"), sep=",")`
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, ".txt}"), sep=",")`
 
 $\ast\ast$`r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
 

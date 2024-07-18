@@ -186,6 +186,25 @@ cor_coxph_risk_plotting (
   for.title = ""
 )
 
+cor_coxph_risk_tertile_incidence_curves (
+  form.0,
+  dat = dat.vac.seroneg,
+  fname.suffix,
+  save.results.to,
+  config,
+  config.cor,
+  tfinal.tpeak,
+  
+  markers = all.markers,
+  markers.names.short = all.markers.names.short,
+  markers.names.long = all.markers.names.long,
+  marker.cutpoints,
+  assay_metadata,
+  
+  dat.plac = dat.pla.seroneg,
+  for.title = ""
+)
+
 
 print(date())
 print("cor_coxph run time: " %.% format(Sys.time() - time.start, digits=1))

@@ -623,7 +623,7 @@ if (exists("COR")) {
     
     # formula
     if (TRIAL %in% c("janssen_partA_VL")) {
-      # will be defined in cor_coxph_ensemble_variant.R
+      # defined in cor_coxph_janssen_partA_VL.R
       # form.0 is different for cox model and risk estimate
       # for risk estimate, it uses competing risk 
 

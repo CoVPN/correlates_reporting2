@@ -255,6 +255,39 @@ cor_coxph_risk_plotting(
     for.title=""
 )
 
+cor_coxph_risk_tertile_incidence_curves(
+    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+    dat,
+    fname.suffix,
+    save.results.to,
+    
+    config,
+    config.cor,
+    assay_metadata,
+    
+    tfinal.tpeak,
+    all.markers = "Day15"%.%assays,
+    all.markers.names.short,
+    all.markers.names.long,
+    labels.assays.short,
+    marker.cutpoints,
+    
+    multi.imp=F,
+    comp.risk=T, 
+    
+    has.plac=F,
+    dat.pla.seroneg = NULL,
+    res.plac.cont = NULL,
+    prev.plac=NULL,
+    
+    variant=NULL,
+    
+    show.ve.curves=F,
+    eq.geq.ub=1, # whether to plot risk vs S>=s
+    wo.w.plac.ub=1, # whether to plot plac
+    for.title=""
+)
+
 
 if (TRIAL %in% c("moderna_real", "janssen_pooled_EUA")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
 
