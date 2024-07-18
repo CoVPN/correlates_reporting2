@@ -1,5 +1,4 @@
-# COR="D22vat08_combined_M6_bAb"
-# COR="D43vat08_combined_M6_nAb"
+# COR="D43vat08_combined_M6_bAb"
 # COR="D43vat08_combined_M6_st2.nAb.sen"
 
 Sys.setenv(TRIAL = "vat08_combined")
@@ -51,90 +50,30 @@ myprint(B, numPerm)
 
 
 dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==1 & ph1)
+dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==1 & ph1)
+
 dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2 & ph1)
-
-## get cutpoints and turn trichotomized markers into factors
-
-for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
-  # don't do stage 1 if D43vat08_combined_M6_st2.nAb.sen
-  
-  marker.cutpoints = list()
-  for (a in all.markers) {
-    # get cut points
-    tmpname = names(table(get("dat.vac.seropos.st"%.%iSt)[[a%.%"cat"]]))[2]
-    tmpname = substr(tmpname, 2, nchar(tmpname)-1)
-    tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
-    tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
-    marker.cutpoints[[a]] <- tmpname
-    
-    if(iSt==1) {
-      dat.vac.seropos.st1[[a%.%"cat"]] = as.factor(get("dat.vac.seropos.st"%.%iSt)[[a%.%"cat"]])
-    } else {
-      dat.vac.seropos.st2[[a%.%"cat"]] = as.factor(get("dat.vac.seropos.st"%.%iSt)[[a%.%"cat"]])
-    }
-    
-    write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
-          file=paste0(save.results.to.0%.%"/stage",iSt,"nnaive/", "cutpoints_", a, ".txt"))
-  }
-  
-}
-
-
-
-## get cutpoints and turn dichotomized markers into factors
-
-for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
-  # don't do stage 1 if D43vat08_combined_M6_st2.nAb.sen
-  
-  marker.cutpoints.dich = list()
-  for (a in "B"%.%assays) {
-    # get cut points
-    levels = names(table(get("dat.vac.seropos.st"%.%iSt)[[a%.%"dich"]]))
-    tmpname = levels[2]
-    tmpname = substr(tmpname, 2, nchar(tmpname)-1)
-    tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
-    tmpname = setdiff(tmpname,Inf) # the second cut point  is Inf
-    marker.cutpoints.dich[[a]] <- tmpname
-    
-    # define two factor variables with different reference levels
-    # coding: cannot use get on the lhs. error:   target of assignment expands to non-language object
-    if(iSt==1) {
-      dat.vac.seropos.st1[[a%.%"dich1"]] = factor(get("dat.vac.seropos.st"%.%iSt)[[a%.%"dich"]], levels=rev(levels))
-      dat.vac.seropos.st1[[a%.%"dich"]]  = factor(get("dat.vac.seropos.st"%.%iSt)[[a%.%"dich"]], levels=levels)
-      
-    } else {
-      dat.vac.seropos.st2[[a%.%"dich1"]] = factor(get("dat.vac.seropos.st"%.%iSt)[[a%.%"dich"]], levels=rev(levels))
-      dat.vac.seropos.st2[[a%.%"dich"]]  = factor(get("dat.vac.seropos.st"%.%iSt)[[a%.%"dich"]], levels=levels)
-    }
-    
-    write(paste0(escape(a), " ", concatList(round(marker.cutpoints.dich[[a]], 2), ", "), "%"), 
-          file=paste0(save.results.to.0%.%"/stage",iSt,"nnaive/", "dichcutpoints_", a, ".txt"))
-  }
-  
-}
-
-
-# add placebo counterpart
-dat.pla.seropos.st1=subset(dat_proc, Trt==0 & ph1 & Trialstage==1 & Bserostatus==1)
-dat.pla.seropos.st2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==1)
-dat.pla.seroneg.st2=subset(dat_proc, Trt==0 & ph1 & Trialstage==2 & Bserostatus==0)
+dat.pla.seropos.st2 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==2 & ph1)
 
 
 for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%assays)) {
   dat.vac.seropos.st1[[a%.%"centered"]] = scale(dat.vac.seropos.st1[[a]], scale=F)
-  dat.vac.seropos.st2[[a%.%"centered"]] = scale(dat.vac.seropos.st2[[a]], scale=F)
   dat.pla.seropos.st1[[a%.%"centered"]] = scale(dat.pla.seropos.st1[[a]], scale=F)
+  
+  dat.vac.seropos.st2[[a%.%"centered"]] = scale(dat.vac.seropos.st2[[a]], scale=F)
   dat.pla.seropos.st2[[a%.%"centered"]] = scale(dat.pla.seropos.st2[[a]], scale=F)
 }
 
 }
 
 
+
+
 # loop through stage 1 and 2 non-naive
 # for st2 sensitivity analysis, only do stage 2
 # forgo the naive populations from mono- and bi-valent trials
 for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
-  # iSt=2
+  # iSt=1
   
   cat("\n\n\n\n")
   myprint(iSt)
@@ -142,14 +81,74 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   if (iSt==1) {dat.vacc=dat.vac.seropos.st1; dat.plac=dat.pla.seropos.st1; save.results.to=save.results.to.0%.%"stage1nnaive/"}
   if (iSt==2) {dat.vacc=dat.vac.seropos.st2; dat.plac=dat.pla.seropos.st2; save.results.to=save.results.to.0%.%"stage2nnaive/"}
   # if (iSt==3) {dat.vacc=dat.vac.seroneg.st2; dat.plac=dat.pla.seroneg.st2; save.results.to=save.results.to.0%.%"stage2naive/"}
-
+  
   form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates))
+  
+  
+  ############################
+  # get cutpoints and turn trichotomized markers into factors
+  # get dichcutpoints and turn dichotomized markers into factors
+  # need to do it within iSt loop because marker.cutpoints are needed in later function calls
+
+  marker.cutpoints = list()
+  for (a in c(paste0("Day", tpeak, assays),
+              paste0("B", assays),
+              paste0("Delta", tpeak, "overB", assays))) {
+    # get cut points
+    tmpname = names(table(dat.vacc[[a%.%"cat"]]))[2]
+    tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+    tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
+    tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
+    marker.cutpoints[[a]] <- tmpname
+    
+    dat.vacc[[a%.%"cat"]] = as.factor(dat.vacc[[a%.%"cat"]])
+
+    write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
+          file=paste0(save.results.to, "cutpoints_", a, ".txt"))
+  }
+  
+
+  marker.cutpoints.dich = list()
+  for (a in "B"%.%assays) {
+    # get cut points
+    levels = names(table(dat.vacc[[a%.%"dich"]]))
+    tmpname = levels[2]
+    tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+    tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
+    tmpname = setdiff(tmpname,Inf) # the second cut point  is Inf
+    marker.cutpoints.dich[[a]] <- tmpname
+    
+    # define two factor variables with different reference levels
+    dat.vacc[[a%.%"dich1"]] = factor(dat.vacc[[a%.%"dich"]], levels=rev(levels))
+    dat.vacc[[a%.%"dich"]]  = factor(dat.vacc[[a%.%"dich"]], levels=levels)
+      
+    write(paste0(escape(a), " ", concatList(round(marker.cutpoints.dich[[a]], 2), ", "), "%"), 
+          file=paste0(save.results.to, "dichcutpoints_", a, ".txt"))
+  }
+  
+    
+  # placebo
+  marker.cutpoints.plac = list()
+  for (a in c(paste0("Day", tpeak, assays))) {
+    # get cut points
+    tmpname = names(table(dat.plac[[a%.%"cat"]]))[2]
+    tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+    tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
+    tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
+    marker.cutpoints.plac[[a]] <- tmpname
+    
+    dat.plac[[a%.%"cat"]] = as.factor(dat.plac[[a%.%"cat"]])
+    
+    write(paste0(escape(a),     " [", concatList(round(marker.cutpoints.plac[[a]], 2), ", "), ")%"), 
+          file=paste0(save.results.to, "cutpoints_", a, "_plac.txt"))
+  }
   
   
   
   ############################
   # count ph1 and ph2 cases
-  
+  {
+    
   # vaccine arm
   fname.suffix = "D"%.%tpeak
   
@@ -187,24 +186,6 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   
   
   if(iSt==1) {
-    # placebo arm stage 1 without region 1
-    fname.suffix = "D"%.%tpeak%.%"_plac_alt"
-    
-    # imputed events of interest
-    tabs=sapply(1:10, simplify="array", function (imp) {
-      dat.plac$EventIndOfInterest = dat.plac[[config.cor$EventIndPrimary%.%imp]]
-      with(dat.plac[dat.plac$region!=1,], table(ph2, EventIndOfInterest))
-    }) 
-    tab =apply(tabs, c(1,2), mean)
-    names(dimnames(tab))[2]="Event Indicator"
-    tab
-    mytex(tab,     
-          file.name = "tab1_" %.% fname.suffix, 
-          save2input.only=T, 
-          input.foldername=save.results.to, 
-          digits=1)
-
-    
     # placebo arm stage 1 with Columbia, Ghana, Kenya, Nepal, India
     fname.suffix = "D"%.%tpeak%.%"_plac_alt2"
     
@@ -224,14 +205,15 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
     
   }
   
+  }
   
   
   ###################################
   # Univariate: Dxx, B, Dxx/B
   
   all.markers=c(paste0("Day", tpeak, assays),
-               paste0("B", assays),
-               paste0("Delta", tpeak, "overB", assays))
+                paste0("B", assays),
+                paste0("Delta", tpeak, "overB", assays))
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short,
@@ -283,25 +265,8 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
     verbose=FALSE
   )
 
-  # repeat stage 1 placebo removing region 1, and additional countries
-
+  # repeat stage 1 placebo, keeping the countries that also appear in stage 2
   if(iSt==1) {
-    cor_coxph_coef_1_mi (
-      form.0,
-      dat=subset(dat.plac, region!=1),
-      fname.suffix="D"%.%tpeak%.%"_plac_alt",
-      save.results.to,
-      config,
-      config.cor,
-      markers=all.markers,
-      markers.names.short=all.markers.names.short,
-
-      dat.pla.seroneg = NULL,
-      show.q=FALSE,
-      verbose=FALSE
-    )
-
-
     cor_coxph_coef_1_mi (
       form.0,
       dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
@@ -324,14 +289,17 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   ###################################
   # Univariate: Dxx, trichotomitized curves
   
-  all.markers=c(paste0("Day", tpeak, assays))
+  all.markers=c(paste0("Day", tpeak, assays),
+                paste0("Delta", tpeak, "overB", assays))
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short,
+                              "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
   
-  all.markers.names.long = sub("Pseudovirus-", "", assay_metadata$assay_label[match(assays,assay_metadata$assay)])
-  all.markers.names.long = c("D"%.%tpeak%.%" "%.%all.markers.names.long)
+  all.markers.names.long  = sub("Pseudovirus-", "", assay_metadata$assay_label[match(assays,assay_metadata$assay)])
+  all.markers.names.long  = c("D"%.%tpeak%.%" "%.%all.markers.names.long,
+                              "D"%.%tpeak%.%"/B "%.%all.markers.names.long)
   names(all.markers.names.long) = all.markers
   
   cor_coxph_risk_tertile_incidence_curves(
@@ -354,7 +322,38 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   )
   
    
-
+  # placebo
+  
+  all.markers=c(paste0("Day", tpeak, assays))
+  
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
+  names(all.markers.names.short) = all.markers
+  
+  all.markers.names.long  = sub("Pseudovirus-", "", assay_metadata$assay_label[match(assays,assay_metadata$assay)])
+  all.markers.names.long  = c("D"%.%tpeak%.%" "%.%all.markers.names.long)
+  names(all.markers.names.long) = all.markers
+  
+  cor_coxph_risk_tertile_incidence_curves(
+    form.0,
+    dat=dat.plac,
+    fname.suffix="D"%.%tpeak%.%"plac",
+    save.results.to,
+    config,
+    config.cor,
+    tfinal.tpeak,
+    
+    markers = all.markers,
+    markers.names.short = all.markers.names.short,
+    markers.names.long = all.markers.names.long,
+    marker.cutpoints.plac,
+    assay_metadata,
+    
+    dat.vacc,
+    for.title="",
+    plac.actually=T
+  )
+  
   
   
   ###################################
