@@ -76,6 +76,7 @@ if (attr(config,"config") == "prevent19_stage2"){
 for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")){
     
     if (sum(grepl(substr(panel, 1, 4), assay_metadata$assay))==0) next
+    if (attr(config,"config") == "vat08_combined") next # do not plot in this format for vat08
     
     assay_num = length(assays[grepl(substr(panel,1,4), assays)])
     if (panel=="bindSpike_sub_stage2") assay_num = 2
@@ -84,7 +85,7 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
         
         set1_times_sub = set1_times[grepl(tm_subset, set1_times)]
         # only plot day 43 and day 43 over d1 in this format for vat08
-        if (attr(config,"config") == "vat08_combined") {set1_times_sub = set1_times_sub[set1_times_sub %in% c("Day 43", "D43 fold-rise over D1")]
+        #if (attr(config,"config") == "vat08_combined") {set1_times_sub = set1_times_sub[set1_times_sub %in% c("Day 43", "D43 fold-rise over D1")]}
         
         # by naive/non-naive, vaccine/placebo
         f_1 <- f_case_non_case_by_time_assay(
@@ -122,11 +123,10 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
         #                                                   "bindSpike_D614","bindSpike_Delta1")) %>% 
         #              unique(),
         #      paste0(save.results.to, "by_case_non_case_summary.csv"), row.names = F)
-        }
     }
 }
 
-# adhoc for vat08_combined: for day 1 and day 22, day22 over day 1, one plot for naive, the other for non-naive
+# adhoc for vat08_combined: for all timepoints and delta, one plot for naive, the other for non-naive
 if (attr(config,"config") == "vat08_combined"){
 
     for (panel in c("pseudoneutid50", "bindSpike")){
@@ -137,7 +137,7 @@ if (attr(config,"config") == "vat08_combined"){
             
             assay_num = length(assays[grepl(substr(panel,1,4), assays)])
             
-            for (tm_subset in set1_times[c(1:2, 4)]){
+            for (tm_subset in set1_times){
                 
                 # by naive/non-naive, vaccine/placebo
                 f_1 <- f_case_non_case_by_time_assay_wrap(
@@ -360,7 +360,11 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
         
         if (nrow(dat.plot)==0) next
         
-        for (assay_list in c(1, if (attr(config,"config") %in% c("prevent19_stage2", "vat08_combined")) 2, if (attr(config,"config") == "vat08_combined") 3)){
+        for (assay_list in c(1, # overall
+                             if (attr(config,"config") %in% c("prevent19_stage2", "vat08_combined")) 2, #bAb
+                             if (attr(config,"config") == "vat08_combined") 3, #nAb
+                             if (attr(config,"config") %in% c("vat08_combined")) 4, #bAb + nAbmdw 
+                             if (attr(config,"config") %in% c("vat08_combined")) 5)){ #nAb + bAbmdw
         
             if (attr(config,"config") == "prevent19_stage2" & assay_list==2) {
                 assay_metadata_ = assay_metadata %>% filter(assay %in% c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "bindSpike_D614", "bindSpike_Delta1"))
@@ -368,12 +372,16 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
                 assay_metadata_ = subset(assay_metadata, grepl("bindSpike", assay))
             } else if (attr(config,"config") == "vat08_combined" & assay_list==3) {
                 assay_metadata_ = subset(assay_metadata, grepl("pseudoneutid50", assay))
-                
+            } else if (attr(config,"config") == "vat08_combined" & assay_list==4) {
+                assay_metadata_ = subset(assay_metadata, grepl("bindSpike", assay) | assay == "pseudoneutid50_mdw")
+            } else if (attr(config,"config") == "vat08_combined" & assay_list==5) {
+                assay_metadata_ = subset(assay_metadata, grepl("pseudoneutid50", assay) | assay == "bindSpike_mdw")
+                assay_metadata_ = assay_metadata_[c(2:7,1), ]
             } else {assay_metadata_ = assay_metadata}
             
-            if (study_name=="VAT08" & t %in% c("B","Day22") & assay_list %in% c(1, 2)){
+            if (study_name=="VAT08" & t %in% c("B","Day22") & assay_list %in% c(1, 2, 4, 5)){
                 dat.plot_ = dat.plot %>% filter(ph2.D22.bAb == 1) %>% mutate(wt = wt.D22.bAb)
-            } else if (study_name=="VAT08" & t %in% c("Day43") & assay_list %in% c(1, 2)){
+            } else if (study_name=="VAT08" & t %in% c("Day43") & assay_list %in% c(1, 2, 4, 5)){
                 dat.plot_ = dat.plot %>% filter(ph2.D43.bAb == 1 & EarlyinfectionD43==0) %>% mutate(wt = wt.D43.bAb)
             } else if (study_name=="VAT08" & t %in% c("B","Day22") & assay_list==3){
                 dat.plot_ = dat.plot %>% filter(ph2.D22.nAb == 1) %>% mutate(wt = wt.D22.nAb)
@@ -388,7 +396,7 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
                 strata = "all_one",
                 weight = "wt",#ifelse(grepl(tpeak, t), paste0("wt.D", tpeak), paste0("wt.D", tinterm)),
                 plot_title = paste0(
-                    "Correlations of ", length(assay_metadata_$assay), " ", t, " antibody markers in ", grp_lb, ",\nCorr = Weighted Spearman Rank Correlation."
+                    "Correlations of ", length(assay_metadata_$assay), " ", ifelse(t=="B", "Day01", t), " antibody markers in ", grp_lb, ",\nCorr = Weighted Spearman Rank Correlation."
                 ),
                 column_labels = paste(gsub("B","D01", gsub("ay", "", t)), 
                                            assay_metadata_$assay_label_short),
@@ -396,7 +404,8 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
                 width = max(1.3 * length(assay_metadata_$assay), 5.5),
                 column_label_size = ifelse(max(nchar(paste(t, assay_metadata_$assay_label_short)))>40, 3.4, 
                                            ifelse(length(assay_metadata_$assay)<=3, 6, 
-                                                  ifelse(length(assay_metadata_$assay)<=6, 5, 4.4))),
+                                                  ifelse(length(assay_metadata_$assay)<=7, 5.3, 
+                                                         ifelse(length(assay_metadata_$assay)<=9, 4.45, 4.4)))),
                 filename = paste0(
                     save.results.to, "/pairs_by_time_", t,
                     "_", length(assay_metadata_$assay), "_markers_", grp, ".pdf"
