@@ -563,22 +563,23 @@ if (study_name == "VAT08") {
     ###################### covail:
     covail <- read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240313.csv", stringsAsFactors = F)
     covail_sub = covail %>% 
-        filter(treatment_assigned %in% c("Beta + Prototype (Sanofi)","Prototype (Sanofi)") & ph1.D29 == 1) %>%
+        filter(treatment_assigned %in% c("Beta + Prototype (Sanofi)","Prototype (Sanofi)") & ph1.D15 == 1) %>%
         mutate(Trt = ifelse(treatment_assigned == "Prototype (Sanofi)", "Ancestral\nVaccine", "Ancestral + Beta\nVaccine"),
                Bserostatus = 1 - naive,
                cohort_event = case_when(COVIDIndD22toD181==1 ~ "D22-D91 Cases",
                                         COVIDIndD22toD181==0 ~ "Non-Cases"),
                Day29pseudoneutid50Duke_BA.2.12.1 = NA,
-               wt = wt.D29
+               wt.D15,
+               wt.D29
         ) %>%
-        dplyr::select(Ptid, Trt, Bserostatus, cohort_event, wt,
+        dplyr::select(Ptid, Trt, Bserostatus, cohort_event, wt.D15, wt.D29,
                       Day15pseudoneutid50_D614G, Day15pseudoneutid50_Beta, Day15pseudoneutid50_BA.1, 
                       Day15pseudoneutid50Duke_BA.2.12.1, Day15pseudoneutid50_BA.4.BA.5, Day15pseudoneutid50_MDW,
                       Day29pseudoneutid50_D614G, Day29pseudoneutid50_Beta, Day29pseudoneutid50_BA.1, 
                       Day29pseudoneutid50Duke_BA.2.12.1, Day29pseudoneutid50_BA.4.BA.5, Day29pseudoneutid50_MDW) %>%
         filter(cohort_event != "")
     dim(covail_sub) # 90
-    colnames(covail_sub) <- c(colnames(covail_sub)[1:5], paste0("Day15", adhoc_assays), paste0("Day29", adhoc_assays))
+    colnames(covail_sub) <- c(colnames(covail_sub)[1:6], paste0("Day15", adhoc_assays), paste0("Day29", adhoc_assays))
     
     covail_assay_metadata = read.csv("../assay_metadata/covail_assay_metadata.csv", stringsAsFactors = F)
     assays = covail_assay_metadata$assay
@@ -586,11 +587,13 @@ if (study_name == "VAT08") {
     times = c("Day15","Day29")
     uloqs = covail_assay_metadata$uloq; names(uloqs) = assays
     pos.cutoffs = covail_assay_metadata$pos.cutoff; names(pos.cutoffs) = assays
+    COR = "D29VLvariant" # hard code to mae getResponder() works as expected
     covail_resp = getResponder(covail %>% mutate(Day29pseudoneutid50Duke_BA.2.12.1 = NA), # this assay doesn't have value at day29
                                cutoff.name = "llox", 
                                times = times,
                                assays = assays, 
                                pos.cutoffs = pos.cutoffs)
+    COR = "D22D43omi" # set COR back to D22D43omi
     covail_resp_by_time_assay <- covail_resp[, c("Ptid", colnames(covail_resp)[grepl("Resp", colnames(covail_resp))])] %>%
         pivot_longer(!Ptid, names_to = "category", values_to = "response") %>%
         mutate(time = ifelse(grepl("^B", category),  substr(category, 1, 1), substr(category, 1, 5))) %>%
@@ -598,7 +601,10 @@ if (study_name == "VAT08") {
     
     covail_long = covail_sub %>% 
         pivot_longer(Day15pseudoneutid50:Day29pseudoneutid50_mdw, names_to = "time_assay", values_to = "value") %>%
-        mutate(assay = gsub("Day15|Day29","", time_assay),
+        mutate(wt = ifelse(grepl("Day15", time_assay), wt.D15, ifelse(grepl("Day29", time_assay), wt.D29, NA)),
+               wt.D15 = NULL,
+               wt.D29 = NULL,
+               assay = gsub("Day15|Day29","", time_assay),
                time = paste0(substr(time_assay, 1, 1), substr(time_assay, 4, 5)), 
                Trt_nnaive = paste0(Trt, ifelse(Bserostatus==1, "\nnon-naive","\nnaive")),
                study_time_cohort = paste0("COVAIL\n", time, " Titer\n", ifelse(cohort_event == "D22-D91 Cases", "Cases", "Non-Cases"))) %>%
