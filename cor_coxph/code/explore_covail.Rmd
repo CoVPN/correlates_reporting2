@@ -6,12 +6,13 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+library(copcor)
 library(survey)
 library(kyotil)
 
 dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240211.csv')
 dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240313.csv')
-dat = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
+dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -30,7 +31,7 @@ dat.ocp.pfizer$Trt=ifelse(dat.ocp.pfizer$treatment_assigned == "Wildtype/Prototy
 
 
 dat.ocp.moderna=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
-    "1 Dose Prototype (Moderna)"
+    "1 Dose Prototype (Moderna)" # 50 ug
   , "1 Dose Omicron (Moderna)"
   , "1 Dose Omicron + Prototype (Moderna)"
   )
@@ -42,8 +43,185 @@ dat.ocp=rbind(cbind(dat.ocp.pfizer, company="Pfz"), cbind(dat.ocp.moderna, compa
 dat.1=subset(dat.ocp.pfizer, naive==1)
 dat.1.moderna=subset(dat.ocp.moderna, naive==1)
 
+dat.sanofi = subset(dat_mapped, TrtSanofi==1) #treatment_actual %in% c("Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)")
+
+
+dat.mRNA1=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+  "1 Dose Beta + Omicron (Moderna)",
+  "2 Dose Beta + Omicron (Moderna)",
+  "1 Dose Delta + Omicron (Moderna)",
+  "Beta (Pfizer 1)",
+  "Beta + Omicron (Pfizer 1)",
+  "Beta + Wildtype/Prototype (Pfizer 1)"
+# "Beta + Prototype (Sanofi)",
+# "Beta (Sanofi)"                          
+# "Omicron BA.4/5 + Prototype (Pfizer 2)"  
+# "Omicron BA.1 + Prototype (Pfizer 2)" )
+))
+
+convert2IU=function(tmp) {
+  tmp$Day15pseudoneutid50_D614G = copcor::MNG2IU_pseudoneutid50_D614G(tmp$Day15pseudoneutid50_D614G)
+  tmp$Bpseudoneutid50_D614G     = copcor::MNG2IU_pseudoneutid50_D614G(tmp$Bpseudoneutid50_D614G)
+  
+  tmp$Day15pseudoneutid50_BA.1 = copcor::MNG2imputedIU_pseudoneutid50_BA1(tmp$Day15pseudoneutid50_BA.1)
+  tmp$Bpseudoneutid50_BA.1     = copcor::MNG2imputedIU_pseudoneutid50_BA1(tmp$Bpseudoneutid50_BA.1)
+  
+  tmp
+}
+
+mytable(dat_proc$treatment_assigned)
+
 ```
 
+
+### scatterplot of D15 and B 
+
+- Make all plots in IU.
+- COVAIL is dose 4. COVE booster is dose 3.
+
+```{r helper functions}
+plot_anc_BA1=function(tmp, main) {
+  par(mfrow=c(1,2), oma=c(0,2.5,3,0.5), mar=c(3,0,2,0), mgp = c(2, .5, 0))
+  lim=c(0,4.5)
+  
+  plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp, col=ifelse(tmp$naive==1,1,2), main="Ancestral ID50", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+  plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp, col=ifelse(tmp$naive==1,1,2), main="BA1 ID50", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+  title(ylab="D15 (IU/ml)", outer=T, line=1.5)
+  
+  title(main=main, outer=T, line=0)
+}
+```
+
+
+BA1 DI50 in one row and Ancestral ID50 in second row, three columns for three vaccines
+```{r}
+tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+    "1 Dose Prototype (Moderna)" # 50 ug
+ ,  "1 Dose Omicron (Moderna)" # BA1
+ , "Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"
+  )
+))
+tmp$col=ifelse(tmp$naive==1,1,2); lim=c(0,4.5)
+par(mfrow=c(2,3), oma=c(2.5,3.5,3,0.5), mar=c(0,0,2,0), mgp = c(2, .5, 0))
+
+kp=tmp$treatment_assigned=="1 Dose Prototype (Moderna)";                                              plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Moderna Prototype", line=1)
+kp=tmp$treatment_assigned=="1 Dose Omicron (Moderna)";                                                plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Moderna BA.1", line=1)
+kp=tmp$treatment_assigned %in% c("Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"); plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Sanofi", line=1)
+
+par(mar=c(0,0,0,0))
+kp=tmp$treatment_assigned=="1 Dose Prototype (Moderna)";                                              plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+kp=tmp$treatment_assigned=="1 Dose Omicron (Moderna)";                                                plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+kp=tmp$treatment_assigned %in% c("Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"); plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+
+title(ylab="Ancestral ID50                              BA.1 ID50", outer=T, line=2.5, font.lab=2)
+title(ylab="D15 (IU/ml)", outer=T, line=1.5)
+title(xlab="D1 (IU/ml)", outer=T, line=1.5) 
+
+```
+
+
+COVAIL Sanofi 
+```{r}
+tmp=convert2IU(dat.sanofi)
+plot_anc_BA1(tmp, main="COVAIL Sanofi")
+```
+
+
+Three Sanofi arms plotted separately
+```{r}
+tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+ "Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"
+  )
+))
+tmp$col=ifelse(tmp$naive==1,1,2); lim=c(0,4.5)
+par(mfrow=c(2,3), oma=c(2.5,3.5,3,0.5), mar=c(0,0,2,0), mgp = c(2, .5, 0))
+
+kp=tmp$treatment_assigned %in% c("Prototype (Sanofi)"); plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Prototype", line=1)
+kp=tmp$treatment_assigned=="Beta (Sanofi)";             plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Beta", line=1)
+kp=tmp$treatment_assigned=="Beta + Prototype (Sanofi)"; plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1); title(main="Prototype + Beta", line=1)
+
+par(mar=c(0,0,0,0))
+kp=tmp$treatment_assigned %in% c("Prototype (Sanofi)"); plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+kp=tmp$treatment_assigned=="Beta (Sanofi)";             plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+kp=tmp$treatment_assigned=="Beta + Prototype (Sanofi)"; plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp[kp,], col=tmp$col[kp], main="", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+
+title(ylab="Ancestral ID50                              BA.1 ID50", outer=T, line=2.5, font.lab=2)
+title(ylab="D15 (IU/ml)", outer=T, line=1.5)
+title(xlab="D1 (IU/ml)", outer=T, line=1.5) 
+title(main="Sanoifi", outer=T, line=1.5) 
+
+```
+
+COVAIL moderna prototype 
+```{r}
+tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+    "1 Dose Prototype (Moderna)" # 50 ug
+  )
+))
+plot_anc_BA1(tmp, main="COVAIL Moderna Prototype (50ug)")
+```
+
+COVAIL moderna Omicron BA1 
+```{r}
+tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+  "1 Dose Omicron (Moderna)" # BA1
+  )
+))
+plot_anc_BA1(tmp, main="COVAIL Moderna BA.1 (50ug)")
+```
+
+COVAIL moderna prototype and BA1 together
+```{r}
+tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+    "1 Dose Prototype (Moderna)" # 50 ug
+   ,"1 Dose Omicron (Moderna)" # BA1
+  )
+))
+tmp$trt=ifelse(tmp$treatment_assigned=="1 Dose Prototype (Moderna)",1,0)
+main="COVAIL Moderna (50ug)"
+
+par(mfrow=c(1,2), oma=c(0,2.5,3,0.5), mar=c(3,0,2,0), mgp = c(2, .5, 0))
+lim=c(0,4.5)
+
+plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp, pch=ifelse(tmp$naive==1,1,2), col=ifelse(tmp$trt==1,1,2), main="Ancestral ID50", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1,   tmp, pch=ifelse(tmp$naive==1,1,2), col=ifelse(tmp$trt==1,1,2), main="BA1 ID50", xlab="D1 (IU/ml)", xlim=lim, ylim=lim, asp=1); abline(0,1)
+# mylegend(legend=c())
+
+title(ylab="D15 (IU/ml)", outer=T, line=1.5)
+
+title(main=main, outer=T, line=0)
+```
+
+
+
+
+
+COVAIL mRNA 
+```{r}
+tmp=convert2IU(dat.ocp)
+plot_anc_BA1(tmp, main="COVAIL Omi/Prot 1 dose mRNA")
+```
+
+
+### For manuscript revision
+
+compute median value for each category 
+```{r}
+tmp=subset(dat_proc, ph1.D15==1 & TrtonedosemRNA==1 & Day15pseudoneutid50_BA.1 <= 3.44762) # naive==1 & 
+10**(wtd.quantile(tmp$Day15pseudoneutid50_BA.1, weights = tmp$wt.D15, probs = c(1/2)))
+tmp=subset(dat_proc, ph1.D15==1 & TrtonedosemRNA==1 & Day15pseudoneutid50_BA.1 > 3.44762 & Day15pseudoneutid50_BA.1 <= 3.95012) # & naive==1 
+10**(wtd.quantile(tmp$Day15pseudoneutid50_BA.1, weights = tmp$wt.D15, probs = c(1/2)))
+tmp=subset(dat_proc, ph1.D15==1 & TrtonedosemRNA==1 & Day15pseudoneutid50_BA.1 > 3.95012) # & naive==1 
+10**(wtd.quantile(tmp$Day15pseudoneutid50_BA.1, weights = tmp$wt.D15, probs = c(1/2)))
+```
+
+
+Relationship between risk score and age
+
+```{r}
+plot(dat_proc$Age, dat_proc$risk_score)
+
+```
 
 ### Difference in risk between prototype and Omicon vaccines
 
@@ -344,7 +522,7 @@ fit=lm(standardized_risk_score ~ I(1-naive), subset(dat, D1_id50 <= -1.06)); sum
 ```{r}
 f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
 
-dat.ocp=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+dat.ocp2=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
     "Wildtype/Prototype (Pfizer 1)"
   , "Omicron (Pfizer 1)"
   , "Omicron + Wildtype/Prototype (Pfizer 1)"
@@ -352,13 +530,13 @@ dat.ocp=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
   # , "Omicron BA.1 + Prototype (Pfizer 2)"
   )
 )
-dat.ocp$Trt=ifelse(dat.ocp$treatment_assigned == "Wildtype/Prototype (Pfizer 1)", 0, 1)
+dat.ocp2$Trt=ifelse(dat.ocp2$treatment_assigned == "Wildtype/Prototype (Pfizer 1)", 0, 1)
 
-coxph(update(f, ~. + naive + Trt), dat.ocp)
-coxph(update(f, ~. + naive + Trt), subset(dat.ocp, naive==0))
-coxph(update(f, ~. + naive + Trt), subset(dat.ocp, naive==1))
+coxph(update(f, ~. + naive + Trt), dat.ocp2)
+coxph(update(f, ~. + naive + Trt), subset(dat.ocp2, naive==0))
+coxph(update(f, ~. + naive + Trt), subset(dat.ocp2, naive==1))
 
-dat.1=subset(dat.ocp, naive==1)
+dat.1=subset(dat.ocp2, naive==1)
 ```
 
 
@@ -388,10 +566,10 @@ corplot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, dat.nn, add.deming.fit = T,
 title(xlab="Bpseudoneutid50_MDW", line=2)
 ```
 
+
 ### distribution 
 
 ```{r}
-dat = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
 
 table(dat$Bpseudoneutid50_MDWcat, dat$Day15pseudoneutid50_MDWcat)
 table(dat$Bpseudoneutid50_MDWcat, dat$Day15pseudoneutid50_MDWcat, dat$naive)
@@ -446,7 +624,6 @@ mytable(dat2$COVIDIndD92toD181, dat2$COVIDtimeD92toD181)
 ```{r}
 with(dat_mapped, table(treatment_actual %in% c("Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)"), TrtSanofi))
 
-dat.sanofi = subset(dat_mapped, TrtSanofi==1) #treatment_actual %in% c("Beta (Sanofi)", "Beta + Prototype (Sanofi)", "Prototype (Sanofi)")
 summary(dat.sanofi[,c("Day29"%.%assays[1:5])])
 
 summary(dat.sanofi[,c("Day15"%.%assays[1:5])])
@@ -609,8 +786,6 @@ corplot(Day29pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_BA.4.BA.5, subset(dat.
 ### correlation between m15 and baseline markers
 
 ```{r}
-dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
-
 mypairs(dat[,paste0("B",assays)])
 
 mypairs(dat[,paste0("Day15",assays)])

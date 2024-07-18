@@ -91,7 +91,7 @@ if (!is.null(config$assay_metadata)) {
   if (exists('COR')) {
     
     if (TRIAL=='vat08_combined') {
-      if (contain(COR, "_nAb")) {
+      if (contain(COR, "nAb")) { # _nAb fails for the sensitivity analysis
         assay_metadata = subset(assay_metadata, panel=='id50')
         
       } else if (contain(COR, "_bAb")) {
@@ -623,7 +623,7 @@ if (exists("COR")) {
     
     # formula
     if (TRIAL %in% c("janssen_partA_VL")) {
-      # will be defined in cor_coxph_ensemble_variant.R
+      # defined in cor_coxph_janssen_partA_VL.R
       # form.0 is different for cox model and risk estimate
       # for risk estimate, it uses competing risk 
 

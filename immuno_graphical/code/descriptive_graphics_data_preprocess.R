@@ -1,9 +1,9 @@
 #Sys.setenv(TRIAL = "profiscov"); lloxs = lloqs
 #Sys.setenv(TRIAL = "profiscov_all"); lloxs = llods
-#Sys.setenv(TRIAL = "vat08_combined");
 #Sys.setenv(TRIAL = "janssen_partA_VL");
 #Sys.setenv(TRIAL = "janssen_pooled_partA")
 #Sys.setenv(TRIAL = "prevent19_stage2")
+#Sys.setenv(TRIAL = "vat08_combined");
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -138,6 +138,9 @@ print("Data preprocess")
 if (attr(config,"config")=="prevent19_stage2") {
   dat.twophase.sample <- dat %>%
     filter(ph2.immuno.D35 == 1) #| ph2.immuno.BD1 | ph2.immuno.C1 == 1) # ph2 D35 covers ph2 BD1 and ph2 C1
+} else if (attr(config,"config")=="vat08_combined") {
+  dat.twophase.sample <- dat %>%
+    filter(ph2.D43.nAb == 1)
 } else {dat.twophase.sample <- dat %>%
   filter(ph2.immuno == 1)
 }
@@ -146,7 +149,11 @@ twophase_sample_id <- dat.twophase.sample$Ptid
 important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex",
   "Bserostatus", "Senior", "Bstratum", 
   colnames(dat)[grepl("wt.subcohort|wt.immuno", colnames(dat))], # e.g. wt.subcohort, wt.immuno.C1, wt.immuno.D35, wt.immuno.BD1
-  if(attr(config,"config")=="prevent19_stage2") colnames(dat)[grepl("ph2.immuno", colnames(dat))], # e.g.ph2.immuno.D35, ph2.immuno.C1, ph2.immuno.BD1
+  if(attr(config,"config")=="prevent19_stage2") colnames(dat)[grepl("ph2.immuno", colnames(dat))], # e.g. ph2.immuno.D35, ph2.immuno.C1, ph2.immuno.BD1
+  
+  if(attr(config,"config")=="vat08_combined") colnames(dat)[grepl("wt.D43.|wt.D22.", colnames(dat))], # e.g. wt.D22.bAb, wt.D22.both, wt.D22.nAb
+  if(attr(config,"config")=="vat08_combined") colnames(dat)[grepl("wt.D43.|wt.D22.", colnames(dat))], # e.g. ph2.D22.bAb, ph2.D22.both, ph2.D22.nAb
+  
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
   if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV") "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
@@ -383,10 +390,10 @@ saveRDS(as.data.frame(dat.twophase.sample),
 
 ###################################################################### 
 # prepare datasets for violin plots, required for janssen_partA_VL, janssen_pooled_partA
-if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA")){
+if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat08_combined")){
   # longer format by assay and time
   dat.longer.immuno.subset <- dat.twophase.sample %>%
-    tidyr::pivot_longer(cols = all_of(c(outer(times_, assays, "%.%")))[all_of(c(outer(times_, assays, "%.%"))) %in% colnames(dat.twophase.sample)], names_to = "time_assay", values_to = "value") %>%
+    tidyr::pivot_longer(cols = c(outer(times_, assays, "%.%"))[c(outer(times_, assays, "%.%")) %in% colnames(dat.twophase.sample)], names_to = "time_assay", values_to = "value") %>%
     mutate(time = gsub(paste0(assays, collapse = "|"), "", time_assay),
            assay = gsub(paste0("^", times_, collapse = "|"), "", time_assay))
   
@@ -408,7 +415,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA")){
   dat.longer.immuno.subset$LLoD = with(dat.longer.immuno.subset, log10(lods[as.character(assay)]))
   dat.longer.immuno.subset$pos.cutoffs = with(dat.longer.immuno.subset, log10(pos.cutoffs[as.character(assay)]))
   dat.longer.immuno.subset$LLoQ = with(dat.longer.immuno.subset, log10(lloqs[as.character(assay)]))
-  if (attr(config,"config")=="janssen_pooled_partA"){
+  if (attr(config,"config") %in% c("janssen_pooled_partA")){
     dat.longer.immuno.subset$lb = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), "Pos.Cut", "LoQ"))
     dat.longer.immuno.subset$lbval = with(dat.longer.immuno.subset, ifelse(grepl("bind", assay), pos.cutoffs, LLoQ))
   } else {
@@ -427,14 +434,14 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA")){
   dat.longer.immuno.subset <- dat.longer.immuno.subset[,c("Ptid", "time", "assay", "category", "Trt", "Bserostatus", 
                                                           "value", "wt.subcohort", "pos.cutoffs","lbval","lbval2", 
                                                           "lb","lb2",if(attr(config,"config")=="janssen_partA_VL") "Region", 
-                                                          if(study_name=="VAT08") "nnaive", "response")]
+                                                          "response")]
   
   dat.longer.immuno.subset$nnaive <- with(dat.longer.immuno.subset, factor(Bserostatus, levels = c(0, 1), labels = bstatus.labels))
   dat.longer.immuno.subset$Trt <- with(dat.longer.immuno.subset, factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")))
   dat.longer.immuno.subset$Trt_nnaive = with(dat.longer.immuno.subset, 
                                                factor(paste(Trt, nnaive), 
-                      levels = paste(rep(c("Vaccine", "Placebo"), each=2), rep(bstatus.labels, each=2)),
-                      labels = paste0(rep(c("Vaccine", "Placebo"), each=2), "\n", rep(bstatus.labels, each=2))))
+                      levels = paste(rep(c("Vaccine", "Placebo")), rep(bstatus.labels, each=2)),
+                      labels = paste0(rep(c("Vaccine", "Placebo")), "\n", rep(bstatus.labels, each=2))))
   
   # subsets for violin/line plots
   #### figure specific data prep

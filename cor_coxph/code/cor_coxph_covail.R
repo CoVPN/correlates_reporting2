@@ -1,5 +1,5 @@
-# COR="D15to181BA45"
 # COR="D15to181"
+# COR="D15to181BA45"
 # COR="D15to91"
 # COR="D92to181"
 
@@ -7,6 +7,7 @@ renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "covail")
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
+
 
 
 {
@@ -46,6 +47,8 @@ for (a in names(marker.cutpoints)) {
   write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
         file=paste0(save.results.to, "cutpoints_", a))
 }
+
+
 
 # create centered version of markers for later use, which is necessary because we do not want to do scaling within naive and non-naive separately
 for (a in c("Day15"%.%assays, "B"%.%assays, "Delta15overB"%.%assays)) {
@@ -134,7 +137,7 @@ has.plac = F
 # 4: like 1, but subset to naive
 # 5: like 1, but subset to nnaive
 for (iObj in c(1,11,12,2,21,3,31,4,5)) {
-    # iObj=5; iPop=1  
+  # iObj=4; iPop=1
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
@@ -254,6 +257,33 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         nCoef=1,
         col.headers=""
       )
+      
+      if (COR=="D15to181" & iPop==1) {
+        
+        # trichotomitized curves
+        cor_coxph_risk_tertile_incidence_curves(
+          # need to remove naive from formula. otherwise risk will be NA
+          form.0 = as.formula(
+            sub("\\+ naive", "", paste0(deparse(form.0,width.cutoff=500)))
+          ),
+          dat,
+          fname.suffix=fname.suffix%.%"_N",
+          save.results.to,
+          config,
+          config.cor,
+          tfinal.tpeak,
+          
+          markers = "Day15"%.%assays,
+          markers.names.short = all.markers.names.short,
+          markers.names.long = all.markers.names.long,
+          marker.cutpoints,
+          assay_metadata,
+          
+          dat.plac = NULL,
+          for.title=""
+        )
+        
+      }
     
     } else if(iObj==5) {
       cor_coxph_coef_n(
@@ -270,6 +300,31 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         col.headers=""
       )
       
+      if (COR=="D15to181" & iPop==1) {
+        
+        # trichotomitized curves
+        cor_coxph_risk_tertile_incidence_curves(
+          form.0 = as.formula(
+            sub("\\+ naive", "", paste0(deparse(form.0,width.cutoff=500)))
+          ),
+          dat,
+          fname.suffix%.%"_NN",
+          save.results.to,
+          config,
+          config.cor,
+          tfinal.tpeak,
+          
+          markers = "Day15"%.%assays,
+          markers.names.short = all.markers.names.short,
+          markers.names.long = all.markers.names.long,
+          marker.cutpoints,
+          assay_metadata,
+          
+          dat.plac = NULL,
+          for.title=""
+        )
+        
+      }
       
     } else if(iObj==1) {
       
@@ -334,7 +389,49 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
           for.title=""
         )
         
+        cor_coxph_risk_tertile_incidence_curves(
+          form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+          dat,
+          fname.suffix,
+          save.results.to,
+          config,
+          config.cor,
+          tfinal.tpeak,
+          
+          markers = "Day15"%.%assays,
+          markers.names.short = all.markers.names.short,
+          markers.names.long = all.markers.names.long,
+          marker.cutpoints,
+          assay_metadata,
+          
+          dat.plac = NULL,
+          for.title=""
+        )
+        
+      } else if (COR=="D15to181" & iPop==1) {
+        
+        # trichotomized curves
+        cor_coxph_risk_tertile_incidence_curves(
+          form.0,
+          dat,
+          fname.suffix,
+          save.results.to,
+          config,
+          config.cor,
+          tfinal.tpeak,
+          
+          markers = "Day15"%.%assays,
+          markers.names.short = all.markers.names.short,
+          markers.names.long = all.markers.names.long,
+          marker.cutpoints,
+          assay_metadata,
+          
+          dat.plac = NULL,
+          for.title=""
+        )
+        
       }
+      
       
     } else if(iObj==11) {
       pvals.cont=cor_coxph_coef_n(
@@ -352,11 +449,11 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
       )
       
       # unit testing 
-      if (iPop==1 & COR=="D15to181") {
+      if (iPop==1 & COR=="D15to181" & config$covariates=="~.+ FOIstandardized + standardized_risk_score + naive") {
         # print(pvals.cont)
         assertthat::assert_that(all(
           abs(pvals.cont-c(0.304557, 0.414779, 0.650192, 0.746262, 0.771249, 0.892435))/pvals.cont < 1e-6
-        ), msg = "failed cor_coxph unit testing")    
+        ), msg = "failed cor_coxph unit testing")
         print("Passed cor_coxph unit testing")    
       }
       

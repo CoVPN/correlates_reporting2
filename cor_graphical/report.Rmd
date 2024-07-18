@@ -58,7 +58,6 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   if (study_name=="ENSEMBLE" & grepl("EUA", attr(config,"config"))) COR_postfix_list <- c("IncludeNotMolecConfirmed", "IncludeNotMolecConfirmedstart1")
   if (study_name=="ENSEMBLE" & grepl("partA$", attr(config,"config"))) COR_postfix_list <- c("IncludeNotMolecConfirmed") # ModerateIncludeNotMolecConfirmed SevereIncludeNotMolecConfirmed
   if (study_name=="ENSEMBLE" & attr(config,"config") == "janssen_partA_VL") COR_postfix_list <- c("adhoc")
-  #if (study_name=="VAT08m") COR_postfix_list <- c("", "omi")
   if (study_name=="IARCHPV") COR_postfix_list <- c("", "sus")
   if (attr(config,"config")=="prevent19_stage2") COR_postfix_list <- c("delta", "severe")
   if (attr(config,"config")=="azd1222_stage2") COR_postfix_list <- c("delta nab", "delta bab",
@@ -66,6 +65,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                                                                      )
   if (attr(config,"config") == "nvx_uk302") COR_postfix_list <- c("D35nvx_uk302")
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
+  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage1")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
@@ -126,6 +126,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       COR_postfix_label = ""
       if (grepl("delta", COR_postfix)) COR_postfix_label=" (Delta Endpoint)"
       if (grepl("severe", COR_postfix)) COR_postfix_label=" (Severe Endpoint)"
+      if (COR_postfix=="D22D43omi_stage1") COR_postfix_label= paste0(" (Stage1)")
+      if (COR_postfix=="D22D43omi_stage2") COR_postfix_label= paste0(" (Stage2)")
       
       COR=case_when(COR_postfix=="" ~ "", 
                     COR_postfix=="delta" ~ "D35prevent19_stage2_delta", 
@@ -138,7 +140,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                     )
       
       # SET 1
-      for (a in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_nvx_stage2")){
+      for (a in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")){
              
         if ((grepl("nab", COR_postfix) & !grepl("pseudoneutid50", a)) | (grepl("bab", COR_postfix) & !grepl("bindSpike", a))) next # for AZ stage 2
         if (a == "pseudoneutid50" & attr(config,"config") %in% c("nvx_uk302","prevent19nvx")) next # no id50 for nvx_uk302, prevent19nvx
@@ -148,7 +150,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           if(attr(config,"config")=="azd1222_stage2" & tp=="Day 360") next # do not have this for azd1222_stage2
           
           tpLabel = tolower(tp)
-          aLabel = gsub("_sub_nvx_stage2", " subset", a)
+          aLabel = gsub("_sub_stage2", " subset", a)
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
           cat("\\clearpage", sep = '\n')
@@ -185,7 +187,15 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           
       }
       
+      
       # SET 3
+      if (COR=="D57azd1222_stage2_delta_bAb") {
+        # adhoc figure
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3_az_adhoc.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+      }
+      
       for (bsero in c("non_naive")){
         if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","prevent19nvx")) next # prevent19_stage2, azd1222_stage2, prevent19nvx don't have non_naive
         
