@@ -29,7 +29,7 @@ getResponder <- function(data,
                          responderFR = 4,
                          pos.cutoffs = pos.cutoffs) {
   
-  cutoff <- get(paste0(cutoff.name, "s"))
+  #cutoff <- get(paste0(cutoff.name, "s"))
   for (i in times){
     for (j in assays){
       post <- paste0(i, j)
