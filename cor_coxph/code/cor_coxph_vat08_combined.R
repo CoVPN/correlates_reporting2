@@ -1,4 +1,4 @@
-# COR="D43vat08_combined_M6_bAb"
+# COR="D43vat08_combined_M12_bAb"
 # COR="D43vat08_combined_M6_st2.nAb.sen"
 
 Sys.setenv(TRIAL = "vat08_combined")
@@ -89,7 +89,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
   # get cutpoints and turn trichotomized markers into factors
   # get dichcutpoints and turn dichotomized markers into factors
   # need to do it within iSt loop because marker.cutpoints are needed in later function calls
-
+  {
   marker.cutpoints = list()
   for (a in c(paste0("Day", tpeak, assays),
               paste0("B", assays),
@@ -142,7 +142,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
     write(paste0(escape(a),     " [", concatList(round(marker.cutpoints.plac[[a]], 2), ", "), ")%"), 
           file=paste0(save.results.to, "cutpoints_", a, "_plac.txt"))
   }
-  
+  }
   
   
   ############################
