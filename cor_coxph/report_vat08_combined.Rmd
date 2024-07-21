@@ -1,81 +1,114 @@
+# Summary
+
 Due to missing variant types, analysis combines ten copies of hotdeck imputed datasets. Events are not considered competing risk.
+
+
 
 ```{r, echo=FALSE, results='asis'}
 
 show.q=F
 
-# forgo naive population
-for (iAna in 1:2) {
-
-  if (iAna==1) subfolder <- "stage1nnaive"
-  if (iAna==2) subfolder <- "stage2nnaive"
-  if (iAna==3) subfolder <- "stage2naive"
-  cat("# ", subfolder, "\n\n")
-
-  for (tpeak in tt) { # 22 and 43
-    cat("## Day ", tpeak, "\n\n")
-    
-    # skip M12 analyses
-    for (j in 2:2) { # 1 is for M12 and 2 is for M6
-      
-      ii=1:2 #  # 1 is for bAb and 2 is for nAb 
-      if (iAna==2) ii=1:3 # add a sensitivity study for stage 2, non-naive, nAb
-      
-      for (i in ii) {
-        # D43vat08_combined_M12_bAb
-        COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
-        
-        config.cor <- config::get(config = COR0)
-        for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-        special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
-        
-        if (i==1) {
-          assays1=assays[startsWith(assays,'bind')]
-        } else if (i==2 | i==3) {
-          assays1=assays[startsWith(assays,'pseudo')]
-        }
-    
-        # modify pathCoRoutput and COR to include subfolder name. 
-        # Changes to COR will also show up in Section title in report_by_COR.Rmd
-        COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
-        pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-      
-        all.markers=paste0("Day", tpeak, assays1)
-        if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays1))
-        names(all.markers)=all.markers
-      
-        level=3 # section title indent
-        
-        fname.suffix="D" %.% tpeak
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        
-        fname.suffix = "B+D" %.% tpeak
-        has.alt = F
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        
-        fname.suffix = "B*D" %.% tpeak
-        has.alt = F
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        
-        # placebo Dxx
-        fname.suffix="D" %.% tpeak %.% "_plac"
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        
-        if (iAna==1) {
-          # placebo Dxx without region 1 for stage 1
-          fname.suffix="D" %.% tpeak %.% "_plac_alt"
-          res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-          cat(res, sep = '\n')
-        }
-        
-      }
-      
-    }
-  }
+for (j in 2) { # 1 for M12 and 2 for M6
+for (tpeak in rev(tt)) { # 22 and 43
+for (iSt in 1:2) {
   
+  if (iSt==1) subfolder <- "stage1nnaive"
+  if (iSt==2) subfolder <- "stage2nnaive"
+
+  cat("# D", tpeak, ifelse(j==1, " M12 ", " M6 "), subfolder, "\n\n", sep="")
+
+  if (iSt==1) ii=1:2 # 1 is for bAb and 2 is for nAb 
+  if (iSt==2) ii=1:3 # add a sensitivity study for stage 2, non-naive, nAb
+  
+  for (i in ii) {
+    tmp=switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen')
+    
+    cat("## Day ", tpeak, ifelse(j==1, " M12", " M6"), " ", tmp, "\n\n")
+    level=3 # section title indent
+    
+    # D43vat08_combined_M12_bAb
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)
+    
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
+    
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
+
+    # modify pathCoRoutput and COR to include subfolder name. 
+    # Changes to COR will also show up in Section title in report_by_COR.Rmd
+    COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  
+    
+    
+    # placebo Dxx
+    fname.suffix="D" %.% tpeak %.% "_plac"
+    all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    
+      # tertile incidence curves
+      fname.suffix = "D" %.% tpeak %.% "plac"
+      all.markers = c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
+      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    
+    if (iSt==1) {
+      # placebo Dxx with a subset of countries for stage 1
+      fname.suffix="D" %.% tpeak %.% "_plac_alt2"
+      all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
+      COR_page_notes="Analyses based on Columbia, Ghana, Kenya, Nepal, India only."
+      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+      COR_page_notes = "" # reset 
+      cat(res, sep = '\n')
+    }
+
+
+    fname.suffix = "D" %.% tpeak
+    all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    
+      # tertile incidence curves
+      fname.suffix = "D" %.% tpeak
+      all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1)); names(all.markers)=all.markers
+      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    
+      
+    fname.suffix = "B+D" %.% tpeak
+    has.alt = F
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    
+    fname.suffix = "B*D" %.% tpeak
+    has.alt = F
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    
+    fname.suffix = "dichB*D" %.% tpeak
+    has.alt = F
+    coef_page_notes = paste0("dich(B) = 1 if baseline marker is high, 0 if baseline marker is low; thus the second parameter is the effect of the continuous marker in the low baseline group. The cutpoint is set to the weighted median unless the negative response rate at baseline exceeds 40% or more than 40% of the values are above the Upper Limit of Quantification (ULOQ). In these cases, the cutpoint is adjusted to the detection limit or ULOQ, respectively. Cutpoints (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/dichcutpoints_B", assays1, ".txt}"), sep=", "), ".")
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    coef_page_notes = "" # reset 
+    cat(res, sep = '\n')
+    
+    fname.suffix = "(1-dichB)*D" %.% tpeak
+    has.alt = F
+    coef_page_notes = paste0("dich(B) = 1 if baseline marker is high, 0 if baseline marker is low; thus the second parameter is the effect of the continuous marker in the high baseline group. The cutpooint is set to the weighted median unless the negative response rate at baseline exceeds 40% or more than 40% of the values are above the Upper Limit of Quantification (ULOQ). In these cases, the cutpoint is adjusted to the detection limit or ULOQ, respectively. Cutpoints (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/dichcutpoints_B", assays1, ".txt}"), sep=", "), ".")
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    coef_page_notes = ""
+    cat(res, sep = '\n')
+    
+  }
+
+            
+}
+}
 }
 ```
