@@ -23,7 +23,7 @@ if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; n
 
 ## COR has a set of analysis-specific parameters defined in the config file
 config.cor <- config::get(config = COR)
-if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)} # need manually update "Trialstage" and line 68 in report.Rmd
+if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 2)} # need manually update "Trialstage" and line 69 in report.Rmd
 
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0

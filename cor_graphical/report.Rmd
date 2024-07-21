@@ -37,7 +37,8 @@ if (attr(config,"config")=="azd1222_stage2") {
 }
 
 tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
-tps_no_delta_over_tinterm_lb <-  time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]
+tps_no_delta_over_tinterm_lb <- if(attr(config,"config")=="vat08_combined") {c("Day 1_n","Day 1_nn", "Day 22_n", "Day 22_nn", "Day 43", "D22 fold-rise over D1_n", "D22 fold-rise over D1_nn", "D43 fold-rise over D1")
+  } else {time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]}
 tps_no_fold_change <- times[!grepl("Delta", times)]
 tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
 
@@ -149,7 +150,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           
           if(attr(config,"config")=="azd1222_stage2" & tp=="Day 360") next # do not have this for azd1222_stage2
           
-          tpLabel = tolower(tp)
+          tpLabel = gsub("_n", " naive", gsub("_nn", " non naive", tolower(tp)))
           aLabel = gsub("_sub_stage2", " subset", a)
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
@@ -202,12 +203,16 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           for (trt in c("vac_pla")){
               
               for (tp in tps_no_fold_change){
+                
+                for (assay_n in c(length(assays), 
+                                  if (attr(config,"config") == "vat08_combined") 9, 
+                                  if (attr(config,"config") == "vat08_combined") 6)){
                   
                   tpLabel = ifelse(tp=="B", "Day1", tp)
-                  assay_n = length(assays)
                   res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
                   cat(res, sep = '\n')
                   cat("\\clearpage", sep = '\n')
+                }
               }
           }
       }
@@ -222,12 +227,20 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                   assay_n = ifelse(COR %in% c("D57azd1222_stage2_delta_nAb", "D57azd1222_stage2_severe_nAb"), sum(grepl("pseudoneutid50", assays)),
                                    ifelse(COR %in% c("D57azd1222_stage2_delta_bAb", "D57azd1222_stage2_severe_bAb"), sum(grepl("bindSpike", assays)),
                                       length(assays)))
-                  if (tp == "Day35_sub"){assay_n = 4; tp = "Day35"} # hard code to pool a subset pair plot for prevent19_stage2
-                  tpLabel = ifelse(tp=="B", "Day1", tp)
+                  if (tp == "Day35_sub"){assay_n = 4; tp = "Day35" 
+                  # hard code to pool a subset pair plot for prevent19_stage2 
+                  } else {assay_n = length(assays)}  
                   
-                  res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
-                  cat(res, sep = '\n')
-                  cat("\\clearpage", sep = '\n')
+                  for (assay_n in c(assay_n, 
+                                  if (attr(config,"config") == "vat08_combined") 9, 
+                                  if (attr(config,"config") == "vat08_combined") 6)) {
+                  
+                    tpLabel = ifelse(tp=="B", "Day1", tp)
+                    
+                    res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
+                    cat(res, sep = '\n')
+                    cat("\\clearpage", sep = '\n')
+                  }
               }
           }
       }
@@ -243,6 +256,18 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           cat(res, sep = '\n')
           cat("\\clearpage", sep = '\n')
           
+      }
+      
+      # adhoc for vat08
+      if (attr(config,"config") == "vat08_combined" & COR_postfix_list == "D22D43omi_stage1"){
+        
+        for (a in c("pseudoneutid50","pseudoneutid50_B.1.351","pseudoneutid50_BA.1",
+                    "pseudoneutid50_BA.2","pseudoneutid50_BA.4.5","pseudoneutid50_mdw")){
+          
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1_sanofi_vat08.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+        }
       }
   }
     

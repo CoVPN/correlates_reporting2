@@ -44,8 +44,16 @@ for (panel in c("pseudoneutid50", "bindSpike")){
     
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
+    if (attr(config,"config")=="vat08_combined" & panel=="pseudoneutid50") {
+        dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.nAb==1)
+    } else if (attr(config,"config")=="vat08_combined" & panel=="bindSpike") {
+        dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.bAb==1)
+    } else {
+        dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
+    }
+    
     f_1 <- f_by_time_assay(
-        dat = dat.longer.immuno.subset.plot1 %>% mutate(x="1"),
+        dat = dat.longer.immuno.subset.plot1_ %>% mutate(x="1"),
         assays = assays[grepl(panel, assays)],
         times = set1_times,
         ylim = c(-3, 4.5), #c(ifelse(panel=="pseudoneutid50", -5, -6), ifelse(panel=="pseudoneutid50", 6, 11)),
@@ -115,8 +123,16 @@ for (panel in c("pseudoneutid50", "bindSpike")){
     
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
+    if (attr(config,"config")=="vat08_combined" & panel=="pseudoneutid50") {
+        dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.nAb==1)
+    } else if (attr(config,"config")=="vat08_combined" & panel=="bindSpike") {
+        dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.bAb==1)
+    } else {
+        dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
+    }
+    
     f_2 <- f_longitude_by_assay(
-        dat = dat.longer.immuno.subset.plot1,
+        dat = dat.longer.immuno.subset.plot1_,
         x.var = "time",
         x.lb = c("D1","D22","D43"),
         assays = set2_assays[grepl(panel, set2_assays) & !grepl("mdw", set2_assays)],
@@ -138,8 +154,16 @@ if (attr(config,"config") == "vat08_combined"){
         
         if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
         
+        if (attr(config,"config")=="vat08_combined" & panel=="pseudoneutid50") {
+            dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.nAb==1)
+        } else if (attr(config,"config")=="vat08_combined" & panel=="bindSpike") {
+            dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.bAb==1)
+        } else {
+            dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
+        }
+        
         f_2 <- f_longitude_by_assay(
-            dat = dat.longer.immuno.subset.plot1,
+            dat = dat.longer.immuno.subset.plot1_,
             x.var = "time",
             x.lb = c("D1","D22","D43"),
             assays = set2_assays[grepl(panel, set2_assays) & grepl("mdw", set2_assays)],
@@ -241,12 +265,16 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
             assays_sub = assays
         }
         
+        if (attr(config,"config")=="vat08_combined") {
+            dat.plot = dat.plot %>% filter(ph2.immuno.bAb==1)
+        }
+        
         covid_corr_pairplots(
             plot_dat = dat.plot,
             time = t,
             assays = assays_sub,
             strata = "all_one",
-            weight = "wt.subcohort",
+            weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", "wt.subcohort"),
             plot_title = paste0(
                 "Correlations of 15 ", ifelse(t=="B", "D1", t), " antibody markers in ", grp_lb, ", Corr = Weighted Spearman Rank Correlation."
             ),
@@ -276,12 +304,17 @@ for (a in assays){
         for (bsero in c(0, 1)){
             times_sub = c("B", paste0("Day", timepoints))
             
+            dat.plot4 = dat.immuno.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero)
+            
+            if (attr(config,"config")=="vat08_combined") {
+                dat.plot4 = dat.plot4 %>% filter(ph2.immuno.bAb==1)
+            }
             panels_set[[i]] = covid_corr_pairplots(
-                plot_dat = dat.immuno.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero),
+                plot_dat = dat.plot4,
                 time = times_sub,
                 assays = a,
                 strata = "all_one",
-                weight = "wt.subcohort",
+                weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", "wt.subcohort"),
                 plot_title = "",
                 column_labels = times_sub,
                 height = 5.5,
