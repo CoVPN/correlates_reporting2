@@ -180,7 +180,7 @@ if (study_name=="IARCHPV"){
                   (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
                   (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 &
                   (!!as.name(paste0("EventTimePrimaryD", tpeak))) >= 7 &
-                  (!!as.name(paste0("EventTimePrimaryD", tpeak))) <= 180 ~ "28-180 days PD2 cases", 
+                  (!!as.name(paste0("EventTimePrimaryD", tpeak))) <= 180 - 21 ~ "28-180 days PD2 cases", 
                 #Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
                 #  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
                 #  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 &
