@@ -14,7 +14,7 @@ graphics: yes
 lot: yes
 lof: yes
 always_allow_html: yes
-toc_depth: 4
+toc_depth: 5
 header-includes:
    - \usepackage{eso-pic,graphicx,transparent,caption,pdflscape,titling} # keep titling last!
    - \usepackage[margin=.5in]{geometry}

@@ -8,27 +8,24 @@ Due to missing variant types, analysis combines ten copies of hotdeck imputed da
 
 show.q=F
 
+for (j in 2) { # 1 for M12 and 2 for M6
 for (tpeak in rev(tt)) { # 22 and 43
-  
-for (j in 2:1) { # 1 for M12 and 2 for M6
-    
-cat("# D", tpeak, ifelse(j==1, " M12", " M6"), "\n\n", sep="")
-  
 for (iSt in 1:2) {
   
   if (iSt==1) subfolder <- "stage1nnaive"
   if (iSt==2) subfolder <- "stage2nnaive"
 
-  cat("## ", subfolder, "\n\n")
-      
+  cat("# D", tpeak, ifelse(j==1, " M12 ", " M6 "), subfolder, "\n\n", sep="")
+
   if (iSt==1) ii=1:2 # 1 is for bAb and 2 is for nAb 
   if (iSt==2) ii=1:3 # add a sensitivity study for stage 2, non-naive, nAb
   
   for (i in ii) {
     tmp=switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen')
     
-    cat("### Day ", tpeak, ifelse(j==1, " M12", " M6"), " ", tmp, "\n\n")
-
+    cat("## Day ", tpeak, ifelse(j==1, " M12", " M6"), " ", tmp, "\n\n")
+    level=3 # section title indent
+    
     # D43vat08_combined_M12_bAb
     COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)
     
@@ -47,19 +44,7 @@ for (iSt in 1:2) {
     COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
   
-  
-    level=4 # section title indent
     
-    fname.suffix = "D" %.% tpeak
-    all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
-    
-      # tertile incidence curves
-      fname.suffix = "D" %.% tpeak
-      all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1)); names(all.markers)=all.markers
-      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
-      cat(res, sep = '\n')
     
     # placebo Dxx
     fname.suffix="D" %.% tpeak %.% "_plac"
@@ -83,6 +68,18 @@ for (iSt in 1:2) {
       cat(res, sep = '\n')
     }
 
+
+    fname.suffix = "D" %.% tpeak
+    all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    
+      # tertile incidence curves
+      fname.suffix = "D" %.% tpeak
+      all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1)); names(all.markers)=all.markers
+      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    
       
     fname.suffix = "B+D" %.% tpeak
     has.alt = F

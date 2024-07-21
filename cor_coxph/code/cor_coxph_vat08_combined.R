@@ -1,4 +1,4 @@
-# COR="D43vat08_combined_M12_bAb"
+# COR="D43vat08_combined_M6_bAb"
 # COR="D43vat08_combined_M6_st2.nAb.sen"
 
 Sys.setenv(TRIAL = "vat08_combined")
@@ -72,8 +72,9 @@ for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%as
 # loop through stage 1 and 2 non-naive
 # for st2 sensitivity analysis, only do stage 2
 # forgo the naive populations from mono- and bi-valent trials
-for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
-  # iSt=1
+if(endsWith(COR, "st2.nAb.sen")) stages=2 else stages=2:1
+for (iSt in stages) {
+  # iSt=2
   
   cat("\n\n\n\n")
   myprint(iSt)
@@ -232,12 +233,13 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
     save.results.to,
     config,
     config.cor,
+    
     markers=all.markers,
     markers.names.short=all.markers.names.short,
 
     dat.pla.seroneg = dat.plac,
     show.q=FALSE,
-    verbose=FALSE
+    verbose=T
   )
   
   
@@ -262,7 +264,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
 
     dat.pla.seroneg = NULL,
     show.q=FALSE,
-    verbose=FALSE
+    verbose=T
   )
 
   # repeat stage 1 placebo, keeping the countries that also appear in stage 2
@@ -279,7 +281,7 @@ for (iSt in if(endsWith(COR, "st2.nAb.sen")) 2 else 1:2) {
 
       dat.pla.seroneg = NULL,
       show.q=FALSE,
-      verbose=FALSE
+      verbose=T
     )
 
   }
