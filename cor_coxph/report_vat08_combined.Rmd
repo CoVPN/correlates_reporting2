@@ -10,9 +10,9 @@ show.q=F
 
 for (tpeak in rev(tt)) { # 22 and 43
   
-for (j in 2:1) { # 1 for M12 and 2 for M6
+for (j in 2) { # 1 for M12 and 2 for M6
     
-cat("# D", tpeak, ifelse(j==1, " M12", " M6"), "\n\n", sep="")
+  cat("# D", tpeak, ifelse(j==1, " M12", " M6"), "\n\n", sep="")
   
 for (iSt in 1:2) {
   
