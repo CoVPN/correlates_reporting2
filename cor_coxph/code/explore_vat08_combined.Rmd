@@ -21,8 +21,8 @@ region.2 = c( # stage 2
   "Nepal" = 3, "India" = 3)
 
 
-dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240620_hotdeck.csv')
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240717.csv')
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240720_hotdeck.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240721.csv')
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -66,16 +66,50 @@ dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDa
 
 ```
 
+### Number of cases between D22 and D43
+
+
+```{r}
+with(subset(dat_proc, baseline.bAb & !D22.bAb & D43.bAb ), mytable(Trt, EventIndOmicronD43M12hotdeck1, Trialstage, Bserostatus))
+```
+
+```{r}
+with(subset(dat_proc, baseline.nAb & !D22.nAb & D43.nAb ), mytable(Trt, EventIndOmicronD43M12hotdeck1, Trialstage, Bserostatus))
+
+```
+
+
+```{r}
+
+with(subset(dat_proc, baseline.bAb & Bserostatus==1), mytable(D22.bAb, D43.bAb, EventIndOmicronD22M12hotdeck1))
+
+with(subset(dat_proc, baseline.nAb & Bserostatus==1), mytable(D22.nAb, D43.nAb, EventIndOmicronD22M12hotdeck1))
+
+```
+
+
+```{r}
+# M6
+nrow(subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==0 & TwophasesampIndbAb & EventIndOmicronD22M6hotdeck1 & ph1.D22))
+nrow(subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==0 & TwophasesampIndbAb & EventIndOmicronD22M6hotdeck1 & ph1.D43))
+# M12
+nrow(subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==0 & TwophasesampIndbAb & EventIndOmicronD22M12hotdeck1 & ph1.D22))
+nrow(subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==0 & TwophasesampIndbAb & EventIndOmicronD22M12hotdeck1 & ph1.D43))
+
+```
+
+
 ### Stratum size
 
 For each of nAb and bAb, for each of Stage 1 NN and Stage 2 NN, cross-tabulation of numbers of ptids in the D43 marker per-protocol correlates cohort by sampling cell, and for completeness the same thing repeated for the D22 marker per-protocol correlates cohort by sampling cells. 
 
 
 ```{r}
-for (iSt in 1:2) {
-  with(subset(dat_proc, Trialstage==iSt & Bserostatus==1 & ph2.D43.nAb), mytable(Trt, region, Senior))
-  with(subset(dat_proc, Trialstage==iSt & Bserostatus==1 & ph2.D43.bAb), mytable(Trt, region, Senior))
-}
+with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph2.D43.nAb), mytable(Trt, region, Senior))
+with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph2.D43.bAb), mytable(Trt, region, Senior))
+
+with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph2.D43.nAb), mytable(Trt, region, Senior))
+with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph2.D43.bAb), mytable(Trt, region, Senior))
 
 ```
 
@@ -1052,27 +1086,6 @@ par(mfrow=c(2,4))
 
 
 ### Misc
-
-Stage 2, vaccine naive, case count for D22 bAb titer
-
-```{r}
-
-with(subset(dat_proc, baseline.bAb & Bserostatus==1), mytable(D22.bAb, D43.bAb, EventIndOmicronD22M12hotdeck1))
-
-with(subset(dat_proc, baseline.nAb & Bserostatus==1), mytable(D22.nAb, D43.nAb, EventIndOmicronD22M12hotdeck1))
-
-```
-
-
-```{r}
-# M6
-nrow(subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==0 & TwophasesampIndbAb & EventIndOmicronD22M6hotdeck1 & ph1.D22))
-nrow(subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==0 & TwophasesampIndbAb & EventIndOmicronD22M6hotdeck1 & ph1.D43))
-# M12
-nrow(subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==0 & TwophasesampIndbAb & EventIndOmicronD22M12hotdeck1 & ph1.D22))
-nrow(subset(dat_proc, Trialstage==2 & Trt==1 & Bserostatus==0 & TwophasesampIndbAb & EventIndOmicronD22M12hotdeck1 & ph1.D43))
-
-```
 
 
 missingness pattern across nAb and bAb markers shows that there is no overlap in pattern between nAb and nAb in stage 1 or 2. 
