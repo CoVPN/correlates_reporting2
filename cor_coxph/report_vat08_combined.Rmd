@@ -46,6 +46,18 @@ for (iSt in 1:2) {
   
     
     
+    fname.suffix = "D" %.% tpeak
+    all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    
+      # tertile incidence curves
+      fname.suffix = "D" %.% tpeak
+      all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1)); names(all.markers)=all.markers
+      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+    
+      
     # placebo Dxx
     fname.suffix="D" %.% tpeak %.% "_plac"
     all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
@@ -69,18 +81,6 @@ for (iSt in 1:2) {
     }
 
 
-    fname.suffix = "D" %.% tpeak
-    all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
-    
-      # tertile incidence curves
-      fname.suffix = "D" %.% tpeak
-      all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1)); names(all.markers)=all.markers
-      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
-      cat(res, sep = '\n')
-    
-      
     fname.suffix = "B+D" %.% tpeak
     has.alt = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
@@ -90,7 +90,8 @@ for (iSt in 1:2) {
     has.alt = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
-    
+
+        
     fname.suffix = "dichB*D" %.% tpeak
     has.alt = F
     coef_page_notes = paste0("dich(B) = 1 if baseline marker is high, 0 if baseline marker is low; thus the second parameter is the effect of the continuous marker in the low baseline group. The cutpoint is set to the weighted median unless the negative response rate at baseline exceeds 40% or more than 40% of the values are above the Upper Limit of Quantification (ULOQ). In these cases, the cutpoint is adjusted to the detection limit or ULOQ, respectively. Cutpoints (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/dichcutpoints_B", assays1, ".txt}"), sep=", "), ".")

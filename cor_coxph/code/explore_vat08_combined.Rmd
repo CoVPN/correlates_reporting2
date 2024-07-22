@@ -66,6 +66,33 @@ dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDa
 
 ```
 
+### Comparing before and after removing ID50 transformation
+
+```{r}
+
+dat_mapped1=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240620_hotdeck.csv')
+dat_mapped2=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240720_hotdeck.csv')
+
+tmp1=subset(dat_mapped1, Trialstage==1 & Bserostatus==1 & Trt==0)
+tmp2=subset(dat_mapped2, Trialstage==1 & Bserostatus==1 & Trt==0)
+
+mytable(tmp1$Day43pseudoneutid50_BA.1)
+mytable(tmp2$Day43pseudoneutid50_BA.1)
+
+dat_proc1 = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240717.csv')
+dat_proc2 = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240721.csv')
+dat_proc3 = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240720.csv')
+
+tmp3=subset(dat_proc1, Trialstage==1 & Bserostatus==1 & Trt==0 & ph1.D43)
+tmp4=subset(dat_proc2, Trialstage==1 & Bserostatus==1 & Trt==0 & ph1.D43)
+
+mytable(tmp3$Day43pseudoneutid50_BA.1cat)
+mytable(tmp4$Day43pseudoneutid50_BA.1cat)
+
+identical(dat_proc1$Day43pseudoneutid50_BA.1, dat_proc2$Day43pseudoneutid50_BA.1)
+identical(dat_proc3$Day43pseudoneutid50_BA.1, dat_proc2$Day43pseudoneutid50_BA.1)
+```
+
 ### Number of cases between D22 and D43
 
 
@@ -242,6 +269,7 @@ with(subset(dat_proc, Trialstage==2 & Bserostatus==0 & ph1.D43), table.prop(Even
 with(subset(dat_proc, Trialstage==1 & Bserostatus==0 & ph1.D43), table.prop(EventIndOmicronD43M6hotdeck1, Trt))
 
 ```
+
 
 ```{r}
 coxph(Surv(EventTimeOmicronD22M6hotdeck1,EventIndOmicronD22M6hotdeck1) ~ Trt, subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43))

@@ -72,9 +72,9 @@ for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%as
 # loop through stage 1 and 2 non-naive
 # for st2 sensitivity analysis, only do stage 2
 # forgo the naive populations from mono- and bi-valent trials
-if(endsWith(COR, "st2.nAb.sen")) stages=2 else stages=2:1
+if(endsWith(COR, "st2.nAb.sen")) stages=2 else stages=1:2
 for (iSt in stages) {
-  # iSt=2
+  # iSt=1
   
   cat("\n\n\n\n")
   myprint(iSt)
