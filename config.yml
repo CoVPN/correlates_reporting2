@@ -340,7 +340,7 @@ vat08_combined: &vat08_combined
   time_labels: [Day 1, Day 22, Day 43, D22 fold-rise over D1, D43 fold-rise over D1, D43 fold-rise over D22]
   study_name: VAT08
   assay_metadata: assay_metadata/vat08_combined_assay_metadata.csv
-  covariates: ~.+ FOI + risk_score + Sex + region
+  covariates: ~.+ FOI + risk_score + Sex + strata(Country) # for Avi, replace strata(Country) with Region3
   low_efficacy: no
   num_boot_replicates: 10
   num_perm_replicates: 10
