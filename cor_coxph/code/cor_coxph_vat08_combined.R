@@ -42,39 +42,32 @@ save.results.to.0 = paste0(save.results.to.0, "/", COR, "/"); if (!dir.exists(sa
 save.results.to = paste0(save.results.to.0, "/stage1nnaive/"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
 save.results.to = paste0(save.results.to.0, "/stage2nnaive/"); if (!dir.exists(save.results.to))  dir.create(save.results.to)
 
-
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
 B <-       config$num_boot_replicates 
 numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
-
 dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==1 & ph1)
 dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==1 & ph1)
-
 dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2 & ph1)
 dat.pla.seropos.st2 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==2 & ph1)
-
 
 for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%assays)) {
   dat.vac.seropos.st1[[a%.%"centered"]] = scale(dat.vac.seropos.st1[[a]], scale=F)
   dat.pla.seropos.st1[[a%.%"centered"]] = scale(dat.pla.seropos.st1[[a]], scale=F)
-  
   dat.vac.seropos.st2[[a%.%"centered"]] = scale(dat.vac.seropos.st2[[a]], scale=F)
   dat.pla.seropos.st2[[a%.%"centered"]] = scale(dat.pla.seropos.st2[[a]], scale=F)
 }
-
 }
-
 
 
 
 # loop through stage 1 and 2 non-naive
 # for st2 sensitivity analysis, only do stage 2
 # forgo the naive populations from mono- and bi-valent trials
-if(endsWith(COR, "st2.nAb.sen")) stages=2 else stages=2:1
+if(endsWith(COR, "st2.nAb.sen")) stages=2 else stages=1:2
 for (iSt in stages) {
-  # iSt=2
+  # iSt=1
   
   cat("\n\n\n\n")
   myprint(iSt)
@@ -146,67 +139,6 @@ for (iSt in stages) {
   }
   
   
-  ############################
-  # count ph1 and ph2 cases
-  {
-    
-  # vaccine arm
-  fname.suffix = "D"%.%tpeak
-  
-  # imputed events of interest
-  tabs=sapply(1:10, simplify="array", function (imp) {
-    dat.vacc$EventIndOfInterest = dat.vacc[[config.cor$EventIndPrimary%.%imp]]
-    with(dat.vacc, table(ph2, EventIndOfInterest))
-  }) 
-  tab =apply(tabs, c(1,2), mean)
-  names(dimnames(tab))[2]="Event Indicator"
-  tab
-  mytex(tab,     
-        file.name = "tab1_" %.% fname.suffix, 
-        save2input.only=T, 
-        input.foldername=save.results.to, 
-        digits=1)
-  
-  
-  # placebo arm
-  fname.suffix = "D"%.%tpeak%.%"_plac"
-  
-  # imputed events of interest
-  tabs=sapply(1:10, simplify="array", function (imp) {
-    dat.plac$EventIndOfInterest = dat.plac[[config.cor$EventIndPrimary%.%imp]]
-    with(dat.plac, table(ph2, EventIndOfInterest))
-  }) 
-  tab =apply(tabs, c(1,2), mean)
-  names(dimnames(tab))[2]="Event Indicator"
-  tab
-  mytex(tab,     
-        file.name = "tab1_" %.% fname.suffix, 
-        save2input.only=T, 
-        input.foldername=save.results.to, 
-        digits=1)
-  
-  
-  if(iSt==1) {
-    # placebo arm stage 1 with Columbia, Ghana, Kenya, Nepal, India
-    fname.suffix = "D"%.%tpeak%.%"_plac_alt2"
-    
-    # imputed events of interest
-    tabs=sapply(1:10, simplify="array", function (imp) {
-      dat.plac$EventIndOfInterest = dat.plac[[config.cor$EventIndPrimary%.%imp]]
-      with(dat.plac[dat.plac$cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India"),], table(ph2, EventIndOfInterest))
-    }) 
-    tab =apply(tabs, c(1,2), mean)
-    names(dimnames(tab))[2]="Event Indicator"
-    tab
-    mytex(tab,     
-          file.name = "tab1_" %.% fname.suffix, 
-          save2input.only=T, 
-          input.foldername=save.results.to, 
-          digits=1)
-    
-  }
-  
-  }
   
   
   ###################################
@@ -218,12 +150,12 @@ for (iSt in stages) {
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short,
-                             "B "%.%all.markers.names.short,
-                             "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
+                              "B "%.%all.markers.names.short,
+                              "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
-
+  
   multivariate_assays = config$multivariate_assays
-
+  
   # vaccine arm
   
   cor_coxph_coef_1_mi (
@@ -236,60 +168,16 @@ for (iSt in stages) {
     
     markers=all.markers,
     markers.names.short=all.markers.names.short,
-
+    
     dat.pla.seroneg = dat.plac,
     show.q=FALSE,
     verbose=T
   )
   
   
-  # placebo arm
-  
-  all.markers=c(paste0("Day", tpeak, assays))
 
-  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
-  names(all.markers.names.short) = all.markers
-  multivariate_assays = config$multivariate_assays
-
-  cor_coxph_coef_1_mi (
-    form.0,
-    dat=dat.plac,
-    fname.suffix="D"%.%tpeak%.%"_plac",
-    save.results.to,
-    config,
-    config.cor,
-    markers=all.markers,
-    markers.names.short=all.markers.names.short,
-
-    dat.pla.seroneg = NULL,
-    show.q=FALSE,
-    verbose=T
-  )
-
-  # repeat stage 1 placebo, keeping the countries that also appear in stage 2
-  if(iSt==1) {
-    cor_coxph_coef_1_mi (
-      form.0,
-      dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
-      fname.suffix="D"%.%tpeak%.%"_plac_alt2",
-      save.results.to,
-      config,
-      config.cor,
-      markers=all.markers,
-      markers.names.short=all.markers.names.short,
-
-      dat.pla.seroneg = NULL,
-      show.q=FALSE,
-      verbose=T
-    )
-
-  }
-  
-  
-  
   ###################################
-  # Univariate: Dxx, trichotomitized curves
+  # Univariate trichotomized curves: D, D/B
   
   all.markers=c(paste0("Day", tpeak, assays),
                 paste0("Delta", tpeak, "overB", assays))
@@ -312,19 +200,65 @@ for (iSt in stages) {
     config,
     config.cor,
     tfinal.tpeak,
-
+    
     markers = all.markers,
     markers.names.short = all.markers.names.short,
     markers.names.long = all.markers.names.long,
     marker.cutpoints,
     assay_metadata,
-
+    
     dat.plac,
-    for.title=""
+    for.title=paste0("Stage ",iSt," NN, Vaccine")
   )
   
-   
-  # placebo
+
+  ###################################
+  # Univariate Placebo: Dxx
+  
+  all.markers=c(paste0("Day", tpeak, assays))
+  
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
+  names(all.markers.names.short) = all.markers
+  multivariate_assays = config$multivariate_assays
+  
+  cor_coxph_coef_1_mi (
+    form.0,
+    dat=dat.plac,
+    fname.suffix="D"%.%tpeak%.%"_plac",
+    save.results.to,
+    config,
+    config.cor,
+    markers=all.markers,
+    markers.names.short=all.markers.names.short,
+    
+    dat.pla.seroneg = NULL,
+    show.q=FALSE,
+    verbose=T
+  )
+  
+  # repeat stage 1 placebo, keeping the countries that also appear in stage 2
+  if(iSt==1) {
+    cor_coxph_coef_1_mi (
+      form.0,
+      dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
+      fname.suffix="D"%.%tpeak%.%"_plac_alt2",
+      save.results.to,
+      config,
+      config.cor,
+      markers=all.markers,
+      markers.names.short=all.markers.names.short,
+      
+      dat.pla.seroneg = NULL,
+      show.q=FALSE,
+      verbose=T
+    )
+    
+  }
+  
+  
+  ###################################
+  # Univariate trichotomized curves, placebo: D
   
   all.markers=c(paste0("Day", tpeak, assays))
   
@@ -339,7 +273,7 @@ for (iSt in stages) {
   cor_coxph_risk_tertile_incidence_curves(
     form.0,
     dat=dat.plac,
-    fname.suffix="D"%.%tpeak%.%"plac",
+    fname.suffix="D"%.%tpeak%.%"_plac",
     save.results.to,
     config,
     config.cor,
@@ -352,12 +286,14 @@ for (iSt in stages) {
     assay_metadata,
     
     dat.vacc,
-    for.title="",
+    for.title=paste0("Stage ",iSt," NN, Placebo"),
     plac.actually=T
   )
   
   
+
   
+
   ###################################
   # B + Dxx (Dxx/B)
   
@@ -498,13 +434,70 @@ for (iSt in stages) {
   
   
   
+  ############################
+  # count ph1 and ph2 cases
+  
+  # vaccine arm
+  fname.suffix = "D"%.%tpeak
+  
+  # imputed events of interest
+  tabs=sapply(1:10, simplify="array", function (imp) {
+    dat.vacc$EventIndOfInterest = dat.vacc[[config.cor$EventIndPrimary%.%imp]]
+    with(dat.vacc, table(ph2, EventIndOfInterest))
+  }) 
+  tab =apply(tabs, c(1,2), mean)
+  names(dimnames(tab))[2]="Event Indicator"
+  tab
+  mytex(tab,     
+        file.name = "tab1_" %.% fname.suffix, 
+        save2input.only=T, 
+        input.foldername=save.results.to, 
+        digits=1)
   
   
+  # placebo arm
+  fname.suffix = "D"%.%tpeak%.%"_plac"
+  
+  # imputed events of interest
+  tabs=sapply(1:10, simplify="array", function (imp) {
+    dat.plac$EventIndOfInterest = dat.plac[[config.cor$EventIndPrimary%.%imp]]
+    with(dat.plac, table(ph2, EventIndOfInterest))
+  }) 
+  tab =apply(tabs, c(1,2), mean)
+  names(dimnames(tab))[2]="Event Indicator"
+  tab
+  mytex(tab,     
+        file.name = "tab1_" %.% fname.suffix, 
+        save2input.only=T, 
+        input.foldername=save.results.to, 
+        digits=1)
+  
+  
+  if(iSt==1) {
+    # placebo arm stage 1 with Columbia, Ghana, Kenya, Nepal, India
+    fname.suffix = "D"%.%tpeak%.%"_plac_alt2"
     
+    # imputed events of interest
+    tabs=sapply(1:10, simplify="array", function (imp) {
+      dat.plac$EventIndOfInterest = dat.plac[[config.cor$EventIndPrimary%.%imp]]
+      with(dat.plac[dat.plac$cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India"),], table(ph2, EventIndOfInterest))
+    }) 
+    tab =apply(tabs, c(1,2), mean)
+    names(dimnames(tab))[2]="Event Indicator"
+    tab
+    mytex(tab,     
+          file.name = "tab1_" %.% fname.suffix, 
+          save2input.only=T, 
+          input.foldername=save.results.to, 
+          digits=1)
+    
+
+  }  
+    
+
+
+  
 } # iSt loop
-
-
-
 
 
 print(date())
