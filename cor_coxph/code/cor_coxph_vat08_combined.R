@@ -16,7 +16,6 @@ library(tools) # toTitleCase
 library(survey)
 library(plotrix) # weighted.hist
 library(parallel)
-library(forestplot)
 library(Hmisc) # wtd.quantile, cut2
 library(mitools)
 library(glue)
@@ -142,7 +141,7 @@ for (iSt in stages) {
   
   
   ###################################
-  # Univariate: Dxx, B, Dxx/B
+  # Univariate: Dxx, B, Dxx/B, vaccine arm
   
   all.markers=c(paste0("Day", tpeak, assays),
                 paste0("B", assays),
@@ -155,8 +154,6 @@ for (iSt in stages) {
   names(all.markers.names.short) = all.markers
   
   multivariate_assays = config$multivariate_assays
-  
-  # vaccine arm
   
   cor_coxph_coef_1_mi (
     form.0,
@@ -171,6 +168,11 @@ for (iSt in stages) {
     
     dat.pla.seroneg = dat.plac,
     show.q=FALSE,
+    
+    forestplot.markers=1:length(assays),
+    forestplot.xlog = F,
+    forestplot.x.ticks = NULL,
+    
     verbose=T
   )
   
@@ -234,6 +236,11 @@ for (iSt in stages) {
     
     dat.pla.seroneg = NULL,
     show.q=FALSE,
+    
+    forestplot.markers=1:length(assays),
+    forestplot.xlog = F,
+    forestplot.x.ticks = NULL,
+    
     verbose=T
   )
   
@@ -251,6 +258,11 @@ for (iSt in stages) {
       
       dat.pla.seroneg = NULL,
       show.q=FALSE,
+      
+      forestplot.markers=1:length(assays),
+      forestplot.xlog = F,
+      forestplot.x.ticks = NULL,
+      
       verbose=T
     )
     
