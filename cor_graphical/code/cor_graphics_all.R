@@ -334,7 +334,7 @@ if (study_name=="VAT08"){
 }
 
 ###### Set 3 plots: Correlation plots across markers at a given time point
-set3_times = if (attr(config,"config") == "vat08_combined") {times_[!grepl("Delta", times_)] # B, Day22, Day43
+set3_times = if (attr(config,"config") == "vat08_combined") {times_[!grepl("Delta43over22", times_)] # B, Day22, Day43
 } else if (attr(config,"config") == "prevent19_stage2") {times_[!grepl("DD1|C1|BD1", times_)] # Day35
 } else if (attr(config,"config") == "prevent19nvx") {"Day35"
 } else {times_}
@@ -379,13 +379,13 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
                 assay_metadata_ = assay_metadata_[c(2:7,1), ]
             } else {assay_metadata_ = assay_metadata}
             
-            if (study_name=="VAT08" & t %in% c("B","Day22") & assay_list %in% c(1, 2, 4, 5)){
+            if (study_name=="VAT08" & t %in% c("B","Day22","Delta22overB") & assay_list %in% c(1, 2, 4, 5)){
                 dat.plot_ = dat.plot %>% filter(ph2.D22.bAb == 1) %>% mutate(wt = wt.D22.bAb)
-            } else if (study_name=="VAT08" & t %in% c("Day43") & assay_list %in% c(1, 2, 4, 5)){
+            } else if (study_name=="VAT08" & t %in% c("Day43","Delta43overB") & assay_list %in% c(1, 2, 4, 5)){
                 dat.plot_ = dat.plot %>% filter(ph2.D43.bAb == 1 & EarlyinfectionD43==0) %>% mutate(wt = wt.D43.bAb)
-            } else if (study_name=="VAT08" & t %in% c("B","Day22") & assay_list==3){
+            } else if (study_name=="VAT08" & t %in% c("B","Day22","Delta22overB") & assay_list==3){
                 dat.plot_ = dat.plot %>% filter(ph2.D22.nAb == 1) %>% mutate(wt = wt.D22.nAb)
-            } else if (study_name=="VAT08" & t %in% c("Day43") & assay_list==3){
+            } else if (study_name=="VAT08" & t %in% c("Day43","Delta43overB") & assay_list==3){
                 dat.plot_ = dat.plot %>% filter(ph2.D43.nAb == 1 & EarlyinfectionD43==0) %>% mutate(wt = wt.D43.nAb)
             } else {dat.plot_ = dat.plot}
             
@@ -462,11 +462,11 @@ if (study_name == "VAT08") {
                 
                 if(nrow(dat.cor.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero))==0) next
                 
-                if (study_name=="VAT08" & t %in% c("B","Day22")){
-                    dat.cor.subset.plot3_ = dat.cor.subset.plot3 %>% filter(ph2.D22.bAb == 1) %>% mutate(wt = wt.D22.bAb)
-                } else if (study_name=="VAT08" & t %in% c("Day43")){
-                    dat.cor.subset.plot3_ = dat.cor.subset.plot3 %>% filter(ph2.D43.bAb == 1 & EarlyinfectionD43==0) %>% mutate(wt = wt.D43.bAb)
-                }else {dat.cor.subset.plot3_ = dat.cor.subset.plot3}
+                if (study_name=="VAT08" & grepl("bind", a)){
+                    dat.cor.subset.plot3_ = dat.cor.subset.plot3 %>% filter(ph2.D43.bAb == 1) %>% mutate(wt = wt.D43.bAb)
+                } else if (study_name=="VAT08" & grepl("pseudo", a)){
+                    dat.cor.subset.plot3_ = dat.cor.subset.plot3 %>% filter(ph2.D43.nAb == 1) %>% mutate(wt = wt.D43.nAb)
+                } else {dat.cor.subset.plot3_ = dat.cor.subset.plot3}
                 
                 panels_set[[i]] = covid_corr_pairplots(
                     plot_dat = dat.cor.subset.plot3_ %>% filter(Trt == trt & Bserostatus == bsero),
@@ -562,7 +562,7 @@ if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {
 
 
 # adhoc for vat08: compare vat08 vs. covail
-if (study_name == "VAT08") {
+if (study_name == "VAT08" & unique(dat.longer.cor.subset.plot1$Trialstage)==1) {
     # Stage 1 VAT008 D43 vs. COVAIL D15 vs.COVAIL D29, stratified by COVID-19 case vs. non-case for #1 and #2
     # Stage 2 VAT008 D43 vs. COVAIL D15 vs.COVAIL D29, stratified by COVID-19 case vs. non-case for #3 and #4
     

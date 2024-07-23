@@ -66,7 +66,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                                                                      )
   if (attr(config,"config") == "nvx_uk302") COR_postfix_list <- c("D35nvx_uk302")
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
-  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage1")
+  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage2")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
@@ -202,7 +202,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
         
           for (trt in c("vac_pla")){
               
-              for (tp in tps_no_fold_change){
+              for (tp in if(attr(config,"config")=="vat08_combined") {tps_no_delta_over_tinterm} else {tps_no_fold_change}){
                 
                 for (assay_n in c(length(assays), 
                                   if (attr(config,"config") == "vat08_combined") 9, 
@@ -223,7 +223,9 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           
           for (trt in c("vac")){
               
-              for (tp in if (attr(config,"config")=="prevent19_stage2") {c("Day35","Day35_sub")} else {tps_no_B_and_fold_change}){
+              for (tp in if (attr(config,"config")=="prevent19_stage2") {c("Day35","Day35_sub")
+                } else if (attr(config,"config")=="vat08_combined") {tps_no_delta_over_tinterm[2:5]
+                  } else {tps_no_B_and_fold_change}){
                   
                   
                   assay_n = ifelse(COR %in% c("D57azd1222_stage2_delta_nAb", "D57azd1222_stage2_severe_nAb"), sum(grepl("pseudoneutid50", assays)),
