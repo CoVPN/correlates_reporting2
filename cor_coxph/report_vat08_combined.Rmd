@@ -15,36 +15,31 @@ for (iSt in 1:2) {
   if (iSt==1) subfolder <- "stage1nnaive"
   if (iSt==2) subfolder <- "stage2nnaive"
 
-  cat("# D", tpeak, ifelse(j==1, " M12 ", " M6 "), subfolder, "\n\n", sep="")
-
   if (iSt==1) ii=1:2 # 1 is for bAb and 2 is for nAb 
   if (iSt==2) ii=1:3 # add a sensitivity study for stage 2, non-naive, nAb
   
+  
+  cat("# D", tpeak, ifelse(j==1, " M12 ", " M6 "), subfolder, "\n\n", sep="")
+
+  # cat("## Day ", tpeak, ifelse(j==1, " M12", " M6"), " ", tmp, "\n\n")
+  level=3 # section title indent
+
+  cat("## Univariate\n\n")
   for (i in ii) {
     tmp=switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen')
-    
-    cat("## Day ", tpeak, ifelse(j==1, " M12", " M6"), " ", tmp, "\n\n")
-    level=3 # section title indent
-    
-    # D43vat08_combined_M12_bAb
-    COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)
-    
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)    # D43vat08_combined_M12_bAb
     config.cor <- config::get(config = COR0)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
     special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
-    
+    # modify pathCoRoutput and COR to include subfolder name. 
+    # Changes to COR will also show up in Section title in report_by_COR.Rmd
+    COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
     if (i==1) {
       assays1=assays[startsWith(assays,'bind')]
     } else if (i==2 | i==3) {
       assays1=assays[startsWith(assays,'pseudo')]
     }
-
-    # modify pathCoRoutput and COR to include subfolder name. 
-    # Changes to COR will also show up in Section title in report_by_COR.Rmd
-    COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
-    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-  
-    
     
     fname.suffix = "D" %.% tpeak
     all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
@@ -56,8 +51,26 @@ for (iSt in 1:2) {
       all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1)); names(all.markers)=all.markers
       res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
+  }
+
+  
+  cat("## Univariate placebo \n\n")
+  for (i in ii) {
+    tmp=switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen')
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)    # D43vat08_combined_M12_bAb
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
+    # modify pathCoRoutput and COR to include subfolder name. 
+    # Changes to COR will also show up in Section title in report_by_COR.Rmd
+    COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
     
-      
     # placebo Dxx
     fname.suffix="D" %.% tpeak %.% "_plac"
     all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
@@ -65,10 +78,29 @@ for (iSt in 1:2) {
     cat(res, sep = '\n')
     
       # tertile incidence curves
-      fname.suffix = "D" %.% tpeak %.% "plac"
+      fname.suffix = "D" %.% tpeak %.% "_plac"
       all.markers = c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
       res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
+  }
+  
+  
+  cat("## Univariate placebo alt \n\n")
+  for (i in ii) {
+    tmp=switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen')
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)    # D43vat08_combined_M12_bAb
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
+    # modify pathCoRoutput and COR to include subfolder name. 
+    # Changes to COR will also show up in Section title in report_by_COR.Rmd
+    COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
     
     if (iSt==1) {
       # placebo Dxx with a subset of countries for stage 1
@@ -79,18 +111,75 @@ for (iSt in 1:2) {
       COR_page_notes = "" # reset 
       cat(res, sep = '\n')
     }
+  }
 
-
+  
+  cat("## B+D", tpeak, "\n\n", sep="")
+  for (i in ii) {
+    tmp=switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen')
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)    # D43vat08_combined_M12_bAb
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
+    # modify pathCoRoutput and COR to include subfolder name. 
+    # Changes to COR will also show up in Section title in report_by_COR.Rmd
+    COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
+    
     fname.suffix = "B+D" %.% tpeak
     has.alt = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
+  }
+  
+  
+  
+  cat("## B*D", tpeak, " \n\n", sep="")
+  for (i in ii) {
+    tmp=switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen')
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)    # D43vat08_combined_M12_bAb
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
+    # modify pathCoRoutput and COR to include subfolder name. 
+    # Changes to COR will also show up in Section title in report_by_COR.Rmd
+    COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
     
     fname.suffix = "B*D" %.% tpeak
     has.alt = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
-
+  }
+  
+  
+  
+  cat("## binary B*D", tpeak, " \n\n", sep="")
+  for (i in ii) {
+    tmp=switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen')
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)    # D43vat08_combined_M12_bAb
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
+    # modify pathCoRoutput and COR to include subfolder name. 
+    # Changes to COR will also show up in Section title in report_by_COR.Rmd
+    COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
         
     fname.suffix = "dichB*D" %.% tpeak
     has.alt = F
@@ -98,6 +187,26 @@ for (iSt in 1:2) {
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
     coef_page_notes = "" # reset 
     cat(res, sep = '\n')
+  }
+  
+  
+  
+  cat("## Rev binary * D", tpeak, " \n\n", sep="")
+  for (i in ii) {
+    tmp=switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen')
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", ifelse(j==1, 12, 6), "_", tmp)    # D43vat08_combined_M12_bAb
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
+    # modify pathCoRoutput and COR to include subfolder name. 
+    # Changes to COR will also show up in Section title in report_by_COR.Rmd
+    COR <- paste0("M", ifelse(j==1, 12, 6), "_", switch(i, '1'='bAb', '2'='nAb', '3'='st2.nAb.sen'))
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
     
     fname.suffix = "(1-dichB)*D" %.% tpeak
     has.alt = F
@@ -105,8 +214,8 @@ for (iSt in 1:2) {
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
     coef_page_notes = ""
     cat(res, sep = '\n')
-    
   }
+  
 
             
 }
