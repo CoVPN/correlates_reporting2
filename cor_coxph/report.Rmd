@@ -13,19 +13,17 @@ message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_coxph report ~~~~~~~~~~~~~~~
 tt=timepoints
 `
 
-# Graphical Descriptions of Time to Event Data {#cor-graphical-time-to-event}
 
 `r 
 if (two_marker_timepoints & is_ows_trial ) { 
-  paste0("
+  paste0("# Graphical Descriptions of Time to Event Data {#cor-graphical-time-to-event}
 \\begin{figure}[H]
     \\centering
     \\includegraphics[width=1\\textwidth]{", paste0("cor_coxph/output/", attr(config,"config"), "/D", tt[1], "D", tt[2]), "/barplot_mixed}
     \\caption{Distribution of the number of days to COVID endpoints, vaccine arm, baseline negative.}
 \\end{figure}
-")} else {
-  paste0("This page is empty.")
-}
+")} 
+
 `
 
 
@@ -37,22 +35,31 @@ if (two_marker_timepoints & is_ows_trial ) {
 
 ```{r, echo=FALSE, results='asis'}
 
-covariates_adjusted = covariates_riskscore
+covariates_adjusted = covariates
 covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
 covariates_adjusted = sub("_","",covariates_adjusted)
 
-if(file.exists(here::here('cor_coxph', paste0('report_', tolower(study_name), '.Rmd')))
+if(file.exists(here::here('cor_coxph', paste0('report_', TRIAL, '.Rmd')))
    & attr(config,"config")!="profiscov_lvmn" # profiscov uses special template but lvmn does not because it does not have D43start48
 ) {
-  # trial-specific report, which also calls report_by_COR.Rmd
   
   message ("trial-specific report rmd found")
+  res = knitr::knit_child(c(here::here('cor_coxph', paste0('report_', TRIAL, '.Rmd'))), quiet = TRUE)
+  cat(res, sep = '\n')
+
+} else if(file.exists(here::here('cor_coxph', paste0('report_', tolower(study_name), '.Rmd')))
+   & attr(config,"config")!="profiscov_lvmn" # profiscov uses special template but lvmn does not because it does not have D43start48
+) {
+
+  message ("study name-specific report rmd found")
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('report_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
 
 } else {
   # generic report
   
+  level=1; show.q=T
+
   for (tpeak in tt) {
     COR <- paste0("D", tpeak)
     config.cor <- config::get(config = COR)

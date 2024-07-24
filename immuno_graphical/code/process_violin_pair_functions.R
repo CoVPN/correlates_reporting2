@@ -30,10 +30,10 @@ getResponder <- function(data,
             bl <- paste0("B", j)
             delta <- paste0("Delta", i, "overB", j)
             
-            if (grepl("bind", j)) {
+            if ((grepl("bind", j) & study_name!="VAT08") | attr(config,"config")=="janssen_partA_VL") {
                 
             data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
-            data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
+            if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
             
             } else { 
                 data[, paste0(post, "Resp")] <- as.numeric(
@@ -57,9 +57,13 @@ getResponder <- function(data,
 #' @return summary statistics and response rate by group
 # 
 get_desc_by_group <- function(data, 
-                              group=group){
+                              group = group){
     
-    data$wt = data$wt.subcohort
+    if (study_name=="VAT08"){
+        data[which(grepl("bind", data$assay)), "wt"] = data[which(grepl("bind", data$assay)), "wt.immuno.bAb"]
+        data[which(grepl("pseudoneutid", data$assay)), "wt"] = data[which(grepl("pseudoneutid", data$assay)), "wt.immuno.nAb"]
+        
+    } else {data$wt = data$wt.subcohort}
     
     complete <- complete.cases(data[, group])
     
@@ -71,11 +75,11 @@ get_desc_by_group <- function(data,
                denom = sum(wt, na.rm=T),
                #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
                RespRate = ifelse(denom!=0 && !is.na(pos.cutoffs), paste0(round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
-               min = min(value),
+               min = min(value, na.rm=T),
                q1 = quantile(value, 0.25, na.rm=T),
                median = median(value, na.rm=T),
                q3 = quantile(value, 0.75, na.rm=T),
-               max= max(value))
+               max= max(value, na.rm=T))
     
     return(dat_stats)
 }
@@ -86,6 +90,7 @@ get_desc_by_group <- function(data,
 #' @param assays List of assays for plots
 #' @param times List of times for plots
 #' @param ylim y-axis limit
+#' @param rate.pos y value to show response rates
 #' @param panel.text.size font size for text within panels
 #' @param axis.x.text.size font size for x-axis tick label
 #' @param strip.x.text.size font size for x-axis strip label
@@ -97,6 +102,7 @@ f_by_time_assay <-
              assays = assays,
              times = times,
              ylim = c(0,7.2),
+             rate.pos = 5, 
              panel.text.size = 2.2,
              axis.x.text.size = 18,
              strip.x.text.size = 10,
@@ -125,10 +131,8 @@ f_by_time_assay <-
         p1 <- dat %>%
             filter(assay %in% assays & time %in% times) %>%
             left_join(assay_metadata, by="assay") %>%
-            mutate(Trt_nnaive = factor(paste(Trt, nnaive), 
-                                       levels = c("Vaccine Naive", "Vaccine Non-naive", "Placebo Naive", "Placebo Non-naive"),
-                                       labels = c("Vaccine\nnaive", "Vaccine\nnon-naive", "Placebo\nnaive", "Placebo\nnon-naive")),
-                   assay_label_short = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label)
+            mutate(assay_label2 = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label),
+                   
             ) %>%
             ungroup() %>%
             group_split(time) %>%
@@ -141,8 +145,8 @@ f_by_time_assay <-
                     #scale_color_manual(name = "", values = "#FF6F1B", guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
-                    geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = 5), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                    geom_text(aes(x = x, label = RespRate, y = 5), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = rate.pos), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(x = x, label = RespRate, y = rate.pos), color = "black", size = panel.text.size, check_overlap = TRUE) +
                     
                     geom_hline(aes(yintercept = ifelse(RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                     geom_text(aes(label = ifelse(RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -150,8 +154,8 @@ f_by_time_assay <-
                     geom_hline(aes(yintercept = ifelse(RespRate!="",lbval2,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                     geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                     scale_x_discrete(labels = "") + 
-                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], 3), labels = scales::math_format(10^.x)) +
-                    labs(x = "Assay", y = unique(d$panel), title = paste(unique(d$panel), "distributions at", unique(d$time)), color = "Category", shape = "Category") +
+                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 3, 1)), labels = scales::math_format(10^.x)) +
+                    labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", unique(d$time), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
                     plot_theme +
                     guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
             })
@@ -237,7 +241,7 @@ f_longitude_by_assay <- function(
                 geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
-                scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], 2), labels = scales::math_format(10^.x)) +
+                scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], 1), labels = scales::math_format(10^.x)) +
                 labs(x = "Assay", y = unique(panel), title = paste(unique(panel), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
@@ -814,7 +818,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
             panel.grid.minor = element_blank()
         )
     pairplots[1, 1] <- pairplots[1, 1] +
-        scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.2)
+        scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.3)
     for (j in 2:pairplots$nrow) {
         for (k in 1:(j - 1)) {
             pairplots[j, k] <- pairplots[j, k] +
@@ -835,7 +839,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
             scale_x_continuous(
                 limits = rr, breaks = breaks,
                 labels = label_math(10^.x)
-            ) + ylim(0, 1.2)
+            ) + ylim(0, 1.3)
     }
     
     ggsave(

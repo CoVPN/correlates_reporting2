@@ -3,8 +3,8 @@
 renv::activate(project = here::here(".."))
 library(GGally)
 library(stringr)
-require(devtools)
-install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org")
+#require(devtools)
+#install_version("dummies", version = "1.5.6", repos = "http://cran.us.r-project.org") # for warning suppression in the covid_corr_plot_functions.R
 library(grid)
 library(gridExtra)
 install.packages("wCorr", repos = "http://cran.us.r-project.org") # for the weightedCorr() in pairplot, weighted correlation
@@ -40,7 +40,7 @@ print(paste0("save.results.to equals ", save.results.to))
 
 ###### Correlation plots across markers at a given time point
 # 3 markers (Anc, Delta, Beta), SA, Day 29
-if (study_name == "janssen_partA_VL" & COR == "D29variant") {
+if (study_name == "janssen_partA_VL" & COR == "D29VLvariant") {
 
   for (t in "Day29"){
     for (trt in c(1)){

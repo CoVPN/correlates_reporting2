@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0(a, "_at_", tp, ".pdf"))`}
 
-\caption{`r paste0("Distribution of ", a, " at ", tpLabel)`}
+\caption{`r paste0("Distribution of ", a, " at ", tpLabel, immuno_postfix_label)`}
 
 \end{figure}
 

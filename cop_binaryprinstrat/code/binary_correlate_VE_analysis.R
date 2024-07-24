@@ -33,7 +33,7 @@ library(psbinary)
 library(xtable)
 #help(analyze_NEE)
 
-data <- dat.mock
+data <- dat_proc
 
 # The "NEE" and "NEH" methods are included in the code, the user specifies one or the other.
 # NEH is always the relevant one for COVID-19 vaccines.

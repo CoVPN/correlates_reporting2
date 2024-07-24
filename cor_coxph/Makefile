@@ -7,7 +7,11 @@ report:
 
 ## clean         : delete saved bootstrap results
 clean:
+ifeq ($(TRIAL),) 
+	$(error The variable TRIAL is either empty or not defined.)
+else
 	rm -rf output/$(TRIAL)/*
+endif
 
 ## cor_coxph     : create tables and figures
 cor_coxph:
@@ -36,11 +40,23 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partAsenior janssen_pooled
 	# janssen_sa_partAsenior not included for having too few cases
 	Rscript code/cor_coxph.R D29IncludeNotMolecConfirmed
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
-	Rscript code/cor_coxph_janssen_partA_VL.R D29VL
+	Rscript code/cor_coxph_janssen_partA_VL.R D29VLvariant
 else ifeq ($(TRIAL),$(filter $(TRIAL), hvtn705 hvtn705V1V2 hvtn705second hvtn705secondRSA hvtn705secondNonRSA))
 	Rscript code/cor_coxph.R D210
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19))
 	Rscript code/cor_coxph.R D35
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19nvx))
+	Rscript code/cor_coxph_prevent19nvx.R D35prevent19nvx
+else ifeq ($(TRIAL),$(filter $(TRIAL), nvx_uk302))
+	Rscript code/cor_coxph_nvx_uk302.R D35nvx_uk302
+else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
+	Rscript code/cor_coxph_prevent19_stage2.R D35prevent19_stage2_severe
+	Rscript code/cor_coxph_prevent19_stage2.R D35prevent19_stage2_delta
+else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_stage2))
+	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_severe_nAb
+	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_severe_bAb
+	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_delta_nAb
+	Rscript code/cor_coxph_azd1222_stage2.R D57azd1222_stage2_delta_bAb
 else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222))
 	Rscript code/cor_coxph.R D29
 	Rscript code/cor_coxph.R D57
@@ -54,18 +70,18 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_bAb)) ## for some reason if this 
 	Rscript code/cor_coxph.R D29start28
 	Rscript code/cor_graphical_time_to_event.R D29D57
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined ))
-	#Rscript code/cor_coxph_vat08_combined.R D22M6omibAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M6omibAb
-	#Rscript code/cor_coxph_vat08_combined.R D22M12omibAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M12omibAb
-	#Rscript code/cor_coxph_vat08_combined.R D22M6ominAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M6ominAb
-	#Rscript code/cor_coxph_vat08_combined.R D22M12ominAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M12ominAb
-	#Rscript code/cor_coxph_vat08_combined.R D43M12omioriginal
-	#Rscript code/cor_coxph_vat08_combined.R D43M6omioriginal
-	#Rscript code/cor_coxph_vat08_combined.R D43M6omioriginal2
-	Rscript code/cor_coxph_vat08_combined.R D43M12omioriginal2
+	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_nAb
+	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_bAb
+	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_st2.nAb.sen
+	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_bAb
+	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_nAb
+	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_st2.nAb.sen
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_bAb 
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_nAb 
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_st2.nAb.sen 
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_bAb 
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_nAb 
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_st2.nAb.sen 
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D43
 	Rscript code/cor_coxph.R D43start48
@@ -73,6 +89,17 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D91over43
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov_lvmn))
 	Rscript code/cor_coxph.R D43
+else ifeq ($(TRIAL),$(filter $(TRIAL), covail))
+	Rscript code/cor_coxph_covail.R D15to181
+	Rscript code/cor_coxph_covail.R D15to91
+	Rscript code/cor_coxph_covail.R D92to181
+	Rscript code/cor_coxph_covail.R D15to181BA45
+	Rscript code/cor_coxph_covail.R D15to91BA45
+	Rscript code/cor_coxph_covail.R D92to181BA45
+else ifeq ($(TRIAL),$(filter $(TRIAL), covail_sanofi))
+	Rscript code/cor_coxph_covail_sanofi.R D15to181
+	Rscript code/cor_coxph_covail_sanofi.R D15to91
+	Rscript code/cor_coxph_covail_sanofi.R D92to181
 endif
 
 collate:

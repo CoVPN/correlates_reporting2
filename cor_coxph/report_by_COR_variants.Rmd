@@ -1,19 +1,10 @@
+<!-- not actually used, but useful to keep around -->
+
 # `r COR` Univariate CoR: Cox Models of Risk {#cor-coxph-Day`r COR`}
 
 The main regression model is the Cox proportional hazards model. All plots are made with Cox models fit unless specified otherwise.
 
 ## Hazard ratios
-
-
-```{r, echo=FALSE, results='asis'}
-
-variants=list(US=c("Ancestral.Lineage"),
-              LatAme=c("Ancestral.Lineage", "Gamma", "Lambda", "Mu", "Zeta"),
-              RSA=c("Beta"))
-
-regions=c("US","LatAm","RSA")
-
-```
 
 
 

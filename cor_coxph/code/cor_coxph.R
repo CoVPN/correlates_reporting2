@@ -1,3 +1,4 @@
+#Sys.setenv(TRIAL = "prevent19_stage2"); COR="D35prevent19_stage2_severe"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "moderna_real"); COR="D57over29"; Sys.setenv(VERBOSE = 1) 
@@ -9,25 +10,22 @@
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_partAsenior"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705secondNonRSA"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_na_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_la_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_sa_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705second"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_partA_VL"); COR="D29"; Sys.setenv(VERBOSE = 1) 
-
 print(date())
 renv::activate(project = here::here(".."))     
-source(here::here("..", "_common.R")) # dat.mock is made
+source(here::here("..", "_common.R")) # dat_proc is made
+if (TRIAL %in% c("janssen_partA_VL")) stop("This TRIAL has its own cor_coxph_TRIAL.R script")    
 
-# tmp, just so that we can add MIWilson to renv
-library(MIWilson)
-phats = c(0.2, 0.23, 0.25)
-mi_wilson_phat(phats, 100, 0.99, FALSE)
 
-# hack to bring in uncheck commited changes to copcor
-# source("~/copcor/R/plotting.R")
-
+{
 library(kyotil) # p.adj.perm, getFormattedSummary
 library(marginalizedRisk)
 library(tools) # toTitleCase
@@ -51,7 +49,7 @@ print(paste0("save.results.to equals ", save.results.to))
 
 # append to file names for figures and tables
 # defined differently in cor_coxph_xx.R
-fname.suffix = study_name
+fname.suffix = ""
 
 
 # B=1e3 and numPerm=1e4 take 10 min to run with 30 CPUS for one analysis
@@ -60,31 +58,39 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B)
 myprint(numPerm)
 
-# define an alias for EventIndPrimaryDxx
-dat.mock$yy=dat.mock[[config.cor$EventIndPrimary]]
-
 myprint(tfinal.tpeak)
 write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
-
     
-dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1)
-dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1)
+
+# define an alias for EventIndPrimaryDxx
+dat_proc$yy=dat_proc[[config.cor$EventIndPrimary]]
+
+dat.vac.seroneg=subset(dat_proc, Trt==1 & ph1)
+dat.pla.seroneg=subset(dat_proc, Trt==0 & ph1)
+
 
 
 # define trichotomized markers
-dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
-marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
+if (is.null(attr(dat_proc, "marker.cutpoints"))) {
+    dat.vac.seroneg = add.trichotomized.markers (dat.vac.seroneg, all.markers, wt.col.name="wt")
+    marker.cutpoints=attr(dat.vac.seroneg, "marker.cutpoints")
+} else {
+    marker.cutpoints=attr(dat_proc, "marker.cutpoints")
+}
 for (a in all.markers) {        
     q.a=marker.cutpoints[[a]]
     if (startsWith(a, "Day")) {
         # not fold change
-        write(paste0(labels.axis[1,marker.name.to.assay(a)], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
+        write(paste0(labels.axis[1,marker.name.to.assay(a)], " [", concatList(round(q.a, 2), ", "), ")%"), 
+              file=paste0(save.results.to, "cutpoints_", a))
     } else {
         # fold change
-        # gsub("_", "\\\_", a, fixed = TRUE) is a bandaid to escape the marker name for latex, which may have _
-        write(paste0(gsub("_", "\\_", a, fixed = TRUE), " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
+        write(paste0(escape(a), " [", concatList(round(q.a, 2), ", "), ")%"), 
+              file=paste0(save.results.to, "cutpoints_", a))
     }
 }
+
+
 
 # some exploratory code
 if (config$is_ows_trial) source(here::here("code", "cor_coxph_misc.R"))
@@ -104,35 +110,31 @@ rv$marker.cutpoints=marker.cutpoints
 tab=with(dat.vac.seroneg, table(ph2, EventIndPrimary))
 names(dimnames(tab))[2]="Event Indicator"
 print(tab)
-mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
+mytex(tab, file.name="tab1_"%.%fname.suffix, save2input.only=T, input.foldername=save.results.to)
 
 # for use in competing risk estimation
 dat.vac.seroneg.ph2=subset(dat.vac.seroneg, ph2)
 
 begin=Sys.time()
-
-# last event time
-# sapply(0:2, function (i) max(subset(dat.vac.seroneg, EventIndPrimary==1 & Region==i, EventTimePrimary)[[1]]))
-
-
-#with(dat.vac.seroneg.ph2, weighted.mean(Day35bindRBD<log10(100), wt))
-
-
-# with(dat.vac.seroneg, table(ph2, SevereEventIndPrimaryIncludeNotMolecConfirmedD29))
-# with(dat.vac.seroneg, table(ph2, SevereEventIndPrimaryMolecConfirmedD29))
-
-
-# with(dat.vac.seroneg, table(ph2, EventIndPrimary))
-# with(subset(dat.vac.seroneg, Ptid %in% sevcases$USUBJID), table(ph2, EventIndPrimary))
-# mywrite.csv(subset(dat.vac.seroneg, EventIndPrimary==1, select=c(Ptid,ph2)), file="~/sevcases_1")
-
+}
 
 
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
 ###################################################################################################
 
-source(here::here("code", "cor_coxph_risk_no_marker.R"))
+cor_coxph_risk_no_marker (
+    form.0,
+    dat=dat.vac.seroneg,
+    fname.suffix, 
+    save.results.to,
+    config,
+    config.cor,
+    tfinal.tpeak,
+    
+    dat.plac = dat.pla.seroneg,
+    verbose=FALSE
+) 
 
 if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 
@@ -142,7 +144,21 @@ if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 # run PH models
 ###################################################################################################
     
-source(here::here("code", "cor_coxph_ph.R"))
+cor_coxph_ph(
+    form.0,
+    design.vacc.seroneg, 
+    fname.suffix,
+    save.results.to,
+    
+    all.markers,
+    all.markers.names.short,
+    
+    config,
+    config.cor,
+    
+    dat.pla.seroneg,
+    show.q=F
+)
 
 
 # unit testing of coxph results
@@ -151,10 +167,10 @@ if (Sys.getenv("TRIAL") == "janssen_pooled_EUA" & COR=="D29IncludeNotMolecConfir
     tmp.2=c("0.162","0.079","0.006",      "0.498","   ","   ","0.162","   ","   ","0.003","   ","   ")
     assertthat::assert_that(all(tmp.1==tmp.2), msg = "failed cor_coxph unit testing")    
     
-} else if (attr(config, "config")=="moderna_real" & COR=="D57") {
+} else if (TRIAL=="moderna_real" & COR=="D57") {
     assertthat::assert_that(all(abs(p.unadj-c(0.004803168, 0.002172787, 0.000129743, 0.000202068, 0.064569846, 0.005631520, 0.009016447, 0.051800145, 0.011506959, 0.579164657))<1e-6), msg = "failed cor_coxph unit testing")    
     
-} else if (attr(config, "config")=="prevent19" & COR=="D35") {
+} else if (TRIAL=="prevent19" & COR=="D35") {
     assertthat::assert_that(all(abs(p.unadj-c(0.000453604, 0.0023274, 0.013258206))<1e-6), msg = "failed cor_coxph unit testing")    
     
 }
@@ -187,12 +203,93 @@ if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m"
 # marginalized risk and controlled VE
 ###################################################################################################
     
-source(here::here("code", "cor_coxph_risk_bootstrap.R"))
 
-for.title="" # need to be defined even if it is empty
-source(here::here("code", "cor_coxph_risk_plotting.R"))
 
-if (attr(config, "config") %in% c("moderna_real", "janssen_pooled_EUA")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
+cor_coxph_risk_bootstrap(  
+    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+    dat, 
+    fname.suffix, 
+    save.results.to,
+    
+    tpeak,
+    tfinal.tpeak,
+    all.markers = "Day15"%.%assays,
+    
+    numCores,
+    B,
+    
+    comp.risk=T, 
+    run.Sgts=F # whether to get risk conditional on continuous S>=s
+)
+
+cor_coxph_risk_plotting(
+    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+    dat,
+    fname.suffix,
+    save.results.to,
+    
+    config,
+    config.cor,
+    assay_metadata,
+    
+    tfinal.tpeak,
+    all.markers = "Day15"%.%assays,
+    all.markers.names.short,
+    all.markers.names.long,
+    labels.assays.short,
+    marker.cutpoints,
+    
+    multi.imp=F,
+    comp.risk=T, 
+    
+    has.plac=F,
+    dat.pla.seroneg = NULL,
+    res.plac.cont = NULL,
+    prev.plac=NULL,
+    
+    variant=NULL,
+    
+    show.ve.curves=F,
+    eq.geq.ub=1, # whether to plot risk vs S>=s
+    wo.w.plac.ub=1, # whether to plot plac
+    for.title=""
+)
+
+cor_coxph_risk_tertile_incidence_curves(
+    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+    dat,
+    fname.suffix,
+    save.results.to,
+    
+    config,
+    config.cor,
+    assay_metadata,
+    
+    tfinal.tpeak,
+    all.markers = "Day15"%.%assays,
+    all.markers.names.short,
+    all.markers.names.long,
+    labels.assays.short,
+    marker.cutpoints,
+    
+    multi.imp=F,
+    comp.risk=T, 
+    
+    has.plac=F,
+    dat.pla.seroneg = NULL,
+    res.plac.cont = NULL,
+    prev.plac=NULL,
+    
+    variant=NULL,
+    
+    show.ve.curves=F,
+    eq.geq.ub=1, # whether to plot risk vs S>=s
+    wo.w.plac.ub=1, # whether to plot plac
+    for.title=""
+)
+
+
+if (TRIAL %in% c("moderna_real", "janssen_pooled_EUA")) source(here::here("code", "cor_coxph_samplesizeratio.R"))
 
 
 

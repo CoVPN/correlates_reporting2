@@ -1,0 +1,271 @@
+---
+title: "AZD1222 Stage 2 Correlates Data Processing"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(survey)
+library(kyotil)
+
+dat_mapped_new=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240514.csv')
+# dat_mapped is  useful for data processing
+dat_mapped=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240322.csv')
+dat_mapped_stage1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage1/adata/COVID_AstraZeneca_realdata_20221208.csv')
+ 
+dat_mapped$EarlyendpointD57 <- with(dat_mapped, EarlyinfectionD57==1 | (EventIndPrimaryD1==1 & EventTimePrimaryD1 < NumberdaysD1toD57 + 7),1,0)
+dat_mapped$ph1.D57 = with(dat_mapped, EarlyendpointD57==0 & Perprotocol==1 & EventTimePrimaryD57 >= 7)
+
+dat_mapped$EventIndPrimaryType_short=substr(dat_mapped$EventIndPrimaryType,1,3)
+dat_mapped$EventIndPrimaryType_short=ifelse(dat_mapped$EventIndPrimaryType_short=="", NA,dat_mapped$EventIndPrimaryType_short)
+dat_mapped$EventIndPrimaryType_short=ifelse(is.na(dat_mapped$EventIndPrimaryType_short) & dat_mapped$EventIndPrimaryD1==1, "Unk",dat_mapped$EventIndPrimaryType_short)
+dat_mapped$EventCalTimePrimaryD57 = with(dat_mapped, as.Date(D57Date)+EventTimePrimaryD57)
+# color coding
+dat_mapped$col=1
+dat_mapped$col[!is.na(dat_mapped$Day57bindSpike_Delta3)]=3 # set ph2 ptids to green
+dat_mapped$col[dat_mapped$SevereEventIndD57_120to21Dec10==1]=2 # set severe cases to red
+dat_mapped$col2=1
+dat_mapped$col2[dat_mapped$EventIndPrimaryD1==1]=2 # set cases to red
+
+
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/azd1222_stage2_assay_metadata.csv')
+assays=assay_metadata$assay
+
+dat_proc = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240514.csv')
+
+dat_proc$EventIndPrimaryType_short=substr(dat_proc$COVIDIndType,1,3)
+dat_proc$EventIndPrimaryType_short=ifelse(dat_proc$EventIndPrimaryType_short=="", NA,dat_proc$EventIndPrimaryType_short)
+dat_proc$EventIndPrimaryType_short=ifelse(is.na(dat_proc$EventIndPrimaryType_short) & dat_proc$COVIDIndD1toD360                           ==1, "Unk",dat_proc$EventIndPrimaryType_short)
+dat_proc$EventCalTimePrimaryD57 = with(dat_proc, as.Date(D57Date)+COVIDTimeD57toD360)
+# color coding
+dat_proc$col=1
+dat_proc$col[!is.na(dat_proc$Day57bindSpike_Delta3)]=3 # set ph2 ptids to green
+dat_proc$col[dat_proc$SevereEventIndD57_120to21Dec10==1]=2 # set severe cases to red
+dat_proc$col2=1
+dat_proc$col2[dat_proc$EventIndPrimaryD1==1]=2 # set cases to red
+
+
+times="Day"%.%c(57,90,180,360)
+```
+
+
+### Data descriptives
+
+The dataset contains both treatment arms and both seropos and seroneg, and has US, CHL and PERU. Only the vaccine arm is sampled in stage 2.
+```{r, include=F}
+mytable(dat_mapped$Bserostatus)
+mytable(dat_mapped$Country, dat_mapped$Trt)
+mytable(dat_mapped$ph1.indicator, dat_mapped$Stage2_sampling_list, dat_mapped$Trt)
+```
+
+### Phase 2 sampling design
+
+The sampling design is a stratified case-control study design. Based on the design, the following failure indicator and time variables are needed for computing weights
+
+* Cases are vaccine group participants who contribute primary COVID-19 endpoints, i.e. baseline SARS-CoV-2 negative and SARS-CoV-2 negative for 15 days post-second dose, adjudicated COVID-19) with COVID-19 onset 7+ days post-Day 57 through D360.  To ensure complete longitudinal data, non-severe COVID-19 cases are required to have D57, D90, and D180 visits that occur before COVID-19 onset to be eligible for sampling.
+  * COVIDIndD57_7toD360
+* All severe COVID-19 cases satisfying these criteria are sampled.  
+  * SevereCOVIDIndD57_7toD360
+* Sampling of non-severe COVID-19 cases satisfying these criteria is stratified into 6 strata (by baseline age, country, and race/ethnicity) and virus lineage (Delta, ancestral, others). For each baseline stratum, stratified sampling is based on quartiles. 
+  * KnownOrImputedDeltaCOVIDIndD57_7toD360
+  * AncestralCOVIDIndD57_7toD360
+  * MinorVariantsCOVIDIndD57_7toD360
+
+
+``Non-cases" are baseline SARS-CoV-2 negative vaccine group participants without any SARS-CoV-2 infection (no positive serology result or COVID-19) and without documented outside COVID-19 vaccination from Day 1 through D360 or the study termination date, whichever earlier, and with a follow up end date after 7 days post Day 57, sampled from the Stage 1 immunogenicity subcohort, achieving 1:1 case:control ratio overall; no case/control matching is performed due to sample availability.  To ensure complete longitudinal data for exposure-proximal correlates analysis, non-cases are also required to have D57, D90, D180, and D360 visits to be eligible for sampling.   
+
+
+Number of severe cases in ph1 and ph2
+```{r}
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), SevereEventIndD57_120to21Dec10))
+```
+
+Number of Delta cases in D57_120to21Dec10 in ph1 and ph2
+```{r}
+with(subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(!is.na(Day57bindSpike_Delta3), DeltaEventIndD57_120to21Dec10))
+```
+
+
+Distributions of sampling weights:
+```{r}
+with (subset(dat_proc, ph2.D57nAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57nAb, Wstratum))
+with (subset(dat_proc, ph2.D57bAb==1 & Trt==1 & Bserostatus==0), table(ph2.D57bAb, Wstratum))
+```
+
+Number of ph2 cases before 180 days post D57 and their distribution
+```{r}
+with (subset(dat_proc, ph2.D57_120nAb==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180), 
+      mytable(SevereCOVIDIndD57_120to21Dec10, KnownOrImputedDeltaCOVIDIndD57_120to21Dec10))
+
+with (subset(dat_proc, ph2.D57_120nAb==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180), 
+      mytable(wt.D57_120nAb, KnownOrImputedDeltaCOVIDIndD57_120to21Dec10))
+
+with (subset(dat_proc, ph1.D57_120==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180), 
+      mytable(wt.D57_120nAb, KnownOrImputedDeltaCOVIDIndD57_120to21Dec10))
+
+with (subset(dat_proc, ph1.D57_120==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180 & abs(wt.D57_120nAb-52)<1),
+      mytable(Wstratum))
+
+with (subset(dat_proc, ph1.D57_120==1 & Trt==1 & Bserostatus==0 & abs(wt.D57_120nAb-52)<1),
+      mytable(Wstratum))
+
+with (subset(dat_proc, ph1.D57_120==1 & Trt==1 & Bserostatus==0 & COVIDTimeD57to21Dec10<=180 & abs(wt.D57_120nAb-14)<1),
+      mytable(Wstratum))
+
+```
+
+### Adjusting endpoint period
+
+Distribution of event time by variant types. Ph2 cases are colored green and severe cases are colored red.
+
+We chose 119/120 days post D57 to break the follow-up period into two because all Delta cases and all but two severe cases happened after that. 120 days post D57 is the first Delta case, on 2021-07-02.
+
+We censor on 2021-12-10 to avoid the Omicron wave, the same day the PREVENT-19 stage2 data is censored on as well. We lose no severe cases by this censoring.
+
+```{r, echo=T}
+dat.tmp=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+print(min(subset(dat.tmp,EventIndPrimaryType_short=="Del",EventTimePrimaryD57),na.rm=T))
+subset(dat.tmp,EventIndPrimaryType_short=="Del" & EventTimePrimaryD57==120, EventCalTimePrimaryD57)
+```
+
+
+```{r, echo=T}
+# D57 study day
+myboxplot(EventTimePrimaryD57~EventIndPrimaryType_short, dat.tmp, ylab="EventTimePrimary57", col=dat.tmp$col, cex.axis=0.8)
+abline(h=120, lty=2) 
+
+# calendar day
+myboxplot(EventCalTimePrimaryD57~EventIndPrimaryType_short, dat.tmp, ylab="Event Calendar Time", col=dat.tmp$col, cex.axis=0.8)
+abline(h=120, lty=2) 
+abline(h=as.Date("2021-12-10"), lty=2) 
+
+# subset(dat_mapped,EventIndPrimaryType_short=="Del" & as.Date(DateDD1)<as.Date("2021-01-01"), c(Subjectid, EventTimePrimaryDate, DateDD1))
+```
+
+
+```{r, echo=T}
+
+# use dat_proc
+dat.tmp = subset(dat_proc, Bserostatus==0 & Trt==1 & ph1.D57_120)
+
+# D57 study day
+myboxplot(COVIDTimeD57toD360~EventIndPrimaryType_short, dat.tmp, ylab="EventTimePrimary57", col=dat.tmp$col, cex.axis=0.8)
+abline(h=120, lty=2) 
+abline(h=180, lty=2) 
+
+
+
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<120 , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<150 , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<180 , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<304 , c(Ptid), drop=T))
+
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<120 & ph2.D57_120nAb, c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<150 & ph2.D57_120nAb , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<180 & ph2.D57_120nAb , c(Ptid), drop=T))
+length(subset(dat.tmp,KnownOrImputedDeltaCOVIDIndD57_120to21Dec10 & COVIDTimeD57to21Dec10<304 & ph2.D57_120nAb , c(Ptid), drop=T))
+
+
+```
+
+
+### Immunogenecity and imputation
+
+Verifying marker values are subject to lower limits
+```{r}
+print(sort(unique(dat_mapped$Day57pseudoneutid50_D614G))[1:5])
+print(sort(unique(dat_mapped$Day57pseudoneutid50_Delta))[1:5])
+```
+
+
+Delta ID50 readouts are lower than ancestral ID50 and that marker level drops from over time. All cases are colored red.
+```{r}
+dat=dat_mapped[,c(rbind(times%.%"pseudoneutid50_D614G",times%.%"pseudoneutid50_Delta"))]
+names(dat)=sub("pseudoneutid50","",names(dat))
+names(dat)=sub("Day","D",names(dat))
+myboxplot(dat, cex.axis=0.6, col=dat_mapped$col2)
+```
+
+
+Correlation is high between bAb markers (0.99 between the three Delta bAb markers), but moderate between the two nAb markers.
+```{r}
+dat=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+dat=dat[,"Day57"%.%assays]
+names(dat)=sub("Day57pseudoneut","",names(dat))
+names(dat)=sub("Day57bindSpike_","",names(dat))
+mypairs(dat)
+```
+
+
+A closer look at the correlation between ancestral ID50 and Delta ID50
+
+```{r}
+corplot(Day57pseudoneutid50_D614G~Day57pseudoneutid50_Delta, dat_mapped, asp=1)
+```
+
+
+bAb markers are all-or-none. 
+```{r}
+dat=subset(dat_mapped, EarlyinfectionD57==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+for (i in 3:10) {
+  dat[['tmp'%.%i]]=ifelse(is.na(dat[['Day57'%.%assays[i]]]), 0, 1)
+}
+dat$tmp=with(dat,paste0(tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp10))
+print(table(dat$tmp, dat$DeltaEventIndD57_120to21Dec10))
+```
+
+
+For nAb, we will require Delta nAb to be present. For the 12 ptids without ancestral nAb but with Delta nAb, we will impute the ancestral nAb. There are a lot more ptids with just ancestral nAb but we won't use them in the correlates study to allow comparison between Delta and ancestral nAb.
+```{r}
+dat=subset(dat_mapped_new, AnyInfectionD1toD57_120==0 & Perprotocol==1 & Bserostatus==0 & Trt==1)
+for (i in 1:2) {
+  dat[['tmp'%.%i]]=ifelse(is.na(dat[['Day57'%.%assays[i]]]), 0, 1)
+}
+dat$tmp=with(dat,paste0(tmp1,tmp2))
+print(table(dat$tmp, dat$KnownOrImputedDeltaCOVIDIndD57_120toD57_270))
+print(table(dat$tmp, dat$SevereCOVIDIndD57_120to21Dec10))
+```
+
+We will have two sets of weights, one for bAb and one for nAb. 
+```{r}
+dat=subset(dat_mapped, ph1.D57==1)
+dat$tmp1 = !is.na(dat$Day57pseudoneutid50_Delta)
+dat$tmp2 = !is.na(dat$Day57bindSpike_Alpha)
+dat$tmp=with(dat,paste0(as.integer(tmp1),as.integer(tmp2)))
+print(table(dat$tmp, dat$DeltaEventIndD57_120to21Dec10))
+```
+
+
+
+### Covariates adjustment
+
+
+We will **adjust for Age in severe COVID correlates analyses**.
+```{r}
+coxph(Surv(SevereEventTimeD57_to21Dec10, SevereEventIndD57_120to21Dec10)~Age+risk_score, subset(dat_proc, ph1.D57_120==1 & Bserostatus==0 & Trt==1))
+coxph(Surv(SevereEventTimeD57_to21Dec10, SevereEventIndD57_120to21Dec10)~Senior+risk_score, subset(dat_proc, ph1.D57_120==1 & Bserostatus==0 & Trt==1))
+```
+
+
+We will **adjust for Age>=65 in Delta COVID correlates analyses**. Age group is a stratification variable of the randomization and adjusted for in the primary efficacy analysis. Furthermore, nonparametric risk estimate shows that the risk as a function of age is a step function with change point at 65.
+
+
+```{r}
+coxph(Surv(DeltaEventTimeD57_to21Dec10, DeltaEventIndD57_120to21Dec10)~Age+risk_score, subset(dat_proc, ph1.D57_120==1 & Bserostatus==0 & Trt==1))
+coxph(Surv(DeltaEventTimeD57_to21Dec10, DeltaEventIndD57_120to21Dec10)~Senior+risk_score, subset(dat_proc, ph1.D57_120==1 & Bserostatus==0 & Trt==1))
+```
+
+### Misc
+
+Ptid D8110C00001/E20053360157 is a severe case censored by outside vaccination contamination,  SevereCOVIDTimeD57to21Dec10_raw and SevereCOVIDTimeD57to21Dec10 are 292 and 34, respectively; contamination_Day180 is 1.
+
+```{r}
+dat_mapped_new1=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240507.csv')
+dat_mapped_new=read.csv('/trials/covpn/p3002/analysis/mapping_immune_correlates/stage2/adata/COVID_AstraZeneca_stage2_mapped_20240514.csv')
+tmp1=subset(dat_mapped_new1, AnyInfectionD1toD57_120==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 )
+tmp=subset(dat_mapped_new, AnyInfectionD1toD57_120==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 )
+mytable(tmp1$SevereCOVIDIndD57_120to21Dec10, tmp$SevereCOVIDIndD57_120to21Dec10)
+
+tmp[which(tmp1$SevereCOVIDIndD57_120to21Dec10==1 & tmp$SevereCOVIDIndD57_120to21Dec10==0),]
+```

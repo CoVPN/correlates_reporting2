@@ -1,0 +1,132 @@
+---
+title: "Novavax UK 302"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(survey)
+library(kyotil)
+
+dat_mapped=read.csv('/trials/covpn/p3004/analysis/mapping_immune_correlates/UK302/adata/COVID_Novavax_302UK_mapped_20240318.csv')
+
+dat_proc = read.csv('/trials/covpn/p3004/analysis/correlates/UK302/adata/nvx_uk302_data_processed_20240320.csv')
+dat_proc$Region1 = dat_proc$Region=="England South East"
+
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/nvx_uk302_assay_metadata.csv')
+assays=assay_metadata$assay
+
+```
+
+
+### Immunigenicity dataset
+
+Immune markers come from several studies. In addition to the samples collected to study the correlates, the database contains antibody measurements from a separate immunogenicity study and a flu study. We will only use the samples collected for the correlates study because 1) we don't know if we can compute sampling probabilities for the other samples, 2) to avoid potential batch effects because samples for different studies were run at different times, and 3) 17 out of 19 cases with markers are in this set. Hence, we define SubcohortIn as 3.Case + 3.Control and that is what we will use for our correlates study. 
+```{r}
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), mytable(SampleSet, EventIndPrimaryD35))
+```
+
+There is one ptid in 3.Case in the table above, whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. They are not a case by a stringent criterion but is by a relaxed criterion.
+```{r}
+subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & EventIndPrimaryD35==0 & SampleSet=="3.Case", select=c(Subjectid, AnyinfectionD1, EventIndPrimaryD1))
+```
+
+There are also 16 ptids without markrs whose AnyinfectionD1 is 1 and EventIndPrimaryD1 is 0. **We will exclude all such ptids from ph1.D35.**
+```{r}
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & AnyinfectionD1==1 & EventIndPrimaryD1==0), mytable( SubcohortInd))
+```
+In the analysis data, the one ptid within 3.case and with EventIndPrimaryD35==0 has been filtered out.
+```{r}
+with(subset(dat_proc, ph1.D35 & Bserostatus==0 & Trt==1), mytable(SampleSet, EventIndPrimaryD35))
+```
+
+Distribution of followup time
+```{r}
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), hist(EventTimePrimaryD35))
+with(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1), sort(EventTimePrimaryD35, de=T)[1:500])
+```
+
+
+
+### Marker data
+
+Before censoring with pos cutoff, the minimum marker value is 100 on the antilog scale, which suggests that the lower limit is 200. After censoring at 500, the min is 500 on the antilog scale.
+```{r}
+with(subset(dat_proc, ph2.D35==1 & Trt==1 & Bserostatus==0), 10**sort(unique(Day35bindNVXIgG))[1:10])
+with(subset(dat_proc, ph2.D35==1 & Trt==1 & Bserostatus==0), 10**sort(unique(Day35bindNVXIgGIU))[1:10])
+```
+
+Correlation plot between baseline and D35 marker suggests that under 1000 (antilog scale), the values are non-specific. 
+```{r}
+par(mfrow=c(1,2))
+lim=range(dat_mapped$Day35bindNVXIgG, na.rm=T)
+corplot(Day35bindNVXIgG~BbindNVXIgG, dat_mapped[dat_mapped$Trt==1,], xlim=lim, asp=1, main="Vacc")
+corplot(Day35bindNVXIgG~BbindNVXIgG, dat_mapped[dat_mapped$Trt==0,], xlim=lim, asp=1, main="Plac")
+```
+
+This does not matter too much for our study because only a few ptids are in that range in the vaccine arm:
+```{r, echo=T}
+hist(subset(dat_mapped, EarlyinfectionD35==0 & Perprotocol==1 & Bserostatus==0 & Trt==1 & SubcohortInd==1)$Day35bindNVXIgG, main="")
+```
+
+Marker is higher in the young people than the old people.
+```{r}
+myboxplot(Day35bindNVXIgG~Trt+Senior, subset(dat_proc, ph2.D35==1), names=c("plac,young","vacc,young","plac,senior","vacc,senior"))
+# with(subset(dat_proc, ph2.D35==1), mytable(Trt, Day35bindNVXIgGcat))
+```
+
+
+Two sample test comparing marker between England South East and England Other is not significant, but there is a trend.
+```{r}
+myboxplot(Day35bindNVXIgG~Region1, subset(dat_proc, ph2.D35==1 & Trt==1), cex.axis=0.8, test="w", names=c("Other","England South East"))
+wilcox.test(Day35bindNVXIgG~Region, subset(dat_proc, ph2.D35==1 & Trt==1 & Region!="Scotland, Wales, Northern Ireland"))
+```
+
+
+### Twophase sampling
+
+
+VE as context of the correlates study
+```{r}
+with (subset(dat_proc, ph1.D35==1), table.prop(EventIndPrimaryD35, Trt))
+cat("VE: "); myprint(1-0.3/1.4)
+```
+
+Numbers of case/control in ph1/ph2:
+```{r}
+with(subset(dat_proc, ph1.D35==1 & Trt==1), mytable(ph2.D35, EventIndPrimaryD35))
+```
+
+
+Sampling is stratified on region.
+```{r}
+with(dat_mapped, table(Region, EventIndPrimaryD35, Trt))
+```
+
+Distribution of sampling weights looks normal. There is one case stratum and six controls strata formed by Senior x Region.
+```{r}
+with (subset(dat_proc, ph1.D35==1 & Trt==1), table(wt.D35, Region, Senior))
+```
+
+
+
+
+### Covariates adjustment
+
+Age is a risk factor in placebo but not vaccine. Southeast England (London) is a risk factror in placebo but not vaccine. Both could be due to the number of cases is much smaller in the vaccine arm. Test of interaction is not significant. In both arms together, they are significant. We decide to adjust for both Senior (age>=65) and Southeast England because **they are both confounders**. Younger people and London both have higher risk and higher markers. We adjust for Senior instead of age because the relationship between age and risk is complicated.
+```{r}
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Senior+Sex, subset(dat_proc, ph1.D35==1 & Trt==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Age*Trt, subset(dat_proc, ph1.D35==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Age+Trt, subset(dat_proc, ph1.D35==1))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Sex+Senior+Trt, subset(dat_proc, ph1.D35==1))
+```
+Age or age group
+```{r}
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Age+Sex, subset(dat_proc, ph1.D35==1 & Trt==0))
+coxph(Surv(EventTimePrimaryD35,EventIndPrimaryD35)~Region+Senior+Sex, subset(dat_proc, ph1.D35==1 & Trt==0))
+
+```
+

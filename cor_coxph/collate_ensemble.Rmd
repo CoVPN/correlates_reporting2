@@ -34,7 +34,7 @@ source(here::here("..", "_common.R"), local = knitr::knit_global()) # needed for
 
 ```{r, echo=FALSE, results='asis'}
 
-covariates_adjusted = covariates_riskscore
+covariates_adjusted = covariates
 covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
 covariates_adjusted = sub("_","",covariates_adjusted)
 

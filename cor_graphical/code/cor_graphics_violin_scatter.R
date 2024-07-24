@@ -23,16 +23,20 @@ library(here)
 library(cowplot) # ggsave2()
 library(gridExtra)
 library(grid)
+library(ggnewscale) # for new_scale_color() 
 
 ## load data 
 longer_cor_data <- readRDS(here("data_clean", "longer_cor_data.rds"))
 longer_cor_data_plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds")) # at level of trt and assay
 plot.25sample1 <- readRDS(here("data_clean", "plot.25sample1.rds"))
+if (attr(config,"config")=="janssen_pooled_partA") {
+  longer_cor_data_plot1_adhoc <- readRDS(here("data_clean", "longer_cor_data_plot1_adhoc.rds"))
+}
 if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
   longer_cor_data_plot3 <- readRDS(here("data_clean", "longer_cor_data_plot3.rds"))
   plot.25sample3 <- readRDS(here("data_clean", "plot.25sample3.rds"))
 }
-if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant") {
   longer_cor_data_plot_variant <- readRDS(here("data_clean", "longer_cor_data_plot_variant.rds"))
 }
 
@@ -83,10 +87,18 @@ if (length(timepoints)==1){
   col_val <- c(#"#FF5EBF", "#0AB7C9", 
     "#FF6F1B", "#810094")
   
+  names(col_val) <- c(#"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
+    case_grp2,
+    "Non-Cases")
+  
   shp_val <- c(#18, 16, 
     17, 15)
   
-} else if (COR != "D29variant") {
+  names(shp_val) <- c(#"Day 2-14 Cases", paste0("Day 15-", 28+tpeaklag, " Cases"), 
+    case_grp2,
+    "Non-Cases")
+  
+} else if (COR != "D29VLvariant") {
   x_lb <- gsub("\\s(?=[a-zA-Z])", "\n", c("Day 1", paste0("Day ", tinterm), paste0("Day ", tpeak), 
                                           paste0("D", tinterm, " fold-rise over D1"), paste0("D",tpeak, " fold-rise over D1"), 
                                           case_grp1, 
@@ -97,7 +109,15 @@ if (length(timepoints)==1){
   
   col_val <- c("#0AB7C9","#FF6F1B","#810094")
   
+  names(col_val) <- c(case_grp1, 
+                      case_grp2,
+                      "Non-Cases")
+  
   shp_val <- c(16, 17, 15)
+  
+  names(shp_val) <- c(case_grp1, 
+                      case_grp2,
+                      "Non-Cases")
 }
 
 # path for figures and tables etc
@@ -110,7 +130,7 @@ if (!dir.exists(save.results.to))  dir.create(save.results.to)
 print(paste0("save.results.to equals ", save.results.to))
 
 
-if (COR != "D29variant") { # D29variant requires non-standard figures
+if (COR != "D29VLvariant") { # D29VLvariant requires non-standard figures
   #### Figure 1. violin+box plot, case vs non-case, (Day 1), Day 29, and Day 57 if exists
   for (i in 1:length(plots)) {
     for (j in 1:length(bstatus)) {
@@ -141,12 +161,35 @@ if (COR != "D29variant") { # D29variant requires non-standard figures
                                     group.num=length(levels(longer_cor_data_plot1$cohort_event)),
                                     rate.y.pos=rate.y.pos,
                                     n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                    xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                    xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb),
+                                    global.size=ifelse(attr(config,"config")=="janssen_pooled_partA", 25, 11)
                                     )
               g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
               file_name <- paste0("Linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", gsub("-", "_", trt[k]), "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
               suppressWarnings(ggsave2(plot = g, filename = paste0(save.results.to, file_name), width = 16, height = 11))
             
+              p <- violin_box_plot(dat=       subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                   dat.sample=subset(longer_cor_data_plot1, assay==plots[i] & Bserostatus==bstatus[j] & Trt==trt[k] & !is.na(value) & time %in% unlist(timesls[t]) & eval(as.name(case_set))==1), 
+                                   ytitle=plots_ytitles[i],toptitle=plots_titles[i],
+                                   x="cohort_event",
+                                   xtitle="Cohort Event",
+                                   facetby=vars(time),
+                                   ylim=y.lim,
+                                   type="noline",
+                                   ybreaks=y.breaks,
+                                   prop.cex=prop.cex,
+                                   ll.cex=ll.cex,
+                                   pt.size=1.5,
+                                   group.num=length(timesls[[t]]),
+                                   rate.y.pos=rate.y.pos,
+                                   axis.text.x.cex=20,
+                                   n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
+                                   xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb),
+                                   global.size=ifelse(attr(config,"config")=="janssen_pooled_partA", 25, 11)
+              )
+              file_name <- paste0("violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", if(case_set=="severe") "severe_", "v",t,"_", study_name, ".pdf")
+              suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+              
               } else if (study_name=="IARCHPV"){
                 
                 hpv_5_breakthroughs = paste(longer_cor_data$persistentindicator[!is.na(longer_cor_data$persistentindicator)], "Cases") %>% unique()
@@ -279,7 +322,8 @@ if (COR != "D29variant") { # D29variant requires non-standard figures
                                     rate.y.pos=rate.y.pos,
                                     group.num=length(levels(longer_cor_data_plot2$cohort_event)),
                                     n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                    xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                    xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb),
+                                    global.size=ifelse(attr(config,"config")=="janssen_pooled_partA", 25, 11)
                                     )
               g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
               s1 <- ifelse(s=="age_geq_65_label", "Age", ifelse(s=="highrisk_label", "Risk", ifelse(s=="sex_label","Sex", ifelse(s=="minority_label","RaceEthnic", ifelse(s=="Dich_RaceEthnic","Dich_RaceEthnic",NA)))))
@@ -302,7 +346,8 @@ if (COR != "D29variant") { # D29variant requires non-standard figures
                                     rate.y.pos=rate.y.pos,
                                     axis.text.x.cex=20,
                                     n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                    xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                    xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb),
+                                    global.size=ifelse(attr(config,"config")=="janssen_pooled_partA", 25, 11)
                                     )
               file_name <- paste0("Violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_", s1, "_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
               suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
@@ -343,7 +388,8 @@ if (COR != "D29variant") { # D29variant requires non-standard figures
                                   rate.y.pos=rate.y.pos,
                                   group.num=length(levels(longer_cor_data_plot3$cohort_event)),
                                   n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                  xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                  xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb),
+                                  global.size=ifelse(attr(config,"config")=="janssen_pooled_partA", 25, 11)
                                   )
             g <- grid.arrange(p, bottom = textGrob("All data points for cases are shown. Non-Case data points are shown for all eligible participants or for a random sample of 100 eligible participants, whichever is larger", x = 1, hjust = 1, gp = gpar(fontsize = 15)))
             file_name <- paste0("Linebox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_Age_Risk_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
@@ -366,7 +412,8 @@ if (COR != "D29variant") { # D29variant requires non-standard figures
                                   group.num=length(timesls[[t]]),
                                   axis.text.x.cex=20,
                                   n_rate=paste0("N_RespRate", if(case_set=="severe") "_severe"),
-                                  xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb)
+                                  xlabel=gsub("\nCases", ifelse(case_set=="severe", "\nSevere\nCases", "\nCases"), x_lb),
+                                  global.size=ifelse(attr(config,"config")=="janssen_pooled_partA", 25, 11)
                                   )
             file_name <- paste0("Violinbox_", gsub("bind","",gsub("pseudoneut","pnAb_",plots[i])), "_", trt[k], "_", gsub(" ","",bstatus[j]), "_Age_Risk_", if(case_set=="severe") "severe_", "v", t,"_", study_name, ".pdf")
             suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 13.5))
@@ -482,105 +529,102 @@ if (COR != "D29variant") { # D29variant requires non-standard figures
   }
 }
 
-if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29variant") {
- # Latin America, 5 PsV markers, baseline negative, vaccine
-  assay_la <- c("pseudoneutid50","pseudoneutid50_Zeta","pseudoneutid50_Mu","pseudoneutid50_Gamma","pseudoneutid50_Lambda")
-  longer_cor_data_plot_variant_la <- longer_cor_data_plot_variant %>%
-    filter(assay %in% assay_la & Region == 1 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29") %>%
-    mutate(assay = factor(assay, levels = assay_la, labels = subset(assay_metadata, assay %in% assay_la)$assay_label))
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant") {
   
-  p <- violin_box_plot(dat=longer_cor_data_plot_variant_la, 
-                       dat.sample=longer_cor_data_plot_variant_la,
-                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in Latin America",
-                       x="cohort_event",
-                       xtitle="Cohort",
-                       facetby=as.formula(paste("~","assay")),
-                       ylim=c(0, 3.1),
-                       type="noline",
-                       ybreaks=c(0, 1, 2, 3),
-                       prop.cex=6.5,
-                       ll.cex=6.5,
-                       pt.size=1.5,
-                       group.num=2,
-                       rate.y.pos=3,
-                       axis.text.x.cex=20,
-                       col=c("#FF6F1B","#0AB7C9"),
-                       shape=c(17, 17),
-                       colby="cohort_event",
-                       shaby="cohort_event",
-                       col_lb=c("Post-Peak Cases","Non-Cases"),
-                       shp_lb=c("Post-Peak Cases","Non-Cases"),
-                       n_rate="N_RespRate",
-                       xlabel=c("Post-Peak Cases","Non-Cases")
-  )
-  file_name <- "Violinbox_Day29_vaccine_bseroneg_NAb_LA.pdf"
-  suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+  # reorder the cohort_event variable to make Non-Cases shown first
+  longer_cor_data_plot_variant$cohort_event <- relevel(longer_cor_data_plot_variant$cohort_event, "Non-Cases")
   
-  # Southern America, 3 PsV markers, baseline negative, vaccine
-  assay_sa <- c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta")
-  longer_cor_data_plot_variant_sa <- longer_cor_data_plot_variant %>%
-    filter(assay %in% assay_sa & Region == 2 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29") %>%
-    mutate(assay = factor(assay, levels = assay_sa, subset(assay_metadata, assay %in% assay_sa)$assay_label))
+  for (ab in c("nAb", "bAb")){
+    
+    for (reg in c(0, 1, 2)) {
+      
+      if (reg==0 && ab=="nAb") next # doesn't need nAb for US
+      
+      reg_lb = case_when(reg==0 ~ "NAM",
+                         reg==1 ~ "LATAM",
+                         reg==2 ~ "ZA",
+                         TRUE ~ "")
+      
+      reg_lb_long = case_when(reg==0 ~ "Northern America",
+                              reg==1 ~ "Latin America",
+                              reg==2 ~ "Southern Africa",
+                              TRUE ~ "")
+    
+      assay_subset <- if(ab=="bAb" && reg==0) {c("bindSpike","bindSpike_P.1")
+        } else if(ab=="bAb" && reg==1) {c("bindSpike","bindSpike_B.1.621","bindSpike_P.1","bindSpike_C.37")
+        } else if(ab=="bAb" && reg==2) {c("bindSpike","bindSpike_DeltaMDW","bindSpike_B.1.351")
+        } else if (ab=="nAb" && reg==1) {c("pseudoneutid50","pseudoneutid50_Zeta","pseudoneutid50_Mu","pseudoneutid50_Gamma","pseudoneutid50_Lambda")
+        } else if (ab=="nAb" && reg==2) {c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta")}
+      
+      violin_plot <- longer_cor_data_plot_variant %>%
+        filter(assay %in% assay_subset & Region == reg & !is.na(value)) %>%
+        mutate(assay = factor(assay, levels = assay_subset, labels = subset(assay_metadata, assay %in% assay_subset)$assay_label))
+      
+      p <- violin_box_plot(dat=violin_plot, 
+                           dat.sample=violin_plot,
+                           ytitle=ifelse(ab=="nAb", "Pseudovirus-nAb Levels (AU/ml)", "Anti Spike IgG Levels (AU/ml)"),
+                           toptitle=paste0(ifelse(ab=="nAb", "Pseudovirus-nAb", "Anti Spike IgG"), " Levels at Day29, in ", reg_lb_long),
+                           x="cohort_event",
+                           xtitle="Cohort",
+                           facetby=as.formula(paste("~","assay")),
+                           ylim=c(0, ifelse(ab=="nAb", 3.1, 4.2)),
+                           type="noline",
+                           ybreaks=c(0, 1, 2, 3, if(ab=="bAb") 4),
+                           prop.cex=6.5,
+                           ll.cex=6.5,
+                           pt.size=1.5,
+                           group.num=2,
+                           rate.y.pos=ifelse(ab=="nAb", 2.8, 3.5),
+                           axis.text.x.cex=20,
+                           col=c("#0AB7C9", "#FF6F1B"),
+                           shape=c(17, 17),
+                           colby="cohort_event",
+                           shaby="cohort_event",
+                           col_lb=c("Non-Cases", "Post-Peak Cases"),
+                           shp_lb=c("Non-Cases", "Post-Peak Cases"),
+                           n_rate="N_RespRate",
+                           xlabel=c("Non-Cases", "Post-Peak Cases"),
+                           global.size=20
+      )
+      file_name <- paste0("Violinbox_Day29_vaccine_bseroneg_", ab, "_", reg_lb, ".pdf")
+      suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
   
-  p <- violin_box_plot(dat=longer_cor_data_plot_variant_sa, 
-                       dat.sample=longer_cor_data_plot_variant_sa,
-                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in South Africa",
-                       x="cohort_event",
-                       xtitle="Cohort",
-                       facetby=as.formula(paste("~","assay")),
-                       ylim=c(0, 3.1),
-                       type="noline",
-                       ybreaks=c(0, 1, 2, 3),
-                       prop.cex=6.5,
-                       ll.cex=6.5,
-                       pt.size=1.5,
-                       group.num=2,
-                       rate.y.pos=3,
-                       axis.text.x.cex=20,
-                       col=c("#FF6F1B","#0AB7C9"),
-                       shape=c(17, 17),
-                       colby="cohort_event", 
-                       shaby="cohort_event",
-                       col_lb=c("Post-Peak Cases","Non-Cases"),
-                       shp_lb=c("Post-Peak Cases","Non-Cases"),
-                       n_rate="N_RespRate",
-                       xlabel=c("Post-Peak Cases","Non-Cases")
-  )
-  file_name <- "Violinbox_Day29_vaccine_bseroneg_NAb_SA.pdf"
-  suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
-  
-  
-  # Northern America, 1 PsV marker, baseline negative, vaccine
-  assay_na <- c("pseudoneutid50")
-  longer_cor_data_plot_variant_na <- longer_cor_data_plot_variant %>%
-    filter(assay %in% assay_na & Region == 0 & Bserostatus=="Baseline Neg" & Trt=="Vaccine" & !is.na(value) & time == "Day 29") %>%
-    mutate(assay = factor(assay, levels = assay_na, subset(assay_metadata, assay %in% assay_na)$assay_label))
-  
-  p <- violin_box_plot(dat=longer_cor_data_plot_variant_na, 
-                       dat.sample=longer_cor_data_plot_variant_na,
-                       ytitle="Pseudovirus-nAb Levels (AU50/ml)",toptitle="Pseudovirus-nAb Levels at Day 29, in United States",
-                       x="cohort_event",
-                       xtitle="Cohort",
-                       facetby=as.formula(paste("~","assay")),
-                       ylim=c(0, 3.1),
-                       type="noline",
-                       ybreaks=c(0, 1, 2, 3),
-                       prop.cex=9,
-                       ll.cex=9,
-                       pt.size=3,
-                       group.num=2,
-                       rate.y.pos=3,
-                       axis.text.x.cex=25,
-                       col=c("#FF6F1B","#0AB7C9"),
-                       shape=c(17, 17),
-                       colby="cohort_event", 
-                       shaby="cohort_event",
-                       col_lb=c("Post-Peak Cases","Non-Cases"),
-                       shp_lb=c("Post-Peak Cases","Non-Cases"),
-                       n_rate="N_RespRate",
-                       xlabel=c("Post-Peak Cases","Non-Cases")
-  )
-  file_name <- "Violinbox_Day29_vaccine_bseroneg_NAb_US.pdf"
-  suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
+    }
+  }
   
 }
+
+
+#### Figure 1 adhoc. longitudinal plot for janssen_pooled_partA severe manuscript: moderate, severe, non-case at 3 timepoints (day 29, day 71, month 6) 
+if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29IncludeNotMolecConfirmed") {
+  
+  p <- f_longitude_by_assay (
+    dat = longer_cor_data_plot1_adhoc %>% 
+      filter(Trt=="Vaccine") %>%
+      mutate(cohort_event = cohort_event_adhoc), # function assumes this variable is always called cohort_event
+    x.var = "time_cohort",
+    x.lb = do.call(paste0, expand.grid(c("Day 29", "Day 71", "Month 6"), "\n", c("Moderate\nPost-Peak Cases", "Severe\nPost-Peak Cases", "Non-Cases"))),
+    assays = c("bindSpike", "bindRBD", "pseudoneutid50"),
+    times = c("Day 29", "Day 71", "Month 6"),
+    ylim = c(0,3),
+    ybreaks = c(0,1,2,3),
+    facet.x.var = vars(assay),
+    facet.y.var = vars(Trt, Bserostatus),
+    split.var = "assay",
+    pointby = "cohort_col",
+    lgdbreaks = c("Moderate Post-Peak Cases", "Severe Post-Peak Cases", "Non-Cases", "Non-Responders"),
+    chtcols = setNames(c("#FF6F1B", "#D92321", "#0AB7C9", "#8F8F8F"), c("Moderate Post-Peak Cases", "Severe Post-Peak Cases", "Non-Cases", "Non-Responders")),
+    chtpchs = setNames(c(19, 19, 19, 2), c("Moderate Post-Peak Cases", "Severe Post-Peak Cases","Non-Cases", "Non-Responders")),
+    strip.text.y.size = 25,
+    axis.text.x.size = 12,
+    panel.text.size = 6
+  )
+  
+  for (i in 1:3){
+    
+    file_name <- paste0(c("RBD","Spike","pnAb_id50")[i], "_longitudinal_by_case_non_case_vaccine_baselineNeg.pdf")
+    ggsave(plot = p[[i]], filename = paste0(save.results.to, file_name), width = 16, height = 11)
+    
+  }
+}
+

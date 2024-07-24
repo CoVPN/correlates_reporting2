@@ -29,18 +29,18 @@ getResponder <- function(data,
                          responderFR = 4,
                          pos.cutoffs = pos.cutoffs) {
   
-  cutoff <- get(paste0(cutoff.name, "s"))
+  #cutoff <- get(paste0(cutoff.name, "s"))
   for (i in times){
     for (j in assays){
       post <- paste0(i, j)
       bl <- paste0("B", j)
       delta <- paste0("Delta", gsub("Day", "", i), "overB", j) 
       
-      # add these two rows for assays only done at certain timepoints, but not baseline
-      if (!bl %in% colnames(data)) {data[, bl] <- 0}
-      if (!delta %in% colnames(data)) {data[, delta] <- data[, post] - data[, bl]}
+      # add these two rows for assays only done at certain timepoints for stage 1 studies, but not baseline
+      if (!bl %in% colnames(data) & !grepl("stage2", COR)) {data[, bl] <- 0}
+      if (!delta %in% colnames(data) & !grepl("stage2", COR)) {data[, delta] <- data[, post] - data[, bl]}
       
-      data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
+      if (bl %in% colnames(data)) {data[, bl] <- pmin(data[, bl], log10(uloqs[j]))}
       data[, post] <- pmin(data[, post], log10(uloqs[j]))
       #data[, delta] <- ifelse(10^data[, post] < cutoff[j], log10(cutoff[j]/2), data[, post])-ifelse(10^data[, bl] < cutoff[j], log10(cutoff[j]/2), data[, bl])
       
@@ -48,14 +48,16 @@ getResponder <- function(data,
       #  data[, paste0(post, k, cutoff.name)] <- as.numeric(10^data[, post] >= k*cutoff[j])
       #}
       
-      for (k in grtns){
-        data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
+      if (delta %in% colnames(data)) {# this delta only exists for stage 1 studies
+        for (k in grtns){
+          data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
+        }
       }
       
       # if (!is.na(pos.cutoffs[j])
-      if (grepl("bind", j)) {
+      if ((grepl("bind|ACE2", j) & study_name!="VAT08") | COR == "D29VLvariant" | grepl("stage2", COR)) {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
-        data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
+        if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
       } else {
         data[, paste0(post, "Resp")] <- as.numeric(
           (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > log10(pos.cutoffs[j])) |
@@ -71,13 +73,23 @@ getResponder <- function(data,
 get_resp_by_group <- function(dat=dat, group=group){
   
   if(length(timepoints)==1) {
-    dat[which(dat$time=="Day 1"), "wt"]=1
-    dat[which(dat$time!="Day 1"), "wt"]=dat[which(dat$time!="Day 1"), config.cor$wt] # wt.D29 or wt.D29start1
+    dat[which(dat$time=="Day 1"), "wt"] = 1
+    dat[which(dat$time!="Day 1"), "wt"] = dat[which(dat$time!="Day 1"), config.cor$wt] # wt.D29 or wt.D29start1
+    # special case for Janssen_partA_VL, ancestral assays use the wt.D29 instead of wt.D29variant
+    if ("wt.D29" %in% colnames(dat)) {dat[which(dat$time!="Day 1" & dat$assay %in% c("bindSpike","pseudoneutid50")), "wt"]=dat[which(dat$time!="Day 1" & dat$assay %in% c("bindSpike","pseudoneutid50")),"wt.D29"]}
+  } else if (study_name=="VAT08"){
+    dat[which(dat$time=="Day 1"), "wt"]=1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
+   
+    dat[which(dat$time=="Day 22" & grepl("bind", dat$assay)), "wt"]=dat[which(dat$time=="Day 22" & grepl("bind", dat$assay)), "wt.D22.bAb"]
+    dat[which(dat$time=="Day 22" & grepl("pseudoneutid", dat$assay)), "wt"]=dat[which(dat$time=="Day 22" & grepl("pseudoneutid", dat$assay)), "wt.D22.nAb"]
+    
+    dat[which(dat$time=="Day 43" & grepl("bind", dat$assay)), "wt"]=dat[which(dat$time=="Day 43" & grepl("bind", dat$assay)), "wt.D43.bAb"]
+    dat[which(dat$time=="Day 43" & grepl("pseudoneutid", dat$assay)), "wt"]=dat[which(dat$time=="Day 43" & grepl("pseudoneutid", dat$assay)), "wt.D43.nAb"]
   } else {
-    dat[which(dat$time=="Day 1" | !dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), "wt"]=1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
-    dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[1]) & dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[1])]
-    dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), "wt"]=dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)]) & dat$cohort_event %in% c("7-27 days PD2 cases", "28-180 days PD2 cases", "Post-Peak Cases", "Non-Cases")), paste0("wt.D",timepoints[length(timepoints)])]
-    }
+    dat[which(dat$time=="Day 1"), "wt"] = 1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
+    dat[which(dat$time==paste0("Day ",timepoints[1])), "wt"] = dat[which(dat$time==paste0("Day ",timepoints[1])), paste0("wt.D",timepoints[1])]
+    dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)])), "wt"] = dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)])), paste0("wt.D",timepoints[length(timepoints)])]
+  }
   
   complete <- complete.cases(dat[, group])
   

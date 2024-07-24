@@ -97,7 +97,7 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
       panel.grid.minor = element_blank()
     )
   pairplots[1, 1] <- pairplots[1, 1] +
-    scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.2)
+    scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.3)
   for (j in 2:pairplots$nrow) {
     for (k in 1:(j - 1)) {
       pairplots[j, k] <- pairplots[j, k] +
@@ -118,7 +118,7 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
       scale_x_continuous(
         limits = rr, breaks = breaks,
         labels = label_math(10^.x)
-      ) + ylim(0, 1.2)
+      ) + ylim(0, 1.3)
   }
 
   ggsave(
@@ -199,7 +199,7 @@ covid_corr_pairplots_for_verification <- function(plot_dat, ## data for plotting
       panel.grid.minor = element_blank()
     )
   pairplots[1, 1] <- pairplots[1, 1] +
-    scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.2)
+    scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.3)
   for (j in 2:pairplots$nrow) {
     for (k in 1:(j - 1)) {
       pairplots[j, k] <- pairplots[j, k] +
@@ -220,7 +220,7 @@ covid_corr_pairplots_for_verification <- function(plot_dat, ## data for plotting
       scale_x_continuous(
         limits = rr, breaks = breaks,
         labels = label_math(10^.x)
-      ) + ylim(0, 1.2)
+      ) + ylim(0, 1.3)
   }
   
   return(pairplots)
@@ -318,7 +318,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
       panel.grid.minor = element_blank()
     )
   pairplots[1, 1] <- pairplots[1, 1] +
-    scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.2)
+    scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.3)
   for (j in 2:pairplots$nrow) {
     for (k in 1:(j - 1)) {
       pairplots[j, k] <- pairplots[j, k] +
@@ -339,7 +339,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
       scale_x_continuous(
         limits = rr, breaks = breaks,
         labels = label_math(10^.x)
-      ) + ylim(0, 1.2)
+      ) + ylim(0, 1.3)
   }
   
   ggsave(
@@ -393,13 +393,8 @@ covid_corr_rcdf_facets <- function(plot_dat,
                                    lwd = 1,
                                    xlim,
                                    xbreaks = 1,
-                                   palette = c(
-                                     "#1749FF", "#D92321", "#0AB7C9",
-                                     "#FF6F1B", "#810094", "#378252",
-                                     "#FF5EBF", "#3700A5", "#8F8F8F",
-                                     "#787873"
-                                   ),
-                                   legend = levels(plot_dat[, color])[levels(plot_dat[, color]) %in% plot_dat[, color]],
+                                   palette, # = c("#1749FF", "#D92321", "#0AB7C9","#FF6F1B", "#810094", "#378252","#FF5EBF", "#3700A5", "#8F8F8F","#787873"),
+                                   legend,
                                    legend_size = 10,
                                    legend_nrow = ceiling(length(legend) / 2),
                                    panel_titles,

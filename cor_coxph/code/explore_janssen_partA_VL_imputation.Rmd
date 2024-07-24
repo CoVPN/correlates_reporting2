@@ -1,0 +1,132 @@
+---
+title: "EMSEMBLE Stage 1 Variants-Invariant Correlates Imputation Check"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+
+```{r, echo=FALSE, include=FALSE}
+{
+library(survey)
+library(kyotil)
+
+dat_mapped=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240123.csv')
+dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
+assays=assay_metadata$assay
+
+country.codes=c("USA", "ARG", "BRA", "CHL", "COL", "MEX", "PER", "ZAF")
+dat_mapped$cc=country.codes[dat_mapped$Country+1]
+dat_proc$cc=country.codes[dat_proc$Country+1]
+
+dat_pooled_partA = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore.csv')
+
+stopifnot(all(dat_pooled_partA$Ptid==dat_mapped$Ptid))
+stopifnot(all(dat_proc$Ptid==dat_mapped$Ptid))
+
+# forVariants is F if ancestral ID50 is measured before variants study, T if for variants study
+dat_mapped$forVariants = ifelse(!is.na(dat_pooled_partA$Day29pseudoneutid50),F,T)
+
+# an indicator for non-cases in the whole cohort
+kp = with(dat_mapped, EventIndPrimaryIncludeNotMolecConfirmedD1 == 0)
+
+# an indicator for cases in the whole cohort
+cases= with(dat_mapped, EventIndPrimaryIncludeNotMolecConfirmedD1 == 1)
+dat_proc$cases= with(dat_proc, EventIndPrimaryIncludeNotMolecConfirmedD1 == 1)
+dat_mapped$ph2.D29 = dat_proc$ph2.D29
+dat_mapped$cases = dat_proc$cases
+
+# an alias for subcohort
+subc = dat_mapped$SubcohortInd==1
+
+dat_mapped$COL_variants_study = with(dat_mapped, cc=="COL" & EventIndPrimaryIncludeNotMolecConfirmedD1==0 & SubcohortInd!=1 & !is.na(Day29bindSpike_D614))
+dat_mapped$SubcohortIndPlus = ifelse(dat_mapped$SubcohortInd | dat_mapped$COL_variants_study, 1, 0)
+table(dat_mapped$SubcohortIndPlus, dat_mapped$SubcohortInd)
+}
+
+
+```
+
+
+
+
+```{r, echo=FALSE}
+
+for (r in 0:2) {
+  cat("\n\n", switch(r+1, "US", "LatAm", "RSA"),"\n\n")
+
+  for(j in 1:2) {
+  # 1 for bAb and 2 for nAb
+    if (j==1) {
+      # bAb, 4 is not included because bindSpike_D614 is removed from dat_proc
+      aa = c(assays[1], assays[5:9]) 
+    } else if (j==2) {
+      # nAb
+      aa = assays[10:16] 
+    }
+    cat("\n", switch(j, "bAb", "nAb"), "\n")
+    print(aa)
+
+    cat("\nbefore imputation")
+    dat=subset(dat_mapped, Trt == 1 & Bserostatus==0 & Region==r & ph2.D29==1) # use ph2.D29==1 to focus on the ph2 b/c there are ptids outside subcohort who have anc bAb but not anc nAb
+    aaa = c(aa[1], aa[-1])
+    dat$tmp=NULL
+    for (i in 1:length(aaa)) { 
+      dat$tmp = paste0(dat$tmp, ifelse(is.na(dat[["Day29"%.%aaa[i]]]), 0, 1))
+    }
+    print(table(dat$tmp, dat$EventIndPrimaryIncludeNotMolecConfirmedD1))
+
+    cat("\nnot restricted to ph2.D29")
+    dat=subset(dat_mapped, Trt == 1 & Bserostatus==0 & Region==r) # use ph2.D29==1 to focus on the ph2 b/c there are ptids outside subcohort who have anc bAb but not anc nAb
+    aaa = c(aa[1], aa[-1])
+    dat$tmp=NULL
+    for (i in 1:length(aaa)) { 
+      dat$tmp = paste0(dat$tmp, ifelse(is.na(dat[["Day29"%.%aaa[i]]]), 0, 1))
+    }
+    print(table(dat$tmp, dat$EventIndPrimaryIncludeNotMolecConfirmedD1))
+    # print(table(dat$tmp, dat$seq1.variant.hotdeck1))
+    
+    # many ptid with lineage not classified as case
+    print(with(subset(dat_proc, Trt == 1 & Bserostatus==0 & Region==2 & ph1.D29) , 
+               table(seq1.variant.hotdeck1, EventIndPrimaryIncludeNotMolecConfirmedD1)))
+
+    
+    cat("\nafter imputation")
+    # for hard imputed markers
+    dat=subset(dat_proc, Trt == 1 & Bserostatus==0 & Region==r & ph2.D29==1) # use ph2.D29==1 to focus on the ph2 b/c there are ptids outside subcohort who have anc bAb but not anc nAb
+    aaa = c(aa[1], aa[-1])
+    dat$tmp=NULL
+    for (i in 1:length(aaa)) { 
+      dat$tmp = paste0(dat$tmp, ifelse(is.na(dat[["Day29"%.%aaa[i]]]), 0, 1))
+    }
+    print(table(dat$tmp, dat$EventIndPrimaryIncludeNotMolecConfirmedD1))
+
+    cat("\nafter imputation, showing multiply imputed markers")
+    dat=subset(dat_proc, Trt == 1 & Bserostatus==0 & Region==r & ph2.D29==1) # use ph2.D29==1 to focus on the ph2 b/c there are ptids outside subcohort who have anc bAb but not anc nAb
+    aaa = c(aa[1], aa[-1]%.%"_1")
+    dat$tmp=NULL
+    for (i in 1:length(aaa)) { 
+      dat$tmp = paste0(dat$tmp, ifelse(is.na(dat[["Day29"%.%aaa[i]]]), 0, 1))
+    }
+    print(table(dat$tmp, dat$EventIndPrimaryIncludeNotMolecConfirmedD1))
+  }
+
+}
+
+# subset(dat_proc, Region==2 & cases==FALSE & !is.na(Day29bindSpike) & !is.na(Day29bindSpike_P.1) & is.na(Day29bindSpike_P.1_1))[,c("SubcohortInd","EventIndPrimaryIncludeNotMolecConfirmedD1")]
+
+
+```
+
+In US, imputation has no impact. There are 27 in the 1110000 group in nAb before imputation, which gets merged into 1000000 group in the multiple imputed markers. This is because they are outside the subcohort and when doing multiple imputation, they are not carried as multiple imputation is restricted to ph2. 
+
+In LatAm, after imputation, 98 non-cases (Colombians) have bindSpike imputed, and one non-case has variants bAb imputed.
+
+In RSA, after imputation, six non-cases have variants bAb imputed. Also, the number of cases with variants bAb increases from 10 to 13. 
+
+Note the multiply imputed version (imputation #1) which affects cases.

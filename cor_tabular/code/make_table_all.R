@@ -213,7 +213,7 @@ labels.BMI <- c("Underweight BMI < 18.5", "Normal 18.5 $\\leq$ BMI < 25",
 
 labels.time <- labels.time[times]
 
-if ("BbindN" %in% names(dat.mock) & any(grepl("bind", assays))) assays <- union(assays, "bindN")
+if ("BbindN" %in% names(dat_proc) & any(grepl("bind", assays))) assays <- union(assays, "bindN")
 
 
 bindN <- "Anti N IgG (BAU/ml)"
@@ -273,8 +273,8 @@ labels_all <- full_join(labels.assays, resp.lb, by = c("time", "marker")) %>%
 # cat_v are rows of `subgroup`
 
 
-# dat.mock was made in _common.R
-dat <- dat.mock
+# dat_proc was made in _common.R
+dat <- dat_proc
 
 
 # The stratified random cohort for immunogenicity

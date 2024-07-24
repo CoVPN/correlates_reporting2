@@ -9,26 +9,52 @@ fits=list()
 fits.scaled=list()
 for (i in 1:2) { # 1: not scaled, 2: scaled
   for (a in all.markers) {
-    if(i==1) {
-      f= update(form.0, as.formula(paste0("~.+", a)))
-    } else {
-      f= update(form.0, as.formula(paste0("~.+scale(", a, ")")))
-    }
     
     models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
       # imp=1
+      
       if (TRIAL=="janssen_partA_VL") {
-        dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-      } else if (study_name=="VAT08") {
-        dat.vac$EventIndOfInterest  = dat.vac[[config.cor$EventIndPrimary  %.% imp]]
-        dat.vac$EventTimeOfInterest = dat.vac[[config.cor$EventTimePrimary %.% imp]]
+        # form.0 is not a list because this is for Cox regression and not risk
+        f = update(form.0, 
+                   as.formula(paste0("~.+", if(i==2) "scale", "(", a, "_"%.%imp, ")"))
+                   )
+      } else if (TRIAL=="vat08_combined") {
+        f = update(form.0, 
+                   as.formula(paste0("~.+", if(i==2) "scale", "(", a, ")"))
+                   )
+      } else {
+        stop("wrong TRIAL")
+      }
+      
+      
+      # set event indicator and time
+      if (TRIAL=="janssen_partA_VL") {
+        
+        dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+        
+      } else if (TRIAL=="vat08_combined") {
+        
+        # not competing risk, imputation only
+        dat.vacc$EventIndOfInterest  = dat.vacc[[config.cor$EventIndPrimary  %.% imp]]
+        dat.vacc$EventTimeOfInterest = dat.vacc[[config.cor$EventTimePrimary %.% imp]]
+        
       } else stop('wrong TRIAL: '%.%TRIAL)
       
-      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
+      
+      if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
+        dat.vacc$ph2a = dat.vacc$ph2.D29
+        
+      } else {
+        dat.vacc$ph2a = dat.vacc$ph2
+      }
+      
+      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vacc)
       svycoxph(f, design=design.vac) 
+    
     })
+    
     betas<-MIextract(models, fun=coef)
-    vars<-MIextract(models, fun=vcov)
+    vars<- MIextract(models, fun=vcov)
     res<-summary(MIcombine(betas,vars)) # MIcombine prints the results, there is no way to silent it
     
     if (i==1) {
@@ -56,7 +82,7 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
 # i=1
 # a="Day29pseudoneutid50"
 # # remove cases with missing variants info and cases with competing types
-# dat.tmp=dat.vac
+# dat.tmp=dat.vacc
 # dat.tmp=subset(dat.tmp, !(EventIndPrimary==1 & (is.na(seq1.variant) | seq1.variant!=variant)))
 # design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.tmp)
 # svycoxph(Surv(EventTimePrimaryD29, EventIndPrimary) ~ risk_score + Day29pseudoneutid50, design=design.vac) 
@@ -82,14 +108,14 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
   
   mytex(tab.1, file.name=paste0("CoR_univariable_svycoxph_pretty_",ifelse(i==1,"","scaled_"),fname.suffix), align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
         col.headers=paste0("\\hline\n 
-         \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{2}{c}{HR per ",ifelse(i==1,"10-fold","SD")," incr.}                     & \\multicolumn{1}{c}{P-value}   \\\\ 
+         \\multicolumn{1}{l}{} & \\multicolumn{2}{c}{HR per ",ifelse(i==1,"10-fold","SD")," incr.}                     & \\multicolumn{1}{c}{P-value}   \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)}  \\\\ 
          \\hline\n 
     "),
         longtable=T, 
         label=paste0("tab:CoR_univariable_svycoxph_pretty",ifelse(i==1,"","_scaled")), 
         caption.placement = "top", 
-        caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", 
+        caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", 
                        config.cor$txt.endpoint, 
                        " in the vaccine group: Hazard ratios per ",ifelse(i==1,"10-fold","SD")," increment in the marker*")
   )
@@ -100,24 +126,38 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
 ###################################################################################################
 if(verbose) print("regression for trichotomized markers")
 
-marker.levels = sapply(all.markers, function(a) length(table(dat.vac[[a%.%"cat"]])))
+marker.levels = sapply(all.markers, function(a) length(table(dat.vacc[[a%.%"cat"]])))
 
 fits.tri=list()
 overall.p.tri=c()
 for (a in all.markers) {
   if(verbose) myprint(a)
-  f = update(form.0, as.formula(paste0("~.+", a, "cat")))
   
   models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
     # imp=1
+    f = update(form.0, as.formula(paste0("~.+", a, if(TRIAL=="janssen_partA_VL") "_"%.%imp, "cat"))); f
+
     if (TRIAL=="janssen_partA_VL") {
-      dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      
     } else if (TRIAL=="vat08_combined") {
-      dat.vac$EventIndOfInterest  = dat.vac[[config.cor$EventIndPrimary %.% imp]]
-      dat.vac$EventTimeOfInterest = dat.vac[[config.cor$EventTimePrimary %.% imp]]
+      dat.vacc$EventIndOfInterest  = dat.vacc[[config.cor$EventIndPrimary %.% imp]]
+      dat.vacc$EventTimeOfInterest = dat.vacc[[config.cor$EventTimePrimary %.% imp]]
+      
     } else stop('wrong TRIAL: '%.%TRIAL)
     
-    design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
+    
+    if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
+      dat.vacc$ph2a = dat.vacc$ph2.D29
+    
+    # } else if (TRIAL=="vat08_combined" & endsWith(a, "pseudoneutid50") & iAna==1) {
+    #   dat.vacc$ph2a = dat.vacc[["ph2.D"%.%tp%.%".nAb.st1.anc"]]
+      
+    } else {
+      dat.vacc$ph2a = dat.vacc$ph2
+    }
+    
+    design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vacc)
     svycoxph(f, design=design.vac) 
   })
   
@@ -185,14 +225,14 @@ tab
 # use longtable because this table could be long, e.g. in hvtn705second
 mytex(tab[1:(nrow(tab)),], file.name=paste0("CoR_univariable_svycoxph_cat_pretty_",fname.suffix), align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
-         \\multicolumn{1}{l}{", toTitleCase(study_name), "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}       \\\\ 
+         \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{2}{c}{Haz. Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}       \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***}\\\\ 
          \\hline\n 
     "),       
       longtable=T, 
       label=paste0("tab:CoR_univariable_svycoxph_cat_pretty_", study_name), 
       caption.placement = "top", 
-      caption=paste0("Inference for Day ", tpeak, "antibody marker covariate-adjusted correlates of risk of ", 
+      caption=paste0("Inference for Day ", tpeak, " antibody marker covariate-adjusted correlates of risk of ", 
                      config.cor$txt.endpoint, 
                      " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*")
 )
@@ -203,56 +243,75 @@ mytex(tab[1:(nrow(tab)),], file.name=paste0("CoR_univariable_svycoxph_cat_pretty
 ###################################################################################################
 # multivariate_assays models
 
-if (!is.null(config$multivariate_assays)) {
-  if(verbose) print("Multiple regression")
-  
-  for (a in config$multivariate_assays) {
-    for (i in 1:2) {
-      # 1: per SD; 2: per 10-fold
-      a.tmp=a
-      aa=trim(strsplit(a, "\\+")[[1]])
-      for (x in aa[!contain(aa, "\\*")]) {
-        # replace every variable with Day210x, with or without scale
-        a.tmp=gsub(x, paste0(if(i==1) "scale","(Day",tpeak,x,")"), a.tmp) 
-      }
-      f= update(form.0, as.formula(paste0("~.+", a.tmp)))
-      
-      ## todo
-      models = lapply(1:10, function (imp) {
-        dat.vac$EventIndOfInterest = ifelse(dat.vac$EventIndPrimary==1 & dat.vac[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-        design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.vac)
-        svycoxph(f, design=design.vac) 
-      })
-      betas<-MIextract(models, fun=coef)
-      vars<-MIextract(models, fun=vcov)
-      combined.model = MIcombine(betas,vars)
-      res<-summary(combined.model) # MIcombine prints the results, there is no way to silent it
-      
-      est=formatDouble(exp(res[,1]), 2, remove.leading0=F)
-      ci= glue("({formatDouble(exp(res[,'(lower']), 2, remove.leading0=F)}-{formatDouble(exp(res[,'upper)']), 2, remove.leading0=F)})")
-      est = paste0(est, " ", ci)
-      p=  formatDouble(2*pnorm(abs(res[,1])/res[,"se"], lower.tail=F), 3, remove.leading0=F)
-      
-      # get generalized Wald p values
-      rows=length(betas[[1]]) - length(aa):1 + 1
-      stat=coef(combined.model)[rows] %*% solve(vcov(combined.model)[rows,rows]) %*% coef(combined.model)[rows]
-      p.gwald=pchisq(stat, length(rows), lower.tail = FALSE)
-      
-      tab=cbind(est, p)[rows,,drop=F]
-      tmp=match(aa, colnames(labels.axis))
-      tmp[is.na(tmp)]=1 # otherwise, labels.axis["Day"%.%tpeak, tmp] would throw an error when tmp is NA
-      rownames(tab)=ifelse(aa %in% colnames(labels.axis), labels.axis["Day"%.%tpeak, tmp], aa)
-      colnames(tab)=c(paste0("HR per ",ifelse(i==1,"sd","10 fold")," incr."), "P value")
-      tab
-      tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
+if (!is.null(multivariate_assays)) {
 
-      mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", match(a, config$multivariate_assays), if(i==2) "_per10fold",fname.suffix), align="c", include.colnames = T, save2input.only=T, 
-            input.foldername=save.results.to)
-    }
-  }
+for (a in multivariate_assays) {
+  aa=trim(strsplit(a, "\\+")[[1]])
   
+  for (i in 1:2) { # 1: per SD; 2: per 10-fold
+    
+    # the function also depends on DayPrefix, tpeak, TRIAL, aa, a
+    get.f=function(i, imp) {
+      a.tmp=a
+      for (x in aa[!contain(aa, "\\*")]) {
+        # replace x with, e.g., Day210x, with scale if i==1 and without scale if i==2
+        # marker may also be multiple imputed
+        
+        # changed from gsub to sub at some point, which may cause a bug
+        # the order of items in aa is important, e.g. 
+        # a="bindSpike+bindSpike_B.1.351" works, but a="bindSpike_B.1.351+bindSpike" does not
+        # since bindSpike_B.1.351 contains bindSpike
+        
+        a.tmp=sub(x, paste0(if(i==1) "scale",  "(", DayPrefix, tpeak, x, if(TRIAL=="janssen_partA_VL") "_"%.%imp, ")"), a.tmp) 
+      }
+      
+      f = update(form.0, as.formula(paste0("~.+", a.tmp)))
+      f
+    }
+    
+    models = lapply(1:10, function (imp) {
+      dat.vacc$EventIndOfInterest = ifelse(dat.vacc$EventIndPrimary==1 & dat.vacc[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
+      
+      if (TRIAL=="janssen_partA_VL" & a=="bindSpike+pseudoneutid50") {
+        dat.vacc$ph2a = dat.vacc$ph2.D29
+      } else {
+        dat.vacc$ph2a = dat.vacc$ph2
+      }
+      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat.vacc)
+      svycoxph(get.f(i, imp), design=design.vac) 
+    })
+    betas<-MIextract(models, fun=coef)
+    vars<-MIextract(models, fun=vcov)
+    combined.model = MIcombine(betas,vars)
+    res<-summary(combined.model) # MIcombine prints the results, there is no way to silent it
+    
+    est=formatDouble(exp(res[,1]), 2, remove.leading0=F)
+    ci= glue("({formatDouble(exp(res[,'(lower']), 2, remove.leading0=F)}-{formatDouble(exp(res[,'upper)']), 2, remove.leading0=F)})")
+    est = paste0(est, " ", ci)
+    p=  formatDouble(2*pnorm(abs(res[,1])/res[,"se"], lower.tail=F), 3, remove.leading0=F)
+    
+    # get generalized Wald p values
+    rows=length(betas[[1]]) - length(aa):1 + 1
+    stat=coef(combined.model)[rows] %*% solve(vcov(combined.model)[rows,rows]) %*% coef(combined.model)[rows]
+    p.gwald=pchisq(stat, length(rows), lower.tail = FALSE)
+    
+    tab=cbind(est, p)[rows,,drop=F]
+    tmp=match(aa, colnames(labels.axis))
+    tmp[is.na(tmp)]=1 # otherwise, labels.axis["Day"%.%tpeak, tmp] would throw an error when tmp is NA
+    rownames(tab)=ifelse(aa %in% colnames(labels.axis), labels.axis["Day"%.%tpeak, tmp], aa)
+    colnames(tab)=c(paste0("HR per ",ifelse(i==1,"sd","10 fold")," incr."), "P value")
+    tab
+    tab=rbind(tab, "Generalized Wald Test"=c("", formatDouble(p.gwald,3, remove.leading0 = F)))
+
+    mytex(tab, file.name=paste0("CoR_multivariable_svycoxph_pretty", 
+                                match(a, multivariate_assays), 
+                                if(i==2) "_per10fold",
+                                fname.suffix), 
+          align="c", include.colnames = T, save2input.only=T, input.foldername=save.results.to)
+  }
 }
 
+}
 
 
 write(NA, file=paste0(save.results.to, "permutation_replicates_"%.%study_name))     # so the rmd file can compile

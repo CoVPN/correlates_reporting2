@@ -1,0 +1,68 @@
+# Summary of Sanofi vaccines correlates results
+
+\vspace{.5cm}
+**Peak Obj 1 Sanofi**
+
+Focusing on MDW: D15 marker is significant (HR 0.47), baseline and fold change are not, when studied alone. When both baseline and D15 markers are included, both are significant. This is true for both D22to181 and D22to91, but no signals in D92to181.
+
+
+<!-- Set up -->
+```{r, echo=FALSE, results='asis'}
+show.q=F
+multivariate_assays=NULL
+show.risk.curves=F
+has.plac=F # controls whether to show placebo prevalence
+
+special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 15.")
+
+assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays) # use to get list of cutpoints
+names(all.markers)=all.markers
+
+config <- config::get(config = "covail")
+dat_proc=read.csv(config$data_cleaned)
+
+```
+
+
+<!-- Sanofi -->
+```{r, echo=FALSE, results='asis'}
+for (iObj in c(1,11)) { 
+  
+  cat("# Objective Peak ", 
+      switch(iObj%.%"", 
+             "1"="1 Sanofi", 
+             "11"="1 Sanofi, baseline+D15/B"), 
+      sep="")
+  
+  for (COR in c("D15to181", "D15to91", "D92to181")) {
+    
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    
+    # shift by 7 days to start counting from D15
+    COR = sub("D15to", "D22to", COR) 
+    # COR = sub("to181", "to188", COR) 
+    
+    for (iPop in 1:1) {
+      fname.suffix = switch (iPop%.%"",
+        '1' = 'sanofi'
+      )  
+      
+      if (iObj==1) {
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==11) {
+        fname.suffix = fname.suffix %.% "_B+D15overB"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+      }
+      cat(res, sep = '\n')
+    }
+  }
+}
+```
+
+

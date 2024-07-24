@@ -1,5 +1,3 @@
-numCores <- unname(ifelse(Sys.info()["sysname"] == "Windows",
-                          1, future::availableCores()))
 
  
 load.data=function(TRIAL, COR, trt=1) {
@@ -8,13 +6,13 @@ load.data=function(TRIAL, COR, trt=1) {
     # uloq censoring    
     for (a in assays) {
         tmp="Day"%.%config.cor$tpeak %.% a
-        dat.mock[[tmp]] <- ifelse(dat.mock[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[tmp]])
+        dat_proc[[tmp]] <- ifelse(dat_proc[[tmp]] > log10(uloqs[a]), log10(uloqs[a]), dat_proc[[tmp]])
     }
     if (trt==1) {
-        dat=subset(dat.mock, Trt==1 & ph1)
+        dat=subset(dat_proc, Trt==1 & ph1)
         dat = add.trichotomized.markers (dat, tpeak, wt.col.name="wt")
     } else {
-        dat=subset(dat.mock, Trt==0 & ph1)        
+        dat=subset(dat_proc, Trt==0 & ph1)        
     }
     dat
 }
@@ -35,22 +33,42 @@ get.trial=function(x, assay) {
 
 
 
-#if (length(assays) %in% c(3,4)) {
-#  .mfrow <- c(2, 2)
-#} else if (length(assays) == 5) {
-#  .mfrow <- c(3, 2)
-#} else if (length(assays) == 2) {
-#  .mfrow <- c(1, 2)
-#} else {
-#  stop("Please re-define variable .mfrows")
-#}
-.mfrow <- c(1, 1)
 
 
 # need this function b/c svycoxh may error due to singularity if, e.g. all cases have the same marker value
 run.svycoxph=function(f, design) {
     fit=try(svycoxph(f, design=design), silent=T)
     if (class(fit)[1]=="try-error") NA else fit
+}
+
+
+
+
+
+forest.covail=function (fits, names, fname.suffix, save.results.to) {
+  
+  names(fits)=names
+  est.ci = sapply(fits, function (fit) {
+    if (length(fit)==1) return (rep(NA,4))
+    tmp=getFixedEf(fit, exp=T, robust=F)
+    tmp[nrow(tmp),c("HR", "(lower", "upper)", "p.value")]
+  })
+  
+  #nevents=rep(sum(dat$yy==1), length(fits))
+  # not showing nevents 
+  nevents=rep(NA, length(fits))
+  
+  mypdf(onefile=F, width=10,height=4, file=paste0(save.results.to, "hr_forest_", fname.suffix)) 
+  
+  theforestplot(point.estimates=est.ci[1,], lower.bounds=est.ci[2,], upper.bounds=est.ci[3,], group=colnames(est.ci), 
+                nEvents=nevents, title=paste0(""), p.values=NA, 
+                decimal.places=2, graphwidth=unit(120, "mm"), fontsize=1.2, 
+                table.labels = c("", "  HR (95% CI)",""), 
+                x.ticks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4) # controls the limit
+  )
+  
+  dev.off()
+  
 }
 
 
@@ -118,7 +136,9 @@ theforestplot <- function(cohort=NA,group,nEvents=NA,totFU=NA,rate=NA,point.esti
   if(!is.na(dashed.line)){grid.line <- structure(dashed.line, gp = gpar(lty = 2, col = "red", lwd=0.5))} else{grid.line <- FALSE}
   
   forestplot(tabletext,plotdata,is.summary = FALSE,col = fpColors(box = "darkblue",line = "darkblue",summary = "royalblue",zero="black"),    
-    graph.pos = 3,graphwidth = graphwidth,hrzl_lines = list("2" = gpar(lty=1)),zero = zero.line,lwd.zero = 0.5,lwd.ci = 0.5,lwd.xaxis = 0.5,xticks = x.ticks,boxsize = 0.1,grid=grid.line,txt_gp = fpTxtGp(
+    graph.pos = 3,graphwidth = graphwidth,
+    hrzl_lines = list("2" = gpar(lty=1)),
+    zero = zero.line,lwd.zero = 0.5,lwd.ci = 0.5,lwd.xaxis = 0.5,xticks = x.ticks,boxsize = 0.1,grid=grid.line,txt_gp = fpTxtGp(
       ticks = gpar(fontfamily = "", cex = fontsize * 0.8),
       label = gpar(fontfamily = "", cex = fontsize * 0.9),
       summary = gpar(cex = fontsize)
@@ -134,4 +154,20 @@ theforestplot <- function(cohort=NA,group,nEvents=NA,totFU=NA,rate=NA,point.esti
 get.dat.with.no.empty=function(dat.tmp) {
     tab=with(dat.tmp, table(Wstratum, ph2))
     subset(dat.tmp, !Wstratum %in% as.integer(rownames(tab)[which(tab[,"TRUE"]==0)]))
+}
+
+
+
+# a more comprehensive, slower version of copcor::escape
+escape_latex <- function(text) {
+  # Define the special characters and their LaTeX escaped equivalents
+  special_chars <- c("\\", "%", "$", "#", "_", "{", "}", "&", "^", "~", "<", ">", "|", "\"")
+  latex_escapes <- c("\\textbackslash{}", "\\%", "\\$", "\\#", "\\_", "\\{", "\\}", "\\&", "\\textasciicircum{}", "\\textasciitilde{}", "\\textless{}", "\\textgreater{}", "\\textbar{}", "\\textquotedbl{}")
+  
+  # Replace each special character in the text with its escaped version
+  for (i in seq_along(special_chars)) {
+    text <- gsub(special_chars[i], latex_escapes[i], text, fixed = TRUE)
+  }
+  
+  return(text)
 }

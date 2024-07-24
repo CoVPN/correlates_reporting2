@@ -55,7 +55,7 @@ myprint(numPerm)
     
 for (a in assays) {
   for (t in "Day"%.%tpeak ) {
-    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
+    dat_proc[[t %.% a]] <- ifelse(dat_proc[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat_proc[[t %.% a]])
   }
 }
     
@@ -63,8 +63,8 @@ for (a in assays) {
 
 # the following data frame define the phase 1 ptids
 # do this after uloq censoring
-dat.vac.seroneg=subset(dat.mock, Trt==1 & ph1==1)
-dat.pla.seroneg=subset(dat.mock, Trt==0 & ph1==1)
+dat.vac.seroneg=subset(dat_proc, Trt==1 & ph1==1)
+dat.pla.seroneg=subset(dat_proc, Trt==0 & ph1==1)
 
     
 # define an alias for EventIndPrimaryDxx
@@ -74,7 +74,7 @@ dat.pla.seroneg$yy=dat.pla.seroneg[["EventIndPrimary"]]
 #hist(dat.vac.seroneg$EventTimePrimaryD29)
 #hist(dat.vac.seroneg$EventTimePrimaryD29[dat.vac.seroneg$EventIndPrimaryD29==1])
     
-form.0.logistic = update (EventIndPrimary ~ 1, as.formula(config$covariates_riskscore))
+form.0.logistic = update (EventIndPrimary ~ 1, as.formula(config$covariates))
 print(form.0.logistic)
 
 

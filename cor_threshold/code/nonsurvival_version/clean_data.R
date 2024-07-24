@@ -8,11 +8,11 @@ source(here::here("code", "params.R"))
 
 # this step is now done in _common.R
 # load data
-# dat.mock <- read.csv(here::here("..", "data_clean", paste0(stringr::str_match(data_name,"(.+).csv")[,2],append_data,".csv")))
+# dat_proc <- read.csv(here::here("..", "data_clean", paste0(stringr::str_match(data_name,"(.+).csv")[,2],append_data,".csv")))
 
 for (a in assays) {
   for (t in c("B", "Day57", if(has29) "Day29") ) {
-    dat.mock[[t %.% a]] <- ifelse(dat.mock[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat.mock[[t %.% a]])
+    dat_proc[[t %.% a]] <- ifelse(dat_proc[[t %.% a]] > log10(uloqs[a]), log10(uloqs[a]), dat_proc[[t %.% a]])
   }
 }
 
@@ -27,7 +27,7 @@ for (time in times) {
   # }
   
   myprint(time)
-  data <- dat.mock
+  data <- dat_proc
   outcome <- data[[Event_Ind_variable[[time]]]] == 1 & data[[Event_Time_variable[[time]]]] <= tf[[time]]
   outcome <- as.numeric(outcome)
   # TO CHANGE
