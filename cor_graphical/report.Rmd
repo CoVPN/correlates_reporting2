@@ -178,14 +178,16 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           assays[grepl("pseudoneutid50", assays)]
         } else {assays}
       
-      for (assay_grp in assay_grp_list){
+      for (version in c("", if (COR_postfix_list == "D22D43omi_stage2") "_v2")){
+        for (assay_grp in assay_grp_list){
+            
+            if (attr(config,"config") == "prevent19nvx") next # no need for prevent19nvx
           
-          if (attr(config,"config") == "prevent19nvx") next # no need for prevent19nvx
-        
-          res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
-          cat(res, sep = '\n')
-          cat("\\clearpage", sep = '\n')
-          
+            res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
+            cat(res, sep = '\n')
+            cat("\\clearpage", sep = '\n')
+            
+        }
       }
       
       
