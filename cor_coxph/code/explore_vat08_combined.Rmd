@@ -22,7 +22,7 @@ region.2 = c( # stage 2
 
 
 dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240720_hotdeck.csv')
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240722.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240723.csv')
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -65,6 +65,30 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDateEnrollment)
 
 ```
+
+
+### VE separately for low and high baseline marker group
+
+VE for Stage 1 NN for D01 nAb D614G < median, and then again for >= median
+
+```{r}
+
+fit=svycoxph(Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ Trt*Bpseudoneutid50dich, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.nAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43))); fit
+
+
+
+```
+
+
+
+### Fit a model with both nAb and bAb in stage 1 NN Vacc
+
+```{r}
+fit = svycoxph(Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ Day43bindSpike_omicron + Day43pseudoneutid50_BA.1 + FOI + risk_score + Sex + strata(Country), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==1)))
+fit
+
+```
+
 
 ### How many sampled were measured from US/JPN
 

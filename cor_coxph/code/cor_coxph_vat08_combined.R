@@ -1,12 +1,11 @@
 # COR="D43vat08_combined_M6_bAb"
-# COR="D43vat08_combined_M6_st2.nAb.sen"
 
 Sys.setenv(TRIAL = "vat08_combined")
 Sys.setenv(VERBOSE = 1) 
 renv::activate(project = here::here(".."))     
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
-
+source(here::here("code", "cor_coxph_coef_1_mi.R"))
 
 {
 library(kyotil) # p.adj.perm, getFormattedSummary
@@ -23,10 +22,7 @@ library(glue)
 time.start=Sys.time()
 print(date())
 for (i in 1:5) cat(COR, " "); cat("\n")
-}
 
-
-{
 tp = substr(COR,2,3) 
     
 # path for figures and tables etc
@@ -82,6 +78,7 @@ for (iSt in stages) {
   # get cutpoints and turn trichotomized markers into factors
   # get dichcutpoints and turn dichotomized markers into factors
   # need to do it within iSt loop because marker.cutpoints are needed in later function calls
+  
   {
   marker.cutpoints = list()
   for (a in c(paste0("Day", tpeak, assays),
@@ -137,7 +134,62 @@ for (iSt in stages) {
   }
   }
   
+  if(F) {
+    
   
+  ###################################
+  # Univariate Placebo: Dxx
+  
+  all.markers=c(paste0("Day", tpeak, assays))
+  
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
+  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
+  names(all.markers.names.short) = all.markers
+  multivariate_assays = config$multivariate_assays
+  
+  cor_coxph_coef_1_mi (
+    form.0,
+    dat=dat.plac,
+    fname.suffix="D"%.%tpeak%.%"_plac",
+    save.results.to,
+    config,
+    config.cor,
+    markers=all.markers,
+    markers.names.short=all.markers.names.short,
+    
+    dat.pla.seroneg = NULL,
+    show.q=FALSE,
+    
+    forestplot.markers=1:length(assays),
+    for.title=paste0("Stage ",iSt," NN, Placebo"),
+    
+    verbose=T
+  )
+  
+  
+  # repeat stage 1 placebo, keeping the countries that also appear in stage 2
+  if(iSt==1) {
+    cor_coxph_coef_1_mi (
+      form.0,
+      dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
+      fname.suffix="D"%.%tpeak%.%"_plac_alt2",
+      save.results.to,
+      config,
+      config.cor,
+      markers=all.markers,
+      markers.names.short=all.markers.names.short,
+      
+      dat.pla.seroneg = NULL,
+      show.q=FALSE,
+      
+      forestplot.markers=1:length(assays),
+      for.title=paste0("Stage ",iSt," NN, Placebo"),
+      
+      verbose=T
+    )
+    
+  }
   
   
   ###################################
@@ -148,6 +200,7 @@ for (iSt in stages) {
                 paste0("Delta", tpeak, "overB", assays))
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short,
                               "B "%.%all.markers.names.short,
                               "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
@@ -169,14 +222,16 @@ for (iSt in stages) {
     dat.pla.seroneg = dat.plac,
     show.q=FALSE,
     
-    forestplot.markers=1:length(assays),
-    forestplot.xlog = F,
-    forestplot.x.ticks = NULL,
+    forestplot.markers=list(1:length(assays), 1:length(assays)+length(assays), 1:length(assays)+2*length(assays)),
+    for.title=paste0("Stage ",iSt," NN, Vaccine"),
     
     verbose=T
   )
   
   
+  
+  
+}
 
   ###################################
   # Univariate trichotomized curves: D, D/B
@@ -185,6 +240,7 @@ for (iSt in stages) {
                 paste0("Delta", tpeak, "overB", assays))
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short,
                               "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
@@ -213,72 +269,20 @@ for (iSt in stages) {
     for.title=paste0("Stage ",iSt," NN, Vaccine")
   )
   
-
-  ###################################
-  # Univariate Placebo: Dxx
   
-  all.markers=c(paste0("Day", tpeak, assays))
-  
-  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-  all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
-  names(all.markers.names.short) = all.markers
-  multivariate_assays = config$multivariate_assays
-  
-  cor_coxph_coef_1_mi (
-    form.0,
-    dat=dat.plac,
-    fname.suffix="D"%.%tpeak%.%"_plac",
-    save.results.to,
-    config,
-    config.cor,
-    markers=all.markers,
-    markers.names.short=all.markers.names.short,
     
-    dat.pla.seroneg = NULL,
-    show.q=FALSE,
-    
-    forestplot.markers=1:length(assays),
-    forestplot.xlog = F,
-    forestplot.x.ticks = NULL,
-    
-    verbose=T
-  )
-  
-  # repeat stage 1 placebo, keeping the countries that also appear in stage 2
-  if(iSt==1) {
-    cor_coxph_coef_1_mi (
-      form.0,
-      dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
-      fname.suffix="D"%.%tpeak%.%"_plac_alt2",
-      save.results.to,
-      config,
-      config.cor,
-      markers=all.markers,
-      markers.names.short=all.markers.names.short,
-      
-      dat.pla.seroneg = NULL,
-      show.q=FALSE,
-      
-      forestplot.markers=1:length(assays),
-      forestplot.xlog = F,
-      forestplot.x.ticks = NULL,
-      
-      verbose=T
-    )
-    
-  }
-  
-  
   ###################################
   # Univariate trichotomized curves, placebo: D
   
   all.markers=c(paste0("Day", tpeak, assays))
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
   
   all.markers.names.long  = sub("Pseudovirus-", "", assay_metadata$assay_label[match(assays,assay_metadata$assay)])
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.long  = c("D"%.%tpeak%.%" "%.%all.markers.names.long)
   names(all.markers.names.long) = all.markers
   
@@ -314,6 +318,7 @@ for (iSt in stages) {
   )
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
   
@@ -346,8 +351,7 @@ for (iSt in stages) {
   )
     
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-  all.markers.names.short = sub("IgG ", "", all.markers.names.short)
-  all.markers.names.short = sub(" \\(AU/ml\\)", "", all.markers.names.short)
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
   
@@ -383,8 +387,7 @@ for (iSt in stages) {
   )
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-  all.markers.names.short = sub("IgG ", "", all.markers.names.short)
-  all.markers.names.short = sub(" \\(AU/ml\\)", "", all.markers.names.short)
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
   
@@ -418,8 +421,7 @@ for (iSt in stages) {
   )
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-  all.markers.names.short = sub("IgG ", "", all.markers.names.short)
-  all.markers.names.short = sub(" \\(AU/ml\\)", "", all.markers.names.short)
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
   
@@ -506,7 +508,7 @@ for (iSt in stages) {
 
   }  
     
-
+  
 
   
 } # iSt loop
