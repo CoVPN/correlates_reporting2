@@ -67,6 +67,68 @@ dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDa
 ```
 
 
+
+
+
+### Feedback from 1st BARDA presentation
+
+1. Dean recommended focusing on understanding better why the D43 absolute level nAb titer results for Stage 1 are weird
+(i.e., direct CoR for vaccine, albeit with exception nAb D614G).
+Things look good for Stage 2.  For the why-weird analyses Dean recommended exploring results under alternative covariate adjustments,
+including no adjustments.
+
+```{r}
+
+f1=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ FOI + risk_score + Sex + Day43pseudoneutid50_BA.1 + strata(cc)
+f2=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ Sex + Day43pseudoneutid50_BA.1 + strata(cc)
+f3=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ risk_score + Day43pseudoneutid50_BA.1 + strata(cc)
+f4=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ Day43pseudoneutid50_BA.1 + strata(cc)
+f5=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ Day43pseudoneutid50_BA.1
+  
+fits=lapply(list(f1, f2, f3, f4, f5), function (f) svycoxph(f, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.nAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==1))))
+
+tab=getFormattedSummary(fits, robust=T)
+tab
+
+```
+
+2. For vaccine arm interaction analyses, consider defining 2 baseline subgroups in a single way, instead of
+antigen-specific like what was done.  Also, consider defining it based on nAb ID50 D614G, because it matches a vaccine strain
+for both Stage 1 and 2 trials, and this antigen has the greatest dynamic range in a sense (and doesn't have the
+issue of a high undetectable response frequency that some antigens have, especially BA.4/BA.5).  So, what if used the < median
+vs. >= median nAb ID50 D614G response for all analyses?  There is the question of how to deal with the 2 trials.
+perhaps using the median of the Stage 2 trial, as that vaccine is better and more important to learn about.
+
+```{r}
+dat1=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43)
+dat2=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43)
+
+plot (density(dat1$Bpseudoneutid50[!is.na(dat1$Bpseudoneutid50)], weights=dat1$wt.D43.nAb[!is.na(dat1$Bpseudoneutid50)]))
+lines(density(dat2$Bpseudoneutid50[!is.na(dat2$Bpseudoneutid50)], weights=dat2$wt.D43.nAb[!is.na(dat2$Bpseudoneutid50)]), col=2)
+
+Hmisc::wtd.quantile(dat1$Bpseudoneutid50, weights=dat1$Bpseudoneutid50, probs=c(1/4,1/2,3/4))
+Hmisc::wtd.quantile(dat2$Bpseudoneutid50, weights=dat2$Bpseudoneutid50, probs=c(1/4,1/2,3/4))
+
+svycoxph(Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ Bhigh, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.nAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==1)))
+svycoxph(Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ I(1-Bhigh), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.nAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==1)))
+```
+
+
+### lack of cases in asiapac in stage 2
+
+```{r}
+
+fit = svycoxph(Surv(EventTimeOmicronD43M6hotdeck7,EventIndOmicronD43M6hotdeck7) ~ Day43bindSpike_omicron + FOI + risk_score + Sex + strata(Region3), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0)))
+fit
+
+fit2 = svycoxph(Surv(EventTimeOmicronD43M6hotdeck7,EventIndOmicronD43M6hotdeck7) ~ Day43bindSpike_omicron + FOI + risk_score + Sex + Region3, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0)))
+fit2
+
+with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0), mytable(Region3, EventIndOmicronD43M6hotdeck7))
+
+```
+
+
 ### VE separately for low and high baseline marker group
 
 VE for Stage 1 NN for D01 nAb D614G < median, and then again for >= median
