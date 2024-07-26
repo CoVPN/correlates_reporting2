@@ -1,5 +1,5 @@
 ## all           : clean saved results and get results to populate report
-all: clean cor_coxph report
+all: cor_coxph report
 
 report:
 	bash _build_chapter.sh
