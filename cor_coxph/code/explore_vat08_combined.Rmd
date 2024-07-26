@@ -21,8 +21,8 @@ region.2 = c( # stage 2
   "Nepal" = 3, "India" = 3)
 
 
-dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240720_hotdeck.csv')
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240723.csv')
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240726_hotdeck.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240726.csv')
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/vat08_combined_assay_metadata.csv')
 assays=assay_metadata$assay
@@ -63,6 +63,146 @@ dat_mapped$nAbBatch1[is.na(dat_mapped$Day43pseudoneutid50_B.1.351) & !is.na(dat_
 mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 
 dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDateEnrollment)
+
+```
+
+
+
+
+
+### Feedback from 1st BARDA presentation
+
+1. Dean recommended focusing on understanding better why the D43 absolute level nAb titer results for Stage 1 are weird
+(i.e., direct CoR for vaccine, albeit with exception nAb D614G).
+Things look good for Stage 2.  For the why-weird analyses Dean recommended exploring results under alternative covariate adjustments,
+including no adjustments.
+
+```{r}
+
+f1=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ FOI + risk_score + Sex + Day43pseudoneutid50_BA.1 + strata(cc)
+f2=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ Sex + Day43pseudoneutid50_BA.1 + strata(cc)
+f3=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ risk_score + Day43pseudoneutid50_BA.1 + strata(cc)
+f4=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ Day43pseudoneutid50_BA.1 + strata(cc)
+f5=Surv(EventTimeOmicronD43M6hotdeck10,EventIndOmicronD43M6hotdeck10) ~ Day43pseudoneutid50_BA.1
+  
+fits=lapply(list(f1, f2, f3, f4, f5), function (f) svycoxph(f, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.nAb, data=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==1))))
+
+tab=getFormattedSummary(fits, robust=T)
+tab
+
+```
+
+2. For vaccine arm interaction analyses, consider defining 2 baseline subgroups in a single way, instead of
+antigen-specific like what was done.  Also, consider defining it based on nAb ID50 D614G, because it matches a vaccine strain
+for both Stage 1 and 2 trials, and this antigen has the greatest dynamic range in a sense (and doesn't have the
+issue of a high undetectable response frequency that some antigens have, especially BA.4/BA.5).  So, what if used the < median
+vs. >= median nAb ID50 D614G response for all analyses?  There is the question of how to deal with the 2 trials.
+perhaps using the median of the Stage 2 trial, as that vaccine is better and more important to learn about.
+
+
+```{r}
+dat1=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph2.D43)
+dat2=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43)
+
+mypairs(dat1[,paste0("B",c(nassays,bassays))])
+mypairs(dat2[,paste0("B",c(nassays,bassays))])
+
+```
+
+```{r}
+dat_proc$Bhigh = ifelse(dat_proc$Bpseudoneutid50>log10(20+0.1), 1, 0) # cut point is LOD
+
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.nAb), Hmisc::wtd.mean(Bhigh, wt.D43.nAb))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.bAb), Hmisc::wtd.mean(Bhigh, wt.D43.bAb))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.nAb), Hmisc::wtd.mean(Bhigh, wt.D43.nAb))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.bAb), Hmisc::wtd.mean(Bhigh, wt.D43.bAb))
+```
+
+```{r}
+dat_proc$Bhigh = ifelse(dat_proc$Bpseudoneutid50>log10(160), 1, 0) # cut point is pos threshold, i.e. 4xLOD
+
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.nAb), Hmisc::wtd.mean(Bhigh, wt.D43.nAb))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.bAb), Hmisc::wtd.mean(Bhigh, wt.D43.bAb))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.nAb), Hmisc::wtd.mean(Bhigh, wt.D43.nAb))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.bAb), Hmisc::wtd.mean(Bhigh, wt.D43.bAb))
+```
+
+6. plot assay run dates by D43 neut titer for each non-naive cohort of interest (Stage 1, Stage 2) x (V, P) x (cases, non-cases).
+
+```{r}
+dat_proc$D43PSVRunDate=as.Date(dat_proc$D43PSVRunDate)
+
+par(mfrow=c(2,2))
+
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.nAb), plot(Day43pseudoneutid50~D43PSVRunDate, col="white", main="Stage 1 NN Vaccine"))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.nAb & Trt==1 & EventIndOmicronD43M6hotdeck10==1), points(Day43pseudoneutid50~D43PSVRunDate,  col=2))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.nAb & Trt==1 & EventIndOmicronD43M6hotdeck10==0), points(Day43pseudoneutid50~D43PSVRunDate))
+
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.nAb), plot(Day43pseudoneutid50~D43PSVRunDate, col="white", main="Stage 1 NN Placebo"))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.nAb & Trt==0 & EventIndOmicronD43M6hotdeck10==1), points(Day43pseudoneutid50~D43PSVRunDate,  col=2))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==1 & ph2.D43.nAb & Trt==0 & EventIndOmicronD43M6hotdeck10==0), points(Day43pseudoneutid50~D43PSVRunDate))
+
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.nAb), plot(Day43pseudoneutid50~D43PSVRunDate, col="white", main="Stage 2 NN Vaccine"))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.nAb & Trt==1 & EventIndOmicronD43M6hotdeck10==1), points(Day43pseudoneutid50~D43PSVRunDate,  col=2))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.nAb & Trt==1 & EventIndOmicronD43M6hotdeck10==0), points(Day43pseudoneutid50~D43PSVRunDate))
+
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.nAb), plot(Day43pseudoneutid50~D43PSVRunDate, col="white", main="Stage 2 NN Placebo"))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.nAb & Trt==0 & EventIndOmicronD43M6hotdeck10==1), points(Day43pseudoneutid50~D43PSVRunDate,  col=2))
+with(subset(dat_proc, Bserostatus==1 & Trialstage==2 & ph2.D43.nAb & Trt==0 & EventIndOmicronD43M6hotdeck10==0), points(Day43pseudoneutid50~D43PSVRunDate))
+
+
+
+```
+
+```{r}
+
+tb <- rgb(255, 255, 255, maxColorValue = 255, alpha = 100)  # with transparency
+
+for (iSt in 1:2) {
+for (trt in 1:0) {
+  
+  myboxplot(Day43pseudoneutid50~D43PSVRunDate, subset(dat_proc, Bserostatus==1 & Trialstage==iSt & ph2.D43.nAb & Trt==trt & EventIndOmicronD43M6hotdeck10==0), col="white", col.points=1, border=1, main=paste0("Stage ", iSt, " NN ", ifelse(trt==1,"Vaccine", "Placebo")), cex.axis=0.8)
+  myboxplot(Day43pseudoneutid50~D43PSVRunDate, subset(dat_proc, Bserostatus==1 & Trialstage==iSt & ph2.D43.nAb & Trt==trt & EventIndOmicronD43M6hotdeck10==1), col=tb, col.points=2, border=2, add=T, xaxt="n")
+  
+}
+}
+
+```
+
+10. For Sanofi Stage 1 -- did we ever try a correlates analysis only including the Batch within which were all the cases
+
+```{r}
+
+dat=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph2.D43.nAb & Trt==1)
+table(dat$nAbBatch, dat$EventIndOmicronD43M6hotdeck10) 
+
+myboxplot(Day43pseudoneutid50~nAbBatch, dat, col=dat$EventIndOmicronD43M6hotdeck1+1)
+
+
+```
+
+
+we’d need proof that for D614G neuts, responses are lower for batch 2 vs. batches 0 and 1 after accounting for the baseline factors that we adjusted for in correlates analyses.
+```{r}
+dat_proc$batch2=dat_proc$nAbBatch==2
+
+fit=lm(Day43pseudoneutid50 ~ FOI + risk_score + Sex + cc + batch2, subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1 & ph1.D43 & EventIndOmicronD43M6hotdeck10==1)); summary(fit)
+
+```
+
+
+
+### lack of cases in asiapac in stage 2
+
+```{r}
+
+fit = svycoxph(Surv(EventTimeOmicronD43M6hotdeck7,EventIndOmicronD43M6hotdeck7) ~ Day43bindSpike_omicron + FOI + risk_score + Sex + strata(Region3), twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0)))
+fit
+
+fit2 = svycoxph(Surv(EventTimeOmicronD43M6hotdeck7,EventIndOmicronD43M6hotdeck7) ~ Day43bindSpike_omicron + FOI + risk_score + Sex + Region3, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0)))
+fit2
+
+with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0), mytable(Region3, EventIndOmicronD43M6hotdeck7))
 
 ```
 
@@ -177,7 +317,14 @@ with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph2.D43.bAb), mytable(Trt
 
 ```
 
+From batch 0, there are plenty of non-cases
 
+```{r}
+with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph2.D43.nAb), mytable(Trt, region, Senior))
+with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph2.D43.nAb & nAbBatch==1), mytable(Trt, region, Senior))
+with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph2.D43.nAb & nAbBatch==2), mytable(Trt, region, Senior))
+with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & !ph2.D43.nAb & !is.na(Bpseudoneutid50)), mytable(Trt, region, Senior))
+```
 
 ### Number of cases by region
 
@@ -785,7 +932,7 @@ myboxplot(Day43pseudoneutid50~nAbBatch1, tmp[tmp$nAbBatch1==0 | tmp$nAbBatch1==2
 
 
 par(mfrow=c(1,2))
-myboxplot(Day43pseudoneutid50~nAbBatch1, tmp[!is.na(tmp$Day43pseudoneutid50),], col=ifelse(tmp[!is.na(tmp$Day43pseudoneutid50),]$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5), main="Anc ID50 by Batch in Mono NN")
+myboxplot(Day43pseudoneutid50~nAbBatch1, tmp[!is.na(tmp$Day43pseudoneutid50),], col=ifelse(tmp[!is.na(tmp$Day43pseudoneutid50),]$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5)+1, main="Anc ID50 by Batch in Mono NN")
 myboxplot(Day43bindSpike~nAbBatch, tmp[!is.na(tmp$Day43pseudoneutid50),], col=ifelse(tmp[!is.na(tmp$Day43pseudoneutid50),]$EventIndOmicronD43M6hotdeck1==1, 2, 1), ylim=c(0,4.5), main="Anc Spike by Batch in Mono NN")
 
 
