@@ -132,6 +132,11 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), id27hpv id27hpvnAb))
 	
 	Rscript code/cor_graphics_corr.R M18sus # pair, dat
 	Rscript code/cor_graphics_violin_scatter.R M18sus # violin, dat.longer by both assay and time
+
+else ifeq ($(TRIAL),$(filter $(TRIAL), covail))
+	Rscript code/cor_data_preprocess_covail.R
+	Rscript code/cor_graphics_all_covail.R
+
 endif
 
 ## clean          : clean up data_clean and output folder

@@ -1,0 +1,11 @@
+\begin{figure}
+\center
+    
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), paste0(panel, "_", strain, "_by_case_non_case_at_", time,group, ".pdf"))`}
+
+\caption{`r paste0("Violinplots of ", ifelse(time=="Delta15overB", "fold-rise in ", ""), "nAb ", toupper(panel), " distributions at ", ifelse(time=="B", "Baseline", ifelse (time=="Day15", "Day 15", "")), " by non-case/case",group)`}
+
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}
