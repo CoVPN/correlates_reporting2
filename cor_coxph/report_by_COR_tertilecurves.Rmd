@@ -1,4 +1,4 @@
-`r paste(concatList(rep('#',level+1)))` Tertiles cumulative incidence plots 
+<!-- `r paste(concatList(rep('#',level+2)))` Tertiles cumulative incidence plots -->
 
 The tertiled incidence curves are estimated by marginalizing over a Cox model. The comparison arm incidence curve is estimated based on a null Cox model. The comparison arm curve may not go all the way to tfinal.tpeak because the last point shown is the last event time in the comparison arm.
 
@@ -10,10 +10,10 @@ The data ribbon is estimated based on survfit separately within each tertile usi
 
 
 `r 
-
 res=""
-
 for (a in all.markers) {
+
+  res = paste0(res, concatList(rep('#',level+2)), " ", a, "\n")
 
   res = paste0(res, '
 \\begin{figure}
@@ -21,6 +21,7 @@ for (a in all.markers) {
 \\includegraphics[width=.75\\textwidth,keepaspectratio]{', pathCoRoutput, '/', a, '_', 'marginalized_risks_cat_',  fname.suffix, '.pdf} 
 \\caption{Marginalized cumulative incidence rate curves for trichotomized Day ', tpeak, ' markers. The gray line, if present, is the overall cumulative incidence rate curve in the comparison arm. Final incidences in the tertiled groups and in the comparison arm, if present: \\protect\\input{',  pathCoRoutput, '/', a, '_tertile_incidences_',  fname.suffix, '.txt}. }
 \\end{figure}
+\\clearpage
 ')
 
 }
@@ -30,5 +31,3 @@ res
 
 
 
-
-\clearpage

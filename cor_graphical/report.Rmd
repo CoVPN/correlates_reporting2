@@ -16,7 +16,8 @@ library(knitr)
 library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
 
-if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
+
+if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302", "COVAIL")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
 
@@ -269,19 +270,81 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       # adhoc for vat08
       if (attr(config,"config") == "vat08_combined" & COR_postfix_list == "D22D43omi_stage1"){
         
-        for (a in c("pseudoneutid50","pseudoneutid50_B.1.351","pseudoneutid50_BA.1",
-                    "pseudoneutid50_BA.2","pseudoneutid50_BA.4.5","pseudoneutid50_mdw")){
+        for (sanofi_filter in c("sanofi_us_only", "sanofi_all_country")){
           
-        res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1_sanofi_vat08.Rmd')), quiet = TRUE)
-          cat(res, sep = '\n')
-          cat("\\clearpage", sep = '\n')
+          sanofi_lb = ifelse(sanofi_filter == "sanofi_us_only", " (U.S only)", 
+                             ifelse(sanofi_filter == "sanofi_all_country", " (All Countries)"))
+          
+          for (a in c("pseudoneutid50","pseudoneutid50_B.1.351","pseudoneutid50_BA.1",
+                      "pseudoneutid50_BA.2","pseudoneutid50_BA.4.5","pseudoneutid50_mdw")){
+            
+            res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1_sanofi_vat08.Rmd')), quiet = TRUE)
+            cat(res, sep = '\n')
+            cat("\\clearpage", sep = '\n')
+          }
         }
       }
   }
     
     
-  } else { # for all other studies but config: janssen_partA_VL and COR: D29VLvariant
-    
+
+  } else if (study_name=="COVAIL"){
+  
+  assay_metadata <- assay_metadata %>% filter(panel=="id50")
+  assays <- assay_metadata$assay
+
+  set1_panels_1 = c("id50")
+  set1_group_1= c(" (13 one-dose mRNA booster arms pooled)",
+                  " (13 one-dose mRNA booster arms pooled: naive vs. non-naive)",
+                  " (3 Sanofi booster arms pooled)",
+                  " (mRNA Moderna vs. mRNA Pfizer)",
+                  " (mRNA Prototype vs. mRNA Omicron-Containing)",
+                  " (Moderna: mRNA Prototype vs. mRNA Omicron-Containing)",
+                  " (Pfizer: mRNA Prototype vs. mRNA Omicron-Containing)",
+                  " (mRNA Bivalent vs. mRNA Monovalent)")
+  set1_group_2= c(" (13 one-dose mRNA booster arms pooled)", " (3 Sanofi booster arms pooled)")
+
+  set1_times <- c("B","Day15","Delta15overB")
+  
+  set2_times = c("B","Day15","Day29","Day91")
+  
+  
+  ## Set 1: violin and line plots #############
+  for (strain in c("6_strain")){
+    for (panel in set1_panels_1){
+      for (group in set1_group_1){
+        for (time in set1_times) {
+        
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+        }
+      }
+    }
+    }
+
+## Set 3: Correlation plots across markers at a given time point #############
+  for (time in set2_times) {
+    for (strain in c("6_markers")){
+      for (group in set1_group_2){
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+      }
+    }
+    }
+
+## Set 4: Correlation plots for a given marker across time points #############
+for (assay in assays) {
+  for (group in set1_group_2){
+      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub4.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+  }
+  }
+
+} else { # for all other studies but config: janssen_partA_VL and COR: D29variant
+  
     for (COR_postfix in COR_postfix_list){
         
       # show in figure title
@@ -416,10 +479,10 @@ PsV-nAb ID50 Score"))))
           
           if(sum(plot_ve_curves)>0){ # plot_ve_curves = c(1, 1) for base neg and base pos, if one doesn't exist, set to 0, eg: c(0, 1)
             for (assayNum in seq(assays)) {
-              
+
               assay <- assays[assayNum]
               assayLabel <- assay.labels[assayNum]
-              
+
               res = knitr::knit_child(c(here::here('cor_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
               cat(res, sep = '\n')
               cat("\\clearpage", sep = '\n')
@@ -500,7 +563,11 @@ PsV-nAb ID50 Score"))))
       }
     }
   }
-    
+
   #}
 #}
+  
+
+
+
 ```

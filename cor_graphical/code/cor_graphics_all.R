@@ -706,8 +706,9 @@ if (study_name == "VAT08" & unique(dat.longer.cor.subset.plot1$Trialstage)==1) {
     ###################### sanofi:        
     sanofi <- read.csv(config$data_cleaned, stringsAsFactors = F)
     sanofi_sub = sanofi %>%
-        filter(#Country == 8 & 
-            Trt == 1) %>% # U.S only for stage 1, all ppts for stage 2
+        bind_rows(sanofi %>% mutate(Country = 99)) %>%
+        filter(#Country == 8 & # only stage 1 has U.S participants
+            Trt == 1) %>% 
         mutate(cohort_event = case_when(Perprotocol==1 & EarlyinfectionD43==0 & ph2.D43.nAb & 
                                             EventIndPrimaryD43==1 &
                                             EventTimePrimaryD43 >= 7 &
@@ -716,11 +717,11 @@ if (study_name == "VAT08" & unique(dat.longer.cor.subset.plot1$Trialstage)==1) {
                                             EventIndPrimaryD1==0 ~ "Non-Cases"),
                Trt = ifelse(Trialstage == 1, "Ancestral\nVaccine", "Ancestral + Beta\nVaccine"),
                wt = wt.D43.nAb) %>%
-        dplyr::select(Ptid, Trt, Bserostatus, cohort_event, wt,
+        dplyr::select(Ptid, Country, Trt, Bserostatus, cohort_event, wt, 
                       Day43pseudoneutid50, Day43pseudoneutid50_B.1.351, Day43pseudoneutid50_BA.1,
                       Day43pseudoneutid50_BA.2, Day43pseudoneutid50_BA.4.5, Day43pseudoneutid50_mdw) %>%
         filter(cohort_event != "")
-    dim(sanofi_sub) # 43
+    table(sanofi_sub$Country) # 1272 (43 U.S.)
     
     sanofi_assay_metadata = read.csv("../assay_metadata/vat08_combined_assay_metadata.csv", stringsAsFactors = F)
     assays = sanofi_assay_metadata$assay
@@ -745,9 +746,9 @@ if (study_name == "VAT08" & unique(dat.longer.cor.subset.plot1$Trialstage)==1) {
                study_time_cohort = paste0("Sanofi\n", ifelse(cohort_event == "28-180 days PD2 cases", "D43 Titer\nCases", "D43 Titer\nNon-Cases"))) %>%
         mutate(category = paste0("Day43", assay, "Resp")) %>%
         left_join(sanofi_resp_by_time_assay, by=c("Ptid", "category")) %>%
-        dplyr::select(Ptid, Trt_nnaive, study_time_cohort, assay, value, response, wt) %>% # n=258 = 43*6
+        dplyr::select(Ptid, Country, Trt_nnaive, study_time_cohort, assay, value, response, wt) %>% # n=258 = 43*6
         filter(!is.na(value)) %>%
-        group_by(Trt_nnaive, study_time_cohort, assay) %>%
+        group_by(Country, Trt_nnaive, study_time_cohort, assay) %>%
         mutate(counts = n(),
                num = sum(response * wt, na.rm=T), 
                denom = sum(wt, na.rm=T),
@@ -758,47 +759,56 @@ if (study_name == "VAT08" & unique(dat.longer.cor.subset.plot1$Trialstage)==1) {
                q3 = quantile(value, 0.75, na.rm=T),
                max= max(value))
     
-    two_studies = sanofi_long %>% 
-        bind_rows(covail_long) %>%
-        mutate(time = "",
-               cohort_event = factor(study_time_cohort,
-                                     levels = c("Sanofi\nD43 Titer\nCases","Sanofi\nD43 Titer\nNon-Cases",
-                                                "COVAIL\nD15 Titer\nCases","COVAIL\nD15 Titer\nNon-Cases",
-                                                "COVAIL\nD29 Titer\nCases","COVAIL\nD29 Titer\nNon-Cases")),
-               Trt = "",
-               lbval = -99,
-               lbval2 = -99,
-               lb = "",
-               lb2 = "") # n = 1158
-    
-    for (a in adhoc_assays){
+    for (sanofi_filter in c("sanofi_us_only", "sanofi_all_country")){
         
-        case_noncase_groups = c("Sanofi\nD43 Titer\nCases","Sanofi\nD43 Titer\nNon-Cases",
-                                "COVAIL\nD15 Titer\nCases","COVAIL\nD15 Titer\nNon-Cases",
-                                "COVAIL\nD29 Titer\nCases","COVAIL\nD29 Titer\nNon-Cases")
-        assay_metadata = sanofi_assay_metadata
+        if (sanofi_filter == "sanofi_us_only"){
+            sanofi_long_plot = sanofi_long %>% filter(Country == 8) %>% ungroup() %>% dplyr::select(-Country)
+        } else if (sanofi_filter == "sanofi_all_country"){
+            sanofi_long_plot = sanofi_long %>% filter(Country == 99) %>% ungroup() %>% dplyr::select(-Country)
+        }
         
-        # by naive/non-naive, vaccine arm
-        f_1 <- f_case_non_case_by_time_assay(
-            dat = two_studies,
-            facet.y.var = vars(Trt_nnaive),
-            assays = a,
-            times = "",
-            ylim = c(1, 6.2), 
-            ybreaks = c(1,2,3,4,5),
-            axis.x.text.size = 25,
-            strip.x.text.size = 25,
-            panel.text.size = 10,
-            scale.x.discrete.lb = case_noncase_groups,
-            lgdbreaks = c(case_noncase_groups, "Non-Responders"),
-            lgdlabels = c(case_noncase_groups, "Non-Responders"),
-            chtcols = setNames(c("#1749FF", "#FF6F1B", "#D92321", "#0AB7C9", "#378252", "#FF5EBF", "#8F8F8F"), c(case_noncase_groups, "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GREEN, PINK, GRAY
-            chtpchs = setNames(c(19, 19, 19, 19, 19, 19, 2), c(case_noncase_groups, "Non-Responders")),
-            guide_legend_ncol = 7)
+        two_studies = sanofi_long_plot %>% 
+            bind_rows(covail_long) %>%
+            mutate(time = "",
+                   cohort_event = factor(study_time_cohort,
+                                         levels = c("Sanofi\nD43 Titer\nCases","Sanofi\nD43 Titer\nNon-Cases",
+                                                    "COVAIL\nD15 Titer\nCases","COVAIL\nD15 Titer\nNon-Cases",
+                                                    "COVAIL\nD29 Titer\nCases","COVAIL\nD29 Titer\nNon-Cases")),
+                   Trt = "",
+                   lbval = -99,
+                   lbval2 = -99,
+                   lb = "",
+                   lb2 = "") # n = 1158
+        
+        for (a in adhoc_assays){
             
-            file_name <- paste0("two_studies_by_case_non_case_", a, ".pdf")
-            ggsave(plot = f_1[[1]], filename = paste0(save.results.to, file_name), width = 25, height = 20)
-        
+            case_noncase_groups = c("Sanofi\nD43 Titer\nCases","Sanofi\nD43 Titer\nNon-Cases",
+                                    "COVAIL\nD15 Titer\nCases","COVAIL\nD15 Titer\nNon-Cases",
+                                    "COVAIL\nD29 Titer\nCases","COVAIL\nD29 Titer\nNon-Cases")
+            assay_metadata = sanofi_assay_metadata
+            
+            # by naive/non-naive, vaccine arm
+            f_1 <- f_case_non_case_by_time_assay(
+                dat = two_studies,
+                facet.y.var = vars(Trt_nnaive),
+                assays = a,
+                times = "",
+                ylim = c(1, 6.2), 
+                ybreaks = c(1,2,3,4,5),
+                axis.x.text.size = 25,
+                strip.x.text.size = 25,
+                panel.text.size = 10,
+                scale.x.discrete.lb = case_noncase_groups,
+                lgdbreaks = c(case_noncase_groups, "Non-Responders"),
+                lgdlabels = c(case_noncase_groups, "Non-Responders"),
+                chtcols = setNames(c("#1749FF", "#FF6F1B", "#D92321", "#0AB7C9", "#378252", "#FF5EBF", "#8F8F8F"), c(case_noncase_groups, "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GREEN, PINK, GRAY
+                chtpchs = setNames(c(19, 19, 19, 19, 19, 19, 2), c(case_noncase_groups, "Non-Responders")),
+                guide_legend_ncol = 7)
+                
+                file_name <- paste0("two_studies_by_case_non_case_", a, "_", sanofi_filter, ".pdf")
+                ggsave(plot = f_1[[1]], filename = paste0(save.results.to, file_name), width = 25, height = 20)
+            
+        }
     }
     
 }

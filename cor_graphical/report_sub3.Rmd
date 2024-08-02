@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), paste0("pairs_by_time_", time, "_", strain, group, ".pdf"))`}
+
+\caption{`r paste0("Correlations of nAb ", toupper(panel), gsub("6_", " ", strain)," at ", ifelse(time=="B","Baseline", sub("Day", "Day ", time)), group)`}
+\end{figure}
+
+
+
