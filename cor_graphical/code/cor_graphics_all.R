@@ -706,7 +706,8 @@ if (study_name == "VAT08" & unique(dat.longer.cor.subset.plot1$Trialstage)==1) {
     ###################### sanofi:        
     sanofi <- read.csv(config$data_cleaned, stringsAsFactors = F)
     sanofi_sub = sanofi %>%
-        filter(Country == 8 & Trt == 1) %>% # U.S only, only stage 1
+        filter(#Country == 8 & 
+            Trt == 1) %>% # U.S only for stage 1, all ppts for stage 2
         mutate(cohort_event = case_when(Perprotocol==1 & EarlyinfectionD43==0 & ph2.D43.nAb & 
                                             EventIndPrimaryD43==1 &
                                             EventTimePrimaryD43 >= 7 &
