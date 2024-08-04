@@ -11,15 +11,15 @@ Due to missing variant types, analysis combines ten copies of hotdeck imputed da
 ```{r, echo=FALSE, results='asis'}
 
 show.q=F
-M=5
 iSt=2
 subfolder <- "stage2nnaive"
 
+for (M in c(5,6)) {
 for (tpeak in c(43, 22)) { 
 
   special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
   
-  iLab = c('bAb', 'nAb')#, 'st2.nAb.sen')
+  iLab = c('bAb', 'nAb', 'st2.nAb.sen')
   ii=1:length(iLab)
 
   cat("# D", tpeak, "M", M, subfolder, "\n\n", sep="")
@@ -195,6 +195,6 @@ for (tpeak in c(43, 22)) {
   # 
   
   
-
+}
 }
 ```

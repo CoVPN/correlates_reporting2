@@ -1,6 +1,6 @@
 export module=cor_coxph
 cd ..
-if [$TRIAL = "vat08_combined"]; then
+if [ $TRIAL = "vat08_combined" ]; then
 
   if [ $stage = 1 ]; then
     echo "stage 1"
