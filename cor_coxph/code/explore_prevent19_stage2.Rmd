@@ -27,7 +27,7 @@ dat_mapped$EventCalTimeFirstD35 = with(dat_mapped, as.Date(D35Date)+EventTimeFir
 # has ph1.D35
 dat_proc_old=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240326.csv')
 # latest
-dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240409.csv')
+dat_proc=read.csv('/trials/covpn/p3004/analysis/correlates/stage2/adata/prevent19_stage2_data_processed_20240502.csv')
 
 # extract the first variant. empty string to empty string
 dat_proc_old$VARTYPE_first1 = sapply(strsplit(dat_proc_old$VARTYPE_first,","), function (x) ifelse(length(x)==0, "Unk", x[1]))
@@ -68,6 +68,16 @@ dat_proc_stage1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded
 
 
 ### For manuscript
+
+Characteristics of severe cases
+```{r}
+tmp = subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1 & SevereCOVIDIndD35_108to21Dec10==1)
+
+tmp=tmp[order(tmp$Sex, tmp$Age),]
+
+tab=subset(tmp, select=c(Sex, Age, HighRiskInd, MinorityInd))
+tabS
+```
 
 immuno has MEX?
 ```{r}
