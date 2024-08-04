@@ -1,0 +1,200 @@
+# Summary
+
+This is the stage 2, bivalent vaccine Sanofi trial.
+
+Non-Omicron events are not considered competing risk.
+
+Due to missing variant types, analysis combines ten copies of hotdeck imputed datasets. Other analyses use the hotdeck10 copy only.
+
+
+
+```{r, echo=FALSE, results='asis'}
+
+show.q=F
+M=5
+iSt=2
+subfolder <- "stage2nnaive"
+
+for (tpeak in c(43, 22)) { 
+
+  special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
+  
+  iLab = c('bAb', 'nAb')#, 'st2.nAb.sen')
+  ii=1:length(iLab)
+
+  cat("# D", tpeak, "M", M, subfolder, "\n\n", sep="")
+
+  # cat("## Day ", tpeak, "M", M, " ", tmp, "\n\n")
+  level=3 # section title indent
+  
+  
+  cat("## Univariate\n\n")
+  for (i in ii) {
+    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
+
+    fname.suffix = "D" %.% tpeak
+    all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+
+  cat("## Univariate placebo \n\n")
+  for (i in ii) {
+    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
+  
+    # placebo Dxx
+    fname.suffix="D" %.% tpeak %.% "_plac"
+    all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+
+  
+  
+  cat("## B detectable*D", tpeak, " \n\n", sep="")
+  for (i in ii) {
+    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
+        
+    fname.suffix = "Bhigh*D" %.% tpeak
+    has.alt = F
+    coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline undetectable group.")
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    coef_page_notes = "" # reset 
+    cat(res, sep = '\n')
+  }
+  
+
+      
+  cat("## Rev B detectable * D", tpeak, " \n\n", sep="")
+  for (i in ii) {
+    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
+  
+    fname.suffix = "(1-Bhigh)*D" %.% tpeak
+    has.alt = F
+    coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline detectable group.")
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    coef_page_notes = ""
+    cat(res, sep = '\n')
+  }
+  
+  
+
+  # cat("## B+D", tpeak, "\n\n", sep="")
+  # for (i in ii) {
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   # modify pathCoRoutput and COR to include subfolder name. 
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
+  # 
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   if (i==1) {
+  #     assays1=assays[startsWith(assays,'bind')]
+  #   } else if (i==2 | i==3) {
+  #     assays1=assays[startsWith(assays,'pseudo')]
+  #   }
+  #   
+  #   fname.suffix = "B+D" %.% tpeak
+  #   has.alt = F
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  #   cat(res, sep = '\n')
+  # }
+  # 
+  # 
+  # 
+  # cat("## B*D", tpeak, " \n\n", sep="")
+  # for (i in ii) {
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   # modify pathCoRoutput and COR to include subfolder name. 
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
+  # 
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   if (i==1) {
+  #     assays1=assays[startsWith(assays,'bind')]
+  #   } else if (i==2 | i==3) {
+  #     assays1=assays[startsWith(assays,'pseudo')]
+  #   }
+  #   
+  #   fname.suffix = "B*D" %.% tpeak
+  #   has.alt = F
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  #   cat(res, sep = '\n')
+  # }
+  # 
+  # 
+  # 
+  # cat("## binary B*D", tpeak, " \n\n", sep="")
+  # for (i in ii) {
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   # modify pathCoRoutput and COR to include subfolder name. 
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
+  # 
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   if (i==1) {
+  #     assays1=assays[startsWith(assays,'bind')]
+  #   } else if (i==2 | i==3) {
+  #     assays1=assays[startsWith(assays,'pseudo')]
+  #   }
+  #       
+  #   fname.suffix = "dichB*D" %.% tpeak
+  #   has.alt = F
+  #   coef_page_notes = paste0("dich(B) = 1 if baseline marker is high, 0 if baseline marker is low; thus the second parameter is the effect of the continuous marker in the low baseline group. The cut point is set to the weighted median unless the negative response rate at baseline exceeds 40% or more than 40% of the values are above the Upper Limit of Quantification (ULOQ). In these cases, the cut point is adjusted to the detection limit or ULOQ, respectively. Cut points (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/dichcutpoints_B", assays1, ".txt}"), sep=", "), ".")
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  #   coef_page_notes = "" # reset 
+  #   cat(res, sep = '\n')
+  # }
+  # 
+  # 
+  # 
+  # cat("## Rev binary * D", tpeak, " \n\n", sep="")
+  # for (i in ii) {
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   # modify pathCoRoutput and COR to include subfolder name. 
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
+  # 
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   if (i==1) {
+  #     assays1=assays[startsWith(assays,'bind')]
+  #   } else if (i==2 | i==3) {
+  #     assays1=assays[startsWith(assays,'pseudo')]
+  #   }
+  #   
+  #   fname.suffix = "(1-dichB)*D" %.% tpeak
+  #   has.alt = F
+  #   coef_page_notes = paste0("dich(B) = 1 if baseline marker is high, 0 if baseline marker is low; thus the second parameter is the effect of the continuous marker in the high baseline group. The cut point is set to the weighted median unless the negative response rate at baseline exceeds 40% or more than 40% of the values are above the Upper Limit of Quantification (ULOQ). In these cases, the cut point is adjusted to the detection limit or ULOQ, respectively. Cut points (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/dichcutpoints_B", assays1, ".txt}"), sep=", "), ".")
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  #   coef_page_notes = ""
+  #   cat(res, sep = '\n')
+  # }
+  # 
+  
+  
+
+}
+```

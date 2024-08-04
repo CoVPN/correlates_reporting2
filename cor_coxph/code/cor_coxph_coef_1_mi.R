@@ -26,7 +26,7 @@ cor_coxph_coef_1_mi = function(
   verbose=FALSE
 ) {
   
-  if(verbose) print("Running cor_coxph_coef_1")
+  if(verbose) print(paste0("Running cor_coxph_coef_1_mi: ", fname.suffix))
   
   
   ###################################################################################################
@@ -38,14 +38,16 @@ cor_coxph_coef_1_mi = function(
   fits.scaled=list()
   for (i in 1:2) { # 1: not scaled, 2: scaled
     for (a in markers) {
+      myprint(a)
       
       models=lapply(1:10, function(imp) {
         # when this script becomes a function, mclapply runs into error:   unable to fork, possible reason: Cannot allocate memory
         # models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
           # imp=1
         
-        if (TRIAL=="janssen_partA_VL") {
-          # form.0 is not a list because this is for Cox regression and not risk
+        if (TRIAL=="janssen_partA_VL" | 
+            TRIAL=="vat08_combined" & endsWith(COR,"st1.nAb.batch0and1")) {
+          # for janssen_partA_VL, form.0 is not a list because this is for Cox regression and not risk
           f = update(form.0, 
                      as.formula(paste0("~.+", if(i==2) "scale", "(", a, "_"%.%imp, ")"))
                      )
@@ -185,7 +187,7 @@ cor_coxph_coef_1_mi = function(
   ###################################################################################################
   if(verbose) print("regression for trichotomized markers")
   
-  marker.levels = sapply(markers, function(a) length(table(dat[[a%.%"cat"]])))
+  marker.levels = sapply(markers, function(a) length(table(dat[[a%.%"cat"]]))); marker.levels
   
   fits.tri=list()
   overall.p.tri=c()
@@ -195,7 +197,8 @@ cor_coxph_coef_1_mi = function(
     models=lapply(1:10, function(imp) {
       # models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
         # imp=1
-      f = update(form.0, as.formula(paste0("~.+", a, if(TRIAL=="janssen_partA_VL") "_"%.%imp, "cat"))); f
+      f = update(form.0, as.formula(paste0("~.+", a, if(TRIAL=="janssen_partA_VL" |
+                                                        TRIAL=="vat08_combined" & endsWith(COR,"st1.nAb.batch0and1")) "_"%.%imp, "cat"))); f
   
       if (TRIAL=="janssen_partA_VL") {
         dat$EventIndOfInterest = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
@@ -210,9 +213,6 @@ cor_coxph_coef_1_mi = function(
       if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
         dat$ph2a = dat$ph2.D29
       
-      # } else if (TRIAL=="vat08_combined" & endsWith(a, "pseudoneutid50") & iAna==1) {
-      #   dat$ph2a = dat[["ph2.D"%.%tp%.%".nAb.st1.anc"]]
-        
       } else {
         dat$ph2a = dat$ph2
       }
