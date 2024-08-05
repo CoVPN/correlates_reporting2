@@ -26,8 +26,8 @@ cor_coxph_coef_1_mi = function(
   verbose=FALSE
 ) {
   
-  if(verbose) print(paste0("Running cor_coxph_coef_1_mi: ", fname.suffix))
   
+  if(verbose) print(paste0("Running cor_coxph_coef_1_mi: ", fname.suffix))
   
   ###################################################################################################
   if(verbose) print("Regression for continuous markers")
@@ -62,21 +62,16 @@ cor_coxph_coef_1_mi = function(
         
         # set event indicator and time
         if (TRIAL=="janssen_partA_VL") {
-          
           dat$EventIndOfInterest = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-          
         } else if (TRIAL=="vat08_combined") {
-          
           # not competing risk, imputation only
           dat$EventIndOfInterest  = dat[[config.cor$EventIndPrimary  %.% imp]]
           dat$EventTimeOfInterest = dat[[config.cor$EventTimePrimary %.% imp]]
-          
         } else stop('wrong TRIAL: '%.%TRIAL)
         
         
         if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
           dat$ph2a = dat$ph2.D29
-          
         } else {
           dat$ph2a = dat$ph2
         }
