@@ -1,4 +1,5 @@
-# COR="D43vat08_combined_M5_bAb"
+# COR="D43vat08_combined_M6_st1.nAb.batch0and1"
+# Sys.setenv(stage = 1) 
 
 Sys.setenv(TRIAL = "vat08_combined")
 Sys.setenv(VERBOSE = 1) 
@@ -43,8 +44,6 @@ B <-       config$num_boot_replicates
 numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
-# define a new binary baseline variable based on baseline ancestral ID50
-dat_proc$Bhigh = ifelse(dat_proc$Bpseudoneutid50>log10(20+0.1), 1, 0) # cut point is pos threshold lod/2
 
 dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==1 & ph1)
 dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==1 & ph1)
@@ -80,6 +79,9 @@ if (Sys.getenv("stage")=="") {
 } else {
   stages=as.numeric(Sys.getenv("stage"))
 }
+myprint(stages)
+
+
 
 
 ################################################################################
@@ -96,13 +98,11 @@ for (iSt in stages) {
   
   form.0 = update(Surv(EventTimeOfInterest, EventIndOfInterest) ~ 1, as.formula(config$covariates))
   
-  
-  ############################
-  # get cutpoints and turn trichotomized markers into factors
-  # get dichcutpoints and turn dichotomized markers into factors
-  # need to do it within iSt loop because marker.cutpoints are needed in later function calls
-  
+  # get cutpoints and dichcutpoints, and turn discrete markers into factors
   {
+    
+  # need to do it within iSt loop because marker.cutpoints are needed in later function calls
+    
   # vaccine, trichotomized
   marker.cutpoints = list()
   for (a in c(paste0("Day", tpeak, assays),
@@ -161,6 +161,7 @@ for (iSt in stages) {
   }
   
   } # end marker cut points
+  
   
   # univariate
   if(T){
@@ -332,16 +333,16 @@ for (iSt in stages) {
   )
   }
   
+  
   # baseline detectable * Dxx
   if(T) {
     
   ###################################
-  # Bhigh x D15 (D15/B)
+  # Bhigh x D15 (D15/B), Vacc
   
   all.markers = c(sapply(assays, function (a) paste0("Bhigh * Day"%.%tpeak%.%"",a,"centered")),
                   sapply(assays, function (a) paste0("Bhigh * Delta"%.%tpeak%.%"overB",a,"centered"))
   )
-  
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
   all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
@@ -350,8 +351,6 @@ for (iSt in stages) {
   # parameters for R script
   nCoef=3
   col.headers=c("Bhigh", "center(D"%.%tpeak%.%" or fold)", "Bhigh:center(D"%.%tpeak%.%" or fold)")
-  
-  # vaccine arm
   
   cor_coxph_coef_n_mi (
     form.0,
@@ -369,14 +368,12 @@ for (iSt in stages) {
   )
   
   
-  
   ###################################
-  # (1 - Bhigh) x D15 (D15/B)
+  # (1 - Bhigh) x D15 (D15/B), Vacc
   
   all.markers = c(sapply(assays, function (a) paste0("I(1-Bhigh) * Day"%.%tpeak%.%"",a,"centered")),
                   sapply(assays, function (a) paste0("I(1-Bhigh) * Delta"%.%tpeak%.%"overB",a,"centered"))
   )
-  
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
   all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
@@ -385,8 +382,6 @@ for (iSt in stages) {
   # parameters for R script
   nCoef=3
   col.headers=c("Blow", "center(D"%.%tpeak%.%" or fold)", "Blow:center(D"%.%tpeak%.%" or fold)")
-  
-  # vaccine arm
   
   cor_coxph_coef_n_mi (
     form.0,
@@ -404,8 +399,10 @@ for (iSt in stages) {
   )
   }
   
+  
   # Bxx + Dxx, Bxx * Dxx
-  if(F) {
+  if(!endsWith(COR,"st1.nAb.batch0and1")) { # for st1.nAb.batch0and1, cor_coxph_coef_n_mi needs to be modified with respect to f
+    
   ###################################
   # B + Dxx (Dxx/B)
   
@@ -435,7 +432,8 @@ for (iSt in stages) {
     all.markers.names.short,
 
     nCoef,
-    col.headers
+    col.headers,
+    verbose=verbose
   )
 
 
@@ -468,7 +466,8 @@ for (iSt in stages) {
     all.markers.names.short,
 
     nCoef,
-    col.headers
+    col.headers,
+    verbose=verbose
   )
   
 
@@ -539,11 +538,10 @@ for (iSt in stages) {
     col.headers,
     verbose=verbose
   )
+  
   }
   
-  
-  
-  
+
   
   ############################
   # count ph1 and ph2 cases
@@ -605,9 +603,6 @@ for (iSt in stages) {
 
   }  
     
-  
-  # } # end if(F)
-  
   
   
 } # iSt loop

@@ -33,7 +33,7 @@ for (tpeak in c(43,22)) {
   
   cat("## Univariate\n\n")
   for (i in ii) {
-    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # for section title in report_by_COR.Rmd
     COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
     config.cor <- config::get(config = COR0)
