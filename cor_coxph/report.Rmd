@@ -39,7 +39,23 @@ covariates_adjusted = covariates
 covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
 covariates_adjusted = sub("_","",covariates_adjusted)
 
-if(file.exists(here::here('cor_coxph', paste0('report_', TRIAL, '.Rmd')))
+
+if (TRIAL=="vat08_combined") {
+  
+  if (Sys.getenv("stage")=="1") {
+    message ("vat08_combined stage 1")
+    res = knitr::knit_child(c(here::here('cor_coxph', paste0('report_vat08_combined_1.Rmd'))), quiet = TRUE)
+    cat(res, sep = '\n')
+  } else if (Sys.getenv("stage")=="2") {
+    message ("vat08_combined stage 2")
+    res = knitr::knit_child(c(here::here('cor_coxph', paste0('report_vat08_combined_2.Rmd'))), quiet = TRUE)
+    cat(res, sep = '\n')
+  } else {
+    stop("Please export stage=1 or 2 .....................")
+  }
+  
+  
+} else if(file.exists(here::here('cor_coxph', paste0('report_', TRIAL, '.Rmd')))
    & attr(config,"config")!="profiscov_lvmn" # profiscov uses special template but lvmn does not because it does not have D43start48
 ) {
   
