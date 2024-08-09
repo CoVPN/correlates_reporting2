@@ -69,6 +69,15 @@ dat_proc_stage1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded
 
 ### For manuscript
 
+
+For IDweek abstract
+```{r}
+
+tmp = subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1 & COVIDIndD35_108to21Dec10==1)
+median(tmp$COVIDTimeD35to21Dec10)/7
+
+```
+
 Characteristics of severe cases
 ```{r}
 tmp = subset(dat_proc, ph1.D35_108==1 & Country==0 & Trt==1 & SevereCOVIDIndD35_108to21Dec10==1)
