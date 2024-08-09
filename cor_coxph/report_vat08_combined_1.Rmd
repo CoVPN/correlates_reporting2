@@ -120,52 +120,52 @@ for (tpeak in c(43,22)) {
   
   
 
-  # cat("## B+D", tpeak, "\n\n", sep="")
-  # for (i in ii) {
-  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
-  #   config.cor <- config::get(config = COR0)
-  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-  #   # modify pathCoRoutput and COR to include subfolder name. 
-  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
-  # 
-  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-  #   if (i==1) {
-  #     assays1=assays[startsWith(assays,'bind')]
-  #   } else if (i==2 | i==3) {
-  #     assays1=assays[startsWith(assays,'pseudo')]
-  #   }
-  #   
-  #   fname.suffix = "B+D" %.% tpeak
-  #   has.alt = F
-  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-  #   cat(res, sep = '\n')
-  # }
-  # 
-  # 
-  # 
-  # cat("## B*D", tpeak, " \n\n", sep="")
-  # for (i in ii) {
-  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
-  #   config.cor <- config::get(config = COR0)
-  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-  #   # modify pathCoRoutput and COR to include subfolder name. 
-  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
-  # 
-  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-  #   if (i==1) {
-  #     assays1=assays[startsWith(assays,'bind')]
-  #   } else if (i==2 | i==3) {
-  #     assays1=assays[startsWith(assays,'pseudo')]
-  #   }
-  #   
-  #   fname.suffix = "B*D" %.% tpeak
-  #   has.alt = F
-  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-  #   cat(res, sep = '\n')
-  # }
-  # 
-  # 
-  # 
+  cat("## B+D", tpeak, "\n\n", sep="")
+  for (i in ii) {
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    # modify pathCoRoutput and COR to include subfolder name.
+    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
+
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
+
+    fname.suffix = "B+D" %.% tpeak
+    has.alt = F
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+
+
+
+  cat("## B*D", tpeak, " \n\n", sep="")
+  for (i in ii) {
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    # modify pathCoRoutput and COR to include subfolder name.
+    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
+
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
+
+    fname.suffix = "B*D" %.% tpeak
+    has.alt = F
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+
+
+
   # cat("## binary B*D", tpeak, " \n\n", sep="")
   # for (i in ii) {
   #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
