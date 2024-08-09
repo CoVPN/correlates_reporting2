@@ -11,10 +11,10 @@ Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
-if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
+if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; names(pos.cutoffs) <- assays}
 #-----------------------------------------------
 
-if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 2)} # need manually update "Trialstage" and line 89 in report.Rmd
+Trialstage_val = 1 ###################################### need manually update "Trialstage" and line 89 in report.Rmd
 
 library(here)
 library(dplyr)
@@ -156,7 +156,7 @@ important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex"
   if(attr(config,"config") %in% c("prevent19_stage2","vat08_combined")) colnames(dat)[grepl("ph2.immuno", colnames(dat))], 
   # e.g. ph2.immuno.D35, ph2.immuno.C1, ph2.immuno.BD1 for prevent19_stage2 
   #      ph2.immuno.bAb, ph2.immuno.nAb for vat08_combined
-  
+  if(attr(config,"config") %in% c("vat08_combined")) "Trialstage",
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
   if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV") "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
@@ -382,12 +382,12 @@ dat.twophase.sample$Ptid <- as.character(dat.twophase.sample$Ptid)
 dat.long.twophase.sample <- filter(dat.long.twophase.sample, assay %in% assay_immuno)
 
 
-
-
-saveRDS(as.data.frame(dat.long.twophase.sample),
+saveRDS(if (attr(config,"config") == "vat08_combined") {dat.long.twophase.sample %>% filter(Trialstage == Trialstage_val)
+  } else {dat.long.twophase.sample},
   file = here("data_clean", "long_twophase_data.rds")
 )
-saveRDS(as.data.frame(dat.twophase.sample),
+saveRDS(if (attr(config,"config") == "vat08_combined") {dat.twophase.sample %>% filter(Trialstage == Trialstage_val)
+  } else {dat.twophase.sample},
   file = here("data_clean", "twophase_data.rds")
 )
 
@@ -407,6 +407,13 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
     dat_proc$Delta71overBpseudoneutid50 = dat_proc$Day71pseudoneutid50 - dat_proc$Bpseudoneutid50
     dat_proc$Delta71overBADCP = dat_proc$Day71ADCP - dat_proc$BADCP
     dat_proc$Day71pseudoneutid50uncensored=NA; dat_proc$Delta71overBpseudoneutid50uncensored=NA
+  } else if (attr(config,"config")=="vat08_combined"){
+    for (extra_tp in c(78, 134, 202, 292, 387)){
+      for (asy in assays){
+        if (!paste0("Day", extra_tp, asy) %in% colnames(dat_proc)) {dat_proc[, paste0("Day", extra_tp, asy)] = NA}
+        dat_proc[, paste0("Delta", extra_tp, "overB", asy)] = dat_proc[, paste0("Day", extra_tp, asy)] - dat_proc[, paste0("B", asy)]
+      }
+    }
   }
   resp <- getResponder(dat_proc, post_times = timepoints_, 
                        assays=assays, pos.cutoffs = pos.cutoffs)
@@ -436,7 +443,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
   
   dat.longer.immuno.subset <- dat.longer.immuno.subset[,c("Ptid", "time", "assay", "category", "Trt", "Bserostatus", 
                                                           "value", if(attr(config,"config")=="janssen_partA_VL") "wt.subcohort",
-                                                          if(attr(config,"config")=="vat08_combined") c("wt.immuno.nAb", "wt.immuno.bAb", "ph2.immuno.nAb", "ph2.immuno.bAb"), 
+                                                          if(attr(config,"config")=="vat08_combined") c("wt.immuno.nAb", "wt.immuno.bAb", "ph2.immuno.nAb", "ph2.immuno.bAb", "Trialstage"), 
                                                           "pos.cutoffs","lbval","lbval2", 
                                                           "lb","lb2",if(attr(config,"config")=="janssen_partA_VL") "Region", 
                                                           "response")]
@@ -457,7 +464,12 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
   
   # define response rate
   dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1)
-  saveRDS(dat.longer.immuno.subset.plot1, file = here::here("data_clean", "longer_immuno_data_plot1.rds"))
+  saveRDS(if (attr(config,"config") == "vat08_combined") {dat.longer.immuno.subset.plot1 %>% filter(Trialstage == Trialstage_val)
+    } else {dat.longer.immuno.subset.plot1}, 
+    file = here::here("data_clean", "longer_immuno_data_plot1.rds"))
+  
+  # save a longer dataset with both stage1 and stage 2 for Sanofi
+  if (attr(config,"config") == "vat08_combined") {saveRDS(dat.longer.immuno.subset.plot1,  file = here::here("data_clean", "longer_immuno_data_plot1_stage1_stage2.rds"))}
   
   if(attr(config,"config")=="janssen_partA_VL") {
     groupby_vars1.2=c("Trt", "Bserostatus", "Region", "time", "assay")

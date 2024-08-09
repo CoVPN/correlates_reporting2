@@ -8,6 +8,12 @@ library(grid)
 library(gridExtra)
 library(wCorr) # weighted correlation
 #library(ggnewscale) # for new_scale_color() 
+library(survey)
+# Suppress summarise info
+options(dplyr.summarise.inform = FALSE)
+# For stratum with 1 ppt
+options(survey.lonely.psu="adjust")
+library(tidyverse)
 
 # There is a bug on Windows that prevents renv from working properly. The following code provides a workaround:
 #if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
@@ -26,6 +32,8 @@ if ("order_in_panel" %in% colnames(assay_metadata)){
 }
 
 dat.longer.immuno.subset.plot1 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.rds"))
+if(attr(config,"config") == "vat08_combined"){
+    dat.longer.immuno.subset.plot1_stage1_stage2 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1_stage1_stage2.rds"))}
 if(attr(config,"config")=="janssen_partA_VL") {
     dat.longer.immuno.subset.plot1.2 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.2.rds"))}
 dat.immuno.subset.plot3 <- readRDS(here::here("data_clean", "twophase_data.rds")); dat.immuno.subset.plot3$all_one <- 1 # as a placeholder for strata values
@@ -52,21 +60,26 @@ for (panel in c("pseudoneutid50", "bindSpike")){
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
     }
     
-    f_1 <- f_by_time_assay(
-        dat = dat.longer.immuno.subset.plot1_ %>% mutate(x="1"),
-        assays = assays[grepl(panel, assays)],
-        times = set1_times,
-        ylim = c(-3, 4.5), #c(ifelse(panel=="pseudoneutid50", -5, -6), ifelse(panel=="pseudoneutid50", 6, 11)),
-        axis.x.text.size = 20,
-        strip.x.text.size = ifelse(panel=="pseudoneutid50", 25, 10),
-        panel.text.size = ifelse(panel=="pseudoneutid50", 7, 4.5),
-        facet.y.var = vars(Trt_nnaive),
-        facet.x.var = vars(assay_label2))
-    
-    for (i in 1:length(set1_times)){
+    for (tm_subset in c("^B|Day", if(sum(grepl("Delta", set1_times))>0) "Delta")){
         
-        file_name <- paste0("/", panel, "_at_", set1_times[i], ".pdf")
-        ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 16, height = 16)
+        set1_times_sub = set1_times[grepl(tm_subset, set1_times)]
+        
+        f_1 <- f_by_time_assay(
+            dat = dat.longer.immuno.subset.plot1_ %>% mutate(x="1"),
+            assays = assays[grepl(panel, assays)],
+            times = set1_times_sub,
+            ylim = if (grepl("^B|Day", tm_subset) & panel=="bindSpike") {c(2, 7)} else if (grepl("^B|Day", tm_subset) & panel=="pseudoneutid50") {c(1, 6.5)} else if (grepl("Delta", tm_subset)) {c(-3, 4.2)} else {c(-3, 4.5)},
+            axis.x.text.size = 20,
+            strip.x.text.size = ifelse(panel=="pseudoneutid50", 25, 10),
+            panel.text.size = ifelse(panel=="pseudoneutid50", 7, 4.5),
+            facet.y.var = vars(Trt_nnaive),
+            facet.x.var = vars(assay_label2))
+        
+        for (i in 1:length(set1_times_sub)){
+            
+            file_name <- paste0("/", panel, "_at_", set1_times_sub[i], ".pdf")
+            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 16, height = 16)
+        }
     }
 }
 
@@ -136,7 +149,7 @@ for (panel in c("pseudoneutid50", "bindSpike")){
         x.var = "time",
         x.lb = c("D1","D22","D43"),
         assays = set2_assays[grepl(panel, set2_assays) & !grepl("mdw", set2_assays)],
-        ylim = c(0, 4.5), #c(0, 5.2),
+        ylim = c(1, 6.5),
         times = c("B","Day22","Day43"),
         strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, 12),
         panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
@@ -146,6 +159,7 @@ for (panel in c("pseudoneutid50", "bindSpike")){
     
     file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", "")), "_longitudinal.pdf")
     ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
+    
 }
 
 if (attr(config,"config") == "vat08_combined"){
@@ -167,7 +181,7 @@ if (attr(config,"config") == "vat08_combined"){
             x.var = "time",
             x.lb = c("D1","D22","D43"),
             assays = set2_assays[grepl(panel, set2_assays) & grepl("mdw", set2_assays)],
-            ylim = c(0, 4.5), #c(0, 5.2),
+            ylim = c(1, 6), #c(0, 5.2),
             times = c("B","Day22","Day43"),
             strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, 12),
             panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
@@ -177,6 +191,100 @@ if (attr(config,"config") == "vat08_combined"){
         
         file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", "")), "_mdw_longitudinal.pdf")
         ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 11, height = 11)
+    }
+}
+
+# adhoc figures only for sanofi stage 1 report
+if (attr(config,"config")=="vat08_combined" & unique(dat.longer.immuno.subset.plot1_$Trialstage)==1) {
+    # longitudinal plots for stage 1 and stage 2, non-naive ppt
+    
+    for (asy in set2_assays){
+        f_2 <- f_longitude_by_assay(
+            dat = dat.longer.immuno.subset.plot1_stage1_stage2 %>% 
+                filter(Bserostatus == 1) %>%
+                mutate(Trt_nnaive = factor(paste(Trt, nnaive),
+                                           levels = c("Vaccine Non-naive", "Placebo Non-naive"),
+                                           labels = c("Vaccine\nNon-naive", "Placebo\nNon-naive")),
+                       Trialstage = ifelse(Trialstage == 1, "Stage 1", "Stage 2")
+                ),
+            x.var = "time",
+            x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
+            assays = asy,
+            ylim = if (grepl("bindSpike", asy)) {c(2, 7)} else if (grepl("pseudoneutid50", asy)) {c(1, 6.5)},
+            times = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"),
+            strip.text.x.size = 14,
+            panel.text.size = 6,
+            axis.text.x.size = 14,
+            facet.y.var = vars(Trt_nnaive), 
+            facet.x.var = vars(Trialstage),
+            y.axis.lb = gsub(" \\(AU/ml\\)", "", labels.assays.short[asy])
+        )
+        
+        file_name <- paste0("/", asy, "_longitudinal_nonnaive_stage1stage2.pdf")
+        ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
+    }
+    
+    
+    # Generate a full table with all the estimates: GMTR
+    # non-naive ppts only
+    # Vaccine vs. Placebo, by Stage 1 and 2
+    
+    sub.by <- c("all")
+    ds.i <- filter(dat_proc %>%
+                       mutate(all = 1) %>% # fake column to satisfy sub.by
+                       filter(Bserostatus == 1) %>% # only do this for non-naive ppts
+                       mutate(Trt=ifelse(Trt==1, "Vaccine", "Placebo")), ph1.immuno==1)
+    gm.v <- apply(expand.grid(times_[!grepl("Delta",times_)], assays), 1, paste0, collapse="")
+    
+    subs <- "Trt"
+    comp.i <- c("Vaccine", "Placebo")
+    
+    rgmt_stage1_bAb_vac <- get_rgmt(ds.i %>% filter(Trialstage == 1), 
+                                    gm.v[grepl("bindSpike", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
+                                    weights="wt.immuno.bAb", subset="ph2.immuno.bAb") %>% mutate(Trialstage = "Stage 1")
+    rgmt_stage1_nAb_vac <- get_rgmt(ds.i %>% filter(Trialstage == 1), 
+                                    gm.v[grepl("pseudoneutid50", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
+                                    weights="wt.immuno.nAb", subset="ph2.immuno.nAb") %>% mutate(Trialstage = "Stage 1") 
+    rgmt_stage2_bAb_vac <- get_rgmt(ds.i %>% filter(Trialstage == 2), 
+                                    gm.v[grepl("bindSpike", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
+                                    weights="wt.immuno.bAb", subset="ph2.immuno.bAb") %>% mutate(Trialstage = "Stage 2") 
+    rgmt_stage2_nAb_vac <- get_rgmt(ds.i %>% filter(Trialstage == 2), 
+                                    gm.v[grepl("pseudoneutid50", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
+                                    weights="wt.immuno.nAb", subset="ph2.immuno.nAb") %>% mutate(Trialstage = "Stage 2")
+    for (asy in set2_assays){
+        f_2 <- f_longitude_by_assay(
+            dat = rgmt_stage1_bAb_vac %>% 
+                bind_rows(rgmt_stage1_nAb_vac) %>%
+                bind_rows(rgmt_stage2_bAb_vac) %>%
+                bind_rows(rgmt_stage2_nAb_vac) %>%
+                filter(!grepl("Delta", mag_cat)) %>%
+                mutate(value = geomean, 
+                       Ptid = Trialstage,
+                       RespRate = "",
+                       time = gsub(paste0(assays, collapse="|"), "", mag_cat),
+                       assay = gsub(paste0(times_, collapse="|"), "", mag_cat),
+                       nnaive = "Non-naive",
+                       lb = "",
+                       lbval = -99,
+                       lb2 = "",
+                       lbval2 = -99),
+            x.var = "time",
+            x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
+            assays = asy,
+            ylim = if (grepl("bindSpike", asy)) {c(0, 60)} else if (grepl("pseudoneutid50", asy)) {c(0, 110)},
+            ybreaks = if (grepl("bindSpike", asy)) {seq(0, 60, 10)} else if (grepl("pseudoneutid50", asy)) {seq(0, 110, 20)},
+            times = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"),
+            strip.text.x.size = 14,
+            panel.text.size = 6,
+            axis.text.x.size = 14,
+            facet.y.var = vars(nnaive), 
+            facet.x.var = vars(Trialstage),
+            y.axis.lb = gsub(" \\(AU/ml\\)", "", labels.assays.short[asy]),
+            y.lb.scale = "original"
+        )
+        
+        file_name <- paste0("/", asy, "_longitudinal_geomean_nonnaive_stage1stage2.pdf")
+        ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
     }
 }
 
@@ -344,3 +452,4 @@ for (a in assays){
     ggsave(filename = paste0(
         save.results.to, "/pairs_across_timepoints_", a, ".pdf"), plot = combined_p, width = 8, height = 10, units="in")
 }
+

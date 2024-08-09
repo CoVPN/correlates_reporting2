@@ -26,6 +26,11 @@ library(wCorr) # weighted correlation
 
 
 source(here("code", "params.R"))
+if (attr(config,"config")=="vat08_combined"){
+  timepoints_ = timepoints
+  times_ = times
+}
+
 assay_lim <- readRDS(here("data_clean", "assay_lim.rds"))
 if (study_name %in% c("VAT08","ENSEMBLE") | attr(config,"config")=="prevent19_stage2"){
   source(here("code", "covid_corr_plot_functions.R"))

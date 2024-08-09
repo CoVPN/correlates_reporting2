@@ -74,7 +74,7 @@ get_desc_by_group <- function(data,
                num = sum(response * wt, na.rm=T),
                denom = sum(wt, na.rm=T),
                #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
-               RespRate = ifelse(denom!=0 && !is.na(pos.cutoffs), paste0(round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+               RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
                min = min(value, na.rm=T),
                q1 = quantile(value, 0.25, na.rm=T),
                median = median(value, na.rm=T),
@@ -131,6 +131,7 @@ f_by_time_assay <-
         p1 <- dat %>%
             filter(assay %in% assays & time %in% times) %>%
             left_join(assay_metadata, by="assay") %>%
+            mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
             mutate(assay_label2 = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label),
                    
             ) %>%
@@ -145,8 +146,8 @@ f_by_time_assay <-
                     #scale_color_manual(name = "", values = "#FF6F1B", guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
-                    geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = rate.pos), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                    geom_text(aes(x = x, label = RespRate, y = rate.pos), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(x = x, label = RespRate, y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
                     
                     geom_hline(aes(yintercept = ifelse(RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                     geom_text(aes(label = ifelse(RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -154,7 +155,7 @@ f_by_time_assay <-
                     geom_hline(aes(yintercept = ifelse(RespRate!="",lbval2,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                     geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                     scale_x_discrete(labels = "") + 
-                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 3, 1)), labels = scales::math_format(10^.x)) +
+                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 2, 1)), labels = scales::math_format(10^.x)) +
                     labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", unique(d$time), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
                     plot_theme +
                     guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
@@ -178,6 +179,8 @@ f_by_time_assay <-
 #' @param strip.text.y.size strip label size for y-axis, default is 25
 #' @param strip.text.x.size strip label size for x-axis, default is 25
 #' @param axis.text.x.size x-axis label size, default is 9.5
+#' @param y.axis.lb y-axis label, if empty, it has default value pooled from the assay_metadata
+#' @param y.lb.scale "log" or "original"
 #' @return A ggplot object list for longitudinal violin + box plot with lines
 f_longitude_by_assay <- function(
     dat,
@@ -186,12 +189,15 @@ f_longitude_by_assay <- function(
     assays = assays,
     times = times,
     ylim = c(0,7.2),
+    ybreaks = c(0,2,4,6),
     panel.text.size = 4,
     facet.x.var,
     facet.y.var,
     strip.text.y.size = 25,
     strip.text.x.size = 25,
-    axis.text.x.size = 15
+    axis.text.x.size = 15,
+    y.axis.lb = "",
+    y.lb.scale = "log"
 ) {
     
     plot_theme <- theme_bw() +
@@ -214,11 +220,8 @@ f_longitude_by_assay <- function(
     p2 <- dat %>%
         filter(assay %in% assays & time %in% times) %>%
         left_join(assay_metadata, by="assay") %>%
-        mutate(Trt_nnaive = factor(paste(Trt, nnaive), 
-                                   levels = c("Vaccine Naive", "Vaccine Non-naive", "Placebo Naive", "Placebo Non-naive"),
-                                   labels = c("Vaccine\nnaive", "Vaccine\nnon-naive", "Placebo\nnaive", "Placebo\nnon-naive")),
-               assay_label_short = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label)
-        ) %>%
+        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+        mutate(assay_label_short = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label)) %>%
         ungroup() %>%
             ggplot(aes_string(x = x.var, y = "value")) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
@@ -232,7 +235,7 @@ f_longitude_by_assay <- function(
                 geom_point(size = 3, alpha = 0.6, show.legend = TRUE, color = "#FF6F1B") +
                 
                 #geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = 5), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes_string(x = x.var, label = "RespRate", y = 5), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes_string(x = x.var, label = "RespRate", y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -241,10 +244,14 @@ f_longitude_by_assay <- function(
                 geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
-                scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], 1), labels = scales::math_format(10^.x)) +
-                labs(x = "Assay", y = unique(panel), title = paste(unique(panel), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
+                scale_y_continuous(limits = ylim, breaks = ybreaks, labels = ifelse(y.lb.scale == "log", scales::math_format(10^.x), ifelse(y.lb.scale == "original", scales::math_format(.x)))) +
+                labs(x = "Assay", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
+    
+    if ("lower_CI" %in% colnames(dat)){
+        p2 = p2 + geom_errorbar(aes(ymin = lower_CI, ymax = upper_CI), width = 0.2)
+    }
         
     return(p2)
 }
@@ -846,4 +853,95 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
         filename = filename, plot = pairplots, width = width, height = height,
         units = units
     )
+}
+
+
+#' Wrapper function to generate ratio of geometric magnitude based on svyglm()
+#' @param dat a data frame containing the variables in the function
+#' @param v continuous response variables
+#' @param groups subpopulation groups to be compared within
+#' @param comp_lev a vector of the compared groups to set the reference group
+#' @param sub.by subpopulations that are always applied 
+#' @param strata used in twophase()
+#' @param weights used in twophase()
+#' @param subset used in twophase()
+get_rgmt <- function(dat, v, groups, comp_lev, sub.by, strata, weights, subset){
+    rgmt <- NULL
+    for (j in groups){
+        comp_i <- comp_lev[comp_lev %in% dat[, gsub("`","",j)]]
+        comp_vs <- paste(comp_i, collapse=" vs ")
+        dat[, gsub("`","",j)] <- factor(dat[, gsub("`","",j)], levels = comp_i)
+        n.j <- dat %>%
+            filter(!is.na(!!as.name(gsub("`","",j)))) %>% 
+            group_by_at(gsub("`", "", sub.by), .drop=F) %>%
+            summarise(n=n_distinct(!!as.name(gsub("`","",j))))
+        if (all(n.j$n!=2)) {
+            warning(paste(j, "has more/less than 2 levels:", paste(unique(dat[,gsub("`","",j)]), collapse = ", ")))
+            next
+        }
+        contrasts(dat[, gsub("`","",j)]) <- contr.treatment(2, base = 2)
+        for (i in v){
+            # cat(i,"--",j, comp_vs, "\n")
+            n.ij <- subset(dat, dat[, subset] & !is.na(dat[, gsub("`","",j)]) & !is.na(dat[, i])) %>% 
+                group_by_at(gsub("`", "", sub.by), .drop=F) %>% 
+                summarise(n.j=n_distinct(!!as.name(gsub("`","",j)))) %>% 
+                filter(n.j==2) %>% 
+                unite("all.sub.by", 1:length(sub.by), remove=F)
+            
+            if (nrow(n.j)!=0){
+                dat.ij <- dat %>% 
+                    group_by_at(strata) %>% 
+                    mutate(ph1cnt=n(), ph2cnt=sum(!!as.name(subset), na.rm = T)) %>% 
+                    filter(ph1cnt!=0 & ph2cnt!=0) %>% 
+                    unite("all.sub.by", match(gsub("`", "", sub.by), names(dat)), remove=F) %>% 
+                    select_at(gsub("`", "",c("Ptid", strata, weights, subset, sub.by, i, j, "all.sub.by")))
+                
+                design.ij <- twophase(list(~Ptid, ~Ptid), 
+                                      strata=list(NULL, as.formula(sprintf("~%s", strata))),
+                                      weights=list(NULL, as.formula(sprintf("~%s", weights))), 
+                                      subset=as.formula(sprintf("~%s", subset)),
+                                      method="simple",
+                                      data=dat.ij)
+                
+                design.ij <- subset(design.ij, all.sub.by %in% n.ij$all.sub.by & eval(parse(text=sprintf("!is.na(%s) & !is.na(%s)", i, j))))
+                
+                ret <- svyby(as.formula(sprintf("%s~%s", i, j)),
+                             by=as.formula(sprintf("~%s", paste(sub.by, collapse="+"))),
+                             design=design.ij,
+                             svyglm, vartype="ci")
+                
+                rgmt <- bind_rows(
+                    ret %>% 
+                        rename_all(gsub, pattern=paste0(j, 1), replacement="Estimate", fixed=T) %>%
+                        mutate(subgroup=gsub("`","",!!j), 
+                               mag_cat=!!i, 
+                               comp=!!comp_vs,  
+                               `Ratios of GMT/GMC` = sprintf("%.2f\n(%.2f, %.2f)", 
+                                                             10^Estimate, 10^ci_l.Estimate, 10^ci_u.Estimate),
+                               geomean = round(10^Estimate, 2),
+                               lower_CI = round(10^ci_l.Estimate, 2),
+                               upper_CI = round(10^ci_u.Estimate, 2)),
+                    rgmt)
+            } else {
+                rgmt <- bind_rows(
+                    dat %>% 
+                        distinct_at(gsub("`","",sub.by)) %>% 
+                        mutate(subgroup=gsub("`","", !!j), 
+                               mag_cat=!!i, 
+                               comp=!!comp_vs, 
+                               `Ratios of GMT/GMC` = "-"),
+                    rgmt)
+            }
+        } # end of i loop
+    } # end of j loop
+    
+    if (is.null(rgmt)){
+        rgmt <- merge(distinct_at(dat, gsub("`","",sub.by)), 
+                      expand.grid(subgroup=gsub("`","", j), 
+                                  mag_cat=v, 
+                                  comp=comp_vs, 
+                                  `Ratios of GMT/GMC` = "-"))
+    }
+    #rgmt <- inner_join(rgmt, distinct(labels_all, mag_cat, Visit, Marker), by="mag_cat")
+    return(rgmt)
 }
