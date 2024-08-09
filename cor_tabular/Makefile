@@ -59,6 +59,11 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), nvx_uk302))
 	Rscript code/make_table_all.R D35nvx_uk302
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19nvx))
 	Rscript code/make_table_all.R D35prevent19nvx
+else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
+	Rscript code/make_table_all_sanofi.R D22vat08_combined_M6_bAb
+	Rscript code/make_table_all_sanofi.R D43vat08_combined_M6_bAb
+	Rscript code/make_table_all_sanofi.R D22vat08_combined_M6_nAb
+	Rscript code/make_table_all_sanofi.R D43vat08_combined_M6_nAb
 endif
 
 ## clean            : delete contents of data_clean/ and output/ directories

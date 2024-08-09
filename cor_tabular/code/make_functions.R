@@ -36,12 +36,13 @@ getResponder <- function(data,
       if (bl %in% names(data)){
         data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
         data[, delta] <- ifelse(10^data[, post] < cutoff, log10(cutoff/2), data[, post])-ifelse(10^data[, bl] < cutoff, log10(cutoff/2), data[, bl])
+        
         for (k in grtns){
           data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
         }
       }
       
-      if(grepl("bind|ACE", j) | COR == "D29VLvariant" | grepl("stage2", COR)){
+      if((grepl("bind|ACE", j) | COR == "D29VLvariant" | grepl("stage2", COR)) & attr(config,"config")!="vat08_combined"){
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(cutoff))
       } else {
       data[, paste0(post, "Resp")] <- as.numeric(

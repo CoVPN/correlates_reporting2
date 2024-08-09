@@ -694,7 +694,7 @@ tab_gmtr_nnaive <- tab_assay_status %>%
   bind_rows()
 
 
-if (config.cor$EventIndPrimary!="COVIDIndD22toD181"){
+# if (config.cor$EventIndPrimary!="COVIDIndD22toD181"){
  
   tab_assay_nevercase <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Never-Cases", "Cases")){
     Trti <- paste0("Trt",x)
@@ -917,7 +917,7 @@ tab_case_nnaive_nevercase <- tab_assay_status_nevercase %>%
   map("tab_case_nnaive") %>% 
   bind_rows()
 
-}
+# }
 
 print("Done with all tables")
 
