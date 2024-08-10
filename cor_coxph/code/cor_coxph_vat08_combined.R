@@ -163,8 +163,9 @@ for (iSt in stages) {
   } # end marker cut points
   
   
+  
   # univariate
-  if(T){
+  if(F){
   ###################################
   # Univariate: Dxx, B, Dxx/B, vaccine arm
   
@@ -335,7 +336,7 @@ for (iSt in stages) {
   
   
   # baseline detectable * Dxx
-  if(T) {
+  if(F) {
     
   ###################################
   # Bhigh x D15 (D15/B), Vacc
@@ -401,10 +402,10 @@ for (iSt in stages) {
   
   
   # Bxx + Dxx, Bxx * Dxx
-  if(!endsWith(COR,"st1.nAb.batch0and1")) { # for st1.nAb.batch0and1, cor_coxph_coef_n_mi needs to be modified with respect to f
+  if(T) { # for st1.nAb.batch0and1, cor_coxph_coef_n_mi needs to be modified with respect to f
     
   ###################################
-  # B + Dxx (Dxx/B)
+  # B + Dxx (Dxx/B), vaccine arm
   
   all.markers = c(sapply(assays, function (a) paste0("B",a, "centered + Day"%.%tpeak%.%"",a, "centered")),
                   sapply(assays, function (a) paste0("B",a, "centered + Delta"%.%tpeak%.%"overB",a, "centered"))
@@ -414,13 +415,9 @@ for (iSt in stages) {
   all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short, "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
-  
-  # parameters for R script
   nCoef=2
   col.headers=c("center(B)", "center(D"%.%tpeak%.%" or fold)")
   
-  # vaccine arm
-
   cor_coxph_coef_n_mi (
     form.0,
     dat=dat.vacc,
@@ -470,6 +467,11 @@ for (iSt in stages) {
     verbose=verbose
   )
   
+  }
+  
+  
+  # dich_B x 
+  if(F) {
 
   ###################################
   # dich_B x D15 (D15/B)

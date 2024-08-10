@@ -39,8 +39,14 @@ cor_coxph_coef_n_mi = function(
     # models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
       # imp=1
       
-      f = update(form.0, as.formula(paste0("~.+", a, if(TRIAL=="janssen_partA_VL" |
-                                                        TRIAL=="vat08_combined" & endsWith(COR,"st1.nAb.batch0and1")) "_"%.%imp))); f
+      if (TRIAL=="vat08_combined" & endsWith(COR,"st1.nAb.batch0and1") & (startsWith(fname.suffix, "B+D") | startsWith(fname.suffix, "B*D")) ) {
+        # need imp and not sufficient to add imp at the end. replace the first term with _imp appended
+        s1=strsplit(a,"[\\+\\*]")[[1]][1]
+        f = update(form.0, as.formula(paste0("~.+", sub(s1, kyotil::trim(s1)%.%"_"%.%imp, a), "_"%.%imp))); f
+      } else {
+        f = update(form.0, as.formula(paste0("~.+", a, if(TRIAL=="janssen_partA_VL" |
+                                                          TRIAL=="vat08_combined" & endsWith(COR,"st1.nAb.batch0and1")) "_"%.%imp)))
+      }
 
       if (TRIAL %in% c("vat08_combined")) {
         dat$EventIndOfInterest  = dat[[config.cor$EventIndPrimary  %.% imp]]

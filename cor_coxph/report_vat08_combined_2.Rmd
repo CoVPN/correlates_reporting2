@@ -14,7 +14,7 @@ show.q=F
 iSt=2
 subfolder <- "stage2nnaive"
 
-for (M in c(5,6)) {
+for (M in c(5)) {
 for (tpeak in c(43, 22)) { 
 
   special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
