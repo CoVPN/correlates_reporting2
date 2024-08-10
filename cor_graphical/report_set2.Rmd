@@ -1,7 +1,7 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0(assay_grp, "_longitudinal_by_case_non_case.pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0(assay_grp, "_longitudinal_by_case_non_case", version, ".pdf"))`}
 
 \caption{`r paste0("Longitudinal plots for ", gsub("_", " ", assay_grp), " markers at key timepoints", COR_postfix_label)`}
 

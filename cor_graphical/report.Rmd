@@ -16,7 +16,8 @@ library(knitr)
 library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
 
-if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
+
+if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302", "COVAIL")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
 
@@ -37,7 +38,7 @@ if (attr(config,"config")=="azd1222_stage2") {
 }
 
 tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
-tps_no_delta_over_tinterm_lb <- if(attr(config,"config")=="vat08_combined") {c("Day 1_n","Day 1_nn", "Day 22_n", "Day 22_nn", "Day 43", "D22 fold-rise over D1_n", "D22 fold-rise over D1_nn", "D43 fold-rise over D1")
+tps_no_delta_over_tinterm_lb <- if(attr(config,"config")=="vat08_combined") {c("Day 1_n","Day 1_nn", "Day 22_n", "Day 22_nn", "Day 43_n", "Day 43_nn", "D22 fold-rise over D1_n", "D22 fold-rise over D1_nn", "D43 fold-rise over D1_n", "D43 fold-rise over D1_nn")
   } else {time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]}
 tps_no_fold_change <- times[!grepl("Delta", times)]
 tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
@@ -66,7 +67,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                                                                      )
   if (attr(config,"config") == "nvx_uk302") COR_postfix_list <- c("D35nvx_uk302")
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
-  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage1")
+  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage2")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
@@ -178,14 +179,16 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           assays[grepl("pseudoneutid50", assays)]
         } else {assays}
       
-      for (assay_grp in assay_grp_list){
+      for (version in c("", if (COR_postfix_list == "D22D43omi_stage2") "_v2")){
+        for (assay_grp in assay_grp_list){
+            
+            if (attr(config,"config") == "prevent19nvx") next # no need for prevent19nvx
           
-          if (attr(config,"config") == "prevent19nvx") next # no need for prevent19nvx
-        
-          res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
-          cat(res, sep = '\n')
-          cat("\\clearpage", sep = '\n')
-          
+            res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
+            cat(res, sep = '\n')
+            cat("\\clearpage", sep = '\n')
+            
+        }
       }
       
       
@@ -202,11 +205,13 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
         
           for (trt in c("vac_pla")){
               
-              for (tp in tps_no_fold_change){
+              for (tp in if(attr(config,"config")=="vat08_combined") {tps_no_delta_over_tinterm} else {tps_no_fold_change}){
                 
                 for (assay_n in c(length(assays), 
                                   if (attr(config,"config") == "vat08_combined") 9, 
-                                  if (attr(config,"config") == "vat08_combined") 6)){
+                                  if (attr(config,"config") == "vat08_combined") 6,
+                                  if (attr(config,"config") == "vat08_combined") 10, 
+                                  if (attr(config,"config") == "vat08_combined") 7)){
                   
                   tpLabel = ifelse(tp=="B", "Day1", tp)
                   res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3.Rmd')), quiet = TRUE)
@@ -221,7 +226,9 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
           
           for (trt in c("vac")){
               
-              for (tp in if (attr(config,"config")=="prevent19_stage2") {c("Day35","Day35_sub")} else {tps_no_B_and_fold_change}){
+              for (tp in if (attr(config,"config")=="prevent19_stage2") {c("Day35","Day35_sub")
+                } else if (attr(config,"config")=="vat08_combined") {tps_no_delta_over_tinterm[2:5]
+                  } else {tps_no_B_and_fold_change}){
                   
                   
                   assay_n = ifelse(COR %in% c("D57azd1222_stage2_delta_nAb", "D57azd1222_stage2_severe_nAb"), sum(grepl("pseudoneutid50", assays)),
@@ -233,7 +240,9 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                   
                   for (assay_n in c(assay_n, 
                                   if (attr(config,"config") == "vat08_combined") 9, 
-                                  if (attr(config,"config") == "vat08_combined") 6)) {
+                                  if (attr(config,"config") == "vat08_combined") 6,
+                                  if (attr(config,"config") == "vat08_combined") 10, 
+                                  if (attr(config,"config") == "vat08_combined") 7)) {
                   
                     tpLabel = ifelse(tp=="B", "Day1", tp)
                     
@@ -272,8 +281,64 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   }
     
     
-  } else { # for all other studies but config: janssen_partA_VL and COR: D29VLvariant
-    
+
+  } else if (study_name=="COVAIL"){
+  
+  assay_metadata <- assay_metadata %>% filter(panel=="id50")
+  assays <- assay_metadata$assay
+
+  set1_panels_1 = c("id50")
+  set1_group_1= c(" (13 one-dose mRNA booster arms pooled)",
+                  " (13 one-dose mRNA booster arms pooled: naive vs. non-naive)",
+                  " (3 Sanofi booster arms pooled)",
+                  " (mRNA Moderna vs. mRNA Pfizer)",
+                  " (mRNA Prototype vs. mRNA Omicron-Containing)",
+                  " (Moderna: mRNA Prototype vs. mRNA Omicron-Containing)",
+                  " (Pfizer: mRNA Prototype vs. mRNA Omicron-Containing)",
+                  " (mRNA Bivalent vs. mRNA Monovalent)")
+  set1_group_2= c(" (13 one-dose mRNA booster arms pooled)", " (3 Sanofi booster arms pooled)")
+
+  set1_times <- c("B","Day15","Delta15overB")
+  
+  set2_times = c("B","Day15","Day29","Day91")
+  
+  
+  ## Set 1: violin and line plots #############
+  for (strain in c("6_strain")){
+    for (panel in set1_panels_1){
+      for (group in set1_group_1){
+        for (time in set1_times) {
+        
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub1.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+        }
+      }
+    }
+    }
+
+## Set 3: Correlation plots across markers at a given time point #############
+  for (time in set2_times) {
+    for (strain in c("6_markers")){
+      for (group in set1_group_2){
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub3.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+      }
+    }
+    }
+
+## Set 4: Correlation plots for a given marker across time points #############
+for (assay in assays) {
+  for (group in set1_group_2){
+      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub4.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\clearpage", sep = '\n')
+  }
+  }
+
+} else { # for all other studies but config: janssen_partA_VL and COR: D29variant
+  
     for (COR_postfix in COR_postfix_list){
         
       # show in figure title
@@ -408,10 +473,10 @@ PsV-nAb ID50 Score"))))
           
           if(sum(plot_ve_curves)>0){ # plot_ve_curves = c(1, 1) for base neg and base pos, if one doesn't exist, set to 0, eg: c(0, 1)
             for (assayNum in seq(assays)) {
-              
+
               assay <- assays[assayNum]
               assayLabel <- assay.labels[assayNum]
-              
+
               res = knitr::knit_child(c(here::here('cor_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
               cat(res, sep = '\n')
               cat("\\clearpage", sep = '\n')
@@ -492,7 +557,11 @@ PsV-nAb ID50 Score"))))
       }
     }
   }
-    
+
   #}
 #}
+  
+
+
+
 ```

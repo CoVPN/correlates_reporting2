@@ -75,15 +75,15 @@ if (grepl("IncludeNotMolecConfirmed", COR)) {incNotMol <- "IncludeNotMolecConfir
 } else {incNotMol <- ""}
 
 # set EventIndTimePrimary to EventIndTimeOmicron if study_name=="VAT08_combined" & COR=="D22D43omi"
-if (study_name=="VAT08" & grepl("omi", COR)){
+#if (study_name=="VAT08" & grepl("omi", COR)){
   # All COVID endpoint cases of observed non-Omicron lineages, or with unknown lineage before January 17, 2022, are excluded
-  dat$EventIndPrimaryD1 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD1 & dat$Omi_or_NA_after_cutoff==1) # used by cohort_event def
-  dat$EventIndPrimaryD22 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD22 & dat$Omi_or_NA_after_cutoff==1) 
-  dat$EventIndPrimaryD43 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD43 & dat$Omi_or_NA_after_cutoff==1) # used by cohort_event def
-  dat$EventTimePrimaryD1 = dat$EventTimeKnownLineageOmicronOrMissingLineageD1
-  dat$EventTimePrimaryD22 = dat$EventTimeKnownLineageOmicronOrMissingLineageD22 # used by scatter plot
-  dat$EventTimePrimaryD43 = dat$EventTimeKnownLineageOmicronOrMissingLineageD43
-}
+  #dat$EventIndPrimaryD1 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD1 & dat$Omi_or_NA_after_cutoff==1) # used by cohort_event def
+  #dat$EventIndPrimaryD22 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD22 & dat$Omi_or_NA_after_cutoff==1) 
+  #dat$EventIndPrimaryD43 = as.numeric(dat$EventIndKnownLineageOmicronOrMissingLineageD43 & dat$Omi_or_NA_after_cutoff==1) # used by cohort_event def
+  #dat$EventTimePrimaryD1 = dat$EventTimeKnownLineageOmicronOrMissingLineageD1
+  #dat$EventTimePrimaryD22 = dat$EventTimeKnownLineageOmicronOrMissingLineageD22 # used by scatter plot
+  #dat$EventTimePrimaryD43 = dat$EventTimeKnownLineageOmicronOrMissingLineageD43
+#}
 
 # tpeak for this study is not set upstream for some reason, so set it here
 if (study_name=="IARCHPV") {tpeak=18}
@@ -172,15 +172,15 @@ if (study_name=="IARCHPV"){
   dat <- dat %>%
     mutate(cohort_event = factor(
       case_when(Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tinterm)))==0 & 
-                  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
-                  (!!as.name(paste0("EventIndPrimaryD", tinterm)))==1 & 
-                  (!!as.name(paste0("EventTimePrimaryD", tinterm))) >= 7 &
-                  (!!as.name(paste0("EventTimePrimaryD", tpeak))) < 7 ~ "7-27 days PD2 cases",
+                  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb==1 | ph2.D43.bAb==1) & 
+                  (!!as.name(paste0("EventIndOmicronD", tinterm, "M6hotdeck10")))==1 & 
+                  (!!as.name(paste0("EventTimeOmicronD", tinterm, "M6hotdeck10"))) >= 7 &
+                  (!!as.name(paste0("EventTimeOmicronD", tpeak, "M6hotdeck10"))) < 7 ~ "7-27 days PD2 cases",
                 Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
-                  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
-                  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 &
-                  (!!as.name(paste0("EventTimePrimaryD", tpeak))) >= 7 &
-                  (!!as.name(paste0("EventTimePrimaryD", tpeak))) <= 180 ~ "28-180 days PD2 cases", 
+                  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb==1 | ph2.D43.bAb==1) & 
+                  (!!as.name(paste0("EventIndOmicronD", tpeak, "M6hotdeck10")))==1 &
+                  (!!as.name(paste0("EventTimeOmicronD", tpeak, "M6hotdeck10"))) >= 7 &
+                  (!!as.name(paste0("EventTimeOmicronD", tinterm, "M6hotdeck10"))) <= 180 ~ "28-180 days PD2 cases", 
                 #Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
                 #  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
                 #  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 &
@@ -190,7 +190,7 @@ if (study_name=="IARCHPV"){
                 # will filter out those without D57 marker data in the D57 panels
                 Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
                   (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
-                  EventIndPrimaryD1==0 ~ "Non-Cases"),
+                  EventIndOmicronD22M6hotdeck10==0 ~ "Non-Cases"),
       levels = c("7-27 days PD2 cases", "28-180 days PD2 cases", #"181-365 days PD2 cases", 
                  "Non-Cases"))
     )
@@ -232,6 +232,7 @@ if(study_name=="ENSEMBLE" & COR=="D29VLvariant"){
 }
 
 dat <- dat[!is.na(dat$cohort_event),]
+table(dat$cohort_event, paste0("Bsero: ", dat$Bserostatus, ", Trt: ", dat$Trt))
 
 if (length(timepoints)==1) {
   ph2.indicator = config.cor$ph2
@@ -474,7 +475,7 @@ if(length(timepoints) > 1 & study_name !="VAT08") {
 
 if(study_name =="VAT08") {
   
-  if (nrow(subset(dat.longer.cor.subset, cohort_event=="7-27 days PD2 cases"))!=0) {
+  #if (nrow(subset(dat.longer.cor.subset, cohort_event=="7-27 days PD2 cases"))!=0) {
     # append with a pooled case group: union of 7-27 days PD2 cases, 28-180 days PD2 cases at both day 1 and day 22 as cases for D22 marker correlates analyses
     dat.longer.cor.subset <- dat.longer.cor.subset %>%
       bind_rows(dat.longer.cor.subset %>% 
@@ -483,20 +484,30 @@ if(study_name =="VAT08") {
       mutate(cohort_event = factor(cohort_event, 
                                    levels = c("7-27 days PD2 cases","28-180 days PD2 cases","7-180 days PD2 cases", "Non-Cases"),
                                    labels = c("C1","C2","C3","Non-Cases")))
-  } else {
+  #} else {
     
-    dat.longer.cor.subset <- dat.longer.cor.subset %>%
-      mutate(cohort_event = factor(cohort_event, 
-                                   levels = c("28-180 days PD2 cases","Non-Cases"),
-                                   labels = c("C2","Non-Cases")))
+    #dat.longer.cor.subset <- dat.longer.cor.subset %>%
+      #mutate(cohort_event = factor(cohort_event, 
+      #                             levels = c("28-180 days PD2 cases","Non-Cases"),
+      #                             labels = c("C2","Non-Cases")))
    
-  }
+  #}
   
   dat.longer.cor.subset <- dat.longer.cor.subset %>% 
     filter(!(time %in% c("B", "Day22", "Delta22overB") & grepl("bind", assay) & ph2.D22.bAb == 0)) %>%
     filter(!(time %in% c("B", "Day22", "Delta22overB") & grepl("pseudoneutid50", assay) & ph2.D22.nAb == 0)) %>%
     filter(!(time %in% c("Day43", "Delta43overB", "Delta43over22") & grepl("bind", assay) & ph2.D43.bAb == 0)) %>%
     filter(!(time %in% c("Day43", "Delta43overB", "Delta43over22") & grepl("pseudoneutid50", assay) & ph2.D43.nAb == 0))
+  
+  table(paste0("Time:", subset(dat.longer.cor.subset, cohort_event=="C3" & assay=="bindSpike")$time, 
+               ", Assay:", subset(dat.longer.cor.subset, cohort_event=="C3" & assay=="bindSpike")$assay), 
+        paste0("Bsero:", subset(dat.longer.cor.subset, cohort_event=="C3" & assay=="bindSpike")$Bserostatus, 
+               ", Trt:", subset(dat.longer.cor.subset, cohort_event=="C3" & assay=="bindSpike")$Trt))
+  
+  table(paste0("Time:", subset(dat.longer.cor.subset, cohort_event=="Non-Cases" & assay=="bindSpike")$time, 
+               ", Assay:", subset(dat.longer.cor.subset, cohort_event=="Non-Cases" & assay=="bindSpike")$assay), 
+        paste0("Bsero:", subset(dat.longer.cor.subset, cohort_event=="Non-Cases" & assay=="bindSpike")$Bserostatus, 
+               ", Trt:", subset(dat.longer.cor.subset, cohort_event=="Non-Cases" & assay=="bindSpike")$Trt))
   
   # exclude EarlyinfectionD43==1 at Day 43 and D43 fold-rise over D1 for all case groups
   stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event %in% c("7-27 days PD2 cases","28-180 days PD2 cases","7-180 days PD2 cases") & time %in% c("Day43", "Delta43overB", "Delta43over22") & EarlyinfectionD43==1))==0)
