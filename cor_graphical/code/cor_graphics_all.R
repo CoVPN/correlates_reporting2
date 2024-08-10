@@ -705,6 +705,9 @@ if (study_name == "VAT08" & unique(dat.longer.cor.subset.plot1$Trialstage)==1) {
     
     ###################### sanofi:        
     sanofi <- read.csv(config$data_cleaned, stringsAsFactors = F)
+    sanofi$ph2.D43.nAb = with(sanofi, ifelse(Trialstage == 1, ph2.D43.st1.nAb.batch0and1, ph2.D43.nAb))
+    sanofi$ph2.D22.nAb = with(sanofi, ifelse(Trialstage == 1, ph2.D22.st1.nAb.batch0and1, ph2.D22.nAb))
+    
     sanofi_sub = sanofi %>%
         bind_rows(sanofi %>% mutate(Country = 99)) %>%
         filter(#Country == 8 & # only stage 1 has U.S participants
