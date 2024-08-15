@@ -279,11 +279,11 @@ if (attr(config,"config")=="vat08_combined" & unique(dat.longer.immuno.subset.pl
             axis.text.x.size = 14,
             facet.y.var = vars(nnaive), 
             facet.x.var = vars(Trialstage),
-            y.axis.lb = gsub(" \\(AU/ml\\)", "", labels.assays.short[asy]),
+            y.axis.lb = paste0("Geometric Mean Ratio (Vaccine/Placebo) of\n", gsub(" \\(AU/ml\\)", "", labels.assays.short[asy])),
             y.lb.scale = "original"
         )
         
-        file_name <- paste0("/", asy, "_longitudinal_geomean_nonnaive_stage1stage2.pdf")
+        file_name <- paste0("/", asy, "_longitudinal_gmr_nonnaive_stage1stage2.pdf")
         ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
     }
 }

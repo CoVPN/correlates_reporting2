@@ -575,7 +575,7 @@ for (assay_grp in assays){
 }
 
 for (assay_grp in assays){
-    details = "_geomean_nonnaive_stage1stage2"
+    details = "_gmr_nonnaive_stage1stage2"
     details_lb = ", D78, D134, D202, D292, D387, Non-naive Stage 1 and Stage 2 Participants"
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set2.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')

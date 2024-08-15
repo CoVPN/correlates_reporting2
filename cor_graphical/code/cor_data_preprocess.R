@@ -27,7 +27,9 @@ if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)} # nee
 if (study_name=="VAT08") {
   dat_proc$ph2.D43.nAb = with(dat_proc, ifelse(Trialstage == 1, ph2.D43.st1.nAb.batch0and1, ph2.D43.nAb))
   dat_proc$ph2.D22.nAb = with(dat_proc, ifelse(Trialstage == 1, ph2.D22.st1.nAb.batch0and1, ph2.D22.nAb))
-  dat_proc$month = with(dat_proc, ifelse(Trialstage == 1, 6, 5))
+  dat_proc$wt.D43.nAb = with(dat_proc, ifelse(Trialstage == 1, wt.D43.st1.nAb.batch0and1, wt.D43.nAb))
+  dat_proc$wt.D22.nAb = with(dat_proc, ifelse(Trialstage == 1, wt.D22.st1.nAb.batch0and1, wt.D22.nAb))
+  month = ifelse(dat_proc$Trialstage[1] == 1, 6, 5)
 }
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0
