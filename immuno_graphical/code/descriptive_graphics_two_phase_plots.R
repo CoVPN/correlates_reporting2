@@ -1009,7 +1009,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
               mutate(Bserostatus = ifelse(Bserostatus == 1, "Pos", "Neg"),
                      Trt = ifelse(Trt == 1, "vaccine", "placebo")) %>%
               group_by(time, Bserostatus, Region, Trt) %>%
-              summarise(across(assays_, ~ exp(sum(log(.x * wt), na.rm=T) / sum(wt)))) %>%
+              summarise(across(all_of(assays_), ~ exp(sum(log(.x * wt), na.rm=T) / sum(wt)))) %>%
               unique() %>%
               ungroup() %>%
               as.data.frame()

@@ -223,7 +223,7 @@ f_longitude_by_assay <- function(
         mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
         mutate(assay_label_short = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label)) %>%
         ungroup() %>%
-            ggplot(aes_string(x = x.var, y = "value")) +
+            ggplot(aes(x = !!sym(x.var), y = !!sym("value"))) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
                 
                 geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE, color = "#FF6F1B") +
@@ -235,7 +235,7 @@ f_longitude_by_assay <- function(
                 geom_point(size = 3, alpha = 0.6, show.legend = TRUE, color = "#FF6F1B") +
                 
                 #geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = 5), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes_string(x = x.var, label = "RespRate", y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(x = !!sym(x.var), label = !!sym("RespRate"), y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
