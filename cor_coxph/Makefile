@@ -1,5 +1,5 @@
 ## all           : clean saved results and get results to populate report
-all: clean cor_coxph report
+all: cor_coxph report
 
 report:
 	bash _build_chapter.sh
@@ -70,18 +70,18 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_bAb)) ## for some reason if this 
 	Rscript code/cor_coxph.R D29start28
 	Rscript code/cor_graphical_time_to_event.R D29D57
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined ))
-	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_nAb
-	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_bAb
-	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_st2.nAb.sen
-	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_bAb
-	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_nAb
-	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_st2.nAb.sen
-	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_bAb 
-	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_nAb 
-	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M12_st2.nAb.sen 
-	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_bAb 
-	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_nAb 
-	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M12_st2.nAb.sen 
+	Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_st1.nAb.batch0and1 # stage 1 only
+	Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_st1.nAb.batch0and1 # stage 1 only
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_nAb # stage 1 
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_nAb # stage 1
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_bAb # stage 1
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_bAb # stage 1 
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_nAb # stage 2 only
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_nAb # stage 2 only
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_bAb # stage 2 only
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_bAb # stage 2 only
+	#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_st2.nAb.sen # stage 2 only
+	#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_st2.nAb.sen # stage 2 only
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D43
 	Rscript code/cor_coxph.R D43start48

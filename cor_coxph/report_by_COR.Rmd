@@ -1,9 +1,13 @@
-`r paste(concatList(rep('#',level)), COR, fname.suffix)`  Univariate
+<!-- There are two subsections, one for continuous markers, including forest plots, and one for trichotomized markers, including tertile incidence plots. -->
+
+`r paste(concatList(rep('#',level)), fname.suffix, COR)`  Univariate
+
+
+`r paste(concatList(rep('#',level+1)))`  Continuous markers
 
 Each row represents results from one model. 
 
 `r if (exists("COR_page_notes")) if(COR_page_notes!="") COR_page_notes`
-
 
 
 <!-- Hazard ratios -->
@@ -21,26 +25,6 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 `r if (!show.q)'-->'`
 
 
-
-
-
-\clearpage
-\scriptsize
-\input{`r paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", fname.suffix)`}
-\normalsize
-\vspace{-15pt}
-$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, ".txt}"), sep=",")`
-
-$\ast\ast$`r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
-
-$\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
-
-`r if (!show.q) '<!--'`
-$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
-`r if (!show.q)'-->'`
-
-
-\vspace{30pt}
 
 
 <!-- Follmann sample size ratio. Only for two TRIALs -->
@@ -90,31 +74,152 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 `r if (!TRIAL %in% c("janssen_partA_VL"))'-->'`
 
 
-\clearpage
-
 
 
 <!-- Forest plots -->
 
 ```{r, echo=FALSE, results='asis'}
 
+# cat(concatList(rep('#',level+1)), " Forest plots\n\n")
+
 if(TRIAL %in% c("azd1222")) {
   message ("forest plots")
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
-  cat("\\clearpage\n")
-  
+
 } else if(file.exists(paste0("../", pathCoRoutput, "/hr_forest_",fname.suffix,".pdf"))) {
   # ../ is necessary because pathCoRoutput starts at corcoxph
+  
   cat("
 \\begin{figure}
 \\center
 \\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_", fname.suffix, ".pdf}
-\\caption{Forest plot.}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_", fname.suffix, ".pdf}
+\\caption{Forest plots depicting hazard ratios per 10-fold change in marker, presented on both an antilog scale and a log scale.}
 \\end{figure}
-\\clearpage", sep="")
+", sep="")
+  
+  cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_scaled_", fname.suffix, ".pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_scaled_", fname.suffix, ".pdf}
+\\caption{Forest plots depicting hazard ratios per SD change in marker, presented on both an antilog scale and a log scale.}
+\\end{figure}
+", sep="")
+  
+  
+  # additional plots
+  if (TRIAL=="vat08_combined" & fname.suffix=="D" %.% tpeak) {
+    # add more forest plots: baseline and fold rise
+    cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_", fname.suffix, "2.pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_", fname.suffix, "2.pdf}
+\\caption{Forest plots depicting hazard ratios per 10-fold change in baseline marker, presented on both an antilog scale and a log scale.}
+\\end{figure}
+", sep="")
+  
+    cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_scaled_", fname.suffix, "2.pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_scaled_", fname.suffix, "2.pdf}
+\\caption{Forest plots depicting hazard ratios per SD change in baseline marker, presented on both an antilog scale and a log scale.}
+\\end{figure}
+", sep="")
+
+    cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_", fname.suffix, "3.pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_", fname.suffix, "3.pdf}
+\\caption{Forest plots depicting hazard ratios per 10-fold change in fold increases, presented on both an antilog scale and a log scale.}
+\\end{figure}
+", sep="")
+  
+    cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_scaled_", fname.suffix, "3.pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_scaled_", fname.suffix, "3.pdf}
+\\caption{Forest plots depicting hazard ratios per SD change in fold increases, presented on both an antilog scale and a log scale.}
+\\end{figure}
+
+\\clearpage
+", sep="")    
+  }
+
 }
 ```
+
+
+\clearpage
+
+
+
+`r paste(concatList(rep('#',level+1)))`  Trichotomized markers
+
+
+\scriptsize
+\input{`r paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", fname.suffix)`}
+\normalsize
+\vspace{-15pt}
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, ".txt}"), sep=",")`
+
+$\ast\ast$`r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
+
+$\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
+
+`r if (!show.q) '<!--'`
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
+`r if (!show.q)'-->'`
+
+
+<!-- `r paste(concatList(rep('#',level+2)))` Tertiles cumulative incidence plots -->
+\vspace{100pt}
+
+
+In the following figures, the tertiled incidence curves are estimated by marginalizing over a Cox model. The comparison arm incidence curve is estimated based on a null Cox model. The comparison arm curve may not go all the way to tfinal.tpeak because the last point shown is the last event time in the comparison arm.
+
+
+The data ribbon is estimated based on survfit separately within each tertile using ph2 data only, without any covariates. Thus, blanks occur when a strata is depleted after a time point.
+
+
+`r if (exists("tertilecurves_page_notes")) if(tertilecurves_page_notes!="") tertilecurves_page_notes`
+
+\clearpage
+
+<!-- markers may be a subset of all.markers, depending on fname.suffix -->
+`r 
+if (TRIAL=="vat08_combined" & fname.suffix=="D" %.% tpeak) {
+  all.markers.tri = all.markers[1:(length(all.markers)/3*2)]
+} else if (TRIAL=="vat08_combined" & fname.suffix=="D" %.% tpeak %.% "_plac_alt2") {
+  all.markers.tri = c()
+} else {
+  all.markers.tri = all.markers
+}
+
+res=""
+for (a in all.markers.tri) {
+
+  res = paste0(res, concatList(rep('#',level+2)), " ", a, "\n\n")
+
+  res = paste0(res, '
+\\begin{figure}
+\\center
+\\includegraphics[width=.75\\textwidth,keepaspectratio]{', pathCoRoutput, '/', a, '_', 'marginalized_risks_cat_',  fname.suffix, '.pdf} 
+\\caption{Marginalized cumulative incidence rate curves for trichotomized Day ', tpeak, ' markers. The gray line, if present, is the overall cumulative incidence rate curve in the comparison arm. Final incidences in the tertiled groups and in the comparison arm, if present: \\protect\\input{',  pathCoRoutput, '/', a, '_tertile_incidences_',  fname.suffix, '.txt}. }
+\\end{figure}
+\\clearpage
+')
+
+}
+
+res 
+`
+
 
 
 

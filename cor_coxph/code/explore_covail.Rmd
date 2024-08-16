@@ -158,7 +158,7 @@ tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
     "1 Dose Prototype (Moderna)" # 50 ug
   )
 ))
-plot_anc_BA1(tmp, main="COVAIL Moderna Prototype (50ug)")
+plot_anc_BA1(tmp, main="COVAIL Moderna Prototype (50ug)") # COVAIL mRNA-1273 Prototype Dose 4 (50ug)
 ```
 
 COVAIL moderna Omicron BA1 
@@ -167,7 +167,7 @@ tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
   "1 Dose Omicron (Moderna)" # BA1
   )
 ))
-plot_anc_BA1(tmp, main="COVAIL Moderna BA.1 (50ug)")
+plot_anc_BA1(tmp, main="COVAIL Moderna BA.1 (50ug)") # COVAIL mRNA-1273 BA.1 Dose 4 (50ug)
 ```
 
 COVAIL moderna prototype and BA1 together
@@ -200,6 +200,72 @@ COVAIL mRNA
 ```{r}
 tmp=convert2IU(dat.ocp)
 plot_anc_BA1(tmp, main="COVAIL Omi/Prot 1 dose mRNA")
+```
+
+
+Cox model using a generated marker based on baseline
+
+```{r}
+
+tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+   "1 Dose Omicron (Moderna)" # BA1
+)))
+
+tmp1 = subset(tmp, Bpseudoneutid50_D614G>0.5 & Day15pseudoneutid50_D614G<4)
+
+fit=lm(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G+I(Bpseudoneutid50_D614G^2)+I(Bpseudoneutid50_D614G^3), tmp1)
+
+tmp$pred=predict(fit,newdata=tmp)
+tmp$resid=tmp$Day15pseudoneutid50_D614G-tmp$pred
+tmp1$pred=predict(fit,newdata=tmp1)
+
+plot(Day15pseudoneutid50_D614G~Bpseudoneutid50_D614G, tmp, xlim=c(0,5), ylim=c(0,5), asp=1); mylines(tmp$Bpseudoneutid50_D614G, tmp$pred, col=2)
+
+par(mfrow=c(1,2))
+lim=NULL
+corplot(Day15pseudoneutid50_D614G~resid, tmp, xlim=NULL, ylim=c(0,5), asp=1)
+corplot(Bpseudoneutid50_D614G~resid, tmp, xlim=NULL, ylim=c(0,5), asp=1)
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ naive + Day15pseudoneutid50_D614G, tmp)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ naive + Bpseudoneutid50_D614G, tmp)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ naive + pred, tmp)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ naive + resid, tmp)
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ pred + resid, tmp)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ pred * resid, tmp)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bpseudoneutid50_D614G + resid, tmp)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bpseudoneutid50_D614G * resid, tmp)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Day15pseudoneutid50_D614G + resid, tmp)
+
+# coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ naive + Day15pseudoneutid50_D614G, tmp1)
+# coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ naive + pred, tmp1)
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ naive + Bpseudoneutid50_D614G * resid, tmp)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ naive * resid, tmp)
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ naive + pred + resid, tmp)
+
+
+```
+
+repeat for BA1 marker. not significant
+
+```{r}
+
+tmp=convert2IU(subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
+   "1 Dose Omicron (Moderna)" # BA1
+)))
+
+fit=lm(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1+I(Bpseudoneutid50_BA.1^2), subset(tmp, Day15pseudoneutid50_BA.1>1))
+tmp$pred=predict(fit,newdata=tmp)
+
+plot(Day15pseudoneutid50_BA.1~Bpseudoneutid50_BA.1, tmp, xlim=c(0,5), ylim=c(0,5), asp=1); mylines(tmp$Bpseudoneutid50_BA.1, tmp$pred, col=2)
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Day15pseudoneutid50_BA.1 + naive, tmp)
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bpseudoneutid50_BA.1 + naive, tmp)
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ pred + naive, tmp)
+
 ```
 
 
