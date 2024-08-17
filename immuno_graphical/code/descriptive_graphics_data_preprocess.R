@@ -463,7 +463,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
   groupby_vars1 = c("Trt", "Bserostatus", "time", "assay")
   
   # define response rate
-  dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1)
+  dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset %>% filter(!is.na(value)), groupby_vars1)
   saveRDS(if (attr(config,"config") == "vat08_combined") {dat.longer.immuno.subset.plot1 %>% filter(Trialstage == Trialstage_val)
     } else {dat.longer.immuno.subset.plot1}, 
     file = here::here("data_clean", "longer_immuno_data_plot1.rds"))
@@ -475,7 +475,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
     groupby_vars1.2=c("Trt", "Bserostatus", "Region", "time", "assay")
     
     # define response rate
-    dat.longer.immuno.subset.plot1.2 <- get_desc_by_group(dat.longer.immuno.subset, groupby_vars1.2)
+    dat.longer.immuno.subset.plot1.2 <- get_desc_by_group(dat.longer.immuno.subset %>% filter(!is.na(value)), groupby_vars1.2)
     saveRDS(dat.longer.immuno.subset.plot1.2, file = here::here("data_clean", "longer_immuno_data_plot1.2.rds"))
   }
 }

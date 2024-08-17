@@ -205,7 +205,8 @@ if (attr(config,"config")=="vat08_combined" & unique(dat.longer.immuno.subset.pl
                 mutate(Trt_nnaive = factor(paste(Trt, nnaive),
                                            levels = c("Vaccine Non-naive", "Placebo Non-naive"),
                                            labels = c("Vaccine\nNon-naive", "Placebo\nNon-naive")),
-                       Trialstage = ifelse(Trialstage == 1, "Stage 1", "Stage 2")
+                       Trialstage = ifelse(Trialstage == 1, "Stage 1", "Stage 2"),
+                       time = factor(time, levels = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"))
                 ),
             x.var = "time",
             x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
