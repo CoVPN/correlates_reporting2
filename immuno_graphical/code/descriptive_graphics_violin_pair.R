@@ -195,7 +195,7 @@ if (attr(config,"config") == "vat08_combined"){
 }
 
 # adhoc figures only for sanofi stage 1 report
-if (attr(config,"config")=="vat08_combined" & unique(dat.longer.immuno.subset.plot1_$Trialstage)==1) {
+if (attr(config,"config")=="vat08_combined" & dat.longer.immuno.subset.plot1_$Trialstage[1]==1) {
     # longitudinal plots for stage 1 and stage 2, non-naive ppt
     
     for (asy in set2_assays){
@@ -269,7 +269,7 @@ if (attr(config,"config")=="vat08_combined" & unique(dat.longer.immuno.subset.pl
                        lb = "",
                        lbval = -99,
                        lb2 = "",
-                       lbval2 = -99),
+                       lbval2 = -99)),
             x.var = "time",
             x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
             assays = asy,
