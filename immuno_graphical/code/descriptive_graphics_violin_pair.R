@@ -263,6 +263,7 @@ if (attr(config,"config")=="vat08_combined" & unique(dat.longer.immuno.subset.pl
                        Ptid = Trialstage,
                        RespRate = "",
                        time = gsub(paste0(assays, collapse="|"), "", mag_cat),
+                       time = factor(time, levels = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"),
                        assay = gsub(paste0("^", times_, collapse="|"), "", mag_cat),
                        nnaive = "Non-naive",
                        lb = "",
