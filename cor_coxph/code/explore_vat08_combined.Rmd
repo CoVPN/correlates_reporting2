@@ -21,7 +21,7 @@ region.2 = c( # stage 2
   "Nepal" = 3, "India" = 3)
 
 
-dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240726_hotdeck.csv')
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240807_hotdeck.csv')
 dat_mapped$EventIndPrimaryD1 = dat_mapped$EventIndFirstInfectionD1
 dat_mapped$EventTimePrimaryD1 = dat_mapped$EventTimeFirstInfectionD1
 dat_mapped$EventIndPrimaryD43= dat_mapped$EventIndFirstInfectionD43
@@ -40,7 +40,7 @@ dat_mapped$SUBJID = gsub("-","",dat_mapped$SUBJID,)
 dat_mapped$nAbBatch1=dat_mapped$nAbBatch
 dat_mapped$nAbBatch1[is.na(dat_mapped$Day43pseudoneutid50_B.1.351) & !is.na(dat_mapped$Day43pseudoneutid50)]=0
 
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240804.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20240808.csv')
 dat_proc$SUBJID = sub("VAT00008-","",dat_proc$Ptid)
 dat_proc$SUBJID = gsub("-","",dat_proc$SUBJID,)
 dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDateEnrollment)
@@ -58,6 +58,127 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 
 
 ```
+
+### number of cases by Bhigh
+
+for Stage 1, for bAb Spike, stratified by (Vaccine, Placebo), how many cases have bAb data that are in the undetectable subgroup and how many cases have bAb data that are in the detectable subgroup?  Then the same question for batch 0 + 1 nab titer data. 
+
+
+```{r}
+tmp=subset(dat_proc, ph2.D43.bAb & Trialstage==1 & Bserostatus==1 & EventIndOmicronD43M6hotdeck10)
+with(tmp, mytable(Bhigh, Trt))
+
+
+tmp=subset(dat_proc, ph2.D43.st1.nAb.batch0and1 & Trialstage==1 & Bserostatus==1 & EventIndOmicronD43M6hotdeck10)
+with(tmp, mytable(Bhigh, Trt))
+
+```
+D22
+
+```{r}
+tmp=subset(dat_proc, ph2.D22.bAb & Trialstage==1 & Bserostatus==1 & EventIndOmicronD22M6hotdeck10)
+with(tmp, mytable(Bhigh, Trt))
+
+
+tmp=subset(dat_proc, ph2.D22.st1.nAb.batch0and1 & Trialstage==1 & Bserostatus==1 & EventIndOmicronD22M6hotdeck10)
+with(tmp, mytable(Bhigh, Trt))
+
+```
+
+Cox model
+
+```{r}
+tmp=subset(dat_proc, ph1.D43 & Trialstage==1 & Bserostatus==1 & Trt==1)
+
+models=lapply(1:10, function(imp) {
+
+  f=as.formula(paste0("Surv(EventTimeOmicronD43M6hotdeck",imp,",EventIndOmicronD43M6hotdeck",imp,") ~ FOI + risk_score + Sex + Day43bindSpike_omicron*Bhigh + strata(cc)"))
+
+  fit = svycoxph(f, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=tmp))
+  
+})
+
+betas<-MIextract(models, fun=coef)
+vars<- MIextract(models, fun=vcov)
+
+fits=list()
+fits[[1]]=MIcombine(betas,vars)  
+
+rows=4:6
+tps=T
+est=getFormattedSummary(fits, exp=T, robust=tps, rows=rows, type=1)
+ci= getFormattedSummary(fits, exp=T, robust=tps, rows=rows, type=7)
+p=  getFormattedSummary(fits, exp=T, robust=tps, rows=rows, type=10)
+
+myboxplot(Day43bindSpike_omicron~Bhigh, tmp, col=tmp$EventIndOmicronD43M6hotdeck10+1, cex=1.5, pch=ifelse(tmp$EventIndOmicronD43M6hotdeck10==1,3,1), xlab="Baseline Detectable")
+
+
+tmp=subset(dat_proc, ph1.D43.st1.nAb.batch0and1 & Trialstage==1 & Bserostatus==1 & Trt==1)
+
+imp=10
+f=as.formula(paste0("Surv(EventTimeOmicronD43M6hotdeck",imp,",EventIndOmicronD43M6hotdeck",imp,") ~ FOI + risk_score + Sex + Day43pseudoneutid50_BA.1_10*Bhigh + strata(cc)"))
+
+fit = svycoxph(f, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.st1.nAb.batch0and1, data=tmp))
+fit
+
+myboxplot(Day43pseudoneutid50_10~Bhigh, tmp, col=tmp$EventIndOmicronD43M6hotdeck10+1, cex=1.5, pch=ifelse(tmp$EventIndOmicronD43M6hotdeck10==1,3,1), xlab="Baseline Detectable")
+
+
+#D22
+tmp=subset(dat_proc, ph1.D22.st1.nAb.batch0and1 & Trialstage==1 & Bserostatus==1 & Trt==1)
+
+imp=10
+f=as.formula(paste0("Surv(EventTimeOmicronD22M6hotdeck",imp,",EventIndOmicronD22M6hotdeck",imp,") ~ FOI + risk_score + Sex + Day22pseudoneutid50_BA.1_10*Bhigh + strata(cc)"))
+
+fit = svycoxph(f, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D22.st1.nAb.batch0and1, data=tmp))
+fit
+
+myboxplot(Day22pseudoneutid50_10~Bhigh, tmp, col=tmp$EventIndOmicronD22M6hotdeck10+1, cex=1.5, pch=ifelse(tmp$EventIndOmicronD22M6hotdeck10==1,3,1), xlab="Baseline Detectable")
+
+subset(tmp, EventIndOmicronD22M6hotdeck10==1)
+```
+
+
+Checking weights ...
+
+```{r}
+tmp=subset(dat_proc, ph1.D43 & Trialstage==1 & Bserostatus==1 & EventIndPrimaryD22 & Trt==0)
+with(tmp, mytable(ph2.D43.bAb, RAPDIAG))
+with(subset(tmp), mytable(wt.D43.bAb, RAPDIAG))
+
+tmp=subset(dat_proc, ph1.D43 & Trialstage==1 & Bserostatus==1 & EventIndOmicronD43M6hotdeck10 & Trt==0)
+with(tmp, mytable(ph2.D43.bAb, RAPDIAG))
+with(subset(tmp), mytable(wt.D43.bAb, RAPDIAG))
+
+```
+
+
+
+```{r}
+tmp=subset(dat_proc, ph1.D43.st1.nAb.batch0and1 & Trialstage==1 & Bserostatus==1 & EventIndPrimaryD22 & Trt==0)
+with(tmp, mytable(ph2.D43.st1.nAb.batch0and1, RAPDIAG))
+with(subset(tmp), mytable(wt.D43.st1.nAb.batch0and1, RAPDIAG))
+
+tmp=subset(dat_proc, ph1.D43.st1.nAb.batch0and1 & Trialstage==1 & Bserostatus==1 & EventIndOmicronD43M6hotdeck10 & Trt==0)
+with(tmp, mytable(ph2.D43.st1.nAb.batch0and1, RAPDIAG))
+with(subset(tmp), mytable(wt.D43.st1.nAb.batch0and1, RAPDIAG))
+
+```
+
+
+For stage 2
+
+
+```{r}
+tmp=subset(dat_proc, ph2.D43.bAb & Trialstage==2 & Bserostatus==1 & EventIndOmicronD43M5hotdeck10)
+with(tmp, mytable(Bhigh, Trt))
+
+
+tmp=subset(dat_proc, ph2.D43.nAb & Trialstage==2 & Bserostatus==1 & EventIndOmicronD43M5hotdeck10)
+with(tmp, mytable(Bhigh, Trt))
+
+```
+
 
 
 ### Checking imputed variants ID50 for batch 0
@@ -441,6 +562,12 @@ with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph2.D43.bAb), mytable(Trt
 
 with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph2.D43.nAb), mytable(Trt, region, Senior))
 with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph2.D43.bAb), mytable(Trt, region, Senior))
+
+```
+
+```{r}
+
+with(subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph2.D43.st1.nAb.batch0and1), mytable(Trt, region, Senior))
 
 ```
 
