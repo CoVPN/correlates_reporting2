@@ -1331,6 +1331,28 @@ for (t in 2:1) {
 ```
 
 
+After imputation, 
+```{r}
+dat1=dat_proc
+# the pattern in cases is un-remarkable
+# dat1=subset(dat_mapped, 1==EventIndPrimaryD1)
+for (t in 2:1) {
+  cat(paste0("stage ", t, '\n'))
+  for (tp in c("B", "Day22", "Day43")) {
+    for(trt in 1) { # placebo has a similar pattern
+      myprint(tp, trt)
+      dat=subset(dat1, Trialstage==t & ph2.D22.nAb & Trt==trt) # pattern is independent of Bserostatus
+      for (i in 1:5) {
+        dat[['tmp'%.%i]]=ifelse(is.na(dat[[tp%.%nassays[i]]]), 0, 1)
+      }
+      dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5))
+      print(table(dat$tmp))
+      cat("\n")
+    }
+  }
+}
+```
+
 Missingness across baseline, d22 and d43, for the ancestral markers in the vaccine arms. The results support the decision "**to keep it simple and require for RIS membership availability of data at all 3 time points**" (Peter).
 
 
