@@ -1,3 +1,8 @@
+# this file is not maintained anymore
+
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19_stage2"); COR="D35prevent19_stage2_severe"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D29"; Sys.setenv(VERBOSE = 1) 
@@ -10,9 +15,6 @@
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_partAsenior"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705secondNonRSA"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_na_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
@@ -77,7 +79,10 @@ if (is.null(attr(dat_proc, "marker.cutpoints"))) {
 } else {
     marker.cutpoints=attr(dat_proc, "marker.cutpoints")
 }
-for (a in all.markers) {        
+for (a in all.markers) {       
+    # needed for tertile plots
+    dat.vac.seroneg[[a%.%"cat"]] = as.factor(dat.vac.seroneg[[a%.%"cat"]])
+    
     q.a=marker.cutpoints[[a]]
     if (startsWith(a, "Day")) {
         # not fold change
@@ -206,7 +211,8 @@ if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m"
 
 
 cor_coxph_risk_bootstrap(  
-    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+    form.0 = form.0,
+    # form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
     dat, 
     fname.suffix, 
     save.results.to,
@@ -223,7 +229,8 @@ cor_coxph_risk_bootstrap(
 )
 
 cor_coxph_risk_plotting(
-    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
+    form.0 = form.0,
+    # form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
     dat,
     fname.suffix,
     save.results.to,
@@ -255,37 +262,23 @@ cor_coxph_risk_plotting(
     for.title=""
 )
 
-cor_coxph_risk_tertile_incidence_curves(
-    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
-    dat,
+cor_coxph_risk_tertile_incidence_curves (
+    form.0,
+    dat = dat.vac.seroneg,
     fname.suffix,
     save.results.to,
-    
     config,
     config.cor,
+    tfinal.tpeak,
+    
+    markers = all.markers,
+    markers.names.short = all.markers.names.short,
+    markers.names.long = all.markers.names.long,
+    marker.cutpoints,
     assay_metadata,
     
-    tfinal.tpeak,
-    all.markers = "Day15"%.%assays,
-    all.markers.names.short,
-    all.markers.names.long,
-    labels.assays.short,
-    marker.cutpoints,
-    
-    multi.imp=F,
-    comp.risk=T, 
-    
-    has.plac=F,
-    dat.pla.seroneg = NULL,
-    res.plac.cont = NULL,
-    prev.plac=NULL,
-    
-    variant=NULL,
-    
-    show.ve.curves=F,
-    eq.geq.ub=1, # whether to plot risk vs S>=s
-    wo.w.plac.ub=1, # whether to plot plac
-    for.title=""
+    dat.plac = dat.pla.seroneg,
+    for.title = ""
 )
 
 
