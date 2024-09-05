@@ -72,7 +72,7 @@ if (TRIAL=="vat08_combined") {
   cat(res, sep = '\n')
 
 } else {
-  # generic report
+  message ("run generic report")
   
   level=1; show.q=T
 

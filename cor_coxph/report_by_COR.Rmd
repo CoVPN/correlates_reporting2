@@ -158,6 +158,16 @@ if(TRIAL %in% c("azd1222")) {
 \clearpage
 
 
+```{r, echo=FALSE, results='asis'}
+show.ve.curves=T
+has.plac=T
+plot.geq=T
+level=level+2
+res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_curves.Rmd')), quiet = TRUE)
+cat(res, sep = '\n')
+level=level-2
+```
+
 
 `r paste(concatList(rep('#',level+1)))`  Trichotomized markers
 
@@ -222,7 +232,6 @@ res
 
 
 
-
 <!-- multiple_regression -->
 
 ```{r, echo=FALSE, results='asis'}
@@ -240,6 +249,7 @@ res
   }
 
 ```
+
 
 
 

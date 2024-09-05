@@ -158,8 +158,8 @@ janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
   <<: *janssen_trial
   primary_assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
   study_name: ENSEMBLE
-  num_boot_replicates: 1000
-  num_perm_replicates: 10000
+  num_boot_replicates: 10
+  num_perm_replicates: 10
   multivariate_assays: [
             bindSpike+bindRBD+pseudoneutid50+ADCP
   ]

@@ -38,7 +38,7 @@ source(here::here("..", "_common.R")) # dat_proc is made
   fname.suffix = ""
   
   myprint(tfinal.tpeak)
-  write(tfinal.tpeak, file = paste0(save.results.to, "timepoints_cum_risk_" %.% study_name))
+  write(tfinal.tpeak, file = paste0(save.results.to, "timepoints_cum_risk_" %.% fname.suffix))
   
   
   if (COR == "D35prevent19_stage2_delta") {
@@ -90,13 +90,13 @@ source(here::here("..", "_common.R")) # dat_proc is made
       # not fold change
       write(
         paste0(labels.axis[1, marker.name.to.assay(a)], " [", concatList(round(q.a, 2), ", "), ")%"),
-        file = paste0(save.results.to, "cutpoints_", a)
+        file = paste0(save.results.to, "cutpoints_", a,".txt")
       )
     } else {
       # fold change
       write(
         paste0(escape(a), " [", concatList(round(q.a, 2), ", "), ")%"),
-        file = paste0(save.results.to, "cutpoints_", a)
+        file = paste0(save.results.to, "cutpoints_", a,".txt")
       )
     }
   }

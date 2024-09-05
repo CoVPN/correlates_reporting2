@@ -14,8 +14,14 @@ if (endsWith(TRIAL,"EUA") | endsWith(TRIAL,"partA")) {
       CORs=c("D29IncludeNotMolecConfirmed", "D29ModerateIncludeNotMolecConfirmed")
     }
   }
+  
+  show.q=T
+  has.alt = F
 
   for (COR in CORs) {
+    level=1
+    fname.suffix=""
+    
     tpeak <- tt[1]
     config.cor <- config::get(config = COR)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
