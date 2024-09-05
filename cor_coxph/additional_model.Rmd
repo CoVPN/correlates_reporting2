@@ -3,7 +3,7 @@
 \begin{center}
     \input{`r pathCoRoutput`/CoR_add_models`r i`}\\
 \end{center}
-*Maximum failure event time \input{`r pathCoRoutput`/timepoints_cum_risk_`r study_name`} days.\\
+*Maximum failure event time \input{`r pathCoRoutput`/timepoints_cum_risk_`r config$study_name`} days.\\
 `r special.note`
 \end{table}
 

@@ -1,5 +1,3 @@
-# this file is not maintained anymore
-
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
@@ -61,7 +59,7 @@ myprint(B)
 myprint(numPerm)
 
 myprint(tfinal.tpeak)
-write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
+write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%fname.suffix))
     
 
 # define an alias for EventIndPrimaryDxx
@@ -87,11 +85,11 @@ for (a in all.markers) {
     if (startsWith(a, "Day")) {
         # not fold change
         write(paste0(labels.axis[1,marker.name.to.assay(a)], " [", concatList(round(q.a, 2), ", "), ")%"), 
-              file=paste0(save.results.to, "cutpoints_", a))
+              file=paste0(save.results.to, "cutpoints_", a,".txt"))
     } else {
         # fold change
         write(paste0(escape(a), " [", concatList(round(q.a, 2), ", "), ")%"), 
-              file=paste0(save.results.to, "cutpoints_", a))
+              file=paste0(save.results.to, "cutpoints_", a,".txt"))
     }
 }
 
@@ -149,21 +147,21 @@ if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 # run PH models
 ###################################################################################################
     
-cor_coxph_ph(
+cor_coxph_coef_1(
     form.0,
-    design.vacc.seroneg, 
-    fname.suffix,
+    design_or_dat = design.vacc.seroneg,
+    fname.suffix="",
     save.results.to,
-    
+    config,
+    config.cor,
     all.markers,
     all.markers.names.short,
     
-    config,
-    config.cor,
-    
     dat.pla.seroneg,
-    show.q=F
+    show.q = T,
+    verbose = T
 )
+
 
 
 # unit testing of coxph results
@@ -209,58 +207,48 @@ if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m"
 ###################################################################################################
     
 
-
-cor_coxph_risk_bootstrap(  
-    form.0 = form.0,
-    # form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
-    dat, 
-    fname.suffix, 
-    save.results.to,
-    
-    tpeak,
-    tfinal.tpeak,
-    all.markers = "Day15"%.%assays,
-    
-    numCores,
-    B,
-    
-    comp.risk=T, 
-    run.Sgts=F # whether to get risk conditional on continuous S>=s
-)
-
-cor_coxph_risk_plotting(
-    form.0 = form.0,
-    # form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
-    dat,
+cor_coxph_risk_bootstrap(
+    form.0,
+    dat = dat.vac.seroneg,
     fname.suffix,
     save.results.to,
-    
     config,
     config.cor,
+    tfinal.tpeak,
+    
+    markers = all.markers,
+    
+    run.Sgts = T # whether to get risk conditional on continuous S>=s
+)
+
+
+cor_coxph_risk_plotting (
+    form.0,
+    dat = dat.vac.seroneg,
+    fname.suffix,
+    save.results.to,
+    config,
+    config.cor,
+    tfinal.tpeak,
+    
+    markers = all.markers,
+    markers.names.short = all.markers.names.short,
+    markers.names.long = all.markers.names.long,
+    marker.cutpoints,
     assay_metadata,
     
-    tfinal.tpeak,
-    all.markers = "Day15"%.%assays,
-    all.markers.names.short,
-    all.markers.names.long,
-    labels.assays.short,
-    marker.cutpoints,
+    dat.plac = dat.pla.seroneg,
+    res.plac.cont,
+    prev.plac,
+    overall.ve,
     
-    multi.imp=F,
-    comp.risk=T, 
-    
-    has.plac=F,
-    dat.pla.seroneg = NULL,
-    res.plac.cont = NULL,
-    prev.plac=NULL,
-    
-    variant=NULL,
-    
-    show.ve.curves=F,
-    eq.geq.ub=1, # whether to plot risk vs S>=s
-    wo.w.plac.ub=1, # whether to plot plac
-    for.title=""
+    show.ve.curves = T,
+    plot.geq = T,
+    plot.w.plac = T,
+    for.title = ""
 )
+
+
 
 cor_coxph_risk_tertile_incidence_curves (
     form.0,

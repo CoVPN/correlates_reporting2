@@ -18,6 +18,28 @@ commit_hash <- system("git rev-parse HEAD", intern = TRUE)
 processed_file_digest <- digest(file = path_to_data, algo = hash_algorithm)
     
 
+# this function did not really work, but somehow the output is wrapped
+insert_zero_width_space <- function(input_string, n) {
+  # Split the string into chunks of n characters
+  string_split <- strsplit(input_string, "")[[1]]
+  
+  # Insert space every n characters
+  result <- sapply(seq_along(string_split), function(i) {
+    if (i %% n == 0 && i != length(string_split)) {
+      return(paste0(string_split[i], " "))
+    } else {
+      return(string_split[i])
+    }
+  })
+  
+  # Combine the result back into a single string
+  result_string <- paste0(result, collapse = "")
+  
+  return(result_string)
+}
+
+
+
 
 ```
 
@@ -28,6 +50,7 @@ This report was built with code from:
 
 and data from:
 
-`r paste0(config$data_cleaned)` 
+`r insert_zero_width_space(config$data_cleaned, 60)`
+
 
 with `r hash_algorithm` hash sum: `r processed_file_digest`

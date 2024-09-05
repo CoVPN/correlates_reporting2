@@ -59,6 +59,15 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 
 ```
 
+### Some ptids in placebo have large fold rise from baseline to D22/D43
+
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0 & ph2.D43.st1.nAb.batch0and1, c(BbindSpike, Day22bindSpike, Day43bindSpike))
+
+mymatplot(t(tmp), legend=F, col=1:8, lty=1)
+```
+
+
 ### number of cases by Bhigh
 
 for Stage 1, for bAb Spike, stratified by (Vaccine, Placebo), how many cases have bAb data that are in the undetectable subgroup and how many cases have bAb data that are in the detectable subgroup?  Then the same question for batch 0 + 1 nab titer data. 
