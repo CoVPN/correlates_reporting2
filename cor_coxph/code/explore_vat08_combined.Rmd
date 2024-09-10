@@ -59,6 +59,15 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 
 ```
 
+### Some ptids in placebo have large fold rise from baseline to D22/D43
+
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0 & ph2.D43.st1.nAb.batch0and1, c(BbindSpike, Day22bindSpike, Day43bindSpike))
+
+mymatplot(t(tmp), legend=F, col=1:8, lty=1)
+```
+
+
 ### number of cases by Bhigh
 
 for Stage 1, for bAb Spike, stratified by (Vaccine, Placebo), how many cases have bAb data that are in the undetectable subgroup and how many cases have bAb data that are in the detectable subgroup?  Then the same question for batch 0 + 1 nab titer data. 
@@ -1330,6 +1339,28 @@ for (t in 2:1) {
 }
 ```
 
+
+After imputation, 
+```{r}
+dat1=dat_proc
+# the pattern in cases is un-remarkable
+# dat1=subset(dat_mapped, 1==EventIndPrimaryD1)
+for (t in 2:1) {
+  cat(paste0("stage ", t, '\n'))
+  for (tp in c("B", "Day22", "Day43")) {
+    for(trt in 1) { # placebo has a similar pattern
+      myprint(tp, trt)
+      dat=subset(dat1, Trialstage==t & ph2.D22.nAb & Trt==trt) # pattern is independent of Bserostatus
+      for (i in 1:5) {
+        dat[['tmp'%.%i]]=ifelse(is.na(dat[[tp%.%nassays[i]]]), 0, 1)
+      }
+      dat$tmp=with(dat,paste0(tmp1,tmp2,tmp3,tmp4,tmp5))
+      print(table(dat$tmp))
+      cat("\n")
+    }
+  }
+}
+```
 
 Missingness across baseline, d22 and d43, for the ancestral markers in the vaccine arms. The results support the decision "**to keep it simple and require for RIS membership availability of data at all 3 time points**" (Peter).
 

@@ -158,8 +158,8 @@ janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
   <<: *janssen_trial
   primary_assays: [bindSpike, bindRBD, pseudoneutid50, ADCP]
   study_name: ENSEMBLE
-  num_boot_replicates: 1000
-  num_perm_replicates: 10000
+  num_boot_replicates: 10
+  num_perm_replicates: 10
   multivariate_assays: [
             bindSpike+bindRBD+pseudoneutid50+ADCP
   ]
@@ -1167,7 +1167,11 @@ D43vat08_combined_M5_st2.nAb.sen:
 
 
 
-# for nAb markers alternative analysis in stage 1 non-naive, using batch 0-1 data only
+# st1.nAb.batch0and1 is for an alternative analysis for nAb markers in stage 1 non-naive. 
+# it uses batch 0-1 data only
+# ancestral ID50 is observed, variants ID50 are imputed, the marker names need _10 suffix. 
+# The suffix also works for ancestral ID50, as 10 dummy copies are created
+
 D22vat08_combined_M6_st1.nAb.batch0and1:
   ph1: ph1.D22.st1.nAb.batch0and1
   ph2: ph2.D22.st1.nAb.batch0and1

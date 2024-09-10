@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, "pairs_by_time_Day57_4_markers_naive_vac_adhoc.pdf")`}
+
+\caption{`r paste0("Correlation plots across the markers at Day57 in naive vaccine group participants. Corr = weighted Spearman rank correlation (bAb weights are used)", COR_postfix_label)`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}

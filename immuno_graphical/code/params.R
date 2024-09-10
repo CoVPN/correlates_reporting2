@@ -38,6 +38,10 @@ if(attr(config,"config")=="janssen_pooled_partA") {
   times_ = c("Day35", "C1", "BD1") 
   labels.time = c("Day 35", "Crossover Day 1", "Booster Day 1"); names(labels.time) = times_
   timepoints_= timepoints
+} else if (attr(config,"config")=="vat08_combined") {
+  times_ = c(times, "Day78", "Day134", "Day202", "Day292", "Day387") 
+  labels.time = c(time_labels, "Day 78", "Day 134", "Day 202", "Day 292", "Day 387"); names(labels.time) = times_
+  timepoints_= c(timepoints, 78, 134, 202, 292, 387)
 } else {times_ = times; timepoints_=timepoints}
 
 

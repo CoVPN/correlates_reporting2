@@ -1,3 +1,6 @@
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
+#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19_stage2"); COR="D35prevent19_stage2_severe"; Sys.setenv(VERBOSE = 1)
 #Sys.setenv(TRIAL = "moderna_mock"); COR="D29"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "azd1222"); COR="D29"; Sys.setenv(VERBOSE = 1) 
@@ -10,9 +13,6 @@
 #Sys.setenv(TRIAL = "azd1222"); COR="D57"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_partAsenior"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "prevent19"); COR="D35"; Sys.setenv(VERBOSE = 1)
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29SevereIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "janssen_pooled_partA"); COR="D29ModerateIncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "hvtn705secondNonRSA"); COR="D210"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_na_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
 #Sys.setenv(TRIAL = "janssen_la_partA"); COR="D29IncludeNotMolecConfirmed"; Sys.setenv(VERBOSE = 1) 
@@ -59,7 +59,7 @@ myprint(B)
 myprint(numPerm)
 
 myprint(tfinal.tpeak)
-write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%study_name))
+write(tfinal.tpeak, file=paste0(save.results.to, "timepoints_cum_risk_"%.%fname.suffix))
     
 
 # define an alias for EventIndPrimaryDxx
@@ -77,16 +77,19 @@ if (is.null(attr(dat_proc, "marker.cutpoints"))) {
 } else {
     marker.cutpoints=attr(dat_proc, "marker.cutpoints")
 }
-for (a in all.markers) {        
+for (a in all.markers) {       
+    # needed for tertile plots
+    dat.vac.seroneg[[a%.%"cat"]] = as.factor(dat.vac.seroneg[[a%.%"cat"]])
+    
     q.a=marker.cutpoints[[a]]
     if (startsWith(a, "Day")) {
         # not fold change
         write(paste0(labels.axis[1,marker.name.to.assay(a)], " [", concatList(round(q.a, 2), ", "), ")%"), 
-              file=paste0(save.results.to, "cutpoints_", a))
+              file=paste0(save.results.to, "cutpoints_", a,".txt"))
     } else {
         # fold change
         write(paste0(escape(a), " [", concatList(round(q.a, 2), ", "), ")%"), 
-              file=paste0(save.results.to, "cutpoints_", a))
+              file=paste0(save.results.to, "cutpoints_", a,".txt"))
     }
 }
 
@@ -144,21 +147,21 @@ if(Sys.getenv("COR_COXPH_NO_MARKER_ONLY")==1) q("no")
 # run PH models
 ###################################################################################################
     
-cor_coxph_ph(
+cor_coxph_coef_1(
     form.0,
-    design.vacc.seroneg, 
-    fname.suffix,
+    design_or_dat = design.vacc.seroneg,
+    fname.suffix="",
     save.results.to,
-    
+    config,
+    config.cor,
     all.markers,
     all.markers.names.short,
     
-    config,
-    config.cor,
-    
     dat.pla.seroneg,
-    show.q=F
+    show.q = T,
+    verbose = T
 )
+
 
 
 # unit testing of coxph results
@@ -204,88 +207,66 @@ if(length(config$forestplot_script)==1 & !study_name %in% c("PREVENT19","VAT08m"
 ###################################################################################################
     
 
-
-cor_coxph_risk_bootstrap(  
-    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
-    dat, 
-    fname.suffix, 
-    save.results.to,
-    
-    tpeak,
-    tfinal.tpeak,
-    all.markers = "Day15"%.%assays,
-    
-    numCores,
-    B,
-    
-    comp.risk=T, 
-    run.Sgts=F # whether to get risk conditional on continuous S>=s
-)
-
-cor_coxph_risk_plotting(
-    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
-    dat,
+cor_coxph_risk_bootstrap(
+    form.0,
+    dat = dat.vac.seroneg,
     fname.suffix,
     save.results.to,
-    
     config,
     config.cor,
-    assay_metadata,
-    
     tfinal.tpeak,
-    all.markers = "Day15"%.%assays,
-    all.markers.names.short,
-    all.markers.names.long,
-    labels.assays.short,
-    marker.cutpoints,
     
-    multi.imp=F,
-    comp.risk=T, 
+    markers = all.markers,
     
-    has.plac=F,
-    dat.pla.seroneg = NULL,
-    res.plac.cont = NULL,
-    prev.plac=NULL,
-    
-    variant=NULL,
-    
-    show.ve.curves=F,
-    eq.geq.ub=1, # whether to plot risk vs S>=s
-    wo.w.plac.ub=1, # whether to plot plac
-    for.title=""
+    run.Sgts = T # whether to get risk conditional on continuous S>=s
 )
 
-cor_coxph_risk_tertile_incidence_curves(
-    form.0 = list(form.0, as.formula(sub("EventIndOfInterest", "EventIndCompeting", paste0(deparse(form.0,width.cutoff=500))))),
-    dat,
+
+cor_coxph_risk_plotting (
+    form.0,
+    dat = dat.vac.seroneg,
     fname.suffix,
     save.results.to,
-    
     config,
     config.cor,
+    tfinal.tpeak,
+    
+    markers = all.markers,
+    markers.names.short = all.markers.names.short,
+    markers.names.long = all.markers.names.long,
+    marker.cutpoints,
     assay_metadata,
     
+    dat.plac = dat.pla.seroneg,
+    res.plac.cont,
+    prev.plac,
+    overall.ve,
+    
+    show.ve.curves = T,
+    plot.geq = T,
+    plot.w.plac = T,
+    for.title = ""
+)
+
+
+
+cor_coxph_risk_tertile_incidence_curves (
+    form.0,
+    dat = dat.vac.seroneg,
+    fname.suffix,
+    save.results.to,
+    config,
+    config.cor,
     tfinal.tpeak,
-    all.markers = "Day15"%.%assays,
-    all.markers.names.short,
-    all.markers.names.long,
-    labels.assays.short,
+    
+    markers = all.markers,
+    markers.names.short = all.markers.names.short,
+    markers.names.long = all.markers.names.long,
     marker.cutpoints,
+    assay_metadata,
     
-    multi.imp=F,
-    comp.risk=T, 
-    
-    has.plac=F,
-    dat.pla.seroneg = NULL,
-    res.plac.cont = NULL,
-    prev.plac=NULL,
-    
-    variant=NULL,
-    
-    show.ve.curves=F,
-    eq.geq.ub=1, # whether to plot risk vs S>=s
-    wo.w.plac.ub=1, # whether to plot plac
-    for.title=""
+    dat.plac = dat.pla.seroneg,
+    for.title = ""
 )
 
 

@@ -1,0 +1,10 @@
+\begin{figure}[H]
+\center
+
+\includegraphics[width=1\textwidth]{`r here("cor_graphical", "output", attr(config,"config"), COR, paste0("two_studies_by_case_non_case_", a, "_", sanofi_filter, ".pdf"))`}
+
+\caption{`r paste0("Distribution of ", gsub("_", " ", a), " for Sanofi D43", sanofi_lb," vs. COVAIL D15 vs. COVAIL D29, by Cases and Non-Cases")`}
+
+\end{figure}
+
+\hphantom{Random text to appease the latex god}
