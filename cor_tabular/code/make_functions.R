@@ -21,7 +21,8 @@ getResponder <- function(data,
                          folds=c(2, 4),
                          grtns=c(2, 4),
                          responderFR = 4,
-                         pos.cutoffs = pos.cutoffs) {
+                         pos.cutoffs = pos.cutoffs,
+                         na.rm=F) {
 
   # cutoff <- get(paste0("l", cutoff.name, "s"))
   for (i in times){
@@ -40,6 +41,14 @@ getResponder <- function(data,
         for (k in grtns){
           data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
         }
+        
+        if (na.rm) {
+          if ((n_na <- sum(is.na(data[, bl] & !is.na(data[, post]))))!=0){
+            cat(n_na, "are set to NA for", post, "due to NA at baseline\n")
+          }
+          data[is.na(data[, bl]), post] <- NA
+        }
+        
       }
       
       if((grepl("bind|ACE", j) | COR == "D29VLvariant" | grepl("stage2", COR)) & attr(config,"config")!="vat08_combined"){
