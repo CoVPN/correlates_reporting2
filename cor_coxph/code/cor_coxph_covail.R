@@ -137,7 +137,7 @@ has.plac = F
 # 4: like 1, but subset to naive
 # 5: like 1, but subset to nnaive
 for (iObj in c(1,11,12,2,21,3,31,4,5)) {
-  # iObj=4; iPop=1
+  # iObj=5; iPop=7
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
@@ -264,7 +264,9 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         cor_coxph_risk_tertile_incidence_curves(
           # need to remove naive from formula. otherwise risk will be NA
           form.0 = as.formula(
-            sub("\\+ naive", "", paste0(deparse(form.0,width.cutoff=500)))
+            sub("naive", 1, # if naive is the first covariate, there will be no +, so the next line won't work
+              sub("\\+ naive", "", paste0(deparse(form.0,width.cutoff=500)))
+            )
           ),
           dat,
           fname.suffix=fname.suffix%.%"_N",
@@ -305,7 +307,9 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         # trichotomitized curves
         cor_coxph_risk_tertile_incidence_curves(
           form.0 = as.formula(
-            sub("\\+ naive", "", paste0(deparse(form.0,width.cutoff=500)))
+            sub("naive", 1, # if naive is the first covariate, there will be no +, so the next line won't work
+                sub("\\+ naive", "", paste0(deparse(form.0,width.cutoff=500)))
+            )
           ),
           dat,
           fname.suffix%.%"_NN",
@@ -666,11 +670,12 @@ for (iPop in 1:3) {
 
 res = sapply(assays, function (a) {
       f= update(form.0, as.formula(paste0("~.+", "Day15", a)))
-      getFormattedSummary(
+      out=getFormattedSummary(
         list(coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==1,]),
              coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==2,]),
              coxph(f, dat.onedosemRNA[as.integer(dat.onedosemRNA[[paste0("B",a,"cat")]])==3,])),
-        type=12, robust=F, exp=T)[4,]
+        type=12, robust=F, exp=T)
+      out=out[nrow(out),]
 })
 tab=t(res); colnames(tab)=c("L","M","H") #tab
 mytex(tab, file.name="CoR_univariable_svycoxph_pretty_Bmarkercat", input.foldername=save.results.to, align="c")

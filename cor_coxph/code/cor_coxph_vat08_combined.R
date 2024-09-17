@@ -1,4 +1,4 @@
-# COR="D43vat08_combined_M6_st1.nAb.batch0and1"
+# COR="D43vat08_combined_M5_bAb"
 # Sys.setenv(stage = 1) 
 
 Sys.setenv(TRIAL = "vat08_combined")

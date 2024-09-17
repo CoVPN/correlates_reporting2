@@ -1711,12 +1711,20 @@ myboxplot(EventTimePrimaryD1~nAbBatch+Trt, subset(dat_proc, Trialstage==2 & Even
 ```
 
 
+for slide 27
+```{r}
+with(subset(dat_proc, Trialstage==1 & ph2.D43.nAb & Bserostatus==1), mytable(nAbBatch, 1-EventIndOmicronD43M6hotdeck10, Trt))
+with(subset(dat_proc, Trialstage==1 & ph1.D43 & Bserostatus==1 & batch0), mytable(Trt, 1-EventIndOmicronD43M6hotdeck10))
+```
+
+
 Stage 1, nAb. Most non-cases are done in batch 2, most cases are done in batch 1. Step 1 and 2 are spread mostly equally between batches.
 Step 1 has ancestral only and no variants
 
 batch NA/step 1 has 706 ptids who have ancestral ID50 but no variant ID50
 
 ```{r}
+
 with(subset(dat_proc, Trialstage==1 & ph2.D43.nAb & Bserostatus==1 & Trt==1), mytable(nAbBatch, EventIndOmicronD43M12hotdeck1, SamplingStep))
 
 with(subset(dat_proc, Trialstage==1 & ph2.D43.nAb), table(SamplingStep))
