@@ -37,6 +37,9 @@ assay_metadata = assay_metadata %>%
 dat.longer.cor.subset.plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds")) # at level of trt and assay
 dat.cor.subset.plot3 <- readRDS(here("data_clean", "cor_data.rds"));dat.cor.subset.plot3$all_one <- 1 # as a placeholder for strata values
 
+stage <- 1
+day <- ifelse(study_name=="VAT08" & stage==1, 180, 150)
+
 cases_lb <- if (study_name=="VAT08"){ 
      
     if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="C1"))!=0) {c("C1", "C2", "C3")
@@ -47,8 +50,8 @@ cases_lb <- if (study_name=="VAT08"){
 
 cases_lb2 <- if (study_name=="VAT08"){ 
     
-    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="C1"))!=0) {c("C1"="C1: 7-27 days PD2 cases", "C2"="C2: 28-180 days PD2 cases", "C3"="C3: 7-180 days PD2 cases")
-    } else {c("C2"="C2: 28-180 days PD2 cases")}
+    if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="C1"))!=0) {c("C1"="C1: 7-27 days PD2 cases", "C2"=sprintf("C2: 28-%s days PD2 cases", day), "C3"=sprintf("C3: 7-%s days PD2 cases", day))
+    } else {c("C2"=sprintf("C2: 28-%s days PD2 cases", day))}
     
     } else {cases_lb}
 
@@ -318,7 +321,7 @@ for (i in 1:length(set2.1_assays)) {
             ybreaks = if (grepl("bind", set2.1_assays[c(i,i+1)])) {c(2,3,4,5,6)} else {c(1,2,3,4,5,6)},
             axis.text.x.size = 9.5,
             lgdbreaks = c("C2", "Non-Cases", "Non-Responders"),
-            lgdlabels = c("C2"="C2: 28-180 days PD2 cases", "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders"),
+            lgdlabels = c("C2"=sprintf("C2: 28-%s days PD2 cases", day), "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders"),
             chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("C2", "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
             chtpchs = setNames(c(19, 19, 2), c("C2", "Non-Cases", "Non-Responders")))
         
@@ -391,7 +394,7 @@ if (study_name=="VAT08"){
             ybreaks = c(1,2,3,4,5,6),
             axis.text.x.size = 9.5,
             lgdbreaks = c("C2", "Non-Cases", "Non-Responders"),
-            lgdlabels = c("C2"="C2: 28-180 days PD2 cases", "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders"),
+            lgdlabels = c("C2"=sprintf("C2: 28-%s days PD2 cases", day), "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders"),
             chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("C2", "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
             chtpchs = setNames(c(19, 19, 2), c("C2", "Non-Cases", "Non-Responders")))
         
@@ -715,7 +718,7 @@ if (study_name == "VAT08" & unique(dat.longer.cor.subset.plot1$Trialstage)==1) {
         mutate(cohort_event = case_when(Perprotocol==1 & EarlyinfectionD43==0 & ph2.D43.nAb & 
                                             EventIndPrimaryD43==1 &
                                             EventTimePrimaryD43 >= 7 &
-                                            EventTimePrimaryD43 <= 180 ~ "28-180 days PD2 cases", 
+                                            EventTimePrimaryD43 <= day ~ sprintf("28-%s days PD2 cases", day), 
                                         Perprotocol==1 & EarlyinfectionD43==0 & ph2.D43.nAb & 
                                             EventIndPrimaryD1==0 ~ "Non-Cases"),
                Trt = ifelse(Trialstage == 1, "Ancestral\nVaccine", "Ancestral + Beta\nVaccine"),
@@ -746,7 +749,7 @@ if (study_name == "VAT08" & unique(dat.longer.cor.subset.plot1$Trialstage)==1) {
         pivot_longer(Day43pseudoneutid50:Day43pseudoneutid50_mdw, names_to = "time_assay", values_to = "value") %>%
         mutate(assay = gsub("Day43","", time_assay),
                Trt_nnaive = paste0(Trt, ifelse(Bserostatus==1, "\nnon-naive","\nnaive")),
-               study_time_cohort = paste0("Sanofi\n", ifelse(cohort_event == "28-180 days PD2 cases", "D43 Titer\nCases", "D43 Titer\nNon-Cases"))) %>%
+               study_time_cohort = paste0("Sanofi\n", ifelse(cohort_event == sprintf("28-%s days PD2 cases", day), "D43 Titer\nCases", "D43 Titer\nNon-Cases"))) %>%
         mutate(category = paste0("Day43", assay, "Resp")) %>%
         left_join(sanofi_resp_by_time_assay, by=c("Ptid", "category")) %>%
         dplyr::select(Ptid, Country, Trt_nnaive, study_time_cohort, assay, value, response, wt) %>% # n=258 = 43*6

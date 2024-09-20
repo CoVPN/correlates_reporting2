@@ -87,7 +87,7 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
                         check.names = FALSE)
       }
       
-      caption.j <- ifelse(!is.na(loop), sprintf("%s (%s)", title_i, j), title_i)
+      caption.j <- ifelse(!is.na(loop), sprintf("%s (%s)", ifelse(j=="Stage 2", gsub("M6", "M5", title_i), title_i), j), title_i)
       
       col_name <- if ("col_name" %in% tlf_args) {
         tlf_labels[["col_name"]]
