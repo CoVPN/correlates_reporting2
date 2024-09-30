@@ -155,19 +155,20 @@ cor_coxph_coef_1_mi = function(
                     p.values=formatDouble(est.ci[4,], 3, remove.leading0=F), 
                     decimal.places=2, graphwidth=unit(120, "mm"), fontsize=1.2, 
                     table.labels = c("", "  HR (95% CI)",""), 
-                    xlog=F,
                     title=for.title, 
+                    xlog=F,
                     x.ticks = get.forestplot.ticks(est.ci, forestplot.xlog=F)  # controls the limit
       )
       dev.off()
       
       mypdf(onefile=F, width=10,height=4, file=paste0(save.results.to, "hr_forest_log_", ifelse(i==1,"","scaled_"), fname.suffix, if (iM>1) iM)) 
         theforestplot(point.estimates=est.ci[1,], lower.bounds=est.ci[2,], upper.bounds=est.ci[3,], group=colnames(est.ci), 
-                    nEvents=nevents, p.values=formatDouble(est.ci[4,], 3, remove.leading0=F), 
+                    nEvents=nevents, 
+                    p.values=formatDouble(est.ci[4,], 3, remove.leading0=F), 
                     decimal.places=2, graphwidth=unit(120, "mm"), fontsize=1.2, 
                     table.labels = c("", "  HR (95% CI)",""), 
-                    xlog=T,
                     title=for.title, 
+                    xlog=T,
                     x.ticks = get.forestplot.ticks(est.ci, forestplot.xlog=T)  # controls the limit
       )
       dev.off()

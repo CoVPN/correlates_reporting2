@@ -1,4 +1,4 @@
-# COR="D15to181"
+# COR="D15to181COVE"
 # COR="D15to181BA45"
 # COR="D15to91"
 # COR="D92to181"
@@ -19,7 +19,6 @@ library(tools) # toTitleCase
 library(survey)
 library(plotrix) # weighted.hist
 library(parallel)
-library(forestplot)
 library(Hmisc) # wtd.quantile, cut2
 library(mitools)
 library(glue)
@@ -83,6 +82,16 @@ if (COR=="D15to181") {
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD91
   dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD91
   
+} else if (COR=="D15to181COVE") {
+  form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181COVE) ~ 1, as.formula(config$covariates))
+  dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD181COVE
+  dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD181COVE
+  
+} else if (COR=="D15to91COVE") {
+  form.0 = update(Surv(COVIDtimeD22toD91, COVIDIndD22toD91COVE) ~ 1, as.formula(config$covariates))
+  dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD91COVE
+  dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD91COVE
+  
 } else if (COR=="D92to181") {
   form.0 = update(Surv(COVIDtimeD92toD181, COVIDIndD92toD181) ~ 1, as.formula(config$covariates))
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD92toD181
@@ -106,7 +115,7 @@ if (COR=="D15to181") {
   dat.onedosemRNA$EventIndCompeting  = ifelse(dat.onedosemRNA$COVIDIndD92toD181==1 & !dat.onedosemRNA$COVIDlineage %in% c("BA.4","BA.5"), 1, 0)
   dat.onedosemRNA$yy=dat.onedosemRNA$EventIndOfInterest
   
-} else stop("Wrong COR")
+} else stop("Wrong COR: "%.% COR)
 
 
 form.1 = update(form.0, ~.-naive)
@@ -137,14 +146,14 @@ has.plac = F
 # 4: like 1, but subset to naive
 # 5: like 1, but subset to nnaive
 for (iObj in c(1,11,12,2,21,3,31,4,5)) {
-  # iObj=5; iPop=7
+  # iObj=1; iPop=1
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
 
   if(iObj %in% c(1,4,5)) {
     all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
-    all.markers.names.short = assay_metadata$assay_label_short[match(assays,assay_metadata$assay)]
+    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
     all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
     
   } else if(iObj==11){
@@ -346,10 +355,7 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         show.q=F, # whether to show fwer and q values in tables
         verbose = T)
       
-      # forest plot
-      fits = lapply ("Day15"%.%assays, function (a) coxph(update(form.0, as.formula(paste0("~.+", a))), dat) )
-      forest.covail (fits, names=assays, fname.suffix, save.results.to)
-      
+
       # risk curves using competing risk for BA45 COVID for all mRNA
       if (COR=="D15to181BA45" & iPop==1) {
         
@@ -570,10 +576,7 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         show.q=F, # whether to show fwer and q values in tables
         verbose = T)
 
-      # forest plot
-      fits = lapply ("Day15"%.%assays, function (a) coxph(update(form.0, as.formula(paste0("~.+", a))), dat) )
-      forest.covail (fits, names=assays, fname.suffix, save.results.to)
-      
+
     } else if(iObj==11) {
       fname.suffix = paste0(fname.suffix, "_B+D15overB")
       cor_coxph_coef_n(

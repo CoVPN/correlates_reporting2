@@ -765,9 +765,9 @@ if (exists("COR")) {
             tfinal.tpeak=NULL
             
           } else if (study_name=="COVAIL") {
-            if (COR %in% c("D15to181","D92to181","D15to181BA45","D92to181BA45")) {
+            if (COR %in% c("D15to181","D15to181COVE","D92to181","D15to181BA45","D92to181BA45")) {
               tfinal.tpeak=188
-            } else if (COR %in% c("D15to91","D15to91BA45")) {
+            } else if (COR %in% c("D15to91","D15to91COVE","D15to91BA45")) {
               tfinal.tpeak=91
             } else {
               stop("COVAIL, wrong COR")
