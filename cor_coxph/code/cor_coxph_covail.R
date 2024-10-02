@@ -146,7 +146,7 @@ has.plac = F
 # 4: like 1, but subset to naive
 # 5: like 1, but subset to nnaive
 for (iObj in c(1,11,12,2,21,3,31,4,5)) {
-  # iObj=1; iPop=1
+  # iObj=5; iPop=7
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
@@ -253,7 +253,7 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
     if(iObj==5) dat=subset(dat, naive==0)
     
     if(iObj==4) {
-      cor_coxph_coef_n(
+      cor_coxph_coef_1(
         form.0,
         design_or_dat = dat,
         fname.suffix=fname.suffix%.%"_N",
@@ -263,9 +263,9 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         all.markers,
         all.markers.names.short,
         
-        nCoef=1,
-        col.headers=""
-      )
+        dat.pla.seroneg = NULL,
+        show.q=F, # whether to show fwer and q values in tables
+        verbose = T)
       
       if (COR=="D15to181" & iPop==1) {
         
@@ -297,7 +297,7 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
       }
     
     } else if(iObj==5) {
-      cor_coxph_coef_n(
+      cor_coxph_coef_1(
         form.0,
         design_or_dat = dat,
         fname.suffix=fname.suffix%.%"_NN",
@@ -307,9 +307,9 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         all.markers,
         all.markers.names.short,
         
-        nCoef=1,
-        col.headers=""
-      )
+        dat.pla.seroneg = NULL,
+        show.q=F, # whether to show fwer and q values in tables
+        verbose = T)
       
       if (COR=="D15to181" & iPop==1) {
         

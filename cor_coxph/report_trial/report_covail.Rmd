@@ -100,14 +100,20 @@ for (iObj in c(4,5)) {
       } else if (iObj==4) {
         fname.suffix = fname.suffix %.% "_N"
         has.alt = F
+        show.tertile.curves=F
+        show.risk.curves = F
         show.ve.curves = F
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        plot.geq=T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
         
       } else if (iObj==5) {
         fname.suffix = fname.suffix %.% "_NN"
         has.alt = F
+        show.tertile.curves=F
+        show.risk.curves = F
         show.ve.curves = F
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        plot.geq=T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
         
       }
   
