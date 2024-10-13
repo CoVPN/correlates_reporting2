@@ -1,5 +1,6 @@
 # COR="D15to181COVE"
 # COR="D15to181BA45"
+COR="D15to181"
 # COR="D15to91"
 # COR="D92to181"
 
@@ -7,7 +8,6 @@ renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "covail")
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
-
 
 
 {
@@ -40,11 +40,11 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-marker.cutpoints = attr(dat_proc, "marker.cutpoints")
 # save cut points to files
+marker.cutpoints = attr(dat_proc, "marker.cutpoints")
 for (a in names(marker.cutpoints)) {        
   write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
-        file=paste0(save.results.to, "cutpoints_", a))
+        file=paste0(save.results.to, "cutpoints_", a,".txt"))
 }
 
 
@@ -55,6 +55,8 @@ for (a in c("Day15"%.%assays, "B"%.%assays, "Delta15overB"%.%assays)) {
 }
 
 assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+
+
 dat.sanofi = subset(dat_proc, ph1.D15 & TrtSanofi==1)
 dat.sanofi$ph2=1
 dat.onedosemRNA = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
@@ -145,8 +147,9 @@ has.plac = F
 # 3 and 31 are itxn models: D15 marker * baseline marker
 # 4: like 1, but subset to naive
 # 5: like 1, but subset to nnaive
+
 for (iObj in c(1,11,12,2,21,3,31,4,5)) {
-  # iObj=5; iPop=7
+    # iObj=5; iPop=7
   
   # define the list of all.markers to work on
   # an item in the list need not be a single marker but is more like a formula
@@ -220,6 +223,16 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
   
   # repeat all objectives over several subpopulations, save results with different fname.suffix
   
+  
+  ###################################################
+  # restrict to gender, for manuscript revision
+  #     subsetting earlier has a detrimental effect
+
+  # dat.onedosemRNA = subset(dat.onedosemRNA, Sex==0)
+  
+  ###################################################
+  
+  
   for (iPop in 1:7) {
     myprint(iObj, iPop)
     
@@ -265,6 +278,7 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         
         dat.pla.seroneg = NULL,
         show.q=F, # whether to show fwer and q values in tables
+        run.trichtom=T,
         verbose = T)
       
       if (COR=="D15to181" & iPop==1) {
@@ -308,11 +322,12 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
         all.markers.names.short,
         
         dat.pla.seroneg = NULL,
-        show.q=F, # whether to show fwer and q values in tables
+        show.q=F, # whether to show fwer and q values in tables, 
+        run.trichtom=T,
         verbose = T)
       
       if (COR=="D15to181" & iPop==1) {
-        
+
         # trichotomitized curves
         cor_coxph_risk_tertile_incidence_curves(
           form.0 = as.formula(
@@ -326,17 +341,17 @@ for (iObj in c(1,11,12,2,21,3,31,4,5)) {
           config,
           config.cor,
           tfinal.tpeak,
-          
+
           markers = "Day15"%.%assays,
           markers.names.short = all.markers.names.short,
           markers.names.long = all.markers.names.long,
           marker.cutpoints,
           assay_metadata,
-          
+
           dat.plac = NULL,
           for.title=""
         )
-        
+
       }
       
     } else if(iObj==1) {

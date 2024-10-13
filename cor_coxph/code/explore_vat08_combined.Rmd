@@ -59,6 +59,18 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 
 ```
 
+### For manuscript
+
+Admin censoring dates
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43)
+summary(tmp$EnrollmentDate + tmp$EventTimeOmicronD43M6hotdeck10)
+
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43)
+summary(tmp$EnrollmentDate + tmp$EventTimeOmicronD43M6hotdeck10)
+
+```
+
 ### Predictiveness of demographics variables
 
 Region is quite predictive. By itself, it has an AUC of 0.8. FOI is highly dependent on region. Risk score is also dependent on region.

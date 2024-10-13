@@ -28,7 +28,7 @@ dat.nn=subset(dat, naive==0)
 ```{r, echo=FALSE, results='asis'}
 
 # tables made in iObj 21 is part of the 2
-for (iObj in c(4,5)) { 
+for (iObj in c(4)) { 
   
   cat("# Objective Peak ", 
       switch(iObj%.%"", 
@@ -42,7 +42,7 @@ for (iObj in c(4,5)) {
              "5"="1, non-naive"
              ), "\n\n", sep="")
   
-  for (COR in c("D15to181COVE", "D15to91COVE")) {
+  for (COR in c("D15to181")) {
     
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
     config.cor <- config::get(config = COR)
@@ -72,6 +72,25 @@ for (iObj in c(4,5)) {
         show.ve.curves = F
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
         
+      } else if (iObj==4) {
+        fname.suffix = fname.suffix %.% "_N"
+        has.alt = F
+        show.tertile.curves=F
+        show.risk.curves = F
+        show.ve.curves = F
+        plot.geq=T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==5) {
+        fname.suffix = fname.suffix %.% "_NN"
+        has.alt = F
+        show.tertile.curves=F
+        show.risk.curves = F
+        show.ve.curves = F
+        plot.geq=T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+        
       } else if (iObj==11) {
         fname.suffix = fname.suffix %.% "_B+D15overB"
         has.alt = F
@@ -96,24 +115,6 @@ for (iObj in c(4,5)) {
         fname.suffix = fname.suffix %.% "_BxD15_cat"
         has.alt = T
         res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-        
-      } else if (iObj==4) {
-        fname.suffix = fname.suffix %.% "_N"
-        has.alt = F
-        show.tertile.curves=F
-        show.risk.curves = F
-        show.ve.curves = F
-        plot.geq=T
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-        
-      } else if (iObj==5) {
-        fname.suffix = fname.suffix %.% "_NN"
-        has.alt = F
-        show.tertile.curves=F
-        show.risk.curves = F
-        show.ve.curves = F
-        plot.geq=T
-        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
         
       }
   
