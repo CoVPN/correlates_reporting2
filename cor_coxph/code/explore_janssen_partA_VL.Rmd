@@ -5,18 +5,12 @@ output: html_document
         
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
 
-
-
-```{r, echo=FALSE, include=FALSE}
-{
-        
 library(survey)
 library(kyotil)
 
-dat_mapped=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240129.csv')
-dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240126.csv')
+dat_mapped=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240226.csv')
+dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240226.csv')
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
 assays=assay_metadata$assay
 
@@ -47,8 +41,49 @@ subc = dat_mapped$SubcohortInd==1
 dat_mapped$COL_variants_study = with(dat_mapped, cc=="COL" & EventIndPrimaryIncludeNotMolecConfirmedD1==0 & SubcohortInd!=1 & !is.na(Day29bindSpike_D614))
 dat_mapped$SubcohortIndPlus = ifelse(dat_mapped$SubcohortInd | dat_mapped$COL_variants_study, 1, 0)
 table(dat_mapped$SubcohortIndPlus, dat_mapped$SubcohortInd)
-}
 ```
+
+## Make analysis data for variant study exposure proximal correlates
+
+```{r}
+tmp=subset(dat_proc, ph1.D29 & Trt==1 & Bserostatus==0 & Region==1)
+mytable(!is.na(tmp$Mon6bindSpike), !is.na(tmp$Mon6bindSpike_D614))
+mytable(!is.na(tmp$Mon6bindSpike), !is.na(tmp$Day29bindSpike))
+
+tmp=subset(dat_proc, ph2.D29 & Trt==1 & Bserostatus==0 & Region==1)
+mytable(!is.na(tmp$Mon6bindSpike), !is.na(tmp$Mon6bindSpike_D614), tmp$EventIndPrimaryD29)
+```
+
+```{r}
+tmp=subset(dat_proc, ph1.D29 & Trt==1 & Bserostatus==0 & Region==1)
+mytable(!is.na(tmp$Day71bindSpike), !is.na(tmp$Day71bindSpike_D614))
+mytable(!is.na(tmp$Day71bindSpike), !is.na(tmp$Day29bindSpike))
+
+tmp=subset(dat_proc, ph2.D29 & Trt==1 & Bserostatus==0 & Region==1)
+mytable(!is.na(tmp$Day71bindSpike), !is.na(tmp$Day71bindSpike_D614), tmp$EventIndPrimaryD29)
+
+tmp=subset(dat_proc, ph2.D29 & Trt==1 & Bserostatus==0 & Region==1 & !is.na(Day71bindSpike) & !is.na(Day71bindSpike_D614))
+tmp$diff=tmp$Day71bindSpike - tmp$Day71bindSpike_D614
+myboxplot(list(tmp$diff))
+wilcox.test (tmp$Day71bindSpike, tmp$Day71bindSpike_D614, paired=T)
+corplot(Day71bindSpike~Day71bindSpike_D614, tmp)
+summary(10**tmp$diff)
+```
+
+Data integrity check
+```{r}
+dat.1=read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240226.csv')
+dat.2=read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20241015.csv')
+
+tmp1=subset(dat.1, ph2.D29 & Trt==1 & Bserostatus==0 & Region==1)
+mytable(!is.na(tmp1$Day71bindSpike), !is.na(tmp1$Day71bindSpike_D614), tmp1$EventIndPrimaryD29)
+tmp2=subset(dat.2, ph2.D29 & Trt==1 & Bserostatus==0 & Region==1)
+mytable(!is.na(tmp2$Day71bindSpike), !is.na(tmp2$Day71bindSpike_D614), tmp2$EventIndPrimaryD29)
+identical(tmp1$Day71bindSpike, tmp2$Day71bindSpike)
+identical(tmp1$Day29bindSpike, tmp2$Day29bindSpike)
+```
+
+##
 
 
 When is Delta wave in RSA?

@@ -59,12 +59,221 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 
 ```
 
+### For manuscript
+
+Admin censoring dates
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43)
+summary(tmp$EnrollmentDate + tmp$EventTimeOmicronD43M6hotdeck10)
+
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43)
+summary(tmp$EnrollmentDate + tmp$EventTimeOmicronD43M6hotdeck10)
+
+```
+
+Baseline immunity pattern
+```{r}
+for (st in 1:2) {
+par(mfrow=c(2,3), mgp=c(2,1,0), oma=c(0,0,0.7,0))
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph1.D43)
+plot(density(dat$Bpseudoneutid50_BA.1, na.rm=T), main="Bpseudoneutid50_BA.1")
+plot(density(dat$Bpseudoneutid50, na.rm=T), main="Bpseudoneutid50")
+plot(dat$Bpseudoneutid50_BA.1, dat$Bpseudoneutid50)
+
+plot(density(dat$BbindSpike_omicron, na.rm=T), main="BbindSpike_omicron")
+plot(density(dat$BbindSpike, na.rm=T), main="BbindSpike")
+plot(dat$BbindSpike_omicron, dat$BbindSpike)
+
+title(main="Stage "%.%st, outer=T)
+}
+```
+
+
+### Predictiveness of demographics variables
+
+Region is quite predictive. By itself, it has an AUC of 0.8. FOI is highly dependent on region. Risk score is also dependent on region.
+
+```{r}
+
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==1)
+
+mytable(tmp$region, tmp$cc)
+mytable(tmp$region, tmp$EventIndOmicronD43M5hotdeck10)
+
+fit=coxph(Surv(EventTimeOmicronD43M5hotdeck10,EventIndOmicronD43M5hotdeck10) ~  FOI + risk_score + as.factor(region), tmp) ; summary(fit)
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  FOI + risk_score + as.factor(region), tmp, family=binomial) ; summary(fit)
+
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(FOI~EventIndOmicronD43M5hotdeck10, tmp)
+
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  I(region==2)+I(region==1), tmp, family=binomial) ; summary(fit)
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(FOI~region, tmp)
+
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  risk_score, tmp, family=binomial) ; summary(fit)
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(risk_score~region, tmp)
+
+```
+
+
+stage 1 trt. similar results
+
+```{r}
+
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43 & Trt==1)
+
+mytable(tmp$region, tmp$cc)
+mytable(tmp$region, tmp$EventIndOmicronD43M5hotdeck10)
+   
+
+fit=coxph(Surv(EventTimeOmicronD43M5hotdeck10,EventIndOmicronD43M5hotdeck10) ~  FOI + risk_score + as.factor(region), tmp) ; summary(fit)
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  FOI + risk_score + as.factor(region), tmp, family=binomial) ; summary(fit)
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(FOI~EventIndOmicronD43M5hotdeck10, tmp)
+
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  I(region==2)+I(region==1), tmp, family=binomial) ; summary(fit)
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(FOI~region, tmp)
+
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  risk_score, tmp, family=binomial) ; summary(fit)
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(risk_score~region, tmp)
+
+```
+
+stage 2 placebo
+
+
+```{r}
+
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0)
+
+mytable(tmp$region, tmp$cc)
+mytable(tmp$region, tmp$EventIndOmicronD43M5hotdeck10)
+
+fit=coxph(Surv(EventTimeOmicronD43M5hotdeck10,EventIndOmicronD43M5hotdeck10) ~  FOI + risk_score + as.factor(region), tmp) ; summary(fit)
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  FOI + risk_score + as.factor(region), tmp, family=binomial) ; summary(fit)
+
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(FOI~EventIndOmicronD43M5hotdeck10, tmp)
+
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  I(region==2)+I(region==1), tmp, family=binomial) ; summary(fit)
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(FOI~region, tmp)
+
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  risk_score, tmp, family=binomial) ; summary(fit)
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(risk_score~region, tmp)
+
+```
+
+stage 2, vaccine arm, ph2, weighted* (fastauc does not support weights)
+
+
+```{r}
+library(WeightedROC)
+# tp.fp <- WeightedROC(y.hat, y, w)
+# (wauc <- WeightedAUC(tp.fp))
+
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph2.D43.bAb & Trt==1)
+
+mytable(tmp$region, tmp$cc)
+mytable(tmp$region, tmp$EventIndOmicronD43M5hotdeck10)
+
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  FOI + risk_score + as.factor(region), tmp, family=binomial, weights=tmp$wt.D43.bAb) ; summary(fit)
+
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(FOI~EventIndOmicronD43M5hotdeck10, tmp)
+
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  I(region==2)+I(region==1), tmp, family=binomial, weights=tmp$wt.D43.bAb) ; summary(fit)
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(FOI~region, tmp)
+
+
+fit=glm(EventIndOmicronD43M5hotdeck10 ~  risk_score, tmp, family=binomial, weights=tmp$wt.D43.bAb) ; summary(fit)
+fastauc(predict(fit), tmp$EventIndOmicronD43M5hotdeck10)
+
+myboxplot(risk_score~region, tmp)
+
+```
+
+### Batch0and1 weights definition check
+
+```{r}
+
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D22.st1.nAb.batch0and1)
+
+summary(tmp$wt.D22.st1.nAb.batch0and1)
+
+```
+
 ### Some ptids in placebo have large fold rise from baseline to D22/D43
 
 ```{r}
-tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0 & ph2.D43.st1.nAb.batch0and1, c(BbindSpike, Day22bindSpike, Day43bindSpike))
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0 & ph2.D43.st1.nAb.batch0and1, c(EventIndFirstInfectionD1, BbindSpike, Day22bindSpike, Day43bindSpike))
+mymatplot(t(tmp[,-1]), legend=F, col=ifelse(tmp$EventIndFirstInfectionD1==1,2,1), lty=1, pch=1)
 
-mymatplot(t(tmp), legend=F, col=1:8, lty=1)
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0 & ph2.D43.st1.nAb.batch0and1, c(EventIndFirstInfectionD1, Bpseudoneutid50, Day22pseudoneutid50, Day43pseudoneutid50))
+tmp=tmp[sample(nrow(tmp),100),]
+mymatplot(t(tmp[,-1]), legend=F, col=ifelse(tmp$EventIndFirstInfectionD1==1,"purple","darkgray"), lty=1, pch=1)
+
+
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0, c(EventIndFirstInfectionD1, BbindSpike_omicron, Day22bindSpike_omicron, Day43bindSpike_omicron, Day78bindSpike_omicron, Day134bindSpike_omicron, Day202bindSpike_omicron, Day292bindSpike_omicron, Day387bindSpike_omicron))
+tmp2=subset(dat_proc, Trialstage==1 & Bserostatus==0 & Trt==0, c(EventIndFirstInfectionD1, BbindSpike_omicron, Day22bindSpike_omicron, Day43bindSpike_omicron, Day78bindSpike_omicron, Day134bindSpike_omicron, Day202bindSpike_omicron, Day292bindSpike_omicron, Day387bindSpike_omicron))
+# tmp=tmp[complete.cases(tmp),]
+par(mfrow=c(4,1), mar=c(1,1,1,1),mgp=c(1,0,0))
+mymatplot(t(tmp[tmp$EventIndFirstInfectionD1==0,-1]), legend=F, lty=1, pch=1, col=1, main="Non-naive, Non-cases, Placebo")
+mymatplot(t(tmp[tmp$EventIndFirstInfectionD1==1,-1]), legend=F, lty=1, pch=1, col=1, main="Non-naive, Cases, Placebo")
+mymatplot(t(tmp2[tmp2$EventIndFirstInfectionD1==0,-1]), legend=F, lty=1, pch=1, col=1, main="Naive, Non-cases, Placebo")
+mymatplot(t(tmp2[tmp2$EventIndFirstInfectionD1==1,-1]), legend=F, lty=1, pch=1, col=1, main="Naive, Cases, Placebo")
+
+
+# filter by ph1.D43
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==0 & ph1.D43, c(EventIndFirstInfectionD1, BbindSpike_omicron, Day22bindSpike_omicron, Day43bindSpike_omicron, Day78bindSpike_omicron, Day134bindSpike_omicron, Day202bindSpike_omicron, Day292bindSpike_omicron, Day387bindSpike_omicron))
+tmp2=subset(dat_proc, Trialstage==1 & Bserostatus==0 & Trt==0 & ph1.D43, c(EventIndFirstInfectionD1, BbindSpike_omicron, Day22bindSpike_omicron, Day43bindSpike_omicron, Day78bindSpike_omicron, Day134bindSpike_omicron, Day202bindSpike_omicron, Day292bindSpike_omicron, Day387bindSpike_omicron))
+# tmp=tmp[complete.cases(tmp),]
+par(mfrow=c(4,1), mar=c(1,1,1,1),mgp=c(1,0,0))
+mymatplot(t(tmp[tmp$EventIndFirstInfectionD1==0,-1]), legend=F, lty=1, pch=1, col=1, main="Non-naive, Non-cases, Placebo")
+mymatplot(t(tmp[tmp$EventIndFirstInfectionD1==1,-1]), legend=F, lty=1, pch=1, col=1, main="Non-naive, Cases, Placebo")
+mymatplot(t(tmp2[tmp2$EventIndFirstInfectionD1==0,-1]), legend=F, lty=1, pch=1, col=1, main="Naive, Non-cases, Placebo")
+mymatplot(t(tmp2[tmp2$EventIndFirstInfectionD1==1,-1]), legend=F, lty=1, pch=1, col=1, main="Naive, Cases, Placebo")
+
+
+# vaccinees
+# filter by ph1.D43
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1 & ph1.D43, c(EventIndFirstInfectionD1, BbindSpike_omicron, Day22bindSpike_omicron, Day43bindSpike_omicron, Day78bindSpike_omicron, Day134bindSpike_omicron, Day202bindSpike_omicron, Day292bindSpike_omicron, Day387bindSpike_omicron))
+tmp2=subset(dat_proc, Trialstage==1 & Bserostatus==0 & Trt==1 & ph1.D43, c(EventIndFirstInfectionD1, BbindSpike_omicron, Day22bindSpike_omicron, Day43bindSpike_omicron, Day78bindSpike_omicron, Day134bindSpike_omicron, Day202bindSpike_omicron, Day292bindSpike_omicron, Day387bindSpike_omicron))
+# tmp=tmp[complete.cases(tmp),]
+par(mfrow=c(4,1), mar=c(1,1,1,1),mgp=c(1,0,0))
+mymatplot(t(tmp[tmp$EventIndFirstInfectionD1==0,-1]), legend=F, lty=1, pch=1, col=1, main="Non-naive, Non-cases, Vaccine")
+mymatplot(t(tmp[tmp$EventIndFirstInfectionD1==1,-1]), legend=F, lty=1, pch=1, col=1, main="Non-naive, Cases, Vaccine")
+mymatplot(t(tmp2[tmp2$EventIndFirstInfectionD1==0,-1]), legend=F, lty=1, pch=1, col=1, main="Naive, Non-cases, Vaccine")
+mymatplot(t(tmp2[tmp2$EventIndFirstInfectionD1==1,-1]), legend=F, lty=1, pch=1, col=1, main="Naive, Cases, Vaccine")
+
+
 ```
 
 
@@ -1711,12 +1920,20 @@ myboxplot(EventTimePrimaryD1~nAbBatch+Trt, subset(dat_proc, Trialstage==2 & Even
 ```
 
 
+for slide 27
+```{r}
+with(subset(dat_proc, Trialstage==1 & ph2.D43.nAb & Bserostatus==1), mytable(nAbBatch, 1-EventIndOmicronD43M6hotdeck10, Trt))
+with(subset(dat_proc, Trialstage==1 & ph1.D43 & Bserostatus==1 & batch0), mytable(Trt, 1-EventIndOmicronD43M6hotdeck10))
+```
+
+
 Stage 1, nAb. Most non-cases are done in batch 2, most cases are done in batch 1. Step 1 and 2 are spread mostly equally between batches.
 Step 1 has ancestral only and no variants
 
 batch NA/step 1 has 706 ptids who have ancestral ID50 but no variant ID50
 
 ```{r}
+
 with(subset(dat_proc, Trialstage==1 & ph2.D43.nAb & Bserostatus==1 & Trt==1), mytable(nAbBatch, EventIndOmicronD43M12hotdeck1, SamplingStep))
 
 with(subset(dat_proc, Trialstage==1 & ph2.D43.nAb), table(SamplingStep))

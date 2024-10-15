@@ -32,10 +32,14 @@ if(is.null("fname.suffix")) fname.suffix = ''
 
 
 ```{r, echo=FALSE, results='asis'}
+  level=level+2
+
   for (a in all.markers) {
     assay=marker.name.to.assay(a)
     res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
+
+  level=level-2
 ```
 
