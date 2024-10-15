@@ -71,6 +71,24 @@ summary(tmp$EnrollmentDate + tmp$EventTimeOmicronD43M6hotdeck10)
 
 ```
 
+Baseline immunity pattern
+```{r}
+for (st in 1:2) {
+par(mfrow=c(2,3), mgp=c(2,1,0), oma=c(0,0,0.7,0))
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph1.D43)
+plot(density(dat$Bpseudoneutid50_BA.1, na.rm=T), main="Bpseudoneutid50_BA.1")
+plot(density(dat$Bpseudoneutid50, na.rm=T), main="Bpseudoneutid50")
+plot(dat$Bpseudoneutid50_BA.1, dat$Bpseudoneutid50)
+
+plot(density(dat$BbindSpike_omicron, na.rm=T), main="BbindSpike_omicron")
+plot(density(dat$BbindSpike, na.rm=T), main="BbindSpike")
+plot(dat$BbindSpike_omicron, dat$BbindSpike)
+
+title(main="Stage "%.%st, outer=T)
+}
+```
+
+
 ### Predictiveness of demographics variables
 
 Region is quite predictive. By itself, it has an AUC of 0.8. FOI is highly dependent on region. Risk score is also dependent on region.
