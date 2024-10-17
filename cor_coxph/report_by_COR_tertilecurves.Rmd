@@ -10,6 +10,16 @@ The data ribbon is estimated based on survfit separately within each tertile usi
 
 
 `r 
+
+if (TRIAL=="vat08_combined" & fname.suffix=="D" %.% tpeak) {
+  all.markers.tri = all.markers[1:(length(all.markers)/3*2)]
+} else if (TRIAL=="vat08_combined" & fname.suffix=="D" %.% tpeak %.% "_plac_alt2") {
+  all.markers.tri = c()
+} else {
+  all.markers.tri = all.markers
+}
+
+
 res=""
 for (a in all.markers) {
 

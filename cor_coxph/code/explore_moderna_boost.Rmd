@@ -63,3 +63,20 @@ title(main="COVE Dose 3", outer=T, line=0)
 title(ylab="BD29 (IU/ml)", outer=T, line=1.5)
 ```
 
+
+binding Ab
+
+```{r}
+tmp=subset(dat_proc, Trt==1 & ph1.BD29)
+
+par(mfrow=c(1,2), oma=c(0,2.5,3,0.5), mar=c(3,0,2,0), mgp = c(2, .5, 0))
+lim=c(2.5,7)
+
+plot(BD29bindSpike~BD1bindSpike, tmp, col=ifelse(tmp$naive==1,1,2),  asp=1, xlab="BD1 (AU/ml)",ylab="BD29 (AU/ml)", main="bindSpike Ancestral", xlim=lim, ylim=lim)
+abline(0,1)
+
+plot(BD29bindSpike_BA.1~BD1bindSpike_BA.1, tmp, col=ifelse(tmp$naive==1,1,2),  asp=1, xlab="BD1 (AU/ml)",ylab="BD29 (AU/ml)", main="bindSpike Omicron", xlim=lim, ylim=lim)
+abline(0,1)
+
+
+```

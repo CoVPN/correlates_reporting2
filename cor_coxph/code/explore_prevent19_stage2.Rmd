@@ -69,6 +69,33 @@ dat_proc_stage1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded
 
 ### For manuscript
 
+Get the max nAb-ID50 for severe cases from ensemble and az
+
+```{r}
+
+tmp=subset(dat_proc, ph2.D35_108 & Trt==1 & SevereCOVIDIndD35_108to21Dec10==1)
+cat("prevent19 stage 2 ", nrow(tmp), "cases\n")
+print("nAb-ID50 D614G")
+10^summary(tmp$Day35pseudoneutid50_D614G)
+print("nAb-ID50 Delta")
+10^summary(tmp$Day35pseudoneutid50_Delta)
+
+dat_proc_az = read.csv('/trials/covpn/p3002/analysis/correlates/stage2/adata/azd1222_stage2_data_processed_20240514.csv')
+tmp=subset(dat_proc_az, ph2.D57_120nAb & Trt==1 & SevereCOVIDIndD57_120to21Dec10==1)
+cat("az stage 2: ", nrow(tmp), "cases\n")
+print("nAb-ID50 D614G")
+10^summary(tmp$Day57pseudoneutid50_D614G)
+print("nAb-ID50 Delta")
+10^summary(tmp$Day57pseudoneutid50_Delta)
+
+dat_proc_en = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore_20240226.csv')
+tmp=subset(dat_proc_en, ph2.D29 & Trt==1 & SevereEventIndPrimaryIncludeNotMolecConfirmedD29==1)
+cat("ensemble: ", nrow(tmp), "cases\n")
+print("nAb-ID50 D614G")
+10^summary(tmp$Day29pseudoneutid50)
+
+```
+
 
 For IDweek abstract
 ```{r}

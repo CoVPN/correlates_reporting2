@@ -1,0 +1,126 @@
+# A shortened version
+
+
+
+<!-- Set up -->
+```{r, echo=FALSE, results='asis'}
+show.q=F
+multivariate_assays=NULL
+show.risk.curves=F
+has.plac=F # controls whether to show placebo prevalence
+
+special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 15.")
+
+assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays) # use to get list of cutpoints
+names(all.markers)=all.markers
+
+config <- config::get(config = "covail")
+dat_proc=read.csv(config$data_cleaned)
+dat = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
+dat.n=subset(dat, naive==1)
+dat.nn=subset(dat, naive==0)
+
+```
+
+
+<!-- Objective 1, 2 and 3 -->
+```{r, echo=FALSE, results='asis'}
+
+# tables made in iObj 21 is part of the 2
+for (iObj in c(4)) { 
+  
+  cat("# Objective Peak ", 
+      switch(iObj%.%"", 
+             "1"=1, 
+             "2"=2, 
+             "3"=3, 
+             "31"="3 discrete baseline", 
+             "11"="1 baseline+D15/B", 
+             "12"="1 baseline+D15+D15^2",
+             "4"="1, naive", 
+             "5"="1, non-naive"
+             ), "\n\n", sep="")
+  
+  for (COR in c("D15to181")) {
+    
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    
+    # shift by 7 days to start counting from D15
+    COR = sub("D15to", "D22to", COR) 
+    # COR = sub("to181", "to188", COR) 
+    
+    cat("## ", COR, sep="")
+    
+    level=3 # section title indent
+    
+    for (iPop in 1:7) {
+      fname.suffix = switch (iPop,
+        '1' = 'mRNA_onedose',
+        '2' = 'mRNA_Moderna',
+        '3' = 'mRNA_Pfizer',
+        '4' = 'mRNA_Prototype',
+        '5' = 'mRNA_Omicron-Containing',
+        '6' = 'mRNA_Bivalent',
+        '7' = 'mRNA_Monovalent'
+      )  
+      
+      if (iObj==1) {
+        has.alt = F
+        show.ve.curves = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==4) {
+        fname.suffix = fname.suffix %.% "_N"
+        has.alt = F
+        show.tertile.curves=F
+        show.risk.curves = F
+        show.ve.curves = F
+        plot.geq=T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==5) {
+        fname.suffix = fname.suffix %.% "_NN"
+        has.alt = F
+        show.tertile.curves=F
+        show.risk.curves = F
+        show.ve.curves = F
+        plot.geq=T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+        
+        
+      } else if (iObj==11) {
+        fname.suffix = fname.suffix %.% "_B+D15overB"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==12) {
+        fname.suffix = fname.suffix %.% "_B+D15^2"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==2) {
+        fname.suffix = fname.suffix %.% "_NxD15"
+        has.alt = T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==3) {
+        fname.suffix = fname.suffix %.% "_BxD15"
+        has.alt = F
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      } else if (iObj==31) {
+        fname.suffix = fname.suffix %.% "_BxD15_cat"
+        has.alt = T
+        res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+        
+      }
+  
+      cat(res, sep = '\n')
+  
+    }
+  }
+}
+```

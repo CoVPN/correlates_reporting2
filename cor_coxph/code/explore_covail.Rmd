@@ -73,6 +73,21 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
+### explore the second order effect
+
+```{r}
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score + scale(Bpseudoneutid50_MDW, scale=F) + I(scale(Day15pseudoneutid50_MDW, scale=F)^2) + scale(Day15pseudoneutid50_MDW, scale=F), subset(dat, naive==1))
+
+coxph(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ scale(Bpseudoneutid50_MDW, scale=F) + I(scale(Day15pseudoneutid50_MDW, scale=F)^2) + scale(Day15pseudoneutid50_MDW, scale=F), subset(dat, naive==1))
+
+
+plot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, subset(dat, naive==1), col=subset(dat, naive==1)$COVIDIndD22toD181+1)
+plot(Day15pseudoneutid50_MDW~Bpseudoneutid50_MDW, subset(dat, naive==0), col=subset(dat, naive==0)$COVIDIndD22toD181+1)
+
+```
+
+
 
 ### scatterplot of D15 and B 
 

@@ -1,27 +1,180 @@
-`r paste(concatList(rep('#',level)), COR, fname.suffix)` 
+<!-- HR tables for continuous markers, forest plots. -->
 
-Each row represents results from one model. 
+
+Each row represents results from one model with a single immune biomarker. The first table shows HRs per 10-fold increase and the second table shows HRs per SD increase. 
 
 `r if (exists("coef_page_notes")) if(coef_page_notes!="") coef_page_notes`
-
-<!-- `r if (exists("coef_page_notes")) if(coef_page_notes!="") paste0("$\\ast$ ", coef_page_notes)` -->
-
 
 \setlength{\tabcolsep}{.5ex}
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}
-`r if (!has.alt) '<!--'`
-  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`_2}
-`r if (!has.alt)'-->'`
 \normalsize
-
 $\ast$ Baseline covariates adjusted for: `r covariates_adjusted`.
 
-$\ast$ `r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
+$\ast\ast$ No. at-risk = estimated number in the population for analysis; no. cases = number of cases within this cohort. Both are ph1 numbers. Case counting starts `r tpeaklag` days post Day `r tpeak`.
 
 `r if (!show.q) '<!--'`
 $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
 `r if (!show.q)'-->'`
+
+
+
+\clearpage
+\setlength{\tabcolsep}{.5ex}
+\small
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r fname.suffix`}
+\normalsize
+$\ast$ Baseline covariates adjusted for: `r covariates_adjusted`.
+
+$\ast\ast$ No. at-risk = estimated number in the population for analysis; no. cases = number of cases within this cohort. Both are ph1 numbers. Case counting starts `r tpeaklag` days post Day `r tpeak`.
+
+`r if (!show.q) '<!--'`
+$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
+`r if (!show.q)'-->'`
+
+
+`r if (!has.alt) '<!--'`
+\clearpage
+\setlength{\tabcolsep}{.5ex}
+\small
+  \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`_2}
+\normalsize
+$\ast$ Baseline covariates adjusted for: `r covariates_adjusted`.
+
+$\ast\ast$ No. at-risk = estimated number in the population for analysis; no. cases = number of cases within this cohort. Both are ph1 numbers. Case counting starts `r tpeaklag` days post Day `r tpeak`.
+
+`r if (!has.alt)'-->'`
+
+
+
+
+<!-- Follmann sample size ratio. Only for two TRIALs -->
+`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA")) '<!--'`
+\begin{table}[H]
+\caption{The ratio of sample sizes required to power a future trial for the column marker compared to the row marker (Follmann 2018). Confidence intervals are based on $10^3$ bootstrap replicates. }
+\begin{center}
+    \input{`r pathCoRoutput`/follmann2018_samplesizeratio}\\
+    (lb, ub)\\
+    \input{`r pathCoRoutput`/follmann2018_samplesizeratio_lbub}\\
+\end{center}
+    %\label{tab:follmann2018_samplesizeratio}
+\end{table}
+\vspace{10pt}
+`r if (!attr(config,"config") %in% c("moderna_real", "janssen_pooled_EUA"))'-->'`
+
+
+<!-- Table 1, commented out for covail -->
+`r if (attr(config,"config") %in% c("covail")) '<!--'`
+\begin{table}[H]
+\caption{Number of cases and non-cases by ph2}
+\begin{center}
+  \input{`r pathCoRoutput`/tab1_`r fname.suffix`}\\
+\end{center}
+\end{table}
+`r if (attr(config,"config") %in% c("covail"))'-->'`
+
+
+<!-- additional counts tables if existed -->
+`r if (!TRIAL %in% c("janssen_partA_VL")) '<!--'`
+
+\begin{table}[H]
+\caption{Number of cases and non-cases by ph2 (with ancestral Abs measured). There are more non-cases in ph2 than the previous table, which is for ph2 subjects with variants Abs measured.}
+\begin{center}
+  \input{`r pathCoRoutput`/tab1_`r fname.suffix`_ancestral}\\
+\end{center}
+\end{table}
+
+
+\begin{table}[H]
+\caption{Number of competing cases by ph2}
+\begin{center}
+  \input{`r pathCoRoutput`/tab1_competing_`r fname.suffix`}\\
+\end{center}
+\end{table}
+
+`r if (!TRIAL %in% c("janssen_partA_VL"))'-->'`
+
+
+
+<!-- Forest plots -->
+
+```{r, echo=FALSE, results='asis'}
+
+# cat(concatList(rep('#',level+1)), " Forest plots\n\n")
+
+if(TRIAL %in% c("azd1222")) {
+  message ("forest plots")
+  res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
+  cat(res, sep = '\n')
+
+} else if(file.exists(paste0("../", pathCoRoutput, "/hr_forest_",fname.suffix,".pdf"))) {
+  # ../ is necessary because pathCoRoutput starts at corcoxph
+  
+  cat("
+  \\clearpage
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_", fname.suffix, ".pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_", fname.suffix, ".pdf}
+\\caption{Forest plots depicting hazard ratios per 10-fold change in marker, presented on both an antilog scale and a log scale.}
+\\end{figure}
+", sep="")
+  
+  cat("
+  \\clearpage
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_scaled_", fname.suffix, ".pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_scaled_", fname.suffix, ".pdf}
+\\caption{Forest plots depicting hazard ratios per SD change in marker, presented on both an antilog scale and a log scale.}
+\\end{figure}
+", sep="")
+  
+  
+  # additional plots
+  if (TRIAL=="vat08_combined" & fname.suffix=="D" %.% tpeak) {
+    # add more forest plots: baseline and fold rise
+    cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_", fname.suffix, "2.pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_", fname.suffix, "2.pdf}
+\\caption{Forest plots depicting hazard ratios per 10-fold change in baseline marker, presented on both an antilog scale and a log scale.}
+\\end{figure}
+", sep="")
+  
+    cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_scaled_", fname.suffix, "2.pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_scaled_", fname.suffix, "2.pdf}
+\\caption{Forest plots depicting hazard ratios per SD change in baseline marker, presented on both an antilog scale and a log scale.}
+\\end{figure}
+", sep="")
+
+    cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_", fname.suffix, "3.pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_", fname.suffix, "3.pdf}
+\\caption{Forest plots depicting hazard ratios per 10-fold change in fold increases, presented on both an antilog scale and a log scale.}
+\\end{figure}
+", sep="")
+  
+    cat("
+\\begin{figure}
+\\center
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_scaled_", fname.suffix, "3.pdf}
+\\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_scaled_", fname.suffix, "3.pdf}
+\\caption{Forest plots depicting hazard ratios per SD change in fold increases, presented on both an antilog scale and a log scale.}
+\\end{figure}
+
+\\clearpage
+", sep="")    
+  }
+
+}
+```
 
 
 \clearpage
