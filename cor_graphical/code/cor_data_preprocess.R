@@ -23,8 +23,14 @@ if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; n
 
 ## COR has a set of analysis-specific parameters defined in the config file
 config.cor <- config::get(config = COR)
-if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 2)} # need manually update "Trialstage" and line 69 in report.Rmd
-
+if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)} # need manually update "Trialstage" and line 69 in report.Rmd
+if (study_name=="VAT08") {
+  dat_proc$ph2.D43.nAb = with(dat_proc, ifelse(Trialstage == 1, ph2.D43.st1.nAb.batch0and1, ph2.D43.nAb))
+  dat_proc$ph2.D22.nAb = with(dat_proc, ifelse(Trialstage == 1, ph2.D22.st1.nAb.batch0and1, ph2.D22.nAb))
+  dat_proc$wt.D43.nAb = with(dat_proc, ifelse(Trialstage == 1, wt.D43.st1.nAb.batch0and1, wt.D43.nAb))
+  dat_proc$wt.D22.nAb = with(dat_proc, ifelse(Trialstage == 1, wt.D22.st1.nAb.batch0and1, wt.D22.nAb))
+  month = ifelse(dat_proc$Trialstage[1] == 1, 6, 5)
+}
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0
 wt.vars <- colnames(dat_proc)[grepl("wt.D", colnames(dat_proc))]
@@ -173,14 +179,14 @@ if (study_name=="IARCHPV"){
     mutate(cohort_event = factor(
       case_when(Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tinterm)))==0 & 
                   (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb==1 | ph2.D43.bAb==1) & 
-                  (!!as.name(paste0("EventIndOmicronD", tinterm, "M6hotdeck10")))==1 & 
-                  (!!as.name(paste0("EventTimeOmicronD", tinterm, "M6hotdeck10"))) >= 7 &
-                  (!!as.name(paste0("EventTimeOmicronD", tpeak, "M6hotdeck10"))) < 7 ~ "7-27 days PD2 cases",
+                  (!!as.name(paste0("EventIndOmicronD", tinterm, "M", month, "hotdeck10")))==1 & 
+                  (!!as.name(paste0("EventTimeOmicronD", tinterm, "M", month, "hotdeck10"))) >= 7 &
+                  (!!as.name(paste0("EventTimeOmicronD", tpeak, "M", month, "hotdeck10"))) < 7 ~ "7-27 days PD2 cases",
                 Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
                   (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb==1 | ph2.D43.bAb==1) & 
-                  (!!as.name(paste0("EventIndOmicronD", tpeak, "M6hotdeck10")))==1 &
-                  (!!as.name(paste0("EventTimeOmicronD", tpeak, "M6hotdeck10"))) >= 7 &
-                  (!!as.name(paste0("EventTimeOmicronD", tinterm, "M6hotdeck10"))) <= 180 ~ "28-180 days PD2 cases", 
+                  (!!as.name(paste0("EventIndOmicronD", tpeak, "M", month, "hotdeck10")))==1 &
+                  (!!as.name(paste0("EventTimeOmicronD", tpeak, "M", month, "hotdeck10"))) >= 7 &
+                  (!!as.name(paste0("EventTimeOmicronD", tinterm, "M", month, "hotdeck10"))) <= 180 ~ "28-180 days PD2 cases", 
                 #Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
                 #  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
                 #  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 &
@@ -190,7 +196,7 @@ if (study_name=="IARCHPV"){
                 # will filter out those without D57 marker data in the D57 panels
                 Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
                   (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
-                  EventIndOmicronD22M6hotdeck10==0 ~ "Non-Cases"),
+                  (!!as.name(paste0("EventIndOmicronD", tinterm, "M", month, "hotdeck10")))==0 ~ "Non-Cases"),
       levels = c("7-27 days PD2 cases", "28-180 days PD2 cases", #"181-365 days PD2 cases", 
                  "Non-Cases"))
     )
@@ -475,7 +481,7 @@ if(length(timepoints) > 1 & study_name !="VAT08") {
 
 if(study_name =="VAT08") {
   
-  #if (nrow(subset(dat.longer.cor.subset, cohort_event=="7-27 days PD2 cases"))!=0) {
+  if (nrow(subset(dat.longer.cor.subset, cohort_event=="7-27 days PD2 cases"))!=0) {
     # append with a pooled case group: union of 7-27 days PD2 cases, 28-180 days PD2 cases at both day 1 and day 22 as cases for D22 marker correlates analyses
     dat.longer.cor.subset <- dat.longer.cor.subset %>%
       bind_rows(dat.longer.cor.subset %>% 
@@ -484,14 +490,14 @@ if(study_name =="VAT08") {
       mutate(cohort_event = factor(cohort_event, 
                                    levels = c("7-27 days PD2 cases","28-180 days PD2 cases","7-180 days PD2 cases", "Non-Cases"),
                                    labels = c("C1","C2","C3","Non-Cases")))
-  #} else {
+  } else {
     
-    #dat.longer.cor.subset <- dat.longer.cor.subset %>%
-      #mutate(cohort_event = factor(cohort_event, 
-      #                             levels = c("28-180 days PD2 cases","Non-Cases"),
-      #                             labels = c("C2","Non-Cases")))
+    dat.longer.cor.subset <- dat.longer.cor.subset %>%
+      mutate(cohort_event = factor(cohort_event, 
+                                   levels = c("28-180 days PD2 cases","Non-Cases"),
+                                   labels = c("C2","Non-Cases")))
    
-  #}
+  }
   
   dat.longer.cor.subset <- dat.longer.cor.subset %>% 
     filter(!(time %in% c("B", "Day22", "Delta22overB") & grepl("bind", assay) & ph2.D22.bAb == 0)) %>%

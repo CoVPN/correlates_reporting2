@@ -86,7 +86,7 @@ neut.marker.captions <- switch(study_name,
                                )
 
 immuno_postfix_label = switch(study_name, 
-                               "VAT08"=" (Stage2)")
+                               "VAT08"=" (Stage1)")
 
 ```
 
@@ -500,7 +500,8 @@ for (a in c("bindSpike","pseudoneutid50")){
 ```{r, echo=FALSE, results='asis', eval=study_name=="VAT08"}
 
 for (assay_grp in c("bAb","bAb_mdw","nAb","nAb_mdw")){
-    
+    details = ""
+    details_lb = ""
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set2.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
@@ -554,6 +555,31 @@ for (a in assays){
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
   
+}
+
+```
+
+\clearpage
+## Set 5 plots: Longitudinal plots D01, D22, D43, D78, D134, D202, D292, D387, 
+## Non-naive Stage 1 and Stage 2 Participants
+```{r, echo=FALSE, results='asis', eval=study_name=="VAT08" & grepl("Stage1", immuno_postfix_label)}
+
+for (assay_grp in assays){
+  
+    immuno_postfix_label = " (Stage 1 and Stage 2)"
+    details = "_nonnaive_stage1stage2"
+    details_lb = ", D78, D134, D202, D292, D387, Non-naive Stage 1 and Stage 2 Participants"
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set2.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+}
+
+for (assay_grp in assays){
+    details = "_gmr_nonnaive_stage1stage2"
+    details_lb = ", D78, D134, D202, D292, D387, Non-naive Stage 1 and Stage 2 Participants"
+    res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set2.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
 }
 
 ```
