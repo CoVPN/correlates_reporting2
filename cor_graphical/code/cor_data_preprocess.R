@@ -30,6 +30,7 @@ if (study_name=="VAT08") {
   dat_proc$wt.D43.nAb = with(dat_proc, ifelse(Trialstage == 1, wt.D43.st1.nAb.batch0and1, wt.D43.nAb))
   dat_proc$wt.D22.nAb = with(dat_proc, ifelse(Trialstage == 1, wt.D22.st1.nAb.batch0and1, wt.D22.nAb))
   month = ifelse(dat_proc$Trialstage[1] == 1, 6, 5)
+  day = ifelse(dat_proc$Trialstage[1] == 1, 180, 150)
 }
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0
@@ -186,7 +187,7 @@ if (study_name=="IARCHPV"){
                   (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb==1 | ph2.D43.bAb==1) & 
                   (!!as.name(paste0("EventIndOmicronD", tpeak, "M", month, "hotdeck10")))==1 &
                   (!!as.name(paste0("EventTimeOmicronD", tpeak, "M", month, "hotdeck10"))) >= 7 &
-                  (!!as.name(paste0("EventTimeOmicronD", tinterm, "M", month, "hotdeck10"))) <= 180 ~ "28-180 days PD2 cases", 
+                  (!!as.name(paste0("EventTimeOmicronD", tinterm, "M", month, "hotdeck10"))) <= day ~ sprintf("28-%s days PD2 cases", day), 
                 #Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
                 #  (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
                 #  (!!as.name(paste0("EventIndPrimaryD", tpeak)))==1 &
@@ -733,4 +734,21 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
   # unique(dat.longer.cor.subset.plot4[, c("N_RespRate","cohort_event2","assay","counts","Region")])
   write.csv(dat.longer.cor.subset.plot.variant, file = here("data_clean", "longer_cor_data_plot_variant.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot.variant, file = here("data_clean", "longer_cor_data_plot_variant.rds"))
+  
+  ###################################
+  groupby_vars_variant_2=c("Trt", "Bserostatus", "cohort_event2", "time", "assay", "Region", "Sex")
+  
+  # define response rate
+  dat.longer.cor.subset = dat.longer.cor.subset %>% filter(!is.na(value))
+  
+  dat.longer.cor.subset.plot.variant.2 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars_variant_2)
+  dat.longer.cor.subset.plot.variant.2 <- dat.longer.cor.subset.plot.variant.2 %>%
+    mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+           lb = ifelse(grepl("Day", time), lb, ""),
+           lbval = ifelse(grepl("Day", time), lbval, NA),
+           lb2 = ifelse(grepl("Day", time), lb2, ""),
+           lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
+  # unique(dat.longer.cor.subset.plot4[, c("N_RespRate","cohort_event2","assay","counts","Region")])
+  write.csv(dat.longer.cor.subset.plot.variant.2, file = here("data_clean", "longer_cor_data_plot_variant_2.csv"), row.names=F)
+  saveRDS(dat.longer.cor.subset.plot.variant.2, file = here("data_clean", "longer_cor_data_plot_variant_2.rds"))
 }
