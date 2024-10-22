@@ -10,7 +10,7 @@ library(survey)
 library(kyotil)
 
 dat_mapped=read.csv('/trials/covpn/p3003/analysis/mapping_immune_correlates/adata/COVID_ENSEMBLE_PartAComplete_variant_mapped_20240226.csv')
-dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20240226.csv')
+dat_proc = read.csv('/trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_partA_VL_data_processed_20241015.csv')
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/janssen_partA_VL_assay_metadata.csv')
 assays=assay_metadata$assay
 
@@ -43,6 +43,14 @@ dat_mapped$SubcohortIndPlus = ifelse(dat_mapped$SubcohortInd | dat_mapped$COL_va
 table(dat_mapped$SubcohortIndPlus, dat_mapped$SubcohortInd)
 ```
 
+```{r}
+tmp=subset(dat_proc, (ph2.D29variant | Trt==0) & Bserostatus==0)
+mytable(tmp$wt.D29variant)
+
+subset(dat_proc, Ptid=="VAC31518COV3001-3000137")
+
+```
+
 ## Make analysis data for variant study exposure proximal correlates
 
 ```{r}
@@ -53,6 +61,24 @@ mytable(!is.na(tmp$Mon6bindSpike), !is.na(tmp$Day29bindSpike))
 tmp=subset(dat_proc, ph2.D29 & Trt==1 & Bserostatus==0 & Region==1)
 mytable(!is.na(tmp$Mon6bindSpike), !is.na(tmp$Mon6bindSpike_D614), tmp$EventIndPrimaryD29)
 ```
+
+
+```{r}
+tmp=subset(dat_proc, ph1.D29 & Trt==1 & Bserostatus==0 & Region==1)
+mytable(!is.na(tmp$Day71bindSpike), !is.na(tmp$Day71bindSpike_D614))
+mytable(!is.na(tmp$Day71bindSpike), !is.na(tmp$Day29bindSpike))
+
+tmp=subset(dat_proc, ph2.D29 & Trt==1 & Bserostatus==0)
+mytable(!is.na(tmp$Day71bindSpike), !is.na(tmp$Day71bindSpike_D614), tmp$EventIndPrimaryD29, tmp$Region)
+
+tmp=subset(dat_proc, ph2.D29 & Trt==1 & Bserostatus==0 & Region==1 & !is.na(Day71bindSpike) & !is.na(Day71bindSpike_D614))
+tmp$diff=tmp$Day71bindSpike - tmp$Day71bindSpike_D614
+myboxplot(list(tmp$diff))
+wilcox.test (tmp$Day71bindSpike, tmp$Day71bindSpike_D614, paired=T)
+corplot(Day71bindSpike~Day71bindSpike_D614, tmp)
+summary(10**tmp$diff)
+```
+
 
 ```{r}
 tmp=subset(dat_proc, ph1.D29 & Trt==1 & Bserostatus==0 & Region==1)
@@ -83,16 +109,16 @@ identical(tmp1$Day71bindSpike, tmp2$Day71bindSpike)
 identical(tmp1$Day29bindSpike, tmp2$Day29bindSpike)
 ```
 
-##
+## When is Delta wave in RSA?
 
-
-When is Delta wave in RSA?
 ```{r}
 with(subset(dat_proc$EventTimePrimaryD29, Trt==1 & Region==2 & ph1.D29), table(seq1.variant.hotdeck1, EventIndPrimaryIncludeNotMolecConfirmedD1))
 
 subset(dat_proc, Trt==1 & EventIndPrimaryIncludeNotMolecConfirmedD1==0 & Region==2 & seq1.variant.hotdeck1=="Delta", EventTimePrimaryD29)
 ```
 
+
+## Others
 
 ```{r, echo=FALSE, include=FALSE}
 

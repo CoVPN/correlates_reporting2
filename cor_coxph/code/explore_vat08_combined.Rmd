@@ -72,20 +72,199 @@ summary(tmp$EnrollmentDate + tmp$EventTimeOmicronD43M6hotdeck10)
 ```
 
 Baseline immunity pattern
+
 ```{r}
-for (st in 1:2) {
-par(mfrow=c(2,3), mgp=c(2,1,0), oma=c(0,0,0.7,0))
-dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph1.D43)
-plot(density(dat$Bpseudoneutid50_BA.1, na.rm=T), main="Bpseudoneutid50_BA.1")
-plot(density(dat$Bpseudoneutid50, na.rm=T), main="Bpseudoneutid50")
-plot(dat$Bpseudoneutid50_BA.1, dat$Bpseudoneutid50)
+st=2
+myfigure(mfrow=c(2,4), mar=c(4,2,2,1), oma=c(0,1,2,0), width=10, height=5.5)
+par(mgp=c(2,1,0))
 
-plot(density(dat$BbindSpike_omicron, na.rm=T), main="BbindSpike_omicron")
-plot(density(dat$BbindSpike, na.rm=T), main="BbindSpike")
-plot(dat$BbindSpike_omicron, dat$BbindSpike)
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.nAb)
+wt=dat$wt.D22.nAb/sum(dat$wt.D22.nAb)
+lim=c(0.9,5.3)
 
-title(main="Stage "%.%st, outer=T)
-}
+xlim=c()
+plot(density(dat$Bpseudoneutid50, weights=wt), main="nAb-ID50 Reference", xlab="")
+title(ylab="    density                                                              density", line=0, outer=T)
+plot(density(dat$Bpseudoneutid50_BA.1,   weights=wt), main="nAb-ID50 BA.1", xlab="")
+plot(density(dat$Bpseudoneutid50_BA.2,   weights=wt), main="nAb-ID50 BA.2", xlab="")
+plot(density(dat$Bpseudoneutid50_BA.4.5, weights=wt), main="nAb-ID50 BA.4.5", xlab="")
+
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.bAb)
+wt=dat$wt.D22.bAb/sum(dat$wt.D22.bAb)
+lim=c(1.9,6.3)
+
+plot(density(dat$BbindSpike,         weights=wt), main="bAb Index", xlab="")
+plot(density(dat$BbindSpike_delta1,  weights=wt), main="bAb Delta", xlab="")
+plot(density(dat$BbindSpike_omicron, weights=wt), main="bAb Omicron", xlab="")
+
+title(main="Distribution of Baseline Markers in Stage 2", outer=T)
+
+mydev.off(file="~/correlates_reporting2/cor_coxph/output/vat08_combined/stage2_baseline_marker_dist")
+```
+
+
+```{r}
+myfigure(mfrow=c(2,3), mar=c(4,2,2,1), oma=c(0,1,2,0), width=8, height=5.5)
+par(mgp=c(2,1,0))
+lim=c(1.9,6.3)
+
+st=1
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.bAb)
+wt=dat$wt.D22.bAb/sum(dat$wt.D22.bAb)
+
+plot(density(dat$BbindSpike,         weights=wt), main="bAb Index", xlab="", xlim=lim)
+title(ylab="       Stage 2 density                                         Stage 1 density", line=0, outer=T)
+plot(density(dat$BbindSpike_delta1,  weights=wt), main="bAb Delta", xlab="", xlim=lim)
+plot(density(dat$BbindSpike_omicron, weights=wt), main="bAb Omicron", xlab="", xlim=lim)
+
+st=2
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.bAb)
+wt=dat$wt.D22.bAb/sum(dat$wt.D22.bAb)
+
+plot(density(dat$BbindSpike,         weights=wt), main="bAb Index", xlab="", xlim=lim)
+plot(density(dat$BbindSpike_delta1,  weights=wt), main="bAb Delta", xlab="", xlim=lim)
+plot(density(dat$BbindSpike_omicron, weights=wt), main="bAb Omicron", xlab="", xlim=lim)
+
+title(main="Distribution of Baseline bAb Markers in Stage 1 and 2", outer=T)
+
+mydev.off(file="~/correlates_reporting2/cor_coxph/output/vat08_combined/stage1_2_baseline_bAb_dist")
+
+```
+
+
+
+```{r}
+myfigure(mfrow=c(2,4), mar=c(4,2,2,1), oma=c(0,1,2,0), width=10, height=5.5)
+par(mgp=c(2,1,0))
+lim=c(0.9,5.3)
+
+st=1
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.st1.nAb.batch0and1)
+wt=dat$wt.D22.st1.nAb.batch0and1/sum(dat$wt.D22.st1.nAb.batch0and1)
+
+plot(density(dat$Bpseudoneutid50,         weights=wt), main="nAb-ID50 Reference", xlab="", xlim=lim)
+title(ylab="       Stage 2 density                                         Stage 1 density", line=0, outer=T)
+# plot(density(dat$Bpseudoneutid50_BA.1,  weights=wt), main="nAb-ID50 BA.1", xlab="", xlim=lim)
+# plot(density(dat$Bpseudoneutid50_BA.2, weights=wt), main="nAb-ID50 BA.2", xlab="", xlim=lim)
+# plot(density(dat$Bpseudoneutid50_BA.4.5, weights=wt), main="nAb-ID50 BA.4.5", xlab="", xlim=lim)
+empty.plot()
+empty.plot()
+empty.plot()
+
+st=2
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.nAb)
+wt=dat$wt.D22.nAb/sum(dat$wt.D22.nAb)
+
+plot(density(dat$Bpseudoneutid50,         weights=wt), main="nAb-ID50 Reference", xlab="", xlim=lim)
+title(ylab="       Stage 2 density                                         Stage 1 density", line=0, outer=T)
+plot(density(dat$Bpseudoneutid50_BA.1,  weights=wt), main="nAb-ID50 BA.1", xlab="", xlim=lim)
+plot(density(dat$Bpseudoneutid50_BA.2, weights=wt), main="nAb-ID50 BA.2", xlab="", xlim=lim)
+plot(density(dat$Bpseudoneutid50_BA.4.5, weights=wt), main="nAb-ID50 BA.4.5", xlab="", xlim=lim)
+
+title(main="Distribution of Baseline nAb Markers in Stage 1 and 2", outer=T)
+
+mydev.off(file="~/correlates_reporting2/cor_coxph/output/vat08_combined/stage1_2_baseline_nAb_dist")
+
+ 
+# par(mfrow=c(2,3), mgp=c(2,1,0), oma=c(0,0,0.7,0))
+# 
+# dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D43.st1.nAb.batch0and1)
+# 
+# plot(density(dat$Bpseudoneutid50_BA.1, na.rm=T), main="Bpseudoneutid50_BA.1")
+# plot(density(dat$Bpseudoneutid50, na.rm=T), main="Bpseudoneutid50")
+# 
+# # plot(dat$Bpseudoneutid50_BA.1, dat$Bpseudoneutid50)
+# 
+# plot(density(dat$BbindSpike_omicron, na.rm=T), main="BbindSpike_omicron")
+# plot(density(dat$BbindSpike, na.rm=T), main="BbindSpike")
+# plot(dat$BbindSpike_omicron, dat$BbindSpike)
+# 
+# title(main="Stage "%.%st, outer=T)
+
+```
+
+
+Estimating proportion of the Stage 2 participants that were likely infected with omicron at enrollment.
+```{r}
+library(Hmisc)
+
+st=2
+
+# myfigure(mfrow=c(2,4), mar=c(4,2,2,1), oma=c(0,1,2,0), width=10, height=5.5)
+par(mgp=c(2,1,0))
+
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.bAb)
+wt=dat$wt.D22.bAb/sum(dat$wt.D22.bAb)
+# lim=c(1.9,6.3) # bAb
+# lim=c(0.9,5.3) # nAb
+
+
+dat2=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.nAb)
+wt=dat2$wt.D22.nAb/sum(dat2$wt.D22.nAb)
+lim=c(0.9,5.3) # nAb
+
+summary(dat2$Bpseudoneutid50_BA.1)
+
+wtd.mean(dat2$Bpseudoneutid50_BA.1>1.302, wt)
+wtd.mean(dat2$Bpseudoneutid50_BA.2>1.302, wt)
+wtd.mean(dat2$Bpseudoneutid50_BA.4.5>1.302, wt)
+
+wtd.mean(dat2$Bpseudoneutid50_BA.1>1.302 | dat2$Bpseudoneutid50_BA.2>1.302 | dat2$Bpseudoneutid50_BA.4.5>1.302, wt)
+wtd.mean(dat2$Bpseudoneutid50_BA.1>1.302 & dat2$Bpseudoneutid50_BA.2>1.302 & dat2$Bpseudoneutid50_BA.4.5>1.302, wt)
+
+kp  = dat2$Bpseudoneutid50_BA.1>1.302 & dat2$Bpseudoneutid50_BA.2>1.302 & dat2$Bpseudoneutid50_BA.4.5>1.302
+kp2 = dat2$Bpseudoneutid50_BA.1>1.302 | dat2$Bpseudoneutid50_BA.2>1.302 | dat2$Bpseudoneutid50_BA.4.5>1.302
+
+par(mfrow=c(3,2))
+for (l in seq(15,40,by=5)) wtd.hist(dat2$Bpseudoneutid50, breaks=seq(lim[1], lim[2], length=l), weight=wt)
+
+
+par(mfrow=c(1,2))
+lab="Baseline nAb-ID50 ancestral"
+l=40
+wtd.hist(dat2$Bpseudoneutid50, breaks=seq(lim[1], lim[2], length=l), weight=wt, freq=T, main="BA.1 & BA.2 & BA.4.5 POS", xlab=lab)
+title(main="in Green: 35% ", line=-0.2)
+wtd.hist(dat2$Bpseudoneutid50[!kp], breaks=seq(lim[1], lim[2], length=l), weight=wt[!kp], freq=T, col=rgb(1,0,0,.5), add=T)
+wtd.hist(dat2$Bpseudoneutid50[kp], breaks=seq(lim[1], lim[2], length=l), weight=wt[kp], freq=T, col=rgb(0,1,0,.5), add=T)
+l=40
+wtd.hist(dat2$Bpseudoneutid50, breaks=seq(lim[1], lim[2], length=l), weight=wt, freq=T, main="BA.1 or BA.2 or BA.4.5 POS", xlab=lab)
+title(main="in Green: 43%", line=-0.2)
+wtd.hist(dat2$Bpseudoneutid50[!kp2], breaks=seq(lim[1], lim[2], length=l), weight=wt[!kp2], freq=T, col=rgb(1,0,0,.5), add=T)
+wtd.hist(dat2$Bpseudoneutid50[kp2], breaks=seq(lim[1], lim[2], length=l), weight=wt[kp2], freq=T, col=rgb(0,1,0,.5), add=T)
+
+```
+
+```{r}
+library(Hmisc)
+
+st=2
+
+# myfigure(mfrow=c(2,4), mar=c(4,2,2,1), oma=c(0,1,2,0), width=10, height=5.5)
+par(mgp=c(2,1,0))
+
+dat=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.bAb)
+wt=dat$wt.D22.bAb/sum(dat$wt.D22.bAb)
+
+lim=c(1.9,6.3) # bAb
+
+summary(dat$BbindSpike_omicron)
+
+wtd.mean(dat$BbindSpike_omicron>2.402, wt)
+
+kp  = dat$BbindSpike_omicron>2.402
+
+# find the right number of breaks
+par(mfrow=c(3,2))
+for (l in seq(30,55,by=5)) wtd.hist(dat$BbindSpike, breaks=seq(lim[1], lim[2], length=l), weight=wt)
+
+par(mfrow=c(1,2))
+lab="Baseline bindSpike ancestral"
+l=40
+wtd.hist(dat$BbindSpike, breaks=seq(lim[1], lim[2], length=l), weight=wt, freq=T, main="bindSpike_Omicron POS", xlab=lab)
+title(main="in Green: 66% ", line=-0.2)
+wtd.hist(dat$BbindSpike[!kp], breaks=seq(lim[1], lim[2], length=l), weight=wt[!kp], freq=T, col=rgb(1,0,0,.5), add=T)
+wtd.hist(dat$BbindSpike[kp], breaks=seq(lim[1], lim[2], length=l), weight=wt[kp], freq=T, col=rgb(0,1,0,.5), add=T)
+
 ```
 
 

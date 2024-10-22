@@ -50,8 +50,8 @@ for (a in "Day29"%.%assays) {
 }
 
 # add placebo counterpart
-dat.vacc.seroneg.allregions=subset(dat_proc, Trt==1 & ph1)
-dat.plac.seroneg.allregions=subset(dat_proc, Trt==0 & ph1)
+dat.vacc.seroneg.allregions=subset(dat_proc, Trt==1 & ph1) # posthoc revision-time analysis  & Sex==0
+dat.plac.seroneg.allregions=subset(dat_proc, Trt==0 & ph1) # posthoc revision-time analysis  & Sex==0
 
 # for validation use
 rv=list() 
