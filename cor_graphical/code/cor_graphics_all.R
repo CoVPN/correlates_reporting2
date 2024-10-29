@@ -10,6 +10,7 @@ library(gridExtra)
 library(wCorr) # weighted correlation
 library(ggnewscale) # for new_scale_color() 
 library(spatstat.geom) # for ewcdf
+library(tidyverse)
 #install.packages("reldist", repos="http://cran.us.r-project.org")
 #library(reldist) # for wtd.quantile
 #install.packages("lemon", repos="http://cran.us.r-project.org")
@@ -234,6 +235,70 @@ if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")){
 
 
 ###### Set 2 plots: Longitudinal violin plots, by cases and non-cases (by naive/non-naive, vaccine/placebo)
+# adhoc for ENSEMBLE variant: requestd by Ying on 10/22/2024 for the manuscript 
+if (COR=="D29VLvariant"){
+    # Anti Spike IgG and nAb-ID50, use the imp1 and select a random 25 of participants who have both D29 and D71
+    # please randomly sample 25 participants from controls (EventIndPrimaryD29=0) that include D29, D71 and M6 measures (and with M6 visit time <= EventTimePrimaryD29).
+    # per-protocol baseline SARS-CoV-2 seronegative vaccine recipients
+    if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; names(pos.cutoffs) <- assays}
+    
+    set.seed(20241029)
+    variant_adhoc_1 = dat_proc %>%
+        filter(Perprotocol==1 & Trt==1 & Bserostatus==0 & EventIndPrimaryD29 == 0) %>%
+        filter(NumberdaysD1toM6 - NumberdaysD1toD29 <= EventTimePrimaryD29) %>%
+        select(Ptid, Day29pseudoneutid50_1, Day71pseudoneutid50, Mon6pseudoneutid50) %>%
+        filter(complete.cases(Day29pseudoneutid50_1, Day71pseudoneutid50, Mon6pseudoneutid50)) %>%
+        sample_n(25) %>%
+        pivot_longer(!Ptid, names_to = "time", values_to = "value") %>%
+        mutate(response = 1,
+               N_RespRate = " ",
+               lbval = log10(uloqs["pseudoneutid50"]),
+               lb = "ULoQ",
+               lbval2 = log10(lods["pseudoneutid50"]),
+               lb2 = "LoD",
+               cohort_event = "Non-Cases",
+               assay = "pseudoneutid50",
+               time = gsub("pseudoneutid50|pseudoneutid50_1","", time))
+    variant_adhoc_2 = dat_proc %>%
+        filter(Perprotocol==1 & Trt==1 & Bserostatus==0 & EventIndPrimaryD29 == 0) %>%
+        filter(NumberdaysD1toM6 - NumberdaysD1toD29 <= EventTimePrimaryD29) %>%
+        select(Ptid, Day29bindSpike_1, Day71bindSpike, Mon6bindSpike) %>%
+        filter(complete.cases(Day29bindSpike_1, Day71bindSpike)) %>%
+        sample_n(25) %>%
+        pivot_longer(!Ptid, names_to = "time", values_to = "value") %>%
+        mutate(response = 1,
+               N_RespRate = " ",
+               lbval = log10(uloqs["bindSpike"]),
+               lb = "ULoQ",
+               lbval2 = log10(pos.cutoffs["bindSpike"]),
+               lb2 = "Pos.Cut",
+               cohort_event = "Non-Cases",
+               assay = "bindSpike",
+               time = gsub("bindSpike|bindSpike_1","", time))
+    
+    variant_adhoc = variant_adhoc_1 %>% bind_rows(variant_adhoc_2)
+    max( variant_adhoc$value, na.rm=T)
+    
+    f_2_adhoc = f_longitude_by_assay(
+        dat = variant_adhoc,
+        x.var = "time",
+        x.lb = c("Day29","Day71","Mon6"),
+        facet.x.var = vars(assay_label_short),
+        facet.y.var = NULL,
+        assays = c("bindSpike","pseudoneutid50"),
+        panel.text.size = 8,
+        split.var = "N_RespRate",
+        ylim = c(0, NA),
+        ybreak = c(0, 1, 2, 3),
+        axis.text.x.size = 25,
+        lgdbreaks = "Non-Cases",
+        lgdlabels = c("Non-Cases"="Non-Cases"),
+        chtcols = c("#FF6F1B","#FF6F1B"),
+        chtpchs = 19)
+    file_name = "adhoc_longitudinal_vaccine_baselineneg_control_random25.pdf"
+    ggsave(plot = f_2_adhoc[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 12)
+        
+}
 set2.1_assays = assays[!assays %in% c("bindSpike_mdw")]
 if(attr(config,"config") == "prevent19_stage2"){set2.1_assays <- set2.1_assays[grepl("Delta$|Delta1$|D614", set2.1_assays)]}
 
