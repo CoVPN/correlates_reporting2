@@ -262,8 +262,8 @@ if (COR=="D29VLvariant"){
     variant_adhoc_2 = dat_proc %>%
         filter(Perprotocol==1 & Trt==1 & Bserostatus==0 & EventIndPrimaryD29 == 0) %>%
         filter(NumberdaysD1toM6 - NumberdaysD1toD29 <= EventTimePrimaryD29) %>%
-        select(Ptid, Day29bindSpike_1, Day71bindSpike, Mon6bindSpike) %>%
-        filter(complete.cases(Day29bindSpike_1, Day71bindSpike)) %>%
+        select(Ptid, Day29bindSpike_1, Day71bindSpike, Mon6bindSpike_D614) %>%
+        filter(complete.cases(Day29bindSpike_1, Day71bindSpike, Mon6bindSpike_D614)) %>%
         sample_n(25) %>%
         pivot_longer(!Ptid, names_to = "time", values_to = "value") %>%
         mutate(response = 1,
@@ -274,7 +274,7 @@ if (COR=="D29VLvariant"){
                lb2 = "Pos.Cut",
                cohort_event = "Non-Cases",
                assay = "bindSpike",
-               time = gsub("bindSpike|bindSpike_1","", time))
+               time = gsub("bindSpike|bindSpike_1|bindSpike_D614","", time))
     
     variant_adhoc = variant_adhoc_1 %>% bind_rows(variant_adhoc_2)
     max( variant_adhoc$value, na.rm=T)
