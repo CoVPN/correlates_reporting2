@@ -244,7 +244,7 @@ if (COR=="D29VLvariant"){
     
     set.seed(20241029)
     variant_adhoc_1 = dat_proc %>%
-        filter(Perprotocol==1 & Trt==1 & Bserostatus==0 & EventIndPrimaryD29 == 0) %>%
+        filter(Perprotocol==1 & Trt==1 & Bserostatus==0 & EventIndPrimaryD29 == 0 & ph2.D29==1) %>%
         filter(NumberdaysD1toM6 - NumberdaysD1toD29 <= EventTimePrimaryD29) %>%
         select(Ptid, Day29pseudoneutid50_1, Day71pseudoneutid50, Mon6pseudoneutid50) %>%
         filter(complete.cases(Day29pseudoneutid50_1, Day71pseudoneutid50, Mon6pseudoneutid50)) %>%
@@ -260,7 +260,7 @@ if (COR=="D29VLvariant"){
                assay = "pseudoneutid50",
                time = gsub("pseudoneutid50|pseudoneutid50_1","", time))
     variant_adhoc_2 = dat_proc %>%
-        filter(Perprotocol==1 & Trt==1 & Bserostatus==0 & EventIndPrimaryD29 == 0) %>%
+        filter(Perprotocol==1 & Trt==1 & Bserostatus==0 & EventIndPrimaryD29 == 0 & ph2.D29==1) %>%
         filter(NumberdaysD1toM6 - NumberdaysD1toD29 <= EventTimePrimaryD29) %>%
         select(Ptid, Day29bindSpike_1, Day71bindSpike, Mon6bindSpike_D614) %>%
         filter(complete.cases(Day29bindSpike_1, Day71bindSpike, Mon6bindSpike_D614)) %>%
