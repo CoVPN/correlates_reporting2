@@ -460,7 +460,9 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
   # define response rate:
   
   #### for figures 1
-  groupby_vars1 = c("Trt", "Bserostatus", "time", "assay")
+  if (attr(config,"config") == "vat08_combined") {
+    groupby_vars1 = c("Trt", "Bserostatus", "time", "assay", "Trialstage")
+  } else {groupby_vars1 = c("Trt", "Bserostatus", "time", "assay")}
   
   # define response rate
   dat.longer.immuno.subset.plot1 <- get_desc_by_group(dat.longer.immuno.subset %>% filter(!is.na(value)), groupby_vars1)

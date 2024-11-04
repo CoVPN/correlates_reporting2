@@ -38,6 +38,7 @@ if (study_name!="IARCHPV") { # IARCHPV doesn't have high risk variable
 }
 if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant") {
   longer_cor_data_plot_variant <- readRDS(here("data_clean", "longer_cor_data_plot_variant.rds"))
+  longer_cor_data_plot_variant_2 <- readRDS(here("data_clean", "longer_cor_data_plot_variant_2.rds"))
 }
 
 ### variables for looping
@@ -531,13 +532,12 @@ if (COR != "D29VLvariant") { # D29VLvariant requires non-standard figures
 
 if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant") {
   
-  # reorder the cohort_event variable to make Non-Cases shown first
-  longer_cor_data_plot_variant$cohort_event <- relevel(longer_cor_data_plot_variant$cohort_event, "Non-Cases")
-  
   for (ab in c("nAb", "bAb")){
     
     for (reg in c(0, 1, 2)) {
       
+      for (sex in c(99, 0, 1)) {
+        
       if (reg==0 && ab=="nAb") next # doesn't need nAb for US
       
       reg_lb = case_when(reg==0 ~ "NAM",
@@ -549,6 +549,10 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
                               reg==1 ~ "Latin America",
                               reg==2 ~ "Southern Africa",
                               TRUE ~ "")
+      
+      sex_lb_long = case_when(sex==0 ~ "Males",
+                              sex==1 ~ "Females",
+                              TRUE ~ "")
     
       assay_subset <- if(ab=="bAb" && reg==0) {c("bindSpike","bindSpike_P.1")
         } else if(ab=="bAb" && reg==1) {c("bindSpike","bindSpike_B.1.621","bindSpike_P.1","bindSpike_C.37")
@@ -556,14 +560,21 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
         } else if (ab=="nAb" && reg==1) {c("pseudoneutid50","pseudoneutid50_Zeta","pseudoneutid50_Mu","pseudoneutid50_Gamma","pseudoneutid50_Lambda")
         } else if (ab=="nAb" && reg==2) {c("pseudoneutid50","pseudoneutid50_Delta","pseudoneutid50_Beta")}
       
-      violin_plot <- longer_cor_data_plot_variant %>%
-        filter(assay %in% assay_subset & Region == reg & !is.na(value)) %>%
+      if (sex %in% c(0, 1)){
+        violin_plot_ = longer_cor_data_plot_variant_2
+      } else {violin_plot_ = longer_cor_data_plot_variant}
+      
+      # reorder the cohort_event variable to make Non-Cases shown first
+      violin_plot_$cohort_event <- relevel(violin_plot_$cohort_event, "Non-Cases")
+      
+      violin_plot <- violin_plot_ %>%
+        filter(assay %in% assay_subset & Region == reg & !is.na(value) & Sex %in% case_when(sex==99 ~ c(0, 1), TRUE ~ sex)) %>%
         mutate(assay = factor(assay, levels = assay_subset, labels = subset(assay_metadata, assay %in% assay_subset)$assay_label))
       
       p <- violin_box_plot(dat=violin_plot, 
                            dat.sample=violin_plot,
                            ytitle=ifelse(ab=="nAb", "Pseudovirus-nAb Levels (AU/ml)", "Anti Spike IgG Levels (AU/ml)"),
-                           toptitle=paste0(ifelse(ab=="nAb", "Pseudovirus-nAb", "Anti Spike IgG"), " Levels at Day29, in ", reg_lb_long),
+                           toptitle=paste0(ifelse(ab=="nAb", "Pseudovirus-nAb", "Anti Spike IgG"), " Levels at Day29, in ", reg_lb_long, ifelse(sex!=99, paste0(" ", sex_lb_long), "")),
                            x="cohort_event",
                            xtitle="Cohort",
                            facetby=as.formula(paste("~","assay")),
@@ -586,9 +597,10 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
                            xlabel=c("Non-Cases", "Post-Peak Cases"),
                            global.size=20
       )
-      file_name <- paste0("Violinbox_Day29_vaccine_bseroneg_", ab, "_", reg_lb, ".pdf")
+      file_name <- paste0("Violinbox_Day29_vaccine_bseroneg_", ab, "_", reg_lb, ifelse(sex!=99, paste0("_", tolower(sex_lb_long)), ""), ".pdf")
       suppressWarnings(ggsave2(plot = p, filename = paste0(save.results.to, file_name), width = 16, height = 11))
   
+      }
     }
   }
   
