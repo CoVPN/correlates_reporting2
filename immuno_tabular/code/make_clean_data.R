@@ -7,7 +7,7 @@ source(here::here("..", "_common.R")) #
 # Immunogenicity Tables
 
 # Reload clean_data
-base::load(here::here("data_clean", "params.Rdata"))
+base::load(here::here("data_clean", attr(config,"config"), "params.Rdata"))
 source(here::here("code", "make_functions.R"))
 
 library(tidyverse)
@@ -16,12 +16,13 @@ library(dplyr, warn.conflicts = FALSE)
 options(dplyr.summarise.inform = FALSE)
 
 # Read in original data
-dat <- read.csv(data_name)
+dat <- dat_proc
 
 # The stratified random cohort for immunogenicity
 
 ds_s <- dat %>%
-  dplyr::filter(ph1.immuno) %>%
+################################################################
+  dplyr::filter(ph1.immuno.D35) %>%
   mutate(
     raceC = as.character(race),
     ethnicityC = case_when(EthnicityHispanic==1 ~ "Hispanic or Latino",
@@ -60,7 +61,6 @@ ds_s <- dat %>%
 if(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "PREVENT19")){
   ds_s <- ds_s %>% 
     mutate(CountryC = labels.countries.ENSEMBLE[Country+1],
-           RegionC = labels.regions.ENSEMBLE[Region+1],
            URMC = case_when(URMforsubcohortsampling == 1 & Country ==0 ~ "Communities of Color",
                             URMforsubcohortsampling == 0 & Country ==0 ~ "White Non-Hispanic", 
                             TRUE ~ as.character(NA)),
@@ -74,8 +74,12 @@ if(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "PREVENT19")){
                            BMI>=18.5 ~ "Normal 18.5 $\\leq$ BMI < 25",
                            BMI<18.5 ~ "Underweight BMI < 18.5")
            )
-}
+} 
 
+if(study_name %in% c("ENSEMBLE", "MockENSEMBLE")){
+  ds_s <- ds_s %>% 
+    mutate(RegionC = labels.regions.ENSEMBLE[Region+1])
+} 
 
 if(study_name %in% c("PROFISCOV")){
   ds_s <- ds_s %>% 
@@ -95,7 +99,10 @@ if(study_name %in% c("PROFISCOV")){
 }
 # Step2: Responders, % >=2FR, % >=4FR, % >=2lloq, % >=4lloq
 # Post baseline visits
-ds <- getResponder(ds_s, times=grep("Day", times, value=T), lloqs=lloqs,
+
+pos.cutoffs <- assay_metadata$pos.cutoff
+names(pos.cutoffs) <- assay_metadata$assay
+ds <- getResponder(ds_s, times=grep("Day", times, value=T), 
                    assays=assays, pos.cutoffs = pos.cutoffs)
 
 subgrp <- c(
@@ -137,6 +144,14 @@ grplev <- c("", labels.age, "At-risk", "Not at-risk",
 
 names(grplev) <- c("All participants", grplev[-1])
 
+# path for tables
+save.results.to <- here::here("data_clean")
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
+save.results.to <- paste0(here::here("data_clean"), "/", attr(config,"config"))
+
+if (!dir.exists(save.results.to))  dir.create(save.results.to)
+print(paste0("save.results.to equals ", save.results.to))
+
 save(ds, assays, assays_col, labels_all, subgrp, grplev, tlf,
-     file = here::here("data_clean", "ds_all.Rdata"))
+     file = file.path(save.results.to, "ds_all.Rdata"))
 
