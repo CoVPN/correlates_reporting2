@@ -1014,7 +1014,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
               as.data.frame()
             
             # stack with max and min values
-            find_max = round(max(dat.spider.by.time %>% summarize(across(where(is.numeric), max, na.rm = TRUE))), 1)
+            find_max = round(max(dat.spider.by.time %>% summarise(across(where(is.numeric), ~ max(.x, na.rm = TRUE)))), 1)
             
             max_min <- rbind(rep(find_max,
                                  ncol(dat.spider.by.time)), 
