@@ -61,6 +61,18 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 
 ### For manuscript
 
+trial stage 1 Batch 0 assay dates
+```{r}
+tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & Trt==1 & ph2.D43.st1.nAb.batch0and1)
+
+library(readxl)
+
+dates=as.data.frame(read_xlsx("~/VAT08_SCHARP Request_MGRM_updated_10182024.xlsx", sheet=2))
+
+tmp$DATE_ASSAY = dates$DATE_ASSAY [match(tmp$SUBJID, dates$SUBJID)]
+
+```
+
 Admin censoring dates
 ```{r}
 tmp=subset(dat_proc, Trialstage==1 & Bserostatus==1 & ph1.D43)
@@ -183,8 +195,53 @@ mydev.off(file="~/correlates_reporting2/cor_coxph/output/vat08_combined/stage1_2
 
 ```
 
+### Estimating proportion of the Stage 2 participants that were likely infected with omicron at enrollment
 
-Estimating proportion of the Stage 2 participants that were likely infected with omicron at enrollment.
+
+```{r}
+library(Hmisc)
+
+st=1
+
+# myfigure(mfrow=c(2,4), mar=c(4,2,2,1), oma=c(0,1,2,0), width=10, height=5.5)
+par(mgp=c(2,1,0))
+
+dat2=subset(dat_proc, Trialstage==st & Bserostatus==1 & ph2.D22.nAb)
+wt=dat2$wt.D22.nAb/sum(dat2$wt.D22.nAb)
+lim=c(0.9,5.3) # nAb
+
+summary(dat2$Bpseudoneutid50_BA.1)
+
+wtd.mean(dat2$Bpseudoneutid50>1.302, wt)
+wtd.mean(dat2$Bpseudoneutid50_BA.1>1.302, wt)
+wtd.mean(dat2$Bpseudoneutid50_BA.2>1.302, wt)
+wtd.mean(dat2$Bpseudoneutid50_BA.4.5>1.302, wt)
+
+wtd.mean(dat2$Bpseudoneutid50_BA.1>1.302 | dat2$Bpseudoneutid50_BA.2>1.302 | dat2$Bpseudoneutid50_BA.4.5>1.302, wt)
+wtd.mean(dat2$Bpseudoneutid50_BA.1>1.302 & dat2$Bpseudoneutid50_BA.2>1.302 & dat2$Bpseudoneutid50_BA.4.5>1.302, wt)
+
+kp  = dat2$Bpseudoneutid50_BA.1>1.302 & dat2$Bpseudoneutid50_BA.2>1.302 & dat2$Bpseudoneutid50_BA.4.5>1.302
+kp2 = dat2$Bpseudoneutid50_BA.1>1.302 | dat2$Bpseudoneutid50_BA.2>1.302 | dat2$Bpseudoneutid50_BA.4.5>1.302
+
+par(mfrow=c(3,2))
+for (l in seq(15,40,by=5)) wtd.hist(dat2$Bpseudoneutid50, breaks=seq(lim[1], lim[2], length=l), weight=wt)
+
+
+par(mfrow=c(1,2))
+lab="Baseline nAb-ID50 ancestral"
+l=40
+wtd.hist(dat2$Bpseudoneutid50, breaks=seq(lim[1], lim[2], length=l), weight=wt, freq=T, main="BA.1 & BA.2 & BA.4.5 POS", xlab=lab)
+title(main="in Green: 12% ", line=-0.2)
+wtd.hist(dat2$Bpseudoneutid50[!kp], breaks=seq(lim[1], lim[2], length=l), weight=wt[!kp], freq=T, col=rgb(1,0,0,.5), add=T)
+wtd.hist(dat2$Bpseudoneutid50[kp], breaks=seq(lim[1], lim[2], length=l), weight=wt[kp], freq=T, col=rgb(0,1,0,.5), add=T)
+l=40
+wtd.hist(dat2$Bpseudoneutid50, breaks=seq(lim[1], lim[2], length=l), weight=wt, freq=T, main="BA.1 or BA.2 or BA.4.5 POS", xlab=lab)
+title(main="in Green: 17%", line=-0.2)
+wtd.hist(dat2$Bpseudoneutid50[!kp2], breaks=seq(lim[1], lim[2], length=l), weight=wt[!kp2], freq=T, col=rgb(1,0,0,.5), add=T)
+wtd.hist(dat2$Bpseudoneutid50[kp2], breaks=seq(lim[1], lim[2], length=l), weight=wt[kp2], freq=T, col=rgb(0,1,0,.5), add=T)
+
+```
+
 ```{r}
 library(Hmisc)
 
@@ -205,6 +262,7 @@ lim=c(0.9,5.3) # nAb
 
 summary(dat2$Bpseudoneutid50_BA.1)
 
+wtd.mean(dat2$Bpseudoneutid50>1.302, wt)
 wtd.mean(dat2$Bpseudoneutid50_BA.1>1.302, wt)
 wtd.mean(dat2$Bpseudoneutid50_BA.2>1.302, wt)
 wtd.mean(dat2$Bpseudoneutid50_BA.4.5>1.302, wt)

@@ -2,8 +2,14 @@
 all: tables_output
 
 ## tables_output    : make summary tables and save data to output/
-tables_output: code/make_table_all.R clean_data
+tables_output: 
+
+ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
+	Rscript code/make_table_all_stg2.R D35prevent19_stage2_delta 
+	Rscript code/make_table_all_stg2.R D35prevent19_stage2_severe 
+else code/make_table_all.R clean_data
 	Rscript code/make_table_all.R
+endif
 
 ## clean_data       : clean up and reformat input data, and save to data_clean/
 clean_data: code/make_clean_data.R set_params

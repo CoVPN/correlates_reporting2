@@ -21,8 +21,7 @@ getResponder <- function(data,
                          folds=c(2, 4),
                          grtns=c(2, 4),
                          responderFR = 4,
-                         pos.cutoffs = pos.cutoffs,
-                         na.rm=F) {
+                         pos.cutoffs = pos.cutoffs) {
 
   # cutoff <- get(paste0("l", cutoff.name, "s"))
   for (i in times){
@@ -37,21 +36,12 @@ getResponder <- function(data,
       if (bl %in% names(data)){
         data[, bl] <- pmin(data[, bl], log10(uloqs[j]))
         data[, delta] <- ifelse(10^data[, post] < cutoff, log10(cutoff/2), data[, post])-ifelse(10^data[, bl] < cutoff, log10(cutoff/2), data[, bl])
-        
         for (k in grtns){
           data[, paste0(post, "FR", k)] <- as.numeric(10^data[, delta] >= k)
         }
-        
-        if (na.rm) {
-          if ((n_na <- sum(is.na(data[, bl] & !is.na(data[, post]))))!=0){
-            cat(n_na, "are set to NA for", post, "due to NA at baseline\n")
-          }
-          data[is.na(data[, bl]), post] <- NA
-        }
-        
       }
       
-      if((grepl("bind|ACE", j) | COR == "D29VLvariant" | grepl("stage2", COR)) & attr(config,"config")!="vat08_combined"){
+      if(grepl("bind", j) | COR == "D29VLvariant" | grepl("stage2", COR)){
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(cutoff))
       } else {
       data[, paste0(post, "Resp")] <- as.numeric(
@@ -74,21 +64,36 @@ getResponder <- function(data,
 #' 
 get_rr <- function(dat, v, subs, sub.by, strata, weights, subset){
   rpcnt <- NULL
-  dat_twophase <- dat %>% 
-    group_by_at(strata) %>% 
-    mutate(ph1cnt=n(), ph2cnt=sum(!!as.name(subset), na.rm = T)) %>% 
-    filter(ph1cnt!=0 & ph2cnt!=0) %>% 
-    select_at(gsub("`", "", c("Ptid", strata, weights, subset, sub.by, v, subs)))
   
-  design.full <- twophase(id=list(~Ptid, ~Ptid), 
-                          strata=list(NULL, as.formula(sprintf("~%s", strata))),
-                          weights=list(NULL, as.formula(sprintf("~%s", weights))),
-                          method="simple",
-                          subset=as.formula(sprintf("~%s", subset)),
-                          data=dat_twophase 
-                          )
-
   for (i in v){
+
+    iind <- paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", unique(labels_all$variant[labels_all$resp_cat==i]))
+
+    if (!grepl("Delta Score", iind)){
+      dat_twophase <- dat %>% 
+        mutate(Case=case_when(Case=="Cases" & !!as.name(iind)==1 ~ "Cases", 
+                              TRUE ~ "Non-Cases")) %>% 
+        group_by_at(strata) %>% 
+        mutate(ph1cnt=n(), ph2cnt=sum(!!as.name(subset), na.rm = T)) %>% 
+        filter(ph1cnt!=0 & ph2cnt!=0) %>% 
+        select_at(gsub("`", "", c("Ptid", strata, weights, subset, sub.by, v, subs)))
+    } else {
+      dat_twophase <- dat %>% 
+        group_by_at(strata) %>% 
+        mutate(ph1cnt=n(), ph2cnt=sum(!!as.name(subset), na.rm = T)) %>% 
+        filter(ph1cnt!=0 & ph2cnt!=0) %>% 
+        select_at(gsub("`", "", c("Ptid", strata, weights, subset, sub.by, v, subs)))
+      
+    }
+    
+    design.full <- twophase(id=list(~Ptid, ~Ptid), 
+                            strata=list(NULL, as.formula(sprintf("~%s", strata))),
+                            weights=list(NULL, as.formula(sprintf("~%s", weights))),
+                            method="simple",
+                            subset=as.formula(sprintf("~%s", subset)),
+                            data=dat_twophase 
+    )
+    
     design.ij <- subset(design.full, eval(parse(text=sprintf("!is.na(%s)",i))))
     for (j in subs){
       # cat(i,"--",j,"\n")
@@ -97,7 +102,7 @@ get_rr <- function(dat, v, subs, sub.by, strata, weights, subset){
                    design=design.ij,
                    svyciprop, vartype="ci", na.rm=T)
       
-      retn <- dat %>%
+      retn <- dat_twophase %>%
         dplyr::filter(!!as.name(subset) & !is.na(!!as.name(i))) %>%
         mutate(rspndr =!!as.name(i)*!!as.name(weights)) %>%
         group_by_at(gsub("`", "", c(j, sub.by))) %>%
@@ -129,19 +134,35 @@ get_rr <- function(dat, v, subs, sub.by, strata, weights, subset){
 #' 
 get_gm <- function(dat, v, subs, sub.by, strata, weights, subset){
   rgm <- NULL
-  dat_twophase <- dat %>% 
-    group_by_at(strata) %>% 
-    mutate(ph1cnt=n(), ph2cnt=sum(!!as.name(subset), na.rm = T)) %>% 
-    filter(ph1cnt!=0 & ph2cnt!=0) %>% 
-    select_at(gsub("`", "", c("Ptid", strata, weights, subset, sub.by, v, subs)))
-  
-  design.full <- twophase(id=list(~Ptid, ~Ptid), 
-                          strata=list(NULL, as.formula(sprintf("~%s", strata))),
-                          weights=list(NULL, as.formula(sprintf("~%s", weights))),
-                          method="simple",
-                          subset=as.formula(sprintf("~%s", subset)),
-                          data=dat_twophase)
+
   for (i in v){
+
+    iind <- paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", unique(labels_all$variant[labels_all$mag_cat==i]))
+    
+    if (!grepl("Delta Score", iind)){
+      dat_twophase <- dat %>% 
+        mutate(Case=case_when(Case=="Cases" & !!as.name(iind)==1 ~ "Cases", 
+                              TRUE ~ "Non-Cases")) %>% 
+        group_by_at(strata) %>% 
+        mutate(ph1cnt=n(), ph2cnt=sum(!!as.name(subset), na.rm = T)) %>% 
+        filter(ph1cnt!=0 & ph2cnt!=0) %>% 
+        select_at(gsub("`", "", c("Ptid", strata, weights, subset, sub.by, v, subs)))
+    } else {
+      dat_twophase <- dat %>% 
+        group_by_at(strata) %>% 
+        mutate(ph1cnt=n(), ph2cnt=sum(!!as.name(subset), na.rm = T)) %>% 
+        filter(ph1cnt!=0 & ph2cnt!=0) %>% 
+        select_at(gsub("`", "", c("Ptid", strata, weights, subset, sub.by, v, subs)))
+      
+    }
+    
+    design.full <- twophase(id=list(~Ptid, ~Ptid), 
+                            strata=list(NULL, as.formula(sprintf("~%s", strata))),
+                            weights=list(NULL, as.formula(sprintf("~%s", weights))),
+                            method="simple",
+                            subset=as.formula(sprintf("~%s", subset)),
+                            data=dat_twophase)
+    
     design.ij <- subset(design.full, eval(parse(text=sprintf("!is.na(%s)", i))))
     for (j in subs){
       # cat(i,"--",j,"\n")
@@ -150,7 +171,7 @@ get_gm <- function(dat, v, subs, sub.by, strata, weights, subset){
                    design=design.ij,
                    svymean, vartype="ci", na.rm=T)
       
-      retn <- dat %>%
+      retn <- dat_twophase %>%
         dplyr::filter(!!as.name(subset) & !is.na(!!as.name(i))) %>%
         group_by_at(gsub("`", "", c(j, sub.by))) %>%
         summarise(N=n(), .groups="drop")
@@ -194,14 +215,25 @@ get_rgmt <- function(dat, v, groups, comp_lev, sub.by, strata, weights, subset){
     contrasts(dat[, gsub("`","",j)]) <- contr.treatment(2, base = 2)
     for (i in v){
       # cat(i,"--",j, comp_vs, "\n")
-      n.ij <- subset(dat, dat[, subset] & !is.na(dat[, gsub("`","",j)]) & !is.na(dat[, i])) %>% 
+
+      iind <- paste0("EventIndPrimaryIncludeNotMolecConfirmedD1_", unique(labels_all$variant[labels_all$mag_cat==i]))
+      
+      if (!grepl("Delta Score", iind)){
+        dat.ij <- dat %>% 
+          mutate(Case=case_when(Case=="Cases" & !!as.name(iind)==1 ~ "Cases", 
+                                TRUE ~ "Non-Cases")) 
+      } else {
+        dat.ij <- dat
+      }
+      
+      n.ij <- subset(dat.ij, dat.ij[, subset] & !is.na(dat.ij[, gsub("`","",j)]) & !is.na(dat.ij[, i])) %>% 
         group_by_at(gsub("`", "", sub.by), .drop=F) %>% 
         summarise(n.j=n_distinct(!!as.name(gsub("`","",j)))) %>% 
         filter(n.j==2) %>% 
         unite("all.sub.by", 1:length(sub.by), remove=F)
       
-      if (nrow(n.j)!=0){
-        dat.ij <- dat %>% 
+      if (nrow(n.ij)!=0){
+        dat.ij <- dat.ij %>% 
           group_by_at(strata) %>% 
           mutate(ph1cnt=n(), ph2cnt=sum(!!as.name(subset), na.rm = T)) %>% 
           filter(ph1cnt!=0 & ph2cnt!=0) %>% 
@@ -221,10 +253,11 @@ get_rgmt <- function(dat, v, groups, comp_lev, sub.by, strata, weights, subset){
                      by=as.formula(sprintf("~%s", paste(sub.by, collapse="+"))),
                      design=design.ij,
                      svyglm, vartype="ci")
-        
+
         rgmt <- bind_rows(
           ret %>% 
-            rename_all(gsub, pattern=paste0(j, 1), replacement="Estimate", fixed=T) %>%
+            rename_all(gsub, pattern="CaseNon-Cases", replacement="Estimate", fixed=T) %>%
+            rename_all(gsub, pattern="Case1", replacement="Estimate", fixed=T) %>%
             mutate(subgroup=gsub("`","",!!j), 
                    mag_cat=!!i, 
                    comp=!!comp_vs,  
