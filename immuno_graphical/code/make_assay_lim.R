@@ -9,7 +9,7 @@ if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 library(here)
 library(dplyr)
 library(abind)
-source(here("code", "params.R"))
+source(here::here("code", "params.R"))
 
 dat.long.twophase.sample <- readRDS(here(
   "data_clean",

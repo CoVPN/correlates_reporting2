@@ -10,8 +10,7 @@ if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 #-----------------------------------------------
 
 library(here)
-library(tidyr)
-library(dplyr)
+library(tidyverse)
 library(stringr)
 library(ggplot2)
 library(ggpubr)
@@ -48,7 +47,7 @@ dat.long.twophase.sample <- readRDS(here(
   "long_twophase_data.rds"
 ))
 
-dat.twophase.sample <- readRDS(here("data_clean", "twophase_data.rds")); dat.twophase.sample$all_one <- 1 # as a placeholder for strata values
+dat.twophase.sample <- readRDS(here::here("data_clean", "twophase_data.rds")); dat.twophase.sample$all_one <- 1 # as a placeholder for strata values
 dat.spider <- readRDS(here::here("data_clean", "twophase_data.rds"))
 
 tps_no_delta_over_tinterm <-  times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
@@ -978,7 +977,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
             
             # calculate geometric mean of IPS weighted readouts
-            times_spider = if (tm=="Day") {times_[!grepl("Delta", times_)]} else{times_[grepl("Delta", times_)]}
+            times_spider = if (study_name=="VAT08") {times_[c(1,2,3)]} else if (tm=="Day") {times_[!grepl("Delta", times_)]} else {times_[grepl("Delta", times_)]}
             
             if (!"Region" %in% colnames(dat.spider)) {dat.spider$Region=reg}
             
@@ -1009,7 +1008,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
               mutate(Bserostatus = ifelse(Bserostatus == 1, "Pos", "Neg"),
                      Trt = ifelse(Trt == 1, "vaccine", "placebo")) %>%
               group_by(time, Bserostatus, Region, Trt) %>%
-              summarise(across(all_of(assays_), ~ exp(sum(log(.x * wt), na.rm=T) / sum(wt)))) %>%
+              summarise(across(all_of(assays_), ~ exp(sum(log(.x * wt), na.rm=T) / sum(wt, na.rm=T)))) %>%
               unique() %>%
               ungroup() %>%
               as.data.frame()
