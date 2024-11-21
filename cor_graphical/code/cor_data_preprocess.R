@@ -198,7 +198,7 @@ if (study_name=="IARCHPV"){
                 Perprotocol==1 & (!!as.name(paste0("EarlyinfectionD", tpeak)))==0 & 
                   (ph2.D22.bAb==1 | ph2.D22.nAb==1 | ph2.D43.nAb | ph2.D43.bAb) & 
                   (!!as.name(paste0("EventIndOmicronD", tinterm, "M", month, "hotdeck10")))==0 ~ "Non-Cases"),
-      levels = c("7-27 days PD2 cases", "28-180 days PD2 cases", #"181-365 days PD2 cases", 
+      levels = c("7-27 days PD2 cases", sprintf("28-%s days PD2 cases", day), #"181-365 days PD2 cases", 
                  "Non-Cases"))
     )
   
@@ -486,16 +486,16 @@ if(study_name =="VAT08") {
     # append with a pooled case group: union of 7-27 days PD2 cases, 28-180 days PD2 cases at both day 1 and day 22 as cases for D22 marker correlates analyses
     dat.longer.cor.subset <- dat.longer.cor.subset %>%
       bind_rows(dat.longer.cor.subset %>% 
-                  filter(cohort_event %in% c("7-27 days PD2 cases","28-180 days PD2 cases") & time %in% c("B", "Day22", "Delta22overB")) %>%
-                  mutate(cohort_event = "7-180 days PD2 cases")) %>%
+                  filter(cohort_event %in% c("7-27 days PD2 cases",sprintf("28-%s days PD2 cases", day)) & time %in% c("B", "Day22", "Delta22overB")) %>%
+                  mutate(cohort_event = sprintf("7-%s days PD2 cases", day))) %>%
       mutate(cohort_event = factor(cohort_event, 
-                                   levels = c("7-27 days PD2 cases","28-180 days PD2 cases","7-180 days PD2 cases", "Non-Cases"),
+                                   levels = c("7-27 days PD2 cases",sprintf("28-%s days PD2 cases", day),sprintf("7-%s days PD2 cases", day), "Non-Cases"),
                                    labels = c("C1","C2","C3","Non-Cases")))
   } else {
     
     dat.longer.cor.subset <- dat.longer.cor.subset %>%
       mutate(cohort_event = factor(cohort_event, 
-                                   levels = c("28-180 days PD2 cases","Non-Cases"),
+                                   levels = c(sprintf("28-%s days PD2 cases", day),"Non-Cases"),
                                    labels = c("C2","Non-Cases")))
    
   }
@@ -517,7 +517,7 @@ if(study_name =="VAT08") {
                ", Trt:", subset(dat.longer.cor.subset, cohort_event=="Non-Cases" & assay=="bindSpike")$Trt))
   
   # exclude EarlyinfectionD43==1 at Day 43 and D43 fold-rise over D1 for all case groups
-  stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event %in% c("7-27 days PD2 cases","28-180 days PD2 cases","7-180 days PD2 cases") & time %in% c("Day43", "Delta43overB", "Delta43over22") & EarlyinfectionD43==1))==0)
+  stopifnot(nrow(subset(dat.longer.cor.subset, cohort_event %in% c("7-27 days PD2 cases",sprintf("28-%s days PD2 cases", day),sprintf("7-%s days PD2 cases", day)) & time %in% c("Day43", "Delta43overB", "Delta43over22") & EarlyinfectionD43==1))==0)
   
 }
 

@@ -38,6 +38,9 @@ dat.longer.cor.subset.plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1
 dat.cor.subset.plot3 <- readRDS(here("data_clean", "cor_data.rds"));dat.cor.subset.plot3$all_one <- 1 # as a placeholder for strata values
 if (study_name=="VAT08") {day = ifelse(dat.longer.cor.subset.plot1$Trialstage[1] == 1, 180, 150)}
 
+stage <- 1
+day <- ifelse(study_name=="VAT08" & stage==1, 180, 150)
+
 cases_lb <- if (study_name=="VAT08"){ 
      
     if (nrow(subset(dat.longer.cor.subset.plot1, cohort_event=="C1"))!=0) {c("C1", "C2", "C3")
