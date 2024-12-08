@@ -1,5 +1,5 @@
-# COR="D43vat08_combined_M5_bAb"
-# Sys.setenv(stage = 1) 
+# COR="D22vat08_combined_M5_bAb"
+# Sys.setenv(stage = 2) 
 
 Sys.setenv(TRIAL = "vat08_combined")
 Sys.setenv(VERBOSE = 1) 
@@ -8,6 +8,7 @@ source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
 source(here::here("code", "cor_coxph_coef_1_mi.R"))
 source(here::here("code", "cor_coxph_coef_n_mi.R"))
+
 
 {
 library(kyotil) # p.adj.perm, getFormattedSummary
@@ -165,7 +166,7 @@ for (iSt in stages) {
   
   
   # univariate
-  if(F){
+  if(T){
   ###################################
   # Univariate: Dxx, B, Dxx/B, vaccine arm
   
@@ -209,16 +210,19 @@ for (iSt in stages) {
   # Univariate trichotomized curves: D, D/B
   
   all.markers=c(paste0("Day", tpeak, assays),
+                paste0("B", assays),
                 paste0("Delta", tpeak, "overB", assays))
   
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
   all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
   all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short,
+                              "B"%.%" "%.%all.markers.names.short,
                               "D"%.%tpeak%.%"/B "%.%all.markers.names.short)
   names(all.markers.names.short) = all.markers
   
   all.markers.names.long  = sub("Pseudovirus-", "", assay_metadata$assay_label[match(assays,assay_metadata$assay)])
   all.markers.names.long  = c("D"%.%tpeak%.%" "%.%all.markers.names.long,
+                              "B"%.%" "%.%all.markers.names.long,
                               "D"%.%tpeak%.%"/B "%.%all.markers.names.long)
   names(all.markers.names.long) = all.markers
   
@@ -336,7 +340,7 @@ for (iSt in stages) {
   
   
   # baseline detectable * Dxx
-  if(F) {
+  if(T) {
     
   ###################################
   # Bhigh x D15 (D15/B), Vacc
@@ -471,7 +475,7 @@ for (iSt in stages) {
   
   
   # dich_B x 
-  if(F) {
+  if(T) {
 
   ###################################
   # dich_B x D15 (D15/B)

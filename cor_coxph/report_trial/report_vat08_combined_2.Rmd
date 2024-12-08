@@ -19,7 +19,8 @@ for (tpeak in c(43, 22)) {
 
   special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
   
-  iLab = c('bAb', 'nAb', 'st2.nAb.sen')
+  # iLab = c('bAb', 'nAb', 'st2.nAb.sen')
+  iLab = c('bAb', 'nAb')
   ii=1:length(iLab)
 
   cat("# D", tpeak, "M", M, subfolder, "\n\n", sep="")
@@ -27,6 +28,7 @@ for (tpeak in c(43, 22)) {
   # cat("## Day ", tpeak, "M", M, " ", tmp, "\n\n")
   level=3 # section title indent
   
+  message("Month "%.%M%.% " tpeak "%.%tpeak)
   
   cat("## Univariate\n\n")
   for (i in ii) {
@@ -39,9 +41,14 @@ for (tpeak in c(43, 22)) {
 
     fname.suffix = "D" %.% tpeak
     all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
+    has.alt = F
+    show.ve.curves = F
+    show.tertile.curves = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
+  
+  message("Univariate placebo")
 
   cat("## Univariate placebo \n\n")
   for (i in ii) {
@@ -55,47 +62,50 @@ for (tpeak in c(43, 22)) {
     # placebo Dxx
     fname.suffix="D" %.% tpeak %.% "_plac"
     all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
+    has.alt = F
+    show.ve.curves = F
+    show.tertile.curves = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
 
-  
-  
-  cat("## B detectable*D", tpeak, " \n\n", sep="")
-  for (i in ii) {
-    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
-    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
-    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-    config.cor <- config::get(config = COR0)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
-        
-    fname.suffix = "Bhigh*D" %.% tpeak
-    has.alt = F
-    coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline undetectable group.")
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-    coef_page_notes = "" # reset 
-    cat(res, sep = '\n')
-  }
-  
-
-      
-  cat("## Rev B detectable * D", tpeak, " \n\n", sep="")
-  for (i in ii) {
-    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
-    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
-    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-    config.cor <- config::get(config = COR0)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
-  
-    fname.suffix = "(1-Bhigh)*D" %.% tpeak
-    has.alt = F
-    coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline detectable group.")
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-    coef_page_notes = ""
-    cat(res, sep = '\n')
-  }
+  # message("B detectable*D")
+  # 
+  # cat("## B detectable*D", tpeak, " \n\n", sep="")
+  # for (i in ii) {
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
+  #       
+  #   fname.suffix = "Bhigh*D" %.% tpeak
+  #   has.alt = F
+  #   coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline undetectable group.")
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  #   coef_page_notes = "" # reset 
+  #   cat(res, sep = '\n')
+  # }
+  # 
+  # message("Rev B detectable * D")
+  #     
+  # cat("## Rev B detectable * D", tpeak, " \n\n", sep="")
+  # for (i in ii) {
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
+  # 
+  #   fname.suffix = "(1-Bhigh)*D" %.% tpeak
+  #   has.alt = F
+  #   coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline detectable group.")
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  #   coef_page_notes = ""
+  #   cat(res, sep = '\n')
+  # }
   
   
 
