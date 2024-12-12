@@ -60,8 +60,8 @@ spider_plot_ <- dat.cor.data.spider %>%
     ungroup() %>%
     select(one_of(paste0("Day29", assays_variant), paste0("Day29", assays_ancestral), "Region", "cohort_event", "wt.D29variant", "wt.D29")) %>%
     group_by(Region, cohort_event) %>%
-    summarise(across(c(paste0("Day29",assays_variant)), ~ exp(sum(log(.x * wt.D29variant), na.rm=T) / sum(wt.D29variant))),
-              across(c(paste0("Day29",assays_ancestral)), ~ exp(sum(log(.x * wt.D29), na.rm=T) / sum(wt.D29)))) %>% # ancestral assays use wt.D29
+    summarise(across(c(paste0("Day29",assays_variant)), ~ exp(sum(log(.x * wt.D29variant), na.rm=T) / sum(wt.D29variant, na.rm=T))),
+              across(c(paste0("Day29",assays_ancestral)), ~ exp(sum(log(.x * wt.D29), na.rm=T) / sum(wt.D29, na.rm=T)))) %>% # ancestral assays use wt.D29
     unique() %>%
     rename_with(~ gsub("Day29", "", .), everything()) %>%
     as.data.frame()

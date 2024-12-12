@@ -14,6 +14,7 @@ ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined janssen_partA_VL))
 	Rscript code/descriptive_graphics_data_preprocess.R
 	Rscript code/make_assay_lim.R
 	Rscript code/descriptive_graphics_two_phase_plots.R
+	Rscript code/descriptive_graphics_violin_pair.R
 ## Rscript code/descriptive_graphics_violin_pair_extra.R
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_pooled_partA))
 	Rscript code/descriptive_graphics_data_preprocess.R
