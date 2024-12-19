@@ -1,0 +1,125 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+  
+---
+# Graphical Description of Immunogenicity Data {#immuno-graphical}
+
+```{r immuno-graphical-setup, echo = FALSE, message = FALSE, include=FALSE}
+library(here)
+library(latex2exp)
+library(knitr)
+
+here::i_am("report.Rmd")
+
+if (study_name !="VAT08"){
+  bstatus.labels <- c("Baseline Neg", "Baseline Pos")
+  bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
+  bstatus.labels.3 <- c("baseline negative", "baseline positive")
+} else {
+  bstatus.labels <-  c("Naive", "Non-naive")
+  bstatus.labels.2 <- bstatus.labels.3 <- c("naive", "non-naive")
+}
+
+# repeat whatever in param.R here
+times = c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
+if(attr(config,"config")=="janssen_pooled_partA") {
+  times_ = c("B","Day29","Delta29overB","Day71"); timepoints_=c(29,71)
+  labels.time = c("Day 1", "Day 29","D29 fold-rise over D1", "Day 71"); names(labels.time) = times_
+  timepoints_=timepoints
+} else if (attr(config,"config")=="prevent19_stage2") {
+  times_ = c("Day35","C1","BD1") 
+  labels.time = c("Day 35", "Crossover Day 1", "Booster Day 1"); names(labels.time) = times_
+  timepoints_=timepoints
+} else {times_ = times; timepoints_=timepoints}
+
+# set time vectors based on times_ and timepoints_
+tps_no_delta_over_tinterm <-  times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
+tps_no_B_and_delta_over_tinterm <-  times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))] #c("Day29", "Delta29overB", "Day57", "Delta57overB")
+tps_no_fold_change <- times_[!grepl("Delta", times_)]
+tps_no_B_and_fold_change <- times_[!grepl("Delta", times_) & times_!="B"]
+tps_delta_over_B <- times_[grepl("overB",times_)]
+
+
+
+if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config")) && !grepl("vat08", attr(config,"config"))){
+  assay_immuno <- c(assays, "bindN")
+  labels.assays.all <- c("Binding Antibody to N", labels.assays)
+  names(labels.assays.all)[1] <- "bindN"
+  labels.assays <- labels.assays.all[assay_immuno]
+} else {
+  assay_immuno <- assays
+}
+```
+
+```{r immuno-graphical-caption-setup, echo = FALSE, message = FALSE, include=FALSE}
+
+is.ensemble <- study_name=="ENSEMBLE" | study_name=="MockENSEMBLE" # only ENSEMBLE has by country and by HIV group figures
+
+config <- config::get(config = Sys.getenv("TRIAL"))
+if.pair <- ifelse(length(assays)>1, 1, 0)
+if.pos.exist <- 1#ifelse(study_name=="AZD1222", 0, 1)
+
+minority.disclaimer <- switch(study_name, 
+                              "COVE"="",
+                              "MockCOVE"="",
+                              "ENSEMBLE"="These plots are restricted to only United States trial participants.",
+                              "MockENSEMBLE"="These plots are restricted to only United States trial participants.",
+                              "PREVENT19"="",
+                              "AZD1222"="",
+                              "VAT08"="",
+                              "PROFISCOV"="")
+
+neut.marker.captions <- switch(study_name, 
+                               "COVE"="The dashed lines in each figure are ULOQ, LLOQ, and positivity cutoffs for binding antibody assays, or ULOQ, LLOQ, and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               "MockCOVE"="The dashed lines in each figure are ULOQ, LLOQ, and positivity cutoffs for binding antibody assays, or ULOQ, LLOQ, and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               "ENSEMBLE"="The dashed lines in each figure are ULOQ and positivity cut-off from top to bottom for binding antibody assays, or ULOQ and LLOQ for neutralizing antibody assays, from top to bottom respectively.",
+                               "MockENSEMBLE"="The dashed lines in each figure are ULOQ and positivity cut-off for binding antibody assays, or ULOQ and LLOQ for neutralizing antibody assays, from top to bottom respectively.",
+                               #"PREVENT19"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               "PREVENT19"="The dashed lines in each figure are ULOQ and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               "AZD1222"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               
+                               "VAT08"="The dashed lines in each figure are ULOQ and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
+                               "PROFISCOV"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOD for binding antibody assays, or LLOD/positivity cut-off for neutralizing antibody assays, from top to bottom respectively."
+                               # PROFISCOV nAb has a ULOQ value out of figure limit
+                               )
+
+immuno_postfix_label = switch(study_name, 
+                               "VAT08"=" (Stage1)")
+
+```
+
+\clearpage
+## Set 6 plots: Longitudinal plots D01, D22, D43, D78, D134, D202, D292, D387, 
+## Non-naive Stage 1 and Stage 2 Participants
+
+
+<!-- ```{r, echo=FALSE, results='asis', eval=study_name=="VAT08" & grepl("Stage1", immuno_postfix_label)} -->
+
+<!-- for (assay_grp in assays){ -->
+<!--     details = "_gmr_nonnaive_stage1stage2" -->
+<!--     details_lb = ", D78, D134, D202, D292, D387, Non-naive Stage 1 and Stage 2 Participants" -->
+<!--     # res = knitr::knit_child(c(here::here('report_set2_extra.Rmd')), quiet = TRUE) -->
+<!--     # cat(res, sep = '\n') -->
+<!--     cat("\\begin{figure}[H]\n\\center\n") -->
+<!--     cat(sprintf("\\includegraphics[width=1\\textwidth]{`r \"output\\vat08\\_combined\\%s_longitudinal\\_gmr\\_nonnaive\\_stage1stage2.pdf\"`}\n", assay_grp)) -->
+<!--     cat(sprintf("\\caption{`r paste0(\"Longitudinal plots for \", gsub(\"_\", \" \", \"%s\"), \" markers at D1, D22, D43, D78, D134, D202, D292, D387, Non\\-naive Stage 1 and Stage 2 Participants\")`}\n", assay_grp)) -->
+
+<!--     cat("\\end{figure}\n\\hphantom{Random text to appease the latex god}\n") -->
+<!--     cat("\\clearpage", sep = '\n') -->
+<!-- } -->
+<!-- ``` -->
+
+
+```{r, echo=FALSE, results='asis', eval=study_name=="VAT08" & grepl("Stage1", immuno_postfix_label)}
+
+for (assay_grp in assays){
+    details = "_gmr_nonnaive_stage1stage2"
+    details_lb = ", D78, D134, D202, D292, D387, Non-naive Stage 1 and Stage 2 Participants"
+    res = knitr::knit_child(c(here::here('report_set2_extra.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+    cat("\\clearpage", sep = '\n')
+}
+
+```
