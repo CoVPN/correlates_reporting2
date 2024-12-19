@@ -1,5 +1,4 @@
-# COR="D22vat08_combined_M5_bAb"
-# Sys.setenv(stage = 2) 
+# COR="D43vat08_combined_M5_nAb"; Sys.setenv(stage = 2) 
 
 Sys.setenv(TRIAL = "vat08_combined")
 Sys.setenv(VERBOSE = 1) 
@@ -88,7 +87,7 @@ myprint(stages)
 ################################################################################
 
 for (iSt in stages) {
-  # iSt=1
+  # iSt=2
   
   cat("\n\n\n\n")
   myprint(iSt)
@@ -340,7 +339,7 @@ for (iSt in stages) {
   
   
   # baseline detectable * Dxx
-  if(T) {
+  if(F) {
     
   ###################################
   # Bhigh x D15 (D15/B), Vacc
@@ -475,7 +474,7 @@ for (iSt in stages) {
   
   
   # dich_B x 
-  if(T) {
+  if(F) {
 
   ###################################
   # dich_B x D15 (D15/B)
@@ -564,11 +563,11 @@ for (iSt in stages) {
   names(dimnames(tab))[2]="Event Indicator"
   tab
   mytex(tab,     
-        file.name = "tab1_" %.% fname.suffix, 
+        # for some unknown reason, kyoti::mytex line 160 runs into file not found error if file.name is not full path.
+        file.name = save.results.to %.% "tab1_" %.% fname.suffix, 
         save2input.only=T, 
         input.foldername=save.results.to, 
         digits=1)
-  
   
   # placebo arm
   fname.suffix = "D"%.%tpeak%.%"_plac"
@@ -582,7 +581,8 @@ for (iSt in stages) {
   names(dimnames(tab))[2]="Event Indicator"
   tab
   mytex(tab,     
-        file.name = "tab1_" %.% fname.suffix, 
+        # for some unknown reason, kyoti::mytex line 160 runs into file not found error if file.name is not full path.
+        file.name = save.results.to %.% "tab1_" %.% fname.suffix, 
         save2input.only=T, 
         input.foldername=save.results.to, 
         digits=1)
@@ -601,7 +601,7 @@ for (iSt in stages) {
     names(dimnames(tab))[2]="Event Indicator"
     tab
     mytex(tab,     
-          file.name = "tab1_" %.% fname.suffix, 
+          file.name = save.results.to %.% "tab1_" %.% fname.suffix, 
           save2input.only=T, 
           input.foldername=save.results.to, 
           digits=1)

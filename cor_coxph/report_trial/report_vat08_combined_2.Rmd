@@ -42,8 +42,10 @@ for (tpeak in c(43, 22)) {
     fname.suffix = "D" %.% tpeak
     all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
     has.alt = F
+    has.scaled = F
+    show.sample.size = F
     show.ve.curves = F
-    show.tertile.curves = F
+    show.tertile.curves = T
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
@@ -63,12 +65,41 @@ for (tpeak in c(43, 22)) {
     fname.suffix="D" %.% tpeak %.% "_plac"
     all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
     has.alt = F
+    has.scaled = F
+    show.sample.size = F
     show.ve.curves = F
     show.tertile.curves = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
 
+  
+  cat("\\newpage")
+  cat("## B*D", tpeak, " \n\n", sep="")
+  cat ("The interaction models are exploratory due to the small number of events. The interaction model says that at low baseline marker level, the risk increases with D43 marker. From a scatterplot of baseline and D43 ancestral bindSpike markers we see that among those with undetectable baseline, there are two cases and both fall in the middle tier. This is kind of interesting, but also hard to make sense of without additional immunogenicity profiling.")
+  for (i in ii) {
+    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+    config.cor <- config::get(config = COR0)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    # modify pathCoRoutput and COR to include subfolder name.
+    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
+
+    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+    if (i==1) {
+      assays1=assays[startsWith(assays,'bind')]
+    } else if (i==2 | i==3) {
+      assays1=assays[startsWith(assays,'pseudo')]
+    }
+
+    fname.suffix = "B*D" %.% tpeak
+    has.alt = F
+    has.scaled = F
+    show.sample.size = F
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+
+  
   # message("B detectable*D")
   # 
   # cat("## B detectable*D", tpeak, " \n\n", sep="")
@@ -129,32 +160,9 @@ for (tpeak in c(43, 22)) {
   #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
   #   cat(res, sep = '\n')
   # }
-  # 
-  # 
-  # 
-  # cat("## B*D", tpeak, " \n\n", sep="")
-  # for (i in ii) {
-  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
-  #   config.cor <- config::get(config = COR0)
-  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-  #   # modify pathCoRoutput and COR to include subfolder name. 
-  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
-  # 
-  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-  #   if (i==1) {
-  #     assays1=assays[startsWith(assays,'bind')]
-  #   } else if (i==2 | i==3) {
-  #     assays1=assays[startsWith(assays,'pseudo')]
-  #   }
-  #   
-  #   fname.suffix = "B*D" %.% tpeak
-  #   has.alt = F
-  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-  #   cat(res, sep = '\n')
-  # }
-  # 
-  # 
-  # 
+
+
+
   # cat("## binary B*D", tpeak, " \n\n", sep="")
   # for (i in ii) {
   #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb

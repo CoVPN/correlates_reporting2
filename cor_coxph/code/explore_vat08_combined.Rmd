@@ -61,6 +61,25 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 
 ### Misc
 
+For Stage 2 non-naïve ptids (pooling over vaccine and placebo), show something like the density of the calendar dates between 7 days post D43 and 150 days post D22.
+```{r}
+df <- subset(dat_proc, Trialstage==2 & Bserostatus==1  & ph1.D43) # EventTimeOmicronD22M5hotdeck10
+summary(df$EnrollmentDate+df$EventTimeOmicronD22M5hotdeck10+df$NumberdaysD1toD22)
+summary(df$EnrollmentDate)
+
+par(mfrow=c(2,1), mar=c(2,4,2,1))
+
+breaks <- as.Date(c("2021-12-01", "2022-01-01", "2022-02-01", "2022-03-01", "2022-04-01", "2022-05-01", "2022-06-01", "2022-07-01", "2022-08-01", "2022-09-01"))
+
+hist( df$EnrollmentDate+df$EventTimeOmicronD22M5hotdeck10+df$NumberdaysD1toD22, breaks = breaks, col = "skyblue", border = "white", xlab = "", main = "Stage 2 NN, Loss to Followup Date", freq=T) # , xlim=as.Date(c("2021-12-01", "2022-07-01"))
+
+hist((df$EnrollmentDate+df$EventTimeOmicronD22M5hotdeck10+df$NumberdaysD1toD22)[df$EventIndOmicronD22M5hotdeck10==1], breaks = breaks, col = "skyblue", border = "white", xlab = "", main = "Stage 2 NN Cases, Event Date", freq=T) # , xlim=as.Date(c("2021-12-01", "2022-07-01"))
+
+# hist(df$EnrollmentDate, breaks = breaks, col = "skyblue", border = "white", ylab="Frequency of Enrollment Date", xlab = "", main = "Stage 2 NN Enrollment Date", freq=T)
+
+```
+
+
 Define a variable for a small project for Peter and Li
 ```{r}
 tmp = subset(dat_proc, EventIndKnownLineageOmicronOrMissingLineageD22==1 & EventIndKnownLineageOmicronD22==0)
@@ -1430,7 +1449,7 @@ plot(tmp$BbindSpike, tmp$Day43bindSpike, col=ifelse(tmp$EventIndFirstInfectionD1
 ```
 
 
-### Fold rise from baseline to D22
+### Fold rise 
 
 
 Stage 1 NN Vac
@@ -1454,16 +1473,55 @@ title(main="VAT08 Monovalent Non-Naive", outer=T, line=0)
 
 Stage 2 NN Vac
 
+```{r, fig.height=8, fig.width=8}
+tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph2.D43.bAb)
+col=1
+lim=c(2,6)
+# bAb
+par(mfrow=c(2,2), oma=c(0,0.5,3,0.5), mar=c(3.1, 3.1, 2.1, 0.1), mgp = c(2, 1, 0))
+with(tmp, 
+{
+# D43
+plot(BbindSpike, Day43bindSpike, xlim=lim, ylim=lim, main="Ancestral bAb", asp=1, col=ifelse(EventIndOmicronD43M5hotdeck10==1,2,1)); abline(0,1); abline(h=c(5.29,5.61))
+plot(BbindSpike, Day43bindSpike_omicron, col=col, xlim=lim, ylim=lim, main="Omicron bAb", asp=1); abline(0,1)
+# D22
+plot(BbindSpike, Day22bindSpike, col=col, xlim=lim, ylim=lim, main="Ancestral bAb", asp=1); abline(0,1)
+plot(BbindSpike, Day22bindSpike_omicron, col=col, xlim=lim, ylim=lim, main="Omicron bAb", asp=1); abline(0,1)
+#
+title(main="VAT08 Bivalent Non-Naive", outer=T, line=0)
+})
+
+library(Hmisc)
+
+wtd.cor(x=tmp$BbindSpike, y=tmp$Day43bindSpike, weights = NULL)
+
+```
+
+Fit a model with both baseline and fold rise
 ```{r}
+df=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)
+design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=df)
+
+fit=svycoxph(Surv(EventTimeOmicronD43M5hotdeck10, EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + strata(Country) + I(scale(Day43bindSpike,scale=FALSE))*I(scale(BbindSpike,scale=FALSE)), design=design.vac) 
+fit
+
+fit=svycoxph(Surv(EventTimeOmicronD43M5hotdeck10, EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + strata(Country) + I(scale(Day43bindSpike,scale=FALSE))+I(scale(BbindSpike,scale=FALSE)), design=design.vac) 
+fit
+
+fit=svycoxph(Surv(EventTimeOmicronD43M5hotdeck10, EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + strata(Country) + I(scale(BbindSpike,scale=FALSE)), design=design.vac) 
+fit
+```
+
+```{r, fig.height=8, fig.width=8}
 tmp=subset(dat_proc, Trialstage==2 & Bserostatus==1 & Trt==1 & ph1.D43)
 col=1
 # nAb
-par(mfrow=c(2,2), oma=c(0,0.5,3,0.5), mar=c(2.1, 0.1, 2.1, 0.1), mgp = c(2, 1, 0))
-lim=c(0,4)
+par(mfrow=c(2,2), oma=c(0,0.5,3,0.5), mar=c(2.1, 2.1, 2.1, 0.1), mgp = c(2, 1, 0))
+lim=c(0,6)
 plot(tmp$Bpseudoneutid50_save, tmp$Day22pseudoneutid50_save, col=col, xlim=lim, ylim=lim, main="Ancestral ID50", asp=1); abline(0,1)
 plot(tmp$Bpseudoneutid50_save, tmp$Day43pseudoneutid50_BA.4.5_save, col=col, xlim=lim, ylim=lim, main="Omicron ID50", asp=1); abline(0,1)
 # bAb
-lim=c(0,4)
+lim=c(2,6)
 plot(tmp$BbindSpike, tmp$Day22bindSpike, col=col, xlim=lim, ylim=lim, main="Ancestral bAb", asp=1); abline(0,1)
 plot(tmp$BbindSpike, tmp$Day22bindSpike_omicron, col=col, xlim=lim, ylim=lim, main="Omicron bAb", asp=1); abline(0,1)
 #
