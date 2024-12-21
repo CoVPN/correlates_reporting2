@@ -194,7 +194,7 @@ if (attr(config,"config") == "vat08_combined"){
     }
 }
 
-# adhoc figures only for sanofi stage 1 report
+# print this adhoc figures only in sanofi stage 1 report, which includes both stage 1 and stage 2 data
 if (attr(config,"config")=="vat08_combined" & dat.longer.immuno.subset.plot1_$Trialstage[1]==1) {
     # longitudinal plots for stage 1 and stage 2, non-naive ppt
     
@@ -231,25 +231,29 @@ if (attr(config,"config")=="vat08_combined" & dat.longer.immuno.subset.plot1_$Tr
     # Vaccine vs. Placebo, by Stage 1 and 2
     
     sub.by <- c("all")
-    ds.i <- filter(dat_proc %>%
+    ds.i.bAb <- filter(dat_proc %>%
                        mutate(all = 1) %>% # fake column to satisfy sub.by
                        filter(Bserostatus == 1) %>% # only do this for non-naive ppts
-                       mutate(Trt=ifelse(Trt==1, "Vaccine", "Placebo")), ph1.immuno==1)
+                       mutate(Trt=ifelse(Trt==1, "Vaccine", "Placebo")), ph1.immuno.bAb==1)
+    ds.i.nAb <- filter(dat_proc %>%
+                           mutate(all = 1) %>% # fake column to satisfy sub.by
+                           filter(Bserostatus == 1) %>% # only do this for non-naive ppts
+                           mutate(Trt=ifelse(Trt==1, "Vaccine", "Placebo")), ph1.immuno.nAb==1)
     gm.v <- apply(expand.grid(times_[!grepl("Delta",times_)], assays), 1, paste0, collapse="")
     
     subs <- "Trt"
     comp.i <- c("Vaccine", "Placebo")
     
-    rgmt_stage1_bAb_vac <- get_rgmt(ds.i %>% filter(Trialstage == 1), 
+    rgmt_stage1_bAb_vac <- get_rgmt(ds.i.bAb %>% filter(Trialstage == 1), 
                                     gm.v[grepl("bindSpike", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
                                     weights="wt.immuno.bAb", subset="ph2.immuno.bAb") %>% mutate(Trialstage = "Stage 1")
-    rgmt_stage1_nAb_vac <- get_rgmt(ds.i %>% filter(Trialstage == 1), 
-                                    gm.v[grepl("pseudoneutid50", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
+    rgmt_stage1_nAb_vac <- get_rgmt(ds.i.nAb %>% filter(Trialstage == 1), 
+                                    gm.v[grepl("pseudoneutid50", gm.v)][c(1:5,9:11,17:19,25:27,33:35,41:43)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
                                     weights="wt.immuno.nAb", subset="ph2.immuno.nAb") %>% mutate(Trialstage = "Stage 1") 
-    rgmt_stage2_bAb_vac <- get_rgmt(ds.i %>% filter(Trialstage == 2), 
+    rgmt_stage2_bAb_vac <- get_rgmt(ds.i.bAb %>% filter(Trialstage == 2), 
                                     gm.v[grepl("bindSpike", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
                                     weights="wt.immuno.bAb", subset="ph2.immuno.bAb") %>% mutate(Trialstage = "Stage 2") 
-    rgmt_stage2_nAb_vac <- get_rgmt(ds.i %>% filter(Trialstage == 2), 
+    rgmt_stage2_nAb_vac <- get_rgmt(ds.i.nAb %>% filter(Trialstage == 2), 
                                     gm.v[grepl("pseudoneutid50", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
                                     weights="wt.immuno.nAb", subset="ph2.immuno.nAb") %>% mutate(Trialstage = "Stage 2")
     for (asy in set2_assays){
@@ -273,8 +277,8 @@ if (attr(config,"config")=="vat08_combined" & dat.longer.immuno.subset.plot1_$Tr
             x.var = "time",
             x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
             assays = asy,
-            ylim = if (grepl("bindSpike", asy)) {c(0, 60)} else if (grepl("pseudoneutid50", asy)) {c(0, 110)},
-            ybreaks = if (grepl("bindSpike", asy)) {seq(0, 60, 10)} else if (grepl("pseudoneutid50", asy)) {seq(0, 110, 20)},
+            ylim = if (grepl("bindSpike", asy)) {c(0, 60)} else if (grepl("pseudoneutid50", asy)) {c(0, 155)},
+            ybreaks = if (grepl("bindSpike", asy)) {seq(0, 60, 10)} else if (grepl("pseudoneutid50", asy)) {seq(0, 150, 20)},
             times = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"),
             strip.text.x.size = 14,
             panel.text.size = 6,
