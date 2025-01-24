@@ -21,7 +21,7 @@ region.2 = c( # stage 2
   "Nepal" = 3, "India" = 3)
 
 
-dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240807_hotdeck.csv')
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240809_hotdeck.csv')
 dat_mapped$EventIndPrimaryD1 = dat_mapped$EventIndFirstInfectionD1
 dat_mapped$EventTimePrimaryD1 = dat_mapped$EventTimeFirstInfectionD1
 dat_mapped$EventIndPrimaryD43= dat_mapped$EventIndFirstInfectionD43
@@ -61,6 +61,13 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 
 ### Misc
 
+```{r}
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43)
+table(!is.na(dat$BbindSpike), dat$ph2.D43.bAb)
+```
+
+
+
 For Stage 2 non-naïve ptids (pooling over vaccine and placebo), show something like the density of the calendar dates between 7 days post D43 and 150 days post D22.
 ```{r}
 df <- subset(dat_proc, Trialstage==2 & Bserostatus==1  & ph1.D43) # EventTimeOmicronD22M5hotdeck10
@@ -96,6 +103,25 @@ a$Ptid
 ```
 
 ### For manuscript
+
+stage 2 An interaction model with arm * marker
+```{r}
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43)
+
+bAb.fits=lapply (assays[1:9], function(a) {
+  f=as.formula(paste0("Surv(EventTimeOmicronD43M5hotdeck10 ,EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + Day43",a,"*Trt + strata(cc)"))
+  fit = svycoxph(f, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=dat))
+  fit
+})
+
+nAb.fits=lapply (assays[10:15], function(a) {
+  f=as.formula(paste0("Surv(EventTimeOmicronD43M5hotdeck10 ,EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + Day43",a,"*Trt + strata(cc)"))
+  fit = svycoxph(f, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.nAb, data=dat))
+  fit
+})
+
+
+```
 
 trial stage 1 Batch 0 assay dates
 ```{r}

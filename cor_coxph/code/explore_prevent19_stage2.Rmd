@@ -69,6 +69,17 @@ dat_proc_stage1=read.csv('/trials/covpn/p3004/analysis/correlates/Part_A_Blinded
 
 ### For manuscript
 
+how many of the delta variant cases were determined by direct sequencing of nasal swab samples and how many were determined by imputation?
+
+```{r}
+tmp=subset(dat_proc, ph1.D35_108 & Country==0 & Trt==1 & Bserostatus==0)
+mytable(tmp$KnownOrImputedDeltaCOVIDIndD35_108to21Dec10, tmp$KnownOrImputedDeltaCOVIDInd21Apr19to22Mar26Lineage)
+
+
+```
+
+
+
 Get the max nAb-ID50 for severe cases from ensemble and az
 
 ```{r}
