@@ -184,7 +184,7 @@ if (attr(config,"config") == "vat08_combined"){
 # adhoc for vat08_combined: split non-naive Binding IgG Spike distributions by case/non−case at Day 43 and at Fold-rise Day 43 over Day 1 by S-pos only and Prev-inf subgroups
 if (attr(config,"config") == "vat08_combined"){
     
-    for (panel in c("bindSpike")){
+    for (panel in c("pseudoneutid50", "bindSpike")){
         
         for (na in c("Non-naive")){
             
