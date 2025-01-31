@@ -47,8 +47,8 @@ myprint(B, numPerm)
 
 dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==1 & ph1)
 dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==1 & ph1)
-dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2 & ph1)
-dat.pla.seropos.st2 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==2 & ph1)
+dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & prev_inf==1 & Trialstage==2 & ph1)
+dat.pla.seropos.st2 = subset(dat_proc, Trt==0 & prev_inf==1 & Trialstage==2 & ph1)
 
 for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%assays)) {
   dat.vac.seropos.st1[[a%.%"centered"]] = scale(dat.vac.seropos.st1[[a]], scale=F)

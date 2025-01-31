@@ -43,7 +43,7 @@ for (tpeak in c(43, 22)) {
     all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
     has.alt = F
     has.scaled = F
-    show.sample.size = F
+    show.sample.size = T
     show.ve.curves = F
     show.tertile.curves = T
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
@@ -66,7 +66,7 @@ for (tpeak in c(43, 22)) {
     all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
     has.alt = F
     has.scaled = F
-    show.sample.size = F
+    show.sample.size = T
     show.ve.curves = F
     show.tertile.curves = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)

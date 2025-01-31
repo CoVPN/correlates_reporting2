@@ -40,7 +40,7 @@ dat_mapped$SUBJID = gsub("-","",dat_mapped$SUBJID,)
 dat_mapped$nAbBatch1=dat_mapped$nAbBatch
 dat_mapped$nAbBatch1[is.na(dat_mapped$Day43pseudoneutid50_B.1.351) & !is.na(dat_mapped$Day43pseudoneutid50)]=0
 
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20241119.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250124.csv')
 dat_proc$SUBJID = sub("VAT00008-","",dat_proc$Ptid)
 dat_proc$SUBJID = gsub("-","",dat_proc$SUBJID,)
 dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDateEnrollment)
@@ -65,8 +65,6 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43)
 table(!is.na(dat$BbindSpike), dat$ph2.D43.bAb)
 ```
-
-
 
 For Stage 2 non-naïve ptids (pooling over vaccine and placebo), show something like the density of the calendar dates between 7 days post D43 and 150 days post D22.
 ```{r}
@@ -103,6 +101,93 @@ a$Ptid
 ```
 
 ### For manuscript
+
+fit coxph models with svydesign instead of twophase
+```{r}
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==1)
+
+a=assays[1]
+f=as.formula(paste0("Surv(EventTimeOmicronD43M5hotdeck10 ,EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + Day43",a," + strata(cc)"))
+
+# using twophase
+fit = svycoxph(f, twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D43.bAb, data=dat)); fit
+
+# using svydesign
+fit1 = svycoxph(f, svydesign(id=~1, strata=~Wstratum, weights=~wt.D43.bAb, data=dat[dat$ph2.D43.bAb==1,])); fit1
+
+# the comparison shows close alignment of two results
+getFormattedSummary(list(fit,fit1), exp=T, robust=T)
+```
+
+
+Percent of participants eligible for D43 correlates analyses
+```{r}
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & ph2.D43.bAb)
+weighted.mean(dat$stage2_D01_S_pos_only_in_non_naive_group, dat$wt.D43.bAb)
+
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & ph2.D43.nAb)
+weighted.mean(dat$stage2_D01_S_pos_only_in_non_naive_group, dat$wt.D43.nAb)
+
+with(subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43), table(Trt, stage2_D01_S_pos_only_in_non_naive_group))
+```
+
+
+Run corcoxph in stage2_D01_S_pos_only_in_non_naive_group for vaccine arm
+```{r}
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==1 & stage2_D01_S_pos_only_in_non_naive_group==0)
+mytable(dat$EventIndOmicronD43M5hotdeck10)
+
+bAb.fits=lapply (assays[1:9], function(a) {
+  f=as.formula(paste0("Surv(EventTimeOmicronD43M5hotdeck10 ,EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + Day43",a," + strata(cc)"))
+  fit = svycoxph(f, svydesign(id=~1, strata=~Wstratum, weights=~wt.D43.bAb, data=dat[dat$ph2.D43.bAb==1,])); fit
+})
+
+tab.bAb=t(getFormattedSummary(bAb.fits, robust=T, exp=T, rows=4))
+rownames(tab.bAb)=assays[1:9]
+tab.bAb
+
+
+nAb.fits=lapply (assays[10:15], function(a) {
+  f=as.formula(paste0("Surv(EventTimeOmicronD43M5hotdeck10 ,EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + Day43",a," + strata(cc)"))
+  fit = svycoxph(f, svydesign(id=~1, strata=~Wstratum, weights=~wt.D43.nAb, data=dat[dat$ph2.D43.nAb==1,])); fit
+})
+
+tab.nAb=t(getFormattedSummary(nAb.fits, robust=T, exp=T, rows=4))
+rownames(tab.nAb)=assays[10:15]
+tab.nAb
+
+```
+
+
+
+Run corcoxph in stage2_D01_S_pos_only_in_non_naive_group for placebo
+```{r}
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43 & Trt==0 & stage2_D01_S_pos_only_in_non_naive_group==0)
+mytable(dat$EventIndOmicronD43M5hotdeck10)
+
+bAb.fits=lapply (assays[1:9], function(a) {
+  f=as.formula(paste0("Surv(EventTimeOmicronD43M5hotdeck10 ,EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + Day43",a," + strata(cc)"))
+  fit = svycoxph(f, svydesign(id=~1, strata=~Wstratum, weights=~wt.D43.bAb, data=dat[dat$ph2.D43.bAb==1,])); fit
+})
+
+tab.bAb=t(getFormattedSummary(bAb.fits, robust=T, exp=T, rows=4))
+rownames(tab.bAb)=assays[1:9]
+tab.bAb
+
+
+nAb.fits=lapply (assays[10:15], function(a) {
+  f=as.formula(paste0("Surv(EventTimeOmicronD43M5hotdeck10 ,EventIndOmicronD43M5hotdeck10) ~ FOI + risk_score + Sex + Day43",a," + strata(cc)"))
+  fit = svycoxph(f, svydesign(id=~1, strata=~Wstratum, weights=~wt.D43.nAb, data=dat[dat$ph2.D43.nAb==1,])); fit
+})
+
+tab.nAb=t(getFormattedSummary(nAb.fits, robust=T, exp=T, rows=4))
+rownames(tab.nAb)=assays[10:15]
+tab.nAb
+
+
+
+
+```
 
 stage 2 An interaction model with arm * marker
 ```{r}
