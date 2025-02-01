@@ -1,6 +1,6 @@
 # Summary
 
-This is the stage 2, bivalent vaccine Sanofi trial.
+Correlates results for the previously infected in the stage 2, bivalent vaccine Sanofi trial. 
 
 Non-Omicron events are not considered competing risk.
 

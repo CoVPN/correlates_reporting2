@@ -45,8 +45,8 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==1 & ph1)
-dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==1 & ph1)
+dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & prev_inf==1 & Trialstage==1 & ph1)
+dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & prev_inf==1 & Trialstage==1 & ph1)
 dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & prev_inf==1 & Trialstage==2 & ph1)
 dat.pla.seropos.st2 = subset(dat_proc, Trt==0 & prev_inf==1 & Trialstage==2 & ph1)
 
@@ -276,29 +276,29 @@ for (iSt in stages) {
     verbose=T
   )
   
-  
-  # repeat stage 1 placebo, keeping the countries that also appear in stage 2
-  if(iSt==1) {
-    cor_coxph_coef_1_mi (
-      form.0,
-      dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
-      fname.suffix="D"%.%tpeak%.%"_plac_alt2",
-      save.results.to,
-      config,
-      config.cor,
-      markers=all.markers,
-      markers.names.short=all.markers.names.short,
-      
-      dat.pla.seroneg = NULL,
-      show.q=FALSE,
-      
-      forestplot.markers=1:length(assays),
-      for.title=paste0("Stage ",iSt," NN, Placebo"),
-      
-      verbose=T
-    )
-    
-  }
+  ## comment out since fails to run with prev_inf due to zero sampling fraction
+  # # repeat stage 1 placebo, keeping only the countries that also appear in stage 2
+  # if(iSt==1) {
+  #   cor_coxph_coef_1_mi (
+  #     form.0,
+  #     dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
+  #     fname.suffix="D"%.%tpeak%.%"_plac_alt2",
+  #     save.results.to,
+  #     config,
+  #     config.cor,
+  #     markers=all.markers,
+  #     markers.names.short=all.markers.names.short,
+  #     
+  #     dat.pla.seroneg = NULL,
+  #     show.q=FALSE,
+  #     
+  #     forestplot.markers=1:length(assays),
+  #     for.title=paste0("Stage ",iSt," NN, Placebo"),
+  #     
+  #     verbose=T
+  #   )
+  #   
+  # }
   
   
   ###################################
