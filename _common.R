@@ -837,7 +837,7 @@ if (exists("COR")) {
 
 # converts discrete markers to factors from strings
 # and set cut points attribute
-# this has to be done after the previous block b/c attribute is lost after subsettting
+# this has to be done after the previous block b/c attribute is lost after subsetting
 
 all.markers1 = NULL
 if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
