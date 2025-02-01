@@ -1,5 +1,4 @@
-# COR="D22vat08_combined_M5_bAb"
-# Sys.setenv(stage = 2) 
+# COR="D43vat08_combined_M5_nAb"; Sys.setenv(stage = 2) 
 
 Sys.setenv(TRIAL = "vat08_combined")
 Sys.setenv(VERBOSE = 1) 
@@ -46,10 +45,10 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==1 & ph1)
-dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==1 & ph1)
-dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & Bserostatus==1 & Trialstage==2 & ph1)
-dat.pla.seropos.st2 = subset(dat_proc, Trt==0 & Bserostatus==1 & Trialstage==2 & ph1)
+dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & prev_inf==1 & Trialstage==1 & ph1)
+dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & prev_inf==1 & Trialstage==1 & ph1)
+dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & prev_inf==1 & Trialstage==2 & ph1)
+dat.pla.seropos.st2 = subset(dat_proc, Trt==0 & prev_inf==1 & Trialstage==2 & ph1)
 
 for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%assays)) {
   dat.vac.seropos.st1[[a%.%"centered"]] = scale(dat.vac.seropos.st1[[a]], scale=F)
@@ -88,7 +87,7 @@ myprint(stages)
 ################################################################################
 
 for (iSt in stages) {
-  # iSt=1
+  # iSt=2
   
   cat("\n\n\n\n")
   myprint(iSt)
@@ -277,29 +276,29 @@ for (iSt in stages) {
     verbose=T
   )
   
-  
-  # repeat stage 1 placebo, keeping the countries that also appear in stage 2
-  if(iSt==1) {
-    cor_coxph_coef_1_mi (
-      form.0,
-      dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
-      fname.suffix="D"%.%tpeak%.%"_plac_alt2",
-      save.results.to,
-      config,
-      config.cor,
-      markers=all.markers,
-      markers.names.short=all.markers.names.short,
-      
-      dat.pla.seroneg = NULL,
-      show.q=FALSE,
-      
-      forestplot.markers=1:length(assays),
-      for.title=paste0("Stage ",iSt," NN, Placebo"),
-      
-      verbose=T
-    )
-    
-  }
+  ## comment out since fails to run with prev_inf due to zero sampling fraction
+  # # repeat stage 1 placebo, keeping only the countries that also appear in stage 2
+  # if(iSt==1) {
+  #   cor_coxph_coef_1_mi (
+  #     form.0,
+  #     dat=subset(dat.plac, cc %in% c("Columbia", "Ghana", "Kenya", "Nepal", "India")),
+  #     fname.suffix="D"%.%tpeak%.%"_plac_alt2",
+  #     save.results.to,
+  #     config,
+  #     config.cor,
+  #     markers=all.markers,
+  #     markers.names.short=all.markers.names.short,
+  #     
+  #     dat.pla.seroneg = NULL,
+  #     show.q=FALSE,
+  #     
+  #     forestplot.markers=1:length(assays),
+  #     for.title=paste0("Stage ",iSt," NN, Placebo"),
+  #     
+  #     verbose=T
+  #   )
+  #   
+  # }
   
   
   ###################################
@@ -340,7 +339,7 @@ for (iSt in stages) {
   
   
   # baseline detectable * Dxx
-  if(T) {
+  if(F) {
     
   ###################################
   # Bhigh x D15 (D15/B), Vacc
@@ -475,7 +474,7 @@ for (iSt in stages) {
   
   
   # dich_B x 
-  if(T) {
+  if(F) {
 
   ###################################
   # dich_B x D15 (D15/B)
@@ -564,11 +563,11 @@ for (iSt in stages) {
   names(dimnames(tab))[2]="Event Indicator"
   tab
   mytex(tab,     
-        file.name = "tab1_" %.% fname.suffix, 
+        # for some unknown reason, kyoti::mytex line 160 runs into file not found error if file.name is not full path.
+        file.name = save.results.to %.% "tab1_" %.% fname.suffix, 
         save2input.only=T, 
         input.foldername=save.results.to, 
         digits=1)
-  
   
   # placebo arm
   fname.suffix = "D"%.%tpeak%.%"_plac"
@@ -582,7 +581,8 @@ for (iSt in stages) {
   names(dimnames(tab))[2]="Event Indicator"
   tab
   mytex(tab,     
-        file.name = "tab1_" %.% fname.suffix, 
+        # for some unknown reason, kyoti::mytex line 160 runs into file not found error if file.name is not full path.
+        file.name = save.results.to %.% "tab1_" %.% fname.suffix, 
         save2input.only=T, 
         input.foldername=save.results.to, 
         digits=1)
@@ -601,7 +601,7 @@ for (iSt in stages) {
     names(dimnames(tab))[2]="Event Indicator"
     tab
     mytex(tab,     
-          file.name = "tab1_" %.% fname.suffix, 
+          file.name = save.results.to %.% "tab1_" %.% fname.suffix, 
           save2input.only=T, 
           input.foldername=save.results.to, 
           digits=1)

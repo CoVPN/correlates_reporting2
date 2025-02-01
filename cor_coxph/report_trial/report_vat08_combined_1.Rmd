@@ -1,12 +1,11 @@
 # Summary
 
-This is the stage 1, monovalent vaccine Sanofi trial.
+Correlates results for the previously infected in the stage 1, monovalent vaccine Sanofi trial. 
 
 Non-Omicron events are not considered competing risk.
 
 Due to missing variant types, cor_coxph analysis combines ten copies of hotdeck imputed datasets. Other analyses use the hotdeck10 copy only.
 
-There is an alternative analysis using only batch 0 and 1 data are conducted for nAb markers. Variants ID50 in this analysis are multiply imputed based on ancestral ID50 since they are not measured. 
 
 
 
@@ -22,8 +21,8 @@ for (tpeak in c(43,22)) {
   
   special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
   
-  iLab = c('bAb', 'nAb', 'st1.nAb.batch0and1')
-  ii=1:length(iLab)
+  # iLab = c('bAb', 'nAb', 'st1.nAb.batch0and1')
+  iLab = c('st1.nAb.batch0and1')
 
   cat("# D", tpeak, "M", M, subfolder, "\n\n", sep="")
 
@@ -32,119 +31,50 @@ for (tpeak in c(43,22)) {
   
   
   cat("## Univariate\n\n")
-  for (i in ii) {
+  for (i in seq_along(iLab)) {
     COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # for section title in report_by_COR.Rmd
     COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
     config.cor <- config::get(config = COR0)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
+    assays1=assays[startsWith(assays, ifelse(iLab[i]=="bAb", 'bind', 'pseudo'))]
 
     fname.suffix = "D" %.% tpeak
     all.markers = c(paste0("Day", tpeak, assays1), paste0("Delta", tpeak, "overB", assays1), paste0("B", assays1)); names(all.markers)=all.markers
+    has.alt = F
+    has.scaled = F
+    show.sample.size = T
+    show.ve.curves = F
+    show.tertile.curves = T
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
 
   cat("## Univariate placebo \n\n")
-  for (i in ii) {
+  for (i in seq_along(iLab)) {
     COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
     COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
     config.cor <- config::get(config = COR0)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
+    assays1=assays[startsWith(assays, ifelse(iLab[i]=="bAb", 'bind', 'pseudo'))]
   
     # placebo Dxx
     fname.suffix="D" %.% tpeak %.% "_plac"
     all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
+    has.alt = F
+    has.scaled = F
+    show.sample.size = T
+    show.ve.curves = F
+    show.tertile.curves = T
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-    cat(res, sep = '\n')
-  }
-
-
-  cat("## Univariate placebo alt \n\n")
-  for (i in ii) {
-    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
-    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
-    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-    config.cor <- config::get(config = COR0)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
-
-    # placebo Dxx with a subset of countries for stage 1
-    fname.suffix="D" %.% tpeak %.% "_plac_alt2"
-    all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
-    COR_page_notes="Analyses based on Columbia, Ghana, Kenya, Nepal, India only."
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
-    COR_page_notes = "" # reset
-    cat(res, sep = '\n')
-  }
-
-  
-  cat("## B detectable*D", tpeak, " \n\n", sep="")
-  for (i in ii) {
-    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
-    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
-    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-    config.cor <- config::get(config = COR0)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
-        
-    fname.suffix = "Bhigh*D" %.% tpeak
-    has.alt = F
-    coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline undetectable group.")
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-    coef_page_notes = "" # reset 
-    cat(res, sep = '\n')
-  }
-  
-
-      
-  cat("## Rev B detectable * D", tpeak, " \n\n", sep="")
-  for (i in ii) {
-    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
-    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
-    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-    config.cor <- config::get(config = COR0)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    assays1=assays[startsWith(assays, ifelse(i==1, 'bind', 'pseudo'))]
-  
-    fname.suffix = "(1-Bhigh)*D" %.% tpeak
-    has.alt = F
-    coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline detectable group.")
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
-    coef_page_notes = ""
-    cat(res, sep = '\n')
-  }
-  
-  
-
-  cat("## B+D", tpeak, "\n\n", sep="")
-  for (i in ii) {
-    COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
-    config.cor <- config::get(config = COR0)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    # modify pathCoRoutput and COR to include subfolder name.
-    COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
-
-    pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-    if (i==1) {
-      assays1=assays[startsWith(assays,'bind')]
-    } else if (i==2 | i==3) {
-      assays1=assays[startsWith(assays,'pseudo')]
-    }
-
-    fname.suffix = "B+D" %.% tpeak
-    has.alt = F
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
 
 
 
   cat("## B*D", tpeak, " \n\n", sep="")
-  for (i in ii) {
+  for (i in seq_along(iLab)) {
     COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
     config.cor <- config::get(config = COR0)
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
@@ -152,7 +82,7 @@ for (tpeak in c(43,22)) {
     COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
 
     pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-    if (i==1) {
+    if (iLab[i]=="bAb") {
       assays1=assays[startsWith(assays,'bind')]
     } else if (i==2 | i==3) {
       assays1=assays[startsWith(assays,'pseudo')]
@@ -160,14 +90,110 @@ for (tpeak in c(43,22)) {
 
     fname.suffix = "B*D" %.% tpeak
     has.alt = F
+    has.scaled = F
+    show.sample.size = F
+    show.ve.curves = F
+    show.tertile.curves = F
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
 
 
 
+  # cat("## Univariate placebo alt \n\n")
+  # for (i in seq_along(iLab)) {
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   assays1=assays[startsWith(assays, ifelse(iLab[i]=="bAb", 'bind', 'pseudo'))]
+  # 
+  #   # placebo Dxx with a subset of countries for stage 1
+  #   fname.suffix="D" %.% tpeak %.% "_plac_alt2"
+  #   all.markers=c(paste0("Day", tpeak, assays1)); names(all.markers)=all.markers
+  #   COR_page_notes="Analyses based on Columbia, Ghana, Kenya, Nepal, India only."
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+  #   COR_page_notes = "" # reset
+  #   cat(res, sep = '\n')
+  # }
+
+  
+  # cat("## B detectable*D", tpeak, " \n\n", sep="")
+  # for (i in seq_along(iLab)) {
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   assays1=assays[startsWith(assays, ifelse(iLab[i]=="bAb", 'bind', 'pseudo'))]
+  #       
+  #   fname.suffix = "Bhigh*D" %.% tpeak
+  #   has.alt = F
+  #   has.scaled = F
+  #   show.sample.size = F
+  #   show.ve.curves = F
+  #   show.tertile.curves = F
+  #   coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline undetectable group.")
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  #   coef_page_notes = "" # reset 
+  #   cat(res, sep = '\n')
+  # }
+  
+
+      
+  # cat("## Rev B detectable * D", tpeak, " \n\n", sep="")
+  # for (i in seq_along(iLab)) {
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)   # affects Section title in report_by_COR.Rmd
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   assays1=assays[startsWith(assays, ifelse(iLab[i]=="bAb", 'bind', 'pseudo'))]
+  # 
+  #   fname.suffix = "(1-Bhigh)*D" %.% tpeak
+  #   has.alt = F
+  #   has.scaled = F
+  #   show.sample.size = F
+  #   show.ve.curves = F
+  #   show.tertile.curves = F
+  #   coef_page_notes = paste0("Bhigh = 1 if baseline ancestral ID50 is above LOD; thus the second parameter is the effect of the continuous marker in the baseline detectable group.")
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  #   coef_page_notes = ""
+  #   cat(res, sep = '\n')
+  # }
+  
+  
+
+  # cat("## B+D", tpeak, "\n\n", sep="")
+  # for (i in seq_along(iLab)) {
+  #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
+  #   config.cor <- config::get(config = COR0)
+  #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  #   # modify pathCoRoutput and COR to include subfolder name.
+  #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
+  # 
+  #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
+  #   if (iLab[i]=="bAb") {
+  #     assays1=assays[startsWith(assays,'bind')]
+  #   } else if (i==2 | i==3) {
+  #     assays1=assays[startsWith(assays,'pseudo')]
+  #   }
+  # 
+  #   fname.suffix = "B+D" %.% tpeak
+  #   has.alt = F
+  #   has.scaled = F
+  #   show.sample.size = F
+  #   show.ve.curves = F
+  #   show.tertile.curves = F
+  #   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  #   cat(res, sep = '\n')
+  # }
+  
+
+
   # cat("## binary B*D", tpeak, " \n\n", sep="")
-  # for (i in ii) {
+  # for (i in seq_along(iLab)) {
   #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
   #   config.cor <- config::get(config = COR0)
   #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
@@ -175,7 +201,7 @@ for (tpeak in c(43,22)) {
   #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
   # 
   #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-  #   if (i==1) {
+  #   if (iLab[i]=="bAb") {
   #     assays1=assays[startsWith(assays,'bind')]
   #   } else if (i==2 | i==3) {
   #     assays1=assays[startsWith(assays,'pseudo')]
@@ -192,7 +218,7 @@ for (tpeak in c(43,22)) {
   # 
   # 
   # cat("## Rev binary * D", tpeak, " \n\n", sep="")
-  # for (i in ii) {
+  # for (i in seq_along(iLab)) {
   #   COR0 <- paste0("D", tpeak, "vat08_combined_M", M, "_", iLab[i])    # D43vat08_combined_M12_bAb
   #   config.cor <- config::get(config = COR0)
   #   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
@@ -200,7 +226,7 @@ for (tpeak in c(43,22)) {
   #   COR <- paste0(iLab[i], " M", M, " Stage ", iSt)
   # 
   #   pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR0, "/", subfolder)
-  #   if (i==1) {
+  #   if (iLab[i]=="bAb") {
   #     assays1=assays[startsWith(assays,'bind')]
   #   } else if (i==2 | i==3) {
   #     assays1=assays[startsWith(assays,'pseudo')]

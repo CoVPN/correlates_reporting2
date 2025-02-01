@@ -74,18 +74,18 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 		echo "stage 1"
 		Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_st1.nAb.batch0and1 # stage 1 only
 		Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_st1.nAb.batch0and1 # stage 1 only
-#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_nAb # stage 1 
-#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_nAb # stage 1
-		Rscript cOde/cor_coxph_vat08_combined.R D43vat08_combined_M6_bAb # stage 1
-		Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_bAb # stage 1
+		#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_bAb # stage 1
+		#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_bAb # stage 1
+        #Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M6_nAb # stage 1 
+        #Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M6_nAb # stage 1
     else
 		echo "stage 2"
 		Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_nAb # stage 2 only
 		Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_nAb # stage 2 only
 		Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_bAb # stage 2 only
 		Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_bAb # stage 2 only
-#Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_st2.nAb.sen # stage 2 only
-#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_st2.nAb.sen # stage 2 only
+        #Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_st2.nAb.sen # stage 2 only
+        #Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_st2.nAb.sen # stage 2 only
     endif
 else ifeq ($(TRIAL),$(filter $(TRIAL), profiscov))
 	Rscript code/cor_coxph.R D43
@@ -122,4 +122,4 @@ help: Makefile
 	@sed -n 's/^##//p' $<
 
 # define PHONYS
-.PHONY: help clean cor_coxph
+.PHONY: help clean cor_coxph report

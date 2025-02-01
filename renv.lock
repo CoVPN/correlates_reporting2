@@ -511,15 +511,15 @@
     },
     "copcor": {
       "Package": "copcor",
-      "Version": "2024.7-23",
+      "Version": "2024.8-30",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "CoVPN",
       "RemoteRepo": "copcor",
       "RemoteRef": "main",
-      "RemoteSha": "f23eeb57d920ffcadc3ffd023e91656540b0b245",
-      "Hash": "c89728a873a3f6e0d4266e24a9358d70"
+      "RemoteSha": "0fb5b0e4b050c83b49d35d6d9710eb5c48c754ad",
+      "Hash": "1782e9cb65a0acd7fb0a5462b8e6e677"
     },
     "corrplot": {
       "Package": "corrplot",
@@ -821,6 +821,13 @@
       "Repository": "CRAN",
       "Hash": "ceabdf54e1cf26e30f99f43bad146acc"
     },
+    "ggnewscale": {
+      "Package": "ggnewscale",
+      "Version": "0.5.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0e4714a05e572eacd7c232fde675558e"
+    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.5.0",
@@ -1112,15 +1119,15 @@
     },
     "kyotil": {
       "Package": "kyotil",
-      "Version": "2024.5-8",
+      "Version": "2024.12-18",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "youyifong",
       "RemoteRepo": "kyotil",
       "RemoteRef": "master",
-      "RemoteSha": "540fe88b8187e6f77941e677282e358cf149ab97",
-      "Hash": "104058432f9766f2b719c1ae076f47fd"
+      "RemoteSha": "2cd065caec9a1d229d35fbeb71634089b0d26288",
+      "Hash": "c49a880c54bd8634a37bae69e3e5d056"
     },
     "labeling": {
       "Package": "labeling",
