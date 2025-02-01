@@ -359,7 +359,7 @@ f_longitude_by_assay <- function(
         ungroup() %>%
         group_split(.[[split.var]]) %>% # e.g., "panel" variable from assay_metadata
         purrr::map(function(d){
-            ggplot(data = d, aes_string(x = x.var, y = "value", color = "cohort_event")) +
+            ggplot(data = d, aes(x = .data[[x.var]], y = .data[["value"]], color = "cohort_event")) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
                 
                 geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE) +
@@ -370,13 +370,12 @@ f_longitude_by_assay <- function(
                 scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
-
                 geom_point(aes(color = .data[[pointby]], shape = .data[[pointby]]), size = 3, alpha = 0.6, show.legend = TRUE) +
                 scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                 scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                 
-                geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes_string(x = x.var, label = "N_RespRate", y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(x = .data[[x.var]], label = "N_RespRate", y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
