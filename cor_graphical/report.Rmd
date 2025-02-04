@@ -159,12 +159,28 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
         }
       }
       
-      # adhoc for vat08 stage 2 non-naive
+      # adhoc for vat08 stage 2 non-naive at day 43 and day 43 over day 1
       if (attr(config,"config")=="vat08_combined" & COR_postfix_list == "D22D43omi_stage2"){
         
         for (a in c("pseudoneutid50", "bindSpike")) {
          
           for (tp in c("Day 43_nn_s_pos", "D43 fold-rise over D1_nn_s_pos", "Day 43_nn_prev_inf", "D43 fold-rise over D1_nn_prev_inf")){
+            
+              tpLabel = gsub("_s_pos", " S-pos only", gsub("_prev_inf", " Prev-inf", gsub("_n", " naive", gsub("_nn", " non naive", tolower(tp)))))
+              aLabel = a 
+              res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
+              cat(res, sep = '\n')
+              cat("\\clearpage", sep = '\n')
+          }
+        }
+      }
+      
+      # adhoc for vat08 stage 2 non-naive at day 1
+      if (attr(config,"config")=="vat08_combined" & COR_postfix_list == "D22D43omi_stage2"){
+        
+        for (a in c("pseudoneutid50", "bindSpike")) {
+         
+          for (tp in c("Day 1_nn_s_pos", "Day 1_nn_prev_inf")){
             
               tpLabel = gsub("_s_pos", " S-pos only", gsub("_prev_inf", " Prev-inf", gsub("_n", " naive", gsub("_nn", " non naive", tolower(tp)))))
               aLabel = a 

@@ -660,6 +660,7 @@ saveRDS(plot.25sample1, file = here("data_clean", "plot.25sample1.rds"))
 
 # adhoc for vat08 stage2
 if (study_name=="VAT08") {
+  # group by S_pos
   dat.longer.cor.subset.plot1.adhoc <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1, "stage2_D01_S_pos_only_in_non_naive_group"))
   dat.longer.cor.subset.plot1.adhoc <- dat.longer.cor.subset.plot1.adhoc %>%
     mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
@@ -669,6 +670,17 @@ if (study_name=="VAT08") {
            lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
   write.csv(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.rds"))
+  
+  # group by S_pos and pool the vaccine and placebo
+  dat.longer.cor.subset.plot1.adhoc2 <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1[groupby_vars1!="Trt"], "stage2_D01_S_pos_only_in_non_naive_group"))
+  dat.longer.cor.subset.plot1.adhoc2 <- dat.longer.cor.subset.plot1.adhoc2 %>%
+      mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+             lb = ifelse(grepl("Day|M", time), lb, ""),
+             lbval = ifelse(grepl("Day|M", time), lbval, NA),
+             lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+             lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  write.csv(dat.longer.cor.subset.plot1.adhoc2, file = here("data_clean", "longer_cor_data_plot1_adhoc2.csv"), row.names=F)
+  saveRDS(dat.longer.cor.subset.plot1.adhoc2, file = here("data_clean", "longer_cor_data_plot1_adhoc2.rds"))
 }
 
 if (attr(config,"config")=="janssen_pooled_partA") { 
