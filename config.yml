@@ -32,7 +32,7 @@ default: &default
 
 # not extending ows trial b/c don't want Bserostatus defined, which affects subset in _common.R
 vat08_combined: &vat08_combined
-  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250124.csv
+  data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250205.csv
   sampling_scheme: case_cohort
   two_marker_timepoints: yes
   timepoints: [22, 43]
@@ -607,7 +607,7 @@ hvtn705V1V2: &hvtn705V1V2
 # in labels, % is allowed in the middle, but not in the beginning
 hvtn705second: &hvtn705second
   <<: *hvtn705base
-  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v12.csv
+  data_cleaned: /trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v13.csv
   assays: [
          ELCZ,ELMo,ADCPgp140C97ZAfib,ADCPgp140Mos1fib,
          IgG3gp140C97ZAfibritin40delta,IgG3gp140Mos1fibritin40delta,IgG340mdw_gp120,IgG340mdw_gp140,IgG340mdw_V1V2,

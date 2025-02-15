@@ -1,4 +1,4 @@
-# COR="D15to181COVE"
+# COR="D15to181COVE" # use a modified def of endpoint that more closely resembles COVE study
 # COR="D15to181BA45"
 COR="D15to181"
 # COR="D15to91"
@@ -145,6 +145,7 @@ has.plac = F
 # 1, 11 and 12 are main effects models
 # 2 and 21 are itxn models: marker * naive
 # 3 and 31 are itxn models: D15 marker * baseline marker
+# Note that 4 and 5 here are not peak object 4 and 5
 # 4: like 1, but subset to naive
 # 5: like 1, but subset to nnaive
 

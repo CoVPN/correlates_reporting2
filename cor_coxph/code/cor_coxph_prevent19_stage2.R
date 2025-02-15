@@ -3,7 +3,7 @@
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "prevent19_stage2")
 Sys.setenv(VERBOSE = 1)
-source(here::here("..", "_common.R")) # dat_proc is made
+source(here::here("..", "_common.R")) 
 
 
 {
