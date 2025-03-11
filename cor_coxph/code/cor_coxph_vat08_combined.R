@@ -1,4 +1,5 @@
-# COR="D43vat08_combined_M5_nAb"; Sys.setenv(stage = 2) 
+# COR="D43vat08_combined_M5_bAb"; Sys.setenv(stage = 2) 
+# COR="D43vat08_combined_M6_st1.nAb.batch0and1"; Sys.setenv(stage = 1) 
 
 Sys.setenv(TRIAL = "vat08_combined")
 Sys.setenv(VERBOSE = 1) 
@@ -7,6 +8,7 @@ source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
 source(here::here("code", "cor_coxph_coef_1_mi.R"))
 source(here::here("code", "cor_coxph_coef_n_mi.R"))
+source("/home/yfong/copcor/R/cor_coxph_risk_tertile_incidence_curves.R") # HACK!!!!!!!!!!!!!!!
 
 
 {
@@ -87,7 +89,7 @@ myprint(stages)
 ################################################################################
 
 for (iSt in stages) {
-  # iSt=2
+  # iSt=1
   
   cat("\n\n\n\n")
   myprint(iSt)

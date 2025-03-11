@@ -1,9 +1,9 @@
 ---
 output:
-  pdf_document: default
-  html_document: default
-  
+pdf_document: default
+html_document: default
 ---
+
 # Graphical Description of Immunogenicity Data {#immuno-graphical}
 
 ```{r immuno-graphical-setup, echo = FALSE, message = FALSE, include=FALSE}
@@ -103,8 +103,8 @@ immuno_postfix_label = switch(study_name,
 <!--     # res = knitr::knit_child(c(here::here('report_set2_extra.Rmd')), quiet = TRUE) -->
 <!--     # cat(res, sep = '\n') -->
 <!--     cat("\\begin{figure}[H]\n\\center\n") -->
-<!--     cat(sprintf("\\includegraphics[width=1\\textwidth]{`r \"output\\vat08\\_combined\\%s_longitudinal\\_gmr\\_nonnaive\\_stage1stage2.pdf\"`}\n", assay_grp)) -->
-<!--     cat(sprintf("\\caption{`r paste0(\"Longitudinal plots for \", gsub(\"_\", \" \", \"%s\"), \" markers at D1, D22, D43, D78, D134, D202, D292, D387, Non\\-naive Stage 1 and Stage 2 Participants\")`}\n", assay_grp)) -->
+<!--     cat(sprintf("\\includegraphics[width=1\\textwidth]{`r 'output\\vat08\\_combined\\%s_longitudinal\\_gmr\\_nonnaive\\_stage1stage2.pdf'`}\n", assay_grp)) -->
+<!--     cat(sprintf("\\caption{`r paste0('Longitudinal plots for ', gsub('_', ' ', '%s'), ' markers at D1, D22, D43, D78, D134, D202, D292, D387, Non\\-naive Stage 1 and Stage 2 Participants')`}\n", assay_grp)) -->
 
 <!--     cat("\\end{figure}\n\\hphantom{Random text to appease the latex god}\n") -->
 <!--     cat("\\clearpage", sep = '\n') -->

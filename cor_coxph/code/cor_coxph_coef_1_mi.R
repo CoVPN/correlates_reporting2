@@ -38,7 +38,7 @@ cor_coxph_coef_1_mi = function(
   fits.scaled=list()
   for (i in 1:2) { # 1: not scaled, 2: scaled
     for (a in markers) {
-      myprint(a)
+      if(verbose>=2) myprint(a)
       
       models=lapply(1:10, function(imp) {
         # when this script becomes a function, mclapply runs into error:   unable to fork, possible reason: Cannot allocate memory
@@ -71,13 +71,19 @@ cor_coxph_coef_1_mi = function(
         
         
         if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
-          dat$ph2a = dat$ph2.D29
+          svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D29, data=dat)) 
+        
+        } else if (TRIAL=="vat08_combined") {
+          svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat)) 
+          # # use ph2 data and not ph1 data to make
+          # options(survey.lonely.psu="adjust")
+          # svycoxph(f, design=svydesign(id=~1, strata=~Wstratum, weights=~wt, data=dat[dat$ph2==1,])) 
+        
         } else {
-          dat$ph2a = dat$ph2
+          svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat)) 
+          
         }
         
-        design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat)
-        svycoxph(f, design=design.vac) 
       
       })
       
@@ -188,7 +194,7 @@ cor_coxph_coef_1_mi = function(
   fits.tri=list()
   overall.p.tri=c()
   for (a in markers) {
-    if(verbose) myprint(a)
+    if(verbose>=2) myprint(a)
     
     models=lapply(1:10, function(imp) {
       # models=mclapply(1:10, mc.cores = 10, FUN=function(imp) {
@@ -207,14 +213,18 @@ cor_coxph_coef_1_mi = function(
       
       
       if (TRIAL=="janssen_partA_VL" & a %in% c("Day29bindSpike","Day29pseudoneutid50")) {
-        dat$ph2a = dat$ph2.D29
-      
+        svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D29, data=dat)) 
+        
+      } else if (TRIAL=="vat08_combined") {
+        svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat)) 
+        # # use ph2 data and not ph1 data to make
+        # svycoxph(f, design=svydesign(id=~1, strata=~Wstratum, weights=~wt, data=dat[dat$ph2==1,])) 
+        
       } else {
-        dat$ph2a = dat$ph2
+        svycoxph(f, design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat)) 
+        
       }
       
-      design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat)
-      svycoxph(f, design=design.vac) 
     })
     
     betas<-MIextract(models, fun=coef)
@@ -333,14 +343,20 @@ cor_coxph_coef_1_mi = function(
       
       models = lapply(1:10, function (imp) {
         dat$EventIndOfInterest = ifelse(dat$EventIndPrimary==1 & dat[["seq1.variant.hotdeck"%.%imp]]==variant, 1, 0)
-        
-        if (TRIAL=="janssen_partA_VL" & a=="bindSpike+pseudoneutid50") {
-          dat$ph2a = dat$ph2.D29
+
+        if (TRIAL=="janssen_partA_VL" & a == "bindSpike+pseudoneutid50") {
+          svycoxph(get.f(i, imp), design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2.D29, data=dat)) 
+          
+        } else if (TRIAL=="vat08_combined") {
+          svycoxph(get.f(i, imp), design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat)) 
+          # # use ph2 data and not ph1 data to make
+          # svycoxph(get.f(i, imp), design=svydesign(id=~1, strata=~Wstratum, weights=~wt, data=dat[dat$ph2==1,])) 
+          
         } else {
-          dat$ph2a = dat$ph2
+          svycoxph(get.f(i, imp), design=twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat)) 
+          
         }
-        design.vac<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2a, data=dat)
-        svycoxph(get.f(i, imp), design=design.vac) 
+        
       })
       betas<-MIextract(models, fun=coef)
       vars<-MIextract(models, fun=vcov)
