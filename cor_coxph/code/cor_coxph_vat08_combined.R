@@ -1,4 +1,4 @@
-# COR="D43vat08_combined_M5_bAb"; Sys.setenv(stage = 2) 
+COR="D43vat08_combined_M5_bAb"; Sys.setenv(stage = 2) 
 # COR="D43vat08_combined_M6_st1.nAb.batch0and1"; Sys.setenv(stage = 1) 
 
 Sys.setenv(TRIAL = "vat08_combined")
@@ -8,7 +8,6 @@ source(here::here("..", "_common.R"))
 source(here::here("code", "params.R"))
 source(here::here("code", "cor_coxph_coef_1_mi.R"))
 source(here::here("code", "cor_coxph_coef_n_mi.R"))
-source("/home/yfong/copcor/R/cor_coxph_risk_tertile_incidence_curves.R") # HACK!!!!!!!!!!!!!!!
 
 
 {
@@ -47,10 +46,14 @@ numPerm <- config$num_perm_replicates # number permutation replicates 1e4
 myprint(B, numPerm)
 
 
-dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & prev_inf==1 & Trialstage==1 & ph1)
-dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & prev_inf==1 & Trialstage==1 & ph1)
-dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & prev_inf==1 & Trialstage==2 & ph1)
-dat.pla.seropos.st2 = subset(dat_proc, Trt==0 & prev_inf==1 & Trialstage==2 & ph1)
+# toggle between nnaive and prev_inf
+# dat_proc$kp = dat_proc$prev_inf
+dat_proc$kp = dat_proc$Bserostatus # nnaive
+
+dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & kp==1 & Trialstage==1 & ph1)
+dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & kp==1 & Trialstage==1 & ph1)
+dat.vac.seropos.st2 = subset(dat_proc, Trt==1 & kp==1 & Trialstage==2 & ph1)
+dat.pla.seropos.st2 = subset(dat_proc, Trt==0 & kp==1 & Trialstage==2 & ph1)
 
 for (a in c("Day"%.%tpeak%.%assays, "B"%.%assays, "Delta"%.%tpeak%.%"overB"%.%assays)) {
   dat.vac.seropos.st1[[a%.%"centered"]] = scale(dat.vac.seropos.st1[[a]], scale=F)
@@ -89,7 +92,7 @@ myprint(stages)
 ################################################################################
 
 for (iSt in stages) {
-  # iSt=1
+  # iSt=2
   
   cat("\n\n\n\n")
   myprint(iSt)
