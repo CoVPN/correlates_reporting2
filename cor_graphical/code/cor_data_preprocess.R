@@ -681,6 +681,28 @@ if (study_name=="VAT08") {
              lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
   write.csv(dat.longer.cor.subset.plot1.adhoc2, file = here("data_clean", "longer_cor_data_plot1_adhoc2.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot1.adhoc2, file = here("data_clean", "longer_cor_data_plot1_adhoc2.rds"))
+  
+  # group by S_pos, pool the vaccine and placebo, pool cohort_event
+  dat.longer.cor.subset.plot1.adhoc3 <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1[groupby_vars1!="Trt" & groupby_vars1!="cohort_event"], "baseline_immune_history"))
+  dat.longer.cor.subset.plot1.adhoc3 <- dat.longer.cor.subset.plot1.adhoc3 %>%
+    mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+           lb = ifelse(grepl("Day|M", time), lb, ""),
+           lbval = ifelse(grepl("Day|M", time), lbval, NA),
+           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  write.csv(dat.longer.cor.subset.plot1.adhoc3, file = here("data_clean", "longer_cor_data_plot1_adhoc3.csv"), row.names=F)
+  saveRDS(dat.longer.cor.subset.plot1.adhoc3, file = here("data_clean", "longer_cor_data_plot1_adhoc3.rds"))
+  
+  # group by S_pos, pool cohort_event
+  dat.longer.cor.subset.plot1.adhoc4 <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1[groupby_vars1!="cohort_event"], "baseline_immune_history"))
+  dat.longer.cor.subset.plot1.adhoc4 <- dat.longer.cor.subset.plot1.adhoc4 %>%
+    mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+           lb = ifelse(grepl("Day|M", time), lb, ""),
+           lbval = ifelse(grepl("Day|M", time), lbval, NA),
+           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  write.csv(dat.longer.cor.subset.plot1.adhoc4, file = here("data_clean", "longer_cor_data_plot1_adhoc4.csv"), row.names=F)
+  saveRDS(dat.longer.cor.subset.plot1.adhoc4, file = here("data_clean", "longer_cor_data_plot1_adhoc4.rds"))
 }
 
 if (attr(config,"config")=="janssen_pooled_partA") { 
