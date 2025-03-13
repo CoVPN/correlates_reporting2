@@ -1,6 +1,6 @@
 # Summary
 
-Correlates results for the previously infected in the stage 1, monovalent vaccine Sanofi trial. 
+“Non-naïve” is defined as in the VAT00008 protocol and Dayan et al., i.e., if they tested positive on at least one of the following tests: detection of anti-S antibodies for the D01 serum sample (Elecsys Anti-SARS-CoV-2 S electrochemiluminescence immunoassay; Roche, Indianapolis, IN, USA); detection of anti-nucleocapsid antibodies for the D01 or D22 serum samples (Elecsys Anti-SARS-CoV-2 N; Roche, Indianapolis, IN, USA); detection of SARS-CoV-2 nucleic acids for the D01 or D22 nasopharyngeal swabs (Abbott RealTime SARS-CoV-2 nucleic-acid amplification assay; Abbott Molecular, Des Plaines, IL, USA). Participants anti-S seropositive at D01 and negative by all other tests noted above were likely previously vaccinated and never (or distantly) previously infected, motivating consideration of the subset of the Non-naïve cohort that were very likely previously infected, defined by testing positive for at least one of the other tests. This subset is referred to as the “Non-naïve Previously Infected” cohort, and the other component of the Non-naïve cohort the “Non-naïve Previously Vaccinated” cohort. This version of the report provides results for the Non-naive Previously Infected cohort in the stage 1, monovalent vaccine Sanofi trial. 
 
 Non-Omicron events are not considered competing risk.
 
@@ -17,7 +17,7 @@ M=6
 show.q=F
 
 
-for (tpeak in c(43,22)) { 
+for (tpeak in c(43)) { 
   
   special.note = paste0("$\\ddagger$ Count Omicron cases starting 7 days post Day ", tpeak, ".")
   
