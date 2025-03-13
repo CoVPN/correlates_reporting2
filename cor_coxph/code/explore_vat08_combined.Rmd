@@ -21,7 +21,7 @@ region.2 = c( # stage 2
   "Nepal" = 3, "India" = 3)
 
 
-dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20240809_hotdeck.csv')
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20250312.csv')
 dat_mapped$EventIndPrimaryD1 = dat_mapped$EventIndFirstInfectionD1
 dat_mapped$EventTimePrimaryD1 = dat_mapped$EventTimeFirstInfectionD1
 dat_mapped$EventIndPrimaryD43= dat_mapped$EventIndFirstInfectionD43
@@ -40,7 +40,7 @@ dat_mapped$SUBJID = gsub("-","",dat_mapped$SUBJID,)
 dat_mapped$nAbBatch1=dat_mapped$nAbBatch
 dat_mapped$nAbBatch1[is.na(dat_mapped$Day43pseudoneutid50_B.1.351) & !is.na(dat_mapped$Day43pseudoneutid50)]=0
 
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250124.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250215.csv')
 dat_proc$SUBJID = sub("VAT00008-","",dat_proc$Ptid)
 dat_proc$SUBJID = gsub("-","",dat_proc$SUBJID,)
 dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDateEnrollment)
@@ -60,6 +60,61 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 ```
 
 ### Misc
+
+```{r understanding baseline immune history indicators}
+mytable(dat_mapped$baseline_immune_history, dat_mapped$Bserostatus)
+mytable(rowSums( subset(dat_mapped, select=c(D01_N_pos, D01_NAAT_pos, D22_N_pos, D22_NAAT_pos)), na.rm=T) > 0, dat_mapped$D01_S_pos_only_in_non_naive_group, dat_mapped$Bserostatus)
+
+```
+
+```{r table for Peter}
+dat=subset(dat_proc, Trialstage==2 & ph1.D43)
+
+mytable(dat$EventIndOmicronD43M5hotdeck10, dat$baseline_immune_history, dat$Trt)
+mytable(dat$EventIndOmicronD43M5hotdeck10, dat$baseline_immune_history!="baseline_naive", dat$Trt)
+
+```
+
+```{r baseline anti-S}
+
+dat_mapped=read.csv('/trials/covpn/p3005/analysis/mapping_immune_correlates/combined/adata/COVID_Sanofi_stage1and2_mapped_20250212.csv')
+
+dat=subset(dat_mapped, Trialstage==1)
+mytable(dat$baseline_immune_history, dat$D01_S_pos)
+mytable(dat$SARSD22, dat$SARSD01)
+with(subset(dat, SARSD22=="Non-Naive-D01/D22" & SARSD01=="Naive-D01"), mytable(D22_N_pos, D22_NAAT_pos))
+mytable(dat$SARSD22, dat$D01_S_pos==1 | dat$D01_N_pos==1 | dat$D01_NAAT_pos==1 | dat$D22_N_pos==1 | dat$D22_NAAT_pos==1)
+
+with(subset(dat, SARSD22=="Non-Naive-D01/D22"), table(D01_S_pos_only_in_non_naive_group, !is.na(Day43bindSpike) | !is.na(Day43pseudoneutid50)))
+
+
+
+dat=subset(dat_mapped, Trialstage==2)
+mytable(dat$baseline_immune_history, dat$D01_S_pos)
+mytable(dat$SARSD22, dat$D01_S_pos)
+mytable(dat$SARSD22, dat$D01_S_pos_only_in_non_naive_group)
+mytable(dat$SARSD22, dat$D01_S_pos==1 & dat$D01_N_pos==0 & dat$D01_NAAT_pos==0 & dat$D22_N_pos==0 & dat$D22_NAAT_pos==0)
+mytable(dat$SARSD22, dat$D01_S_pos==1 | dat$D01_N_pos==1 | dat$D01_NAAT_pos==1 | dat$D22_N_pos==1 | dat$D22_NAAT_pos==1)
+
+with(subset(dat, SARSD22=="Non-Naive-D01/D22"), mytable(D01_S_pos_only_in_non_naive_group, !is.na(Day43bindSpike) | !is.na(Day43pseudoneutid50)))
+with(subset(dat, SARSD22=="Non-Naive-D01/D22"), mytable(D01_S_pos_only_in_non_naive_group, SamplingStep))
+with(subset(dat, D01_S_pos_only_in_non_naive_group==1), mytable(!is.na(Day43bindSpike), !is.na(Day43pseudoneutid50), SamplingStep))
+with(subset(dat, D01_S_pos_only_in_non_naive_group==1), mytable(nAbBatch, SamplingStep))
+with(subset(dat, SARSD22=="Non-Naive-D01/D22"), mytable(nAbBatch, SamplingStep))
+
+with(subset(dat, SARSD22=="Non-Naive-D01/D22"), table(D01_S_pos, !is.na(Day43bindSpike) | !is.na(Day43pseudoneutid50)))
+with(subset(dat, SARSD22=="Non-Naive-D01/D22"), table(D01_N_pos, !is.na(Day43bindSpike) | !is.na(Day43pseudoneutid50)))
+with(subset(dat, SARSD22=="Non-Naive-D01/D22"), table(D01_NAAT_pos, !is.na(Day43bindSpike) | !is.na(Day43pseudoneutid50)))
+
+with(subset(dat), table(!is.na(Day43bindSpike) | !is.na(Day43pseudoneutid50), D01_S_pos_only_in_non_naive_group, Country))
+
+mytable(dat$D01_S_pos, dat$D01_N_pos, dat$D01_NAAT_pos)
+
+mytable(dat$EventIndFirstInfectionD1, dat$baseline_immune_history, dat$Trt)
+
+```
+
+
 
 ```{r}
 dat=subset(dat_proc, Trialstage==2 & Bserostatus==1 & ph1.D43)
