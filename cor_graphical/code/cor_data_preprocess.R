@@ -23,7 +23,7 @@ if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; n
 
 ## COR has a set of analysis-specific parameters defined in the config file
 config.cor <- config::get(config = COR)
-if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 1)} # need manually update "Trialstage" and line 69 in report.Rmd
+if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 2)} # need manually update "Trialstage" and line 70 in report.Rmd
 if (study_name=="VAT08") {
   dat_proc$ph2.D43.nAb = with(dat_proc, ifelse(Trialstage == 1, ph2.D43.st1.nAb.batch0and1, ph2.D43.nAb))
   dat_proc$ph2.D22.nAb = with(dat_proc, ifelse(Trialstage == 1, ph2.D22.st1.nAb.batch0and1, ph2.D22.nAb))
@@ -658,6 +658,31 @@ plot.25sample1 <- get_sample_by_group(dat.longer.cor.subset.plot1, groupby_vars1
 write.csv(plot.25sample1, file = here("data_clean", "plot.25sample1.csv"), row.names=F)
 saveRDS(plot.25sample1, file = here("data_clean", "plot.25sample1.rds"))
 
+# adhoc for vat08 stage2
+if (study_name=="VAT08") {
+  # group by S_pos
+  dat.longer.cor.subset.plot1.adhoc <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1, "stage2_D01_S_pos_only_in_non_naive_group"))
+  dat.longer.cor.subset.plot1.adhoc <- dat.longer.cor.subset.plot1.adhoc %>%
+    mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+           lb = ifelse(grepl("Day|M", time), lb, ""),
+           lbval = ifelse(grepl("Day|M", time), lbval, NA),
+           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  write.csv(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.csv"), row.names=F)
+  saveRDS(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.rds"))
+  
+  # group by S_pos and pool the vaccine and placebo
+  dat.longer.cor.subset.plot1.adhoc2 <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1[groupby_vars1!="Trt"], "stage2_D01_S_pos_only_in_non_naive_group"))
+  dat.longer.cor.subset.plot1.adhoc2 <- dat.longer.cor.subset.plot1.adhoc2 %>%
+      mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+             lb = ifelse(grepl("Day|M", time), lb, ""),
+             lbval = ifelse(grepl("Day|M", time), lbval, NA),
+             lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+             lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  write.csv(dat.longer.cor.subset.plot1.adhoc2, file = here("data_clean", "longer_cor_data_plot1_adhoc2.csv"), row.names=F)
+  saveRDS(dat.longer.cor.subset.plot1.adhoc2, file = here("data_clean", "longer_cor_data_plot1_adhoc2.rds"))
+}
+
 if (attr(config,"config")=="janssen_pooled_partA") { 
   # for adhoc plots showing moderate, severe and non-cases at 3 timepoints (day 29, day 71, month 6) 
   # 1 ptid with both severe and moderate cases post day 29 (moderate first), VAC31518COV3001-3010000, so moderate post-peak cases can be derived from config.cor$EventIndPrimary, i.e., EventIndPrimaryIncludeNotMolecConfirmedD29
@@ -678,14 +703,14 @@ if (attr(config,"config")=="janssen_pooled_partA") {
   #table(unique(dat.longer.cor.subset[,c("Ptid","cohort_event")])$cohort_event)
   dat.longer.cor.subset.adhoc = dat.longer.cor.subset.adhoc %>% filter(!is.na(value))
   
-  dat.longer.cor.subset.plot1_adhoc <- get_resp_by_group(dat.longer.cor.subset.adhoc, groupby_vars1_adhoc)
-  dat.longer.cor.subset.plot1_adhoc <- dat.longer.cor.subset.plot1_adhoc %>%
+  dat.longer.cor.subset.plot1.adhoc <- get_resp_by_group(dat.longer.cor.subset.adhoc, groupby_vars1_adhoc)
+  dat.longer.cor.subset.plot1.adhoc <- dat.longer.cor.subset.plot1.adhoc %>%
     mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
            lb = ifelse(grepl("Day|M", time), lb, ""),
            lbval = ifelse(grepl("Day|M", time), lbval, NA),
            lb2 = ifelse(grepl("Day|M", time), lb2, ""),
            lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
-  saveRDS(dat.longer.cor.subset.plot1_adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.rds"))
+  saveRDS(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.rds"))
 }
 
 #### for Figure 3. intercurrent vs pp, case vs non-case, (Day 1) Day 29 Day 57, by if Age >=65 and if at risk
