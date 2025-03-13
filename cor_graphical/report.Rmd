@@ -198,7 +198,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
          
           for (tp in c("Day 1_nn_s_pos_region", "Day 43_nn_s_pos_region")){
             
-              tpLabel = gsub("_s_pos", " S-pos only", gsub("_nn", " non naive", tolower(tp)))
+              tpLabel = gsub("_s_pos", " S-pos only", gsub("_nn", " non naive", gsub("_region", ", by region", tolower(tp))))
               aLabel = a 
               res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
               cat(res, sep = '\n')
