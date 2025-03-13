@@ -202,7 +202,7 @@ if (attr(config,"config") == "vat08_combined"){
                             mutate(Trt_nnaive = factor(paste(Trt, Bserostatus), 
                                                        levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
                                                        labels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels.2))) %>%
-                            filter(Bserostatus == na & baseline_immune_history == ifelse(day1_pos == "s_pos", "baseline_anti_S_pos_only", "baseline_RNA_or_antiN_pos")),
+                            filter(Bserostatus == na & immune_history == ifelse(day1_pos == "s_pos", "anti_S_pos_only", "RNA_or_antiN_pos")),
                         
                         facet.x.var = "assay_label_short",
                         facet.y.var = "Trt_nnaive",
@@ -255,7 +255,7 @@ if (attr(config,"config") == "vat08_combined"){
                                    Trt_nnaive = factor(paste(Trt, Bserostatus), 
                                                        levels = paste(Trt, bstatus.labels),
                                                        labels = paste(Trt, bstatus.labels.2))) %>%
-                            filter(Bserostatus == na & baseline_immune_history == ifelse(day1_pos == "s_pos", "baseline_anti_S_pos_only", "baseline_RNA_or_antiN_pos")),
+                            filter(Bserostatus == na & immune_history == ifelse(day1_pos == "s_pos", "anti_S_pos_only", "RNA_or_antiN_pos")),
                         
                         facet.x.var = "assay_label_short",
                         facet.y.var = "Trt_nnaive",
@@ -309,7 +309,7 @@ if (attr(config,"config") == "vat08_combined"){
                                    Trt_nnaive = factor(paste(Trt, Bserostatus), 
                                                        levels = paste(Trt, bstatus.labels),
                                                        labels = paste(Trt, bstatus.labels.2))) %>%
-                            filter(Bserostatus == na & baseline_immune_history == ifelse(day1_pos == "s_pos", "baseline_anti_S_pos_only", "baseline_RNA_or_antiN_pos")),
+                            filter(Bserostatus == na & immune_history == ifelse(day1_pos == "s_pos", "anti_S_pos_only", "RNA_or_antiN_pos")),
                         
                         facet.x.var = "assay_label_short",
                         facet.y.var = "Trt_nnaive",
@@ -346,7 +346,7 @@ if (attr(config,"config") == "vat08_combined"){
                                    Trt_nnaive = factor(paste(Trt, Bserostatus), 
                                                        levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
                                                        labels = paste0(rep(c("Vaccine","Placebo"),each=2), " ", bstatus.labels.2))) %>%
-                            filter(Bserostatus == na & baseline_immune_history == ifelse(day1_pos == "s_pos", "baseline_anti_S_pos_only", "baseline_RNA_or_antiN_pos")),
+                            filter(Bserostatus == na & immune_history == ifelse(day1_pos == "s_pos", "anti_S_pos_only", "RNA_or_antiN_pos")),
                         
                         facet.x.var = "assay_label_short",
                         facet.y.var = "Trt_nnaive",
