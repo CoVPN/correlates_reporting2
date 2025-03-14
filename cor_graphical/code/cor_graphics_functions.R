@@ -1029,7 +1029,7 @@ f_case_non_case_by_time_assay_wrap_adhoc <-
                     #facet_rep_wrap(Trt_nnaive ~ assay_label_short, repeat.tick.labels = TRUE) +
                     facet_wrap(as.formula(paste("~", facet.y.var, "+ ",facet.x.var)), ncol = ceiling(length(assays)/2)) +
                     geom_violin(aes(color = cohort_event, fill = Region3), color = "#8F8F8F", scale = "width", alpha = 0.3, position = "identity", na.rm = TRUE, show.legend = TRUE) +
-                    geom_boxplot(color = "#8F8F8F", width = 0.25, lwd = 1.5, alpha = 0.15, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
+                    #geom_boxplot(color = "#8F8F8F", width = 0.25, lwd = 1.5, alpha = 0.15, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
                     scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                     # geoms below will use another color scale
                     new_scale_color() +
