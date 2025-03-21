@@ -40,7 +40,7 @@ dat_mapped$SUBJID = gsub("-","",dat_mapped$SUBJID,)
 dat_mapped$nAbBatch1=dat_mapped$nAbBatch
 dat_mapped$nAbBatch1[is.na(dat_mapped$Day43pseudoneutid50_B.1.351) & !is.na(dat_mapped$Day43pseudoneutid50)]=0
 
-dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250215.csv')
+dat_proc = read.csv('/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250320.csv')
 dat_proc$SUBJID = sub("VAT00008-","",dat_proc$Ptid)
 dat_proc$SUBJID = gsub("-","",dat_proc$SUBJID,)
 dat_proc$EnrollmentDate = with(dat_proc, as.Date(FirstEnrollmentDate)+CalendarDateEnrollment)
@@ -60,6 +60,22 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 ```
 
 ### Misc
+
+```{r weights distribution}
+dat=subset(dat_proc, Trialstage==2 & ph2.D43.nAb & Bserostatus==1)
+mytable(round(dat$wt.D43.nAb))
+mytable(dat$Wstratum)
+mytable(dat$Wstratum, round(dat$wt.D43.nAb))
+
+dat=subset(dat_proc, Trialstage==2 & ph2.D43.bAb & Bserostatus==1)
+mytable(round(dat$wt.D43.bAb))
+mytable(dat$Wstratum)
+mytable(dat$Wstratum, round(dat$wt.D43.bAb))
+
+dat=subset(dat_proc, Trialstage==2 & Bserostatus==1)
+mytable(round(dat$Wstratum))
+
+```
 
 ```{r understanding baseline immune history indicators}
 mytable(dat_mapped$baseline_immune_history, dat_mapped$Bserostatus)
