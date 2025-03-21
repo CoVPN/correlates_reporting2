@@ -82,7 +82,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 		echo "stage 2"
 		Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_nAb # stage 2 only
 		#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_nAb # stage 2 only
-		Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_bAb # stage 2 only
+		 Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_bAb # stage 2 only
 		#Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_bAb # stage 2 only
         #Rscript code/cor_coxph_vat08_combined.R D43vat08_combined_M5_st2.nAb.sen # stage 2 only
         #Rscript code/cor_coxph_vat08_combined.R D22vat08_combined_M5_st2.nAb.sen # stage 2 only
