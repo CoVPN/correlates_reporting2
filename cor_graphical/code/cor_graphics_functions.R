@@ -974,3 +974,85 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
         pairplots
     }
 }
+
+
+# adhoc version for f_case_non_case_by_time_assay_wrap(), pool cohort_event, only show density for region
+f_case_non_case_by_time_assay_wrap_adhoc <- 
+    function(dat,
+             assays = assays,
+             times = times,
+             ylim = c(0,7.2), 
+             ybreaks = c(0,2,4,6),
+             panel.text.size = 3.8,
+             axis.x.text.size = 18,
+             strip.x.text.size = 18,
+             facet.x.var, # "assay_label_short",
+             facet.y.var, # "Trt_nnaive",
+             pointby = "cohort_col",
+             scale.x.discrete.lb = c("Omicron Cases", "Non-Cases"),
+             lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+             lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+             chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
+             chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders"))
+    ) {
+        
+        plot_theme <- theme_bw(base_size = 25) +
+            theme(plot.title = element_text(hjust = 0.5),
+                  axis.text.x = element_text(size = axis.x.text.size),
+                  axis.text.y = element_text(size = 25),
+                  axis.title = element_text(size = 24, face="bold"),
+                  strip.text.x = element_text(size = strip.x.text.size), # facet label size
+                  strip.text.y = element_text(size = 25),
+                  strip.background = element_rect(fill=NA,colour=NA),
+                  strip.placement = "outside",
+                  legend.position = "bottom", 
+                  legend.text = element_text(size = 26, face="plain"),
+                  legend.key = element_blank(), # remove square outside legend key
+                  plot.caption = element_text(size = 26, hjust=0, face="plain"), 
+                  panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank(),
+                  plot.margin = margin(5.5, 12, 5.5, 5.5, "pt")) 
+        
+        p1 <- dat %>%
+            filter(assay %in% assays & time %in% times) %>%
+            left_join(assay_metadata, by="assay") %>%
+            mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+            mutate(cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event)),
+                   cohort_col2 = paste(cohort_event, Trt),
+                   time = factor(time, levels=times),
+                   Region3 = factor(Region3, levels = c("Africa", "AsiaPac", "LatAm"))
+            ) %>%
+            ungroup() %>%
+            group_split(time) %>%
+            purrr::map(function(d){
+                ggplot(data = d, aes(x = cohort_event, y = value)) +
+                    #facet_rep_wrap(Trt_nnaive ~ assay_label_short, repeat.tick.labels = TRUE) +
+                    facet_wrap(as.formula(paste("~", facet.y.var, "+ ",facet.x.var)), ncol = ceiling(length(assays)/2)) +
+                    geom_violin(aes(color = cohort_event, fill = Region3), color = "#8F8F8F", scale = "width", alpha = 0.3, position = "identity", na.rm = TRUE, show.legend = TRUE) +
+                    #geom_boxplot(color = "#8F8F8F", width = 0.25, lwd = 1.5, alpha = 0.15, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
+                    scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                    # geoms below will use another color scale
+                    new_scale_color() +
+                    geom_jitter(aes(color = .data[[pointby]], shape = .data[[pointby]]), width = 0.3, height = 0, size = 1.1, show.legend = TRUE) +
+                    scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                    scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                    scale_fill_manual(name = "Region", values = c("Africa" = "#33A02C", "AsiaPac" = "#E31A1C", "LatAm" = "#1F78B4")) +
+                    # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
+                    # Whisker: Q3 + 1.5 IQR
+                    geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    
+                    geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
+                    geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
+                    # only plot uloq for ID50
+                    geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval2,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
+                    geom_text(aes(label = ifelse(N_RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
+                    
+                    scale_x_discrete(labels = scale.x.discrete.lb, drop=FALSE) +
+                    scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scales::math_format(10^.x)) +
+                    labs(x = "Cohort", y = unique(d$panel), title = paste(unique(d$panel), "distributions at", unique(d$time)), color = "Category", shape = "Category") +
+                    plot_theme +
+                    guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1), fill = guide_legend(ncol = 1))
+            })
+        return(p1)
+    }
