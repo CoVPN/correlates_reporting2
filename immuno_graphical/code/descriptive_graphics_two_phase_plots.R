@@ -822,8 +822,8 @@ if (study_name!="VAT08" & attr(config,"config")!="prevent19_stage2"){ # no spagh
         split(., .$BT) %>%
         lapply(function(xx) {
           if (xx$BT[1] %in% c("10", "00")) {
-            sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 10 placebo recipients
-            # add ifelse(length(xx$Ptid)<20, F, T) because some subset has small sample e.g. janssen_sa_partA
+            sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 20 placebo recipients
+            # add ifelse here because some subset has small sample e.g. janssen_sa_partA
           } else {
             sample(xx$Ptid, 20, ifelse(length(xx$Ptid)<20, T, F))  ## sample 20 vaccine recipients
           }
