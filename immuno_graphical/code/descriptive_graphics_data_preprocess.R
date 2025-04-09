@@ -14,7 +14,7 @@ source(here::here("code", "process_violin_pair_functions.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; names(pos.cutoffs) <- assays}
 #-----------------------------------------------
 
-Trialstage_val = 1 ###################################### need manually update "Trialstage" and line 89 in report.Rmd
+Trialstage_val = 2 ###################################### need manually update "Trialstage" and line 89 in report.Rmd for vat08_combined 
 
 library(here)
 library(dplyr)

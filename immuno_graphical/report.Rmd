@@ -86,7 +86,7 @@ neut.marker.captions <- switch(study_name,
                                )
 
 immuno_postfix_label = switch(study_name, 
-                               "VAT08"=" (Stage1)")
+                               "VAT08"=" (Stage2)")
 
 ```
 
