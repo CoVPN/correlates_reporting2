@@ -47,8 +47,8 @@ myprint(B, numPerm)
 
 
 # toggle between nnaive and prev_inf
-# dat_proc$kp = dat_proc$prev_inf
-dat_proc$kp = dat_proc$Bserostatus # nnaive
+dat_proc$kp = dat_proc$prev_inf
+# dat_proc$kp = dat_proc$Bserostatus # nnaive
 
 dat.vac.seropos.st1 = subset(dat_proc, Trt==1 & kp==1 & Trialstage==1 & ph1)
 dat.pla.seropos.st1 = subset(dat_proc, Trt==0 & kp==1 & Trialstage==1 & ph1)
