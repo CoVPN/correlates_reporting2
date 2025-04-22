@@ -339,6 +339,12 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
         subdat <- dat.twophase.sample %>%
           dplyr::filter(Bserostatus == bserostatus)
         
+        if (attr(config,"config")=="vat08_combined" & asy %in% c("bind", "*")) {
+          subdat = subdat[which(subdat$ph2.immuno.bAb==1), ]
+        } else if (attr(config,"config")=="vat08_combined" & asy=="pseudo") {
+          subdat = subdat[which(subdat$ph2.immuno.nAb==1), ]
+        }
+        
         covid_corr_pairplots(
           plot_dat = subdat,
           time = tp,
@@ -752,9 +758,11 @@ print("Boxplots 4:")
 if (study_name=="VAT08" & F) {# this is only reported for VAT08
   for (tp in tps_no_fold_change) {
     
+    subdat_box4 = dat.long.twophase.sample %>% filter(ph2.immuno.bAb==1)
+    
     covid_corr_boxplot_facets(
-      plot_dat = dat.long.twophase.sample %>% mutate(BseroTrtGender = factor(paste0(Bserostatus,"\n",Trt,"\n",sex_label),
-                                                                       levels = paste0(rep(bstatus.labels, 2), "\n", rep(c("Vaccine", "Placebo"), each=2) , "\n", rep(c("Female", "Male"), each=4))
+      plot_dat = subdat_box4 %>% mutate(BseroTrtGender = factor(paste0(Bserostatus,"\n",Trt,"\n",sex_label),
+                                                                levels = paste0(rep(bstatus.labels, 2), "\n", rep(c("Vaccine", "Placebo"), each=2) , "\n", rep(c("Female", "Male"), each=4))
       )),
       x = "BseroTrtGender",
       y = tp,

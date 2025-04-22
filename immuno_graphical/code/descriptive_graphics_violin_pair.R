@@ -199,8 +199,15 @@ if (attr(config,"config")=="vat08_combined" & dat.longer.immuno.subset.plot1_$Tr
     # longitudinal plots for stage 1 and stage 2, non-naive ppt
     
     for (asy in set2_assays){
+        
+        if (attr(config,"config")=="vat08_combined" & grepl("bind", asy)) {
+            subdat_adhoc = dat.longer.immuno.subset.plot1_stage1_stage2 %>% filter(ph2.immuno.bAb==1)
+        } else if (attr(config,"config")=="vat08_combined" & grepl("pseudo", asy)){
+            subdat_adhoc = dat.longer.immuno.subset.plot1_stage1_stage2 %>% filter(ph2.immuno.nAb==1)
+        }
+        
         f_2 <- f_longitude_by_assay(
-            dat = dat.longer.immuno.subset.plot1_stage1_stage2 %>% 
+            dat = subdat_adhoc %>% 
                 filter(Bserostatus == 1) %>%
                 mutate(Trt_nnaive = factor(paste(Trt, nnaive),
                                            levels = c("Vaccine Non-naive", "Placebo Non-naive"),
