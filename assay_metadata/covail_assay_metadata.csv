@@ -1,98 +1,62 @@
-"panel","order_in_panel","assay","lloq","uloq","lod","pos.cutoff","assay_label","assay_label_short","llox_label","for_correlates"
-"id50",1,"pseudoneutid50_D614G",47,198904,40,40,"PsV Neutralization to D614G","Pseudovirus-nAb D614G (AU/ml)","lod",1
-"id50",2,"pseudoneutid50_Delta",50,145858,40,40,"PsV Neutralization to Delta","Pseudovirus-nAb Delta (AU/ml)","lod",1
-"id50",3,"pseudoneutid50_Beta",44,35879,40,40,"PsV Neutralization to Beta","Pseudovirus-nAb Beta (AU/ml)","lod",1
-"id50",4,"pseudoneutid50_BA.1",66,27104,40,40,"PsV Neutralization to BA.1","Pseudovirus-nAb BA.1 (AU/ml)","lod",1
-"id50",5,"pseudoneutid50_BA.4.BA.5",57,58293,40,40,"PsV Neutralization to BA.4/BA.5","Pseudovirus-nAb BA.4/BA.5 (AU/ml)","lod",1
-"id50",6,"pseudoneutid50_MDW",-1000000,Inf,40,NA,"PsV Neutralization breadth score","Pseudovirus-nAb ID50 breadth score","lod",1
-"id50Duke",4,"pseudoneutid50Duke_BA.2.12.1",66,27104,40,40,"Duke PsV Neutralization to BA.2.12.1","Duke Pseudovirus-nAb BA.2.12.1 (AU/ml)","lod",0
-"tcell",1,"cd4_IFNg.IL2_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 to COV2 CON S1","CD4+ T cells IFN-g and/or IL-2 COV2 CON S1 (%)","lod",NA
-"tcell",2,"cd4_IFNg.IL2_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 to COV2 CON S2","CD4+ T cells IFN-g and/or IL-2 COV2 CON S2 (%)","lod",NA
-"tcell",3,"cd4_IFNg.IL2_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 to BA.4-5 S1","CD4+ T cells IFN-g and/or IL-2 BA.4-5 S1 (%)","lod",NA
-"tcell",4,"cd4_IFNg.IL2_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 to BA.4-5 S2","CD4+ T cells IFN-g and/or IL-2 BA.4-5 S2 (%)","lod",NA
-"tcell",5,"cd4_IFNg.IL2_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 to Wuhan N","CD4+ T cells IFN-g and/or IL-2 Wuhan N (%)","lod",NA
-"tcell",6,"cd8_IFNg.IL2_COV2.CON.S1",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 to COV2 CON S1","CD8+ T cells IFN-g and/or IL-2 COV2 CON S1 (%)","lod",NA
-"tcell",7,"cd8_IFNg.IL2_COV2.CON.S2",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 to COV2 CON S2","CD8+ T cells IFN-g and/or IL-2 COV2 CON S2 (%)","lod",NA
-"tcell",8,"cd8_IFNg.IL2_BA.4.5.S1",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 to BA.4-5 S1","CD8+ T cells IFN-g and/or IL-2 BA.4-5 S1 (%)","lod",NA
-"tcell",9,"cd8_IFNg.IL2_BA.4.5.S2",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 to BA.4-5 S2","CD8+ T cells IFN-g and/or IL-2 BA.4-5 S2 (%)","lod",NA
-"tcell",10,"cd8_IFNg.IL2_Wuhan.N",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 to Wuhan N","CD8+ T cells IFN-g and/or IL-2 Wuhan N (%)","lod",NA
-"tcell",11,"cd4_IFNg.IL2.154_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to COV2 CON S1","CD4+ T cells IFN-g and/or IL-2 and/or CD154 COV2 CON S1 (%)","lod",NA
-"tcell",12,"cd4_IFNg.IL2.154_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to COV2 CON S2","CD4+ T cells IFN-g and/or IL-2 and/or CD154 COV2 CON S2 (%)","lod",NA
-"tcell",13,"cd4_IFNg.IL2.154_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to BA.4-5 S1","CD4+ T cells IFN-g and/or IL-2 and/or CD154 BA.4-5 S1 (%)","lod",NA
-"tcell",14,"cd4_IFNg.IL2.154_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to BA.4-5 S2","CD4+ T cells IFN-g and/or IL-2 and/or CD154 BA.4-5 S2 (%)","lod",NA
-"tcell",15,"cd4_IFNg.IL2.154_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to Wuhan N","CD4+ T cells IFN-g and/or IL-2 and/or CD154 Wuhan N (%)","lod",NA
-"tcell",16,"cd4_IL4.IL5.IL13.154_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to COV2 CON S1","CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 COV2 CON S1 (%)","lod",NA
-"tcell",17,"cd4_IL4.IL5.IL13.154_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to COV2 CON S2","CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 COV2 CON S2 (%)","lod",NA
-"tcell",18,"cd4_IL4.IL5.IL13.154_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to BA.4-5 S1","CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 BA.4-5 S1 (%)","lod",NA
-"tcell",19,"cd4_IL4.IL5.IL13.154_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to BA.4-5 S2","CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 BA.4-5 S2 (%)","lod",NA
-"tcell",20,"cd4_IL4.IL5.IL13.154_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to Wuhan N","CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 Wuhan N (%)","lod",NA
-"tcell",21,"cd4_IL21_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-21 to COV2 CON S1","CD4+ T cells IL-21 COV2 CON S1 (%)","lod",NA
-"tcell",22,"cd4_IL21_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-21 to COV2 CON S2","CD4+ T cells IL-21 COV2 CON S2 (%)","lod",NA
-"tcell",23,"cd4_IL21_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-21 to BA.4-5 S1","CD4+ T cells IL-21 BA.4-5 S1 (%)","lod",NA
-"tcell",24,"cd4_IL21_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-21 to BA.4-5 S2","CD4+ T cells IL-21 BA.4-5 S2 (%)","lod",NA
-"tcell",25,"cd4_IL21_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing IL-21 to Wuhan N","CD4+ T cells IL-21 Wuhan N (%)","lod",NA
-"tcell",26,"cd4_IFNg_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g to COV2 CON S1","CD4+ T cells IFN-g COV2 CON S1 (%)","lod",NA
-"tcell",27,"cd4_IFNg_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g to COV2 CON S2","CD4+ T cells IFN-g COV2 CON S2 (%)","lod",NA
-"tcell",28,"cd4_IFNg_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g to BA.4-5 S1","CD4+ T cells IFN-g BA.4-5 S1 (%)","lod",NA
-"tcell",29,"cd4_IFNg_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g to BA.4-5 S2","CD4+ T cells IFN-g BA.4-5 S2 (%)","lod",NA
-"tcell",30,"cd4_IFNg_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing IFN-g to Wuhan N","CD4+ T cells IFN-g Wuhan N (%)","lod",NA
-"tcell",31,"cd4_IL2_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-2 to COV2 CON S1","CD4+ T cells IL-2 COV2 CON S1 (%)","lod",NA
-"tcell",32,"cd4_IL2_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-2 to COV2 CON S2","CD4+ T cells IL-2 COV2 CON S2 (%)","lod",NA
-"tcell",33,"cd4_IL2_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-2 to BA.4-5 S1","CD4+ T cells IL-2 BA.4-5 S1 (%)","lod",NA
-"tcell",34,"cd4_IL2_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-2 to BA.4-5 S2","CD4+ T cells IL-2 BA.4-5 S2 (%)","lod",NA
-"tcell",35,"cd4_IL2_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing IL-2 to Wuhan N","CD4+ T cells IL-2 Wuhan N (%)","lod",NA
-"tcell",36,"cd4_TNFa_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing TNF-a to COV2 CON S1","CD4+ T cells TNF-a COV2 CON S1 (%)","lod",NA
-"tcell",37,"cd4_TNFa_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing TNF-a to COV2 CON S2","CD4+ T cells TNF-a COV2 CON S2 (%)","lod",NA
-"tcell",38,"cd4_TNFa_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing TNF-a to BA.4-5 S1","CD4+ T cells TNF-a BA.4-5 S1 (%)","lod",NA
-"tcell",39,"cd4_TNFa_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing TNF-a to BA.4-5 S2","CD4+ T cells TNF-a BA.4-5 S2 (%)","lod",NA
-"tcell",40,"cd4_TNFa_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing TNF-a to Wuhan N","CD4+ T cells TNF-a Wuhan N (%)","lod",NA
-"tcell",41,"cd8_IFNg_COV2.CON.S1",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g to COV2 CON S1","CD8+ T cells IFN-g COV2 CON S1 (%)","lod",NA
-"tcell",42,"cd8_IFNg_COV2.CON.S2",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g to COV2 CON S2","CD8+ T cells IFN-g COV2 CON S2 (%)","lod",NA
-"tcell",43,"cd8_IFNg_BA.4.5.S1",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g to BA.4-5 S1","CD8+ T cells IFN-g BA.4-5 S1 (%)","lod",NA
-"tcell",44,"cd8_IFNg_BA.4.5.S2",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g to BA.4-5 S2","CD8+ T cells IFN-g BA.4-5 S2 (%)","lod",NA
-"tcell",45,"cd8_IFNg_Wuhan.N",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g to Wuhan N","CD8+ T cells IFN-g Wuhan N (%)","lod",NA
-"tcell",46,"cd8_IL2_COV2.CON.S1",NA,NA,NA,NA,"CD8+ T cells expressing IL-2 to COV2 CON S1","CD8+ T cells IL-2 COV2 CON S1 (%)","lod",NA
-"tcell",47,"cd8_IL2_COV2.CON.S2",NA,NA,NA,NA,"CD8+ T cells expressing IL-2 to COV2 CON S2","CD8+ T cells IL-2 COV2 CON S2 (%)","lod",NA
-"tcell",48,"cd8_IL2_BA.4.5.S1",NA,NA,NA,NA,"CD8+ T cells expressing IL-2 to BA.4-5 S1","CD8+ T cells IL-2 BA.4-5 S1 (%)","lod",NA
-"tcell",49,"cd8_IL2_BA.4.5.S2",NA,NA,NA,NA,"CD8+ T cells expressing IL-2 to BA.4-5 S2","CD8+ T cells IL-2 BA.4-5 S2 (%)","lod",NA
-"tcell",50,"cd8_IL2_Wuhan.N",NA,NA,NA,NA,"CD8+ T cells expressing IL-2 to Wuhan N","CD8+ T cells IL-2 Wuhan N (%)","lod",NA
-"tcell",51,"cd8_TNFa_COV2.CON.S1",NA,NA,NA,NA,"CD8+ T cells expressing TNF-a to COV2 CON S1","CD8+ T cells TNF-a COV2 CON S1 (%)","lod",NA
-"tcell",52,"cd8_TNFa_COV2.CON.S2",NA,NA,NA,NA,"CD8+ T cells expressing TNF-a to COV2 CON S2","CD8+ T cells TNF-a COV2 CON S2 (%)","lod",NA
-"tcell",53,"cd8_TNFa_BA.4.5.S1",NA,NA,NA,NA,"CD8+ T cells expressing TNF-a to BA.4-5 S1","CD8+ T cells TNF-a BA.4-5 S1 (%)","lod",NA
-"tcell",54,"cd8_TNFa_BA.4.5.S2",NA,NA,NA,NA,"CD8+ T cells expressing TNF-a to BA.4-5 S2","CD8+ T cells TNF-a BA.4-5 S2 (%)","lod",NA
-"tcell",55,"cd8_TNFa_Wuhan.N",NA,NA,NA,NA,"CD8+ T cells expressing TNF-a to Wuhan N","CD8+ T cells TNF-a Wuhan N (%)","lod",NA
-"tcell",56,"cd4_154_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing CD154 to COV2 CON S1","CD4+ T cells CD154 COV2 CON S1 (%)","lod",NA
-"tcell",57,"cd4_154_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing CD154 to COV2 CON S2","CD4+ T cells CD154 COV2 CON S2 (%)","lod",NA
-"tcell",58,"cd4_154_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing CD154 to BA.4-5 S1","CD4+ T cells CD154 BA.4-5 S1 (%)","lod",NA
-"tcell",59,"cd4_154_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing CD154 to BA.4-5 S2","CD4+ T cells CD154 BA.4-5 S2 (%)","lod",NA
-"tcell",60,"cd4_154_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing CD154 to Wuhan N","CD4+ T cells CD154 Wuhan N (%)","lod",NA
-"tcell",61,"cd4_IL17a_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-17a to COV2 CON S1","CD4+ T cells IL-17a COV2 CON S1 (%)","lod",NA
-"tcell",62,"cd4_IL17a_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-17a to COV2 CON S2","CD4+ T cells IL-17a COV2 CON S2 (%)","lod",NA
-"tcell",63,"cd4_IL17a_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-17a to BA.4-5 S1","CD4+ T cells IL-17a BA.4-5 S1 (%)","lod",NA
-"tcell",64,"cd4_IL17a_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-17a to BA.4-5 S2","CD4+ T cells IL-17a BA.4-5 S2 (%)","lod",NA
-"tcell",65,"cd4_IL17a_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing IL-17a to Wuhan N","CD4+ T cells IL-17a Wuhan N (%)","lod",NA
-"tcell",66,"cd4_IL4.154_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and CD154 to COV2 CON S1","CD4+ T cells IL-4 and CD154 COV2 CON S1 (%)","lod",NA
-"tcell",67,"cd4_IL4.154_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and CD154 to COV2 CON S2","CD4+ T cells IL-4 and CD154 COV2 CON S2 (%)","lod",NA
-"tcell",68,"cd4_IL4.154_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and CD154 to BA.4-5 S1","CD4+ T cells IL-4 and CD154 BA.4-5 S1 (%)","lod",NA
-"tcell",69,"cd4_IL4.154_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and CD154 to BA.4-5 S2","CD4+ T cells IL-4 and CD154 BA.4-5 S2 (%)","lod",NA
-"tcell",70,"cd4_IL4.154_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing IL-4 and CD154 to Wuhan N","CD4+ T cells IL-4 and CD154 Wuhan N (%)","lod",NA
-"tcell",71,"cd4_IL5.IL13.154_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to COV2 CON S1","CD4+ T cells IL-5 and/or IL-13 and CD154 COV2 CON S1 (%)","lod",NA
-"tcell",72,"cd4_IL5.IL13.154_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to COV2 CON S2","CD4+ T cells IL-5 and/or IL-13 and CD154 COV2 CON S2 (%)","lod",NA
-"tcell",73,"cd4_IL5.IL13.154_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to BA.4-5 S1","CD4+ T cells IL-5 and/or IL-13 and CD154 BA.4-5 S1 (%)","lod",NA
-"tcell",74,"cd4_IL5.IL13.154_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to BA.4-5 S2","CD4+ T cells IL-5 and/or IL-13 and CD154 BA.4-5 S2 (%)","lod",NA
-"tcell",75,"cd4_IL5.IL13.154_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to Wuhan N","CD4+ T cells IL-5 and/or IL-13 and CD154 Wuhan N (%)","lod",NA
-"tcell",76,"cd4_CXCR5.154_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or CD154 to COV2 CON S1","CD4+ T cells CXCR5 and/or CD154 COV2 CON S1 (%)","lod",NA
-"tcell",77,"cd4_CXCR5.154_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or CD154 to COV2 CON S2","CD4+ T cells CXCR5 and/or CD154 COV2 CON S2 (%)","lod",NA
-"tcell",78,"cd4_CXCR5.154_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or CD154 to BA.4-5 S1","CD4+ T cells CXCR5 and/or CD154 BA.4-5 S1 (%)","lod",NA
-"tcell",79,"cd4_CXCR5.154_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or CD154 to BA.4-5 S2","CD4+ T cells CXCR5 and/or CD154 BA.4-5 S2 (%)","lod",NA
-"tcell",80,"cd4_CXCR5.154_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or CD154 to Wuhan N","CD4+ T cells CXCR5 and/or CD154 Wuhan N (%)","lod",NA
-"tcell",81,"cd4_CXCR5.IL21_COV2.CON.S1",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or IL-21 to COV2 CON S1","CD4+ T cells CXCR5 and/or IL-21 COV2 CON S1 (%)","lod",NA
-"tcell",82,"cd4_CXCR5.IL21_COV2.CON.S2",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or IL-21 to COV2 CON S2","CD4+ T cells CXCR5 and/or IL-21 COV2 CON S2 (%)","lod",NA
-"tcell",83,"cd4_CXCR5.IL21_BA.4.5.S1",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or IL-21 to BA.4-5 S1","CD4+ T cells CXCR5 and/or IL-21 BA.4-5 S1 (%)","lod",NA
-"tcell",84,"cd4_CXCR5.IL21_BA.4.5.S2",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or IL-21 to BA.4-5 S2","CD4+ T cells CXCR5 and/or IL-21 BA.4-5 S2 (%)","lod",NA
-"tcell",85,"cd4_CXCR5.IL21_Wuhan.N",NA,NA,NA,NA,"CD4+ T cells expressing CXCR5 and/or IL-21 to Wuhan N","CD4+ T cells CXCR5 and/or IL-21 Wuhan N (%)","lod",NA
-"tcell",86,"cd8_IFNg.IL2.TNFa_COV2.CON.S1",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to COV2 CON S1","CD8+ T cells IFN-g and/or IL-2 and/or TNF-a COV2 CON S1 (%)","lod",NA
-"tcell",87,"cd8_IFNg.IL2.TNFa_COV2.CON.S2",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to COV2 CON S2","CD8+ T cells IFN-g and/or IL-2 and/or TNF-a COV2 CON S2 (%)","lod",NA
-"tcell",88,"cd8_IFNg.IL2.TNFa_BA.4.5.S1",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to BA.4-5 S1","CD8+ T cells IFN-g and/or IL-2 and/or TNF-a BA.4-5 S1 (%)","lod",NA
-"tcell",89,"cd8_IFNg.IL2.TNFa_BA.4.5.S2",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to BA.4-5 S2","CD8+ T cells IFN-g and/or IL-2 and/or TNF-a BA.4-5 S2 (%)","lod",NA
-"tcell",90,"cd8_IFNg.IL2.TNFa_Wuhan.N",NA,NA,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to Wuhan N","CD8+ T cells IFN-g and/or IL-2 and/or TNF-a Wuhan N (%)","lod",NA
+panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates
+id50,1,pseudoneutid50_D614G,47,198904,40,40,PsV Neutralization to D614G,Pseudovirus-nAb D614G (AU/ml),lod,1
+id50,2,pseudoneutid50_Delta,50,145858,40,40,PsV Neutralization to Delta,Pseudovirus-nAb Delta (AU/ml),lod,1
+id50,3,pseudoneutid50_Beta,44,35879,40,40,PsV Neutralization to Beta,Pseudovirus-nAb Beta (AU/ml),lod,1
+id50,4,pseudoneutid50_BA.1,66,27104,40,40,PsV Neutralization to BA.1,Pseudovirus-nAb BA.1 (AU/ml),lod,1
+id50,5,pseudoneutid50_BA.4.BA.5,57,58293,40,40,PsV Neutralization to BA.4/BA.5,Pseudovirus-nAb BA.4/BA.5 (AU/ml),lod,1
+id50,6,pseudoneutid50_MDW,-1000000,Inf,40,NA,PsV Neutralization breadth score,Pseudovirus-nAb ID50 breadth score,lod,1
+id50Duke,4,pseudoneutid50Duke_BA.2.12.1,66,27104,40,40,Duke PsV Neutralization to BA.2.12.1,Duke Pseudovirus-nAb BA.2.12.1 (AU/ml),lod,0
+tcell,1,cd4_IFNg.IL2_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 to COV2 CON,CD4+ T cells IFN-g and/or IL-2 COV2 CON (%),lod,NA
+tcell,2,cd4_IFNg.IL2_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 to BA.4-5,CD4+ T cells IFN-g and/or IL-2 BA.4-5 (%),lod,NA
+tcell,3,cd4_IFNg.IL2_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 to Wuhan N,CD4+ T cells IFN-g and/or IL-2 Wuhan N (%),lod,NA
+tcell,4,cd8_IFNg.IL2_COV2.CON,NA,NA,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 to COV2 CON,CD8+ T cells IFN-g and/or IL-2 COV2 CON (%),lod,NA
+tcell,5,cd8_IFNg.IL2_BA.4.5,NA,NA,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 to BA.4-5,CD8+ T cells IFN-g and/or IL-2 BA.4-5 (%),lod,NA
+tcell,6,cd8_IFNg.IL2_Wuhan.N,NA,NA,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 to Wuhan N,CD8+ T cells IFN-g and/or IL-2 Wuhan N (%),lod,NA
+tcell,7,cd4_IFNg.IL2.154_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to COV2 CON,CD4+ T cells IFN-g and/or IL-2 and/or CD154 COV2 CON (%),lod,NA
+tcell,8,cd4_IFNg.IL2.154_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to BA.4-5,CD4+ T cells IFN-g and/or IL-2 and/or CD154 BA.4-5 (%),lod,NA
+tcell,9,cd4_IFNg.IL2.154_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to Wuhan N,CD4+ T cells IFN-g and/or IL-2 and/or CD154 Wuhan N (%),lod,NA
+tcell,10,cd4_IL4.IL5.IL13.154_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to COV2 CON,CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 COV2 CON (%),lod,NA
+tcell,11,cd4_IL4.IL5.IL13.154_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to BA.4-5,CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 BA.4-5 (%),lod,NA
+tcell,12,cd4_IL4.IL5.IL13.154_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to Wuhan N,CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 Wuhan N (%),lod,NA
+tcell,13,cd4_IL21_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing IL-21 to COV2 CON,CD4+ T cells IL-21 COV2 CON (%),lod,NA
+tcell,14,cd4_IL21_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing IL-21 to BA.4-5,CD4+ T cells IL-21 BA.4-5 (%),lod,NA
+tcell,15,cd4_IL21_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing IL-21 to Wuhan N,CD4+ T cells IL-21 Wuhan N (%),lod,NA
+tcell,16,cd4_IFNg_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing IFN-g to COV2 CON,CD4+ T cells IFN-g COV2 CON (%),lod,NA
+tcell,17,cd4_IFNg_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing IFN-g to BA.4-5,CD4+ T cells IFN-g BA.4-5 (%),lod,NA
+tcell,18,cd4_IFNg_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing IFN-g to Wuhan N,CD4+ T cells IFN-g Wuhan N (%),lod,NA
+tcell,19,cd4_IL2_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing IL-2 to COV2 CON,CD4+ T cells IL-2 COV2 CON (%),lod,NA
+tcell,20,cd4_IL2_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing IL-2 to BA.4-5,CD4+ T cells IL-2 BA.4-5 (%),lod,NA
+tcell,21,cd4_IL2_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing IL-2 to Wuhan N,CD4+ T cells IL-2 Wuhan N (%),lod,NA
+tcell,22,cd4_TNFa_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing TNF-a to COV2 CON,CD4+ T cells TNF-a COV2 CON (%),lod,NA
+tcell,23,cd4_TNFa_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing TNF-a to BA.4-5,CD4+ T cells TNF-a BA.4-5 (%),lod,NA
+tcell,24,cd4_TNFa_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing TNF-a to Wuhan N,CD4+ T cells TNF-a Wuhan N (%),lod,NA
+tcell,25,cd8_IFNg_COV2.CON,NA,NA,NA,NA,CD8+ T cells expressing IFN-g to COV2 CON,CD8+ T cells IFN-g COV2 CON (%),lod,NA
+tcell,26,cd8_IFNg_BA.4.5,NA,NA,NA,NA,CD8+ T cells expressing IFN-g to BA.4-5,CD8+ T cells IFN-g BA.4-5 (%),lod,NA
+tcell,27,cd8_IFNg_Wuhan.N,NA,NA,NA,NA,CD8+ T cells expressing IFN-g to Wuhan N,CD8+ T cells IFN-g Wuhan N (%),lod,NA
+tcell,28,cd8_IL2_COV2.CON,NA,NA,NA,NA,CD8+ T cells expressing IL-2 to COV2 CON,CD8+ T cells IL-2 COV2 CON (%),lod,NA
+tcell,29,cd8_IL2_BA.4.5,NA,NA,NA,NA,CD8+ T cells expressing IL-2 to BA.4-5,CD8+ T cells IL-2 BA.4-5 (%),lod,NA
+tcell,30,cd8_IL2_Wuhan.N,NA,NA,NA,NA,CD8+ T cells expressing IL-2 to Wuhan N,CD8+ T cells IL-2 Wuhan N (%),lod,NA
+tcell,31,cd8_TNFa_COV2.CON,NA,NA,NA,NA,CD8+ T cells expressing TNF-a to COV2 CON,CD8+ T cells TNF-a COV2 CON (%),lod,NA
+tcell,32,cd8_TNFa_BA.4.5,NA,NA,NA,NA,CD8+ T cells expressing TNF-a to BA.4-5,CD8+ T cells TNF-a BA.4-5 (%),lod,NA
+tcell,33,cd8_TNFa_Wuhan.N,NA,NA,NA,NA,CD8+ T cells expressing TNF-a to Wuhan N,CD8+ T cells TNF-a Wuhan N (%),lod,NA
+tcell,34,cd4_154_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing CD154 to COV2 CON,CD4+ T cells CD154 COV2 CON (%),lod,NA
+tcell,35,cd4_154_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing CD154 to BA.4-5,CD4+ T cells CD154 BA.4-5 (%),lod,NA
+tcell,36,cd4_154_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing CD154 to Wuhan N,CD4+ T cells CD154 Wuhan N (%),lod,NA
+tcell,37,cd4_IL17a_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing IL-17a to COV2 CON,CD4+ T cells IL-17a COV2 CON (%),lod,NA
+tcell,38,cd4_IL17a_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing IL-17a to BA.4-5,CD4+ T cells IL-17a BA.4-5 (%),lod,NA
+tcell,39,cd4_IL17a_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing IL-17a to Wuhan N,CD4+ T cells IL-17a Wuhan N (%),lod,NA
+tcell,40,cd4_IL4.154_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing IL-4 and CD154 to COV2 CON,CD4+ T cells IL-4 and CD154 COV2 CON (%),lod,NA
+tcell,41,cd4_IL4.154_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing IL-4 and CD154 to BA.4-5,CD4+ T cells IL-4 and CD154 BA.4-5 (%),lod,NA
+tcell,42,cd4_IL4.154_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing IL-4 and CD154 to Wuhan N,CD4+ T cells IL-4 and CD154 Wuhan N (%),lod,NA
+tcell,43,cd4_IL5.IL13.154_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to COV2 CON,CD4+ T cells IL-5 and/or IL-13 and CD154 COV2 CON (%),lod,NA
+tcell,44,cd4_IL5.IL13.154_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to BA.4-5,CD4+ T cells IL-5 and/or IL-13 and CD154 BA.4-5 (%),lod,NA
+tcell,45,cd4_IL5.IL13.154_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to Wuhan N,CD4+ T cells IL-5 and/or IL-13 and CD154 Wuhan N (%),lod,NA
+tcell,46,cd4_CXCR5.154_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing CXCR5 and/or CD154 to COV2 CON,CD4+ T cells CXCR5 and/or CD154 COV2 CON (%),lod,NA
+tcell,47,cd4_CXCR5.154_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing CXCR5 and/or CD154 to BA.4-5,CD4+ T cells CXCR5 and/or CD154 BA.4-5 (%),lod,NA
+tcell,48,cd4_CXCR5.154_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing CXCR5 and/or CD154 to Wuhan N,CD4+ T cells CXCR5 and/or CD154 Wuhan N (%),lod,NA
+tcell,49,cd4_CXCR5.IL21_COV2.CON,NA,NA,NA,NA,CD4+ T cells expressing CXCR5 and/or IL-21 to COV2 CON,CD4+ T cells CXCR5 and/or IL-21 COV2 CON (%),lod,NA
+tcell,50,cd4_CXCR5.IL21_BA.4.5,NA,NA,NA,NA,CD4+ T cells expressing CXCR5 and/or IL-21 to BA.4-5,CD4+ T cells CXCR5 and/or IL-21 BA.4-5 (%),lod,NA
+tcell,51,cd4_CXCR5.IL21_Wuhan.N,NA,NA,NA,NA,CD4+ T cells expressing CXCR5 and/or IL-21 to Wuhan N,CD4+ T cells CXCR5 and/or IL-21 Wuhan N (%),lod,NA
+tcell,52,cd8_IFNg.IL2.TNFa_COV2.CON,NA,NA,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to COV2 CON,CD8+ T cells IFN-g and/or IL-2 and/or TNF-a COV2 CON (%),lod,NA
+tcell,53,cd8_IFNg.IL2.TNFa_BA.4.5,NA,NA,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to BA.4-5,CD8+ T cells IFN-g and/or IL-2 and/or TNF-a BA.4-5 (%),lod,NA
+tcell,54,cd8_IFNg.IL2.TNFa_Wuhan.N,NA,NA,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to Wuhan N,CD8+ T cells IFN-g and/or IL-2 and/or TNF-a Wuhan N (%),lod,NA
