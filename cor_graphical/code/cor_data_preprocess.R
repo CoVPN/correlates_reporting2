@@ -33,6 +33,13 @@ if (study_name=="VAT08") {
   month = ifelse(dat_proc$Trialstage[1] == 1, 6, 5)
   day = ifelse(dat_proc$Trialstage[1] == 1, 180, 150)
 }
+
+if (study_name=="VAT08") {
+  dat_proc$ph2.D22.bAb = ifelse(dat_proc$plot_deletion_bAb==1, 0, dat_proc$ph2.D22.bAb)
+  dat_proc$ph2.D22.nAb = ifelse(dat_proc$plot_deletion_nAb==1, 0, dat_proc$ph2.D22.nAb)
+  dat_proc$ph2.D43.bAb = ifelse(dat_proc$plot_deletion_bAb==1, 0, dat_proc$ph2.D43.bAb)
+  dat_proc$ph2.D43.nAb = ifelse(dat_proc$plot_deletion_nAb==1, 0, dat_proc$ph2.D43.nAb)
+}
 # forcing this is not a good idea. ~ Youyi
 # set wt.DXX missingness to 0
 wt.vars <- colnames(dat_proc)[grepl("wt.D", colnames(dat_proc))]

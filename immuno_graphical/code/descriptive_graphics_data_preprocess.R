@@ -14,6 +14,11 @@ source(here::here("code", "process_violin_pair_functions.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; names(pos.cutoffs) <- assays}
 #-----------------------------------------------
 
+if (attr(config,"config")=="vat08_combined") {
+  dat_proc$ph2.immuno.bAb = ifelse(dat_proc$plot_deletion_bAb==1, 0, dat_proc$ph2.immuno.bAb)
+  dat_proc$ph2.immuno.nAb = ifelse(dat_proc$plot_deletion_nAb==1, 0, dat_proc$ph2.immuno.nAb)
+}
+
 Trialstage_val = 2 ###################################### need manually update "Trialstage" and line 89 in report.Rmd for vat08_combined 
 
 library(here)

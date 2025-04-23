@@ -375,7 +375,7 @@ f_longitude_by_assay <- function(
                 scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                 
                 geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes(x = .data[[x.var]], label = "N_RespRate", y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(x = .data[[x.var]], label = .data[["N_RespRate"]], y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
