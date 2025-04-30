@@ -9,13 +9,23 @@ knitr::opts_chunk$set(echo = TRUE)
 library(copcor)
 library(survey)
 library(kyotil)
+library(glue)
+library(Hmisc)
+library(knitr)
 
-dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20240211.csv')
-dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240313.csv')
+dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20250424.csv')
+dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250430.csv')
 dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
+tmp=assay_metadata$assay[8:nrow(assay_metadata)]
+S1=tmp[!endsWith(tmp, ".N")]%.%".S1"; S1
+S2=tmp[!endsWith(tmp, ".N")]%.%".S2"; S2
+N=tmp[endsWith(tmp, "Wuhan.N")]; N
+tcellvv=c(S1, S2, N)
+
+
 
 f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
 
@@ -72,6 +82,194 @@ convert2IU=function(tmp) {
 mytable(dat_proc$treatment_assigned)
 
 ```
+
+
+
+### T cell data
+
+```{r check weights}
+mytable(dat_proc$ph1.D15.tcell, dat_proc$Wstratum.tcell)
+mytable(dat_proc[dat_proc$ph1.D15.tcell==1, "wt.D15.tcell"])
+tab=t(mytable(dat_proc[dat_proc$ph1.D15.tcell==1, "Wstratum.tcell"], dat_proc[dat_proc$ph1.D15.tcell==1, "ph2.D15.tcell"]))
+names(dimnames(tab))=c("ph2","stratum")
+kable(tab)
+```
+
+```{r}
+par(mfrow=c(3,3)); reduce_margin()
+corplot(Day15cd4_IFNg.IL2_COV2.CON.S1~ Bcd4_IFNg.IL2_COV2.CON.S1, subset(dat_proc, naive==1), asp=1)
+corplot(Day15cd4_IFNg.IL2_COV2.CON.S2~ Bcd4_IFNg.IL2_COV2.CON.S2, subset(dat_proc, naive==1), asp=1)
+corplot(Day15cd4_IFNg.IL2_COV2.CON.S ~ Bcd4_IFNg.IL2_COV2.CON.S , subset(dat_proc, naive==1), asp=1)
+corplot(Day15pseudoneutid50_D614G ~ Bpseudoneutid50_D614G , subset(dat_proc, naive==1), asp=1)
+corplot(Day15pseudoneutid50_D614G ~ Day15cd4_IFNg.IL2_COV2.CON.S , subset(dat_proc, naive==1))
+corplot(Bpseudoneutid50_D614G ~ Bcd4_IFNg.IL2_COV2.CON.S , subset(dat_proc, naive==1))
+corplot(Day15cd4_IFNg.IL2_COV2.CON.S2~ Day15cd4_IFNg.IL2_COV2.CON.S1, subset(dat_proc, naive==1), asp=1)
+corplot(Bcd4_IFNg.IL2_COV2.CON.S2    ~ Bcd4_IFNg.IL2_COV2.CON.S1, subset(dat_proc, naive==1), asp=1)
+```
+
+
+```{r Day 15 correlation between S1 and S2, fig.height=8, fig.width=8}
+
+x=log10(dat_mapped[dat_mapped$ph1.D15==1 & dat_mapped$naive==1,c("Bcd4_IFNg.IL2_Wuhan.N")]); y=log10(dat_mapped[dat_mapped$ph1.D15==1 & dat_mapped$naive==1,c("Day15cd4_IFNg.IL2_Wuhan.N")])
+x[x<=-2]=-2; y[y<= -2]=-2
+mypairs(cbind(x,y), gap=0, xlim=c(-3,0), ylim=c(-3,0), show.data.only=T, asp=1, cor.method="p")
+
+x=log10(dat_mapped[dat_mapped$ph1.D15==1 & dat_mapped$naive==0,c("Bcd4_IFNg.IL2_Wuhan.N")]); y=log10(dat_mapped[dat_mapped$ph1.D15==1 & dat_mapped$naive==0,c("Day15cd4_IFNg.IL2_Wuhan.N")])
+x[x<=-2]=-2; y[y<= -2]=-2
+mypairs(cbind(x,y), gap=0, xlim=c(-3,0), ylim=c(-3,0), show.data.only=T, asp=1, cor.method="p")
+
+
+mypairs(log10(dat_mapped[,c(glue("Day15{c(rbind(S1[1:2], S2[1:2]))}"))]), gap=0)
+
+mypairs(log10(dat_mapped[,c("Day15cd4_IFNg.IL2_COV2.CON.S1", "Day15cd4_IFNg.IL2_BA.4.5.S1")]), gap=0)
+
+
+
+tab=mysapply (1:length(S1), function(i) {
+  c(mytable(!is.na(dat_mapped[[glue("Day15{S1[i]}")]]), !is.na(dat_mapped[[glue("Day15{S2[i]}")]])))
+})
+rownames(tab)=sub(".S1", "", S1)
+tab
+
+i=2; mytable(!is.na(dat_mapped[[glue("Day15{S1[i]}")]]), !is.na(dat_mapped[[glue("Day15{S2[i]}")]]))
+
+i=1; mytable(!is.na(dat_mapped[[glue("B{S1[i]}")]]), !is.na(dat_mapped[[glue("Day15{S1[i]}")]]), dat_mapped$COVIDIndD22toD181)
+
+i=1; mytable(!is.na(dat_mapped[[glue("Day15{S2[i]}")]]), !is.na(dat_mapped[["Day15cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD22toD91)
+
+mytable(rowSums(!is.na(dat_mapped[glue("Day15{tcellvv}")])))
+             
+# t(dat_mapped[which(rowSums(!is.na(dat_mapped[glue("Day15{tcellvv}")]))==36),201:300])
+```
+
+
+```{r B correlation between S1 and S2}
+
+mypairs(dat_mapped[,c(glue("B{c(rbind(S1[1:2], S2[1:2]))}"))], gap=0)
+
+tab=mysapply (1:length(S1), function(i) {
+  c(mytable(!is.na(dat_mapped[[glue("B{S1[i]}")]]), !is.na(dat_mapped[[glue("B{S2[i]}")]])))
+})
+rownames(tab)=sub(".S1", "", S1)
+tab
+
+i=2; mytable(!is.na(dat_mapped[[glue("B{S1[i]}")]]), !is.na(dat_mapped[[glue("B{S2[i]}")]]))
+
+i=1; mytable(!is.na(dat_mapped[[glue("B{S1[i]}")]]), !is.na(dat_mapped[[glue("B{S2[i]}")]]), dat_mapped$COVIDIndD22toD91)
+
+i=1; mytable(!is.na(dat_mapped[[glue("B{S2[i]}")]]), !is.na(dat_mapped[["Day15cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD22toD91)
+
+i=1; mytable(!is.na(dat_mapped[[glue("B{S2[i]}")]]), !is.na(dat_mapped[["Bcd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD22toD91)
+
+i=1; mytable(!is.na(dat_mapped[[glue("Bcd4_IFNg.IL2_Wuhan.N")]]), !is.na(dat_mapped[["Day15cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD22toD91)
+
+mytable(rowSums(!is.na(dat_mapped[glue("B{tcellvv}")])))
+             
+# t(dat_mapped[which(rowSums(!is.na(dat_mapped[glue("B{tcellvv}")]))==36),201:300])
+
+# cross-tabulate missingness between baseline and D15
+tab=mysapply (1:length(S1), function(i) {
+  c(mytable(!is.na(dat_mapped[[glue("B{S1[i]}")]]), !is.na(dat_mapped[[glue("Day15{S1[i]}")]])))
+})
+rownames(tab)=sub(".S1", "", S1); tab
+
+mypairs(log10(dat_mapped[dat_mapped$naive==0,c(glue("B{c(rbind(S1[1]))}"), glue("Day15{c(rbind(S1[1]))}"))]), gap=0)
+mypairs(log10(dat_mapped[dat_mapped$naive==1,c(glue("B{c(rbind(S1[1]))}"), glue("Day15{c(rbind(S1[1]))}"))]), gap=0)
+
+```
+
+
+```{r Day91 correlation between S1 and S2}
+
+mypairs(log10(dat_mapped[,c(glue("Day91{c(rbind(S1[1:2], S2[1:2]))}"))]), gap=0)
+
+tab=mysapply (1:length(S1), function(i) {
+  c(mytable(!is.na(dat_mapped[[glue("Day91{S1[i]}")]]), !is.na(dat_mapped[[glue("Day91{S2[i]}")]])))
+})
+rownames(tab)=sub(".S1", "", S1)
+tab
+
+i=1; mytable(!is.na(dat_mapped[[glue("B{S2[i]}")]]), !is.na(dat_mapped[["Day91cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD22toD91)
+
+i=1; mytable(!is.na(dat_mapped[[glue("Day15{S2[i]}")]]), !is.na(dat_mapped[["Day91cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD22toD91)
+
+mytable(rowSums(!is.na(dat_mapped[glue("B{tcellvv}")])))
+             
+# t(dat_mapped[which(rowSums(!is.na(dat_mapped[glue("B{tcellvv}")]))==36),201:300])
+
+# cross-tabulate missingness between baseline and D91
+tab=mysapply (1:length(S1), function(i) c(mytable(!is.na(dat_mapped[[glue("B{S1[i]}")]]), !is.na(dat_mapped[[glue("Day91{S1[i]}")]]))))
+rownames(tab)=sub(".S1", "", S1); tab
+tab=mysapply (1:length(S1), function(i) c(mytable(!is.na(dat_mapped[[glue("Day15{S1[i]}")]]), !is.na(dat_mapped[[glue("Day91{S1[i]}")]]))))
+rownames(tab)=sub(".S1", "", S1); tab
+
+mypairs(log10(dat_mapped[,c(glue("B{c(rbind(S1[1:2]))}"), glue("Day91{c(rbind(S1[1:2]))}"))]), gap=0)
+
+```
+
+
+```{r Day181 correlation between S1 and S2}
+
+mypairs(log10(dat_mapped[,c(glue("Day181{c(rbind(S1[1:2], S2[1:2]))}"))]), gap=0)
+
+tab=mysapply (1:length(S1), function(i) c(mytable(!is.na(dat_mapped[[glue("Day181{S1[i]}")]]), !is.na(dat_mapped[[glue("Day181{S2[i]}")]]))))
+rownames(tab)=sub(".S1", "", S1); tab
+
+i=1; mytable(!is.na(dat_mapped[[glue("B{S2[i]}")]]), !is.na(dat_mapped[["Day181cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD22toD181)
+
+i=1; mytable(!is.na(dat_mapped[[glue("Day15{S2[i]}")]]), !is.na(dat_mapped[["Day181cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD22toD181)
+
+i=1; mytable(!is.na(dat_mapped[[glue("Day91{S2[i]}")]]), !is.na(dat_mapped[["Day181cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD92toD181)
+
+i=1; mytable(!is.na(dat_mapped[[glue("Day91{S2[i]}")]]), !is.na(dat_mapped[[glue("Day181{S2[i]}")]]), 
+dat_mapped$COVIDIndD92toD181)
+i=1; mytable(!is.na(dat_mapped[[glue("Day91{S2[i]}")]][dat_mapped$ph1.D92==1]), !is.na(dat_mapped[[glue("Day181{S2[i]}")]][dat_mapped$ph1.D92==1]), 
+dat_mapped$COVIDIndD92toD181[dat_mapped$ph1.D92==1])
+
+i=1; mytable(!is.na(dat_mapped[[glue("Day91{S2[i]}")]]), !is.na(dat_mapped[["Day91cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD22toD181)
+
+i=1; mytable(!is.na(dat_mapped[[glue("Day181{S2[i]}")]]), !is.na(dat_mapped[["Day181cd4_IFNg.IL2_Wuhan.N"]]), 
+dat_mapped$COVIDIndD92toD181)
+
+mytable(rowSums(!is.na(dat_mapped[glue("B{tcellvv}")])))
+             
+# t(dat_mapped[which(rowSums(!is.na(dat_mapped[glue("B{tcellvv}")]))==36),201:300])
+
+# cross-tabulate missingness between baseline and D181
+tab=mysapply (1:length(S1), function(i) c(mytable(!is.na(dat_mapped[[glue("B{S1[i]}")]]), !is.na(dat_mapped[[glue("Day181{S1[i]}")]]))))
+rownames(tab)=sub(".S1", "", S1); tab
+tab=mysapply (1:length(S1), function(i) c(mytable(!is.na(dat_mapped[[glue("Day15{S1[i]}")]]), !is.na(dat_mapped[[glue("Day181{S1[i]}")]]))))
+rownames(tab)=sub(".S1", "", S1); tab
+tab=mysapply (1:length(S1), function(i) c(mytable(!is.na(dat_mapped[[glue("Day91{S1[i]}")]]), !is.na(dat_mapped[[glue("Day181{S1[i]}")]]))))
+rownames(tab)=sub(".S1", "", S1); tab
+
+print("D15/D91")
+i=1; table(!is.na(dat_mapped[[glue("Day15{S1[i]}")]]), !is.na(dat_mapped[[glue("Day91{S1[i]}")]]), 
+dat_mapped$COVIDIndD22toD181)
+print("D91/D181")
+# note that COVIDIndD92toD181 is used below because for cases in D15toD91, their markers at D91 and D181 are not needed
+i=1; table(!is.na(dat_mapped[[glue("Day91{S1[i]}")]]), !is.na(dat_mapped[[glue("Day181{S1[i]}")]]), 
+dat_mapped$COVIDIndD92toD181) 
+print("D15/D181")
+i=1; table(!is.na(dat_mapped[[glue("Day15{S1[i]}")]]), !is.na(dat_mapped[[glue("Day181{S1[i]}")]]), 
+dat_mapped$COVIDIndD22toD181)
+
+subset(dat_mapped, is.na(Day15cd4_IFNg.IL2_COV2.CON.S1) & !is.na(Day91cd4_IFNg.IL2_COV2.CON.S1))[,200:300]
+
+mypairs(log10(dat_mapped[,c(glue("Day91{c(rbind(S1[1:2]))}"), glue("Day181{c(rbind(S1[1:2]))}"))]), gap=0)
+
+```
+
 
 ### explore the second order effect
 
@@ -798,8 +996,8 @@ Interaction plot, naive
 ```{r}
 par(mfrow=c(1,2))
 lim=c(1.2,4.8)
-myboxplot(subset(dat.sanofi, naive==1, c(Day15pseudoneutid50_D614G, Day15pseudoneutid50_BA.4.BA.5)), names=c("ancestral", "BA4BA5"), main="Sanofi, naive", add.interaction=T)
-myboxplot(subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0, c(Day15pseudoneutid50_D614G, Day15pseudoneutid50_BA.4.BA.5)), names=c("ancestral", "BA4BA5"), main="Pfz,P, naive", add.interaction=T)
+# myboxplot(subset(dat.sanofi, naive==1, c(Day15pseudoneutid50_D614G, Day15pseudoneutid50_BA.4.BA.5)), names=c("ancestral", "BA4BA5"), main="Sanofi, naive", add.interaction=T)
+# myboxplot(subset(dat.ocp, naive==1 & company=="Pfz" & Trt==0, c(Day15pseudoneutid50_D614G, Day15pseudoneutid50_BA.4.BA.5)), names=c("ancestral", "BA4BA5"), main="Pfz,P, naive", add.interaction=T)
 
 ```
 
@@ -867,11 +1065,11 @@ corplot(Day29pseudoneutid50_BA.4.BA.5~Day15pseudoneutid50_BA.4.BA.5, subset(dat.
 ### correlation between m15 and baseline markers
 
 ```{r}
-mypairs(dat[,paste0("B",assays)])
+# mypairs(dat[,paste0("B",assays)])
 
-mypairs(dat[,paste0("Day15",assays)])
+# mypairs(dat[,paste0("Day15",assays)])
 
-mypairs(dat[,paste0(c("B","Day15", "Delta15overB"),assays[1])])
+# mypairs(dat[,paste0(c("B","Day15", "Delta15overB"),assays[1])])
 ```
 
 
@@ -1037,6 +1235,18 @@ nrow(subset(dat_proc, kp & Bpseudoneutid50_BA.1<1.5))
 
 
 ### Misc
+
+```{r check data processing}
+datold = read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20241007.csv")
+datnew = read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20250423.csv")
+
+assays = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
+
+sapply (all.markers, function (a) {
+  all(datold[[a]]==datnew[[a]], na.rm=T)
+})
+```
 
 ```{r}
 myboxplot(dat_mapped[, c("B"%.%assays[1:5], "Day15"%.%assays[1:5])], names=sub("pseudoneutid50_", "", rep(assays[1:5],2)))
