@@ -89,6 +89,40 @@ if (!is.null(config$assay_metadata)) {
   } else if (TRIAL=='id27hpvnAb') {
     assay_metadata = subset(assay_metadata, panel=='id50')
     
+  } else if (TRIAL=="covail_tcell") {
+    # add S1 and S2 to assay_metadata
+    tmp=assay_metadata$assay[8:nrow(assay_metadata)]
+    N=tmp[endsWith(tmp, ".N") & startsWith(tmp, "c")]
+    S=tmp[endsWith(tmp, ".S") & startsWith(tmp, "c")]
+    # sort S by BA.4.5 and N
+    S = c(S[endsWith(S,"_COV2.CON.S")], S[endsWith(S,"_BA.4.5.S")])
+    
+    tmp = subset(assay_metadata, assay %in% S)
+    S1 = paste0(tmp$assay, "1"); tmp1 = tmp; tmp1$assay = S1; tmp1$assay_label_short = sub(".S \\(\\%\\)", ".S1 (%)", tmp1$assay_label_short); tmp1$assay_label = paste0(tmp1$assay_label, "1"); tmp1$panel="S1"
+    S2 = paste0(tmp$assay, "2"); tmp2 = tmp; tmp2$assay = S2; tmp2$assay_label_short = sub(".S \\(\\%\\)", ".S2 (%)", tmp2$assay_label_short); tmp2$assay_label = paste0(tmp2$assay_label, "2"); tmp2$panel="S2"
+    assay_metadata = rbind(assay_metadata, tmp1, tmp2)
+    
+    primary = c("Bcd4_IFNg.IL2_Wuhan.N", "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S")
+    secondary = c("Bcd8_IFNg.IL2_Wuhan.N",         "Bcd8_IFNg.IL2_BA.4.5.S", 
+                  "Bcd4_IFNg.IL2.154_Wuhan.N",     "Bcd4_IFNg.IL2.154_BA.4.5.S", 
+                  "Bcd4_IL4.IL5.IL13.154_Wuhan.N", "Bcd4_IL4.IL5.IL13.154_BA.4.5.S", 
+                  "Bcd4_IL21_Wuhan.N",             "Bcd4_IL21_BA.4.5.S", 
+                  "Day15cd8_IFNg.IL2_BA.4.5.S",
+                  "Day15cd4_IFNg.IL2.154_BA.4.5.S",
+                  "Day15cd4_IL4.IL5.IL13.154_BA.4.5.S", 
+                  "Day15cd4_IL21_BA.4.5.S")
+    
+    # filter exploratory markers by Day15 pos rate
+    # B and D15 S-marker pos rates are slightly different, we sync the two by using D15 to filter
+    tmp=c("Day15"%.%S)
+    pos = sapply(tmp%.%"_resp", function(x) mean(dat_proc[[x]], na.rm=T))
+    exploratory = c("B"%.%S[pos>=0.2], "Day15"%.%S[pos>=0.2])
+
+    tmp=c("B"%.%N, "Day15"%.%N)
+    pos1 = sapply(tmp%.%"_resp", function(x) mean(dat_proc[[x]], na.rm=T))
+    exploratory = c(exploratory, tmp[pos1>=0.2])
+    
+    exploratory = setdiff(exploratory, c(primary, secondary))
   }
   
   if (exists('COR')) {
