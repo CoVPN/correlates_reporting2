@@ -22,6 +22,7 @@ set.seed(98109)
 if(!exists("verbose")) verbose=0
 if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
+
     
 # COR defines the analysis to be done, e.g. D14
 if(!exists("COR")) {
@@ -64,6 +65,8 @@ if (is.null(config$threshold_grid_size)) {
 } else {
   threshold_grid_size = config$threshold_grid_size
 }
+
+
 
 }
 
@@ -111,18 +114,7 @@ if (!is.null(config$assay_metadata)) {
                   "Day15cd4_IFNg.IL2.154_BA.4.5.S",
                   "Day15cd4_IL4.IL5.IL13.154_BA.4.5.S", 
                   "Day15cd4_IL21_BA.4.5.S")
-    
-    # filter exploratory markers by Day15 pos rate
-    # B and D15 S-marker pos rates are slightly different, we sync the two by using D15 to filter
-    tmp=c("Day15"%.%S)
-    pos = sapply(tmp%.%"_resp", function(x) mean(dat_proc[[x]], na.rm=T))
-    exploratory = c("B"%.%S[pos>=0.2], "Day15"%.%S[pos>=0.2])
-
-    tmp=c("B"%.%N, "Day15"%.%N)
-    pos1 = sapply(tmp%.%"_resp", function(x) mean(dat_proc[[x]], na.rm=T))
-    exploratory = c(exploratory, tmp[pos1>=0.2])
-    
-    exploratory = setdiff(exploratory, c(primary, secondary))
+    # exploratory tier defined after data is read    
   }
   
   if (exists('COR')) {
@@ -145,6 +137,15 @@ if (!is.null(config$assay_metadata)) {
       
     } else if (COR == "D57azd1222_stage2_delta_bAb" | COR == "D57azd1222_stage2_severe_bAb") {
       assay_metadata = subset(assay_metadata, panel=='bindSpike')
+      
+    } else if (COR == "D31nextgen_mock") {
+      assay_metadata = subset(assay_metadata, panel %in% c('bindSpike',"id50") )
+      # hack
+      assay_metadata=subset(assay_metadata, !assay %in% c("bindSpike_IgG_N","bindSpike_IgA_N"))
+      
+      
+    } else if (COR == "D31nextgen_mock_tcell") {
+      assay_metadata = subset(assay_metadata, panel %in% c('CD4',"CD8") )
       
     }
     
@@ -577,6 +578,23 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset not available ========
 
 dat_proc <- read.csv(path_to_data)
 
+#
+if(config$sampling_scheme == 'case_cohort') stopifnot(!is.null(dat_proc$SubcohortInd))
+
+
+if (TRIAL=="covail_tcell") {
+  # filter exploratory markers by Day15 pos rate
+  # B and D15 S-marker pos rates are slightly different, we sync the two by using D15 to filter
+  pos = sapply("Day15"%.%S%.%"_resp", function(x) sum(dat_proc[[x]] * dat_proc$ph2.D15.tcell * dat_proc$wt.D15.tcell, na.rm=T)/sum(dat_proc$ph1.D15.tcell))
+  exploratory = c("B"%.%S[pos>=0.2], "Day15"%.%S[pos>=0.2])
+  
+  tmp=c("B"%.%N, "Day15"%.%N)
+  pos1 = sapply(tmp%.%"_resp", function(x) sum(dat_proc[[x]] * dat_proc$ph2.D15.tcell * dat_proc$wt.D15.tcell, na.rm=T)/sum(dat_proc$ph1.D15.tcell))
+  exploratory = c(exploratory, tmp[pos1>=0.2])
+  
+  exploratory = setdiff(exploratory, c(primary, secondary))
+}
+
 
 ###################################################################################################
 # additional data processing
@@ -811,7 +829,7 @@ if (exists("COR")) {
             }
             
             
-          } else if (TRIAL %in% c("prevent19", "azd1222_stage2")) {
+          } else if (TRIAL %in% c("prevent19", "azd1222_stage2", "nextgen_mock")) {
             # default rule for followup time is the last case in ph2 in vaccine arm
             tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
             
@@ -886,7 +904,7 @@ if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
               "bindSpike_B.1.351", "bindSpike_DeltaMDW")
   all.markers1 = c("Day29"%.%assays1)
   
-} else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302")) {
+} else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302", "nextgen_mock")) {
   all.markers1 = c("Day"%.%timepoints%.%assays)
 } 
 
@@ -1073,7 +1091,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age <= 14"
   )
   
-} else if (TRIAL %in% c("covail", "covail_sanofi")) {
+} else if (TRIAL %in% c("covail", "covail_sanofi", "nextgen_mock")) {
   # do nothing
   
 } else stop("unknown study_name 2")
@@ -1177,8 +1195,16 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age <= 14"
   )
   
+} else if (study_name == 'NextGen_Mock') {
+  demo.stratum.labels <- c(
+    "Age < 65, At risk",
+    "Age < 65, Not at risk",
+    "Age >= 65"
+  )
+  
 } else stop("unknown study_name 3")
 
+{
 labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
 regions.ENSEMBLE=0:2
 names(regions.ENSEMBLE)=labels.regions.ENSEMBLE
@@ -1186,12 +1212,12 @@ names(regions.ENSEMBLE)=labels.regions.ENSEMBLE
 labels.countries.ENSEMBLE=c("0"="United States", "1"="Argentina", "2"="Brazil", "3"="Chile", "4"="Columbia", "5"="Mexico", "6"="Peru", "7"="South Africa")
 countries.ENSEMBLE=0:7
 names(countries.ENSEMBLE)=labels.countries.ENSEMBLE
-
+}
 
 ###############################################################################
 # theme options
 ###############################################################################
-
+{
 # fixed knitr chunk options
 knitr::opts_chunk$set(
   comment = "#>",
@@ -1276,7 +1302,4 @@ ggsave_custom <- function(filename = default_name(plot),
                           height= 15, width = 21, ...) {
   ggsave(filename = filename, height = height, width = width, ...)
 }
-
-
-
-
+}
