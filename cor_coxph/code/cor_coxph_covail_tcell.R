@@ -2,7 +2,7 @@ COR="D15to181covail_tcell"
 # COR="D15to91covail_tcell"
 
 renv::activate(project = here::here(".."))
-Sys.setenv(TRIAL = "covail")
+Sys.setenv(TRIAL = "covail_tcell")
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
 

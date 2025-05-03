@@ -111,18 +111,7 @@ if (!is.null(config$assay_metadata)) {
                   "Day15cd4_IFNg.IL2.154_BA.4.5.S",
                   "Day15cd4_IL4.IL5.IL13.154_BA.4.5.S", 
                   "Day15cd4_IL21_BA.4.5.S")
-    
-    # filter exploratory markers by Day15 pos rate
-    # B and D15 S-marker pos rates are slightly different, we sync the two by using D15 to filter
-    tmp=c("Day15"%.%S)
-    pos = sapply(tmp%.%"_resp", function(x) mean(dat_proc[[x]], na.rm=T))
-    exploratory = c("B"%.%S[pos>=0.2], "Day15"%.%S[pos>=0.2])
-
-    tmp=c("B"%.%N, "Day15"%.%N)
-    pos1 = sapply(tmp%.%"_resp", function(x) mean(dat_proc[[x]], na.rm=T))
-    exploratory = c(exploratory, tmp[pos1>=0.2])
-    
-    exploratory = setdiff(exploratory, c(primary, secondary))
+    # exploratory tier defined after data is read    
   }
   
   if (exists('COR')) {
@@ -576,6 +565,21 @@ cat("Analysis-ready data: ", path_to_data, "\n")
 if (!file.exists(path_to_data)) stop ("_common.R: dataset not available ===========================================")
 
 dat_proc <- read.csv(path_to_data)
+
+
+
+if (TRIAL=="covail_tcell") {
+  # filter exploratory markers by Day15 pos rate
+  # B and D15 S-marker pos rates are slightly different, we sync the two by using D15 to filter
+  pos = sapply("Day15"%.%S%.%"_resp", function(x) sum(dat_proc[[x]] * dat_proc$ph2.D15.tcell * dat_proc$wt.D15.tcell, na.rm=T)/sum(dat_proc$ph1.D15.tcell))
+  exploratory = c("B"%.%S[pos>=0.2], "Day15"%.%S[pos>=0.2])
+  
+  tmp=c("B"%.%N, "Day15"%.%N)
+  pos1 = sapply(tmp%.%"_resp", function(x) sum(dat_proc[[x]] * dat_proc$ph2.D15.tcell * dat_proc$wt.D15.tcell, na.rm=T)/sum(dat_proc$ph1.D15.tcell))
+  exploratory = c(exploratory, tmp[pos1>=0.2])
+  
+  exploratory = setdiff(exploratory, c(primary, secondary))
+}
 
 
 ###################################################################################################

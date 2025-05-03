@@ -30,6 +30,22 @@ default: &default
 
 
 
+nextgen_mock: &nextgen_mock
+  data_cleaned: /trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20250503.csv
+  sampling_scheme: case_cohort
+  two_marker_timepoints: no
+  timepoints: [31]
+  times: [B, Day31Delta31overB]
+  time_labels: [Day 1, Day 31, D31 fold-rise over B]
+  study_name: NextGen_Mock
+  assay_metadata: assay_metadata/nextgen_mock_assay_metadata.csv
+  covariates: ~.+ HighRiskInd
+  low_efficacy: no
+  num_boot_replicates: 100
+  num_perm_replicates: 100
+
+
+
 # not extending ows trial b/c don't want Bserostatus defined, which affects subset in _common.R
 vat08_combined: &vat08_combined
   data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250417.csv
@@ -349,7 +365,7 @@ janssen_sa_mock:
   covariates_norisksco: ~.+ Age
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250429.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250430.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
@@ -1810,3 +1826,36 @@ D43D91:
   tpeak: 91
   tpeaklag: 7
   txt.endpoint: COVID
+  
+################################################################################
+
+
+D31nextgen_mock:
+  ph1: ph1.D31_7
+  ph2: ph2.D31_7
+  wt: wt.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD31_7toM12
+  EventTimePrimary: COVIDTimeD31toM12
+  Earlyendpoint: 
+  covariates: ~.+ HighRiskInd
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 305
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+D31nextgen_mock_tcell:
+  ph1: ph1.ps.D31_7
+  ph2: ph2.ps.D31_7
+  wt:  wt.ps.D31_7
+  WtStratum: Wstratum.tcell
+  EventIndPrimary:  COVIDIndD31_7toM12
+  EventTimePrimary: COVIDTimeD31toM12
+  Earlyendpoint: 
+  covariates: ~.+ HighRiskInd
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 305
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.

@@ -87,6 +87,24 @@ mytable(dat_proc$treatment_assigned)
 
 ### T cell data
 
+```{r check missing _resp, fig.width=8, fig.height=8}
+par(mfrow=c(2,2)); reduce_margin()
+mytable(is.na(dat_proc$Bcd4_IFNg.IL2_COV2.CON.S1_resp[dat_proc$ph2.D15.tcell==1]))
+mytable(is.na(dat_proc$Bcd4_IFNg.IL2_COV2.CON.S1[dat_proc$ph2.D15.tcell==1]))
+
+dat_proc$Bcd4_IFNg.IL2_COV2.CON.S1[is.na(dat_proc$Bcd4_IFNg.IL2_COV2.CON.S1_resp) & dat_proc$ph2.D15.tcell==1]
+dat_proc$Bcd4_IFNg.IL2_BA.4.5.S1[is.na(dat_proc$Bcd4_IFNg.IL2_COV2.CON.S1_resp) & dat_proc$ph2.D15.tcell==1]
+
+corplot(Bcd4_IFNg.IL2_COV2.CON.S1~ Bcd4_IFNg.IL2_BA.4.5.S1, dat_proc[dat_proc$ph2.D15.tcell==1,], ylim=c(-3,0), xlim=c(-3,0), asp=1)
+abline(h=-1, col=2)
+
+myboxplot(Bcd4_IFNg.IL2_COV2.CON.S1~ Bcd4_IFNg.IL2_COV2.CON.S1_resp, dat_proc[dat_proc$ph2.D15.tcell==1,], ylim=c(-3,0))
+myboxplot(Bcd4_IFNg.IL2_BA.4.5.S1~ Bcd4_IFNg.IL2_BA.4.5.S1_resp, dat_proc[dat_proc$ph2.D15.tcell==1,], ylim=c(-3,0))
+
+# myboxplot(Day15cd4_IFNg.IL2_COV2.CON.S1~ Day15cd4_IFNg.IL2_COV2.CON.S1_resp, dat_proc[dat_proc$ph2.D15.tcell==1,], ylim=c(-3,0))
+
+```
+
 ```{r check weights}
 mytable(dat_proc$ph1.D15.tcell, dat_proc$Wstratum.tcell)
 mytable(dat_proc[dat_proc$ph1.D15.tcell==1, "wt.D15.tcell"])
