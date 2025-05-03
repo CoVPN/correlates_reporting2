@@ -1,7 +1,7 @@
 <!-- HR tables for continuous markers, forest plots, risk/VE curves. -->
 
 
-`r paste(concatList(rep('#',level)), fname.suffix, ", ", COR)`  
+`r paste(concatList(rep('#',level)), ifelse(fname.suffix=="","",fname.suffix%.%", "), COR)`  
 
 ```{r, echo=FALSE, results='asis'}
 res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
