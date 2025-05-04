@@ -123,8 +123,16 @@ if(TRIAL %in% c("azd1222")) {
 \\begin{figure}
 \\center
 \\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_", fname.suffix, ".pdf}
+\\caption{Forest plots depicting hazard ratios per 10-fold change in marker, x-axis on the antilog scale.}
+\\end{figure}
+", sep="")
+  
+  cat("
+  \\clearpage
+\\begin{figure}
+\\center
 \\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_", fname.suffix, ".pdf}
-\\caption{Forest plots depicting hazard ratios per 10-fold change in marker, presented on both an antilog scale and a log scale.}
+\\caption{Forest plots depicting hazard ratios per 10-fold change in marker, x-axis on the log scale.}
 \\end{figure}
 ", sep="")
   
@@ -133,8 +141,16 @@ if(TRIAL %in% c("azd1222")) {
 \\begin{figure}
 \\center
 \\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_scaled_", fname.suffix, ".pdf}
+\\caption{Forest plots depicting hazard ratios per SD change in marker, x-aix on the antilog scale.}
+\\end{figure}
+", sep="")
+  
+  cat("
+  \\clearpage
+\\begin{figure}
+\\center
 \\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_scaled_", fname.suffix, ".pdf}
-\\caption{Forest plots depicting hazard ratios per SD change in marker, presented on both an antilog scale and a log scale.}
+\\caption{Forest plots depicting hazard ratios per SD change in marker, x-aix on the log scale.}
 \\end{figure}
 ", sep="")
   
