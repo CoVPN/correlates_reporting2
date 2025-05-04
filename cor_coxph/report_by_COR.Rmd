@@ -21,6 +21,7 @@ if (show.ve.curves) {
 
 
 <!-- HR tables for trichotomized markers, tertile incidence plots. -->
+\clearpage
 
 `r paste(concatList(rep('#',level+1)))`  Trichotomized markers
 

@@ -138,13 +138,13 @@ if (!is.null(config$assay_metadata)) {
     } else if (COR == "D57azd1222_stage2_delta_bAb" | COR == "D57azd1222_stage2_severe_bAb") {
       assay_metadata = subset(assay_metadata, panel=='bindSpike')
       
-    } else if (COR == "D31nextgen_mock") {
+    } else if (endsWith(COR, "nextgen_mock")) {
       assay_metadata = subset(assay_metadata, panel %in% c('bindSpike',"id50") )
       # hack
       assay_metadata=subset(assay_metadata, !assay %in% c("bindSpike_IgG_N","bindSpike_IgA_N"))
       
       
-    } else if (COR == "D31nextgen_mock_tcell") {
+    } else if (endsWith(COR, "nextgen_mock_tcell")) {
       assay_metadata = subset(assay_metadata, panel %in% c('CD4',"CD8") )
       
     }
@@ -904,9 +904,13 @@ if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
               "bindSpike_B.1.351", "bindSpike_DeltaMDW")
   all.markers1 = c("Day29"%.%assays1)
   
-} else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302", "nextgen_mock")) {
+} else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302")) {
   all.markers1 = c("Day"%.%timepoints%.%assays)
-} 
+  
+} else if (TRIAL=="nextgen_mock") {
+  all.markers1 = c("B"%.%assays, "Day31"%.%assays, "Delta31overB"%.%assays)
+  
+}
 
 # set marker cutpoints attr first b/c we don't need to do it for imputed copies
 if (!is.null(all.markers1)) {

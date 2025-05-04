@@ -1,13 +1,9 @@
-# COR="D31nextgen_mock";
-# COR="D31nextgen_mock_tcell";
+# COR="D31toM6_nextgen_mock";
+# COR="D31toM6_nextgen_mock_tcell";
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "nextgen_mock")
 Sys.setenv(VERBOSE = 1)
 source(here::here("..", "_common.R")) 
-
-
-# hack, also hack in _common.R L143 and in Rmd L26
-all.markers=setdiff(all.markers, c("Day31bindSpike_IgG_N","Day31bindSpike_IgA_N"))
 
 {
   library(kyotil) # p.adj.perm, getFormattedSummary
@@ -24,7 +20,6 @@ all.markers=setdiff(all.markers, c("Day31bindSpike_IgG_N","Day31bindSpike_IgA_N"
   myprint(study_name)
   myprint(verbose)
   
-  
   # path for figures and tables etc
   save.results.to = here::here("output")
   if (!dir.exists(save.results.to))
@@ -37,69 +32,43 @@ all.markers=setdiff(all.markers, c("Day31bindSpike_IgG_N","Day31bindSpike_IgA_N"
     dir.create(save.results.to)
   print(paste0("save.results.to equals ", save.results.to))
   
-  # append to file names for figures and tables
-  fname.suffix = "Obj1"
-  
-  myprint(tfinal.tpeak)
-  write(tfinal.tpeak, file = paste0(save.results.to, "timepoints_cum_risk_" %.% fname.suffix))
-  
-  
   dat_proc$yy = dat_proc$COVIDIndD31_7toM12
 
   for (a in c("Day31"%.%assays)) {
     dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
   }
   
-  dat.vac = subset(dat_proc, Trt == 1 & ph1)
+  dat.vacc = subset(dat_proc, Trt == 1 & ph1)
   dat.plac = subset(dat_proc, Trt == 0 & ph1)
-  dat.vac.ph2 = subset(dat.vac, ph2==1)
+  # dat.vacc.ph2 = subset(dat.vacc, ph2==1)
   
-  
-  # define trichotomized markers
-  if (is.null(attr(dat_proc, "marker.cutpoints"))) {
-    # do it in _common.R
-  } else {
-    marker.cutpoints = attr(dat_proc, "marker.cutpoints")
-  }
-  # save cutpoints to files
-  for (a in all.markers) {
-    q.a = marker.cutpoints[[a]]
-    if (startsWith(a, "Day")) {
-      # not fold change
-      write(
-        paste0(labels.axis[1, marker.name.to.assay(a)], " [", concatList(round(q.a, 2), ", "), ")%"),
-        file = paste0(save.results.to, "cutpoints_", a,".txt")
-      )
-    } else {
-      # fold change
-      write(
-        paste0(escape(a), " [", concatList(round(q.a, 2), ", "), ")%"),
-        file = paste0(save.results.to, "cutpoints_", a,".txt")
-      )
-    }
-  }
-  
-  #create twophase design object
   design.vacc <-
     twophase(
       id = list( ~ 1,  ~ 1),
       strata = list(NULL,  ~ Wstratum),
       subset =  ~ ph2,
-      data = dat.vac
+      data = dat.vacc
     )
-  with(dat.vac, table(Wstratum, ph2))
+
+  design.plac <-
+    twophase(
+      id = list( ~ 1,  ~ 1),
+      strata = list(NULL,  ~ Wstratum),
+      subset =  ~ ph2,
+      data = dat.plac
+    )
   
-  # table of ph1 and ph2 cases
-  tab = with(dat.vac, table(ph2, EventIndPrimary))
-  names(dimnames(tab))[2] = "Event Indicator"
-  print(tab)
-  mytex(
-    tab,
-    file.name = "tab1_" %.% fname.suffix,
-    save2input.only = T,
-    input.foldername = save.results.to
-  )
-  
+  # define trichotomized markers
+  if (is.null(attr(dat_proc, "marker.cutpoints"))) {
+    # better create marker.cutpoints attr in _common.R
+  } else {
+    marker.cutpoints = attr(dat_proc, "marker.cutpoints")
+  }
+  # save cutpoints to files
+  for (a in c("Day31"%.%assays, "B"%.%assays, "Delta31overB"%.%assays)) 
+    write(paste0(labels.axis[1, marker.name.to.assay(a)], " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"),
+      file = paste0(save.results.to, "cutpoints_", a,".txt"))
+
   begin = Sys.time()
 }
 
@@ -107,9 +76,12 @@ all.markers=setdiff(all.markers, c("Day31bindSpike_IgG_N","Day31bindSpike_IgA_N"
 ###################################################################################################
 # estimate overall VE in the placebo and vaccine arms
 
+# append to file names for figures and tables
+fname.suffix = "ExpVacc"
+
 cor_coxph_risk_no_marker (
   form.0,
-  dat=dat.vac,
+  dat=dat.vacc,
   fname.suffix, 
   save.results.to,
   config,
@@ -125,41 +97,110 @@ cor_coxph_risk_no_marker (
 ###################################################################################################
 # Univariate models
 
-cor_coxph_coef_1(
-  form.0,
-  design_or_dat = design.vacc,
-  fname.suffix,
-  save.results.to,
-  config,
-  config.cor,
-  all.markers,
-  all.markers.names.short,
+for (trt in 1:0) {
+  if (trt==1) {
+    dat.1=dat.vacc; design.1 = design.vacc
+    dat.0=dat.plac
+    fname.suffix.0 = "ExpVacc"
+    trt.label="ExpVacc"
+    cmp.label="CtlVacc"
+
+  } else {
+    dat.1=dat.plac; design.1 = design.plac
+    dat.0=dat.vacc
+    fname.suffix.0 = "CtlVacc"
+    trt.label="CtlVacc"
+    cmp.label="ExpVacc"
+  }
   
-  dat.plac,
-  show.q = F,
-  verbose = T
-)
+  
+  # table of ph1 and ph2 cases
+  tab1 = with(dat.1, table(ph2, EventIndPrimary))
+  names(dimnames(tab1))[2] = "Event Indicator"; print(tab1)
+  
+  for (marker_set in 1:3) {
+    
+    if (marker_set==1) {
+      fname.suffix = fname.suffix.0%.%"_D31"
+      
+      all.markers=c(paste0("Day", tpeak, assays))
+      all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+      all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
+      all.markers.names.short = c("D"%.%tpeak%.%" "%.%all.markers.names.short)
+      
+    } else if (marker_set==2) {
+      fname.suffix = fname.suffix.0%.%"_B"
+      
+      all.markers=c(paste0("B", assays) )
+      all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+      all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
+      all.markers.names.short = c("B "%.%all.markers.names.short)
+      
+    } else if (marker_set==3) {
+      fname.suffix = fname.suffix.0%.%"_D31overB"
+      
+      all.markers=c(paste0("Delta", tpeak, "overB", assays))
+      all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+      all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
+      all.markers.names.short = c("D"%.%tpeak%.%"/B "%.%all.markers.names.short    )
+      
+    }
+    names(all.markers.names.short) = all.markers
+    
+    # need to save tab1 for each distinct fname.suffix
+    mytex(tab1, file.name = "tab1_" %.% fname.suffix, save2input.only = T, input.foldername = save.results.to)
+  
+    # hack, also hack in _common.R L143 and in Rmd L26
+    if (COR=="D31toM6_nextgen_mock") {
+      all.markers.names.short=all.markers.names.short[!contain(all.markers, "_N")]
+      all.markers=all.markers[!contain(all.markers, "_N")]
+    }
+    
+    cat("\n\n"); myprint(fname.suffix)
+    
+    cor_coxph_coef_1(
+      form.0,
+      design_or_dat = design.vacc,
+      fname.suffix,
+      save.results.to,
+      config,
+      config.cor,
+      markers = all.markers,
+      markers.names.short = all.markers.names.short,
+  
+      dat.plac = dat.0,
+      show.q = F,
+      
+      cmp.label = cmp.label,
+      verbose = T
+    )
+  
+    cor_coxph_risk_tertile_incidence_curves (
+      form.0,
+      dat = dat.1,
+      fname.suffix,
+      save.results.to,
+      config,
+      config.cor,
+      tfinal.tpeak,
+  
+      markers = all.markers,
+      markers.names.short = all.markers.names.short,
+      markers.names.long = all.markers.names.long,
+      marker.cutpoints,
+      assay_metadata,
+  
+      dat.plac = dat.0,
+      for.title = "",
+      
+      trt.label = trt.label,
+      cmp.label = cmp.label
+    )
+  
+  
+  }
 
-
-cor_coxph_risk_tertile_incidence_curves (
-  form.0,
-  dat = dat.vac,
-  fname.suffix,
-  save.results.to,
-  config,
-  config.cor,
-  tfinal.tpeak,
-
-  markers = all.markers,
-  markers.names.short = all.markers.names.short,
-  markers.names.long = all.markers.names.long,
-  marker.cutpoints,
-  assay_metadata,
-
-  dat.plac,
-  for.title = ""
-)
-
+}
 
 # ###################################################################################################
 # # marginalized risk and controlled VE
@@ -178,7 +219,7 @@ cor_coxph_risk_tertile_incidence_curves (
 # 
 # cor_coxph_risk_bootstrap(
 #   form.0,
-#   dat = dat.vac,
+#   dat = dat.vacc,
 #   fname.suffix,
 #   save.results.to,
 #   config,
@@ -192,7 +233,7 @@ cor_coxph_risk_tertile_incidence_curves (
 # 
 # cor_coxph_risk_plotting (
 #   form.0,
-#   dat = dat.vac,
+#   dat = dat.vacc,
 #   fname.suffix,
 #   save.results.to,
 #   config,
