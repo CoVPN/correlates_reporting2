@@ -6,13 +6,16 @@ tfinal.tpeak is given by the default rule - the last case in ph2 in vaccine arm 
 
 ```{r, echo=FALSE, results='asis'}
 
+trts=c(1,0) # 1,0
+marker_sets = 1:3 # 1:3
+
 show.q=F
 
-for (i in 1:2) {
-  if (i==1) {
+for (trt in trts) {
+  if (trt==1) {
     cat("# Univariate, investigational vaccine \n\n")
     fname.suffix.0="ExpVacc"
-  } else if (i==2) {
+  } else if (trt==0) {
     cat("# Univariate, ctrl vaccine \n\n")
     fname.suffix.0="CtlVacc"
 }
@@ -36,7 +39,7 @@ for (i in 1:2) {
       assays1 = assays[startsWith(assays,"T")]
     }
   
-    for (marker_set in 1:3) {
+    for (marker_set in marker_sets) {
       
       if (marker_set==1) {
         fname.suffix = fname.suffix.0%.%"_D31"

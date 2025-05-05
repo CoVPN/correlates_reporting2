@@ -31,7 +31,8 @@ if (show.ve.curves) {
 \vspace{-15pt}
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, ".txt}"), sep=",")`
 
-$\ast\ast$`r txt.coxph.note2` Case counting starts `r tpeaklag` days post Day `r tpeak`.
+$\ast\ast$ No. at-risk/no. cases = estimated population size and case number in the group. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
+
 
 $\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
 

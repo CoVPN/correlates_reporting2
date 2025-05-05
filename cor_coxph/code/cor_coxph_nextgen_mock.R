@@ -20,6 +20,9 @@ source(here::here("..", "_common.R"))
   myprint(study_name)
   myprint(verbose)
   
+  # hack
+  # source("~/copcor/R/cor_coxph_coef_1.R")
+  
   # path for figures and tables etc
   save.results.to = here::here("output")
   if (!dir.exists(save.results.to))
@@ -32,8 +35,6 @@ source(here::here("..", "_common.R"))
     dir.create(save.results.to)
   print(paste0("save.results.to equals ", save.results.to))
   
-  dat_proc$yy = dat_proc$COVIDIndD31_7toM12
-
   for (a in c("Day31"%.%assays)) {
     dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
   }
@@ -97,7 +98,10 @@ cor_coxph_risk_no_marker (
 ###################################################################################################
 # Univariate models
 
-for (trt in 1:0) {
+trts=c(1,0); marker_sets = 1:3 
+# trts=1; marker_sets = 1 
+
+for (trt in trts) {
   if (trt==1) {
     dat.1=dat.vacc; design.1 = design.vacc
     dat.0=dat.plac
@@ -118,7 +122,7 @@ for (trt in 1:0) {
   tab1 = with(dat.1, table(ph2, EventIndPrimary))
   names(dimnames(tab1))[2] = "Event Indicator"; print(tab1)
   
-  for (marker_set in 1:3) {
+  for (marker_set in marker_sets) {
     
     if (marker_set==1) {
       fname.suffix = fname.suffix.0%.%"_D31"
@@ -171,6 +175,9 @@ for (trt in 1:0) {
       dat.plac = dat.0,
       show.q = F,
       
+      forestplot.markers=NULL, 
+      for.title="",
+      run.trichtom=TRUE,
       cmp.label = cmp.label,
       verbose = T
     )
