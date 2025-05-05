@@ -154,12 +154,6 @@ for (trt in trts) {
     # need to save tab1 for each distinct fname.suffix
     mytex(tab1, file.name = "tab1_" %.% fname.suffix, save2input.only = T, input.foldername = save.results.to)
   
-    # hack, also hack in _common.R L143 and in Rmd L26
-    if (COR=="D31toM6_nextgen_mock") {
-      all.markers.names.short=all.markers.names.short[!contain(all.markers, "_N")]
-      all.markers=all.markers[!contain(all.markers, "_N")]
-    }
-    
     cat("\n\n"); myprint(fname.suffix)
     
     cor_coxph_coef_1(
