@@ -931,10 +931,24 @@ if (!is.null(all.markers1)) {
 if (TRIAL=="janssen_partA_VL") {
   for (i in 1:10) all.markers1 = c(all.markers1, "Day29"%.%assays1%.%"_"%.%i)
 }  
+
 # turn categorical variables into factors
+# first define a sort function that can properly handle negative value ordering
+sort_by_numeric_prefix <- function(x) {
+  # Remove leading "(" and extract substring before comma
+  prefix <- sub("^\\(", "", x)
+  numeric_part <- sub(",.*", "", prefix)
+  
+  # Convert to numeric
+  numeric_vals <- as.numeric(numeric_part)
+  
+  # Order by numeric values
+  x[order(numeric_vals)]
+}
+
 if (!is.null(all.markers1)) {
   for (a in all.markers1) {
-    dat_proc[[a%.%"cat"]] = as.factor(dat_proc[[a%.%"cat"]])
+    dat_proc[[a%.%"cat"]] = factor(dat_proc[[a%.%"cat"]], levels=sort_by_numeric_prefix(names(table(dat_proc[[a%.%"cat"]]))))
   }
 }
 

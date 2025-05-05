@@ -1871,7 +1871,7 @@ D31toM6_nextgen_mock:
   covariates: ~.+ HighRiskInd
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
@@ -1886,6 +1886,6 @@ D31toM6_nextgen_mock_tcell:
   covariates: ~.+ HighRiskInd
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
