@@ -139,7 +139,7 @@ if (!is.null(config$assay_metadata)) {
       assay_metadata = subset(assay_metadata, panel=='bindSpike')
       
     } else if (endsWith(COR, "nextgen_mock")) {
-      assay_metadata = subset(assay_metadata, panel %in% c("bindSpike","id50","bindN") )
+      assay_metadata = subset(assay_metadata, !panel %in% c('CD4',"CD8") )
       
     } else if (endsWith(COR, "nextgen_mock_tcell")) {
       assay_metadata = subset(assay_metadata, panel %in% c('CD4',"CD8") )
