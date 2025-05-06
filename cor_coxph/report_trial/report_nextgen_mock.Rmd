@@ -16,7 +16,7 @@ for (trt in trts) {
     cat("# Univariate, investigational vaccine \n\n")
     fname.suffix.0="ExpVacc"
   } else if (trt==0) {
-    cat("# Univariate, ctrl vaccine \n\n")
+    cat("# Univariate, control vaccine \n\n")
     fname.suffix.0="CtlVacc"
 }
 
