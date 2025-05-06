@@ -33,8 +33,6 @@ for (trt in trts) {
     for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
     if (COR == "D31toM6_nextgen_mock") {
       assays1 = assays[startsWith(assays,"bind") | startsWith(assays,"pseud")]
-      # hack
-      assays1=assays1[!assays1 %in% c("bindSpike_IgG_N","bindSpike_IgA_N")]
     } else if (COR == "D31toM6_nextgen_mock_tcell") {
       assays1 = assays[startsWith(assays,"T")]
     }
