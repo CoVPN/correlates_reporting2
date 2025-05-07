@@ -4,6 +4,7 @@
 #Sys.setenv(TRIAL = "janssen_pooled_partA")
 #Sys.setenv(TRIAL = "prevent19_stage2")
 #Sys.setenv(TRIAL = "vat08_combined");
+#Sys.setenv(TRIAL = "nextgen_mock");
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -162,9 +163,10 @@ important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex"
   # e.g. ph2.immuno.D35, ph2.immuno.C1, ph2.immuno.BD1 for prevent19_stage2 
   #      ph2.immuno.bAb, ph2.immuno.nAb for vat08_combined
   if(attr(config,"config") %in% c("vat08_combined")) "Trialstage",
+  if(attr(config,"config") %in% c("nextgen_mock")) c("ph2.immuno", "ph2.AB.immuno", "Track", "wt.D31_7", "wt.AB.D31_7"), 
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
-  if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV") "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
+  if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV" & !grepl("NextGen", study_name)) "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
 
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;
@@ -398,7 +400,7 @@ saveRDS(if (attr(config,"config") == "vat08_combined") {dat.twophase.sample %>% 
 
 ###################################################################### 
 # prepare datasets for violin plots, required for janssen_partA_VL, janssen_pooled_partA
-if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat08_combined")){
+if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat08_combined","nextgen_mock")){
   # longer format by assay and time
   dat.longer.immuno.subset <- dat.twophase.sample %>%
     tidyr::pivot_longer(cols = c(outer(times_, assays, "%.%"))[c(outer(times_, assays, "%.%")) %in% colnames(dat.twophase.sample)], names_to = "time_assay", values_to = "value") %>%
@@ -421,7 +423,12 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
     }
   }
   resp <- getResponder(dat_proc, post_times = timepoints_, 
-                       assays=assays, pos.cutoffs = pos.cutoffs)
+                       assays = assays[!grepl("T4|T8", assays)], pos.cutoffs = pos.cutoffs)
+  
+  # add ICS response call for NextGen
+  if (study_name == "NextGen_Mock") {
+    colnames(resp) <- gsub("_resp", "Resp", colnames(resp))
+  }
   
   resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
     tidyr::pivot_longer(!Ptid, names_to = "category", values_to = "response")
@@ -449,6 +456,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
   dat.longer.immuno.subset <- dat.longer.immuno.subset[,c("Ptid", "time", "assay", "category", "Trt", "Bserostatus", 
                                                           "value", if(attr(config,"config")=="janssen_partA_VL") "wt.subcohort",
                                                           if(attr(config,"config")=="vat08_combined") c("wt.immuno.nAb", "wt.immuno.bAb", "ph2.immuno.nAb", "ph2.immuno.bAb", "Trialstage"), 
+                                                          if(attr(config,"config")=="nextgen_mock") c("ph2.AB.immuno", "ph2.immuno", "Track", "wt.AB.D31_7", "wt.D31_7"),
                                                           "pos.cutoffs","lbval","lbval2", 
                                                           "lb","lb2",if(attr(config,"config")=="janssen_partA_VL") "Region", 
                                                           "response")]

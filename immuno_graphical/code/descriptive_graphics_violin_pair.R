@@ -32,6 +32,10 @@ if ("order_in_panel" %in% colnames(assay_metadata)){
 }
 
 dat.longer.immuno.subset.plot1 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.rds"))
+if(attr(config,"config") == "nextgen_mock"){
+    dat.longer.immuno.subset.plot1.trackA = dat.longer.immuno.subset.plot1$dat_stats # for Track A RIS/RIS-PBMC (initial immuno)
+    dat.longer.immuno.subset.plot1.whole = dat.longer.immuno.subset.plot1$dat_stats2 # for whole RIS/RIS-PBMC (final immuno)
+}
 if(attr(config,"config") == "vat08_combined"){
     dat.longer.immuno.subset.plot1_stage1_stage2 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1_stage1_stage2.rds"))}
 if(attr(config,"config")=="janssen_partA_VL") {

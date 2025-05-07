@@ -42,7 +42,11 @@ if(attr(config,"config")=="janssen_pooled_partA") {
   times_ = c(times, "Day78", "Day134", "Day202", "Day292", "Day387") 
   labels.time = c(time_labels, "Day 78", "Day 134", "Day 202", "Day 292", "Day 387"); names(labels.time) = times_
   timepoints_= c(timepoints, 78, 134, 202, 292, 387)
-} else {times_ = times; timepoints_=timepoints}
+} else if (attr(config,"config")=="nextgen_mock") {
+  times_ = c("B", "Day31", "Delta31overB", "Day91", "Day181", "Day366")
+  labels.time = c("Day 1","Day 31", "D31 fold-rise over D1", "Day 91", "Day 181", "Day 366"); names(labels.time) = times_
+  timepoints_= c(timepoints, 91, 181, 366)
+} else {times_ = times; timepoints_ = timepoints}
 
 
 

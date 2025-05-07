@@ -30,11 +30,21 @@ getResponder <- function(data,
             bl <- paste0("B", j)
             delta <- paste0("Delta", i, "overB", j)
             
-            if ((grepl("bind", j) & study_name!="VAT08") | attr(config,"config")=="janssen_partA_VL") {
+            if ((grepl("bind", j) & !study_name %in% c("VAT08", "NextGen_Mock")) | attr(config,"config")=="janssen_partA_VL") {
                 
             data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
             if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
             
+            } else if (study_name == "NextGen_Mock") {
+                # 1 if baseline < lloq, post-baseline >= 4 * lloq
+                # if lloq <= Baseline < uloq, post-baseline >= 4 * baseline
+                data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
+                data[, paste0(post, "Resp")] <- as.numeric(
+                    (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > 4 * log10(pos.cutoffs[j])) |
+                        (data[, bl] >= log10(pos.cutoffs[j]) & data[, bl] < log10(uloqs[j]) & as.numeric(10^data[, post]/10^data[, bl] >= responderFR))) 
+                data[, paste0(bl, "Resp")] <- ifelse(data[, bl] >= log10(uloqs[j]), NA, data[, paste0(bl, "Resp")])
+                data[, paste0(post, "Resp")] <- ifelse(data[, bl] >= log10(uloqs[j]), NA, data[, paste0(post, "Resp")])
+
             } else { 
                 data[, paste0(post, "Resp")] <- as.numeric(
                     (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > log10(pos.cutoffs[j])) |
@@ -63,16 +73,20 @@ get_desc_by_group <- function(data,
         data[which(grepl("bind", data$assay)), "wt"] = data[which(grepl("bind", data$assay)), "wt.immuno.bAb"]
         data[which(grepl("pseudoneutid", data$assay)), "wt"] = data[which(grepl("pseudoneutid", data$assay)), "wt.immuno.nAb"]
         
-    } else {data$wt = data$wt.subcohort}
+    } else if (study_name == "NextGen_Mock") {
+        data$wt = data[, "wt.AB.D31_7"]  # initial, on Track A RIS/RIS-PBMC
+        data$wt2 = data[, "wt.D31_7"] # final, on whole RIS/RIS-PBMC
+            
+    }else {data$wt = data$wt.subcohort}
     
     complete <- complete.cases(data[, group])
     
     dat_stats <-
         data %>% filter(complete==1) %>%
         group_by_at(group) %>%
-        mutate(counts = n(),
-               num = sum(response * wt, na.rm=T),
-               denom = sum(wt, na.rm=T),
+        mutate(counts = ifelse(study_name == "NextGen_Mock", sum(!is.na(response) & as.numeric(Track == "A")), n()),
+               num = ifelse(study_name == "NextGen_Mock", sum(response * wt * as.numeric(Track == "A"), na.rm=T), sum(response * wt, na.rm=T)),
+               denom = ifelse(study_name == "NextGen_Mock", sum(wt * as.numeric(Track == "A"), na.rm=T), sum(wt, na.rm=T)),
                #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
                RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
                min = min(value, na.rm=T),
@@ -81,7 +95,28 @@ get_desc_by_group <- function(data,
                q3 = quantile(value, 0.75, na.rm=T),
                max= max(value, na.rm=T))
     
-    return(dat_stats)
+    if (study_name == "NextGen_Mock") {
+        dat_stats2 <-
+            data %>% filter(complete == 1) %>%
+            filter(ph2.immuno == 1) %>% # condition for the whole RIS/RIS-PBMC
+            group_by_at(group) %>%
+            mutate(counts = sum(!is.na(response)),
+                   num = sum(response * wt2, na.rm=T),
+                   denom = sum(wt2, na.rm=T),
+                   #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
+                   RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+                   min = min(value, na.rm=T),
+                   q1 = quantile(value, 0.25, na.rm=T),
+                   median = median(value, na.rm=T),
+                   q3 = quantile(value, 0.75, na.rm=T),
+                   max= max(value, na.rm=T))
+    }
+    
+    if (exists("des_stats2")) {
+        return(list(dat_stats = dat_stats, dat_stats2 = dat_stats2))
+    } else {
+        return(dat_stats)
+    }
 }
 
 #' A ggplot object for violin box plot without lines, loop by timepoints
