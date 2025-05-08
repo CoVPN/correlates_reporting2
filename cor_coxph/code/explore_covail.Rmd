@@ -14,7 +14,7 @@ library(Hmisc)
 library(knitr)
 
 dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20250424.csv')
-dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250430.csv')
+dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250507.csv')
 dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
@@ -83,6 +83,41 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
+
+```{r stratify by stage}
+nAbs=subset(assay_metadata, panel=="id50", assay, drop=T)
+
+# compare all Pfizer and all Moderna and onedosemRNA to decide whether to stratify by stage or not
+dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
+dat.onedoseModerna = subset(dat.onedosemRNA, arm<=6)
+dat.onedosePfizer  = subset(dat.onedosemRNA, arm> 6)
+
+for (.naive in 1:0) {
+  
+  markers=nAbs[2]
+
+  res=sapply(1:4, function (i) {
+    fits=lapply(markers, function (a) {
+      if (i==1) dat=subset(dat.onedoseModerna, naive==.naive)
+      if (i==2) dat=subset(dat.onedosePfizer, naive==.naive)
+      if (i==3 | i==4) dat=subset(dat.onedosemRNA, naive==.naive)
+      
+      dat[["Day15"%.%a]]=scale(dat[["Day15"%.%a]])
+      formula = as.formula(glue("Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ FOIstandardized + standardized_risk_score + B{a} + Day15{a}"))
+      if (i==4) {
+        formula = update(formula, ~ . + strata(stage))
+      } 
+      coxph(formula, dat)
+    })
+    names(fits)=markers
+    getFormattedSummary(fits, robust=F, type=5)[,]
+  })
+  colnames(res)=c("Moderna","Pfizer","all","all stratified")
+  print(kable(res))
+  
+}
+
+```
 
 
 ### T cell data
