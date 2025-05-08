@@ -3,7 +3,7 @@
 
 ```{r, echo=FALSE, results='asis'}
 
-trts=1:8
+trts=c(5:8, 1:4)
 marker_sets = 1:2 # 1:2
 
 show.q=F

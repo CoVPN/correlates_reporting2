@@ -5,7 +5,7 @@
 Sys.setenv(TRIAL = "covail_tcell"); source(here::here("..", "_common.R")); source(here::here("code", "params.R"))
 
 # hack
-source("~/copcor/R/cor_coxph_coef_1.R")
+# source("~/copcor/R/cor_coxph_coef_1.R")
 
 {
 Sys.setenv(VERBOSE = 1) 
@@ -82,7 +82,7 @@ has.plac = F
 
 # trts=1:8; marker_sets = 1:2 
 marker_sets = 1:2; trts=1:8
-# trt=4; marker_set = 1
+# trt=8; marker_set = 2
 
 for (trt in trts) {
   # naive
