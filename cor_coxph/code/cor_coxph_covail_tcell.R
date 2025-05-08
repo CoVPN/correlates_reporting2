@@ -7,6 +7,10 @@ Sys.setenv(TRIAL = "covail_tcell"); source(here::here("..", "_common.R")); sourc
 # hack
 # source("~/copcor/R/cor_coxph_coef_1.R")
 
+marker_sets = 1:2 # primary, secondary
+trts=1:8 # onedosemRNA, etc
+# trt=8; marker_set = 2
+
 {
 Sys.setenv(VERBOSE = 1) 
 library(kyotil) # p.adj.perm, getFormattedSummary
@@ -62,8 +66,8 @@ if (startsWith(COR,"D15to181")) {
 
 } else stop("Wrong COR: "%.% COR)
 
-
-form.0 = update(form.0, ~.-naive)
+# updated config to remove naive
+# form.0 = update(form.0, ~.-naive)
 
 prev.vacc = get.marginalized.risk.no.marker(form.0, dat.onedosemRNA, tfinal.tpeak)
 myprint(prev.vacc)
@@ -80,9 +84,6 @@ has.plac = F
 ################################################################################
 # time periods (vaccine proximal, distal and all) are implemented through COR
 
-# trts=1:8; marker_sets = 1:2 
-marker_sets = 1:2; trts=1:8
-# trt=8; marker_set = 2
 
 for (trt in trts) {
   # naive
@@ -135,7 +136,7 @@ for (trt in trts) {
     
     cat("\n\n")
     cor_coxph_coef_1 (
-      form.0, # updated to remove naive
+      if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
       design_or_dat = design.1,
       fname.suffix,
       save.results.to,
