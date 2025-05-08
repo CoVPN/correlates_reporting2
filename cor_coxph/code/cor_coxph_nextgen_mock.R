@@ -100,6 +100,7 @@ cor_coxph_risk_no_marker (
 
 trts=c(1,0); marker_sets = 1:3 
 # trts=1; marker_sets = 1 
+# trt=1; marker_set = 1 
 
 for (trt in trts) {
   if (trt==1) {
@@ -158,7 +159,7 @@ for (trt in trts) {
     
     cor_coxph_coef_1(
       form.0,
-      design_or_dat = design.vacc,
+      design_or_dat = design.1,
       fname.suffix,
       save.results.to,
       config,
