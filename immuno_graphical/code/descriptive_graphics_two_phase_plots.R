@@ -1,4 +1,5 @@
 #Sys.setenv(TRIAL = "vat08_combined")
+#Sys.setenv(TRIAL = "nextgen_mock")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -135,10 +136,25 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
   # this loop is for prevent19 and janssen_partA_VL, prevent19 needs to be looped through all people (US+Mex) and US only, janssen_partA_VL needs to be looped through regions
     
   if (length(assay_immuno)==1) next # AZ two datasets only have one marker in each as of 5/13/2022, can't do pair 
-    
+  
     print("Pair plots 1:")
+  
+    if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
+    if(attr(config,"config")=="janssen_partA_VL") {subdat=subset(subdat, Region==country)} # janssen_partA_VL Region: (Northern America = 0, Latin America = 1, Southern Africa = 2)
+    country_lb = case_when(country=="Nvx_US" ~ "US_only_", 
+                           country==0 ~ "NAM_",
+                           country==1 ~ "LATAM_",
+                           country==2 ~ "ZA_",
+                           TRUE ~ "")
+    country_lb_long = case_when(country=="Nvx_US" ~ "US only", 
+                                country==0 ~ "Northern America",
+                                country==1 ~ "Latin America",
+                                country==2 ~ "Southern Africa",
+                                TRUE ~ "")
     
     for (tp in if(study_name=="VAT08") {tps_no_fold_change} else if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints_)} else {tps_no_B_and_delta_over_tinterm}) { # "B", "Day29", "Day57", "Day29overB", "Day57overB"
+      if (study_name == "NextGen_Mock") next # NextGen doesn't need pairplot at single timepoint
+      
       for (trt in 0:1) {
         
         # Don't produce figures for placebo baseline negative except for VAT08 to improve build time
@@ -152,19 +168,6 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
           
           subdat <- dat.twophase.sample %>%
             dplyr::filter(Bserostatus == bserostatus & Trt == trt)
-          
-          if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
-          if(attr(config,"config")=="janssen_partA_VL") {subdat=subset(subdat, Region==country)} # janssen_partA_VL Region: (Northern America = 0, Latin America = 1, Southern Africa = 2)
-          country_lb = case_when(country=="Nvx_US" ~ "US_only_", 
-                                 country==0 ~ "NAM_",
-                                 country==1 ~ "LATAM_",
-                                 country==2 ~ "ZA_",
-                                 TRUE ~ "")
-          country_lb_long = case_when(country=="Nvx_US" ~ "US only", 
-                                 country==0 ~ "Northern America",
-                                 country==1 ~ "Latin America",
-                                 country==2 ~ "Southern Africa",
-                                 TRUE ~ "")
           
           for (asy in c("*", 
                         if (attr(config,"config") %in% c("janssen_partA_VL","vat08_combined")) "bind", 
@@ -268,50 +271,60 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
         subdat <- dat.twophase.sample %>%
           dplyr::filter(Bserostatus == bserostatus & Trt == trt)
         
-        times_selected <- if(study_name=="VAT08") {tps_no_delta_over_tinterm[c(1,4,5)]
+        times_selected <- if(study_name=="VAT08") {list(tps_no_delta_over_tinterm[c(1,4,5)])
           # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
-          } else {tps_no_fold_change} # "B", "Day29", "Day57"
+          } else if (study_name == "NextGen_Mock") {list(
+              tps_no_delta_over_tinterm[c(1,2,4)], # "B", "Day31", "Day91"
+              tps_no_delta_over_tinterm[c(3,5)] # "Delta31overB", "Delta91overB"
+              ) 
+          } else {list(tps_no_fold_change)} # "B", "Day29", "Day57"
         
         if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
         
-        for (aa in assay_immuno) {
-          #if (study_name=="VAT08" && aa=="pseudoneutid50_mdw" && bserostatus==0) next # psv_mdw doesn't have any value for naive at baseline
-          
-          # subset for prevent19_stage2
-          if(attr(config,"config")=="prevent19_stage2") {
-            subdat = subdat[which(subdat[, "ph2.immuno.BD1"]==1), ]
-          } else if (attr(config,"config")=="vat08_combined" & grepl("bind", aa)) {
-            subdat = subdat[which(subdat$ph2.immuno.bAb==1), ]
-          } else if (attr(config,"config")=="vat08_combined" & grepl("pseudo", aa)) {
-            subdat = subdat[which(subdat$ph2.immuno.nAb==1), ]
+        for (tm in seq(length(times_selected))){
+            for (aa in assay_immuno) {
+              #if (study_name=="VAT08" && aa=="pseudoneutid50_mdw" && bserostatus==0) next # psv_mdw doesn't have any value for naive at baseline
+              
+              # subset for prevent19_stage2
+              if(attr(config,"config")=="prevent19_stage2") {
+                subdat = subdat[which(subdat[, "ph2.immuno.BD1"]==1), ]
+              } else if (attr(config,"config")=="vat08_combined" & grepl("bind", aa)) {
+                subdat = subdat[which(subdat$ph2.immuno.bAb==1), ]
+              } else if (attr(config,"config")=="vat08_combined" & grepl("pseudo", aa)) {
+                subdat = subdat[which(subdat$ph2.immuno.nAb==1), ]
+              } else if (attr(config,"config")=="nextgen_mock" & grepl("T4|T8", aa)) {
+                subdat = subdat[which(subdat$ph2.AB.immuno==1), ] # subset to the RIS-PBMC set for NextGen ICS final report
+              }
+              
+              covid_corr_pairplots_by_time(
+                plot_dat = subdat,
+                times = times_selected[[tm]],
+                assay = aa,
+                strata = "all_one",
+                weight = ifelse(attr(config,"config")=="prevent19_stage2", "wt.immuno.BD1",
+                                ifelse(attr(config,"config")=="vat08_combined" & grepl("bind", aa), "wt.immuno.bAb",
+                                       ifelse(attr(config,"config")=="vat08_combined" & grepl("pseudo", aa), "wt.immuno.nAb",
+                                              ifelse(attr(config,"config")=="nextgen_mock" & grepl("bind|pseudo", aa), "wt.immuno",
+                                                     ifelse(attr(config,"config")=="nextgen_mock" & grepl("T4|T8", aa), "wt.AB.immuno",
+                                "wt.subcohort"))))),
+                plot_title = paste0(
+                  labels.assays[aa], ": ",
+                  bstatus.labels.3[bserostatus + 1], " ",
+                  c("placebo", "vaccine")[trt + 1], " arm"
+                ), 
+                column_labels = paste(gsub("ay ","", labels.time[times_selected[[tm]]]),
+                                      "\n", labels.axis[, aa][1]),
+                column_label_size = ifelse(study_name=="VAT08", 4.5, 
+                                           ifelse(max(str_length(labels.axis[1,])) > 28, 4.3, 6.5)),
+                axis_label_size = ifelse(study_name=="VAT08", 7, 9),
+                filename = paste0(
+                  save.results.to, "/pairs_", aa, "_by_times_", ifelse(tm!=1, paste0(tm, "_"), ""), 
+                  bstatus.labels.2[bserostatus + 1], "_", c("placebo_", "vaccine_")[trt + 1], country_lb,
+                  study_name, ifelse(study_name == "NextGen_Mock", "_final", ""), ".pdf"
+                )
+              )
+            }
           }
-          
-          covid_corr_pairplots_by_time(
-            plot_dat = subdat,
-            times = times_selected,
-            assay = aa,
-            strata = "all_one",
-            weight = ifelse(attr(config,"config")=="prevent19_stage2", "wt.immuno.BD1",
-                            ifelse(attr(config,"config")=="vat08_combined" & grepl("bind", aa), "wt.immuno.bAb",
-                                   ifelse(attr(config,"config")=="vat08_combined" & grepl("pseudo", aa), "wt.immuno.nAb",
-                            "wt.subcohort"))),
-            plot_title = paste0(
-              labels.assays[aa], ": ",
-              bstatus.labels.3[bserostatus + 1], " ",
-              c("placebo", "vaccine")[trt + 1], " arm"
-            ), 
-            column_labels = paste(gsub("ay ","", labels.time[times_selected]),
-                                  "\n", labels.axis[, aa][1]),
-            column_label_size = ifelse(study_name=="VAT08", 4.5, 
-                                       ifelse(max(str_length(labels.axis[1,])) > 28, 4.3, 6.5)),
-            axis_label_size = ifelse(study_name=="VAT08", 7, 9),
-            filename = paste0(
-              save.results.to, "/pairs_", aa, "_by_times_",
-              bstatus.labels.2[bserostatus + 1], "_", c("placebo_", "vaccine_")[trt + 1], country_lb,
-              study_name, ".pdf"
-            )
-          )
-        }
       }
     }
   }

@@ -74,8 +74,8 @@ get_desc_by_group <- function(data,
         data[which(grepl("pseudoneutid", data$assay)), "wt"] = data[which(grepl("pseudoneutid", data$assay)), "wt.immuno.nAb"]
         
     } else if (study_name == "NextGen_Mock") {
-        data$wt = data[, "wt.AB.D31_7"]  # initial, on Track A RIS/RIS-PBMC
-        data$wt2 = data[, "wt.D31_7"] # final, on whole RIS/RIS-PBMC
+        data$wt = data[, "wt.AB.immuno"]  # initial, on Track A RIS/RIS-PBMC
+        data$wt2 = data[, "wt.immuno"] # final, on whole RIS/RIS-PBMC
             
     }else {data$wt = data$wt.subcohort}
     
@@ -97,8 +97,8 @@ get_desc_by_group <- function(data,
     
     if (study_name == "NextGen_Mock") {
         dat_stats2 <-
-            data %>% filter(complete == 1) %>%
-            filter(ph2.immuno == 1) %>% # condition for the whole RIS/RIS-PBMC
+            data %>% filter(complete == 1 & grepl("bind|pseudo", assay)) %>%
+            filter(ph2.immuno == 1) %>% # condition for the whole RIS for bAb/nAb and RIS-PBMC for ICS
             group_by_at(group) %>%
             mutate(counts = sum(!is.na(response)),
                    num = sum(response * wt2, na.rm=T),
@@ -109,7 +109,20 @@ get_desc_by_group <- function(data,
                    q1 = quantile(value, 0.25, na.rm=T),
                    median = median(value, na.rm=T),
                    q3 = quantile(value, 0.75, na.rm=T),
-                   max= max(value, na.rm=T))
+                   max= max(value, na.rm=T)) %>%
+            bind_rows(data %>% filter(complete == 1 & grepl("T4|T8", assay)) %>%
+                          filter(ph2.immuno == 1) %>% # condition for the whole RIS for bAb/nAb and RIS-PBMC for ICS
+                          group_by_at(group) %>%
+                          mutate(counts = sum(!is.na(response)),
+                                 num = sum(response * wt, na.rm=T),
+                                 denom = sum(wt, na.rm=T),
+                                 #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
+                                 RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+                                 min = min(value, na.rm=T),
+                                 q1 = quantile(value, 0.25, na.rm=T),
+                                 median = median(value, na.rm=T),
+                                 q3 = quantile(value, 0.75, na.rm=T),
+                                 max= max(value, na.rm=T)))
     }
     
     if (exists("des_stats2")) {

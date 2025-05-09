@@ -22,6 +22,28 @@ if (attr(config,"config")=="vat08_combined") {
 
 Trialstage_val = 2 ###################################### need manually update "Trialstage" and line 89 in report.Rmd for vat08_combined 
 
+# add delta variables
+if (attr(config,"config")=="janssen_pooled_partA" & !any(grepl("Delta71", colnames(dat_proc)))){
+  dat_proc$Delta71overBbindSpike = dat_proc$Day71bindSpike - dat_proc$BbindSpike
+  dat_proc$Delta71overBbindRBD = dat_proc$Day71bindRBD - dat_proc$BbindRBD
+  dat_proc$Delta71overBpseudoneutid50 = dat_proc$Day71pseudoneutid50 - dat_proc$Bpseudoneutid50
+  dat_proc$Delta71overBADCP = dat_proc$Day71ADCP - dat_proc$BADCP
+  dat_proc$Day71pseudoneutid50uncensored=NA; dat_proc$Delta71overBpseudoneutid50uncensored=NA
+} else if (attr(config,"config")=="vat08_combined"){
+  for (extra_tp in c(78, 134, 202, 292, 387)){
+    for (asy in assays){
+      if (!paste0("Day", extra_tp, asy) %in% colnames(dat_proc)) {dat_proc[, paste0("Day", extra_tp, asy)] = NA}
+      dat_proc[, paste0("Delta", extra_tp, "overB", asy)] = dat_proc[, paste0("Day", extra_tp, asy)] - dat_proc[, paste0("B", asy)]
+    }
+  }
+} else if (attr(config,"config") == "nextgen_mock") {
+  for (extra_tp in c(31, 91, 181, 366)){
+    for (asy in assays){
+      dat_proc[, paste0("Delta", extra_tp, "overB", asy)] = dat_proc[, paste0("Day", extra_tp, asy)] - dat_proc[, paste0("B", asy)]
+    }
+  }
+}
+
 library(here)
 library(dplyr)
 library(stringr)
@@ -163,7 +185,7 @@ important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex"
   # e.g. ph2.immuno.D35, ph2.immuno.C1, ph2.immuno.BD1 for prevent19_stage2 
   #      ph2.immuno.bAb, ph2.immuno.nAb for vat08_combined
   if(attr(config,"config") %in% c("vat08_combined")) "Trialstage",
-  if(attr(config,"config") %in% c("nextgen_mock")) c("ph2.immuno", "ph2.AB.immuno", "Track", "wt.D31_7", "wt.AB.D31_7"), 
+  if(attr(config,"config") %in% c("nextgen_mock")) c("ph2.immuno", "ph2.AB.immuno", "Track", "wt.immuno", "wt.AB.immuno"), 
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
   if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV" & !grepl("NextGen", study_name)) "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
@@ -408,20 +430,6 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
            assay = gsub(paste0("^", times_, collapse = "|"), "", time_assay))
   
   # define response rates
-  if (attr(config,"config")=="janssen_pooled_partA" & !any(grepl("Delta71", colnames(dat_proc)))){
-    dat_proc$Delta71overBbindSpike = dat_proc$Day71bindSpike - dat_proc$BbindSpike
-    dat_proc$Delta71overBbindRBD = dat_proc$Day71bindRBD - dat_proc$BbindRBD
-    dat_proc$Delta71overBpseudoneutid50 = dat_proc$Day71pseudoneutid50 - dat_proc$Bpseudoneutid50
-    dat_proc$Delta71overBADCP = dat_proc$Day71ADCP - dat_proc$BADCP
-    dat_proc$Day71pseudoneutid50uncensored=NA; dat_proc$Delta71overBpseudoneutid50uncensored=NA
-  } else if (attr(config,"config")=="vat08_combined"){
-    for (extra_tp in c(78, 134, 202, 292, 387)){
-      for (asy in assays){
-        if (!paste0("Day", extra_tp, asy) %in% colnames(dat_proc)) {dat_proc[, paste0("Day", extra_tp, asy)] = NA}
-        dat_proc[, paste0("Delta", extra_tp, "overB", asy)] = dat_proc[, paste0("Day", extra_tp, asy)] - dat_proc[, paste0("B", asy)]
-      }
-    }
-  }
   resp <- getResponder(dat_proc, post_times = timepoints_, 
                        assays = assays[!grepl("T4|T8", assays)], pos.cutoffs = pos.cutoffs)
   
@@ -456,7 +464,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
   dat.longer.immuno.subset <- dat.longer.immuno.subset[,c("Ptid", "time", "assay", "category", "Trt", "Bserostatus", 
                                                           "value", if(attr(config,"config")=="janssen_partA_VL") "wt.subcohort",
                                                           if(attr(config,"config")=="vat08_combined") c("wt.immuno.nAb", "wt.immuno.bAb", "ph2.immuno.nAb", "ph2.immuno.bAb", "Trialstage"), 
-                                                          if(attr(config,"config")=="nextgen_mock") c("ph2.AB.immuno", "ph2.immuno", "Track", "wt.AB.D31_7", "wt.D31_7"),
+                                                          if(attr(config,"config")=="nextgen_mock") c("ph2.AB.immuno", "ph2.immuno", "Track", "wt.AB.immuno", "wt.immuno"),
                                                           "pos.cutoffs","lbval","lbval2", 
                                                           "lb","lb2",if(attr(config,"config")=="janssen_partA_VL") "Region", 
                                                           "response")]
