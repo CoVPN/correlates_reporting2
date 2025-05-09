@@ -12,8 +12,6 @@ Each row represents results from one model with a single immune biomarker. The f
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}
 \normalsize
-$\ast$ Baseline covariates adjusted for: `r covariates_adjusted`.
-
 $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
 
 `r if (!show.q) '<!--'`
@@ -29,8 +27,6 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r fname.suffix`}
 \normalsize
-$\ast$ Baseline covariates adjusted for: `r covariates_adjusted`.
-
 $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
 
 `r if (!show.q) '<!--'`
@@ -46,8 +42,6 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`_2}
 \normalsize
-$\ast$ Baseline covariates adjusted for: `r covariates_adjusted`.
-
 $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
 
 `r if (!has.alt)'-->'`

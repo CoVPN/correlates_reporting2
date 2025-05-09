@@ -109,6 +109,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail_sanofi))
 else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
 	Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock
 	Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_tcell
+else ifeq ($(TRIAL),$(filter $(TRIAL), covail_tcell))
+	Rscript code/cor_coxph_covail_tcell.R D15to91covail_tcell
+	Rscript code/cor_coxph_covail_tcell.R D15to181covail_tcell
 endif
 
 collate:
