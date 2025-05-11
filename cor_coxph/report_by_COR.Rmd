@@ -37,7 +37,7 @@ $\ast\ast$ No. at-risk/no. cases = estimated population size and case number in 
 $\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
 
 `r if (!show.q) '<!--'`
-$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
+$\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers using the `r ifelse(file.exists(tmp), "Westfall and Young permutation", "Holm and FDR")` method`r ifelse(file.exists(tmp), " (\\protect\\input\\{" %.%tmp%.% "\\} replicates)", "")`.
 `r if (!show.q)'-->'`
 
 ```{r, echo=FALSE, results='asis'}
