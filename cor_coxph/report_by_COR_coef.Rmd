@@ -15,7 +15,8 @@ Each row represents results from one model with a single immune biomarker. The f
 $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
 
 `r if (!show.q) '<!--'`
-$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
+`r tmp = paste0(pathCoRoutput, "/permutation_replicates_", fname.suffix)`
+$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the `r ifelse(file.exists(tmp), "Westfall and Young permutation", "Holm and FDR")` method`r ifelse(file.exists(tmp), " (\\protect\\input\\{" %.%tmp%.% "\\} replicates)", "")`.
 `r if (!show.q)'-->'`
 
 
@@ -30,7 +31,7 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
 
 `r if (!show.q) '<!--'`
-$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates).
+$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the `r ifelse(file.exists(tmp), "Westfall and Young permutation", "Holm and FDR")` method`r ifelse(file.exists(tmp), " (\\protect\\input\\{" %.%tmp%.% "\\} replicates)", "")`.
 `r if (!show.q)'-->'`
 
 `r if (!has.scaled) '<!--'`
@@ -66,6 +67,9 @@ $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this co
 
 <!-- Table 1, commented out for covail -->
 `r if (attr(config,"config") %in% c("covail") | !show.sample.size) '<!--'`
+
+\bigskip
+
 \begin{table}[H]
 \caption{Number of cases (`r escape(EventIndPrimary)`) and non-cases in the `r escape(fname.suffix)` group by ph2 status.}
 \begin{center}
@@ -79,6 +83,8 @@ $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this co
 <!-- additional counts tables if existed -->
 `r if (!TRIAL %in% c("janssen_partA_VL")) '<!--'`
 
+\bigskip
+
 \begin{table}[H]
 \caption{Number of cases and non-cases by ph2 (with ancestral Abs measured). There are more non-cases in ph2 than the previous table, which is for ph2 subjects with variants Abs measured.}
 \begin{center}
@@ -86,6 +92,8 @@ $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this co
 \end{center}
 \end{table}
 
+
+\bigskip
 
 \begin{table}[H]
 \caption{Number of competing cases by ph2}

@@ -8,8 +8,6 @@
 trts=c(5:8, 1:4)
 marker_sets = 1:2 # 1:2
 
-show.q=F
-
 for (COR in c("D15to91covail_tcell", "D15to181covail_tcell")) {
   cat(paste0("# Univariate, ", COR, " \n\n"))
   for (trt in trts) {
@@ -52,6 +50,7 @@ for (COR in c("D15to91covail_tcell", "D15to181covail_tcell")) {
   
       level=3 #  title indent
       show.tertile.curves=T
+      show.q = marker_set==1
       has.alt <- show.risk.curves <- show.ve.curves <- plot.geq <- F
       res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE); cat(res, sep = '\n')
     }
