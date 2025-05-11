@@ -4,6 +4,11 @@ renv::activate(project = here::here(".."))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
+if (study_name == "NextGen_Mock") {
+  assays = assays[!grepl("nasal|saliva", assays)]
+  assay_immuno = assay_immuno[!grepl("nasal|saliva", assay_immuno)]
+  assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva", assay))
+} # will remove later
 #-----------------------------------------------
 
 library(here)
@@ -167,6 +172,11 @@ if(study_name=="VAT08" & F) {# hard code for VAT08
 
 if (attr(config,"config")=="prevent19_stage2") {
   assay_lim[, ,"ub"] = 5
+}
+
+if (attr(config,"config")=="nextgen_mock") {
+  assay_lim[, ,"ub"] = 6.5
+  assay_lim[, ,"lb"] = -2.5
 }
 
 # dup assay_lim to avoid dimention got dropped for the dataset with only one marker

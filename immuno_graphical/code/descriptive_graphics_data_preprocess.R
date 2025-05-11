@@ -13,6 +13,11 @@ source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; names(pos.cutoffs) <- assays}
+if (study_name == "NextGen_Mock") {
+  assays = assays[!grepl("nasal|saliva", assays)]
+  assay_immuno = assay_immuno[!grepl("nasal|saliva", assay_immuno)]
+  assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva", assay))
+} # will remove later
 #-----------------------------------------------
 
 if (attr(config,"config")=="vat08_combined") {
@@ -185,7 +190,8 @@ important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex"
   # e.g. ph2.immuno.D35, ph2.immuno.C1, ph2.immuno.BD1 for prevent19_stage2 
   #      ph2.immuno.bAb, ph2.immuno.nAb for vat08_combined
   if(attr(config,"config") %in% c("vat08_combined")) "Trialstage",
-  if(attr(config,"config") %in% c("nextgen_mock")) c("ph2.immuno", "ph2.AB.immuno", "Track", "wt.immuno", "wt.AB.immuno"), 
+  if(attr(config,"config") %in% c("nextgen_mock")) c("ph2.immuno", "ph2.AB.immuno", "Track", #"wt.immuno", # wt.immuno was added above
+                                                     "wt.AB.immuno"), 
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
   if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV" & !grepl("NextGen", study_name)) "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")

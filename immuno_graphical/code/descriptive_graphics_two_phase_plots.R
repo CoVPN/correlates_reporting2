@@ -392,7 +392,9 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
 # - We made multiple ggplot objects, each for one assay, and combine them with ggarrange()
 #-----------------------------------------------
 print("RCDF 1:")
-for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
+for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm} else if (study_name == "NextGen_Mock") {
+  tps_no_fold_change # "B", "Day31", "Day91", "Day181", "Day366"
+} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
   
   if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
   
@@ -401,6 +403,12 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
     subdat_rcdf1 = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.",gsub("ay","",tp))]==1), ]
   } else if (attr(config,"config")=="vat08_combined") {
     subdat_rcdf1 = dat.long.twophase.sample[which(dat.long.twophase.sample$ph2.immuno.bAb==1), ]
+  } else if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) {
+    subdat_rcdf1 = dat.long.twophase.sample
+    subdat_rcdf1$wt = with(subdat_rcdf1, ifelse(grepl("T4|T8", assay), wt.AB.immuno, wt.immuno)) # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
+  } else if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) {
+    subdat_rcdf1 = dat.long.twophase.sample[which(dat.long.twophase.sample$Track == "A"), ]
+    subdat_rcdf1$wt = subdat_rcdf1$wt.AB.immuno
   } else {subdat_rcdf1 = dat.long.twophase.sample}
   
   categories = c(paste0("Placebo, ", bstatus.labels[1]), 
@@ -420,22 +428,26 @@ for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_n
                     ifelse(attr(config,"config")=="prevent19_stage2" & tp=="C1", "wt.immuno.C1",
                            ifelse(attr(config,"config")=="prevent19_stage2" & tp=="BD1", "wt.immuno.BD1",
                                   ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb",
-                                  "wt.subcohort")))),
+                                         ifelse(attr(config,"config")=="nextgen_mock", "wt",
+                                                "wt.subcohort"))))),
     xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
-    arrange_ncol = ifelse(study_name=="VAT08", 4, 3),
+    arrange_ncol = ifelse(study_name %in% c("VAT08", "NextGen_Mock"), 4, 3),
     arrange_nrow = ceiling(length(assay_immuno) / 3),
     panel_titles = labels.title2[tp, ] %>% unlist(),
     axis_titles = labels.axis[tp, ] %>% unlist(),
     xbreaks = ifelse(study_name=="VAT08", 2, 1),
-    axis_title_size = 10,
-    axis_size = 10,
-    panel_title_size = ifelse(study_name=="VAT08", 8, 10),
+    axis_title_size = ifelse(study_name == "NextGen_Mock", 8, 10),
+    axis_size = ifelse(study_name == "NextGen_Mock", 8, 10),
+    panel_title_size = ifelse(study_name == "VAT08", 8, ifelse(study_name == "NextGen_Mock", 7, 10)),
     height = ifelse(attr(config,"config")=="prevent19_stage2", 10, 
                     ifelse(study_name=="VAT08", 3 * ceiling(length(assay_immuno) / 4) + 0.5,
-                           3 * ceiling(length(assay_immuno) / 3) + 0.5)),
+                           ifelse(study_name=="NextGen_Mock", 3 * ceiling(length(assay_immuno) / 4) + 0.5,
+                                 3 * ceiling(length(assay_immuno) / 3) + 0.5))),
     filename = paste0(
       save.results.to, "/Marker_Rcdf_", tp,
-      "_trt_both_bstatus_both_", study_name, ".pdf"
+      "_trt_both_bstatus_both_", study_name, 
+      ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
+             ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
     )
   )
 }
@@ -452,11 +464,12 @@ dat.long.twophase.sample$assay_labels <-
          labels = labels.assays.short)
 
 # plot bAb, PsV and ADCP assays separately
-for (Ab in c("bind", "pseudo", "ADCP")) {
+for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
   
   Ab_lb = case_when(Ab=="ADCP" ~ "other_",
                     Ab=="bind" ~ "bAb_",
-                    Ab=="pseudo" ~ "nAb_")
+                    Ab=="pseudo" ~ "nAb_", 
+                    Ab=="T4|T8" ~ "ics_")
   
   rcdf_assays <- assay_immuno[grepl(Ab, assay_immuno)]
   
@@ -479,7 +492,7 @@ for (Ab in c("bind", "pseudo", "ADCP")) {
         subdat_rcdf2 = subdat_rcdf2 %>% filter(ph2.immuno.bAb==1)
       } else if (attr(config,"config")=="vat08_combined" & Ab=="pseudo") {
         subdat_rcdf2 = subdat_rcdf2 %>% filter(ph2.immuno.nAb==1)
-      }
+      } 
       
       covid_corr_rcdf(
         plot_dat = subdat_rcdf2,
