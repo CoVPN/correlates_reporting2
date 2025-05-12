@@ -30,22 +30,6 @@ default: &default
 
 
 
-nextgen_mock: &nextgen_mock
-  data_cleaned: /trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20250507.csv
-  sampling_scheme: case_cohort
-  two_marker_timepoints: no
-  timepoints: [31]
-  times: [B, Day31, Delta31overB]
-  time_labels: [Day 1, Day 31, D31 fold-rise over B]
-  study_name: NextGen_Mock
-  assay_metadata: assay_metadata/nextgen_mock_assay_metadata.csv
-  covariates: ~.+ HighRiskInd
-  low_efficacy: no
-  num_boot_replicates: 100
-  num_perm_replicates: 100
-
-
-
 # not extending ows trial b/c don't want Bserostatus defined, which affects subset in _common.R
 vat08_combined: &vat08_combined
   data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250417.csv
@@ -1636,7 +1620,24 @@ D43D91:
   tpeaklag: 7
   txt.endpoint: COVID
   
+  
+  
 ################################################################################
+# NextGen Mock
+
+nextgen_mock: &nextgen_mock
+  data_cleaned: /trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20250507.csv
+  sampling_scheme: case_cohort
+  two_marker_timepoints: no
+  timepoints: [31]
+  times: [B, Day31, Delta31overB]
+  time_labels: [Day 1, Day 31, D31 fold-rise over B]
+  study_name: NextGen_Mock
+  assay_metadata: assay_metadata/nextgen_mock_assay_metadata.csv
+  covariates: ~.+ HighRiskInd
+  low_efficacy: no
+  num_boot_replicates: 100
+  num_perm_replicates: 100
 
 
 D31toM12_nextgen_mock:
