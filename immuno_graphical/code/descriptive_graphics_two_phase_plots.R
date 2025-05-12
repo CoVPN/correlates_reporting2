@@ -838,7 +838,7 @@ if (study_name=="VAT08" & F) {# this is only reported for VAT08
 #-----------------------------------------------
 # - Spaghetti plots of antibody marker change over time
 #-----------------------------------------------
-if (study_name!="VAT08" & attr(config,"config")!="prevent19_stage2"){ # no spaghetti plots for VAT08, prevent19_stage2
+if (!attr(config,"config") %in% c("vat08_combined", "prevent19_stage2", "nextgen_mock")){ # no spaghetti plots for VAT08, prevent19_stage2, NextGen_Mock
 
   print("Spaghetti plots:")
   ## in each baseline serostatus group, randomly select 10 placebo recipients and 20 vaccine recipients
@@ -1002,15 +1002,18 @@ if (study_name!="VAT08" & attr(config,"config")!="prevent19_stage2"){ # no spagh
 
 
 print("Spider plots:")
-if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
+if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_mock")){
   
   # setup pdf file
-  for (ab in c("bAb", "nAb")) {
+  for (ab in c("bAb", "nAb", if(attr(config,"config") == "nextgen_mock") "ics")) {
     
-    for (tm in c("Day"#, if (attr(config,"config")!="janssen_partA_VL") "Delta"
+    for (tm in c(if(attr(config,"config") != "nextgen_mock") "Day", 
+                 if(attr(config,"config") == "nextgen_mock") "Day initial", # "Day91", "Day366" Track A
+                 if(attr(config,"config") == "nextgen_mock") "Day whole" # "B", "Day31", "Day181" whole
+                 #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
                  )) {
       
-      for (bsero in c("Neg", "Pos")) {
+      for (bsero in c(if(attr(config,"config") != "nextgen_mock") "Neg", "Pos")) {
         
         for (trt in c("placebo", "vaccine")) {
           
@@ -1027,14 +1030,20 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
                                     TRUE ~ "")
             
             if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
+            if (attr(config,"config") == "nextgen_mock" & tm == "Day whole" & ab == "ics") next # include negative values
             
             # calculate geometric mean of IPS weighted readouts
-            times_spider = if (study_name=="VAT08") {times_[c(1,2,3)]} else if (tm=="Day") {times_[!grepl("Delta", times_)]} else {times_[grepl("Delta", times_)]}
+            times_spider = if (study_name=="VAT08") {times_[c(1,2,3)]
+            } else if (tm=="Day") {times_[!grepl("Delta", times_)]
+            } else if (tm == "Day initial") {times_[c(4, 8)]
+            } else if (tm == "Day whole") {times_[c(1, 2, 6)]
+            } else {times_[grepl("Delta", times_)]}
             
             if (!"Region" %in% colnames(dat.spider)) {dat.spider$Region=reg}
             
-            assays_ = if(ab=="bAb") {assays[grepl("bind", assays) & !grepl("mdw", assays)]
-            } else if(ab=="nAb") {assays[grepl("pseudo", assays) & !grepl("mdw", assays)]
+            assays_ = if (ab=="bAb") {assays[grepl("bind", assays) & !grepl("mdw", assays)]
+            } else if (ab=="nAb") {assays[grepl("pseudo", assays) & !grepl("mdw", assays)]
+            } else if (ab=="ics") {assays[grepl("T4|T8", assays) & !grepl("mdw", assays)]
             } else {assays}
             
             # define cohort and create weight variable
@@ -1047,6 +1056,15 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             } else if (attr(config,"config")=="vat08_combined" & ab=="nAb") {
               dat.spider.by.time_ = dat.spider %>% filter(ph2.immuno.nAb==1)
               dat.spider.by.time_$wt = dat.spider.by.time_$wt.immuno.nAb
+            } else if (attr(config,"config")=="nextgen_mock" & tm == "Day initial") {
+              dat.spider.by.time_ = dat.spider %>% filter(Track == "A")
+              dat.spider.by.time_$wt = dat.spider.by.time_$wt.AB.immuno
+            } else if (attr(config,"config")=="nextgen_mock" & tm == "Day whole" & ab != "ics") {
+              dat.spider.by.time_ = dat.spider
+              dat.spider.by.time_$wt = dat.spider.by.time_$wt.immuno
+            } else if (attr(config,"config")=="nextgen_mock" & tm == "Day whole" & ab == "ics") {
+              dat.spider.by.time_ = dat.spider
+              dat.spider.by.time_$wt = dat.spider.by.time_$wt.AB.immuno
             }
             
             dat.spider.by.time <- dat.spider.by.time_ %>%
@@ -1080,10 +1098,11 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             dat.plot <- dat.spider.by.time[c(1,2), ] %>%
               bind_rows(
                 dat.spider.by.time[2:nrow(dat.spider.by.time), ] %>%
-                  filter(grepl(tm, time) & Bserostatus %in% bsero & Trt %in% trt & Region %in% reg)
+                  filter(grepl(gsub("Day whole", "B|Day31|Day181", gsub("Day initial", "Day91|Day366", tm)), time) & Bserostatus %in% bsero & Trt %in% trt & Region %in% reg)
                 ) %>%
               mutate(time = NULL, Bserostatus=NULL, Trt=NULL) %>%
-              select(if(ab=="bAb") {starts_with("bindSpike")
+              select(if (ab=="bAb") {starts_with("bindSpike")
+              } else if (ab=="ics") {matches("T4|T8")
               } else if (ab=="nAb" && reg==1) {matches("pseudoneutid50$|pseudoneutid50_Zeta|pseudoneutid50_Mu|pseudoneutid50_Gamma|pseudoneutid50_Lambda")
               } else if (ab=="nAb" && reg==2) {matches("pseudoneutid50$|pseudoneutid50_Delta|pseudoneutid50_Beta")
               } else {contains("pseudoneutid50")})
@@ -1094,15 +1113,20 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             if (nrow(dat.plot)==2) next
             
             ############# figure start here
-            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(tm), "_", ifelse(reg!="all", reg_lb, ""), ab, "_", tolower(bsero), "_", trt, ".pdf")
-            pdf(filename, width=5.5, height=6.5)
+            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(tm), "_", ifelse(reg!="all", reg_lb, ""), ab, "_", tolower(bsero), "_", trt, 
+                              ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
+                                     ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
+            pdf(filename, width = ifelse(study_name == "NextGen_Mock", 8, 5.5), height = 6.5)
             par(mfrow=#if (study_name=="VAT08") {c(2,2)} else {
                   c(1,1)#}
                 , mar=c(0.1,0.1,1,0.1))
             
             colnames(dat.plot) <- assay_metadata$assay_label[match( colnames(dat.plot) , assay_metadata$assay)]
             
-            colnames(dat.plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike |Binding Antibody to | Spike|Binding Antibody ", "", colnames(dat.plot))
+            colnames(dat.plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike |Binding Antibody to | Spike|Binding Antibody |T cells expressing", "", 
+                                       gsub("Binding IgG Antibody", "bAb IgG", 
+                                            gsub("Binding IgA Antibody", "bAb IgA", 
+                                               gsub("neutralization to", "bAb", colnames(dat.plot)))))
             
             color = c(if(study_name=="VAT08")"#0AB7C9","#FF6F1B","#FF5EBF","dodgerblue","chartreuse3")[1:length(times_spider)]
             legend_lb = times_spider
@@ -1118,7 +1142,7 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
                        #label size
                        vlcex=ifelse(study_name=="VAT08", 0.4, 1),
                        #title
-                       title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", "of nAb Markers, "), 
+                       title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", ifelse(ab=="nAb", "of nAb Markers, ", "of ICS Markers, ")), 
                                     ifelse(bsero=="Neg", "naive ", "non-naive "),
                                     trt, ifelse(reg!="all", paste0(", ", reg_lb_long), "")),
                        #title size
@@ -1127,9 +1151,9 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
             par(xpd=NA)
             
             #legend
-            legend("bottom", legend=legend_lb, lty=5, pch=c(15),
+            legend("bottomleft", legend=legend_lb, lty=5, pch=c(15),
                    col=color, bty="n", ncol=3, cex=0.7,
-                   inset=c(-0.25,0))
+                   inset=c(0.1, 0))
             
             dev.off()
             }
