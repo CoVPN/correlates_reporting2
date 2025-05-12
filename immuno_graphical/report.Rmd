@@ -13,7 +13,7 @@ library(knitr)
 
 here::i_am("immuno_graphical/report.Rmd")
 
-if (study_name !="VAT08"){
+if (!study_name %in% c("VAT08", "NextGen_Mock")){
   bstatus.labels <- c("Baseline Neg", "Baseline Pos")
   bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
   bstatus.labels.3 <- c("baseline negative", "baseline positive")
@@ -27,12 +27,17 @@ times = c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoin
 if(attr(config,"config")=="janssen_pooled_partA") {
   times_ = c("B","Day29","Delta29overB","Day71"); timepoints_=c(29,71)
   labels.time = c("Day 1", "Day 29","D29 fold-rise over D1", "Day 71"); names(labels.time) = times_
-  timepoints_=timepoints
+  timepoints_= timepoints
 } else if (attr(config,"config")=="prevent19_stage2") {
   times_ = c("Day35","C1","BD1") 
   labels.time = c("Day 35", "Crossover Day 1", "Booster Day 1"); names(labels.time) = times_
-  timepoints_=timepoints
-} else {times_ = times; timepoints_=timepoints}
+  timepoints_= timepoints
+} else if (attr(config,"config") == "nextgen_mock") {
+  times_ = c("B", "Day31", "Delta31overB", "Day91", "Delta91overB", "Day181", "Delta181overB", "Day366", "Delta366overB")
+  labels.time = c("Day 1","Day 31", "D31 fold-rise over D1", "Day 91", "D91 fold-rise over D1", 
+                  "Day 181",  "D181 fold-rise over D1", "Day 366",  "D366 fold-rise over D1"); names(labels.time) = times_
+  timepoints_= c(timepoints, 91, 181, 366)
+} else {times_ = times; timepoints_ = timepoints}
 
 # set time vectors based on times_ and timepoints_
 tps_no_delta_over_tinterm <-  times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
@@ -43,7 +48,7 @@ tps_delta_over_B <- times_[grepl("overB",times_)]
 
 
 
-if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config")) && !grepl("vat08", attr(config,"config"))){
+if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config")) && !grepl("vat08|nextgen", attr(config,"config"))){
   assay_immuno <- c(assays, "bindN")
   labels.assays.all <- c("Binding Antibody to N", labels.assays)
   names(labels.assays.all)[1] <- "bindN"
@@ -69,7 +74,8 @@ minority.disclaimer <- switch(study_name,
                               "PREVENT19"="",
                               "AZD1222"="",
                               "VAT08"="",
-                              "PROFISCOV"="")
+                              "PROFISCOV"="",
+                              "NextGen_Mock"="")
 
 neut.marker.captions <- switch(study_name, 
                                "COVE"="The dashed lines in each figure are ULOQ, LLOQ, and positivity cutoffs for binding antibody assays, or ULOQ, LLOQ, and LLOD for neutralizing antibody assays, from top to bottom respectively.",
@@ -81,9 +87,9 @@ neut.marker.captions <- switch(study_name,
                                "AZD1222"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
                                
                                "VAT08"="The dashed lines in each figure are ULOQ and LLOQ for binding antibody assays, or ULOQ and LLOD for neutralizing antibody assays, from top to bottom respectively.",
-                               "PROFISCOV"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOD for binding antibody assays, or LLOD/positivity cut-off for neutralizing antibody assays, from top to bottom respectively."
+                               "PROFISCOV"="The dashed lines in each figure are ULOQ, positivity cut-off and LLOD for binding antibody assays, or LLOD/positivity cut-off for neutralizing antibody assays, from top to bottom respectively.",
                                # PROFISCOV nAb has a ULOQ value out of figure limit
-                               )
+                               "NextGen_Mock"="The dashed lines in each figure are ULOQ and LLOQ, from top to bottom respectively.")
 
 immuno_postfix_label = switch(study_name, 
                                "VAT08"=" (Stage2)")
@@ -110,6 +116,7 @@ for (bsero in bstatus.labels.2) {
         
         for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
           
+          if (study_name == "NextGen_Mock") next # no single timepoint plot for NextGen
           if (study_name=="VAT08" && grepl("Delta", tp)) next # do not report delta timepoints for VAT08
           if (study_name=="VAT08" && trt=="pooled" && tp!="B") next # only report pooled at baseline for VAT08
           if (attr(config,"config")=="janssen_partA_VL" && !grepl("Day", tp)) next # only report peak timepoint for janssen_partA_VL
@@ -146,15 +153,22 @@ for (bsero in bstatus.labels.2) {
           
       for (asy in assay_immuno){
         
-        if (study_name=="VAT08" && trt=="pooled") next # do not report "pooled" for across timepoint plots
-        #if (study_name=="VAT08" && asy=="pseudoneutid50_mdw" && bsero=="naive") next # psv_mdw doesn't have any value for naive at baseline
-        if (attr(config,"config") %in% c("janssen_partA_VL")) next # no figure for janssen_partA_VL
+        for (times_index in c("", if (study_name == "NextGen_Mock") "2")){
         
-        asyLabel <- gsub("%","\\\\%", labels.assays[asy])
-        
-        res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
-        cat(res, sep = '\n')
-        cat("\\clearpage", sep = '\n')
+          if (study_name=="VAT08" && trt=="pooled") next # do not report "pooled" for across timepoint plots
+          #if (study_name=="VAT08" && asy=="pseudoneutid50_mdw" && bsero=="naive") next # psv_mdw doesn't have any value for naive at baseline
+          if (attr(config,"config") %in% c("janssen_partA_VL")) next # no figure for janssen_partA_VL
+          
+          asyLabel <- gsub("%","\\\\%", labels.assays[asy])
+          
+          immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & times_index == "", "(Final Immunogenicity)",
+                                         ifelse(study_name == "NextGen_Mock" & times_index == "2", "(Final Immunogenicity)",
+                                                immuno_postfix_label))
+          res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
+          cat(res, sep = '\n')
+          cat("\\clearpage", sep = '\n')
+          
+        }
       }
       
     }
@@ -179,7 +193,7 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
 }
 
   
-for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo")){
+for (trt in c("trt_both", "trt_vaccine", if (study_name %in% c("VAT08")) "trt_placebo")){
   
   if (attr(config,"config")=="prevent19_stage2") next # no these figures for prevent19_stage2
   
@@ -187,6 +201,7 @@ for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo"))
   
   for (bsero in c("bstatus_both", "bstatus_Neg", "bstatus_Pos")){
     if (bsero=="bstatus_Pos" && if.pos.exist==0) next
+    if (bsero != "bstatus_both" & study_name == "NextGen_Mock") next # NextGen_Mock only have bstatus_both plot which only contains non-naive 
     if (trt=="trt_both" && bsero!="bstatus_both" && study_name!="VAT08") next # trt_both is only for bstatus both if the study is VAT08
     if (attr(config,"config")=="janssen_partA_VL" && !(trt=="trt_vaccine" && bsero=="bstatus_Neg")) next # only report for vaccine baseline neg for janssan_partA_VL
     
@@ -194,12 +209,14 @@ for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo"))
     
     for(tp in times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
             
-      if (study_name=="VAT08" && grepl("Delta", tp)) next # only report main timepoints for VAT08
+      if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
       if (attr(config,"config")=="janssen_partA_VL" && !grepl("Day", tp)) next # only report peak timepoint for janssen_partA_VL
       
       tpLabel <- gsub("ay ", "", labels.time[tp])
       
-      for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")} else {c("","bAb","nAb","other")}){ # for VAT08 and janssen_partA_VL, only report for bAb and nAb
+      for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")
+        } else if (study_name == "NextGen_Mock") {c("bAb", "nAb", "ics")
+        } else {c("","bAb","nAb","other")}){ # for VAT08 and janssen_partA_VL, only report for bAb and nAb
         if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
         if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
         if (asy!="" & trt=="trt_both" & bsero=="bstatus_both") next  # assay subset do not report for trt_both & bstatus_both
@@ -211,7 +228,10 @@ for (trt in c("trt_both", "trt_vaccine", if(study_name=="VAT08") "trt_placebo"))
           regLabel <- case_when(reg=="LATAM_" ~ "Latin America",
                                 reg=="ZA_" ~ "Southern Africa",
                                 TRUE ~ "")
-                
+          
+          immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "(Final Immunogenicity)",
+                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "(Final Immunogenicity)",
+                                                immuno_postfix_label))      
           res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
           cat("\\clearpage", sep = '\n')
@@ -283,6 +303,7 @@ if (study_name != "VAT08") { # VAT08 doesn't report this
 for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus_gender"
                                                             ) )) { # only VAT08 report 2 extra kind of plots
   
+  if (attr(config,"config")=="NextGen_Mock" & bsero==bstatus.labels.2[1]) next # NextGen_Mock only has non-naive
   if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL do not report this
   if (attr(config,"config")=="prevent19_stage2" & bsero==bstatus.labels.2[2]) next # prevent19_stage2 only has baseline neg
   
@@ -294,10 +315,13 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
   
   for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
     
-    if (study_name=="VAT08" && grepl("Delta", tp)) next # only report main timepoints for VAT08
+    if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
     
     tpLabel <- gsub("ay ", "", labels.time[tp])
     
+    immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "(Final Immunogenicity)",
+                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "(Final Immunogenicity)",
+                                                immuno_postfix_label)) 
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
@@ -308,7 +332,7 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
 
 for (trt in c("vaccine_arm","placebo_arm")) {
   
-  if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2")) next # janssen_partA_VL and prevent19_stage2 do not report this
+  if (attr(config,"config") %in% c("janssen_partA_VL", "prevent19_stage2", "nextgen_mock")) next # nextgen_mock, janssen_partA_VL and prevent19_stage2 do not report this
     
   for(tp in times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))]) {
     
@@ -327,7 +351,7 @@ for (trt in c("vaccine_arm","placebo_arm")) {
 
 <!-- ## Spaghetti plots of antibody markers over time for overall per-protocol cohort -->
 
-```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline negative vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & study_name!="VAT08" & study_name!="ENSEMBLE" & study_name!="PREVENT19")}
+```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline negative vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & study_name!="VAT08" & study_name!="ENSEMBLE" & study_name!="PREVENT19" & study_name!="NextGen_Mock")}
 include_graphics(here(
   "immuno_graphical", "output", attr(config,"config"), 
   paste0("spaghetti_plot_BaselineNeg_", study_name, ".pdf")
@@ -335,7 +359,7 @@ include_graphics(here(
 ```
 
 
-```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline positive vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & if.pos.exist==1 & study_name!="VAT08" & study_name!="ENSEMBLE" & study_name!="PREVENT19")}
+```{r, fig.cap = paste0("Spaghetti plots of Ab markers over time: baseline positive vaccine + placebo arm"), eval = any(c("B", paste0("Day",timepoints[1]), "Day57") %in% times & if.pos.exist==1 & study_name!="VAT08" & study_name!="ENSEMBLE" & study_name!="PREVENT19" & study_name!="NextGen_Mock")}
 include_graphics(here(
   "immuno_graphical", "output", attr(config,"config"),
   paste0("spaghetti_plot_BaselinePos_", study_name, ".pdf")
@@ -357,7 +381,7 @@ race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(stu
 positivity")
 names(demoLabels) <- demos
 
-if (study_name!="VAT08") {
+if (!study_name %in% c("VAT08", "NextGen_Mock")) {
   for (bsero in c("BaselineNeg", if (if.pos.exist==1) "BaselinePos")){
     
     for (trt in c("Vaccine", "Placebo")){
@@ -398,7 +422,7 @@ race and ethnic group"),if(study_name=="ENSEMBLE")"country of residence", if(stu
 positivity")
 names(demoLabels) <- demos
 
-if (study_name!="VAT08") {
+if (!study_name %in% c("VAT08", "NextGen_Mock")) {
   for (bsero in c("BaselineNeg", if (if.pos.exist==1) "BaselinePos")){
     
     for (trt in c("Vaccine", "Placebo")){
@@ -440,17 +464,23 @@ if (attr(config,"config")=="janssen_partA_VL"){
 
 ## Spider plot of antibody markers for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
-if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
+if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
   for (tp in #if(study_name=="VAT08") {c("day", "delta")} else {
-       "day"#}
+       c(if(attr(config,"config") != "nextgen_mock") "day", 
+                 if(attr(config,"config") == "nextgen_mock") "day initial", # "Day91", "Day366" Track A
+                 if(attr(config,"config") == "nextgen_mock") "day whole" # "B", "Day31", "Day181" whole
+                 #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
+                 )#}
        ) {
   
-    for (asy in c("bAb" ,"nAb")){
+    for (asy in c("bAb" ,"nAb", if (study_name == "NextGen_Mock") "ics")){
+      if (study_name == "NextGen_Mock" & tp == "day whole" & asy == "ics") next # do not have these plots
       
       for (bsero in c("Neg", "Pos")) {
+        if (study_name == "NextGen_Mock" & bsero == "Neg") next # NextGen_Mock only has non-naive
         
         for (trt in c("placebo", "vaccine")) {
-      
+          
           for (reg in if(attr(config,"config")=="janssen_partA_VL") {c("LATAM_","ZA_")} else {""}){
             
             if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
@@ -466,6 +496,9 @@ if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL"){
                                    bsero=="Pos" ~ bstatus.labels.3[2],
                                    TRUE ~ "")
       
+            immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "(Final Immunogenicity)",
+                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "(Final Immunogenicity)",
+                                                immuno_postfix_label)) 
             res = knitr::knit_child(c(here::here('immuno_graphical', 'report_spider.Rmd')), quiet = TRUE)
             cat(res, sep = '\n')
             cat("\\clearpage", sep = '\n')

@@ -21,7 +21,7 @@ config <- config::get(config = Sys.getenv("TRIAL"))
 age.cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "VAT08"), 60, 65)
 
 trt.labels <- c("Placebo", "Vaccine")
-if (study_name !="VAT08"){
+if (!study_name %in% c("VAT08", "NextGen_Mock")){
   bstatus.labels <- c("Baseline Neg", "Baseline Pos")
   bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
   bstatus.labels.3 <- c("baseline negative", "baseline positive")
