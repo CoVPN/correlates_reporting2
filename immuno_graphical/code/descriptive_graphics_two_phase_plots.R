@@ -480,11 +480,14 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
   # one treatment arm and two baseline status per plot
   #-----------------------------------------------
   print("RCDF 2:")
-  for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
+  for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm
+    } else if (study_name == "NextGen_Mock") {
+      tps_no_fold_change # "B"      "Day31"  "Day91"  "Day181" "Day366"
+  } else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
       
     if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2")) next # janssen_partA_VL, prevent19_stage2 doesn't need these plots
     
-    for (trt in c("Vaccine", if(study_name=="VAT08") "Placebo")){
+    for (trt in c("Vaccine", if(study_name %in% c("VAT08", "NextGen_Mock")) "Placebo")){
       
       subdat_rcdf2 = subset(dat.long.twophase.sample, Trt == trt & assay %in% rcdf_assays)
       
@@ -492,7 +495,12 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
         subdat_rcdf2 = subdat_rcdf2 %>% filter(ph2.immuno.bAb==1)
       } else if (attr(config,"config")=="vat08_combined" & Ab=="pseudo") {
         subdat_rcdf2 = subdat_rcdf2 %>% filter(ph2.immuno.nAb==1)
-      } 
+      } else if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) {
+        subdat_rcdf2$wt = with(subdat_rcdf2, ifelse(grepl("T4|T8", assay), wt.AB.immuno, wt.immuno)) # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
+      } else if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) {
+        subdat_rcdf2 = subdat_rcdf2[which(subdat_rcdf2$Track == "A"), ]
+        subdat_rcdf2$wt = subdat_rcdf2$wt.AB.immuno
+      }
       
       covid_corr_rcdf(
         plot_dat = subdat_rcdf2,
@@ -501,18 +509,24 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
         lty = "Bserostatus",
         weight = ifelse(attr(config,"config")=="vat08_combined" & Ab=="bind", "wt.immuno.bAb",
                         ifelse(attr(config,"config")=="vat08_combined" & Ab=="pseudo", "wt.immuno.nAb",
-                                                              "wt.subcohort")),
+                               ifelse(attr(config,"config")=="nextgen_mock", "wt",
+                                      "wt.subcohort"))),
         xlab = paste0(gsub("ay ", "", labels.time[tp]), " Ab Markers"
         ),
         xlim = c(min(assay_lim[rcdf_assays, tp, 1]), 
                  max(assay_lim[rcdf_assays, tp, 2])),
-        xbreaks = seq(min(assay_lim[rcdf_assays, tp, 1]), 
-                      max(assay_lim[rcdf_assays, tp, 2]), 
+        xbreaks = seq(floor(min(assay_lim[rcdf_assays, tp, 1])), 
+                      ceiling(max(assay_lim[rcdf_assays, tp, 2])), 
                       ifelse(study_name=="VAT08", 3, 1)),
         plot_title = paste0(labels.time[tp], " Ab Markers"),
+        legend_size = ifelse(attr(config,"config")=="nextgen_mock", 8, 14), 
+        axis_size = ifelse(attr(config,"config")=="nextgen_mock", 10, 16), 
+        legend_nrow = length(rcdf_assays),
         filename = paste0(
           save.results.to, "/Marker_Rcdf_", Ab_lb, tp,
-          "_trt_", tolower(trt), "_bstatus_both_", study_name, ".pdf"
+          "_trt_", tolower(trt), "_bstatus_both_", study_name, 
+          ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
+                 ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
         )
       )
     }
@@ -520,11 +534,11 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
     
   #-----------------------------------------------
   # RCDF plot 
-  # one treatment arm and one baseline status per plot, in vaccine arm
+  # one treatment arm and one baseline status per plot, in vaccine/placebo arm
   #-----------------------------------------------
   print("RCDF 3:")
   for (bstatus in 1:2) {
-    if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")) next # vat08_combined, prevent19_stage2 doesn't need these plots
+    if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2","nextgen_mock")) next # vat08_combined, prevent19_stage2 doesn't need these plots
     
     if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next
     if (attr(config,"config")=="janssen_partA_VL" && bstatus==2) next # do not plot baseline positive for janssen_partA_VL
@@ -649,17 +663,19 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
 print("Boxplots 1:")
 for (bstatus in 1:2) {
   
-  if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+  if (attr(config,"config") %in% c("janssen_partA_VL")) next # janssen_partA_VL doesn't need these plots
   
   if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next 
   
-  for (tp in if(study_name!="VAT08") {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
+  for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
     
     # subset for prevent19_stage2
     if(attr(config,"config")=="prevent19_stage2") {
       subdat_box1 = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.", gsub("ay","",tp))]==1), ]
     } else if (attr(config,"config")=="vat08_combined") {
       subdat_box1 = dat.long.twophase.sample %>% filter((grepl("bind", assay) & ph2.immuno.bAb==1) | (grepl("pseudo", assay) & ph2.immuno.nAb==1) )
+    } else if (attr(config,"config") == "nextgen_mock" & tp %in% c("Day91", "Day366")){
+      subdat_box1 = dat.long.twophase.sample %>% filter(Track == "A")
     } else {subdat_box1 = dat.long.twophase.sample}
     
     covid_corr_boxplot_facets(
@@ -675,18 +691,20 @@ for (bstatus in 1:2) {
       POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
       LLOX = log10(lloxs[assay_immuno]),
       ULOQ = log10(uloqs[assay_immuno]),
-      arrange_ncol = ifelse(study_name=="VAT08", 4, 3),
+      arrange_ncol = ifelse(study_name %in% c("VAT08", "NextGen_Mock"), 4, 3),
       arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
       legend = c("Placebo"="Placebo", "Vaccine"="Vaccine"),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
-      panel_title_size = ifelse(study_name=="VAT08", 8, 10),
+      panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "NextGen_Mock", 6, 10)),
       height = ifelse(study_name=="VAT08", 11, 
                       ifelse(attr(config,"config")=="prevent19_stage2", 10, 
                              3 * ceiling(length(assay_immuno) / 3) + 0.5)),
       filename = paste0(
         save.results.to, "/boxplots_", tp, "_x_trt_", bstatus.labels.2[bstatus],
-        "_", study_name, ".pdf"
+        "_", study_name, 
+        ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
+               ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
       )
     )
   }
@@ -699,7 +717,7 @@ for (bstatus in 1:2) {
 print("Boxplots 2:")
 for (trt in 1:2) {
   
-  if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2")) next # janssen_partA_VL, prevent19_stage2 doesn't need these plots
+  if (attr(config,"config") %in% c("janssen_partA_VL", "prevent19_stage2", "nextgen_mock")) next # janssen_partA_VL, prevent19_stage2 doesn't need these plots
   
   for (tp in if (study_name!="VAT08") {tps_no_delta_over_tinterm} else {tps_no_fold_change}) {
     
@@ -740,11 +758,11 @@ for (trt in 1:2) {
 # one treatment arm, one baseline status per plot
 #-----------------------------------------------
 print("Boxplots 3:")
-if (study_name=="VAT08") {# this is only reported for VAT08
+if (study_name %in% c("VAT08")) {# this is only reported for VAT08
   for (tp in tps_no_fold_change) {
     
     subdat_box3 = dat.long.twophase.sample %>% filter((grepl("bind", assay) & ph2.immuno.bAb==1) | (grepl("pseudo", assay) & ph2.immuno.nAb==1) )
-    
+      
     covid_corr_boxplot_facets(
       plot_dat = subdat_box3 %>% 
         mutate(BseroTrt = factor(paste0(Bserostatus,"\n",Trt),
@@ -759,7 +777,7 @@ if (study_name=="VAT08") {# this is only reported for VAT08
       POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
       LLOX = log10(lloxs[assay_immuno]),
       ULOQ = log10(uloqs[assay_immuno]),
-      arrange_ncol = ifelse(study_name=="VAT08", 4, 3),
+      arrange_ncol = 4,
       arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
       legend = paste0(rep(stringr::str_to_title(bstatus.labels.3), 2), ", ", rep(c("Vaccine", "Placebo"), each=2)),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),

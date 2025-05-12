@@ -5,7 +5,6 @@ Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 if (study_name == "NextGen_Mock") {
   assays = assays[!grepl("nasal|saliva", assays)]
-  assay_immuno = assay_immuno[!grepl("nasal|saliva", assay_immuno)]
   labels.assays.short = labels.assays.short[assays]
   assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva", assay))
 } # will remove later

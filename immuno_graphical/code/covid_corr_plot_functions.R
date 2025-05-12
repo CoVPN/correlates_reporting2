@@ -514,7 +514,19 @@ covid_corr_rcdf <- function(plot_dat,
                               "#1749FF", "#D92321", "#0AB7C9",
                               "#FF6F1B", "#810094", "#378252",
                               "#FF5EBF", "#3700A5", "#8F8F8F",
-                              "#787873"
+                              "#787873",
+                              "#FFC20A",  # warm yellow
+                              "#009E73",  # teal green
+                              "#E69F00",  # amber
+                              "#56B4E9",  # light blue
+                              "#CC79A7",  # light magenta
+                              "#F0E442",  # soft yellow
+                              "#999933",  # olive
+                              "#D55E00",  # dark orange
+                              "#0072B2",  # steel blue
+                              "#A65628",  # brown
+                              "#DC267F",  # vibrant pink
+                              "#117733"   # forest green
                             ),
                             xlab,
                             lwd = 1,
@@ -524,6 +536,7 @@ covid_corr_rcdf <- function(plot_dat,
                             plot_title_size = 14,
                             legend_position = "right",
                             legend_size = 14,
+                            legend_nrow = 10,
                             axis_title_size = 16,
                             axis_size = 16,
                             height = 5,
@@ -580,6 +593,7 @@ covid_corr_rcdf <- function(plot_dat,
     ylab("Reverse ECDF") +
     xlab(xlab) +
     ggtitle(plot_title) +
+    guides(color = guide_legend(nrow = legend_nrow, byrow = TRUE)) +
     theme(
       plot.title = element_text(hjust = 0.5, size = plot_title_size),
       legend.position = legend_position,
