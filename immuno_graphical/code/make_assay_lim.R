@@ -6,7 +6,6 @@ source(here::here("..", "_common.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
 if (study_name == "NextGen_Mock") {
   assays = assays[!grepl("nasal|saliva", assays)]
-  assay_immuno = assay_immuno[!grepl("nasal|saliva", assay_immuno)]
   assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva", assay))
 } # will remove later
 #-----------------------------------------------

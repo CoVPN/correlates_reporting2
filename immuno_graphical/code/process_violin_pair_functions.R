@@ -125,7 +125,7 @@ get_desc_by_group <- function(data,
                                  max= max(value, na.rm=T)))
     }
     
-    if (exists("des_stats2")) {
+    if (exists("dat_stats2")) {
         return(list(dat_stats = dat_stats, dat_stats2 = dat_stats2))
     } else {
         return(dat_stats)
@@ -293,7 +293,7 @@ f_longitude_by_assay <- function(
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = ifelse(y.lb.scale == "log", scales::math_format(10^.x), ifelse(y.lb.scale == "original", scales::math_format(.x)))) +
-                labs(x = "Assay", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
+                labs(x = "Assay", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(gsub("\\$\\|", "_", panel))), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
     

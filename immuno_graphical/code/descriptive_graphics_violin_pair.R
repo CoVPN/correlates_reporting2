@@ -48,10 +48,15 @@ dat.immuno.subset.plot3 <- dat.immuno.subset.plot3 %>%
                             labels = bstatus.labels))
 
 ###### Set 1 plots: Ab distributions at main timepoints and delta by vaccine/placebo, naive/nnaive
-set1_times <- times[1:5]
+if (attr(config, "config") == "nextgen_mock") {
+    set1_times <- times_[c(1, 2, 4, 6, 8)]
+} else {
+    set1_times <- times_[1:5]
+}
 # ID50, at B, D22, D43, D22-B, D43-B
 # bindSpike, at B, D22, D43, D22-B, D43-B
-for (panel in c("pseudoneutid50", "bindSpike")){
+for (panel in if (study_name == "NextGen_Mock") {gsub("CD", "T", unique(assay_metadata$panel))
+    } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
@@ -66,23 +71,38 @@ for (panel in c("pseudoneutid50", "bindSpike")){
     
     for (tm_subset in c("^B|Day", if(sum(grepl("Delta", set1_times))>0) "Delta")){
         
-        set1_times_sub = set1_times[grepl(tm_subset, set1_times)]
-        
-        f_1 <- f_by_time_assay(
-            dat = dat.longer.immuno.subset.plot1_ %>% mutate(x="1"),
-            assays = assays[grepl(panel, assays)],
-            times = set1_times_sub,
-            ylim = if (grepl("^B|Day", tm_subset) & panel=="bindSpike") {c(2, 7)} else if (grepl("^B|Day", tm_subset) & panel=="pseudoneutid50") {c(1, 6.5)} else if (grepl("Delta", tm_subset)) {c(-3, 4.2)} else {c(-3, 4.5)},
-            axis.x.text.size = 20,
-            strip.x.text.size = ifelse(panel=="pseudoneutid50", 25, 10),
-            panel.text.size = ifelse(panel=="pseudoneutid50", 7, 4.5),
-            facet.y.var = vars(Trt_nnaive),
-            facet.x.var = vars(assay_label2))
-        
-        for (i in 1:length(set1_times_sub)){
+        for (tm in c(if(attr(config, "config") == "nextgen_mock") "Day initial", "Day whole")){
             
-            file_name <- paste0("/", panel, "_at_", set1_times_sub[i], ".pdf")
-            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 16, height = 16)
+            if (tm == "Day initial") {
+                set1_times_sub = set1_times[c(3, 5)]
+                dat.longer.immuno.subset.plot1_  = dat.longer.immuno.subset.plot1.trackA %>% filter(Track == "A") # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
+            } else if (tm == "Day whole" & attr(config, "config") == "nextgen_mock") {
+                set1_times_sub = set1_times[c(1, 2, 4)]
+                dat.longer.immuno.subset.plot1_  = dat.longer.immuno.subset.plot1.whole # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
+            } else {set1_times_sub = set1_times[grepl(tm_subset, set1_times)]}
+            
+            f_1 <- f_by_time_assay(
+                dat = dat.longer.immuno.subset.plot1_ %>% mutate(x="1"),
+                assays = assays[grepl(panel, assays)],
+                times = set1_times_sub,
+                ylim = if (grepl("^B|Day", tm_subset) & panel=="bindSpike") {c(2, 7)
+                    } else if (grepl("^B|Day", tm_subset) & panel=="pseudoneutid50") {c(1, 6.5)
+                        } else if (grepl("Delta", tm_subset)) {c(-3, 4.2)} else if (study_name == "NextGen_Mock") {c(-3, 7)} else {c(-3, 4.5)},
+                axis.x.text.size = 20,
+                strip.x.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("T4|T8", panel), 20, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("bindSpike_", panel), 8, 10)))),
+                panel.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 7, ifelse(grepl("T4|T8|pseudoneutid50", panel), 6, 4.5)),
+                facet.y.var = vars(Trt_nnaive),
+                facet.x.var = vars(assay_label2))
+            
+            for (i in 1:length(set1_times_sub)){
+                
+                file_name <- paste0("/", panel, "_at_", set1_times_sub[i], 
+                                    ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
+                                           ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
+                ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), 
+                       width = if (grepl("bindSpike", panel) & study_name == "NextGen_Mock") {28} else {16}, 
+                       height = 16)
+            }
         }
     }
 }
@@ -135,7 +155,7 @@ set2_assays = assays
 # bindSpike
 # ID50
 # bindSpike mdw
-for (panel in c("pseudoneutid50", "bindSpike")){
+for (panel in if (study_name == "NextGen_Mock") {paste0(paste(set2_assays[!grepl("mdw", set2_assays)][c(TRUE, FALSE)], set2_assays[!grepl("mdw", set2_assays)][c(FALSE, TRUE)], sep = "$|"), "$")} else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
@@ -144,6 +164,10 @@ for (panel in c("pseudoneutid50", "bindSpike")){
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.nAb==1)
     } else if (attr(config,"config")=="vat08_combined" & panel=="bindSpike") {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.bAb==1)
+    } else if (attr(config,"config") == "nextgen_mock") {
+        dat.longer.immuno.subset.plot1_  = dat.longer.immuno.subset.plot1.trackA %>% 
+            filter(Track == "A" & time %in% c("Day91", "Day366")) %>%
+            bind_rows(dat.longer.immuno.subset.plot1.whole %>% filter(time %in% c("B", "Day31", "Day181"))) # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
     } else {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
     }
@@ -151,17 +175,17 @@ for (panel in c("pseudoneutid50", "bindSpike")){
     f_2 <- f_longitude_by_assay(
         dat = dat.longer.immuno.subset.plot1_,
         x.var = "time",
-        x.lb = c("D1","D22","D43"),
+        x.lb = if (study_name == "NextGen_Mock") {c("D1","D31","D91","D181","D366")} else if (study_name == "VAT08"){c("D1","D22","D43")},
         assays = set2_assays[grepl(panel, set2_assays) & !grepl("mdw", set2_assays)],
         ylim = c(1, 6.5),
-        times = c("B","Day22","Day43"),
+        times = if (study_name == "NextGen_Mock") {c("B","Day31","Day91","Day181","Day366")} else if (study_name == "VAT08"){c("B","Day22","Day43")},
         strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, 12),
         panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
         facet.y.var = vars(Trt_nnaive), 
         facet.x.var = vars(assay_label_short)
     )
     
-    file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", "")), "_longitudinal.pdf")
+    file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", gsub("\\$\\|", "_", panel))), "_longitudinal", if (study_name == "NextGen_Mock") "_final", ".pdf")
     ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
     
 }
@@ -374,7 +398,7 @@ if (attr(config,"config") == "janssen_pooled_partA"){
 # 15 markers, naive vaccine, three timepoints
 for (grp in c("non_naive_vac_pla", "naive_vac")){
     
-    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA", "nextgen_mock")) next # janssen_partA_VL doesn't need these plots
     
     for (t in c("B","Day22","Day43")) {
         
@@ -420,7 +444,7 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
 # all markers, by naive/non-naive, vaccine/placebo, pooling cases and non-cases
 for (a in assays){
     
-    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA", "nextgen_mock")) next # janssen_partA_VL doesn't need these plots
     
     panels_set <- list()
     i <- 1
