@@ -1,7 +1,7 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0(a, "_at_", tp, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0(a, "_at_", tp, if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) "_final", if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) "_initial", ".pdf"))`}
 
 \caption{`r paste0("Distribution of ", a, " at ", tpLabel, immuno_postfix_label)`}
 

@@ -155,7 +155,10 @@ set2_assays = assays
 # bindSpike
 # ID50
 # bindSpike mdw
-for (panel in if (study_name == "NextGen_Mock") {paste0(paste(set2_assays[!grepl("mdw", set2_assays)][c(TRUE, FALSE)], set2_assays[!grepl("mdw", set2_assays)][c(FALSE, TRUE)], sep = "$|"), "$")} else {c("pseudoneutid50", "bindSpike")}){
+for (panel in if (study_name == "NextGen_Mock") {
+    paste0(paste(set2_assays[!grepl("mdw", set2_assays)][c(TRUE, FALSE)], 
+                 set2_assays[!grepl("mdw", set2_assays)][c(FALSE, TRUE)], sep = "$|"), "$")
+    } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
@@ -167,7 +170,8 @@ for (panel in if (study_name == "NextGen_Mock") {paste0(paste(set2_assays[!grepl
     } else if (attr(config,"config") == "nextgen_mock") {
         dat.longer.immuno.subset.plot1_  = dat.longer.immuno.subset.plot1.trackA %>% 
             filter(Track == "A" & time %in% c("Day91", "Day366")) %>%
-            bind_rows(dat.longer.immuno.subset.plot1.whole %>% filter(time %in% c("B", "Day31", "Day181"))) # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
+            bind_rows(dat.longer.immuno.subset.plot1.whole %>% filter(time %in% c("B", "Day31", "Day181"))) %>% # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
+            mutate(time = factor(time, levels = c("B", "Day31", "Day91", "Day181", "Day366")))
     } else {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
     }
