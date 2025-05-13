@@ -397,13 +397,18 @@ if (attr(config,"config") == "janssen_pooled_partA"){
 ###### Set 3 plots: Correlation plots across markers at a given time point
 # 15 markers, non-naive pooled vaccine & placebo, three timepoints
 # 15 markers, naive vaccine, three timepoints
-for (grp in c("non_naive_vac_pla", "naive_vac")){
+for (grp in c("non_naive_vac_pla", 
+              if (study_name == "NextGen_Mock") "non_naive_vac", 
+              if (study_name == "NextGen_Mock") "non_naive_pla", 
+              if (study_name != "NextGen_Mock") "naive_vac")){
     
-    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA", "nextgen_mock")) next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
-    for (t in c("B","Day22","Day43")) {
+    for (t in if (study_name == "NextGen_Mock") {c("B", "Day31", "Day91", "Day181", "Day366")} else {c("B","Day22","Day43")}) {
         
         if (grp == "naive_vac" && t=="B") next # this is not needed for VAT08
+        if (grp == "non_naive_vac_pla" & study_name == "NextGen_Mock" & t != "B") next # pooled results are only needed at baseline for NextGen_Mock
+        if (grp != "non_naive_vac_pla" & study_name == "NextGen_Mock" & t == "B") next # pooled results are only needed at baseline for NextGen_Mock
         
         if (grp == "non_naive_vac_pla") {
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==1)
@@ -413,6 +418,24 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)=="Vaccine")
             grp_lb = paste0(bstatus.labels.3[1], " vaccine group participants")
             assays_sub = assays
+        } else if (study_name == "NextGen_Mock" & t %in% c("B", "Day31", "Day181") &
+                   grp %in% c("non_naive_vac", "non_naive_pla")) {
+            
+            trt_val <- ifelse(grp == "non_naive_vac", "Vaccine", "Placebo")
+            label_val <- bstatus.labels.3[2]
+            
+            dat.plot <- subset(dat.immuno.subset.plot3, as.character(Trt) == trt_val)
+            grp_lb <- paste0(label_val, " ", tolower(trt_val), " group participants")
+            assays_sub <- assays
+        } else if (study_name == "NextGen_Mock" & t %in% c("Day91", "Day366") &
+                   grp %in% c("non_naive_vac", "non_naive_pla")) {
+            
+            trt_val <- ifelse(grp == "non_naive_vac", "Vaccine", "Placebo")
+            label_val <- bstatus.labels.3[2]
+            
+            dat.plot <- subset(dat.immuno.subset.plot3, as.character(Trt) == trt_val & Track == "A")
+            grp_lb <- paste0(label_val, " ", tolower(trt_val), " group participants")
+            assays_sub <- assays
         }
         
         if (attr(config,"config")=="vat08_combined") {
@@ -424,9 +447,12 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
             time = t,
             assays = assays_sub,
             strata = "all_one",
-            weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", "wt.subcohort"),
+            weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", 
+                            ifelse(study_name == "NextGen_Mock" & t %in% c("B", "Day31", "Day181"), "wt.immuno", 
+                                   ifelse(study_name == "NextGen_Mock" & t %in% c("Day91", "Day366"), "wt.AB.immuno", 
+                                          "wt.subcohort"))),
             plot_title = paste0(
-                "Correlations of 15 ", ifelse(t=="B", "D1", t), " antibody markers in ", grp_lb, ", Corr = Weighted Spearman Rank Correlation."
+                "Correlations of ", length(assays_sub), " ", ifelse(t=="B", "D1", t), " antibody markers in ", grp_lb, ", Corr = Weighted Spearman Rank Correlation."
             ),
             column_labels = assay_metadata$assay_label_short[match(assays_sub, assay_metadata$assay)],
             height = max(1.3 * length(assays_sub) + 0.1, 5.5),
@@ -434,7 +460,10 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
             column_label_size = ifelse(max(nchar(paste(assay_metadata$assay_label_short)))>28, 4, 6.5),
             filename = paste0(
                 save.results.to, "/pairs_by_time_", t,
-                "_", length(assays_sub), "_markers_", grp, ".pdf"
+                "_", length(assays_sub), "_markers_", grp, 
+                ifelse(study_name == "NextGen_Mock" & t %in% c("B", "Day31", "Day181"), "_final", 
+                       ifelse(study_name == "NextGen_Mock" & t %in% c("Day91", "Day366"), "_initial", "")), 
+                ".pdf"
             )
         )
         
@@ -445,16 +474,18 @@ for (grp in c("non_naive_vac_pla", "naive_vac")){
 # all markers, by naive/non-naive, vaccine/placebo, pooling cases and non-cases
 for (a in assays){
     
-    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA", "nextgen_mock")) next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
     panels_set <- list()
     i <- 1
     
     for (trt in c("Vaccine", "Placebo")){
         for (bsero in c(0, 1)){
-            times_sub = c("B", paste0("Day", timepoints))
+            if(study_name == "NextGen_Mock") {times_sub = c("B", "Day31", "Day181")
+            } else {times_sub = c("B", paste0("Day", timepoints))}
             
             dat.plot4 = dat.immuno.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero)
+            if (nrow(dat.plot4) == 0) next
             
             if (attr(config,"config")=="vat08_combined") {
                 dat.plot4 = dat.plot4 %>% filter(ph2.immuno.bAb==1)
@@ -464,7 +495,8 @@ for (a in assays){
                 time = times_sub,
                 assays = a,
                 strata = "all_one",
-                weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", "wt.subcohort"),
+                weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", 
+                                ifelse(study_name == "NextGen_Mock", "wt.immuno", "wt.subcohort")),
                 plot_title = "",
                 column_labels = times_sub,
                 height = 5.5,
@@ -478,20 +510,33 @@ for (a in assays){
     
     y.grob.1 <- textGrob("Vaccine", gp=gpar(fontface="bold", col="black", fontsize=9))
     y.grob.2 <- textGrob("Placebo", gp=gpar(fontface="bold", col="black", fontsize=9))
+    y.grob.1_ <- textGrob("Vaccine, Non-naive", gp=gpar(fontface="bold", col="black", fontsize=9))
+    y.grob.2_ <- textGrob("Placebo, Non_naive", gp=gpar(fontface="bold", col="black", fontsize=9))
     y.grob.3 <- textGrob("Naive", gp=gpar(fontface="bold", col="black", fontsize=9))
     y.grob.4 <- textGrob("Non-naive", gp=gpar(fontface="bold", col="black", fontsize=9))
     
     #add to plot
-    combined_p <- grid.arrange(
+    if (study_name == "NextGen_Mock") {
+        row_plot <- arrangeGrob(
+            arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.1_),
+            arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.2_),
+            nrow = 1
+        )
+        # Add bottom space with an empty grob
+        bottom_space <- textGrob(" ", gp = gpar(fontsize = 10)) 
+        combined_p <- grid.arrange(row_plot, bottom_space, ncol = 1, heights = c(1, 1))
+        
+    } else {combined_p <- grid.arrange(
         grid.arrange(arrangeGrob(plot_grid(
             arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.3), arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.4)), left = y.grob.1), nrow=1),
         grid.arrange(arrangeGrob(plot_grid(
             ggmatrix_gtable(panels_set[[3]]), ggmatrix_gtable(panels_set[[4]])), left = y.grob.2), nrow=1),
         #bottom = x.grob,
         ncol = 1
-    )
+    )}
     
     ggsave(filename = paste0(
-        save.results.to, "/pairs_across_timepoints_", a, ".pdf"), plot = combined_p, width = 8, height = 10, units="in")
+        save.results.to, "/pairs_across_timepoints_", a, 
+        if (study_name == "NextGen_Mock") "_final", ".pdf"), plot = combined_p, width = 8, height = 10, units="in")
 }
 
