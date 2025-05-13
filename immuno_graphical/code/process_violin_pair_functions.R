@@ -293,7 +293,7 @@ f_longitude_by_assay <- function(
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = ifelse(y.lb.scale == "log", scales::math_format(10^.x), ifelse(y.lb.scale == "original", scales::math_format(.x)))) +
-                labs(x = "Assay", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(gsub("\\$\\|", "_", panel))), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
+                labs(x = "Assay", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(gsub("\\$", "", gsub("\\|", "_", panel)))), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
     

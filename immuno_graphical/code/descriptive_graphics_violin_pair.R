@@ -182,10 +182,11 @@ for (panel in if (study_name == "NextGen_Mock") {paste0(paste(set2_assays[!grepl
         strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, 12),
         panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
         facet.y.var = vars(Trt_nnaive), 
-        facet.x.var = vars(assay_label_short)
+        facet.x.var = vars(assay_label_short),
+        y.axis.lb = ifelse(study_name == "NextGen_Mock", " ", "")
     )
     
-    file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", gsub("\\$\\|", "_", panel))), "_longitudinal", if (study_name == "NextGen_Mock") "_final", ".pdf")
+    file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", gsub("\\$", "", gsub("\\|", "_", panel)))), "_longitudinal", if (study_name == "NextGen_Mock") "_final", ".pdf")
     ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
     
 }
