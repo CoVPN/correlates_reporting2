@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_", asy, "_by_times", times_index, "_", bsero, "_", trt, "_", ifelse(attr(config,"config")=="prevent19" & country=="Nvx_US", "US_only_", ""), study_name, if (study_name == "NextGen_Mock") "_final", ".pdf"))`}
 
-\caption{`r paste0("Pair plots of ", if (study_name!="VAT08") paste0(gsub("B", "D1", gsub("ay", "", times_selected[[tm]])), collapse = " and "), ifelse(study_name=="VAT08", " and fold-change of ", " "), asyLabel, ": ", bseroLabel, " ", trt, " arm", ifelse(attr(config,"config")=="prevent19" & country=="Nvx_US", " (US only)", ""), immuno_postfix_label)`}
+\caption{`r paste0("Pair plots of ", if (study_name!="VAT08") paste0(gsub("B", "D1", gsub("ay", "", times_selected[[ifelse(times_index=="_2", 2, 1)]])), collapse = " and "), ifelse(study_name=="VAT08", " and fold-change of ", " "), asyLabel, ": ", bseroLabel, " ", trt, " arm", ifelse(attr(config,"config")=="prevent19" & country=="Nvx_US", " (US only)", ""), immuno_postfix_label)`}
 
 \end{figure}
 

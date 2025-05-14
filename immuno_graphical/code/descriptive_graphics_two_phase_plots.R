@@ -292,9 +292,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                 subdat = subdat[which(subdat$ph2.immuno.bAb==1), ]
               } else if (attr(config,"config")=="vat08_combined" & grepl("pseudo", aa)) {
                 subdat = subdat[which(subdat$ph2.immuno.nAb==1), ]
-              } else if (attr(config,"config")=="nextgen_mock" & grepl("T4|T8", aa)) {
-                subdat = subdat[which(subdat$ph2.AB.immuno==1), ] # subset to the RIS-PBMC set for NextGen ICS final report
-              }
+              } 
               
               covid_corr_pairplots_by_time(
                 plot_dat = subdat,
@@ -489,17 +487,19 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
     
     for (trt in c("Vaccine", if(study_name %in% c("VAT08", "NextGen_Mock")) "Placebo")){
       
-      subdat_rcdf2 = subset(dat.long.twophase.sample, Trt == trt & assay %in% rcdf_assays)
+      subdat_rcdf2_ = subset(dat.long.twophase.sample, Trt == trt & assay %in% rcdf_assays)
       
       if (attr(config,"config")=="vat08_combined" & Ab=="bind") {
-        subdat_rcdf2 = subdat_rcdf2 %>% filter(ph2.immuno.bAb==1)
+        subdat_rcdf2 = subdat_rcdf2_ %>% filter(ph2.immuno.bAb==1)
       } else if (attr(config,"config")=="vat08_combined" & Ab=="pseudo") {
-        subdat_rcdf2 = subdat_rcdf2 %>% filter(ph2.immuno.nAb==1)
+        subdat_rcdf2 = subdat_rcdf2_ %>% filter(ph2.immuno.nAb==1)
       } else if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) {
-        subdat_rcdf2$wt = with(subdat_rcdf2, ifelse(grepl("T4|T8", assay), wt.AB.immuno, wt.immuno)) # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
+        subdat_rcdf2 = subdat_rcdf2_ %>%
+          mutate(wt = ifelse(grepl("T4|T8", assay), wt.AB.immuno, wt.immuno))  # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
       } else if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) {
-        subdat_rcdf2 = subdat_rcdf2[which(subdat_rcdf2$Track == "A"), ]
-        subdat_rcdf2$wt = subdat_rcdf2$wt.AB.immuno
+        subdat_rcdf2 = subdat_rcdf2_ %>% 
+          filter(Track == "A") %>%
+          mutate(wt = wt.AB.immuno)
       }
       
       covid_corr_rcdf(
@@ -519,9 +519,9 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
                       ceiling(max(assay_lim[rcdf_assays, tp, 2])), 
                       ifelse(study_name=="VAT08", 3, 1)),
         plot_title = paste0(labels.time[tp], " Ab Markers"),
-        legend_size = ifelse(attr(config,"config")=="nextgen_mock", 8, 14), 
+        legend_size = ifelse(length(rcdf_assays) > 10, 5, ifelse(length(rcdf_assays) >= 4, 8, 14)), 
         axis_size = ifelse(attr(config,"config")=="nextgen_mock", 10, 16), 
-        legend_nrow = length(rcdf_assays),
+        legend_nrow = ifelse(length(rcdf_assays) < 10, length(rcdf_assays), ceiling(length(rcdf_assays)/2)),
         filename = paste0(
           save.results.to, "/Marker_Rcdf_", Ab_lb, tp,
           "_trt_", tolower(trt), "_bstatus_both_", study_name, 

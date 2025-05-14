@@ -168,9 +168,15 @@ for (bsero in bstatus.labels.2) {
           
           asyLabel <- gsub("%","\\\\%", labels.assays[asy])
           
-          immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & times_index == "", " (Whole RIS/RIS-PBMC)",
-                                         ifelse(study_name == "NextGen_Mock" & times_index == "_2", " (Track A RIS/RIS-PBMC)",
-                                                immuno_postfix_label))
+          times_selected <- if(study_name=="VAT08") {list(tps_no_delta_over_tinterm[c(1,4,5)])
+          # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
+          } else if (study_name == "NextGen_Mock") {list(
+              tps_no_delta_over_tinterm[c(1,2,6)], # "B", "Day31", "Day181"
+              tps_no_delta_over_tinterm[c(3,7)] # "Delta31overB", "Delta181overB"
+              ) 
+          } else {list(tps_no_fold_change)}
+          
+          immuno_postfix_label <- ifelse(study_name == "NextGen_Mock", " (Whole RIS/RIS-PBMC)", immuno_postfix_label)
           res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
           cat("\\clearpage", sep = '\n')
