@@ -55,7 +55,7 @@ if (attr(config, "config") == "nextgen_mock") {
 }
 # ID50, at B, D22, D43, D22-B, D43-B
 # bindSpike, at B, D22, D43, D22-B, D43-B
-for (panel in if (study_name == "NextGen_Mock") {gsub("CD", "T", unique(assay_metadata$panel))
+for (panel in if (study_name == "NextGen_Mock") {unique(assay_metadata$panel)
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
@@ -65,7 +65,7 @@ for (panel in if (study_name == "NextGen_Mock") {gsub("CD", "T", unique(assay_me
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.nAb==1)
     } else if (attr(config,"config")=="vat08_combined" & panel=="bindSpike") {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.bAb==1)
-    } else {
+    } else if (study_name != "NextGen_Mock") {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
     }
     
@@ -81,16 +81,20 @@ for (panel in if (study_name == "NextGen_Mock") {gsub("CD", "T", unique(assay_me
                 dat.longer.immuno.subset.plot1_  = dat.longer.immuno.subset.plot1.whole # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
             } else {set1_times_sub = set1_times[grepl(tm_subset, set1_times)]}
             
+            # set time to be a factor
+            dat.longer.immuno.subset.plot1_ <- dat.longer.immuno.subset.plot1_ %>% 
+                mutate(time = factor(time, levels = times_))
+            
             f_1 <- f_by_time_assay(
                 dat = dat.longer.immuno.subset.plot1_ %>% mutate(x="1"),
-                assays = assays[grepl(panel, assays)],
+                assays = assays[grepl(ifelse(panel == "tcell", "T4|T8", panel), assays)],
                 times = set1_times_sub,
                 ylim = if (grepl("^B|Day", tm_subset) & panel=="bindSpike") {c(2, 7)
                     } else if (grepl("^B|Day", tm_subset) & panel=="pseudoneutid50") {c(1, 6.5)
                         } else if (grepl("Delta", tm_subset)) {c(-3, 4.2)} else if (study_name == "NextGen_Mock") {c(-3, 7)} else {c(-3, 4.5)},
                 axis.x.text.size = 20,
-                strip.x.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("T4|T8", panel), 20, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("bindSpike_", panel), 8, 10)))),
-                panel.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 7, ifelse(grepl("T4|T8|pseudoneutid50", panel), 6, 4.5)),
+                strip.x.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("tcell", panel), 10, ifelse(grepl("bindSpike_", panel), 8, 10)))),
+                panel.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 7, ifelse(grepl("tcell|pseudoneutid50", panel), 6, 4.5)),
                 facet.y.var = vars(Trt_nnaive),
                 facet.x.var = vars(assay_label2))
             
@@ -156,8 +160,8 @@ set2_assays = assays
 # ID50
 # bindSpike mdw
 for (panel in if (study_name == "NextGen_Mock") {
-    paste0(paste(set2_assays[!grepl("mdw", set2_assays)][c(TRUE, FALSE)], 
-                 set2_assays[!grepl("mdw", set2_assays)][c(FALSE, TRUE)], sep = "$|"), "$")
+    paste0(paste(set2_assays[c(TRUE, FALSE)], 
+                 set2_assays[c(FALSE, TRUE)], sep = "$|"), "$")
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     

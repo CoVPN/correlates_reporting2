@@ -479,16 +479,16 @@ if (attr(config,"config")=="janssen_partA_VL"){
 ## Spider plot of antibody markers for overall per-protocol cohort
 ```{r, echo=FALSE, results='asis'}
 if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
-  for (tp in #if(study_name=="VAT08") {c("day", "delta")} else {
-       c(if(attr(config,"config") != "nextgen_mock") "day", 
-                 if(attr(config,"config") == "nextgen_mock") "day initial", # "Day91", "Day366" Track A
-                 if(attr(config,"config") == "nextgen_mock") "day whole" # "B", "Day31", "Day181" whole
+  for (tp in #if(study_name=="VAT08") {c("Day", "Delta")} else {
+       c(if(attr(config,"config") != "nextgen_mock") "Day", 
+                 if(attr(config,"config") == "nextgen_mock") "Day initial", # "Day91", "Day366" Track A
+                 if(attr(config,"config") == "nextgen_mock") "Day whole" # "B", "Day31", "Day181" whole
                  #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
                  )#}
        ) {
   
     for (asy in c("bAb" ,"nAb", if (study_name == "NextGen_Mock") "ics")){
-      if (study_name == "NextGen_Mock" & tp == "day whole" & asy == "ics") next # do not have these plots
+      if (study_name == "NextGen_Mock" & tp == "Day whole" & asy == "ics") next # do not have these plots
       
       for (bsero in c("Neg", "Pos")) {
         if (study_name == "NextGen_Mock" & bsero == "Neg") next # NextGen_Mock only has non-naive
@@ -499,8 +499,10 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
             
             if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
           
-            tpLabel <- case_when(tp=="day" ~ paste0("Day 1, ", paste0("Day ", timepoints_,  collapse = ", ")), 
-                                 tp=="delta" ~"fold-rise", 
+            tpLabel <- case_when(tp == "Day" ~ paste0("Day 1, ", paste0("Day ", timepoints_,  collapse = ", ")), 
+                                 tp == "Delta" ~"fold-rise", 
+                                 tp == "Day initial" ~ "Day 91 and D366",
+                                 tp == "Day whole" ~ "Day 1, Day 31 and Day 181",
                                  TRUE ~ paste0("Day ", timepoints_,  collapse = ", "))
             
             regLabel <- case_when(reg=="LATAM_" ~ "Latin America",
@@ -510,8 +512,8 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
                                    bsero=="Pos" ~ bstatus.labels.3[2],
                                    TRUE ~ "")
       
-            immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("day whole"), " (Whole RIS/RIS-PBMC)",
-                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("day initial"), " (Track A RIS/RIS-PBMC)",
+            immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("Day whole"), " (Whole RIS/RIS-PBMC)",
+                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day initial"), " (Track A RIS/RIS-PBMC)",
                                                 immuno_postfix_label)) 
             res = knitr::knit_child(c(here::here('immuno_graphical', 'report_spider.Rmd')), quiet = TRUE)
             cat(res, sep = '\n')
@@ -529,7 +531,7 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
 ## Set 1 plots: D01, D31, D91, D181, D366 Ab distributions
 ```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock")}
 
-for (a in if (study_name == "NextGen_Mock") {c("bindN", "bindSpike_IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", "T4", "T8")
+for (a in if (study_name == "NextGen_Mock") {c("bindN", "bindSpike_IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", "tcell")
   } else {c("bindSpike","pseudoneutid50")}){
   
   for (tp in if (study_name == "NextGen_Mock") {tps_no_fold_change} else {tps_no_delta_over_tinterm}){
@@ -552,8 +554,8 @@ for (a in if (study_name == "NextGen_Mock") {c("bindN", "bindSpike_IgG_sera", "b
 ```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock")}
 
 for (assay_grp in if (study_name == "NextGen_Mock") {
-  c(paste(assays[!grepl("mdw", assays)][c(TRUE, FALSE)], 
-          assays[!grepl("mdw", assays)][c(FALSE, TRUE)], sep = "_"))
+  c(paste(assays[c(TRUE, FALSE)], 
+          assays[c(FALSE, TRUE)], sep = "_"))
   } else {c("bAb","bAb_mdw","nAb","nAb_mdw")}){
     details = ""
     details_lb = ""

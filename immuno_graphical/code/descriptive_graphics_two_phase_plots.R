@@ -691,7 +691,7 @@ for (bstatus in 1:2) {
       POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
       LLOX = log10(lloxs[assay_immuno]),
       ULOQ = log10(uloqs[assay_immuno]),
-      arrange_ncol = ifelse(study_name %in% c("VAT08", "NextGen_Mock"), 4, 3),
+      arrange_ncol = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "NextGen_Mock", 6, 3)),
       arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
       legend = c("Placebo"="Placebo", "Vaccine"="Vaccine"),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),

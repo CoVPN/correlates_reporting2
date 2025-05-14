@@ -179,7 +179,7 @@ f_by_time_assay <-
         p1 <- dat %>%
             filter(assay %in% assays & time %in% times) %>%
             left_join(assay_metadata, by="assay") %>%
-            mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+            mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", panel))) %>%
             mutate(assay_label2 = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label),
                    
             ) %>%
@@ -204,7 +204,7 @@ f_by_time_assay <-
                     geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                     scale_x_discrete(labels = "") + 
                     scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 2, 1)), labels = scales::math_format(10^.x)) +
-                    labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", unique(d$time), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
+                    labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", gsub("^B", "Day1", unique(d$time)), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
                     plot_theme +
                     guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
             })
@@ -268,7 +268,7 @@ f_longitude_by_assay <- function(
     p2 <- dat %>%
         filter(assay %in% assays & time %in% times) %>%
         left_join(assay_metadata, by="assay") %>%
-        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", panel))) %>%
         mutate(assay_label_short = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label)) %>%
         ungroup() %>%
             ggplot(aes(x = !!sym(x.var), y = !!sym("value"))) +
