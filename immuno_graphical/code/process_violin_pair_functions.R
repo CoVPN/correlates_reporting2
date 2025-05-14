@@ -93,7 +93,8 @@ get_desc_by_group <- function(data,
                q1 = quantile(value, 0.25, na.rm=T),
                median = median(value, na.rm=T),
                q3 = quantile(value, 0.75, na.rm=T),
-               max= max(value, na.rm=T))
+               max= max(value, na.rm=T)) %>%
+        mutate(RespRate = ifelse(grepl("mdw", assay), "", RespRate))
     
     if (study_name == "NextGen_Mock") {
         dat_stats2 <-
@@ -122,7 +123,8 @@ get_desc_by_group <- function(data,
                                  q1 = quantile(value, 0.25, na.rm=T),
                                  median = median(value, na.rm=T),
                                  q3 = quantile(value, 0.75, na.rm=T),
-                                 max= max(value, na.rm=T)))
+                                 max= max(value, na.rm=T))) %>%
+            mutate(RespRate = ifelse(grepl("mdw", assay), "", RespRate))
     }
     
     if (exists("dat_stats2")) {

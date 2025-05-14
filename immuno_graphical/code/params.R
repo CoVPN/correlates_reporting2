@@ -22,8 +22,11 @@ age.cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "VAT08"), 60,
 
 if (study_name == "NextGen_Mock") {
   trt.labels <- c("Comparator Vaccine", "Investigational Vaccine")
-} else {trt.labels <- c("Placebo", "Vaccine")
-  }
+  trt.labels.2 <- c("comparator_vaccine", "investigational_vaccine")
+} else {
+  trt.labels <- c("Placebo", "Vaccine")
+  trt.labels.2 <- c("placebo", "vaccine")
+}
 if (!study_name %in% c("VAT08", "NextGen_Mock")){
   bstatus.labels <- c("Baseline Neg", "Baseline Pos")
   bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")

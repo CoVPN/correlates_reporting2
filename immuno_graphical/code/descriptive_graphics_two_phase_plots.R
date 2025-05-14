@@ -1112,7 +1112,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             if (nrow(dat.plot)==2) next
             
             ############# figure start here
-            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tm)), "_", ifelse(reg!="all", reg_lb, ""), ab, "_", tolower(bstatus.labels[bsero + 1]), "_", trt.labels.2[trt + 1], 
+            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tm)), "_", ifelse(reg!="all", reg_lb, ""), ab, "_", tolower(bstatus.labels.2[bsero + 1]), "_", trt.labels.2[trt + 1], 
                               ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
                                      ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
             pdf(filename, width = ifelse(study_name == "NextGen_Mock", 8, 5.5), height = 6.5)

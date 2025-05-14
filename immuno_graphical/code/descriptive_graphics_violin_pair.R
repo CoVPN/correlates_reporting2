@@ -42,10 +42,8 @@ if(attr(config,"config")=="janssen_partA_VL") {
     dat.longer.immuno.subset.plot1.2 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.2.rds"))}
 dat.immuno.subset.plot3 <- readRDS(here::here("data_clean", "twophase_data.rds")); dat.immuno.subset.plot3$all_one <- 1 # as a placeholder for strata values
 dat.immuno.subset.plot3 <- dat.immuno.subset.plot3 %>%
-    mutate(Trt = factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")),
-           nnaive = factor(Bserostatus,
-                            levels = c(0, 1),
-                            labels = bstatus.labels))
+    mutate(Trt = factor(Trt, levels = c(0, 1), labels = trt.labels),
+           nnaive = factor(Bserostatus, levels = c(0, 1), labels = bstatus.labels))
 
 ###### Set 1 plots: Ab distributions at main timepoints and delta by vaccine/placebo, naive/nnaive
 if (attr(config, "config") == "nextgen_mock") {
@@ -422,16 +420,16 @@ for (grp in c("non_naive_vac_pla",
         
         if (grp == "non_naive_vac_pla") {
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==1)
-            grp_lb = paste0(gsub("-","",bstatus.labels.3[2]), " participants")
+            grp_lb = paste0(gsub("-", "", tolower(bstatus.labels.3[2])), " pooled group participants")
             assays_sub = assays
         } else if (grp == "naive_vac"){
-            dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)=="Vaccine")
-            grp_lb = paste0(bstatus.labels.3[1], " vaccine group participants")
+            dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)==trt.labels[2])
+            grp_lb = paste0(bstatus.labels.3[1], " ", tolower(trt.labels[2]), " group participants")
             assays_sub = assays
         } else if (study_name == "NextGen_Mock" & t %in% c("B", "Day31", "Day181") &
                    grp %in% c("non_naive_vac", "non_naive_pla")) {
             
-            trt_val <- ifelse(grp == "non_naive_vac", "Vaccine", "Placebo")
+            trt_val <- ifelse(grp == "non_naive_vac", trt.labels[2], trt.labels[1])
             label_val <- bstatus.labels.3[2]
             
             dat.plot <- subset(dat.immuno.subset.plot3, as.character(Trt) == trt_val)
@@ -440,7 +438,7 @@ for (grp in c("non_naive_vac_pla",
         } else if (study_name == "NextGen_Mock" & t %in% c("Day91", "Day366") &
                    grp %in% c("non_naive_vac", "non_naive_pla")) {
             
-            trt_val <- ifelse(grp == "non_naive_vac", "Vaccine", "Placebo")
+            trt_val <- ifelse(grp == "non_naive_vac", trt.labels[2], trt.labels[1])
             label_val <- bstatus.labels.3[2]
             
             dat.plot <- subset(dat.immuno.subset.plot3, as.character(Trt) == trt_val & Track == "A")
@@ -489,7 +487,7 @@ for (a in assays){
     panels_set <- list()
     i <- 1
     
-    for (trt in c("Vaccine", "Placebo")){
+    for (trt in trt.labels){
         for (bsero in c(0, 1)){
             if(study_name == "NextGen_Mock") {times_sub = c("B", "Day31", "Day181")
             } else {times_sub = c("B", paste0("Day", timepoints))}

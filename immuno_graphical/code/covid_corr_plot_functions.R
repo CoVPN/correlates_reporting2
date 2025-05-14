@@ -300,8 +300,8 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
         wrap(ggally_cor_resample,
              stars = FALSE,
              size = corr_size,
-             strata = subdat[, strata],
-             weight = subdat[, weight]
+             strata = plot_dat[, strata],
+             weight = plot_dat[, weight]
         )
     ),
     lower = list(

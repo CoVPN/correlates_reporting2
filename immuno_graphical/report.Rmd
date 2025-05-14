@@ -497,8 +497,8 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
     for (asy in c("bAb" ,"nAb", if (study_name == "NextGen_Mock") "ics")){
       if (study_name == "NextGen_Mock" & tp == "Day whole" & asy == "ics") next # do not have these plots
       
-      for (bsero in c("Neg", "Pos")) {
-        if (study_name == "NextGen_Mock" & bsero == "Neg") next # NextGen_Mock only has non-naive
+      for (bsero in bstatus.labels.2) {
+        if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # NextGen_Mock only has non-naive
         
         for (trt in trt.labels.2) {
           

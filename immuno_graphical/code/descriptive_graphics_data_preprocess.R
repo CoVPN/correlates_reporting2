@@ -437,7 +437,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
   
   # define response rates
   resp <- getResponder(dat_proc, post_times = timepoints_, 
-                       assays = assays[!grepl("T4|T8", assays)], pos.cutoffs = pos.cutoffs)
+                       assays = assays[!grepl("T4|T8|mdw", assays)], pos.cutoffs = pos.cutoffs)
   
   # add ICS response call for NextGen
   if (study_name == "NextGen_Mock") {
