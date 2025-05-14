@@ -20,14 +20,17 @@ config <- config::get(config = Sys.getenv("TRIAL"))
 # Define age cutoff based on trial
 age.cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "VAT08"), 60, 65)
 
-trt.labels <- c("Placebo", "Vaccine")
+if (study_name == "NextGen_Mock") {
+  trt.labels <- c("Comparator Vaccine", "Investigational Vaccine")
+} else {trt.labels <- c("Placebo", "Vaccine")
+  }
 if (!study_name %in% c("VAT08", "NextGen_Mock")){
   bstatus.labels <- c("Baseline Neg", "Baseline Pos")
   bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
   bstatus.labels.3 <- c("baseline negative", "baseline positive")
 } else {
   bstatus.labels <-  c("Naive", "Non-naive")
-  bstatus.labels.2 <- bstatus.labels.3 <- c("naive", "non-naive")
+  bstatus.labels.2 <- bstatus.labels.3 <- c("Naive", "Non-naive")
 }
 
 bAb_assays <- assays[grepl("bind", assays)]

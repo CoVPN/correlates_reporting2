@@ -13,13 +13,20 @@ library(knitr)
 
 here::i_am("immuno_graphical/report.Rmd")
 
+if (study_name == "NextGen_Mock") {
+  trt.labels <- c("Comparator Vaccine", "Investigational Vaccine")
+  trt.labels.2 <- c("comparator_vaccine", "investigational_vaccine")
+} else {
+  trt.labels <- c("Placebo", "Vaccine")
+  trt.labels.2 <- c("placebo", "vaccine")
+  }
 if (!study_name %in% c("VAT08", "NextGen_Mock")){
   bstatus.labels <- c("Baseline Neg", "Baseline Pos")
   bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
   bstatus.labels.3 <- c("baseline negative", "baseline positive")
 } else {
-  bstatus.labels <-  c("Naive", "Non-naive")
-  bstatus.labels.2 <- bstatus.labels.3 <- c("naive", "non-naive")
+  bstatus.labels <- c("Naive", "Non-naive")
+  bstatus.labels.2 <- bstatus.labels.3 <- c("Naive", "Non-naive")
 }
 
 # repeat whatever in param.R here
@@ -110,9 +117,9 @@ for (bsero in bstatus.labels.2) {
   
   bseroLabel <- bstatus.labels.3[match(bsero, bstatus.labels.2)]
   
-  for (trt in c("vaccine","placebo", if(study_name=="VAT08") "pooled")) {  
+  for (trt in c(trt.labels.2[2:1], if(study_name=="VAT08") "pooled")) {  
     
-    if (study_name!="VAT08" && trt=="placebo" && bsero==bstatus.labels.2[1]) next # only report for placebo baseline neg for VAT08
+    if (study_name!="VAT08" && trt==trt.labels.2[1] && bsero==bstatus.labels.2[1]) next # only report for placebo baseline neg for VAT08
     if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2") && !(trt=="vaccine" && bsero==bstatus.labels.2[1])) next # only report for vaccine baseline neg for janssan_partA_VL
     
     for (country in c("Nvx_US_Mex", if(attr(config,"config")=="prevent19") "Nvx_US")){
@@ -206,7 +213,7 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
 }
 
   
-for (trt in c("trt_both", "trt_vaccine", if (study_name %in% c("VAT08", "NextGen_Mock")) "trt_placebo")){
+for (trt in c("trt_both", paste0("trt_", trt.labels.2[2]), if (study_name %in% c("VAT08", "NextGen_Mock")) paste0("trt_", trt.labels.2[1]))){
   
   if (attr(config,"config")=="prevent19_stage2") next # no these figures for prevent19_stage2
   
@@ -216,7 +223,7 @@ for (trt in c("trt_both", "trt_vaccine", if (study_name %in% c("VAT08", "NextGen
     if (bsero=="bstatus_Pos" && if.pos.exist==0) next
     if (bsero != "bstatus_both" & study_name == "NextGen_Mock") next # NextGen_Mock only have bstatus_both plot which only contains non-naive 
     if (trt=="trt_both" && bsero!="bstatus_both" && study_name!="VAT08") next # trt_both is only for bstatus both if the study is VAT08
-    if (attr(config,"config")=="janssen_partA_VL" && !(trt=="trt_vaccine" && bsero=="bstatus_Neg")) next # only report for vaccine baseline neg for janssan_partA_VL
+    if (attr(config,"config")=="janssen_partA_VL" && !(trt==paste0("trt_", trt.labels.2[2]) && bsero=="bstatus_Neg")) next # only report for vaccine baseline neg for janssan_partA_VL
     
     bseroLabel <- ifelse(bsero=="bstatus_both", "by serostatus", ifelse(bsero=="bstatus_Neg", bstatus.labels.3[1], bstatus.labels.3[2]))
     
@@ -493,7 +500,7 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
       for (bsero in c("Neg", "Pos")) {
         if (study_name == "NextGen_Mock" & bsero == "Neg") next # NextGen_Mock only has non-naive
         
-        for (trt in c("placebo", "vaccine")) {
+        for (trt in trt.labels.2) {
           
           for (reg in if(attr(config,"config")=="janssen_partA_VL") {c("LATAM_","ZA_")} else {""}){
             

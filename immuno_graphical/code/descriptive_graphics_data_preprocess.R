@@ -249,7 +249,7 @@ dat.long.twophase.sample$trt_bstatus_label <- # e.g. Placebo, Baseline Neg
     dat.long.twophase.sample,
     factor(paste0(as.numeric(Trt), as.numeric(Bserostatus)),
       levels = c("11", "12", "21", "22"),
-      labels = paste0(rep(c("Placebo","Vaccine"), each=2), ", ", rep(bstatus.labels))
+      labels = paste0(rep(trt.labels, each=2), ", ", rep(bstatus.labels))
     )
   )
 
@@ -476,11 +476,11 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
                                                           "response")]
   
   dat.longer.immuno.subset$nnaive <- with(dat.longer.immuno.subset, factor(Bserostatus, levels = c(0, 1), labels = bstatus.labels))
-  dat.longer.immuno.subset$Trt <- with(dat.longer.immuno.subset, factor(Trt, levels = c(0, 1), labels = c("Placebo", "Vaccine")))
+  dat.longer.immuno.subset$Trt <- with(dat.longer.immuno.subset, factor(Trt, levels = c(0, 1), labels = trt.labels))
   dat.longer.immuno.subset$Trt_nnaive = with(dat.longer.immuno.subset, 
                                                factor(paste(Trt, nnaive), 
-                      levels = paste(rep(c("Vaccine", "Placebo")), rep(bstatus.labels, each=2)),
-                      labels = paste0(rep(c("Vaccine", "Placebo")), "\n", rep(bstatus.labels, each=2))))
+                      levels = paste(rep(trt.labels[2:1]), rep(bstatus.labels, each=2)),
+                      labels = paste0(rep(trt.labels[2:1]), "\n", rep(bstatus.labels, each=2))))
   
   # subsets for violin/line plots
   #### figure specific data prep

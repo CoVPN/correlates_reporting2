@@ -308,8 +308,9 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                 plot_title = paste0(
                   labels.assays[aa], ": ",
                   bstatus.labels.3[bserostatus + 1], " ",
-                  c("placebo", "vaccine")[trt + 1], " arm"
+                  tolower(trt.labels)[trt + 1], " arm"
                 ), 
+                plot_title_size = ifelse(study_name == "NextGen_Mock", 7, 10), 
                 column_labels = paste(gsub("ay ","", labels.time[times_selected[[tm]]]),
                                       "\n", labels.axis[, aa][1]),
                 column_label_size = ifelse(study_name=="VAT08", 4.5, 
@@ -317,7 +318,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                 axis_label_size = ifelse(study_name=="VAT08", 7, 9),
                 filename = paste0(
                   save.results.to, "/pairs_", aa, "_by_times_", ifelse(tm!=1, paste0(tm, "_"), ""), 
-                  bstatus.labels.2[bserostatus + 1], "_", c("placebo_", "vaccine_")[trt + 1], country_lb,
+                  bstatus.labels.2[bserostatus + 1], "_", paste0(gsub(" ", "_", tolower(trt.labels)), "_")[trt + 1], country_lb,
                   study_name, ifelse(study_name == "NextGen_Mock", "_final", ""), ".pdf"
                 )
               )
@@ -409,10 +410,10 @@ for (tp in if(!study_name %in% c("VAT08")) {tps_no_B_and_delta_over_tinterm} els
     subdat_rcdf1$wt = subdat_rcdf1$wt.AB.immuno
   } else {subdat_rcdf1 = dat.long.twophase.sample}
   
-  categories = c(paste0("Placebo, ", bstatus.labels[1]), 
-                 paste0("Placebo, ", bstatus.labels[2]), 
-                 paste0("Vaccine, ", bstatus.labels[1]),
-                 paste0("Vaccine, ", bstatus.labels[2]))
+  categories = c(paste0(trt.labels[1], ", ", bstatus.labels[1]), 
+                 paste0(trt.labels[1], ", ", bstatus.labels[2]), 
+                 paste0(trt.labels[2], ", ", bstatus.labels[1]),
+                 paste0(trt.labels[2], ", ", bstatus.labels[2]))
   colors = c("#1749FF", "#D92321", "#0AB7C9", "#FF6F1B")
   
   covid_corr_rcdf_facets(
@@ -485,7 +486,7 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
       
     if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2")) next # janssen_partA_VL, prevent19_stage2 doesn't need these plots
     
-    for (trt in c("Vaccine", if(study_name %in% c("VAT08", "NextGen_Mock")) "Placebo")){
+    for (trt in c(trt.labels[2], if(study_name %in% c("VAT08", "NextGen_Mock")) trt.labels[1])){
       
       subdat_rcdf2_ = subset(dat.long.twophase.sample, Trt == trt & assay %in% rcdf_assays)
       
@@ -691,9 +692,9 @@ for (bstatus in 1:2) {
       POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
       LLOX = log10(lloxs[assay_immuno]),
       ULOQ = log10(uloqs[assay_immuno]),
-      arrange_ncol = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "NextGen_Mock", 6, 3)),
+      arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "NextGen_Mock", 6, 3)),
       arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
-      legend = c("Placebo"="Placebo", "Vaccine"="Vaccine"),
+      legend = setNames(trt.labels, trt.labels),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "NextGen_Mock", 6, 10)),
@@ -766,7 +767,7 @@ if (study_name %in% c("VAT08")) {# this is only reported for VAT08
     covid_corr_boxplot_facets(
       plot_dat = subdat_box3 %>% 
         mutate(BseroTrt = factor(paste0(Bserostatus,"\n",Trt),
-                                 levels = paste0(rep(bstatus.labels, 2), "\n", rep(c("Vaccine", "Placebo"), each=2))
+                                 levels = paste0(rep(bstatus.labels, 2), "\n", rep(trt.labels[2:1], each=2))
                                  )),
       x = "BseroTrt",
       y = tp,
@@ -779,7 +780,7 @@ if (study_name %in% c("VAT08")) {# this is only reported for VAT08
       ULOQ = log10(uloqs[assay_immuno]),
       arrange_ncol = 4,
       arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
-      legend = paste0(rep(stringr::str_to_title(bstatus.labels.3), 2), ", ", rep(c("Vaccine", "Placebo"), each=2)),
+      legend = paste0(rep(stringr::str_to_title(bstatus.labels.3), 2), ", ", rep(trt.labels[2:1], each=2)),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
@@ -806,7 +807,7 @@ if (study_name=="VAT08" & F) {# this is only reported for VAT08
     
     covid_corr_boxplot_facets(
       plot_dat = subdat_box4 %>% mutate(BseroTrtGender = factor(paste0(Bserostatus,"\n",Trt,"\n",sex_label),
-                                                                levels = paste0(rep(bstatus.labels, 2), "\n", rep(c("Vaccine", "Placebo"), each=2) , "\n", rep(c("Female", "Male"), each=4))
+                                                                levels = paste0(rep(bstatus.labels, 2), "\n", rep(trt.labels[2:1], each=2) , "\n", rep(c("Female", "Male"), each=4))
       )),
       x = "BseroTrtGender",
       y = tp,
@@ -819,7 +820,7 @@ if (study_name=="VAT08" & F) {# this is only reported for VAT08
       ULOQ = log10(uloqs[assay_immuno]),
       arrange_ncol = ifelse(study_name=="VAT08", 4, 3),
       arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
-      legend = paste0(rep(stringr::str_to_title(bstatus.labels.3), 2), ", ", rep(c("Vaccine", "Placebo"), each=2) , ", ", rep(c("Female", "Male"), each=4)),
+      legend = paste0(rep(stringr::str_to_title(bstatus.labels.3), 2), ", ", rep(trt.labels[2:1], each=2) , ", ", rep(c("Female", "Male"), each=4)),
       axis_titles_y = labels.axis[tp, ] %>% unlist(),
       panel_titles = labels.title2[tp, ] %>% unlist(),
       panel_title_size = ifelse(study_name=="VAT08", 8, 10),
@@ -1013,9 +1014,9 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                  #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
                  )) {
       
-      for (bsero in c(if(attr(config,"config") != "nextgen_mock") "Neg", "Pos")) {
+      for (bsero in c(if(attr(config,"config") != "nextgen_mock") 0, 1)) {
         
-        for (trt in c("placebo", "vaccine")) {
+        for (trt in c(0, 1)) {
           
           for (reg in if (attr(config,"config")=="janssen_partA_VL") {c(1,2)} else {"all"}) {
             
@@ -1029,7 +1030,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                                     reg==2 ~ "Southern Africa",
                                     TRUE ~ "")
             
-            if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
+            if (attr(config,"config")=="janssen_partA_VL" & (trt==trt.labels[1] | bsero=="Pos")) next
             if (attr(config,"config") == "nextgen_mock" & tm == "Day whole" & ab == "ics") next # include negative values
             
             # calculate geometric mean of IPS weighted readouts
@@ -1075,8 +1076,6 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                      time = gsub(paste0(assays_, collapse="|"), "", time_assay),
                      time_assay = NULL) %>%
               pivot_wider(names_from = assay, values_from = value) %>%
-              mutate(Bserostatus = ifelse(Bserostatus == 1, "Pos", "Neg"),
-                     Trt = ifelse(Trt == 1, "vaccine", "placebo")) %>%
               group_by(time, Bserostatus, Region, Trt) %>%
               summarise(across(all_of(assays_), ~ exp(sum(log(.x * wt), na.rm=T) / sum(wt, na.rm=T)))) %>%
               unique() %>%
@@ -1113,7 +1112,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             if (nrow(dat.plot)==2) next
             
             ############# figure start here
-            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(tm), "_", ifelse(reg!="all", reg_lb, ""), ab, "_", tolower(bsero), "_", trt, 
+            filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tm)), "_", ifelse(reg!="all", reg_lb, ""), ab, "_", tolower(bstatus.labels[bsero + 1]), "_", trt.labels.2[trt + 1], 
                               ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
                                      ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
             pdf(filename, width = ifelse(study_name == "NextGen_Mock", 8, 5.5), height = 6.5)
@@ -1130,8 +1129,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             
             color = c(if(study_name=="VAT08")"#0AB7C9","#FF6F1B","#FF5EBF","dodgerblue","chartreuse3")[1:length(times_spider)]
             legend_lb = times_spider
-          
-            spider_range = if(attr(config,"config")=="janssen_partA_VL") {seq(1, 1.2, (1.2-1)/4)} else {seq(0.1, find_max, (find_max-0.1)/4)}
+
+            spider_range = if(attr(config,"config")=="janssen_partA_VL") {seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
             radarchart(dat.plot, 
                        axistype=1 , 
                        # Customize the polygon
@@ -1140,11 +1139,11 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                        #custom the grid
                        cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^", spider_range), 
                        #label size
-                       vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12, 0.7, 1)),
+                       vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12 | max(nchar(assays_)) > 25, 0.7, 1)),
                        #title
                        title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", ifelse(ab=="nAb", "of nAb Markers, ", "of ICS Markers, ")), 
-                                    ifelse(bsero=="Neg", "naive ", "non-naive "),
-                                    trt, ifelse(reg!="all", paste0(", ", reg_lb_long), "")),
+                                    bstatus.labels.2[bsero + 1], " ", trt.labels[trt + 1],
+                                    ifelse(reg!="all", paste0(", ", reg_lb_long), "")),
                        #title size
                        cex.main=0.7)
             

@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0(assay_grp, "_longitudinal", details, if (study_name == "NextGen_Mock") "_final", ".pdf"))`}
 
-\caption{`r paste0("Longitudinal plots for ", gsub("_", " ", assay_grp), " markers at D1, D22, D43", details_lb, immuno_postfix_label)`}
+\caption{`r paste0("Longitudinal plots for ", gsub("_", " ", assay_grp),  if (study_name == "VAT08") " markers at D1, D22, D43", details_lb, immuno_postfix_label)`}
 
 \end{figure}
 

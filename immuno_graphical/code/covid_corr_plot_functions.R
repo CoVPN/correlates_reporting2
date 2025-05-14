@@ -887,7 +887,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
         alpha = "none", fill = "none",
         color = guide_legend(nrow = legend_nrow, byrow = TRUE)
       ) +
-      scale_x_discrete(labels = xlabels) +
+      scale_x_discrete(labels = gsub(" ", "\n", xlabels)) +
       scale_y_continuous(
         limits = ylim[aa, ], labels = label_math(10^.x),
         breaks = seq(ylim[aa, 1], ylim[aa, 2], by = ybreaks)
