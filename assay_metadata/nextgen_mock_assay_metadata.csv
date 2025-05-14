@@ -77,7 +77,7 @@ pseudoneutid50_saliva,9,pseudoneutid50_saliva,10,5598,NA,10,Saliva neutralizatio
 pseudoneutid50_saliva,10,pseudoneutid50_saliva_XBB.1.5,10,1302,NA,10,Saliva neutralization to XBB.1.5,Saliva nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_saliva,11,pseudoneutid50_saliva_KP.2,10,1302,NA,10,Saliva neutralization to KP.2,Saliva nAb ID50 KP.2 (AU/ml),lloq,1,NA
 pseudoneutid50_saliva,12,pseudoneutid50_saliva_mdw,0,Inf,NA,0,Saliva neutralization breadth score,Saliva nAb ID50 ID50 breadth score,lloq,1,NA
-CD4,1,T4_IFNg_OR_IL2_N_BA.4.5,NA,Inf,NA,NA,CD4+ T cells expressing IFN or IL2 to N BA.4.5,CD4+ T cells IFN/IL2 to N BA.4.5,lloq,1,0.001
-CD4,2,T4_IFNg_OR_IL2_Spike_BA.4.5,NA,Inf,NA,NA,CD4+ T cells expressing IFN or IL2 to Spike BA.4.5,CD4+ T cells IFN/IL2 to Spike BA.4.5,lloq,1,0.001
-CD8,3,T8_IFNg_OR_IL2_N_BA.4.5,NA,Inf,NA,NA,CD8+ T cells expressing IFN or IL2 to N BA.4.5,CD8+ T cells IFN/IL2 to N BA.4.5,lloq,1,0.001
-CD8,4,T8_IFNg_OR_IL2_Spike_BA.4.5,NA,Inf,NA,NA,CD8+ T cells expressing IFN or IL2 to Spike BA.4.5,CD8+ T cells IFN/IL2 to Spike BA.4.5,lloq,1,0.001
+tcell,1,T4_IFNg_OR_IL2_N_BA.4.5,NA,Inf,NA,NA,CD4+ T cells expressing IFN or IL2 to N BA.4.5,CD4+ T cells IFN/IL2 to N BA.4.5,lloq,1,0.001
+tcell,2,T4_IFNg_OR_IL2_Spike_BA.4.5,NA,Inf,NA,NA,CD4+ T cells expressing IFN or IL2 to Spike BA.4.5,CD4+ T cells IFN/IL2 to Spike BA.4.5,lloq,1,0.001
+tcell,3,T8_IFNg_OR_IL2_N_BA.4.5,NA,Inf,NA,NA,CD8+ T cells expressing IFN or IL2 to N BA.4.5,CD8+ T cells IFN/IL2 to N BA.4.5,lloq,1,0.001
+tcell,4,T8_IFNg_OR_IL2_Spike_BA.4.5,NA,Inf,NA,NA,CD8+ T cells expressing IFN or IL2 to Spike BA.4.5,CD8+ T cells IFN/IL2 to Spike BA.4.5,lloq,1,0.001
