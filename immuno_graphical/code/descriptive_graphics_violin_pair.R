@@ -228,109 +228,111 @@ if (attr(config,"config") == "vat08_combined"){
 }
 
 # print this adhoc figures only in sanofi stage 1 report, which includes both stage 1 and stage 2 data
-if (attr(config,"config")=="vat08_combined" & dat.longer.immuno.subset.plot1_$Trialstage[1]==1) {
-    # longitudinal plots for stage 1 and stage 2, non-naive ppt
-    
-    for (asy in set2_assays){
+if (attr(config,"config")=="vat08_combined") {
+    if (dat.longer.immuno.subset.plot1_$Trialstage[1]==1) {
+        # longitudinal plots for stage 1 and stage 2, non-naive ppt
         
-        if (attr(config,"config")=="vat08_combined" & grepl("bind", asy)) {
-            subdat_adhoc = dat.longer.immuno.subset.plot1_stage1_stage2 %>% filter(ph2.immuno.bAb==1)
-        } else if (attr(config,"config")=="vat08_combined" & grepl("pseudo", asy)){
-            subdat_adhoc = dat.longer.immuno.subset.plot1_stage1_stage2 %>% filter(ph2.immuno.nAb==1)
+        for (asy in set2_assays){
+            
+            if (attr(config,"config")=="vat08_combined" & grepl("bind", asy)) {
+                subdat_adhoc = dat.longer.immuno.subset.plot1_stage1_stage2 %>% filter(ph2.immuno.bAb==1)
+            } else if (attr(config,"config")=="vat08_combined" & grepl("pseudo", asy)){
+                subdat_adhoc = dat.longer.immuno.subset.plot1_stage1_stage2 %>% filter(ph2.immuno.nAb==1)
+            }
+            
+            f_2 <- f_longitude_by_assay(
+                dat = subdat_adhoc %>% 
+                    filter(Bserostatus == 1) %>%
+                    mutate(Trt_nnaive = factor(paste(Trt, nnaive),
+                                               levels = c("Vaccine Non-naive", "Placebo Non-naive"),
+                                               labels = c("Vaccine\nNon-naive", "Placebo\nNon-naive")),
+                           Trialstage = ifelse(Trialstage == 1, "Stage 1", "Stage 2"),
+                           time = factor(time, levels = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"))
+                    ),
+                x.var = "time",
+                x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
+                assays = asy,
+                ylim = if (grepl("bindSpike", asy)) {c(2, 7)} else if (grepl("pseudoneutid50", asy)) {c(1, 6.5)},
+                times = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"),
+                strip.text.x.size = 14,
+                panel.text.size = 6,
+                axis.text.x.size = 14,
+                facet.y.var = vars(Trt_nnaive), 
+                facet.x.var = vars(Trialstage),
+                y.axis.lb = gsub(" \\(AU/ml\\)", "", labels.assays.short[asy])
+            )
+            
+            file_name <- paste0("/", asy, "_longitudinal_nonnaive_stage1stage2.pdf")
+            ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
         }
         
-        f_2 <- f_longitude_by_assay(
-            dat = subdat_adhoc %>% 
-                filter(Bserostatus == 1) %>%
-                mutate(Trt_nnaive = factor(paste(Trt, nnaive),
-                                           levels = c("Vaccine Non-naive", "Placebo Non-naive"),
-                                           labels = c("Vaccine\nNon-naive", "Placebo\nNon-naive")),
-                       Trialstage = ifelse(Trialstage == 1, "Stage 1", "Stage 2"),
-                       time = factor(time, levels = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"))
-                ),
-            x.var = "time",
-            x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
-            assays = asy,
-            ylim = if (grepl("bindSpike", asy)) {c(2, 7)} else if (grepl("pseudoneutid50", asy)) {c(1, 6.5)},
-            times = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"),
-            strip.text.x.size = 14,
-            panel.text.size = 6,
-            axis.text.x.size = 14,
-            facet.y.var = vars(Trt_nnaive), 
-            facet.x.var = vars(Trialstage),
-            y.axis.lb = gsub(" \\(AU/ml\\)", "", labels.assays.short[asy])
-        )
         
-        file_name <- paste0("/", asy, "_longitudinal_nonnaive_stage1stage2.pdf")
-        ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
-    }
-    
-    
-    # Generate a full table with all the estimates: GMTR
-    # non-naive ppts only
-    # Vaccine vs. Placebo, by Stage 1 and 2
-    
-    sub.by <- c("all")
-    ds.i.bAb <- filter(dat_proc %>%
-                       mutate(all = 1) %>% # fake column to satisfy sub.by
-                       filter(Bserostatus == 1) %>% # only do this for non-naive ppts
-                       mutate(Trt=ifelse(Trt==1, "Vaccine", "Placebo")), ph1.immuno.bAb==1)
-    ds.i.nAb <- filter(dat_proc %>%
+        # Generate a full table with all the estimates: GMTR
+        # non-naive ppts only
+        # Vaccine vs. Placebo, by Stage 1 and 2
+        
+        sub.by <- c("all")
+        ds.i.bAb <- filter(dat_proc %>%
                            mutate(all = 1) %>% # fake column to satisfy sub.by
                            filter(Bserostatus == 1) %>% # only do this for non-naive ppts
-                           mutate(Trt=ifelse(Trt==1, "Vaccine", "Placebo")), ph1.immuno.nAb==1)
-    gm.v <- apply(expand.grid(times_[!grepl("Delta",times_)], assays), 1, paste0, collapse="")
-    
-    subs <- "Trt"
-    comp.i <- c("Vaccine", "Placebo")
-    
-    rgmt_stage1_bAb_vac <- get_rgmt(ds.i.bAb %>% filter(Trialstage == 1), 
-                                    gm.v[grepl("bindSpike", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
-                                    weights="wt.immuno.bAb", subset="ph2.immuno.bAb") %>% mutate(Trialstage = "Stage 1")
-    rgmt_stage1_nAb_vac <- get_rgmt(ds.i.nAb %>% filter(Trialstage == 1), 
-                                    gm.v[grepl("pseudoneutid50", gm.v)][c(1:5,9:11,17:19,25:27,33:35,41:43)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
-                                    weights="wt.immuno.nAb", subset="ph2.immuno.nAb") %>% mutate(Trialstage = "Stage 1") 
-    rgmt_stage2_bAb_vac <- get_rgmt(ds.i.bAb %>% filter(Trialstage == 2), 
-                                    gm.v[grepl("bindSpike", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
-                                    weights="wt.immuno.bAb", subset="ph2.immuno.bAb") %>% mutate(Trialstage = "Stage 2") 
-    rgmt_stage2_nAb_vac <- get_rgmt(ds.i.nAb %>% filter(Trialstage == 2), 
-                                    gm.v[grepl("pseudoneutid50", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
-                                    weights="wt.immuno.nAb", subset="ph2.immuno.nAb") %>% mutate(Trialstage = "Stage 2")
-    for (asy in set2_assays){
-        f_2 <- f_longitude_by_assay(
-            dat = rgmt_stage1_bAb_vac %>% 
-                bind_rows(rgmt_stage1_nAb_vac) %>%
-                bind_rows(rgmt_stage2_bAb_vac) %>%
-                bind_rows(rgmt_stage2_nAb_vac) %>%
-                filter(!grepl("Delta", mag_cat)) %>%
-                mutate(value = geomean, 
-                       Ptid = Trialstage,
-                       RespRate = "",
-                       time = gsub(paste0(assays, collapse="|"), "", mag_cat),
-                       time = factor(time, levels = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387")),
-                       assay = gsub(paste0("^", times_, collapse="|"), "", mag_cat),
-                       nnaive = "Non-naive",
-                       lb = "",
-                       lbval = -99,
-                       lb2 = "",
-                       lbval2 = -99),
-            x.var = "time",
-            x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
-            assays = asy,
-            ylim = if (grepl("bindSpike", asy)) {c(0, 60)} else if (grepl("pseudoneutid50", asy)) {c(0, 155)},
-            ybreaks = if (grepl("bindSpike", asy)) {seq(0, 60, 10)} else if (grepl("pseudoneutid50", asy)) {seq(0, 150, 20)},
-            times = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"),
-            strip.text.x.size = 14,
-            panel.text.size = 6,
-            axis.text.x.size = 14,
-            facet.y.var = vars(nnaive), 
-            facet.x.var = vars(Trialstage),
-            y.axis.lb = paste0("Geometric Mean Ratio (Vaccine/Placebo) of\n", gsub(" \\(AU/ml\\)", "", labels.assays.short[asy])),
-            y.lb.scale = "original"
-        )
+                           mutate(Trt=ifelse(Trt==1, "Vaccine", "Placebo")), ph1.immuno.bAb==1)
+        ds.i.nAb <- filter(dat_proc %>%
+                               mutate(all = 1) %>% # fake column to satisfy sub.by
+                               filter(Bserostatus == 1) %>% # only do this for non-naive ppts
+                               mutate(Trt=ifelse(Trt==1, "Vaccine", "Placebo")), ph1.immuno.nAb==1)
+        gm.v <- apply(expand.grid(times_[!grepl("Delta",times_)], assays), 1, paste0, collapse="")
         
-        file_name <- paste0("/", asy, "_longitudinal_gmr_nonnaive_stage1stage2.pdf")
-        ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
+        subs <- "Trt"
+        comp.i <- c("Vaccine", "Placebo")
+        
+        rgmt_stage1_bAb_vac <- get_rgmt(ds.i.bAb %>% filter(Trialstage == 1), 
+                                        gm.v[grepl("bindSpike", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
+                                        weights="wt.immuno.bAb", subset="ph2.immuno.bAb") %>% mutate(Trialstage = "Stage 1")
+        rgmt_stage1_nAb_vac <- get_rgmt(ds.i.nAb %>% filter(Trialstage == 1), 
+                                        gm.v[grepl("pseudoneutid50", gm.v)][c(1:5,9:11,17:19,25:27,33:35,41:43)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
+                                        weights="wt.immuno.nAb", subset="ph2.immuno.nAb") %>% mutate(Trialstage = "Stage 1") 
+        rgmt_stage2_bAb_vac <- get_rgmt(ds.i.bAb %>% filter(Trialstage == 2), 
+                                        gm.v[grepl("bindSpike", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
+                                        weights="wt.immuno.bAb", subset="ph2.immuno.bAb") %>% mutate(Trialstage = "Stage 2") 
+        rgmt_stage2_nAb_vac <- get_rgmt(ds.i.nAb %>% filter(Trialstage == 2), 
+                                        gm.v[grepl("pseudoneutid50", gm.v)], subs, comp_lev=comp.i, sub.by, strata="Wstratum", 
+                                        weights="wt.immuno.nAb", subset="ph2.immuno.nAb") %>% mutate(Trialstage = "Stage 2")
+        for (asy in set2_assays){
+            f_2 <- f_longitude_by_assay(
+                dat = rgmt_stage1_bAb_vac %>% 
+                    bind_rows(rgmt_stage1_nAb_vac) %>%
+                    bind_rows(rgmt_stage2_bAb_vac) %>%
+                    bind_rows(rgmt_stage2_nAb_vac) %>%
+                    filter(!grepl("Delta", mag_cat)) %>%
+                    mutate(value = geomean, 
+                           Ptid = Trialstage,
+                           RespRate = "",
+                           time = gsub(paste0(assays, collapse="|"), "", mag_cat),
+                           time = factor(time, levels = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387")),
+                           assay = gsub(paste0("^", times_, collapse="|"), "", mag_cat),
+                           nnaive = "Non-naive",
+                           lb = "",
+                           lbval = -99,
+                           lb2 = "",
+                           lbval2 = -99),
+                x.var = "time",
+                x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
+                assays = asy,
+                ylim = if (grepl("bindSpike", asy)) {c(0, 60)} else if (grepl("pseudoneutid50", asy)) {c(0, 155)},
+                ybreaks = if (grepl("bindSpike", asy)) {seq(0, 60, 10)} else if (grepl("pseudoneutid50", asy)) {seq(0, 150, 20)},
+                times = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"),
+                strip.text.x.size = 14,
+                panel.text.size = 6,
+                axis.text.x.size = 14,
+                facet.y.var = vars(nnaive), 
+                facet.x.var = vars(Trialstage),
+                y.axis.lb = paste0("Geometric Mean Ratio (Vaccine/Placebo) of\n", gsub(" \\(AU/ml\\)", "", labels.assays.short[asy])),
+                y.lb.scale = "original"
+            )
+            
+            file_name <- paste0("/", asy, "_longitudinal_gmr_nonnaive_stage1stage2.pdf")
+            ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
+        }
     }
 }
 

@@ -56,6 +56,11 @@ if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("
 } else {
   assay_immuno <- assays
 }
+
+if (study_name == "NextGen_Mock") {
+  assays = assays[!grepl("nasal|saliva", assays)]
+  assay_immuno = assay_immuno[!grepl("nasal|saliva", assay_immuno)]
+}
 ```
 
 ```{r immuno-graphical-caption-setup, echo = FALSE, message = FALSE, include=FALSE}
@@ -153,7 +158,9 @@ for (bsero in bstatus.labels.2) {
           
       for (asy in assay_immuno){
         
-        for (times_index in c("", if (study_name == "NextGen_Mock") "2")){
+        for (times_index in c("", if (study_name == "NextGen_Mock") "_2")){
+          
+          if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # no naive for NextGen_Mock
         
           if (study_name=="VAT08" && trt=="pooled") next # do not report "pooled" for across timepoint plots
           #if (study_name=="VAT08" && asy=="pseudoneutid50_mdw" && bsero=="naive") next # psv_mdw doesn't have any value for naive at baseline
@@ -161,8 +168,8 @@ for (bsero in bstatus.labels.2) {
           
           asyLabel <- gsub("%","\\\\%", labels.assays[asy])
           
-          immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & times_index == "", "(Whole RIS/RIS-PBMC)",
-                                         ifelse(study_name == "NextGen_Mock" & times_index == "2", "(Track A RIS/RIS-PBMC)",
+          immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & times_index == "", " (Whole RIS/RIS-PBMC)",
+                                         ifelse(study_name == "NextGen_Mock" & times_index == "_2", " (Track A RIS/RIS-PBMC)",
                                                 immuno_postfix_label))
           res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
@@ -193,7 +200,7 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
 }
 
   
-for (trt in c("trt_both", "trt_vaccine", if (study_name %in% c("VAT08")) "trt_placebo")){
+for (trt in c("trt_both", "trt_vaccine", if (study_name %in% c("VAT08", "NextGen_Mock")) "trt_placebo")){
   
   if (attr(config,"config")=="prevent19_stage2") next # no these figures for prevent19_stage2
   
@@ -207,7 +214,7 @@ for (trt in c("trt_both", "trt_vaccine", if (study_name %in% c("VAT08")) "trt_pl
     
     bseroLabel <- ifelse(bsero=="bstatus_both", "by serostatus", ifelse(bsero=="bstatus_Neg", bstatus.labels.3[1], bstatus.labels.3[2]))
     
-    for(tp in times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
+    for(tp in times_[!times_ %in% c(if (study_name != "NextGen_Mock") "B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
             
       if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
       if (attr(config,"config")=="janssen_partA_VL" && !grepl("Day", tp)) next # only report peak timepoint for janssen_partA_VL
@@ -229,8 +236,8 @@ for (trt in c("trt_both", "trt_vaccine", if (study_name %in% c("VAT08")) "trt_pl
                                 reg=="ZA_" ~ "Southern Africa",
                                 TRUE ~ "")
           
-          immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "(Whole RIS/RIS-PBMC)",
-                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "(Track A RIS/RIS-PBMC)",
+          immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), " (Whole RIS/RIS-PBMC)",
+                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), " (Track A RIS/RIS-PBMC)",
                                                 immuno_postfix_label))      
           res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
@@ -316,11 +323,12 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
   for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
     
     if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
+    if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # NextGen_Mock doesn't have naive ppts
     
     tpLabel <- gsub("ay ", "", labels.time[tp])
     
-    immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "(Whole RIS/RIS-PBMC)",
-                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "(Track A RIS/RIS-PBMC)",
+    immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), " (Whole RIS/RIS-PBMC)",
+                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), " (Track A RIS/RIS-PBMC)",
                                                 immuno_postfix_label)) 
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
@@ -496,8 +504,8 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
                                    bsero=="Pos" ~ bstatus.labels.3[2],
                                    TRUE ~ "")
       
-            immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("day whole"), "(Whole RIS/RIS-PBMC)",
-                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("day initial"), "(Track A RIS/RIS-PBMC)",
+            immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("day whole"), " (Whole RIS/RIS-PBMC)",
+                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("day initial"), " (Track A RIS/RIS-PBMC)",
                                                 immuno_postfix_label)) 
             res = knitr::knit_child(c(here::here('immuno_graphical', 'report_spider.Rmd')), quiet = TRUE)
             cat(res, sep = '\n')
@@ -513,7 +521,7 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
 
 \clearpage
 ## Set 1 plots: D01, D31, D91, D181, D366 Ab distributions
-```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock)}
+```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock")}
 
 for (a in if (study_name == "NextGen_Mock") {c("bindN", "bindSpike_IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", "T4", "T8")
   } else {c("bindSpike","pseudoneutid50")}){
@@ -522,8 +530,8 @@ for (a in if (study_name == "NextGen_Mock") {c("bindN", "bindSpike_IgG_sera", "b
     
     tpLabel = ifelse(tp=="B", "Day1", tp)
     
-    immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "(Whole RIS/RIS-PBMC)",
-                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "(Track A RIS/RIS-PBMC)",
+    immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), " (Whole RIS/RIS-PBMC)",
+                                         ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), " (Track A RIS/RIS-PBMC)",
                                                 immuno_postfix_label)) 
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set1.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
@@ -535,15 +543,15 @@ for (a in if (study_name == "NextGen_Mock") {c("bindN", "bindSpike_IgG_sera", "b
 
 \clearpage
 ## Set 2 plots: Longitudinal plots D01, D31, D91, D181, D366
-```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock)}
+```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock")}
 
 for (assay_grp in if (study_name == "NextGen_Mock") {
-  c(paste(set2_assays[!grepl("mdw", set2_assays)][c(TRUE, FALSE)], 
-          set2_assays[!grepl("mdw", set2_assays)][c(FALSE, TRUE)], sep = "_"))
+  c(paste(assays[!grepl("mdw", assays)][c(TRUE, FALSE)], 
+          assays[!grepl("mdw", assays)][c(FALSE, TRUE)], sep = "_"))
   } else {c("bAb","bAb_mdw","nAb","nAb_mdw")}){
     details = ""
     details_lb = ""
-    immuno_postfix_label <- ifelse(study_name == "NextGen_Mock", "(Whole RIS/RIS-PBMC at B, Day31, Day181, Track A RIS/RIS-PBMC at Day91, Day366)",
+    immuno_postfix_label <- ifelse(study_name == "NextGen_Mock", " (Whole RIS/RIS-PBMC at B, Day31, Day181, Track A RIS/RIS-PBMC at Day91, Day366)",
                                                 immuno_postfix_label)
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set2.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
@@ -569,8 +577,8 @@ for (bsero in c("non_naive")){
       tpLabel = ifelse(tp=="B", "Day1", tp)
       assay_n = length(assays)
       
-      immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "(Whole RIS/RIS-PBMC)",
-                                           ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "(Track A RIS/RIS-PBMC)",
+      immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), " (Whole RIS/RIS-PBMC)",
+                                           ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), " (Track A RIS/RIS-PBMC)",
                                                   immuno_postfix_label))
       res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set3.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
@@ -580,7 +588,7 @@ for (bsero in c("non_naive")){
 }
 
 for (bsero in c("naive")){
-  if (study_name == "NextGen_Mock") # NextGen_Mock doesn't have naive ppts
+  if (study_name == "NextGen_Mock") next # NextGen_Mock doesn't have naive ppts
   
   for (trt in c("vac")){
   
@@ -602,7 +610,7 @@ for (bsero in c("naive")){
 
 for (a in assays){
     
-  immuno_postfix_label <- ifelse(study_name == "NextGen_Mock", "(Whole RIS/RIS-PBMC)", immuno_postfix_label)
+  immuno_postfix_label <- ifelse(study_name == "NextGen_Mock", " (Whole RIS/RIS-PBMC)", immuno_postfix_label)
   res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set4.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
   cat("\\clearpage", sep = '\n')
@@ -612,9 +620,10 @@ for (a in assays){
 ```
 
 \clearpage
+
+```{r, echo=FALSE, results='asis', eval=study_name=="VAT08" & grepl("Stage1", immuno_postfix_label)}
 ## Set 5 plots: Longitudinal plots D01, D22, D43, D78, D134, D202, D292, D387, 
 ## Non-naive Stage 1 and Stage 2 Participants
-```{r, echo=FALSE, results='asis', eval=study_name=="VAT08" & grepl("Stage1", immuno_postfix_label)}
 
 for (assay_grp in assays){
   

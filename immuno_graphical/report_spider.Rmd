@@ -1,7 +1,7 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("radar_plot_weighted_geomean_", tp, "_", reg, asy, "_", tolower(bsero), "_", trt, if (study_name == "NextGen_Mock" & tp == "day final") "_final", if (study_name == "NextGen_Mock" & tp == "day initial") "_initial", ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("radar_plot_weighted_geomean_", tp, "_", reg, asy, "_", tolower(bsero), "_", trt, if (study_name == "NextGen_Mock" & tp == "day whole") "_final", if (study_name == "NextGen_Mock" & tp == "day initial") "_initial", ".pdf"))`}
 
 \caption{`r paste0("Spider plots for ", tpLabel, " ", asy, " markers, ", baseLabel, " ", trt, " arm", ifelse(regLabel!="", paste0(", ", regLabel), ""), immuno_postfix_label)`}
 

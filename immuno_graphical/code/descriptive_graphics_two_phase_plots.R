@@ -274,8 +274,8 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
         times_selected <- if(study_name=="VAT08") {list(tps_no_delta_over_tinterm[c(1,4,5)])
           # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
           } else if (study_name == "NextGen_Mock") {list(
-              tps_no_delta_over_tinterm[c(1,2,4)], # "B", "Day31", "Day91"
-              tps_no_delta_over_tinterm[c(3,5)] # "Delta31overB", "Delta91overB"
+              tps_no_delta_over_tinterm[c(1,2,6)], # "B", "Day31", "Day181"
+              tps_no_delta_over_tinterm[c(3,7)] # "Delta31overB", "Delta181overB"
               ) 
           } else {list(tps_no_fold_change)} # "B", "Day29", "Day57"
         
@@ -392,11 +392,11 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
 # - We made multiple ggplot objects, each for one assay, and combine them with ggarrange()
 #-----------------------------------------------
 print("RCDF 1:")
-for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm} else if (study_name == "NextGen_Mock") {
+for (tp in if(!study_name %in% c("VAT08")) {tps_no_B_and_delta_over_tinterm} else if (study_name == "NextGen_Mock") {
   tps_no_fold_change # "B", "Day31", "Day91", "Day181", "Day366"
 } else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
   
-  if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL doesn't need these plots
+  if (attr(config,"config") %in% c("janssen_partA_VL", "NextGen_Mock")) next # NextGen_Mock and janssen_partA_VL don't need these plots
   
   # subset for prevent19_stage2
   if(attr(config,"config")=="prevent19_stage2") {
@@ -1101,7 +1101,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                   filter(grepl(gsub("Day whole", "B|Day31|Day181", gsub("Day initial", "Day91|Day366", tm)), time) & Bserostatus %in% bsero & Trt %in% trt & Region %in% reg)
                 ) %>%
               mutate(time = NULL, Bserostatus=NULL, Trt=NULL) %>%
-              select(if (ab=="bAb") {starts_with("bindSpike")
+              select(if (ab=="bAb") {starts_with("bind")
               } else if (ab=="ics") {matches("T4|T8")
               } else if (ab=="nAb" && reg==1) {matches("pseudoneutid50$|pseudoneutid50_Zeta|pseudoneutid50_Mu|pseudoneutid50_Gamma|pseudoneutid50_Lambda")
               } else if (ab=="nAb" && reg==2) {matches("pseudoneutid50$|pseudoneutid50_Delta|pseudoneutid50_Beta")
@@ -1123,7 +1123,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             
             colnames(dat.plot) <- assay_metadata$assay_label[match( colnames(dat.plot) , assay_metadata$assay)]
             
-            colnames(dat.plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike |Binding Antibody to | Spike|Binding Antibody |T cells expressing", "", 
+            colnames(dat.plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike |Binding Antibody to |Binding Antibody |T cells expressing", "", 
                                        gsub("Binding IgG Antibody", "bAb IgG", 
                                             gsub("Binding IgA Antibody", "bAb IgA", 
                                                gsub("neutralization to", "bAb", colnames(dat.plot)))))
@@ -1140,7 +1140,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                        #custom the grid
                        cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^", spider_range), 
                        #label size
-                       vlcex=ifelse(study_name=="VAT08", 0.4, 1),
+                       vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12, 0.7, 1)),
                        #title
                        title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", ifelse(ab=="nAb", "of nAb Markers, ", "of ICS Markers, ")), 
                                     ifelse(bsero=="Neg", "naive ", "non-naive "),
