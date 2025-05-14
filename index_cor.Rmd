@@ -20,10 +20,13 @@ header-includes:
    - \usepackage[margin=.5in]{geometry}
    - \usepackage{float}
    - \usepackage{subfig}
+   - \renewcommand{\thesubfigure}{\Alph{subfigure}}
    - \usepackage{chngpage}
 ---
 
-
+```{r}
+library(glue)
+```
 
 
 ```{r, include = knitr::is_latex_output() & (startsWith(study_name, "Mock") | contain(tolower(data_cleaned), "mock"))}

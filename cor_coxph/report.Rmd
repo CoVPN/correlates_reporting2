@@ -6,6 +6,21 @@
 
 ```{r, echo=FALSE, message=FALSE}
 message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_coxph report ~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+# a more comprehensive, slower version of copcor::escape
+escape_latex <- function(text) {
+  # Define the special characters and their LaTeX escaped equivalents
+  special_chars <- c("\\", "%", "$", "#", "_", "{", "}", "&", "^", "~", "<", ">", "|", "\"")
+  latex_escapes <- c("\\textbackslash{}", "\\%", "\\$", "\\#", "\\_", "\\{", "\\}", "\\&", "\\textasciicircum{}", "\\textasciitilde{}", "\\textless{}", "\\textgreater{}", "\\textbar{}", "\\textquotedbl{}")
+  
+  # Replace each special character in the text with its escaped version
+  for (i in seq_along(special_chars)) {
+    text <- gsub(special_chars[i], latex_escapes[i], text, fixed = TRUE)
+  }
+  
+  return(text)
+}
+
 ```
 
 

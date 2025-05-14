@@ -2,66 +2,113 @@
 
 tfinal.tpeak is given by the default rule - the last case in ph2 in vaccine arm - applied to D31_7. 
 
+# TLF
 
+```{r params}
+t0=151
+t1=339
+date="2027/10/01"
+labels <- c(
+  "M6, Investigational vaccine.", 
+  "M6, Comparator vaccine.", 
+  "M12, Investigational vaccine.", 
+  "M12, Comparator vaccine.")
+fig_parts <- c("\\begin{figure}[htbp]\n\\centering\n")
 
-```{r, echo=FALSE, results='asis'}
-
-trts=c(1,0) # 1,0
-marker_sets = 1:3 # 1:3
-
-show.q=F
-
-for (trt in trts) {
-  if (trt==1) {
-    cat("# Univariate, investigational vaccine \n\n")
-    fname.suffix.0="ExpVacc"
-  } else if (trt==0) {
-    cat("# Univariate, control vaccine \n\n")
-    fname.suffix.0="CtlVacc"
+get.short.name=function(assays){
+  all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+  all.markers.names.short = sub(" \\(AU/ml\\)", "", sub("Anti Spike ", "", all.markers.names.short))
+  all.markers.names.short
 }
 
-  for (COR in c("D31toM6_nextgen_mock", "D31toM6_nextgen_mock_tcell")) {
-      
-    if (COR=="D31toM6_nextgen_mock") {
-      cat("## Antibody markers \n\n")
+panels=unique(assay_metadata$panel)
+# marker_sets = panels
+marker_sets='pseudoneutid50_sera'
+message(panels)
+```
+
+```{r forestplot, echo=FALSE, results='asis'}
+for (marker_set in marker_sets) {
+  for (i in seq_along(labels)) {
+    label <- labels[i]
+    pathCoRoutput <- c(
+      "cor_coxph/output/nextgen_mock/D31toM6_nextgen_mock",
+      "cor_coxph/output/nextgen_mock/D31toM6_nextgen_mock",
+      "cor_coxph/output/nextgen_mock/D31toM12_nextgen_mock",
+      "cor_coxph/output/nextgen_mock/D31toM12_nextgen_mock"
+    )[i]
+    fname.suffix <- c(
+      "InvVacc_",
+      "CtlVacc_",
+      "InvVacc_",
+      "CtlVacc_"
+    )[i] %.% marker_set
+    
+    file <- paste0(pathCoRoutput, "/hr_forest_", fname.suffix, ".pdf")
+    entry <- paste0("\\subfloat[\\textbf{", label, "}]{\n\\includegraphics[width=0.45\\textwidth]{", file, "}}")
+    fig_parts <- c(fig_parts, entry)
+    
+    if (i %% 2 == 1) {
+      fig_parts <- c(fig_parts, "\\hfill")
     } else {
-      cat("## T cell markers \n\n")
-  }
-    pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
-    
-    config.cor <- config::get(config = COR)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-    if (COR == "D31toM6_nextgen_mock") {
-      assays1 = assays[startsWith(assays,"bind") | startsWith(assays,"pseud")]
-    } else if (COR == "D31toM6_nextgen_mock_tcell") {
-      assays1 = assays[startsWith(assays,"T")]
+      fig_parts <- c(fig_parts, "\\\\")
     }
-  
-    for (marker_set in marker_sets) {
-      
-      if (marker_set==1) {
-        fname.suffix = fname.suffix.0%.%"_D31"
-        all.markers=paste0("Day", tpeak, assays1)
-      } else if (marker_set==2) {
-        fname.suffix = fname.suffix.0%.%"_B"
-        all.markers=paste0("B", assays1)
-      } else if (marker_set==3) {
-        fname.suffix = fname.suffix.0%.%"_D31overB"
-        all.markers=paste0("Delta31overB", assays1)
-      }
-      names(all.markers)=all.markers # for listing cutpoints
-    
-      show.tertile.curves=T
-      has.alt <- show.risk.curves <- show.ve.curves <- plot.geq <- F
-      level=3 #  title indent
-      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE); cat(res, sep = '\n')
-    }
-    
   }
   
-
-
+  fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Correlate of risk analyses of {marker_set} based on sera from ccIAS participants. Covariate-adjusted hazard ratios (HRs) of COVID-19 (A, B: 7 to {t0} days post D31, C, D: 7 to {t1} days post D31) per 10-fold increase in the designated immune marker at D01, at D31, or for D31/D01 fold-change as indicated. Cases acquired a COVID-19 endpoint (A, B) 7 days post D31 through {t0} days post D31 or (C, D) 7 days post D31 through {t1} days post D31. (A, C) Investigational Vaccine arm; (B, D) Comparator Vaccine arm. Non-cases have no evidence of SARS-CoV-2 infection (i.e., never tested nucleic acid amplification/PCR positive) after D01 up to the date by which the last enrolled participant reached {t1} days post D31 ({date}).  HRs were estimated using inverse probability sampling weighted Cox regression models; 95% confidence intervals (CIs) and Wald-based p-values are shown. Analyses adjust for the randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub). FWER, family-wise error rate adjusted p-value. N, Nucleocapsid protein. D50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."))  %.% "}")
+  
+  fig_parts <- c(fig_parts, "\\end{figure}\n")
+  
+  txt = paste(fig_parts, collapse = "\n")
+  message(txt) # for debugging tex
+  cat(txt, "\n")
 }
+```
 
 
+
+```{r trichotomized cumulative incidence curves, echo=FALSE, results='asis'}
+for (marker_set in marker_sets) {
+  .assays = subset(assay_metadata, panel==marker_set, assay, drop=T)
+  for (a in .assays) {
+    short_label = get.short.name(a)
+    labels <- c(
+      "D01 "%.%short_label%.%", Investigational vaccine.", 
+      "D01 "%.%short_label%.%", Comparator vaccine.", 
+      "D31 "%.%short_label%.%", Investigational vaccine.", 
+      "D31 "%.%short_label%.%", Comparator vaccine.")
+    fig_parts <- c("\\begin{figure}[htbp]\n\\centering\n")
+    
+    for (i in seq_along(labels)) {
+      label <- labels[i]
+      pathCoRoutput <- "cor_coxph/output/nextgen_mock/D31toM12_nextgen_mock"
+      tp <- c("B", "B", "Day31", "Day31")[i]
+      fname.suffix <- c(
+        "InvVacc_",
+        "CtlVacc_",
+        "InvVacc_",
+        "CtlVacc_"
+      )[i] %.% marker_set
+      
+      # 
+      file <- glue("{pathCoRoutput}/{tp}{a}_marginalized_risks_cat_{fname.suffix}.pdf")
+      entry <- paste0("\\subfloat[\\textbf{", label, "}]{\n\\includegraphics[width=0.45\\textwidth]{", file, "}}")
+      fig_parts <- c(fig_parts, entry)
+      
+      if (i %% 2 == 1) {
+        fig_parts <- c(fig_parts, "\\hfill")
+      } else {
+        fig_parts <- c(fig_parts, "\\\\")
+      }
+    }
+    
+    fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Covariate-adjusted cumulative incidence of COVID-19 by Low, Medium, High tertile of {short_label} based on sera from ccIAS participants. (A, B) By D01 marker tertile subgroups for the Investigational and Comparator Vaccine arms; (C, D) By D31 marker tertile subgroups for the Investigational and Comparator Vaccine arms. COVID-19 endpoints are counted between 7 and {t1} days post D31. Antibody marker cut-points defining each tertile (based on the Investigational Vaccine arm) are shown in the upper-left inset panel in each plot. The gray line in each plot is the overall cumulative incidence rate curve in the vaccine arm being compared, where the last point shown is the last event time in the comparison arm. The overall P-value is from a generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Low, Medium, and High tertile groups. Analyses adjust for randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub). ID50, 50% inhibitory dilution neutralizing antibody titer. nAb, neutralizing antibody titer."))  %.% "}")
+    
+    fig_parts <- c(fig_parts, "\\end{figure}\n")
+    
+    txt = paste(fig_parts, collapse = "\n")
+    message(txt) # for debugging tex
+    cat(txt, "\n")
+  }
+}
 ```
