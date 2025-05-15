@@ -32,14 +32,14 @@ if (attr(config,"config")=="vat08_combined"){
 }
 
 assay_lim <- readRDS(here("data_clean", "assay_lim.rds"))
-if (study_name %in% c("VAT08","ENSEMBLE") | attr(config,"config")=="prevent19_stage2"){
+if (study_name %in% c("VAT08", "ENSEMBLE", "NextGen_Mock") | attr(config,"config")=="prevent19_stage2"){
   source(here("code", "covid_corr_plot_functions.R"))
   source(here("code", "process_violin_pair_functions.R")) # pair plot functions in this program are overwritten by those in the second program
   # pairplots are non-stratum-adjusted, no resampling, IPS-weighted spearman correlation
-} else {
-  source(here("code", "ggally_cor_resample.R"))
-  source(here("code", "covid_corr_plot_functions.R")) # pair plot functions in this program produces geom_statistics w/ resampling-based covariate-adjusted Spearman
-}
+} #else {
+#  source(here("code", "ggally_cor_resample.R"))
+#  source(here("code", "covid_corr_plot_functions.R")) # pair plot functions in this program produces geom_statistics w/ resampling-based covariate-adjusted Spearman
+#}
 
 set.seed(12345)
 # load cleaned data
@@ -139,8 +139,6 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
   
     print("Pair plots 1:")
   
-    if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
-    if(attr(config,"config")=="janssen_partA_VL") {subdat=subset(subdat, Region==country)} # janssen_partA_VL Region: (Northern America = 0, Latin America = 1, Southern Africa = 2)
     country_lb = case_when(country=="Nvx_US" ~ "US_only_", 
                            country==0 ~ "NAM_",
                            country==1 ~ "LATAM_",
@@ -166,8 +164,11 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
           
           tt=match(tp, times_)
           
-          subdat <- dat.twophase.sample %>%
+          subdat_ <- dat.twophase.sample %>%
             dplyr::filter(Bserostatus == bserostatus & Trt == trt)
+          
+          if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
+          if(attr(config,"config")=="janssen_partA_VL") {subdat=subset(subdat, Region==country)} # janssen_partA_VL Region: (Northern America = 0, Latin America = 1, Southern Africa = 2)
           
           for (asy in c("*", 
                         if (attr(config,"config") %in% c("janssen_partA_VL","vat08_combined")) "bind", 
@@ -215,12 +216,13 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
             
             # subset for prevent19_stage2
             if(attr(config,"config")=="prevent19_stage2") {
+              subdat = subdat_
               subdat = subdat[which(subdat[, paste0("ph2.immuno.",gsub("ay","",tp))]==1), ]
             } else if (attr(config,"config")=="vat08_combined" & asy %in% c("bind", "*")) {
-              subdat = subdat[which(subdat$ph2.immuno.bAb==1), ]
+              subdat = subdat_ %>% filter(ph2.immuno.bAb == 1)
             } else if (attr(config,"config")=="vat08_combined" & asy=="pseudo") {
-              subdat = subdat[which(subdat$ph2.immuno.nAb==1), ]
-            }
+              subdat = subdat_ %>% filter(ph2.immuno.nAb == 1)
+            } else (subdat = subdat_)
             
             covid_corr_pairplots(
               plot_dat = subdat,
@@ -268,7 +270,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
       for (bserostatus in bstatus.range) {
         if (!bserostatus %in% unique(dat.twophase.sample$Bserostatus)) next
         
-        subdat <- dat.twophase.sample %>%
+        subdat_ <- dat.twophase.sample %>%
           dplyr::filter(Bserostatus == bserostatus & Trt == trt)
         
         times_selected <- if(study_name=="VAT08") {list(tps_no_delta_over_tinterm[c(1,4,5)])
@@ -279,7 +281,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
               ) 
           } else {list(tps_no_fold_change)} # "B", "Day29", "Day57"
         
-        if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
+        if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat = subset(subdat_, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
         
         for (tm in seq(length(times_selected))){
             for (aa in assay_immuno) {
@@ -287,12 +289,12 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
               
               # subset for prevent19_stage2
               if(attr(config,"config")=="prevent19_stage2") {
-                subdat = subdat[which(subdat[, "ph2.immuno.BD1"]==1), ]
+                subdat = subdat_ %>% filter(ph2.immuno.BD1 == 1)
               } else if (attr(config,"config")=="vat08_combined" & grepl("bind", aa)) {
-                subdat = subdat[which(subdat$ph2.immuno.bAb==1), ]
+                subdat = subdat_ %>% filter(ph2.immuno.bAb == 1) 
               } else if (attr(config,"config")=="vat08_combined" & grepl("pseudo", aa)) {
-                subdat = subdat[which(subdat$ph2.immuno.nAb==1), ]
-              } 
+                subdat = subdat_ %>% filter(ph2.immuno.nAb == 1)
+              } else {subdat = subdat_}
               
               covid_corr_pairplots_by_time(
                 plot_dat = subdat,
@@ -348,14 +350,14 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
         
         tt=match(tp, times_)
         
-        subdat <- dat.twophase.sample %>%
+        subdat_ <- dat.twophase.sample %>%
           dplyr::filter(Bserostatus == bserostatus)
         
         if (attr(config,"config")=="vat08_combined" & asy %in% c("bind", "*")) {
-          subdat = subdat[which(subdat$ph2.immuno.bAb==1), ]
+          subdat = subdat_ %>% filter(ph2.immuno.bAb == 1)
         } else if (attr(config,"config")=="vat08_combined" & asy=="pseudo") {
-          subdat = subdat[which(subdat$ph2.immuno.nAb==1), ]
-        }
+          subdat = subdat_ %>% filter(ph2.immuno.nAb == 1)
+        } else {subdat = subdat_}
         
         covid_corr_pairplots(
           plot_dat = subdat,
@@ -395,7 +397,7 @@ for (tp in if(!study_name %in% c("VAT08")) {tps_no_B_and_delta_over_tinterm} els
   tps_no_fold_change # "B", "Day31", "Day91", "Day181", "Day366"
 } else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
   
-  if (attr(config,"config") %in% c("janssen_partA_VL", "NextGen_Mock")) next # NextGen_Mock and janssen_partA_VL don't need these plots
+  if (attr(config,"config") %in% c("janssen_partA_VL", "nextgen_mock")) next # NextGen_Mock and janssen_partA_VL don't need these plots
   
   # subset for prevent19_stage2
   if(attr(config,"config")=="prevent19_stage2") {
@@ -1107,7 +1109,9 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               } else {contains("pseudoneutid50")})
             
             # those without any data will have a weighted geomean equal to 1 because exp(0)=1, set these to NA
-            dat.plot[dat.plot == 1] <- NA
+            idx <- dat.plot == 1
+            idx[1:2, ] <- FALSE
+            dat.plot[idx] <- NA
             
             if (nrow(dat.plot)==2) next
             

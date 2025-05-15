@@ -181,8 +181,8 @@ covid_corr_pairplots_for_verification <- function(plot_dat, ## data for plotting
              size = corr_size,
              seed = seed,
              file_name = corr_file_name,
-             strata = subdat[, strata],
-             weight = subdat[, weight]
+             strata = plot_dat[, strata],
+             weight = plot_dat[, weight]
         )
     ),
     lower = list(

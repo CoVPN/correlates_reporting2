@@ -91,7 +91,7 @@ for (panel in if (study_name == "NextGen_Mock") {unique(assay_metadata$panel)
                     } else if (grepl("^B|Day", tm_subset) & panel=="pseudoneutid50") {c(1, 6.5)
                         } else if (grepl("Delta", tm_subset)) {c(-3, 4.2)} else if (study_name == "NextGen_Mock") {c(-3, 7)} else {c(-3, 4.5)},
                 axis.x.text.size = 20,
-                strip.x.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("tcell", panel), 10, ifelse(grepl("bindSpike_", panel), 8, 10)))),
+                strip.x.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("tcell", panel), 10, ifelse(grepl("bindSpike_", panel), 6, 10)))),
                 panel.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 7, ifelse(grepl("tcell|pseudoneutid50", panel), 6, 4.5)),
                 facet.y.var = vars(Trt_nnaive),
                 facet.x.var = vars(assay_label2))
