@@ -3,7 +3,7 @@
 
 \includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tp)), "_", reg, asy, "_", tolower(bsero), "_", trt, if (study_name == "NextGen_Mock" & tp == "Day whole") "_final", if (study_name == "NextGen_Mock" & tp == "Day initial") "_initial", ".pdf"))`}
 
-\caption{`r paste0("Spider plots for ", tpLabel, " ", asy, " markers, ", baseLabel, " ", trt, " arm", ifelse(regLabel!="", paste0(", ", regLabel), ""), immuno_postfix_label)`}
+\caption{`r paste0("Spider plots for ", tpLabel, " ", asy, " markers, ", baseLabel, " ", gsub("_", " ", trt), " arm", ifelse(regLabel!="", paste0(", ", regLabel), ""), immuno_postfix_label)`}
 
 \end{figure}
 

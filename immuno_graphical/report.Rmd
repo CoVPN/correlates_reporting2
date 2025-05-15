@@ -217,7 +217,7 @@ for (trt in c("trt_both", paste0("trt_", trt.labels.2[2]), if (study_name %in% c
   
   if (attr(config,"config")=="prevent19_stage2") next # no these figures for prevent19_stage2
   
-  trtLabel <- ifelse(trt=="trt_both", "x randomization arm", paste0(gsub("trt_","", trt), " arm"))
+  trtLabel <- ifelse(trt=="trt_both", "x randomization arm", paste0(gsub("_", " ", gsub("trt_","", trt)), " arm"))
   
   for (bsero in c("bstatus_both", "bstatus_Neg", "bstatus_Pos")){
     if (bsero=="bstatus_Pos" && if.pos.exist==0) next

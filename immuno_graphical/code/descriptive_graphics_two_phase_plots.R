@@ -527,7 +527,7 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
         legend_nrow = ifelse(length(rcdf_assays) < 10, length(rcdf_assays), ceiling(length(rcdf_assays)/2)),
         filename = paste0(
           save.results.to, "/Marker_Rcdf_", Ab_lb, tp,
-          "_trt_", tolower(trt), "_bstatus_both_", study_name, 
+          "_trt_", tolower(gsub(" ", "_", trt)), "_bstatus_both_", study_name, 
           ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
                  ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
         )
