@@ -522,10 +522,10 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
                         
                         if (attr(config,"config")=="janssen_partA_VL" & (trt=="placebo" | bsero=="Pos")) next
                         
-                        tpLabel <- case_when(tp == "Day" ~ paste0("Day 1, ", paste0("Day ", timepoints_,  collapse = ", ")), 
+                        tpLabel <- case_when(tp == "Day" ~ paste0("Day 01, ", paste0("Day ", timepoints_,  collapse = ", ")), 
                                              tp == "Delta" ~"fold-rise", 
-                                             tp == "Day initial" ~ "Day 91 and D366",
-                                             tp == "Day whole" ~ "Day 1, Day 31 and Day 181",
+                                             tp == "Day initial" ~ "Day 01, Day 31, Day 91, Day 181 and D366",
+                                             tp == "Day whole" ~ "Day 01, Day 31 and Day 181",
                                              TRUE ~ paste0("Day ", timepoints_,  collapse = ", "))
                         
                         regLabel <- case_when(reg=="LATAM_" ~ "Latin America",
@@ -561,7 +561,7 @@ for (a in if (study_name == "NextGen_Mock") {c("bindN", "bindSpike_IgG_sera", "b
     
     for (tp in if (study_name == "NextGen_Mock") {tps_no_fold_change} else {tps_no_delta_over_tinterm}){
         
-        tpLabel = ifelse(tp=="B", "Day1", tp)
+        tpLabel = ifelse(tp=="B", "Day01", tp)
         
         immuno_postfix_label <- case_when(
             study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366") ~ " (Track A RIS-PBMC cohort)",
@@ -629,7 +629,7 @@ for (bsero in c("naive")){
         
         for (tp in tps_no_B_and_fold_change){
             
-            tpLabel = ifelse(tp=="B", "Day1", tp)
+            tpLabel = ifelse(tp=="B", "Day01", tp)
             res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set3.Rmd')), quiet = TRUE)
             cat(res, sep = '\n')
             cat("\\clearpage", sep = '\n')

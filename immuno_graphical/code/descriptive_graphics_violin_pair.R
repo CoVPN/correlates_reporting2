@@ -506,7 +506,7 @@ for (a in assays){
                 weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", 
                                 ifelse(study_name == "NextGen_Mock", "wt.immuno", "wt.subcohort")),
                 plot_title = "",
-                column_labels = times_sub,
+                column_labels = gsub("B", "Day01", times_sub),
                 height = 5.5,
                 width = 5.5,
                 column_label_size = 10,
