@@ -510,7 +510,7 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
         plot_dat = subdat_rcdf2,
         x = tp,
         color = "assay_labels",
-        lty = "Bserostatus",
+        lty = if (study_name == "NextGen_Mock") NULL else "Bserostatus",
         weight = ifelse(attr(config,"config")=="vat08_combined" & Ab=="bind", "wt.immuno.bAb",
                         ifelse(attr(config,"config")=="vat08_combined" & Ab=="pseudo", "wt.immuno.nAb",
                                ifelse(attr(config,"config")=="nextgen_mock", "wt",

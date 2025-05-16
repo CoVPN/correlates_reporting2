@@ -1626,7 +1626,7 @@ D43D91:
 # NextGen Mock
 
 nextgen_mock: &nextgen_mock
-  data_cleaned: /trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20250507.csv
+  data_cleaned: /trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20250514.csv
   sampling_scheme: case_cohort
   two_marker_timepoints: no
   timepoints: [31]
