@@ -497,6 +497,7 @@ covid_corr_rcdf_facets <- function(plot_dat,
 #' @param axis_size: scalar: font size of the axis labels.
 #' @param axis_titles: string vector: axis titles for the panels.
 #' @param axis_title_size: scalar: font size of the axis title.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param arrange_nrow: integer: number of rows to arrange the panels.
 #' @param arrange_ncol: integer: number of columns to arrange the panels.
 #' @param height: scalar: plot height.
@@ -539,6 +540,7 @@ covid_corr_rcdf <- function(plot_dat,
                             legend_nrow = 10,
                             axis_title_size = 16,
                             axis_size = 16,
+                            label_format = "log10",
                             height = 5,
                             width = 8,
                             units = "in",
@@ -576,7 +578,14 @@ covid_corr_rcdf <- function(plot_dat,
         }
       }) %>% bind_rows()
   }
-
+  
+  scale_label <- switch(label_format,
+                        "log10" = scales::label_math(10^.x),
+                        "percent" = function(x) {
+                          paste0(format(10^x * 100, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                        }
+  )
+  
   output_plot <- ggplot(
     rcdf_dat,
     aes_string(
@@ -586,7 +595,7 @@ covid_corr_rcdf <- function(plot_dat,
     geom_step(lwd = lwd) +
     theme_pubr() +
     scale_x_continuous(
-      limits = xlim, labels = label_math(10^.x),
+      limits = xlim, labels = scale_label,
       breaks = xbreaks
     ) +
     scale_color_manual(values = palette) +
