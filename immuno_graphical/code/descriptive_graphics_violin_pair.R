@@ -93,7 +93,7 @@ for (panel in if (study_name == "NextGen_Mock") {unique(assay_metadata$panel)
                 axis.x.text.size = 20,
                 strip.x.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("tcell", panel), 10, ifelse(grepl("bindSpike_", panel), 6, 10)))),
                 panel.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 7, ifelse(grepl("tcell|pseudoneutid50", panel), 6, 4.5)),
-                facet.y.var = vars(Trt_nnaive),
+                facet.y.var = vars(Trt),
                 facet.x.var = vars(assay_label2))
             
             for (i in 1:length(set1_times_sub)){
@@ -181,13 +181,13 @@ for (panel in if (study_name == "NextGen_Mock") {
     f_2 <- f_longitude_by_assay(
         dat = dat.longer.immuno.subset.plot1_,
         x.var = "time",
-        x.lb = if (study_name == "NextGen_Mock") {c("D1","D31","D91","D181","D366")} else if (study_name == "VAT08"){c("D1","D22","D43")},
+        x.lb = if (study_name == "NextGen_Mock") {c("D01","D31","D91","D181","D366")} else if (study_name == "VAT08"){c("D1","D22","D43")},
         assays = if (study_name == "NextGen_Mock") {set2_assays[grepl(panel, set2_assays)]} else {set2_assays[grepl(panel, set2_assays) & !grepl("mdw", set2_assays)]},
         ylim = if (grepl("T4|T8", panel)) {c(-2.2, 2.5)} else {c(1, 6.5)},
         times = if (study_name == "NextGen_Mock") {c("B","Day31","Day91","Day181","Day366")} else if (study_name == "VAT08"){c("B","Day22","Day43")},
         strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, 12),
         panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
-        facet.y.var = vars(Trt_nnaive), 
+        facet.y.var = vars(Trt), 
         facet.x.var = vars(assay_label_short),
         y.axis.lb = ifelse(study_name == "NextGen_Mock", " ", "")
     )
@@ -430,19 +430,19 @@ for (grp in c("non_naive_vac_pla",
                    grp %in% c("non_naive_vac", "non_naive_pla")) {
             
             trt_val <- ifelse(grp == "non_naive_vac", trt.labels[2], trt.labels[1])
-            label_val <- bstatus.labels.3[2]
+            #label_val <- bstatus.labels.3[2]
             
             dat.plot <- subset(dat.immuno.subset.plot3, as.character(Trt) == trt_val)
-            grp_lb <- paste0(label_val, " ", tolower(trt_val), " group participants")
+            grp_lb <- paste0(tolower(trt_val), " group participants")
             assays_sub <- assays
         } else if (study_name == "NextGen_Mock" & t %in% c("Day91", "Day366") &
                    grp %in% c("non_naive_vac", "non_naive_pla")) {
             
             trt_val <- ifelse(grp == "non_naive_vac", trt.labels[2], trt.labels[1])
-            label_val <- bstatus.labels.3[2]
+            #label_val <- bstatus.labels.3[2]
             
             dat.plot <- subset(dat.immuno.subset.plot3, as.character(Trt) == trt_val & Track == "A")
-            grp_lb <- paste0(label_val, " ", tolower(trt_val), " group participants")
+            grp_lb <- paste0(tolower(trt_val), " group participants")
             assays_sub <- assays
         }
         
@@ -516,18 +516,16 @@ for (a in assays){
         }
     }
     
-    y.grob.1 <- textGrob("Vaccine", gp=gpar(fontface="bold", col="black", fontsize=9))
-    y.grob.2 <- textGrob("Placebo", gp=gpar(fontface="bold", col="black", fontsize=9))
-    y.grob.1_ <- textGrob("Vaccine, Non-naive", gp=gpar(fontface="bold", col="black", fontsize=9))
-    y.grob.2_ <- textGrob("Placebo, Non_naive", gp=gpar(fontface="bold", col="black", fontsize=9))
-    y.grob.3 <- textGrob("Naive", gp=gpar(fontface="bold", col="black", fontsize=9))
-    y.grob.4 <- textGrob("Non-naive", gp=gpar(fontface="bold", col="black", fontsize=9))
+    y.grob.1 <- textGrob(trt.labels[2], gp=gpar(fontface="bold", col="black", fontsize=9)) # Vaccine
+    y.grob.2 <- textGrob(trt.labels[1], gp=gpar(fontface="bold", col="black", fontsize=9)) # Placebo
+    y.grob.3 <- textGrob(bstatus.labels.3[1], gp=gpar(fontface="bold", col="black", fontsize=9)) # Naive
+    y.grob.4 <- textGrob(bstatus.labels.3[2], gp=gpar(fontface="bold", col="black", fontsize=9)) # Non-naive
     
     #add to plot
     if (study_name == "NextGen_Mock") {
         row_plot <- arrangeGrob(
-            arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.1_),
-            arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.2_),
+            arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.1),
+            arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.2),
             nrow = 1
         )
         # Add bottom space with an empty grob

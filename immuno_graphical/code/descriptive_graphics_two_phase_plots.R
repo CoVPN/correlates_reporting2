@@ -309,14 +309,15 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                                 "wt.subcohort"))))),
                 plot_title = paste0(
                   labels.assays[aa], ": ",
-                  bstatus.labels.3[bserostatus + 1], " ",
+                  if (study_name == "NextGen_Mock") {""} else {paste0(bstatus.labels.3[bserostatus + 1], " ")},
                   tolower(trt.labels)[trt + 1], " arm"
                 ), 
                 plot_title_size = ifelse(study_name == "NextGen_Mock", 7, 10), 
                 column_labels = paste(gsub("ay ","", labels.time[times_selected[[tm]]]),
                                       "\n", labels.axis[, aa][1]),
                 column_label_size = ifelse(study_name=="VAT08", 4.5, 
-                                           ifelse(max(str_length(labels.axis[1,])) > 28, 4.3, 6.5)),
+                                           max(5.4, min(8, 8 - (str_length(labels.axis[1, aa]) - 14) * (8 - 5.4) / (34 - 14)))
+                                           ),
                 axis_label_size = ifelse(study_name=="VAT08", 7, 9),
                 filename = paste0(
                   save.results.to, "/pairs_", aa, "_by_times_", ifelse(tm!=1, paste0(tm, "_"), ""), 
@@ -374,7 +375,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
           column_labels = labels.axis[tp, assay_immuno_] %>% unlist(),
           height = max(1.3 * length(assay_immuno_) + 0.1, 5.5),
           width = max(1.3 * length(assay_immuno_), 5.5),
-          column_label_size = ifelse(max(str_length(labels.axis[1,])) > 28, 4, 6.5),
+          column_label_size = ifelse(max(str_length(labels.axis[1, aa])) > 28, 4, 6.5),
           filename = paste0(
             save.results.to, "/pairs_", tp,
             "_Markers_", bstatus.labels.2[bserostatus + 1],
@@ -1146,7 +1147,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                        vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12 | max(nchar(assays_)) > 25, 0.7, 1)),
                        #title
                        title=paste0("GeoMean ", ifelse(ab=="bAb", "of bAb Markers, ", ifelse(ab=="nAb", "of nAb Markers, ", "of ICS Markers, ")), 
-                                    bstatus.labels.2[bsero + 1], " ", trt.labels[trt + 1],
+                                    if (study_name == "NextGen_Mock") {""} else {paste0(bstatus.labels.2[bsero + 1], " ")}, trt.labels[trt + 1],
                                     ifelse(reg!="all", paste0(", ", reg_lb_long), "")),
                        #title size
                        cex.main=0.7)

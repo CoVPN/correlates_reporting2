@@ -41,9 +41,12 @@ getResponder <- function(data,
                 data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
                 data[, paste0(post, "Resp")] <- as.numeric(
                     (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > 4 * log10(pos.cutoffs[j])) |
-                        (data[, bl] >= log10(pos.cutoffs[j]) & data[, bl] < log10(uloqs[j]) & as.numeric(10^data[, post]/10^data[, bl] >= responderFR))) 
-                data[, paste0(bl, "Resp")] <- ifelse(data[, bl] >= log10(uloqs[j]), NA, data[, paste0(bl, "Resp")])
-                data[, paste0(post, "Resp")] <- ifelse(data[, bl] >= log10(uloqs[j]), NA, data[, paste0(post, "Resp")])
+                        (data[, bl] >= log10(pos.cutoffs[j]) & data[, bl] < log10(uloqs[j]) & as.numeric(10^data[, post]/10^data[, bl] >= responderFR)) |
+                        data[, bl] < log10(uloqs[j]) & data[, post] >= log10(uloqs[j]) & as.numeric(uloqs[j]/10^data[, bl] < responderFR) ) 
+                
+                over_uloq <- which(!is.na(data[, bl]) & data[, bl] >= log10(uloqs[j]))
+                data[over_uloq, paste0(bl, "Resp")] <- NA
+                data[over_uloq, paste0(post, "Resp")] <- NA
 
             } else { 
                 data[, paste0(post, "Resp")] <- as.numeric(
@@ -206,7 +209,7 @@ f_by_time_assay <-
                     geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                     scale_x_discrete(labels = "") + 
                     scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 2, 1)), labels = scales::math_format(10^.x)) +
-                    labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", gsub("^B", "Day1", unique(d$time)), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
+                    labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", gsub("^B", "Day01", unique(d$time)), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
                     plot_theme +
                     guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
             })
