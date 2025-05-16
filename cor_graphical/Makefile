@@ -27,14 +27,14 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
 	Rscript code/cor_graphics_all.R D35prevent19_stage2_severe
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_stage2))
-	Rscript code/cor_data_preprocess.R D57azd1222_stage2_delta_nAb # Yiwen's
-	Rscript code/cor_graphics_all.R D57azd1222_stage2_delta_nAb
+##	Rscript code/cor_data_preprocess.R D57azd1222_stage2_delta_nAb # Yiwen's
+##	Rscript code/cor_graphics_all.R D57azd1222_stage2_delta_nAb
 	
 	Rscript code/cor_data_preprocess.R D57azd1222_stage2_delta_bAb # Yiwen's
 	Rscript code/cor_graphics_all.R D57azd1222_stage2_delta_bAb
 	
-	Rscript code/cor_data_preprocess.R D57azd1222_stage2_severe_nAb # Yiwen's
-	Rscript code/cor_graphics_all.R D57azd1222_stage2_severe_nAb
+##	Rscript code/cor_data_preprocess.R D57azd1222_stage2_severe_nAb # Yiwen's
+##	Rscript code/cor_graphics_all.R D57azd1222_stage2_severe_nAb
 	
 	Rscript code/cor_data_preprocess.R D57azd1222_stage2_severe_bAb # Yiwen's
 	Rscript code/cor_graphics_all.R D57azd1222_stage2_severe_bAb
