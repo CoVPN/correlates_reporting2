@@ -13,8 +13,8 @@ library(glue)
 library(Hmisc)
 library(knitr)
 
-dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20250424.csv')
 dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250508.csv')
+dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20250424.csv')
 dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
@@ -55,6 +55,7 @@ mytable(dat.onedosemRNA$ph1.D15.tcell, dat.onedosemRNA$ph1.D15)
 
 ```{r, fig.width=8, fig.height=8}
 mypairs(dat_proc[,c("Bcd4_IFNg.IL2_Wuhan.N", "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S", "Bpseudoneutid50_D614G", "Day15pseudoneutid50_D614G", "Bpseudoneutid50_BA.4.BA.5", "Day15pseudoneutid50_BA.4.BA.5")])
+mypairs(dat_proc[,c("Bcd4_IFNg.IL2_Wuhan.N", "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S")])
 ```
 
 ## Multivariate models
@@ -91,4 +92,29 @@ fits=list(
 tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
 tab[is.na(tab)]=""
 kable(tab)
+```
+
+
+
+```{r }
+summary(dat_proc$Bcd4_IL4.IL5.IL13.154_BA.4.5.S)
+
+dat.onedosemRNA$Bcd4_IL4.IL5.IL13.154_BA.4.5.S_alt = pmax(-1.699, dat.onedosemRNA$Bcd4_IL4.IL5.IL13.154_BA.4.5.S)
+dat.onedosemRNA$Day15cd4_IL4.IL5.IL13.154_BA.4.5.S_alt = pmax(-1.699, dat.onedosemRNA$Day15cd4_IL4.IL5.IL13.154_BA.4.5.S)
+
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum), subset =  ~ ph2.D15.tcell, data = subset(dat.onedosemRNA, naive==0))
+
+fit = svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ Bcd4_IL4.IL5.IL13.154_BA.4.5.S, design)
+summary(fit)
+
+fit = svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ Bcd4_IL4.IL5.IL13.154_BA.4.5.S_alt, design)
+summary(fit)
+
+fit = svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ Day15cd4_IL4.IL5.IL13.154_BA.4.5.S_alt, design)
+summary(fit)
+
+
+myboxplot(Bcd4_IL4.IL5.IL13.154_BA.4.5.S_alt~COVIDIndD22toD91, subset(dat.onedosemRNA, naive==0), names=c("non-cases", "cases"))
+mytable(subset(dat.onedosemRNA, naive==0, Bcd4_IL4.IL5.IL13.154_BA.4.5.S_alt))
+mytable(subset(dat.onedosemRNA, naive==0, Day15cd4_IL4.IL5.IL13.154_BA.4.5.S_alt))
 ```

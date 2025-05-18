@@ -47,6 +47,18 @@ for (a in names(marker.cutpoints)) {
         file=paste0(save.results.to, "cutpoints_", a,".txt"))
 }
 
+# # experiment with truncating t cell markers at 0.02 or -1.699
+# for (a in c(primary,secondary)) {
+#   if (endsWith(a, ".N")) {
+#     dat_proc[[a]] = ifelse(dat_proc[[a]] < -2, -2, dat_proc[[a]])
+#   } else {
+#     dat_proc[[a]] = ifelse(dat_proc[[a]] < -1.699, -1.699, dat_proc[[a]])
+#   }
+# }
+# summary(dat_proc[primary])
+# # filter out ones with no variablity
+# secondary=setdiff(secondary, c("Bcd4_IL4.IL5.IL13.154_Wuhan.N"))
+
 # note that arm 16 and 17 are excluded, because no T cells are done for them. This is different from the antibody correlates where 16 and 17 are included.
 dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
 dat.onedoseModerna = subset(dat_proc, ph1.D15 & arm %in% c(1,2,5,6))
@@ -136,7 +148,7 @@ for (trt in trts) {
     
     cat("\n\n")
     cor_coxph_coef_1 (
-      if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
+      form.0 = if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
       design_or_dat = design.1,
       fname.suffix,
       save.results.to,
