@@ -1,7 +1,8 @@
-<!-- HR tables for continuous markers, forest plots, risk/VE curves. -->
+<!-- Includes HR tables for continuous markers, forest plots, risk/VE curves. -->
 
-
-`r paste(concatList(rep('#',level)), ifelse(fname.suffix=="","",fname.suffix%.%", "), COR)`  
+```{r, echo=FALSE, results='asis'}
+#paste(concatList(rep('#',level)), ifelse(fname.suffix=="","",fname.suffix%.%", "), COR)
+```
 
 ```{r, echo=FALSE, results='asis'}
 res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
@@ -29,8 +30,10 @@ if (show.ve.curves) {
 \input{`r paste0(pathCoRoutput, "/CoR_univariable_svycoxph_cat_pretty_", fname.suffix)`}
 \normalsize
 \vspace{-15pt}
-$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, ".txt}"), sep=",")`
-
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. 
+```{r, echo=FALSE, results='asis'}
+# cat("Cutpoints (on the log10 scale): ", concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, ".txt}"), sep=","))
+```
 $\ast\ast$ No. at-risk/no. cases = estimated population size and case number in the group. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
 
 

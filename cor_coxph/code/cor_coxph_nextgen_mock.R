@@ -22,8 +22,8 @@ source(here::here("..", "_common.R"))
   myprint(verbose)
   
   # hack
-  # source("~/copcor/R/cor_coxph_coef_1.R")
-  source("~/copcor/R/cor_coxph_risk_tertile_incidence_curves.R")
+  source("~/copcor/R/cor_coxph_coef_1.R")
+  # source("~/copcor/R/cor_coxph_risk_tertile_incidence_curves.R")
   
   # path for figures and tables etc
   save.results.to = here::here("output")
@@ -110,10 +110,7 @@ cor_coxph_risk_no_marker (
 panels=unique(assay_metadata$panel)
 
 trts=c(1,0); marker_sets = panels
-marker_sets='pseudoneutid50_sera'
-
-# trts=1; marker_sets = "pseudoneutid50_sera"
-# trt=1; marker_set = "pseudoneutid50_sera"
+# marker_sets='pseudoneutid50_sera'
 
 for (trt in trts) {
   

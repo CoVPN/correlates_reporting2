@@ -7,7 +7,7 @@ Sys.setenv(TRIAL = "covail_tcell"); source(here::here("..", "_common.R")); sourc
 # hack
 # source("~/copcor/R/cor_coxph_coef_1.R")
 
-marker_sets = 1:2 # primary, secondary
+marker_sets = c("primary", "secondary", "exploratory")
 trts=1:8 # onedosemRNA, etc
 # trt=8; marker_set = 2
 
@@ -46,6 +46,18 @@ for (a in names(marker.cutpoints)) {
   write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
         file=paste0(save.results.to, "cutpoints_", a,".txt"))
 }
+
+# # experiment with truncating t cell markers at 0.02 or -1.699
+# for (a in c(primary,secondary)) {
+#   if (endsWith(a, ".N")) {
+#     dat_proc[[a]] = ifelse(dat_proc[[a]] < -2, -2, dat_proc[[a]])
+#   } else {
+#     dat_proc[[a]] = ifelse(dat_proc[[a]] < -1.699, -1.699, dat_proc[[a]])
+#   }
+# }
+# summary(dat_proc[primary])
+# # filter out ones with no variablity
+# secondary=setdiff(secondary, c("Bcd4_IL4.IL5.IL13.154_Wuhan.N"))
 
 # note that arm 16 and 17 are excluded, because no T cells are done for them. This is different from the antibody correlates where 16 and 17 are included.
 dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
@@ -95,6 +107,7 @@ for (trt in trts) {
     dat.1=subset(dat.onedosePfizer, naive==1);  fname.suffix.0 <- trt.label <- "OneDosePfizer_Naive"
   } else if (trt==4) {
     dat.1=subset(dat.sanofi, naive==1);         fname.suffix.0 <- trt.label <- "Sanofi_Naive"
+    
   # nnaive  
   } else if (trt==5) {
     dat.1=subset(dat.onedosemRNA, naive==0);    fname.suffix.0 <- trt.label <- "OneDosemRNA_NNaive"
@@ -115,13 +128,8 @@ for (trt in trts) {
   
   for (marker_set in marker_sets) {
     
-    if (marker_set==1) {
-      fname.suffix = fname.suffix.0%.%"_primary"
-      all.markers=primary
-    } else if (marker_set==2) {
-      fname.suffix = fname.suffix.0%.%"_secondary"
-      all.markers=secondary
-    } 
+    fname.suffix = fname.suffix.0%.%"_"%.%marker_set
+    all.markers=get(marker_set)
     all.markers.names.short <- all.markers.names.long <- all.markers
     names(all.markers.names.short) = all.markers
     names(all.markers.names.long) = all.markers
@@ -136,7 +144,7 @@ for (trt in trts) {
     
     cat("\n\n")
     cor_coxph_coef_1 (
-      if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
+      form.0 = if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
       design_or_dat = design.1,
       fname.suffix,
       save.results.to,
@@ -146,7 +154,7 @@ for (trt in trts) {
       markers.names.short = all.markers.names.short,
       
       dat.plac = dat.0,
-      show.q = marker_set==1,
+      show.q = marker_set=="primary",
       
       forestplot.markers=NULL, 
       for.title="",

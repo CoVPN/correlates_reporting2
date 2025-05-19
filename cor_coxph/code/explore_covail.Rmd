@@ -14,7 +14,7 @@ library(Hmisc)
 library(knitr)
 
 dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20250424.csv')
-dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250429.csv')
+dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250508.csv')
 dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
@@ -81,8 +81,48 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
+```{r compute weighted response rate using _resp variables}
+dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
+dat.sanofi = subset(dat_proc, ph1.D15 & TrtSanofi==1)
+
+primary = c("Bcd4_IFNg.IL2_Wuhan.N", "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S")
+secondary = c("Bcd8_IFNg.IL2_Wuhan.N",         "Bcd8_IFNg.IL2_BA.4.5.S", 
+              "Bcd4_IFNg.IL2.154_Wuhan.N",     "Bcd4_IFNg.IL2.154_BA.4.5.S", 
+              "Bcd4_IL4.IL5.IL13.154_Wuhan.N", "Bcd4_IL4.IL5.IL13.154_BA.4.5.S", 
+              "Bcd4_IL21_Wuhan.N",             "Bcd4_IL21_BA.4.5.S", 
+              "Day15cd8_IFNg.IL2_BA.4.5.S",
+              "Day15cd4_IFNg.IL2.154_BA.4.5.S",
+              "Day15cd4_IL4.IL5.IL13.154_BA.4.5.S", 
+              "Day15cd4_IL21_BA.4.5.S")
+
+res=sapply (0:3, function(.naive) {
+  
+  if (.naive<2) {
+    dat=subset(dat.onedosemRNA, ph2.D15.tcell & naive==.naive )
+  } else {
+    dat=subset(dat.sanofi, ph2.D15.tcell & naive==.naive %% 2)
+  }
+  sapply (c(primary, secondary), function(a) sum(dat[[a%.%"_resp"]]*dat$wt.D15.tcell)/sum(dat$wt.D15.tcell))
+})
+colnames(res)=c("mRNA NN","mRNA N", "Sanofi NN", "Sanofi N")
+round(res,3)
+```
+
+All the CD8 values for positive responders are above -1.5.
 ```{r}
-hist(dat_proc$Bcd4_IFNg.IL2_Wuhan.N)
+par(mfrow=c(1,4)); reduce_margin()
+lim=c(-3,1)
+myboxplot(Bcd8_IFNg.IL2_BA.4.5.S~Bcd8_IFNg.IL2_BA.4.5.S_resp, dat_proc[dat_proc$naive==0,], ylim=lim, xlab="response call", main="D01"); abline(h=-1.7, col=2)
+myboxplot(Day15cd8_IFNg.IL2_BA.4.5.S~Day15cd8_IFNg.IL2_BA.4.5.S_resp, dat_proc[dat_proc$naive==0,], ylim=lim, xlab="response call", main="D15"); abline(h=-1.7, col=2)
+mtext("NNaive", side=3, at=0, line=0.8)
+myboxplot(Bcd8_IFNg.IL2_BA.4.5.S~Bcd8_IFNg.IL2_BA.4.5.S_resp, dat_proc[dat_proc$naive==1,], ylim=lim, xlab="response call", main="D01"); abline(h=-1.7, col=2)
+myboxplot(Day15cd8_IFNg.IL2_BA.4.5.S~Day15cd8_IFNg.IL2_BA.4.5.S_resp, dat_proc[dat_proc$naive==1,], ylim=lim, xlab="response call", main="D15"); abline(h=-1.7, col=2)
+mtext("Naive", side=3, at=0, line=0.8)
+
+par(mfrow=c(1,2));  par(mar=c(4,3,2,1), mgp = c(1.5, 0.5, 0))
+lim=c(-3,1)
+myboxplot(Bcd4_IFNg.IL2_BA.4.5.S~naive, dat_proc, ylim=lim, xlab="naive", main="D01", test='w');# abline(h=-1.7, col=2)
+myboxplot(Day15cd4_IFNg.IL2_BA.4.5.S~naive, dat_proc, ylim=lim, xlab="naive", main="D15", test="w");# abline(h=-1.7, col=2)
 ```
 
 
