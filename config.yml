@@ -1725,9 +1725,10 @@ covail: &covail
 covail_sanofi: &covail_sanofi
   inherits: covail
 
-# a copy of covail, used to drive Makefile
 covail_tcell: &covail
   inherits: covail
+  primary_markers: [Bcd4_IFNg.IL2_Wuhan.N, Bcd4_IFNg.IL2_BA.4.5.S, Day15cd4_IFNg.IL2_BA.4.5.S]
+  secondary_markers: [Bcd8_IFNg.IL2_BA.4.5.S, Bcd4_IFNg.IL2.154_Wuhan.N, Bcd4_IFNg.IL2.154_BA.4.5.S, Day15cd8_IFNg.IL2_BA.4.5.S, Day15cd4_IFNg.IL2.154_BA.4.5.S, Day15cd4_IL21_BA.4.5.S]
 
 
 #### COR labels
