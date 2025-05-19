@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("boxplots_", tp, "_x_trt_", bsero, "_", study_name, if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) "_final", if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) "_initial", ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("boxplots_", tp, "_x_trt_", ifelse(study_name == "NextGen_Mock", paste0(pn, "_"), ""), bsero, "_", study_name, if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) "_final", if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) "_initial", ".pdf"))`}
 
-\caption{`r paste0("Boxplots of ", tpLabel, " Ab markers: ", bseroLabel, " x randomization arm", gender_lb, ". ", ifelse(grepl("Delta", tp), "", neut.marker.captions), immuno_postfix_label)`}
+\caption{`r paste0("Boxplots of ", tpLabel, ifelse(pn!="", paste0(" ", gsub("_", " ", pn)), " Ab"), " markers: ", bseroLabel, " x randomization arm", gender_lb, ". ", ifelse(grepl("Delta", tp), "", neut.marker.captions), immuno_postfix_label)`}
 
 \end{figure}
 

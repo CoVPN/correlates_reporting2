@@ -677,44 +677,54 @@ for (bstatus in 1:2) {
   
   for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
     
-    # subset for prevent19_stage2
-    if(attr(config,"config")=="prevent19_stage2") {
-      subdat_box1 = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.", gsub("ay","",tp))]==1), ]
-    } else if (attr(config,"config")=="vat08_combined") {
-      subdat_box1 = dat.long.twophase.sample %>% filter((grepl("bind", assay) & ph2.immuno.bAb==1) | (grepl("pseudo", assay) & ph2.immuno.nAb==1) )
-    } else if (attr(config,"config") == "nextgen_mock" & tp %in% c("Day91", "Day366")){
-      subdat_box1 = dat.long.twophase.sample %>% filter(Track == "A")
-    } else {subdat_box1 = dat.long.twophase.sample}
-    
-    covid_corr_boxplot_facets(
-      plot_dat = subset(subdat_box1,
-        Bserostatus == bstatus.labels[bstatus]
-      ),
-      x = "Trt",
-      y = tp,
-      color = "Trt",
-      facet_by = "assay",
-      ylim = assay_lim[, tp, ],
-      plot_LLOX = !grepl("Delta", tp), # "B", "Day29", "Day57"
-      POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
-      LLOX = log10(lloxs[assay_immuno]),
-      ULOQ = log10(uloqs[assay_immuno]),
-      arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "NextGen_Mock", 6, 3)),
-      arrange_nrow = ifelse(study_name=="VAT08", 4, ceiling(length(assay_immuno) / 3)),
-      legend = setNames(trt.labels, trt.labels),
-      axis_titles_y = labels.axis[tp, ] %>% unlist(),
-      panel_titles = labels.title2[tp, ] %>% unlist(),
-      panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "NextGen_Mock", 6, 10)),
-      height = ifelse(study_name=="VAT08", 11, 
-                      ifelse(attr(config,"config")=="prevent19_stage2", 10, 
-                             3 * ceiling(length(assay_immuno) / 3) + 0.5)),
-      filename = paste0(
-        save.results.to, "/boxplots_", tp, "_x_trt_", bstatus.labels.2[bstatus],
-        "_", study_name, 
-        ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
-               ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
+    for (pn in if (study_name != "NextGen_Mock") {""} else {unique(assay_metadata$panel)}) {
+      # subset for prevent19_stage2
+      if(attr(config,"config")=="prevent19_stage2") {
+        subdat_box1_ = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.", gsub("ay","",tp))]==1), ]
+      } else if (attr(config,"config")=="vat08_combined") {
+        subdat_box1_ = dat.long.twophase.sample %>% filter((grepl("bind", assay) & ph2.immuno.bAb==1) | (grepl("pseudo", assay) & ph2.immuno.nAb==1) )
+      } else if (attr(config,"config") == "nextgen_mock" & tp %in% c("Day91", "Day366")){
+        subdat_box1_ = dat.long.twophase.sample %>% filter(Track == "A")
+      } else {subdat_box1_ = dat.long.twophase.sample}
+      
+      if (pn == "") {subdat_box1 = subdat_box1_
+      } else {subdat_box1 = subdat_box1_ %>% filter(assay %in% subset(assay_metadata, panel == pn)$assay) %>% mutate(assay = droplevels(assay))}
+      
+      assay_sub = unique(as.character(subdat_box1$assay))
+        
+      covid_corr_boxplot_facets(
+        plot_dat = subset(subdat_box1,
+          Bserostatus == bstatus.labels[bstatus]
+        ),
+        x = "Trt",
+        y = tp,
+        color = "Trt",
+        facet_by = "assay",
+        ylim = assay_lim[assay_sub, tp, ],
+        plot_LLOX = !grepl("Delta", tp), # "B", "Day29", "Day57"
+        POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
+        LLOX = log10(lloxs[assay_immuno]),
+        ULOQ = log10(uloqs[assay_immuno]),
+        arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "NextGen_Mock" & grepl("bindSpike", pn), 4, 2)),
+        arrange_nrow = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "NextGen_Mock" & grepl("bindSpike", pn), 3, ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 1, 2))),
+        legend = setNames(trt.labels, trt.labels),
+        axis_titles_y = labels.axis[tp, assay_sub] %>% unlist(),
+        panel_titles = labels.title2[tp, assay_sub] %>% unlist(),
+        panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "NextGen_Mock", 6, 10)),
+        height = ifelse(study_name %in% c("VAT08"), 11, 
+                        ifelse(attr(config,"config")=="prevent19_stage2", 10, 
+                               ifelse(study_name == "NextGen_Mock" & grepl("bindSpike", pn), 10.5,
+                                      ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 3.5,
+                                             7)))),
+        filename = paste0(
+          save.results.to, "/boxplots_", tp, "_x_trt_", 
+          ifelse(study_name == "NextGen_Mock", paste0(pn, "_"), ""),
+          bstatus.labels.2[bstatus], "_", study_name, 
+          ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
+                 ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
+        )
       )
-    )
+    }
   }
 }
 

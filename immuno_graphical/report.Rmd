@@ -67,6 +67,7 @@ if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("
 if (study_name == "NextGen_Mock") {
     assays = assays[!grepl("nasal|saliva", assays)]
     assay_immuno = assay_immuno[!grepl("nasal|saliva", assay_immuno)]
+    assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva", assay))
 }
 ```
 
@@ -348,6 +349,8 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
     
     for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
         
+        for (pn in if (study_name != "NextGen_Mock") {""} else {unique(assay_metadata$panel)}) {
+        
         if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
         if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # NextGen_Mock doesn't have naive ppts
         
@@ -360,6 +363,7 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
         res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box.Rmd')), quiet = TRUE)
         cat(res, sep = '\n')
         cat("\\clearpage", sep = '\n')
+        }
     }
 }
 
