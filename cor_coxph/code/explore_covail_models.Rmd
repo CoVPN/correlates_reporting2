@@ -13,8 +13,11 @@ library(glue)
 library(Hmisc)
 library(knitr)
 
-dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20250424.csv')
-dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250508.csv')
+config.reporting  <- config::get(config = "covail_tcell", file="/home/yfong/correlates_reporting2/config.yml") 
+config.processing <- config::get(config = "covail", file="/home/yfong/correlates_processing/config.yml") 
+
+dat_proc=read.csv(config.reporting$data_cleaned)
+dat_mapped=read.csv(config.processing$mapped_data)
 dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
@@ -55,6 +58,7 @@ mytable(dat.onedosemRNA$ph1.D15.tcell, dat.onedosemRNA$ph1.D15)
 
 ```{r, fig.width=8, fig.height=8}
 mypairs(dat_proc[,c("Bcd4_IFNg.IL2_Wuhan.N", "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S", "Bpseudoneutid50_D614G", "Day15pseudoneutid50_D614G", "Bpseudoneutid50_BA.4.BA.5", "Day15pseudoneutid50_BA.4.BA.5")])
+mypairs(dat_proc[,c("Bcd4_IFNg.IL2_Wuhan.N", "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S")])
 ```
 
 ## Multivariate models
@@ -91,4 +95,88 @@ fits=list(
 tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
 tab[is.na(tab)]=""
 kable(tab)
+```
+
+
+
+```{r some markers have low dynamic range}
+a="Bcd4_IL4.IL5.IL13.154_BA.4.5.S"
+a="Day15cd4_154_BA.4.5.S"
+
+dat.onedosemRNA$Bcd4_IL4.IL5.IL13.154_BA.4.5.S_alt = pmax(-1.699, dat.onedosemRNA$Bcd4_IL4.IL5.IL13.154_BA.4.5.S)
+dat.onedosemRNA$Day15cd4_IL4.IL5.IL13.154_BA.4.5.S_alt = pmax(-1.699, dat.onedosemRNA$Day15cd4_IL4.IL5.IL13.154_BA.4.5.S)
+
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum), subset =  ~ ph2.D15.tcell, data = subset(dat.onedosemRNA, naive==0))
+
+fit = svycoxph(f=as.formula(glue("Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ {a}")), design)
+summary(fit)
+
+fit = svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ Bcd4_IL4.IL5.IL13.154_BA.4.5.S_alt, design)
+summary(fit)
+
+fit = svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ Day15cd4_IL4.IL5.IL13.154_BA.4.5.S_alt, design)
+summary(fit)
+
+
+myboxplot(Bcd4_IL4.IL5.IL13.154_BA.4.5.S_alt~COVIDIndD22toD91, subset(dat.onedosemRNA, naive==0), names=c("non-cases", "cases"))
+mytable(subset(dat.onedosemRNA, naive==0, Bcd4_IL4.IL5.IL13.154_BA.4.5.S_alt))
+mytable(subset(dat.onedosemRNA, naive==0, Day15cd4_IL4.IL5.IL13.154_BA.4.5.S_alt))
+```
+
+There isno obvious issues with model fitting with Day15cd4_154_BA.4.5.S continuous, which is highly significant, especially after covariates adjustment. The trichotomized version has overall p value 0.089. 
+```{r fits}
+a="Day15cd4_154_BA.4.5.S" #
+
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum), subset =  ~ ph2.D15.tcell, data = subset(dat.onedosemRNA, naive==0))
+
+hist(subset(dat.onedosemRNA, naive==0)[[a]])
+
+fits = list(
+  svycoxph(f=as.formula(glue("Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ {a}  ")), design)
+,
+  svycoxph(f=as.formula(glue("Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ {a}   + strata(stage)")), design)
+,
+  svycoxph(f=as.formula(glue("Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ {a}   + FOIstandardized + standardized_risk_score + strata(stage)")), design)
+
+)
+for(fit in fits) print(summary(fit))
+getFormattedSummary(fits, robust=T, exp=T)
+```
+
+
+```{r fold change}
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum), subset =  ~ ph2.D15.tcell, data = subset(dat.onedosemRNA, naive==0))
+
+fits=list(
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S  + Day15pseudoneutid50_BA.4.BA.5, design)
+,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S + Delta15overBcd4_IFNg.IL2_BA.4.5.S, design)
+,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Delta15overBcd4_IFNg.IL2_BA.4.5.S, design)
+,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bpseudoneutid50_BA.4.BA.5 + Delta15overBpseudoneutid50_BA.4.BA.5, design)
+,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Delta15overBpseudoneutid50_BA.4.BA.5, design)
+)
+tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
+tab[is.na(tab)]=""
+kable(tab)
+
+```
+
+The following models show that in Bcd4_IFNg.IL2_BA.4.5.S, S1 is mainly responsible.
+```{r S1 S2}
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum), subset =  ~ ph2.D15.tcell, data = subset(dat.onedosemRNA, naive==0))
+
+fits=list(
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S   + Day15pseudoneutid50_BA.4.BA.5, design)
+,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S1  + Day15pseudoneutid50_BA.4.BA.5, design)
+,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S2  + Day15pseudoneutid50_BA.4.BA.5, design)
+)
+tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
+tab[is.na(tab)]=""
+kable(tab)
+
 ```

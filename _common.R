@@ -105,17 +105,10 @@ if (!is.null(config$assay_metadata)) {
     S2 = paste0(tmp$assay, "2"); tmp2 = tmp; tmp2$assay = S2; tmp2$assay_label_short = sub(".S \\(\\%\\)", ".S2 (%)", tmp2$assay_label_short); tmp2$assay_label = paste0(tmp2$assay_label, "2"); tmp2$panel="S2"
     assay_metadata = rbind(assay_metadata, tmp1, tmp2)
     
-    primary = c("Bcd4_IFNg.IL2_Wuhan.N", "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S")
-    secondary = c("Bcd8_IFNg.IL2_Wuhan.N",         "Bcd8_IFNg.IL2_BA.4.5.S", 
-                  "Bcd4_IFNg.IL2.154_Wuhan.N",     "Bcd4_IFNg.IL2.154_BA.4.5.S", 
-                  "Bcd4_IL4.IL5.IL13.154_Wuhan.N", "Bcd4_IL4.IL5.IL13.154_BA.4.5.S", 
-                  "Bcd4_IL21_Wuhan.N",             "Bcd4_IL21_BA.4.5.S", 
-                  "Day15cd8_IFNg.IL2_BA.4.5.S",
-                  "Day15cd4_IFNg.IL2.154_BA.4.5.S",
-                  "Day15cd4_IL4.IL5.IL13.154_BA.4.5.S", 
-                  "Day15cd4_IL21_BA.4.5.S")
-    # exploratory tier defined after data is read    
   }
+  
+  primary = config$primary_markers
+  secondary = config$secondary_markers
   
   if (exists('COR')) {
     
@@ -580,16 +573,13 @@ if(config$sampling_scheme == 'case_cohort') stopifnot(!is.null(dat_proc$Subcohor
 
 
 if (TRIAL=="covail_tcell") {
-  # filter exploratory markers by Day15 pos rate
-  # B and D15 S-marker pos rates are slightly different, we sync the two by using D15 to filter
-  pos = sapply("Day15"%.%S%.%"_resp", function(x) sum(dat_proc[[x]] * dat_proc$ph2.D15.tcell * dat_proc$wt.D15.tcell, na.rm=T)/sum(dat_proc$ph1.D15.tcell))
-  exploratory = c("B"%.%S[pos>=0.2], "Day15"%.%S[pos>=0.2])
+  # filter exploratory markers by pos rate among NN
+  tmp=c("B"%.%N, "Day15"%.%N, "B"%.%S, "Day15"%.%S)
+  dat.tmp = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17) & naive==0)
+  pos1 = sapply(tmp%.%"_resp", function(x) sum(dat.tmp[[x]] * dat.tmp$ph2.D15.tcell * dat.tmp$wt.D15.tcell, na.rm=T)/sum(dat.tmp$ph1.D15.tcell))
+  exploratory = tmp[pos1>=0.1]
   
-  tmp=c("B"%.%N, "Day15"%.%N)
-  pos1 = sapply(tmp%.%"_resp", function(x) sum(dat_proc[[x]] * dat_proc$ph2.D15.tcell * dat_proc$wt.D15.tcell, na.rm=T)/sum(dat_proc$ph1.D15.tcell))
-  exploratory = c(exploratory, tmp[pos1>=0.2])
-  
-  exploratory = setdiff(exploratory, c(primary, secondary))
+  exploratory = sort(setdiff(exploratory, c(primary, secondary)))
 }
 
 
