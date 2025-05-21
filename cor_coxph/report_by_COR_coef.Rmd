@@ -117,7 +117,7 @@ if(TRIAL %in% c("azd1222")) {
   res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
 
-} else if(file.exists(paste0("../", pathCoRoutput, "/hr_forest_",fname.suffix,".pdf"))) {
+} else if(show.forestplots & file.exists(paste0("../", pathCoRoutput, "/hr_forest_",fname.suffix,".pdf"))) {
   # ../ is necessary because pathCoRoutput starts at corcoxph
   
   cat("
