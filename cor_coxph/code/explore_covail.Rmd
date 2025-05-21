@@ -13,8 +13,14 @@ library(glue)
 library(Hmisc)
 library(knitr)
 
-dat_mapped=read.csv('/trials/covpn/COVAILcorrelates/analysis/mapping_immune_correlates/adata/covail_mapped_data_20250424.csv')
-dat_proc=read.csv('/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250508.csv')
+TRIAL="covail"
+
+config.processing <- config::get(config = TRIAL, file="/home/yfong/correlates_processing/config.yml") 
+dat_mapped=read.csv(config.processing$mapped_data)
+
+config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml") 
+dat_proc=read.csv(config.reporting$data_cleaned)
+
 dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1) 
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
@@ -80,6 +86,16 @@ convert2IU=function(tmp) {
 mytable(dat_proc$treatment_assigned)
 
 ```
+
+```{r FS scatterplots, fig.height=6, fig.width=6}
+par(mfrow=c(2,2)); reduce_margin()
+corplot(Day15cd4_FS_Wuhan.N~Bcd4_FS_Wuhan.N,  dat_mapped)
+corplot(Day15cd4_FS_BA.4.5.S1~Bcd4_FS_BA.4.5.S1,  dat_mapped)
+hist(dat_mapped$Bcd4_FS_Wuhan.N, main="")
+hist(dat_mapped$Bcd4_FS_BA.4.5.S1, main="")
+
+```
+
 
 ```{r compute weighted response rate using _resp variables}
 dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
