@@ -484,7 +484,7 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
   print("RCDF 2:")
   for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm
     } else if (study_name == "NextGen_Mock") {
-      tps_no_fold_change # "B"      "Day31"  "Day91"  "Day181" "Day366"
+      c(paste0(tps_no_fold_change, "_initial"), tps_no_fold_change[c(1,2,4)]) # "B"      "Day31"  "Day91"  "Day181" "Day366"
   } else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
       
     if (attr(config,"config") %in% c("janssen_partA_VL","prevent19_stage2")) next # janssen_partA_VL, prevent19_stage2 doesn't need these plots
@@ -500,7 +500,7 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
       } else if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) {
         subdat_rcdf2 = subdat_rcdf2_ %>%
           mutate(wt = ifelse(grepl("T4|T8", assay), wt.AB.immuno, wt.immuno))  # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
-      } else if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) {
+      } else if (study_name == "NextGen_Mock" & grepl("_initial", tp)) {
         subdat_rcdf2 = subdat_rcdf2_ %>% 
           filter(Track == "A") %>%
           mutate(wt = wt.AB.immuno)
@@ -508,7 +508,7 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
       
       covid_corr_rcdf(
         plot_dat = subdat_rcdf2,
-        x = tp,
+        x = gsub("_initial", "", tp),
         color = "assay_labels",
         lty = if (study_name == "NextGen_Mock") NULL else "Bserostatus",
         weight = ifelse(attr(config,"config")=="vat08_combined" & Ab=="bind", "wt.immuno.bAb",
@@ -517,22 +517,22 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
                                       "wt.subcohort"))),
         xlab = if (Ab == "T4|T8") {"Percent of T cells expressing indicated function"
         } else if (Ab == "bind") {"Concentration of binding antibodies (AU/ml)"
-        } else if (Ab == "pseudo") {"nAb ID50 titer (AU/ml)"} else {paste0(gsub("ay ", "", labels.time[tp]), " Ab Markers")},
-        xlim = c(min(assay_lim[rcdf_assays, tp, 1]), 
-                 max(assay_lim[rcdf_assays, tp, 2])),
-        xbreaks = seq(floor(min(assay_lim[rcdf_assays, tp, 1])), 
-                      ceiling(max(assay_lim[rcdf_assays, tp, 2])), 
+        } else if (Ab == "pseudo") {"nAb ID50 titer (AU/ml)"} else {paste0(gsub("ay ", "", labels.time[gsub("_initial", "", tp)]), " Ab Markers")},
+        xlim = c(min(assay_lim[rcdf_assays, gsub("_initial", "", tp), 1]), 
+                 max(assay_lim[rcdf_assays, gsub("_initial", "", tp), 2])),
+        xbreaks = seq(floor(min(assay_lim[rcdf_assays, gsub("_initial", "", tp), 1])), 
+                      ceiling(max(assay_lim[rcdf_assays, gsub("_initial", "", tp), 2])), 
                       ifelse(study_name=="VAT08", 3, 1)),
-        plot_title = paste0(labels.time[tp], " Ab Markers"),
+        plot_title = paste0(labels.time[gsub("_initial", "", tp)], " Ab Markers"),
         legend_size = ifelse(length(rcdf_assays) > 10, 5, ifelse(length(rcdf_assays) >= 4, 8, 14)), 
         axis_size = ifelse(attr(config,"config")=="nextgen_mock", 10, 16), 
         label_format = ifelse(Ab == "T4|T8", "percent", "log10"),
         legend_nrow = ifelse(length(rcdf_assays) < 10, length(rcdf_assays), ceiling(length(rcdf_assays)/2)),
         filename = paste0(
-          save.results.to, "/Marker_Rcdf_", Ab_lb, tp,
+          save.results.to, "/Marker_Rcdf_", Ab_lb, gsub("_initial", "", tp),
           "_trt_", tolower(gsub(" ", "_", trt)), "_bstatus_both_", study_name, 
           ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
-                 ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
+                 ifelse(study_name == "NextGen_Mock" & grepl("_initial", tp), "_initial", "")), ".pdf"
         )
       )
     }
@@ -1147,7 +1147,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                                                gsub("neutralization to", "bAb", colnames(dat.plot)))))
             
             color = c(if(study_name=="VAT08") "#0AB7C9", "#FF6F1B", "#FF5EBF", "dodgerblue", "chartreuse3", "#009E73")[1:length(times_spider)]
-            legend_lb = times_spider
+            legend_lb = labels.time[times_spider]
 
             spider_range = if(attr(config,"config")=="janssen_partA_VL") {seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
             radarchart(dat.plot, 

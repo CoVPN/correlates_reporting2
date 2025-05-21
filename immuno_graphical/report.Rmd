@@ -10,6 +10,7 @@ html_document: default
 library(here)
 library(latex2exp)
 library(knitr)
+library(stringr) # str_extract
 
 here::i_am("immuno_graphical/report.Rmd")
 
@@ -187,11 +188,11 @@ for (bsero in bstatus.labels.2) {
                     ) 
                     } else {list(tps_no_fold_change)}
                     
-                    immuno_postfix_label <- case_when(
-                        study_name == "NextGen_Mock" & grepl("T4|T8", asy) & !grepl("bind|pseudo", asy) ~ " (RIS-PBMC cohort)",
-                        study_name == "NextGen_Mock" & !grepl("T4|T8", asy) & grepl("bind|pseudo", asy) ~ " (RIS cohort)",
+                    #immuno_postfix_label <- case_when(
+                    #    study_name == "NextGen_Mock" & grepl("T4|T8", asy) & !grepl("bind|pseudo", asy) ~ " (RIS-PBMC cohort)",
+                    #    study_name == "NextGen_Mock" & !grepl("T4|T8", asy) & grepl("bind|pseudo", asy) ~ " (RIS cohort)",
                         #study_name == "NextGen_Mock" & !grepl("T4|T8", asy) & grepl("bind", asy) ~ " (RIS or RIS-PBMC cohort)",
-                        TRUE ~ immuno_postfix_label)
+                    #    TRUE ~ immuno_postfix_label)
                     bseroLabel <- ifelse(study_name == "NextGen_Mock", "", bseroLabel)
                     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
                     cat(res, sep = '\n')
@@ -222,27 +223,28 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
     }
 }
 
+ for(tp in if (study_name == "NextGen_Mock") {c(paste0(tps_no_fold_change, "_initial"), paste0(tps_no_fold_change[c(1,2,4)], "_final"))} else {times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]}) {
 
-for (trt in c("trt_both", paste0("trt_", trt.labels.2[2]), if (study_name %in% c("VAT08", "NextGen_Mock")) paste0("trt_", trt.labels.2[1]))){
-    
-    if (attr(config,"config")=="prevent19_stage2") next # no these figures for prevent19_stage2
-    
-    trtLabel <- ifelse(trt=="trt_both", "x randomization arm", paste0(gsub("_", " ", gsub("trt_","", trt)), " arm"))
-    
-    for (bsero in c("bstatus_both", "bstatus_Neg", "bstatus_Pos")){
-        if (bsero=="bstatus_Pos" && if.pos.exist==0) next
-        if (bsero != "bstatus_both" & study_name == "NextGen_Mock") next # NextGen_Mock only have bstatus_both plot which only contains non-naive 
-        if (trt=="trt_both" && bsero!="bstatus_both" && study_name!="VAT08") next # trt_both is only for bstatus both if the study is VAT08
-        if (attr(config,"config")=="janssen_partA_VL" && !(trt==paste0("trt_", trt.labels.2[2]) && bsero=="bstatus_Neg")) next # only report for vaccine baseline neg for janssan_partA_VL
+    for (trt in c("trt_both", paste0("trt_", trt.labels.2[2]), if (study_name %in% c("VAT08", "NextGen_Mock")) paste0("trt_", trt.labels.2[1]))){
         
-        bseroLabel <- ifelse(bsero=="bstatus_both", "by serostatus", ifelse(bsero=="bstatus_Neg", bstatus.labels.3[1], bstatus.labels.3[2]))
+        if (attr(config,"config")=="prevent19_stage2") next # no these figures for prevent19_stage2
         
-        for(tp in times_[!times_ %in% c(if (study_name != "NextGen_Mock") "B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
+        trtLabel <- ifelse(trt=="trt_both", "x randomization arm", paste0(gsub("_", " ", gsub("trt_","", trt)), " arm"))
+        
+        for (bsero in c("bstatus_both", "bstatus_Neg", "bstatus_Pos")){
+            if (bsero=="bstatus_Pos" && if.pos.exist==0) next
+            if (bsero != "bstatus_both" & study_name == "NextGen_Mock") next # NextGen_Mock only have bstatus_both plot which only contains non-naive 
+            if (trt=="trt_both" && bsero!="bstatus_both" && study_name!="VAT08") next # trt_both is only for bstatus both if the study is VAT08
+            if (attr(config,"config")=="janssen_partA_VL" && !(trt==paste0("trt_", trt.labels.2[2]) && bsero=="bstatus_Neg")) next # only report for vaccine baseline neg for janssan_partA_VL
             
-            if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
+            bseroLabel <- ifelse(bsero=="bstatus_both", "by serostatus", ifelse(bsero=="bstatus_Neg", bstatus.labels.3[1], bstatus.labels.3[2]))
+        
+       
+            
+            if (study_name %in% c("VAT08") && grepl("Delta", tp)) next # only report main timepoints for VAT08
             if (attr(config,"config")=="janssen_partA_VL" && !grepl("Day", tp)) next # only report peak timepoint for janssen_partA_VL
             
-            tpLabel <- gsub("ay ", "", labels.time[tp])
+            tpLabel <- gsub("ay ", "", labels.time[gsub("_initial|_final", "", tp)])
             
             for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")
             } else if (study_name == "NextGen_Mock") {c("bAb", "nAb", "ics")
@@ -259,11 +261,11 @@ for (trt in c("trt_both", paste0("trt_", trt.labels.2[2]), if (study_name %in% c
                                           reg=="ZA_" ~ "Southern Africa",
                                           TRUE ~ "")
                     
-                    immuno_postfix_label <- case_when(
-                        study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366") ~ " (Track A RIS-PBMC cohort)",
-                        study_name == "NextGen_Mock" & asy %in% c("bAb", "nAb") ~ " (RIS cohort)",
-                        study_name == "NextGen_Mock" & asy == "ics" ~ " (RIS-PBMC cohort)",
-                        TRUE ~ immuno_postfix_label)
+                    #immuno_postfix_label <- case_when(
+                    #    study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366") ~ " (Track A RIS-PBMC cohort)",
+                    #    study_name == "NextGen_Mock" & asy %in% c("bAb", "nAb") ~ " (RIS cohort)",
+                    #    study_name == "NextGen_Mock" & asy == "ics" ~ " (RIS-PBMC cohort)",
+                    #    TRUE ~ immuno_postfix_label)
                     bseroLabel <- ifelse(study_name == "NextGen_Mock", "", bseroLabel)
                     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
                     cat(res, sep = '\n')
