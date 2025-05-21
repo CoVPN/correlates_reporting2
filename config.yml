@@ -1707,7 +1707,7 @@ D31toM6_nextgen_mock_tcell:
 # Note that for data processing, covail is the only TRIAL label. But for reporting2, there are multiple variants.
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250508.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250520.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
@@ -1727,8 +1727,9 @@ covail_sanofi: &covail_sanofi
 
 covail_tcell: &covail
   inherits: covail
-  primary_markers: [Bcd4_IFNg.IL2_Wuhan.N, Bcd4_IFNg.IL2_BA.4.5.S, Day15cd4_IFNg.IL2_BA.4.5.S]
-  secondary_markers: [Bcd8_IFNg.IL2_BA.4.5.S, Bcd4_IFNg.IL2.154_Wuhan.N, Bcd4_IFNg.IL2.154_BA.4.5.S, Day15cd8_IFNg.IL2_BA.4.5.S, Day15cd4_IFNg.IL2.154_BA.4.5.S, Day15cd4_IL21_BA.4.5.S]
+  primary_markers: [Bcd4_IFNg.IL2_Wuhan.N, Bcd4_IFNg.IL2_BA.4.5.S, Day15cd4_IFNg.IL2_BA.4.5.S, Bcd4_FS_Wuhan.N, Bcd4_FS_BA.4.5.S, Day15cd4_FS_BA.4.5.S]
+  secondary_markers: [Bcd4_IFNg.IL2.154_Wuhan.N, Bcd4_IFNg.IL2.154_BA.4.5.S, Bcd8_IFNg.IL2_BA.4.5.S, Day15cd4_IFNg.IL2.154_BA.4.5.S, Day15cd4_IL21_BA.4.5.S, Day15cd8_IFNg.IL2_BA.4.5.S]
+#  secondary_markers: [Bcd4_IFNg.IL2.154_Wuhan.N, Bcd4_IFNg.IL2.154_BA.4.5.S, Bcd8_IFNg.IL2_BA.4.5.S, Day15cd4_IFNg.IL2.154_BA.4.5.S, Day15cd4_IL21_BA.4.5.S, Day15cd8_IFNg.IL2_BA.4.5.S, Bcd8_FS_BA.4.5, Bcd8_FS_Wuhan.N, Day15cd8_FS_BA.4.5]
 
 
 #### COR labels

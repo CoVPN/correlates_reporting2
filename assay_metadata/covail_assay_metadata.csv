@@ -60,3 +60,6 @@ tcell,51,cd4_CXCR5.IL21_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing CXCR5 and/o
 tcell,52,cd8_IFNg.IL2.TNFa_COV2.CON.S,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to COV2.CON.S,CD8+ T cells IFN-g and/or IL-2 and/or TNF-a COV2.CON.S (%),lod,1,0.001
 tcell,53,cd8_IFNg.IL2.TNFa_BA.4.5.S,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to BA.4.5.S,CD8+ T cells IFN-g and/or IL-2 and/or TNF-a BA.4.5.S (%),lod,1,0.001
 tcell,54,cd8_IFNg.IL2.TNFa_Wuhan.N,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to Wuhan N,CD8+ T cells IFN-g and/or IL-2 and/or TNF-a Wuhan N (%),lod,1,0.001
+tcell,55,cd4_FS_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells functionality score to COV2.CON.S,CD4+ T cells functionality score COV2.CON.S,lod,1,NA
+tcell,56,cd4_FS_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells functionality score to BA.4.5.S,CD4+ T cells functionality score BA.4.5.S,lod,1,NA
+tcell,57,cd4_FS_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells functionality score to Wuhan N,CD4+ T cells functionality score Wuhan N,lod,1,NA

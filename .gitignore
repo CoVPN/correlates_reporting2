@@ -23,8 +23,8 @@ _report_immuno/*.pdf
 _report_immuno/*.html
 _report_riskscore/*.pdf
 _report_riskscore/*.html
-_report_cor/*.pdf
 _report_cor/*.html
+_report_cor/*.pdf
 _report_cop/*.pdf
 _report_cop/*.html
 data_clean/.README.md.swp
