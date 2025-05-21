@@ -5,8 +5,7 @@
 Sys.setenv(TRIAL = "covail_tcell"); source(here::here("..", "_common.R")); source(here::here("code", "params.R"))
 
 # hack
-source("~/copcor/R/cor_coxph_coef_1.R")
-source("~/kyotil/R/regression.model.functions.R")
+# source("~/copcor/R/cor_coxph_coef_1.R")
 
 marker_sets = c("primary", "secondary", "exploratory")
 trts=1:8 # onedosemRNA, etc
@@ -61,10 +60,10 @@ for (a in names(marker.cutpoints)) {
 # secondary=setdiff(secondary, c("Bcd4_IL4.IL5.IL13.154_Wuhan.N"))
 
 # note that arm 16 and 17 are excluded, because no T cells are done for them. This is different from the antibody correlates where 16 and 17 are included.
-dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
-dat.onedoseModerna = subset(dat_proc, ph1.D15 & arm %in% c(1,2,5,6))
-dat.onedosePfizer  = subset(dat_proc, ph1.D15 & arm %in% c(7,9,12))
-dat.sanofi = subset(dat_proc, ph1.D15 & TrtSanofi==1)
+dat.onedosemRNA  =    subset(dat_proc, ph1.D15.tcell & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
+dat.onedoseModerna = subset(dat_proc, ph1.D15.tcell & arm %in% c(1,2,5,6))
+dat.onedosePfizer  = subset(dat_proc, ph1.D15.tcell & arm %in% c(7,9,12))
+dat.sanofi = subset(dat_proc, ph1.D15.tcell & TrtSanofi==1)
 
 # all cases have covid lineage observed
 

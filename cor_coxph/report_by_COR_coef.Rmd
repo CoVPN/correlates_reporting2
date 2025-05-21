@@ -15,8 +15,8 @@ Each row represents results from one model with a single immune biomarker. The f
 $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
 
 `r if (!show.q) '<!--'`
-`r tmp = paste0(pathCoRoutput, "/permutation_replicates_", fname.suffix)`
-$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the `r ifelse(file.exists(tmp), "Westfall and Young permutation", "Holm and FDR")` method`r ifelse(file.exists(tmp), " (\\protect\\input\\{" %.%tmp%.% "\\} replicates)", "")`.
+`r tmp = paste0(sub("^[^/]+/", "", pathCoRoutput), "/pvals.perm.", fname.suffix, ".Rdata")`
+$\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the `r ifelse(file.exists(tmp), "Westfall and Young permutation", "Holm and FDR")` method`r ifelse(file.exists(tmp), " (" %.%config$num_perm_replicates%.% " replicates)", "")`.
 `r if (!show.q)'-->'`
 
 

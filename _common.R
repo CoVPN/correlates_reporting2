@@ -94,11 +94,13 @@ if (!is.null(config$assay_metadata)) {
     
   } else if (TRIAL=="covail_tcell") {
     # add S1 and S2 to assay_metadata
-    tmp=assay_metadata$assay[8:nrow(assay_metadata)]
+    tmp = assay_metadata$assay
+    tmp = tmp[startsWith(tmp, "cd")]
     N=tmp[endsWith(tmp, ".N") & startsWith(tmp, "c")]
     S=tmp[endsWith(tmp, ".S") & startsWith(tmp, "c")]
     # sort S by BA.4.5 and N
     S = c(S[endsWith(S,"_COV2.CON.S")], S[endsWith(S,"_BA.4.5.S")])
+    FS=tmp[grepl("_FS", tmp)]
     
     tmp = subset(assay_metadata, assay %in% S)
     S1 = paste0(tmp$assay, "1"); tmp1 = tmp; tmp1$assay = S1; tmp1$assay_label_short = sub(".S \\(\\%\\)", ".S1 (%)", tmp1$assay_label_short); tmp1$assay_label = paste0(tmp1$assay_label, "1"); tmp1$panel="S1"
@@ -578,6 +580,10 @@ if (TRIAL=="covail_tcell") {
   dat.tmp = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17) & naive==0)
   pos1 = sapply(tmp%.%"_resp", function(x) sum(dat.tmp[[x]] * dat.tmp$ph2.D15.tcell * dat.tmp$wt.D15.tcell, na.rm=T)/sum(dat.tmp$ph1.D15.tcell))
   exploratory = tmp[pos1>=0.1]
+  
+  # add FS markers
+  FS_vars = c("B"%.%FS, "Day15"%.%FS)
+  exploratory = c(exploratory, FS_vars)
   
   exploratory = sort(setdiff(exploratory, c(primary, secondary)))
 }
