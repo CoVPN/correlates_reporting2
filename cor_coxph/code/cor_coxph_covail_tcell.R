@@ -5,7 +5,8 @@
 Sys.setenv(TRIAL = "covail_tcell"); source(here::here("..", "_common.R")); source(here::here("code", "params.R"))
 
 # hack
-# source("~/copcor/R/cor_coxph_coef_1.R")
+source("~/copcor/R/cor_coxph_coef_1.R")
+source("~/kyotil/R/regression.model.functions.R")
 
 marker_sets = c("primary", "secondary", "exploratory")
 trts=1:8 # onedosemRNA, etc

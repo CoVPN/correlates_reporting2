@@ -1718,8 +1718,7 @@ covail: &covail
   covariates: ~.+ FOIstandardized + standardized_risk_score
   low_efficacy: no
   num_boot_replicates: 1000
-  num_perm_replicates: 10
-  primary_assays: []
+  num_perm_replicates: 5000
 
 # a copy of covail, used to drive Makefile
 covail_sanofi: &covail_sanofi

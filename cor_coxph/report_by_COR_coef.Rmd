@@ -6,7 +6,7 @@
 
 
 
-Each row represents results from one model with a single immune biomarker. The first table shows HRs per 10-fold increase and the second table shows HRs per SD increase. 
+Each row represents results from one model with a single immune biomarker. The first table shows HRs per 10-fold increase (unless otherwise noted) and the second table shows HRs per SD increase. 
 
 \setlength{\tabcolsep}{.5ex}
 \small
@@ -19,6 +19,11 @@ $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this co
 $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the `r ifelse(file.exists(tmp), "Westfall and Young permutation", "Holm and FDR")` method`r ifelse(file.exists(tmp), " (\\protect\\input\\{" %.%tmp%.% "\\} replicates)", "")`.
 `r if (!show.q)'-->'`
 
+
+<!-- additional notes -->
+`r if (!TRIAL %in% c("covail_tcell")) '<!--'`
+ For functionality score (FS) markers, the table shows HR per 0.01 increase in score.
+`r if (!TRIAL %in% c("covail_tcell")) '-->'`
 
 
 `r if (!has.scaled) '<!--'`
