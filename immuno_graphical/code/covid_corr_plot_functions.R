@@ -582,7 +582,7 @@ covid_corr_rcdf <- function(plot_dat,
   scale_label <- switch(label_format,
                         "log10" = scales::label_math(10^.x),
                         "percent" = function(x) {
-                          paste0(format(10^x * 100, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                          paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
                         }
   )
   

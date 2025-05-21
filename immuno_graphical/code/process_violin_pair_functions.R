@@ -149,6 +149,7 @@ get_desc_by_group <- function(data,
 #' @param strip.x.text.size font size for x-axis strip label
 #' @param facet.x.var horizontal facet variable 
 #' @param facet.y.var vertical facet variable 
+#' @param color.map # specify colors for Trt values
 #' @return A ggplot object list for violin + box plot without lines
 f_by_time_assay <- 
     function(dat,
@@ -160,7 +161,8 @@ f_by_time_assay <-
              axis.x.text.size = 18,
              strip.x.text.size = 10,
              facet.y.var,
-             facet.x.var
+             facet.x.var,
+             color.map = c("Vaccine" = "#FF6F1B", "Placebo" = "#FF6F1B")
     ) {
         
         plot_theme <- theme_bw(base_size = 25) +
@@ -184,6 +186,8 @@ f_by_time_assay <-
         p1 <- dat %>%
             filter(assay %in% assays & time %in% times) %>%
             left_join(assay_metadata, by="assay") %>%
+            # adhoc code below
+            mutate(panel = ifelse(study_name == "NextGen_Mock" & grepl("IgG", assay), "Binding IgG", panel)) %>%
             mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", panel))) %>%
             mutate(assay_label2 = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label),
                    
@@ -193,9 +197,11 @@ f_by_time_assay <-
             purrr::map(function(d){
                 ggplot(data = d, aes(x = x, y = value)) +
                     facet_grid(rows = facet.y.var, cols = facet.x.var) +
-                    geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE, color = "#FF6F1B") +
-                    geom_boxplot(width = 0.25, lwd = 1.5, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE, color = "#FF6F1B") +
-                    geom_jitter(width = 0.1, height = 0, size = 2, show.legend = TRUE, color = "#FF6F1B") +
+                    geom_violin(aes(color = Trt), scale = "width", na.rm = TRUE, show.legend = FALSE) +
+                    geom_boxplot(aes(color = Trt), width = 0.25, lwd = 1.5, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
+                    geom_jitter(aes(color = Trt), width = 0.1, height = 0, size = 2, show.legend = TRUE) +
+                    scale_color_manual(values = color.map) +
+                    scale_fill_manual(values = color.map) +
                     #scale_color_manual(name = "", values = "#FF6F1B", guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR

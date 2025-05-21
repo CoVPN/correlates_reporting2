@@ -507,4 +507,9 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
     dat.longer.immuno.subset.plot1.2 <- get_desc_by_group(dat.longer.immuno.subset %>% filter(!is.na(value)), groupby_vars1.2)
     saveRDS(dat.longer.immuno.subset.plot1.2, file = here::here("data_clean", "longer_immuno_data_plot1.2.rds"))
   }
+  
+  if (study_name == "NextGen_Mock") {
+    dat.longer.immuno.subset.plot1.3 <- get_desc_by_group(dat.longer.immuno.subset %>% filter(!is.na(value)) %>% mutate(Trt = "Pooled Arm"), groupby_vars1)
+    saveRDS(dat.longer.immuno.subset.plot1.3, file = here::here("data_clean", "longer_immuno_data_plot1.3.rds"))
+  }
 }

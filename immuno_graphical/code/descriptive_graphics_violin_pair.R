@@ -36,6 +36,10 @@ if(attr(config,"config") == "nextgen_mock"){
     dat.longer.immuno.subset.plot1.trackA = dat.longer.immuno.subset.plot1$dat_stats # for Track A RIS/RIS-PBMC (initial immuno)
     dat.longer.immuno.subset.plot1.whole = dat.longer.immuno.subset.plot1$dat_stats2 # for whole RIS/RIS-PBMC (final immuno)
 }
+if (attr(config,"config") == "nextgen_mock") {
+    dat.longer.immuno.subset.plot1.3 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.3.rds"))
+    dat.longer.immuno.subset.plot1.3.whole = dat.longer.immuno.subset.plot1.3$dat_stats2 # for whole RIS/RIS-PBMC (final immuno)
+}
 if(attr(config,"config") == "vat08_combined"){
     dat.longer.immuno.subset.plot1_stage1_stage2 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1_stage1_stage2.rds"))}
 if(attr(config,"config")=="janssen_partA_VL") {
@@ -47,13 +51,13 @@ dat.immuno.subset.plot3 <- dat.immuno.subset.plot3 %>%
 
 ###### Set 1 plots: Ab distributions at main timepoints and delta by vaccine/placebo, naive/nnaive
 if (attr(config, "config") == "nextgen_mock") {
-    set1_times <- times_[c(1, 2, 4, 6, 8)]
+    set1_times <- times_[c(2, 4, 6, 8)]
 } else {
     set1_times <- times_[1:5]
 }
 # ID50, at B, D22, D43, D22-B, D43-B
 # bindSpike, at B, D22, D43, D22-B, D43-B
-for (panel in if (study_name == "NextGen_Mock") {unique(assay_metadata$panel)
+for (panel in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera", "T4", "T8")
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
@@ -72,10 +76,10 @@ for (panel in if (study_name == "NextGen_Mock") {unique(assay_metadata$panel)
         for (tm in c(if(attr(config, "config") == "nextgen_mock") "Day initial", "Day whole")){
             
             if (tm == "Day initial") {
-                set1_times_sub = set1_times[c(3, 5)]
+                set1_times_sub = set1_times[c(2, 4)]
                 dat.longer.immuno.subset.plot1_  = dat.longer.immuno.subset.plot1.trackA %>% filter(Track == "A") # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
             } else if (tm == "Day whole" & attr(config, "config") == "nextgen_mock") {
-                set1_times_sub = set1_times[c(1, 2, 4)]
+                set1_times_sub = set1_times[c(1, 3)]
                 dat.longer.immuno.subset.plot1_  = dat.longer.immuno.subset.plot1.whole # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
             } else {set1_times_sub = set1_times[grepl(tm_subset, set1_times)]}
             
@@ -85,16 +89,17 @@ for (panel in if (study_name == "NextGen_Mock") {unique(assay_metadata$panel)
             
             f_1 <- f_by_time_assay(
                 dat = dat.longer.immuno.subset.plot1_ %>% mutate(x="1"),
-                assays = assays[grepl(ifelse(panel == "tcell", "T4|T8", panel), assays)],
+                assays = assays[grepl(panel, assays)],
                 times = set1_times_sub,
                 ylim = if (grepl("^B|Day", tm_subset) & panel=="bindSpike") {c(2, 7)
                     } else if (grepl("^B|Day", tm_subset) & panel=="pseudoneutid50") {c(1, 6.5)
                         } else if (grepl("Delta", tm_subset)) {c(-3, 4.2)} else if (study_name == "NextGen_Mock") {c(-3, 7)} else {c(-3, 4.5)},
                 axis.x.text.size = 20,
-                strip.x.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("tcell", panel), 10, ifelse(grepl("bindSpike_", panel), 6, 10)))),
-                panel.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 7, ifelse(grepl("tcell|pseudoneutid50", panel), 6, 4.5)),
+                strip.x.text.size = ifelse(grepl("pseudoneutid50$", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("T4|T8", panel), 10, ifelse(grepl("IgG|IgA", panel), 6, 10)))),
+                panel.text.size = ifelse(grepl("pseudoneutid50$", panel), 7, ifelse(grepl("T4|T8|pseudoneutid50", panel), 6, 4.5)),
                 facet.y.var = vars(Trt),
-                facet.x.var = vars(assay_label2))
+                facet.x.var = vars(assay_label2),
+                color.map = c("Investigational Vaccine" = "#1749FF", "Comparator Vaccine" = "#009E73"))
             
             for (i in 1:length(set1_times_sub)){
                 
@@ -102,9 +107,35 @@ for (panel in if (study_name == "NextGen_Mock") {unique(assay_metadata$panel)
                                     ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
                                            ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
                 ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), 
-                       width = if (grepl("bindSpike", panel) & study_name == "NextGen_Mock") {28} else {16}, 
+                       width = if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {30} else {16}, 
                        height = 16)
             }
+        }
+    }
+}
+
+# pooling two arms at D01 for NextGen_Mock
+if (study_name == "NextGen_Mock") {
+    for (panel in c("IgG", "pseudoneutid50_sera", "T4", "T8")) {
+            
+        f_1 <- f_by_time_assay(
+            dat = dat.longer.immuno.subset.plot1.3.whole %>% mutate(x="1"),
+            assays = assays[grepl(panel, assays)],
+            times = "B",
+            ylim = c(-3, 7),
+            axis.x.text.size = 20,
+            strip.x.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("tcell", panel), 10, ifelse(grepl("IgG|IgA", panel), 6, 10)))),
+            panel.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 7, ifelse(grepl("tcell|pseudoneutid50", panel), 6, 4.5)),
+            facet.y.var = vars(Trt),
+            facet.x.var = vars(assay_label2),
+            color.map = c("Pooled Arm" = "#FF6F1B"))
+        
+        for (i in 1){
+            
+            file_name <- paste0("/", panel, "_at_B_final.pdf")
+            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), 
+                   width = if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {30} else {16}, 
+                   height = 8)
         }
     }
 }
