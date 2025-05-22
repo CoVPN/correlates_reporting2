@@ -189,8 +189,24 @@ set2_assays = assays
 # ID50
 # bindSpike mdw
 for (panel in if (study_name == "NextGen_Mock") {
-    paste0(paste(set2_assays[c(TRUE, FALSE)], 
-                 set2_assays[c(FALSE, TRUE)], sep = "$|"), "$")
+     c("bindSpike_IgG_sera$|bindSpike_IgG_sera_delta_AY.4$",
+       "bindSpike_IgG_sera_BA.5$|bindSpike_IgG_sera_BA.2.86$",
+       "bindSpike_IgG_sera_XBB.1.5$|bindSpike_IgG_sera_JN.1$",
+       "bindSpike_IgG_sera_KP.2$|bindSpike_IgG_sera_KP.3$",
+       "bindSpike_IgG_sera_LB.1$|bindN_IgG_sera$",
+       
+       "bindSpike_IgA_sera$|bindSpike_IgA_sera_delta_AY.4$",
+       "bindSpike_IgA_sera_BA.5$|bindSpike_IgA_sera_BA.2.86$",
+       "bindSpike_IgA_sera_XBB.1.5$|bindSpike_IgA_sera_JN.1$",
+       "bindSpike_IgA_sera_KP.2$|bindSpike_IgA_sera_KP.3$",
+       "bindSpike_IgA_sera_LB.1$",
+       
+       "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$", 
+       
+       "T4_IFNg_OR_IL2_N_BA.4.5$|T4_IFNg_OR_IL2_Spike_BA.4.5$",
+       
+       "T8_IFNg_OR_IL2_N_BA.4.5$|T8_IFNg_OR_IL2_Spike_BA.4.5$"
+       )
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
@@ -201,9 +217,7 @@ for (panel in if (study_name == "NextGen_Mock") {
     } else if (attr(config,"config")=="vat08_combined" & panel=="bindSpike") {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.bAb==1)
     } else if (attr(config,"config") == "nextgen_mock") {
-        dat.longer.immuno.subset.plot1_  = dat.longer.immuno.subset.plot1.trackA %>% 
-            filter(Track == "A" & time %in% c("Day91", "Day366")) %>%
-            bind_rows(dat.longer.immuno.subset.plot1.whole %>% filter(time %in% c("B", "Day31", "Day181"))) %>% # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
+        dat.longer.immuno.subset.plot1_  = dat.longer.immuno.subset.plot1.trackA %>%  # NextGen_Mock has different weights for track A and whole, for bAb/nAb and ICS
             mutate(time = factor(time, levels = c("B", "Day31", "Day91", "Day181", "Day366")))
     } else {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
@@ -220,10 +234,11 @@ for (panel in if (study_name == "NextGen_Mock") {
         panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
         facet.y.var = vars(Trt), 
         facet.x.var = vars(assay_label_short),
-        y.axis.lb = ifelse(study_name == "NextGen_Mock", " ", "")
+        y.axis.lb = ifelse(study_name == "NextGen_Mock", " ", ""),
+        color.map = c("Investigational Vaccine" = "#1749FF", "Comparator Vaccine" = "#009E73")
     )
     
-    file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", gsub("\\$", "", gsub("\\|", "_", panel)))), "_longitudinal", if (study_name == "NextGen_Mock") "_final", ".pdf")
+    file_name <- paste0("/", ifelse(panel=="pseudoneutid50", "nAb", ifelse(panel=="bindSpike", "bAb", gsub("\\$", "", gsub("\\|", "__", panel)))), "_longitudinal", if (study_name == "NextGen_Mock") "_initial", ".pdf")
     ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
     
 }

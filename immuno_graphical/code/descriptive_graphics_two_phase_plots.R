@@ -466,11 +466,24 @@ dat.long.twophase.sample$assay_labels <-
          labels = labels.assays.short)
 
 # plot bAb, PsV and ADCP assays separately
-for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
+for (Ab in c(if (study_name != "NextGen_Mock") "bind", 
+             if (study_name != "NextGen_Mock") "pseudo", 
+             "bind.*sera", "bind.*nasal", "bind.*saliva", 
+             "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", 
+             "ADCP", "T4|T8")) {
   
   Ab_lb = case_when(Ab=="ADCP" ~ "other_",
                     Ab=="bind" ~ "bAb_",
                     Ab=="pseudo" ~ "nAb_", 
+                    
+                    Ab=="bind.*sera" ~ "bAb_sera_",
+                    Ab=="bind.*nasal" ~ "bAb_nasal_",
+                    Ab=="bind.*saliva" ~ "bAb_saliva_",
+                    
+                    Ab=="pseudo.*sera" ~ "nAb_sera_",
+                    Ab=="pseudo.*nasal" ~ "nAb_nasal_",
+                    Ab=="pseudo.*saliva" ~ "nAb_saliva_",
+                    
                     Ab=="T4|T8" ~ "ics_")
   
   rcdf_assays <- assay_immuno[grepl(Ab, assay_immuno)]
@@ -516,8 +529,8 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
                                ifelse(attr(config,"config")=="nextgen_mock", "wt",
                                       "wt.subcohort"))),
         xlab = if (Ab == "T4|T8") {"Percent of T cells expressing indicated function"
-        } else if (Ab == "bind") {"Concentration of binding antibodies (AU/ml)"
-        } else if (Ab == "pseudo") {"nAb ID50 titer (AU/ml)"} else {paste0(gsub("ay ", "", labels.time[gsub("_initial", "", tp)]), " Ab Markers")},
+        } else if (grepl("bind", Ab)) {"Concentration of binding antibodies (AU/ml)"
+        } else if (grepl("pseudo", Ab)) {"nAb ID50 titer (AU/ml)"} else {paste0(gsub("ay ", "", labels.time[gsub("_initial", "", tp)]), " Ab Markers")},
         xlim = c(min(assay_lim[rcdf_assays, gsub("_initial", "", tp), 1]), 
                  max(assay_lim[rcdf_assays, gsub("_initial", "", tp), 2])),
         xbreaks = seq(floor(min(assay_lim[rcdf_assays, gsub("_initial", "", tp), 1])), 
@@ -529,7 +542,8 @@ for (Ab in c("bind", "pseudo", "ADCP", "T4|T8")) {
         label_format = ifelse(Ab == "T4|T8", "percent", "log10"),
         legend_nrow = ifelse(length(rcdf_assays) < 10, length(rcdf_assays), ceiling(length(rcdf_assays)/2)),
         filename = paste0(
-          save.results.to, "/Marker_Rcdf_", Ab_lb, gsub("_initial", "", tp),
+          save.results.to, "/Marker_Rcdf_", Ab_lb, 
+          gsub("_initial", "", tp),
           "_trt_", tolower(gsub(" ", "_", trt)), "_bstatus_both_", study_name, 
           ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
                  ifelse(study_name == "NextGen_Mock" & grepl("_initial", tp), "_initial", "")), ".pdf"

@@ -247,7 +247,7 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
             tpLabel <- gsub("ay ", "", labels.time[gsub("_initial|_final", "", tp)])
             
             for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")
-            } else if (study_name == "NextGen_Mock") {c("bAb", "nAb", "ics")
+            } else if (study_name == "NextGen_Mock") {c("bAb_sera", "nAb_sera", "ics")
             } else {c("","bAb","nAb","other")}){ # for VAT08 and janssen_partA_VL, only report for bAb and nAb
                 if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
                 if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
@@ -587,12 +587,31 @@ for (a in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera", "T4
 ```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock")}
 
 for (assay_grp in if (study_name == "NextGen_Mock") {
-    c(paste(assays[c(TRUE, FALSE)], 
-            assays[c(FALSE, TRUE)], sep = "_"))
+    gsub("\\|", "__", gsub("\\$", "", c("bindSpike_IgG_sera$|bindSpike_IgG_sera_delta_AY.4$",
+     "bindSpike_IgG_sera_BA.5$|bindSpike_IgG_sera_BA.2.86$",
+     "bindSpike_IgG_sera_XBB.1.5$|bindSpike_IgG_sera_JN.1$",
+     "bindSpike_IgG_sera_KP.2$|bindSpike_IgG_sera_KP.3$",
+     "bindSpike_IgG_sera_LB.1$|bindN_IgG_sera$",
+     
+     "bindSpike_IgA_sera$|bindSpike_IgA_sera_delta_AY.4$",
+     "bindSpike_IgA_sera_BA.5$|bindSpike_IgA_sera_BA.2.86$",
+     "bindSpike_IgA_sera_XBB.1.5$|bindSpike_IgA_sera_JN.1$",
+     "bindSpike_IgA_sera_KP.2$|bindSpike_IgA_sera_KP.3$",
+     "bindSpike_IgA_sera_LB.1$",
+     
+     "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$", 
+     
+     "T4_IFNg_OR_IL2_N_BA.4.5$|T4_IFNg_OR_IL2_Spike_BA.4.5$",
+     
+     "T8_IFNg_OR_IL2_N_BA.4.5$|T8_IFNg_OR_IL2_Spike_BA.4.5$")))
 } else {c("bAb","bAb_mdw","nAb","nAb_mdw")}){
     details = ""
     details_lb = ""
-    immuno_postfix_label <- ifelse(study_name == "NextGen_Mock", " (RIS or RIS-PBMC cohort at Day01, Day31, Day181, Track A RIS-PBMC cohort at Day91, Day366)", immuno_postfix_label)
+    #immuno_postfix_label <- ifelse(study_name == "NextGen_Mock", " (RIS or RIS-PBMC cohort at Day01, Day31, Day181, Track A RIS-PBMC cohort at Day91, Day366)", immuno_postfix_label)
+    
+    assay_grp_lb = sub("^(.*?nAb ID50 )(.*?)(nAb ID50 )", "\\1\\2", # delete the second nab ID50
+                       paste0(gsub("^Serum |^ |Serum IgG Spike | \\(AU/ml\\)", "", gsub("Serum IgG Spike D614 ", "bAb-IgG Spike Index", labels.assays.short[strsplit(assay_grp, "__")[[1]]])), collapse = " and ")
+    )
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set2.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')

@@ -240,6 +240,7 @@ f_by_time_assay <-
 #' @param axis.text.x.size x-axis label size, default is 9.5
 #' @param y.axis.lb y-axis label, if empty, it has default value pooled from the assay_metadata
 #' @param y.lb.scale "log" or "original"
+#' @param color.map # specify colors for Trt values
 #' @return A ggplot object list for longitudinal violin + box plot with lines
 f_longitude_by_assay <- function(
     dat,
@@ -256,7 +257,8 @@ f_longitude_by_assay <- function(
     strip.text.x.size = 25,
     axis.text.x.size = 15,
     y.axis.lb = "",
-    y.lb.scale = "log"
+    y.lb.scale = "log",
+    color.map = c("Vaccine" = "#FF6F1B", "Placebo" = "#FF6F1B")
 ) {
     
     plot_theme <- theme_bw() +
@@ -285,13 +287,15 @@ f_longitude_by_assay <- function(
             ggplot(aes(x = !!sym(x.var), y = !!sym("value"))) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
                 
-                geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE, color = "#FF6F1B") +
-                geom_line(aes(group = Ptid), alpha = 0.3, color = "#FF6F1B") +
-                geom_boxplot(width = 0.25, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE, color = "#FF6F1B") +
+                geom_violin(aes(color = Trt), scale = "width", na.rm = TRUE, show.legend = FALSE) +
+                geom_line(aes(group = Ptid, color = Trt), alpha = 0.3) +
+                geom_boxplot(aes(color = Trt), width = 0.25, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
                 #scale_color_manual(name = "", values = c("#FF6F1B", "#0AB7C9"), guide = "none") + # guide = "none" in scale_..._...() to suppress legend
-                geom_point(size = 3, alpha = 0.6, show.legend = TRUE, color = "#FF6F1B") +
+                geom_point(aes(color = Trt), size = 3, alpha = 0.6, show.legend = TRUE) +
+                scale_color_manual(values = color.map) +
+                scale_fill_manual(values = color.map) +
                 
                 #geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = 5), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes(x = !!sym(x.var), label = !!sym("RespRate"), y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
