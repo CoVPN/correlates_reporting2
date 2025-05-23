@@ -14,9 +14,9 @@ source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; names(pos.cutoffs) <- assays}
 if (study_name == "NextGen_Mock") {
-  assays = assays[!grepl("nasal|saliva", assays)]
-  assay_immuno = assay_immuno[!grepl("nasal|saliva", assay_immuno)]
-  assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva", assay))
+  assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
+  assay_immuno = assay_immuno[!grepl("nasal|saliva|bindN_IgA", assay_immuno)]
+  assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
 } # will remove later
 #-----------------------------------------------
 

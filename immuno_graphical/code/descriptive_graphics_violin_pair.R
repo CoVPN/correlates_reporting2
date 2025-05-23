@@ -542,39 +542,41 @@ for (a in assays){
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
     panels_set <- list()
-    i <- 1
+
     
-    for (trt in trt.labels){
-        for (bsero in c(0, 1)){
+    if (study_name == "NextGen_Mock") {
+        times_list <- list(
+            c("B", "Day31", "Day181"),
+            c("B", "Day31", "Day91", "Day181", "Day366")
+        )
+    } else {
+        times_list <- list(c("B", paste0("Day", timepoints)))
+    }
+    
+
+    for (times_sub in times_list) {
+    
+        i <- 1
+        for (trt in trt.labels){
+            for (bsero in c(0, 1)){
             
-            if (study_name == "NextGen_Mock") {
-                times_list <- list(
-                    c("B", "Day31", "Day181"),
-                    c("B", "Day31", "Day91", "Day181", "Day366")
-                )
-            } else {
-                times_list <- list(c("B", paste0("Day", timepoints)))
-            }
-            
-            for (times_sub in times_list) {
-            
-                dat.plot4 = dat.immuno.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero)
-                if (nrow(dat.plot4) == 0) next
+                dat.plot4_ = dat.immuno.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero)
+                if (nrow(dat.plot4_) == 0) next
                 
                 if (attr(config,"config")=="vat08_combined") {
-                    dat.plot4 = dat.plot4 %>% filter(ph2.immuno.bAb==1)
+                    dat.plot4 = dat.plot4_ %>% filter(ph2.immuno.bAb==1)
                 }
                 
                 if (study_name == "NextGen_Mock") {
-                    if (time_sub == c("B", "Day31", "Day181")) {
-                        dat.plot4 = dat.plot4 %>% mutate(wt = ifelse(grepl("T4|T8", a), wt.AB.immuno, wt.immuno)) # RIS    
-                    } else if (time_sub == c("B", "Day31", "Day91", "Day181", "Day366")) {
-                        dat.plot4 = dat.plot4 %>% filter(Track == "A") %>% mutate(wt = wt.AB.immuno) # Track A
+                    if (length(times_sub) == 3) {
+                        dat.plot4 = dat.plot4_ %>% mutate(wt = wt.immuno) # RIS    
+                    } else if (length(times_sub) == 5) {
+                        dat.plot4 = dat.plot4_ %>% filter(Track == "A") %>% mutate(wt = wt.AB.immuno) # Track A
                     }
                 }
                 panels_set[[i]] = covid_corr_pairplots(
                     plot_dat = dat.plot4,
-                    time = unlist(times_sub),
+                    time = times_sub,
                     assays = a,
                     strata = "all_one",
                     weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", 
@@ -587,37 +589,41 @@ for (a in assays){
                     write_to_file = F
                 ) 
                 i = i + 1
+            }
         }
-    }
+
     
-    y.grob.1 <- textGrob(trt.labels[2], gp=gpar(fontface="bold", col="black", fontsize=9)) # Vaccine
-    y.grob.2 <- textGrob(trt.labels[1], gp=gpar(fontface="bold", col="black", fontsize=9)) # Placebo
-    y.grob.3 <- textGrob(bstatus.labels.3[1], gp=gpar(fontface="bold", col="black", fontsize=9)) # Naive
-    y.grob.4 <- textGrob(bstatus.labels.3[2], gp=gpar(fontface="bold", col="black", fontsize=9)) # Non-naive
-    
-    #add to plot
-    if (study_name == "NextGen_Mock") {
-        row_plot <- arrangeGrob(
-            arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.1),
-            arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.2),
-            nrow = 1
-        )
-        # Add bottom space with an empty grob
-        bottom_space <- textGrob(" ", gp = gpar(fontsize = 10)) 
-        combined_p <- grid.arrange(row_plot, bottom_space, ncol = 1, heights = c(1, 1))
+        y.grob.1 <- textGrob(trt.labels[2], gp=gpar(fontface="bold", col="black", fontsize=9)) # Vaccine
+        y.grob.2 <- textGrob(trt.labels[1], gp=gpar(fontface="bold", col="black", fontsize=9)) # Placebo
+        y.grob.3 <- textGrob(bstatus.labels.3[1], gp=gpar(fontface="bold", col="black", fontsize=9)) # Naive
+        y.grob.4 <- textGrob(bstatus.labels.3[2], gp=gpar(fontface="bold", col="black", fontsize=9)) # Non-naive
         
-    } else {combined_p <- grid.arrange(
-        grid.arrange(arrangeGrob(plot_grid(
-            arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.3), arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.4)), left = y.grob.1), nrow=1),
-        grid.arrange(arrangeGrob(plot_grid(
-            ggmatrix_gtable(panels_set[[3]]), ggmatrix_gtable(panels_set[[4]])), left = y.grob.2), nrow=1),
-        #bottom = x.grob,
-        ncol = 1
-    )}
-    
-    ggsave(filename = paste0(
-        save.results.to, "/pairs_across_timepoints_", a, 
-        if (study_name == "NextGen_Mock" & length(time_sub) == 5) "_initial", 
-        if (study_name == "NextGen_Mock" & length(time_sub) == 3) "_final", ".pdf"), plot = combined_p, width = 8, height = 10, units="in")
+        #add to plot
+        if (study_name == "NextGen_Mock") {
+            row_plot <- arrangeGrob(
+                arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.1),
+                arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.2),
+                nrow = 1,
+                top = textGrob(labels.assays.short[a], gp = gpar(fontsize = 10, fontface = "bold"))
+            )
+            # Add bottom space with an empty grob
+            bottom_space <- textGrob(" ", gp = gpar(fontsize = 10)) 
+            combined_p <- grid.arrange(row_plot, bottom_space, ncol = 1, heights = c(1, 0.8))
+            
+        } else {combined_p <- grid.arrange(
+            grid.arrange(arrangeGrob(plot_grid(
+                arrangeGrob(ggmatrix_gtable(panels_set[[1]]), top = y.grob.3), arrangeGrob(ggmatrix_gtable(panels_set[[2]]), top = y.grob.4)), left = y.grob.1), nrow=1),
+            grid.arrange(arrangeGrob(plot_grid(
+                ggmatrix_gtable(panels_set[[3]]), ggmatrix_gtable(panels_set[[4]])), left = y.grob.2), nrow=1),
+            #bottom = x.grob,
+            ncol = 1,
+            top = textGrob(labels.assays.short[a], gp = gpar(fontsize = 10, fontface = "bold"))
+        )}
+        
+        ggsave(filename = paste0(
+            save.results.to, "/pairs_across_timepoints_", a, 
+            if (study_name == "NextGen_Mock" & length(times_sub) == 5) "_initial", 
+            if (study_name == "NextGen_Mock" & length(times_sub) == 3) "_final", ".pdf"), plot = combined_p, width = 8, height = 9, units="in")
+    }
 }
 

@@ -66,9 +66,9 @@ if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("
 }
 
 if (study_name == "NextGen_Mock") {
-    assays = assays[!grepl("nasal|saliva", assays)]
-    assay_immuno = assay_immuno[!grepl("nasal|saliva", assay_immuno)]
-    assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva", assay))
+    assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
+    assay_immuno = assay_immuno[!grepl("nasal|saliva|bindN_IgA", assay_immuno)]
+    assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
 }
 ```
 
@@ -694,15 +694,18 @@ for (bsero in c("naive")){
 ## Set 4 plots: Correlation plots for a given marker across time points
 ```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock")}
 
-for (a in assays){
-    
-    immuno_postfix_label <- case_when(
-        study_name == "NextGen_Mock" & grepl("bind|pseudo", a) ~ " (RIS cohort)",
-        study_name == "NextGen_Mock" & grepl("T4|T8", a) ~ " (RIS-PBMC cohort)",
-        TRUE ~ immuno_postfix_label)
+
+for (cohort in if (study_name != "NextGen_Mock") {""} else {c("_initial", "_final")}){
+   
+    for (a in assays){
+    #immuno_postfix_label <- case_when(
+    #    study_name == "NextGen_Mock" & grepl("bind|pseudo", a) ~ " (RIS cohort)",
+    #    study_name == "NextGen_Mock" & grepl("T4|T8", a) ~ " (RIS-PBMC cohort)",
+    #    TRUE ~ immuno_postfix_label)
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set4.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
+    }
     
 }
 
