@@ -1,0 +1,33 @@
+---
+title: "Covail Modeling"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(copcor)
+library(survey)
+library(kyotil)
+library(glue)
+library(Hmisc)
+library(knitr)
+
+TRIAL="nextgen_mock"
+config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml") 
+config.processing <- config::get(config = TRIAL, file="/home/yfong/correlates_processing/config.yml") 
+
+dat_proc=read.csv(config.reporting$data_cleaned)
+dat_mapped=read.csv(config.processing$mapped_data)
+
+assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/{TRIAL}_assay_metadata.csv'))
+assays=assay_metadata$assay
+abmarkers=assays[startsWith(assays,"bind") | startsWith(assays,"pseudo")]
+
+```
+
+```{r}
+myboxplot(Day31bindSpike_IgA_saliva_LB.1~Trt, subset(dat_proc, ph2.D31_7==1))
+
+
+```
