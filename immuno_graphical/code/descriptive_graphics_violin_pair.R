@@ -99,7 +99,7 @@ for (panel in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera",
                 axis.x.text.size = 20,
                 strip.x.text.size = ifelse(study_name == "NextGen_Mock", 25, 10),
                 strip.y.text.size = ifelse(grepl("pseudoneutid50$", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("T4|T8", panel), 18, ifelse(grepl("IgG|IgA", panel), 8, 10)))),
-                panel.text.size = ifelse(grepl("pseudoneutid50$", panel), 7, ifelse(grepl("T4|T8|pseudoneutid50", panel), 6, ifelse(grepl("IgG|IgA", panel), 3, 4.5))),
+                panel.text.size = ifelse(grepl("pseudoneutid50$", panel), 7, ifelse(grepl("T4|T8|pseudoneutid50", panel), 6, ifelse(grepl("IgG|IgA", panel), 10, 4.5))),
                 facet.y.var = if (study_name == "NextGen_Mock") vars(assay_label2) else vars(Trt),
                 facet.x.var = if (study_name == "NextGen_Mock") vars(Trt) else vars(assay_label2),
                 label_format = ifelse(panel %in% c("T4", "T8"), "percent", "log10"), 
@@ -107,12 +107,18 @@ for (panel in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera",
             
             for (i in 1:length(set1_times_sub)){
                 
+                if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {p_wrapped <- ggdraw(f_1[[i]]) + theme(plot.margin = unit(c(0, 20, 0, 20), "cm"))
+                } else if (grepl("pseudoneutid50", panel) & study_name == "NextGen_Mock") {p_wrapped <- ggdraw(f_1[[i]]) + theme(plot.margin = unit(c(0, 5, 0, 5), "cm"))
+                } else {p_wrapped <- ggdraw(f_1[[i]])}
+                
                 file_name <- paste0("/", panel, "_at_", set1_times_sub[i], 
                                     ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
                                            ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
-                ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), 
-                       width =  16, 
-                       height = if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {40} else if (grepl("pseudoneutid50", panel)) {22} else {16})
+                ggsave(plot = p_wrapped, filename = paste0(save.results.to, file_name), 
+                       width = ifelse(grepl("IgG|IgA", panel) & study_name == "NextGen_Mock", 40, 
+                                      ifelse(grepl("pseudoneutid50", panel) & study_name == "NextGen_Mock", 22, 16)), 
+                       height = ifelse(grepl("IgG|IgA", panel) & study_name == "NextGen_Mock", 40, 
+                                       ifelse(grepl("pseudoneutid50", panel) & study_name == "NextGen_Mock", 22, 16)))
             }
         }
     }
@@ -129,8 +135,9 @@ if (study_name == "NextGen_Mock") {
             ylim = c(floor(min(assay_lim[assays[grepl(panel, assays)], "B", "lb"], na.rm = T)),
                      ceiling(max(assay_lim[assays[grepl(panel, assays)], "B", "ub"], na.rm = T))),
             axis.x.text.size = 20,
-            strip.y.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("tcell", panel), 10, ifelse(grepl("IgG|IgA", panel), 6, 10)))),
-            panel.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 7, ifelse(grepl("tcell|pseudoneutid50", panel), 6, 4.5)),
+            strip.x.text.size = ifelse(study_name == "NextGen_Mock", 25, 10),
+            strip.y.text.size = ifelse(grepl("pseudoneutid50$", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("T4|T8", panel), 18, ifelse(grepl("IgG|IgA", panel), 8, 10)))),
+            panel.text.size = ifelse(grepl("pseudoneutid50$", panel), 7, ifelse(grepl("T4|T8|pseudoneutid50", panel), 6, ifelse(grepl("IgG|IgA", panel), 10, 4.5))),
             facet.y.var = vars(assay_label2),
             facet.x.var = vars(Trt),
             label_format = ifelse(panel %in% c("T4", "T8"), "percent", "log10"),
@@ -138,10 +145,16 @@ if (study_name == "NextGen_Mock") {
         
         for (i in 1){
             
+            if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {p_wrapped <- ggdraw(f_1[[i]]) + theme(plot.margin = unit(c(0, 30, 0, 30), "cm"))
+            } else if (grepl("pseudoneutid50", panel) & study_name == "NextGen_Mock") {p_wrapped <- ggdraw(f_1[[i]]) + theme(plot.margin = unit(c(0, 10, 0, 10), "cm"))
+            } else {p_wrapped <- ggdraw(f_1[[i]])}
+            
             file_name <- paste0("/", panel, "_at_B_final.pdf")
-            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), 
-                   width = 8, 
-                   height = if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {30} else {16})
+            ggsave(plot = p_wrapped, filename = paste0(save.results.to, file_name), 
+                   width = ifelse(grepl("IgG|IgA", panel) & study_name == "NextGen_Mock", 40, 
+                                  ifelse(grepl("pseudoneutid50", panel) & study_name == "NextGen_Mock", 22, 16)), 
+                   height = ifelse(grepl("IgG|IgA", panel) & study_name == "NextGen_Mock", 40, 
+                                   ifelse(grepl("pseudoneutid50", panel) & study_name == "NextGen_Mock", 22, 16)))
         }
     }
 }

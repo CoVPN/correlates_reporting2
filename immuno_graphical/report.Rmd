@@ -508,17 +508,18 @@ if (attr(config,"config")=="janssen_partA_VL"){
 ## Spider plot of antibody markers for overall per-protocol cohort
 
 if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
-    for (tp in #if(study_name=="VAT08") {c("Day", "Delta")} else {
-         c(if(attr(config,"config") != "nextgen_mock") "Day", 
-           if(attr(config,"config") == "nextgen_mock") "Day initial", # "Day91", "Day366" Track A
-           if(attr(config,"config") == "nextgen_mock") "Day whole" # "B", "Day31", "Day181" whole
-           #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
-         )#}
-    ) {
-        
-        for (asy in c("bAb" ,"nAb", if (study_name == "NextGen_Mock") "ics")){
+    
+    for (asy in c("bAb" ,"nAb", if (study_name == "NextGen_Mock") "ics")){
             if (study_name == "NextGen_Mock" & tp %in% c("Day whole", "Day initial") & asy == "ics") next # do not have these plots
-            
+        
+        for (tp in #if(study_name=="VAT08") {c("Day", "Delta")} else {
+             c(if(attr(config,"config") != "nextgen_mock") "Day", 
+               if(attr(config,"config") == "nextgen_mock") "Day initial", # "Day91", "Day366" Track A
+               if(attr(config,"config") == "nextgen_mock") "Day whole" # "B", "Day31", "Day181" whole
+               #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
+             )#}
+        ) {
+        
             for (bsero in bstatus.labels.2) {
                 if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # NextGen_Mock only has non-naive
                 
@@ -610,7 +611,7 @@ for (assay_grp in if (study_name == "NextGen_Mock") {
     #immuno_postfix_label <- ifelse(study_name == "NextGen_Mock", " (RIS or RIS-PBMC cohort at Day01, Day31, Day181, Track A RIS-PBMC cohort at Day91, Day366)", immuno_postfix_label)
     
     assay_grp_lb = sub("^(.*?nAb ID50 )(.*?)(nAb ID50 )", "\\1\\2", # delete the second nab ID50
-                       paste0(gsub("^Serum |^ |Serum IgG Spike | \\(AU/ml\\)", "", gsub("Serum IgG Spike D614 ", "bAb-IgG Spike Index", labels.assays.short[strsplit(assay_grp, "__")[[1]]])), collapse = " and ")
+                       paste0(gsub("^Serum |^ |Serum IgG Spike |Serum IgA Spike | \\(AU/ml\\)|\\(AU/ml\\)", "", gsub("Serum IgG Spike D614 ", "bAb-IgG Spike Index", labels.assays.short[strsplit(assay_grp, "__")[[1]]])), collapse = " and ")
     )
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set2.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
@@ -647,19 +648,19 @@ for (bsero in c("non_naive")){
 
                 asy_lb = case_when(asy == "IgG_sera" ~ "bAb-IgG Spike and bAb-IgG Nucleocapsid concentrations",
                                    asy == "bindSpike_IgA_sera" ~ "bAb-IgA Spike concentrations",
-                                   asy == "pseudoneutid50_sera" ~ "",
-                                   asy == "T4" ~ "",
-                                   asy == "T8" ~ "",
-                                   asy == "IgG_sera|bindSpike_IgA_sera" ~ "",
-                                   asy == "IgG_sera|pseudoneutid50_sera" ~ "",
-                                   asy == "IgG_sera|T4" ~ "",
-                                   asy == "IgG_sera|T8" ~ "",
-                                   asy == "bindSpike_IgA_sera|pseudoneutid50_sera" ~ "",
-                                   asy == "bindSpike_IgA_sera|T4" ~ "",
-                                   asy == "bindSpike_IgA_sera|T8" ~ "",
-                                   asy == "pseudoneutid50_sera|T4" ~ "",
-                                   asy == "pseudoneutid50_sera|T8" ~ "",
-                                   asy == "T4|T8" ~ "")
+                                   asy == "pseudoneutid50_sera" ~ "nAb-ID50 titers",
+                                   asy == "T4" ~ "CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "T8" ~ "CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "IgG_sera|bindSpike_IgA_sera" ~ "bAb-IgG Spike, bAb-IgG Nucleocapsid and bAb-IgA Spike concentrations",
+                                   asy == "IgG_sera|pseudoneutid50_sera" ~ "bAb-IgG Spike, bAb-IgG Nucleocapsid concentrations and nAb-ID50 titers",
+                                   asy == "IgG_sera|T4" ~ "bAb-IgG Spike, bAb-IgG Nucleocapsid concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "IgG_sera|T8" ~ "bAb-IgG Spike, bAb-IgG Nucleocapsid concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_sera|pseudoneutid50_sera" ~ "bAb-IgA Spike concentrations and nAb-ID50 titers",
+                                   asy == "bindSpike_IgA_sera|T4" ~ "bAb-IgA Spike concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_sera|T8" ~ "bAb-IgA Spike concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "pseudoneutid50_sera|T4" ~ "nAb-ID50 titers and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "pseudoneutid50_sera|T8" ~ "nAb-ID50 titers and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "T4|T8" ~ "CD4+ and CD8+ T-cell markers to Spike and Nucleocapsid peptides")
                 
                 #immuno_postfix_label <- case_when(
                 #    study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181") ~ " (RIS or RIS-PBMC cohort)",
