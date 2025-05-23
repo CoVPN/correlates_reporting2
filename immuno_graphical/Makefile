@@ -10,7 +10,7 @@ all: clean immuno_graphical
 ## violin_pair_plots      : violin, pair plots saved in output, code/descriptive_graphics_violin_pair.R
 ## code/descriptive_graphics_demographic_strata.R, code/descriptive_graphics_violin_pair.R
 immuno_graphical: 
-ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined janssen_partA_VL))
+ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock vat08_combined janssen_partA_VL))
 	Rscript code/descriptive_graphics_data_preprocess.R
 	Rscript code/make_assay_lim.R
 	Rscript code/descriptive_graphics_two_phase_plots.R

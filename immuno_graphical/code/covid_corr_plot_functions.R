@@ -181,8 +181,8 @@ covid_corr_pairplots_for_verification <- function(plot_dat, ## data for plotting
              size = corr_size,
              seed = seed,
              file_name = corr_file_name,
-             strata = subdat[, strata],
-             weight = subdat[, weight]
+             strata = plot_dat[, strata],
+             weight = plot_dat[, weight]
         )
     ),
     lower = list(
@@ -300,8 +300,8 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
         wrap(ggally_cor_resample,
              stars = FALSE,
              size = corr_size,
-             strata = subdat[, strata],
-             weight = subdat[, weight]
+             strata = plot_dat[, strata],
+             weight = plot_dat[, weight]
         )
     ),
     lower = list(
@@ -497,6 +497,7 @@ covid_corr_rcdf_facets <- function(plot_dat,
 #' @param axis_size: scalar: font size of the axis labels.
 #' @param axis_titles: string vector: axis titles for the panels.
 #' @param axis_title_size: scalar: font size of the axis title.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param arrange_nrow: integer: number of rows to arrange the panels.
 #' @param arrange_ncol: integer: number of columns to arrange the panels.
 #' @param height: scalar: plot height.
@@ -514,7 +515,19 @@ covid_corr_rcdf <- function(plot_dat,
                               "#1749FF", "#D92321", "#0AB7C9",
                               "#FF6F1B", "#810094", "#378252",
                               "#FF5EBF", "#3700A5", "#8F8F8F",
-                              "#787873"
+                              "#787873",
+                              "#FFC20A",  # warm yellow
+                              "#009E73",  # teal green
+                              "#E69F00",  # amber
+                              "#56B4E9",  # light blue
+                              "#CC79A7",  # light magenta
+                              "#F0E442",  # soft yellow
+                              "#999933",  # olive
+                              "#D55E00",  # dark orange
+                              "#0072B2",  # steel blue
+                              "#A65628",  # brown
+                              "#DC267F",  # vibrant pink
+                              "#117733"   # forest green
                             ),
                             xlab,
                             lwd = 1,
@@ -524,8 +537,10 @@ covid_corr_rcdf <- function(plot_dat,
                             plot_title_size = 14,
                             legend_position = "right",
                             legend_size = 14,
+                            legend_nrow = 10,
                             axis_title_size = 16,
                             axis_size = 16,
+                            label_format = "log10",
                             height = 5,
                             width = 8,
                             units = "in",
@@ -563,7 +578,14 @@ covid_corr_rcdf <- function(plot_dat,
         }
       }) %>% bind_rows()
   }
-
+  
+  scale_label <- switch(label_format,
+                        "log10" = scales::label_math(10^.x),
+                        "percent" = function(x) {
+                          paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                        }
+  )
+  
   output_plot <- ggplot(
     rcdf_dat,
     aes_string(
@@ -573,13 +595,14 @@ covid_corr_rcdf <- function(plot_dat,
     geom_step(lwd = lwd) +
     theme_pubr() +
     scale_x_continuous(
-      limits = xlim, labels = label_math(10^.x),
+      limits = xlim, labels = scale_label,
       breaks = xbreaks
     ) +
     scale_color_manual(values = palette) +
     ylab("Reverse ECDF") +
     xlab(xlab) +
     ggtitle(plot_title) +
+    guides(color = guide_legend(nrow = legend_nrow, byrow = TRUE)) +
     theme(
       plot.title = element_text(hjust = 0.5, size = plot_title_size),
       legend.position = legend_position,
@@ -772,6 +795,7 @@ covid_corr_scatter_facets <- function(plot_dat,
 #' @param axis_size: scalar: font size of the axis labels.
 #' @param axis_titles_y: string vector: y-axis titles for the panels.
 #' @param axis_title_size: scalar: font size of the axis title.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param arrange_nrow: integer: number of rows to arrange the panels.
 #' @param arrange_ncol: integer: number of columns to arrange the panels.
 #' @param panel_titles: string vector: subtitles of each panel.
@@ -827,6 +851,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
                                       height = 3 * arrange_nrow + 0.5,
                                       width = 3 * arrange_ncol,
                                       units = "in",
+                                      label_format = "log10",
                                       filename) {
   plot_dat <- plot_dat[!is.na(plot_dat[, x]), ]
   # make a subset of data with 30 sample points for the jitter in each subgroup
@@ -852,6 +877,13 @@ covid_corr_boxplot_facets <- function(plot_dat,
       }
     }) %>%
     bind_rows()
+  
+  scale_label <- switch(label_format,
+                        "log10" = scales::label_math(10^.x),
+                        "percent" = function(x) {
+                          paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                        }
+  )
 
   boxplot_list <- vector("list", length(unique(plot_dat[, facet_by])))
   for (aa in 1:length(unique(plot_dat[, facet_by]))) {
@@ -873,10 +905,10 @@ covid_corr_boxplot_facets <- function(plot_dat,
         alpha = "none", fill = "none",
         color = guide_legend(nrow = legend_nrow, byrow = TRUE)
       ) +
-      scale_x_discrete(labels = xlabels) +
+      scale_x_discrete(labels = gsub(" ", "\n", xlabels)) +
       scale_y_continuous(
-        limits = ylim[aa, ], labels = label_math(10^.x),
-        breaks = seq(ylim[aa, 1], ylim[aa, 2], by = ybreaks)
+        limits = ylim[aa, ], labels = scale_label,
+        breaks = seq(floor(ylim[aa, 1]), ceiling(ylim[aa, 2]), by = ybreaks)
       ) +
       theme_pubr(legend = "none") +
       ylab(axis_titles_y[aa]) +

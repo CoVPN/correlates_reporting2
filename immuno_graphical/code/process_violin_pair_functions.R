@@ -30,11 +30,24 @@ getResponder <- function(data,
             bl <- paste0("B", j)
             delta <- paste0("Delta", i, "overB", j)
             
-            if ((grepl("bind", j) & study_name!="VAT08") | attr(config,"config")=="janssen_partA_VL") {
+            if ((grepl("bind", j) & !study_name %in% c("VAT08", "NextGen_Mock")) | attr(config,"config")=="janssen_partA_VL") {
                 
             data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
             if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
             
+            } else if (study_name == "NextGen_Mock") {
+                # 1 if baseline < lloq, post-baseline >= 4 * lloq
+                # if lloq <= Baseline < uloq, post-baseline >= 4 * baseline
+                data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
+                data[, paste0(post, "Resp")] <- as.numeric(
+                    (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > 4 * log10(pos.cutoffs[j])) |
+                        (data[, bl] >= log10(pos.cutoffs[j]) & data[, bl] < log10(uloqs[j]) & as.numeric(10^data[, post]/10^data[, bl] >= responderFR)) |
+                        data[, bl] < log10(uloqs[j]) & data[, post] >= log10(uloqs[j]) & as.numeric(uloqs[j]/10^data[, bl] < responderFR) ) 
+                
+                over_uloq <- which(!is.na(data[, bl]) & data[, bl] >= log10(uloqs[j]))
+                data[over_uloq, paste0(bl, "Resp")] <- NA
+                data[over_uloq, paste0(post, "Resp")] <- NA
+
             } else { 
                 data[, paste0(post, "Resp")] <- as.numeric(
                     (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > log10(pos.cutoffs[j])) |
@@ -63,25 +76,65 @@ get_desc_by_group <- function(data,
         data[which(grepl("bind", data$assay)), "wt"] = data[which(grepl("bind", data$assay)), "wt.immuno.bAb"]
         data[which(grepl("pseudoneutid", data$assay)), "wt"] = data[which(grepl("pseudoneutid", data$assay)), "wt.immuno.nAb"]
         
-    } else {data$wt = data$wt.subcohort}
+    } else if (study_name == "NextGen_Mock") {
+        data$wt = data[, "wt.AB.immuno"]  # initial, on Track A RIS/RIS-PBMC
+        data$wt2 = data[, "wt.immuno"] # final, on whole RIS/RIS-PBMC
+            
+    }else {data$wt = data$wt.subcohort}
     
     complete <- complete.cases(data[, group])
     
     dat_stats <-
         data %>% filter(complete==1) %>%
         group_by_at(group) %>%
-        mutate(counts = n(),
-               num = sum(response * wt, na.rm=T),
-               denom = sum(wt, na.rm=T),
+        mutate(counts = ifelse(study_name == "NextGen_Mock", sum(!is.na(response) & as.numeric(Track == "A")), n()),
+               num = ifelse(study_name == "NextGen_Mock", sum(response * wt * as.numeric(Track == "A"), na.rm=T), sum(response * wt, na.rm=T)),
+               denom = ifelse(study_name == "NextGen_Mock", sum(wt * as.numeric(Track == "A"), na.rm=T), sum(wt, na.rm=T)),
                #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
                RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
                min = min(value, na.rm=T),
                q1 = quantile(value, 0.25, na.rm=T),
                median = median(value, na.rm=T),
                q3 = quantile(value, 0.75, na.rm=T),
-               max= max(value, na.rm=T))
+               max= max(value, na.rm=T)) %>%
+        mutate(RespRate = ifelse(grepl("mdw", assay), "", RespRate))
     
-    return(dat_stats)
+    if (study_name == "NextGen_Mock") {
+        dat_stats2 <-
+            data %>% filter(complete == 1 & grepl("bind|pseudo", assay)) %>%
+            filter(ph2.immuno == 1) %>% # condition for the whole RIS for bAb/nAb and RIS-PBMC for ICS
+            group_by_at(group) %>%
+            mutate(counts = sum(!is.na(response)),
+                   num = sum(response * wt2, na.rm=T),
+                   denom = sum(wt2, na.rm=T),
+                   #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
+                   RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+                   min = min(value, na.rm=T),
+                   q1 = quantile(value, 0.25, na.rm=T),
+                   median = median(value, na.rm=T),
+                   q3 = quantile(value, 0.75, na.rm=T),
+                   max= max(value, na.rm=T)) %>%
+            bind_rows(data %>% filter(complete == 1 & grepl("T4|T8", assay)) %>%
+                          filter(ph2.immuno == 1) %>% # condition for the whole RIS for bAb/nAb and RIS-PBMC for ICS
+                          group_by_at(group) %>%
+                          mutate(counts = sum(!is.na(response)),
+                                 num = sum(response * wt, na.rm=T),
+                                 denom = sum(wt, na.rm=T),
+                                 #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
+                                 RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+                                 min = min(value, na.rm=T),
+                                 q1 = quantile(value, 0.25, na.rm=T),
+                                 median = median(value, na.rm=T),
+                                 q3 = quantile(value, 0.75, na.rm=T),
+                                 max= max(value, na.rm=T))) %>%
+            mutate(RespRate = ifelse(grepl("mdw", assay), "", RespRate))
+    }
+    
+    if (exists("dat_stats2")) {
+        return(list(dat_stats = dat_stats, dat_stats2 = dat_stats2))
+    } else {
+        return(dat_stats)
+    }
 }
 
 #' A ggplot object for violin box plot without lines, loop by timepoints
@@ -94,8 +147,11 @@ get_desc_by_group <- function(data,
 #' @param panel.text.size font size for text within panels
 #' @param axis.x.text.size font size for x-axis tick label
 #' @param strip.x.text.size font size for x-axis strip label
+#' @param strip.y.text.size font size for x-axis strip label
 #' @param facet.x.var horizontal facet variable 
 #' @param facet.y.var vertical facet variable 
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
+#' @param color.map # specify colors for Trt values
 #' @return A ggplot object list for violin + box plot without lines
 f_by_time_assay <- 
     function(dat,
@@ -106,8 +162,11 @@ f_by_time_assay <-
              panel.text.size = 2.2,
              axis.x.text.size = 18,
              strip.x.text.size = 10,
+             strip.y.text.size = 25,
              facet.y.var,
-             facet.x.var
+             facet.x.var,
+             label_format = "log10",
+             color.map = c("Vaccine" = "#FF6F1B", "Placebo" = "#FF6F1B")
     ) {
         
         plot_theme <- theme_bw(base_size = 25) +
@@ -116,7 +175,7 @@ f_by_time_assay <-
                   axis.text.y = element_text(size = 25),
                   axis.title = element_text(size = 24, face="bold"),
                   strip.text.x = element_text(size = strip.x.text.size), # facet label size
-                  strip.text.y = element_text(size = 25),
+                  strip.text.y = element_text(size = strip.y.text.size),
                   axis.ticks.x=element_blank(),
                   strip.background = element_rect(fill=NA,colour=NA),
                   strip.placement = "outside",
@@ -128,10 +187,19 @@ f_by_time_assay <-
                   panel.grid.minor = element_blank(),
                   plot.margin = margin(5.5, 12, 5.5, 5.5, "pt")) 
         
+        scale_label <- switch(label_format,
+                              "log10" = scales::label_math(10^.x),
+                              "percent" = function(x) {
+                                  paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                              }
+        )
+        
         p1 <- dat %>%
             filter(assay %in% assays & time %in% times) %>%
             left_join(assay_metadata, by="assay") %>%
-            mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+            # adhoc code below
+            mutate(panel = ifelse(study_name == "NextGen_Mock" & grepl("IgG", assay), "Binding IgG", panel)) %>%
+            mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", panel))) %>%
             mutate(assay_label2 = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label),
                    
             ) %>%
@@ -140,9 +208,11 @@ f_by_time_assay <-
             purrr::map(function(d){
                 ggplot(data = d, aes(x = x, y = value)) +
                     facet_grid(rows = facet.y.var, cols = facet.x.var) +
-                    geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE, color = "#FF6F1B") +
-                    geom_boxplot(width = 0.25, lwd = 1.5, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE, color = "#FF6F1B") +
-                    geom_jitter(width = 0.1, height = 0, size = 2, show.legend = TRUE, color = "#FF6F1B") +
+                    geom_violin(aes(color = Trt), scale = "width", na.rm = TRUE, show.legend = FALSE) +
+                    geom_boxplot(aes(color = Trt), width = 0.25, lwd = 1.5, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
+                    geom_jitter(aes(color = Trt), width = 0.1, height = 0, size = 2, show.legend = TRUE) +
+                    scale_color_manual(values = color.map) +
+                    scale_fill_manual(values = color.map) +
                     #scale_color_manual(name = "", values = "#FF6F1B", guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
@@ -155,8 +225,8 @@ f_by_time_assay <-
                     geom_hline(aes(yintercept = ifelse(RespRate!="",lbval2,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                     geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                     scale_x_discrete(labels = "") + 
-                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 2, 1)), labels = scales::math_format(10^.x)) +
-                    labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", unique(d$time), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
+                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 2, 1)), labels = scale_label) +
+                    labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", gsub("^B", "Day01", unique(d$time)), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
                     plot_theme +
                     guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
             })
@@ -180,7 +250,9 @@ f_by_time_assay <-
 #' @param strip.text.x.size strip label size for x-axis, default is 25
 #' @param axis.text.x.size x-axis label size, default is 9.5
 #' @param y.axis.lb y-axis label, if empty, it has default value pooled from the assay_metadata
-#' @param y.lb.scale "log" or "original"
+#y.lb.scale "log" or "original"
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "original", "log10" or "percent"
+#' @param color.map # specify colors for Trt values
 #' @return A ggplot object list for longitudinal violin + box plot with lines
 f_longitude_by_assay <- function(
     dat,
@@ -197,7 +269,9 @@ f_longitude_by_assay <- function(
     strip.text.x.size = 25,
     axis.text.x.size = 15,
     y.axis.lb = "",
-    y.lb.scale = "log"
+    label_format = "log10",
+#    y.lb.scale = "log",
+    color.map = c("Vaccine" = "#FF6F1B", "Placebo" = "#FF6F1B")
 ) {
     
     plot_theme <- theme_bw() +
@@ -217,22 +291,32 @@ f_longitude_by_assay <- function(
               panel.grid.minor = element_blank(),
               plot.margin = margin(5.5, 12, 5.5, 5.5, "pt")) 
     
+    scale_label <- switch(label_format,
+                          "original" = scales::label_math(.x),
+                          "log10" = scales::label_math(10^.x),
+                          "percent" = function(x) {
+                              paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                          }
+    )
+    
     p2 <- dat %>%
         filter(assay %in% assays & time %in% times) %>%
         left_join(assay_metadata, by="assay") %>%
-        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", panel))) %>%
         mutate(assay_label_short = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label)) %>%
         ungroup() %>%
             ggplot(aes(x = !!sym(x.var), y = !!sym("value"))) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
                 
-                geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE, color = "#FF6F1B") +
-                geom_line(aes(group = Ptid), alpha = 0.3, color = "#FF6F1B") +
-                geom_boxplot(width = 0.25, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE, color = "#FF6F1B") +
+                geom_violin(aes(color = Trt), scale = "width", na.rm = TRUE, show.legend = FALSE) +
+                geom_line(aes(group = Ptid, color = Trt), alpha = 0.3) +
+                geom_boxplot(aes(color = Trt), width = 0.25, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
                 #scale_color_manual(name = "", values = c("#FF6F1B", "#0AB7C9"), guide = "none") + # guide = "none" in scale_..._...() to suppress legend
-                geom_point(size = 3, alpha = 0.6, show.legend = TRUE, color = "#FF6F1B") +
+                geom_point(aes(color = Trt), size = 3, alpha = 0.6, show.legend = TRUE) +
+                scale_color_manual(values = color.map) +
+                scale_fill_manual(values = color.map) +
                 
                 #geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.4, y = 5), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes(x = !!sym(x.var), label = !!sym("RespRate"), y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
@@ -244,8 +328,8 @@ f_longitude_by_assay <- function(
                 geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
-                scale_y_continuous(limits = ylim, breaks = ybreaks, labels = ifelse(y.lb.scale == "log", scales::math_format(10^.x), ifelse(y.lb.scale == "original", scales::math_format(.x)))) +
-                labs(x = "Assay", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
+                scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scale_label) +
+                labs(x = "Assay", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(gsub("\\$", "", gsub("\\|", "_", panel)))), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
     
@@ -622,6 +706,7 @@ ggally_cor_resample <- function(
 #' @param plot_title_size: scalar: font size of the plot title.
 #' @param column_label_size: scalar: font size of the column labels.
 #' @param axis_label_size: scalar: font size of the axis labels.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param filename: string: output file name.
 #' @param write_to_file: logical: whether to output file or just output an object
 #'
@@ -643,6 +728,7 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
                                  plot_title_size = 10,
                                  column_label_size = 6.5,
                                  axis_label_size = 9,
+                                 label_format = "log10",
                                  filename,
                                  write_to_file = T) {
     dat.tmp <- plot_dat[, paste0(time, assays)]
@@ -697,6 +783,13 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
     pairplots[1, 1] <- pairplots[1, 1] +
         scale_x_continuous(limits = rr.x, breaks = breaks) + ylim(0, 1.25)
     
+    scale_label <- switch(label_format,
+                          "log10" = scales::label_math(10^.x),
+                          "percent" = function(x) {
+                              paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                          }
+    )
+    
     for (j in 2:pairplots$nrow) {
         for (k in 1:(j - 1)) {
             pairplots[j, k] <- pairplots[j, k] +
@@ -706,11 +799,11 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
                 ) +
                 scale_x_continuous(
                     limits = rr.x, breaks = breaks,
-                    labels = scales::math_format(10^.x)
+                    labels = scale_label
                 ) +
                 scale_y_continuous(
                     limits = rr.y, breaks = breaks,
-                    labels = scales::math_format(10^.x)
+                    labels = scale_label
                 )
         }
         pairplots[j, j] <- pairplots[j, j] +
@@ -755,6 +848,7 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
 #' @param plot_title_size: scalar: font size of the plot title.
 #' @param column_label_size: scalar: font size of the column labels.
 #' @param axis_label_size: scalar: font size of the axis labels.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param filename: string: output file name.
 #'
 #' @return pairplots: a ggplot object of the pairplot
@@ -774,6 +868,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
                                          plot_title_size = 10,
                                          column_label_size = 6.5,
                                          axis_label_size = 9,
+                                         label_format = "log10",
                                          filename) {
     dat.tmp <- plot_dat[, paste0(times, assay)]
     rr <- range(dat.tmp, na.rm = TRUE)
@@ -806,8 +901,8 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
                 wrap(ggally_cor_resample,
                      stars = FALSE,
                      size = corr_size,
-                     strata = subdat[, strata],
-                     weight = subdat[, weight]
+                     strata = plot_dat[, strata],
+                     weight = plot_dat[, weight]
                 )
         ),
         lower = list(
@@ -826,6 +921,14 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
         )
     pairplots[1, 1] <- pairplots[1, 1] +
         scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.3)
+    
+    scale_label <- switch(label_format,
+                          "log10" = scales::label_math(10^.x),
+                          "percent" = function(x) {
+                              paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                          }
+    )
+    
     for (j in 2:pairplots$nrow) {
         for (k in 1:(j - 1)) {
             pairplots[j, k] <- pairplots[j, k] +
@@ -835,11 +938,11 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
                 ) +
                 scale_x_continuous(
                     limits = rr, breaks = breaks,
-                    labels = label_math(10^.x)
+                    labels = scale_label
                 ) +
                 scale_y_continuous(
                     limits = rr, breaks = breaks,
-                    labels = label_math(10^.x)
+                    labels = scale_label
                 )
         }
         pairplots[j, j] <- pairplots[j, j] +

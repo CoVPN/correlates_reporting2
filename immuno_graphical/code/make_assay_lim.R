@@ -4,6 +4,10 @@ renv::activate(project = here::here(".."))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
+if (study_name == "NextGen_Mock") {
+  assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
+  assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
+} # will remove later
 #-----------------------------------------------
 
 library(here)
@@ -167,6 +171,26 @@ if(study_name=="VAT08" & F) {# hard code for VAT08
 
 if (attr(config,"config")=="prevent19_stage2") {
   assay_lim[, ,"ub"] = 5
+}
+
+if (attr(config,"config")=="nextgen_mock") {
+  assay_lim[, , "ub"] = 7
+  assay_lim[, , "lb"] = 2
+  
+  assay_lim["T4_IFNg_OR_IL2_N_BA.4.5", , "ub"] = 2.5
+  assay_lim["T8_IFNg_OR_IL2_N_BA.4.5", , "ub"] = 2.5
+  assay_lim["T4_IFNg_OR_IL2_Spike_BA.4.5", , "ub"] = 2.5
+  assay_lim["T8_IFNg_OR_IL2_Spike_BA.4.5", , "ub"] = 2.5
+  
+  assay_lim["T4_IFNg_OR_IL2_N_BA.4.5", c("B", "Day31"), "lb"] = -2.5
+  assay_lim["T8_IFNg_OR_IL2_N_BA.4.5", c("B", "Day31"), "lb"] = -2.5
+  assay_lim["T4_IFNg_OR_IL2_Spike_BA.4.5", c("B", "Day31"), "lb"] = -2.5
+  assay_lim["T8_IFNg_OR_IL2_Spike_BA.4.5", c("B", "Day31"), "lb"] = -2.5
+
+  assay_lim["T4_IFNg_OR_IL2_N_BA.4.5", c("Day91", "Day181", "Day366"), "lb"] = -1
+  assay_lim["T8_IFNg_OR_IL2_N_BA.4.5", c("Day91", "Day181", "Day366"), "lb"] = -1
+  assay_lim["T4_IFNg_OR_IL2_Spike_BA.4.5", c("Day91", "Day181", "Day366"), "lb"] = -1
+  assay_lim["T8_IFNg_OR_IL2_Spike_BA.4.5", c("Day91", "Day181", "Day366"), "lb"] = -1
 }
 
 # dup assay_lim to avoid dimention got dropped for the dataset with only one marker
