@@ -458,7 +458,7 @@ for (grp in c("non_naive_vac_pla",
     
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
-    for (t in if (study_name == "NextGen_Mock") {c("B", "Day31", "Day91", "Day181", "Day366")} else {c("B","Day22","Day43")}) {
+    for (t in if (study_name == "NextGen_Mock") {c("B", "Day31", "Day181")} else {c("B","Day22","Day43")}) {
         
         if (grp == "naive_vac" && t=="B") next # this is not needed for VAT08
         if (grp == "non_naive_vac_pla" & study_name == "NextGen_Mock" & t != "B") next # pooled results are only needed at baseline for NextGen_Mock
@@ -466,12 +466,14 @@ for (grp in c("non_naive_vac_pla",
         
         if (grp == "non_naive_vac_pla") {
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==1)
-            grp_lb = paste0(gsub("-", "", tolower(bstatus.labels.3[2])), " pooled group participants")
-            assays_sub = assays
+            grp_lb = if (study_name == "NextGen_Mock") {"pooled group participants"
+                } else {paste0(gsub("-", "", tolower(bstatus.labels.3[2])), " pooled group participants")}
+            assays_sub_ = assays
         } else if (grp == "naive_vac"){
             dat.plot = subset(dat.immuno.subset.plot3, Bserostatus==0 & as.character(Trt)==trt.labels[2])
-            grp_lb = paste0(bstatus.labels.3[1], " ", tolower(trt.labels[2]), " group participants")
-            assays_sub = assays
+            grp_lb = if (study_name == "NextGen_Mock") {paste0(tolower(trt.labels[2]), " group participants")
+            } else {paste0(bstatus.labels.3[1], " ", tolower(trt.labels[2]), " group participants")}
+            assays_sub_ = assays
         } else if (study_name == "NextGen_Mock" & t %in% c("B", "Day31", "Day181") &
                    grp %in% c("non_naive_vac", "non_naive_pla")) {
             
@@ -480,47 +482,56 @@ for (grp in c("non_naive_vac_pla",
             
             dat.plot <- subset(dat.immuno.subset.plot3, as.character(Trt) == trt_val)
             grp_lb <- paste0(tolower(trt_val), " group participants")
-            assays_sub <- assays
-        } else if (study_name == "NextGen_Mock" & t %in% c("Day91", "Day366") &
-                   grp %in% c("non_naive_vac", "non_naive_pla")) {
+            assays_sub_ <- assays
+        } #else if (study_name == "NextGen_Mock" & t %in% c("Day91", "Day366") &
+           #        grp %in% c("non_naive_vac", "non_naive_pla")) {
             
-            trt_val <- ifelse(grp == "non_naive_vac", trt.labels[2], trt.labels[1])
+            #trt_val <- ifelse(grp == "non_naive_vac", trt.labels[2], trt.labels[1])
             #label_val <- bstatus.labels.3[2]
             
-            dat.plot <- subset(dat.immuno.subset.plot3, as.character(Trt) == trt_val & Track == "A")
-            grp_lb <- paste0(tolower(trt_val), " group participants")
-            assays_sub <- assays
-        }
+            #dat.plot <- subset(dat.immuno.subset.plot3, as.character(Trt) == trt_val & Track == "A")
+            #grp_lb <- paste0(tolower(trt_val), " group participants")
+            #assays_sub_ <- assays
+        #}
         
         if (attr(config,"config")=="vat08_combined") {
             dat.plot = dat.plot %>% filter(ph2.immuno.bAb==1)
         }
         
-        covid_corr_pairplots(
-            plot_dat = dat.plot,
-            time = t,
-            assays = assays_sub,
-            strata = "all_one",
-            weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", 
-                            ifelse(study_name == "NextGen_Mock" & t %in% c("B", "Day31", "Day181"), "wt.immuno", 
-                                   ifelse(study_name == "NextGen_Mock" & t %in% c("Day91", "Day366"), "wt.AB.immuno", 
-                                          "wt.subcohort"))),
-            plot_title = paste0(
-                "Correlations of ", length(assays_sub), " ", ifelse(t=="B", "D1", t), " antibody markers in ", grp_lb, ", Corr = Weighted Spearman Rank Correlation."
-            ),
-            column_labels = assay_metadata$assay_label_short[match(assays_sub, assay_metadata$assay)],
-            height = max(1.3 * length(assays_sub) + 0.1, 5.5),
-            width = max(1.3 * length(assays_sub), 5.5),
-            column_label_size = ifelse(max(nchar(paste(assay_metadata$assay_label_short)))>28, 4, 6.5),
-            filename = paste0(
-                save.results.to, "/pairs_by_time_", t,
-                "_", length(assays_sub), "_markers_", grp, 
-                ifelse(study_name == "NextGen_Mock" & t %in% c("B", "Day31", "Day181"), "_final", 
-                       ifelse(study_name == "NextGen_Mock" & t %in% c("Day91", "Day366"), "_initial", "")), 
-                ".pdf"
-            )
-        )
+        for (asy in if (study_name != "NextGen_Mock") {""} else {
+            c("IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", "T4", "T8", 
+              "IgG_sera|bindSpike_IgA_sera", "IgG_sera|pseudoneutid50_sera", "IgG_sera|T4", "IgG_sera|T8",
+              "bindSpike_IgA_sera|pseudoneutid50_sera", "bindSpike_IgA_sera|T4", "bindSpike_IgA_sera|T8",
+              "pseudoneutid50_sera|T4", "pseudoneutid50_sera|T8", "T4|T8")}) { 
+            
+            if (asy == "") {assays_sub = assays_sub_
+            } else {assays_sub = assays_sub_[grepl(asy, assays_sub_)]}
         
+            covid_corr_pairplots(
+                plot_dat = dat.plot,
+                time = t,
+                assays = assays_sub,
+                strata = "all_one",
+                weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", 
+                                ifelse(study_name == "NextGen_Mock" & t %in% c("B", "Day31", "Day181"), "wt.immuno", 
+                                       ifelse(study_name == "NextGen_Mock" & t %in% c("Day91", "Day366"), "wt.AB.immuno", 
+                                              "wt.subcohort"))),
+                plot_title = paste0(
+                    "Correlations of ", length(assays_sub), " ", ifelse(t=="B", "D01", t), " antibody markers in ", grp_lb, "\nCorr = Weighted Spearman Rank Correlation."
+                ),
+                column_labels = assay_metadata$assay_label_short[match(assays_sub, assay_metadata$assay)],
+                height = max(1.3 * length(assays_sub) + 0.1, 5.5),
+                width = max(1.3 * length(assays_sub), 5.5),
+                column_label_size = ifelse(max(nchar(paste(assay_metadata$assay_label_short)))>28, 4, 6.5),
+                filename = paste0(
+                    save.results.to, "/pairs_by_time_", t,
+                    "_", ifelse(asy == "", length(assays_sub), gsub("\\|", "_and_", asy)), "_markers_", grp, 
+                    ifelse(study_name == "NextGen_Mock" & t %in% c("B", "Day31", "Day181"), "_final", 
+                           ifelse(study_name == "NextGen_Mock" & t %in% c("Day91", "Day366"), "_initial", "")), 
+                    ".pdf"
+                )
+            )
+        }
     }
 }
 
@@ -535,30 +546,47 @@ for (a in assays){
     
     for (trt in trt.labels){
         for (bsero in c(0, 1)){
-            if(study_name == "NextGen_Mock") {times_sub = c("B", "Day31", "Day181")
-            } else {times_sub = c("B", paste0("Day", timepoints))}
             
-            dat.plot4 = dat.immuno.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero)
-            if (nrow(dat.plot4) == 0) next
-            
-            if (attr(config,"config")=="vat08_combined") {
-                dat.plot4 = dat.plot4 %>% filter(ph2.immuno.bAb==1)
+            if (study_name == "NextGen_Mock") {
+                times_list <- list(
+                    c("B", "Day31", "Day181"),
+                    c("B", "Day31", "Day91", "Day181", "Day366")
+                )
+            } else {
+                times_list <- list(c("B", paste0("Day", timepoints)))
             }
-            panels_set[[i]] = covid_corr_pairplots(
-                plot_dat = dat.plot4,
-                time = times_sub,
-                assays = a,
-                strata = "all_one",
-                weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", 
-                                ifelse(study_name == "NextGen_Mock", "wt.immuno", "wt.subcohort")),
-                plot_title = "",
-                column_labels = gsub("B", "Day01", times_sub),
-                height = 5.5,
-                width = 5.5,
-                column_label_size = 10,
-                write_to_file = F
-            ) 
-            i = i + 1
+            
+            for (times_sub in times_list) {
+            
+                dat.plot4 = dat.immuno.subset.plot3 %>% filter(Trt == trt & Bserostatus == bsero)
+                if (nrow(dat.plot4) == 0) next
+                
+                if (attr(config,"config")=="vat08_combined") {
+                    dat.plot4 = dat.plot4 %>% filter(ph2.immuno.bAb==1)
+                }
+                
+                if (study_name == "NextGen_Mock") {
+                    if (time_sub == c("B", "Day31", "Day181")) {
+                        dat.plot4 = dat.plot4 %>% mutate(wt = ifelse(grepl("T4|T8", a), wt.AB.immuno, wt.immuno)) # RIS    
+                    } else if (time_sub == c("B", "Day31", "Day91", "Day181", "Day366")) {
+                        dat.plot4 = dat.plot4 %>% filter(Track == "A") %>% mutate(wt = wt.AB.immuno) # Track A
+                    }
+                }
+                panels_set[[i]] = covid_corr_pairplots(
+                    plot_dat = dat.plot4,
+                    time = unlist(times_sub),
+                    assays = a,
+                    strata = "all_one",
+                    weight = ifelse(attr(config,"config")=="vat08_combined", "wt.immuno.bAb", 
+                                    ifelse(study_name == "NextGen_Mock", "wt", "wt.subcohort")),
+                    plot_title = "",
+                    column_labels = gsub("B", "Day01", times_sub),
+                    height = 5.5,
+                    width = 5.5,
+                    column_label_size = 10,
+                    write_to_file = F
+                ) 
+                i = i + 1
         }
     }
     
@@ -589,6 +617,7 @@ for (a in assays){
     
     ggsave(filename = paste0(
         save.results.to, "/pairs_across_timepoints_", a, 
-        if (study_name == "NextGen_Mock") "_final", ".pdf"), plot = combined_p, width = 8, height = 10, units="in")
+        if (study_name == "NextGen_Mock" & length(time_sub) == 5) "_initial", 
+        if (study_name == "NextGen_Mock" & length(time_sub) == 3) "_final", ".pdf"), plot = combined_p, width = 8, height = 10, units="in")
 }
 
