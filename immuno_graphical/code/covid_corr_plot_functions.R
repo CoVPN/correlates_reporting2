@@ -795,6 +795,7 @@ covid_corr_scatter_facets <- function(plot_dat,
 #' @param axis_size: scalar: font size of the axis labels.
 #' @param axis_titles_y: string vector: y-axis titles for the panels.
 #' @param axis_title_size: scalar: font size of the axis title.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param arrange_nrow: integer: number of rows to arrange the panels.
 #' @param arrange_ncol: integer: number of columns to arrange the panels.
 #' @param panel_titles: string vector: subtitles of each panel.
@@ -850,6 +851,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
                                       height = 3 * arrange_nrow + 0.5,
                                       width = 3 * arrange_ncol,
                                       units = "in",
+                                      label_format = "log10",
                                       filename) {
   plot_dat <- plot_dat[!is.na(plot_dat[, x]), ]
   # make a subset of data with 30 sample points for the jitter in each subgroup
@@ -875,6 +877,13 @@ covid_corr_boxplot_facets <- function(plot_dat,
       }
     }) %>%
     bind_rows()
+  
+  scale_label <- switch(label_format,
+                        "log10" = scales::label_math(10^.x),
+                        "percent" = function(x) {
+                          paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                        }
+  )
 
   boxplot_list <- vector("list", length(unique(plot_dat[, facet_by])))
   for (aa in 1:length(unique(plot_dat[, facet_by]))) {
@@ -898,8 +907,8 @@ covid_corr_boxplot_facets <- function(plot_dat,
       ) +
       scale_x_discrete(labels = gsub(" ", "\n", xlabels)) +
       scale_y_continuous(
-        limits = ylim[aa, ], labels = label_math(10^.x),
-        breaks = seq(ylim[aa, 1], ylim[aa, 2], by = ybreaks)
+        limits = ylim[aa, ], labels = scale_label,
+        breaks = seq(floor(ylim[aa, 1]), ceiling(ylim[aa, 2]), by = ybreaks)
       ) +
       theme_pubr(legend = "none") +
       ylab(axis_titles_y[aa]) +

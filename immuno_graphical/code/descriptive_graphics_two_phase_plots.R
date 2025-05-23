@@ -318,7 +318,8 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                 column_label_size = ifelse(study_name=="VAT08", 4.5, 
                                            max(5.4, min(8, 8 - (str_length(labels.axis[1, aa]) - 14) * (8 - 5.4) / (34 - 14)))
                                            ),
-                axis_label_size = ifelse(study_name=="VAT08", 7, 9),
+                axis_label_size = ifelse(study_name=="VAT08", 7, ifelse(grepl("T4|T8", aa), 8, 9)),
+                label_format = ifelse(grepl("T4|T8", aa), "percent", "log10"),
                 filename = paste0(
                   save.results.to, "/pairs_", aa, "_by_times_", ifelse(tm!=1, paste0(tm, "_"), ""), 
                   bstatus.labels.2[bserostatus + 1], "_", paste0(gsub(" ", "_", tolower(trt.labels)), "_")[trt + 1], country_lb,
@@ -691,7 +692,7 @@ for (bstatus in 1:2) {
   
   for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
     
-    for (pn in if (study_name != "NextGen_Mock") {""} else {unique(assay_metadata$panel)}) {
+    for (pn in if (study_name != "NextGen_Mock") {""} else {c("IgG_sera", "IgA_sera", "pseudoneutid50_sera", "T4_T8")}) {
       # subset for prevent19_stage2
       if(attr(config,"config")=="prevent19_stage2") {
         subdat_box1_ = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.", gsub("ay","",tp))]==1), ]
@@ -702,7 +703,7 @@ for (bstatus in 1:2) {
       } else {subdat_box1_ = dat.long.twophase.sample}
       
       if (pn == "") {subdat_box1 = subdat_box1_
-      } else {subdat_box1 = subdat_box1_ %>% filter(assay %in% subset(assay_metadata, panel == pn)$assay) %>% mutate(assay = droplevels(assay))}
+      } else {subdat_box1 = subdat_box1_ %>% filter(grepl(gsub("T4_T8", "T4|T8", pn), assay)) %>% mutate(assay = droplevels(assay))}
       
       assay_sub = unique(as.character(subdat_box1$assay))
         
@@ -719,15 +720,16 @@ for (bstatus in 1:2) {
         POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
         LLOX = log10(lloxs[assay_immuno]),
         ULOQ = log10(uloqs[assay_immuno]),
-        arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "NextGen_Mock" & grepl("bindSpike", pn), 4, 2)),
-        arrange_nrow = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "NextGen_Mock" & grepl("bindSpike", pn), 3, ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 1, 2))),
+        arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 4, 2)),
+        arrange_nrow = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 3, ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 1, 2))),
         legend = setNames(trt.labels, trt.labels),
         axis_titles_y = labels.axis[tp, assay_sub] %>% unlist(),
+        label_format = ifelse(all(grepl("T4|T8", assay_sub)==1), "percent", "log10"),
         panel_titles = labels.title2[tp, assay_sub] %>% unlist(),
         panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "NextGen_Mock", 6, 10)),
         height = ifelse(study_name %in% c("VAT08"), 11, 
                         ifelse(attr(config,"config")=="prevent19_stage2", 10, 
-                               ifelse(study_name == "NextGen_Mock" & grepl("bindSpike", pn), 10.5,
+                               ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 10.5,
                                       ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 3.5,
                                              7)))),
         filename = paste0(
@@ -742,7 +744,6 @@ for (bstatus in 1:2) {
   }
 }
 
-#-----------------------------------------------
 # box plot 
 # one treatment arm, two baseline status per plot
 #-----------------------------------------------
@@ -1185,7 +1186,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             #legend
             legend("bottomleft", legend=legend_lb, lty=5, pch=c(15),
                    col=color, bty="n", ncol=3, cex=0.7,
-                   inset=c(0.1, 0))
+                   inset=c(0.01, 0))
             
             dev.off()
             }

@@ -147,8 +147,10 @@ get_desc_by_group <- function(data,
 #' @param panel.text.size font size for text within panels
 #' @param axis.x.text.size font size for x-axis tick label
 #' @param strip.x.text.size font size for x-axis strip label
+#' @param strip.y.text.size font size for x-axis strip label
 #' @param facet.x.var horizontal facet variable 
 #' @param facet.y.var vertical facet variable 
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param color.map # specify colors for Trt values
 #' @return A ggplot object list for violin + box plot without lines
 f_by_time_assay <- 
@@ -160,8 +162,10 @@ f_by_time_assay <-
              panel.text.size = 2.2,
              axis.x.text.size = 18,
              strip.x.text.size = 10,
+             strip.y.text.size = 25,
              facet.y.var,
              facet.x.var,
+             label_format = "log10",
              color.map = c("Vaccine" = "#FF6F1B", "Placebo" = "#FF6F1B")
     ) {
         
@@ -171,7 +175,7 @@ f_by_time_assay <-
                   axis.text.y = element_text(size = 25),
                   axis.title = element_text(size = 24, face="bold"),
                   strip.text.x = element_text(size = strip.x.text.size), # facet label size
-                  strip.text.y = element_text(size = 25),
+                  strip.text.y = element_text(size = strip.y.text.size),
                   axis.ticks.x=element_blank(),
                   strip.background = element_rect(fill=NA,colour=NA),
                   strip.placement = "outside",
@@ -182,6 +186,13 @@ f_by_time_assay <-
                   panel.grid.major = element_blank(), 
                   panel.grid.minor = element_blank(),
                   plot.margin = margin(5.5, 12, 5.5, 5.5, "pt")) 
+        
+        scale_label <- switch(label_format,
+                              "log10" = scales::label_math(10^.x),
+                              "percent" = function(x) {
+                                  paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                              }
+        )
         
         p1 <- dat %>%
             filter(assay %in% assays & time %in% times) %>%
@@ -214,7 +225,7 @@ f_by_time_assay <-
                     geom_hline(aes(yintercept = ifelse(RespRate!="",lbval2,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                     geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                     scale_x_discrete(labels = "") + 
-                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 2, 1)), labels = scales::math_format(10^.x)) +
+                    scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2], ifelse(ylim[2]-ylim[1]>=6, 2, 1)), labels = scale_label) +
                     labs(x = "Assay", y = unique(d$panel), title = paste0(unique(d$panel), " distributions at ", gsub("^B", "Day01", unique(d$time)), if(attr(config,"config")=="janssen_partA_VL") paste0(": ", region_lb_long)), color = "Category", shape = "Category") +
                     plot_theme +
                     guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
@@ -239,7 +250,8 @@ f_by_time_assay <-
 #' @param strip.text.x.size strip label size for x-axis, default is 25
 #' @param axis.text.x.size x-axis label size, default is 9.5
 #' @param y.axis.lb y-axis label, if empty, it has default value pooled from the assay_metadata
-#' @param y.lb.scale "log" or "original"
+#y.lb.scale "log" or "original"
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "original", "log10" or "percent"
 #' @param color.map # specify colors for Trt values
 #' @return A ggplot object list for longitudinal violin + box plot with lines
 f_longitude_by_assay <- function(
@@ -257,7 +269,8 @@ f_longitude_by_assay <- function(
     strip.text.x.size = 25,
     axis.text.x.size = 15,
     y.axis.lb = "",
-    y.lb.scale = "log",
+    label_format = "log10",
+#    y.lb.scale = "log",
     color.map = c("Vaccine" = "#FF6F1B", "Placebo" = "#FF6F1B")
 ) {
     
@@ -277,6 +290,14 @@ f_longitude_by_assay <- function(
               panel.grid.major = element_blank(), 
               panel.grid.minor = element_blank(),
               plot.margin = margin(5.5, 12, 5.5, 5.5, "pt")) 
+    
+    scale_label <- switch(label_format,
+                          "original" = scales::label_math(.x),
+                          "log10" = scales::label_math(10^.x),
+                          "percent" = function(x) {
+                              paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                          }
+    )
     
     p2 <- dat %>%
         filter(assay %in% assays & time %in% times) %>%
@@ -307,7 +328,7 @@ f_longitude_by_assay <- function(
                 geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
-                scale_y_continuous(limits = ylim, breaks = ybreaks, labels = ifelse(y.lb.scale == "log", scales::math_format(10^.x), ifelse(y.lb.scale == "original", scales::math_format(.x)))) +
+                scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scale_label) +
                 labs(x = "Assay", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(gsub("\\$", "", gsub("\\|", "_", panel)))), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
@@ -685,6 +706,7 @@ ggally_cor_resample <- function(
 #' @param plot_title_size: scalar: font size of the plot title.
 #' @param column_label_size: scalar: font size of the column labels.
 #' @param axis_label_size: scalar: font size of the axis labels.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param filename: string: output file name.
 #' @param write_to_file: logical: whether to output file or just output an object
 #'
@@ -706,6 +728,7 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
                                  plot_title_size = 10,
                                  column_label_size = 6.5,
                                  axis_label_size = 9,
+                                 label_format = "log10",
                                  filename,
                                  write_to_file = T) {
     dat.tmp <- plot_dat[, paste0(time, assays)]
@@ -760,6 +783,13 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
     pairplots[1, 1] <- pairplots[1, 1] +
         scale_x_continuous(limits = rr.x, breaks = breaks) + ylim(0, 1.25)
     
+    scale_label <- switch(label_format,
+                          "log10" = scales::label_math(10^.x),
+                          "percent" = function(x) {
+                              paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                          }
+    )
+    
     for (j in 2:pairplots$nrow) {
         for (k in 1:(j - 1)) {
             pairplots[j, k] <- pairplots[j, k] +
@@ -769,11 +799,11 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
                 ) +
                 scale_x_continuous(
                     limits = rr.x, breaks = breaks,
-                    labels = scales::math_format(10^.x)
+                    labels = scale_label
                 ) +
                 scale_y_continuous(
                     limits = rr.y, breaks = breaks,
-                    labels = scales::math_format(10^.x)
+                    labels = scale_label
                 )
         }
         pairplots[j, j] <- pairplots[j, j] +
@@ -818,6 +848,7 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
 #' @param plot_title_size: scalar: font size of the plot title.
 #' @param column_label_size: scalar: font size of the column labels.
 #' @param axis_label_size: scalar: font size of the axis labels.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param filename: string: output file name.
 #'
 #' @return pairplots: a ggplot object of the pairplot
@@ -837,6 +868,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
                                          plot_title_size = 10,
                                          column_label_size = 6.5,
                                          axis_label_size = 9,
+                                         label_format = "log10",
                                          filename) {
     dat.tmp <- plot_dat[, paste0(times, assay)]
     rr <- range(dat.tmp, na.rm = TRUE)
@@ -889,6 +921,14 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
         )
     pairplots[1, 1] <- pairplots[1, 1] +
         scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.3)
+    
+    scale_label <- switch(label_format,
+                          "log10" = scales::label_math(10^.x),
+                          "percent" = function(x) {
+                              paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                          }
+    )
+    
     for (j in 2:pairplots$nrow) {
         for (k in 1:(j - 1)) {
             pairplots[j, k] <- pairplots[j, k] +
@@ -898,11 +938,11 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
                 ) +
                 scale_x_continuous(
                     limits = rr, breaks = breaks,
-                    labels = label_math(10^.x)
+                    labels = scale_label
                 ) +
                 scale_y_continuous(
                     limits = rr, breaks = breaks,
-                    labels = label_math(10^.x)
+                    labels = scale_label
                 )
         }
         pairplots[j, j] <- pairplots[j, j] +

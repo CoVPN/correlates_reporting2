@@ -232,7 +232,7 @@ dat.long <- cbind(dat.long.subject_level, dat.long.assay_value)
 
 
 ## change the labels of the factors for plot labels
-dat.long$Trt <- factor(dat.long$Trt, levels = c(0, 1), labels = trt.labels)
+dat.long$Trt <- factor(dat.long$Trt, levels = c(1, 0), labels = trt.labels[2:1])
 dat.long$Bserostatus <- factor(dat.long$Bserostatus,
   levels = c(0, 1),
   labels = bstatus.labels
@@ -476,7 +476,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
                                                           "response")]
   
   dat.longer.immuno.subset$nnaive <- with(dat.longer.immuno.subset, factor(Bserostatus, levels = c(0, 1), labels = bstatus.labels))
-  dat.longer.immuno.subset$Trt <- with(dat.longer.immuno.subset, factor(Trt, levels = c(0, 1), labels = trt.labels))
+  dat.longer.immuno.subset$Trt <- with(dat.longer.immuno.subset, factor(Trt, levels = c(1, 0), labels = trt.labels[2:1]))
   dat.longer.immuno.subset$Trt_nnaive = with(dat.longer.immuno.subset, 
                                                factor(paste(Trt, nnaive), 
                       levels = paste(rep(trt.labels[2:1]), rep(bstatus.labels, each=2)),

@@ -21,6 +21,7 @@ source(here::here("code", "process_violin_pair_functions.R"))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
+assay_lim <- readRDS(here("data_clean", "assay_lim.rds"))
 
 # for the order of figure panels
 if ("order_in_panel" %in% colnames(assay_metadata)){
@@ -46,7 +47,7 @@ if(attr(config,"config")=="janssen_partA_VL") {
     dat.longer.immuno.subset.plot1.2 <- readRDS(here::here("data_clean", "longer_immuno_data_plot1.2.rds"))}
 dat.immuno.subset.plot3 <- readRDS(here::here("data_clean", "twophase_data.rds")); dat.immuno.subset.plot3$all_one <- 1 # as a placeholder for strata values
 dat.immuno.subset.plot3 <- dat.immuno.subset.plot3 %>%
-    mutate(Trt = factor(Trt, levels = c(0, 1), labels = trt.labels),
+    mutate(Trt = factor(Trt, levels = c(1, 0), labels = trt.labels),
            nnaive = factor(Bserostatus, levels = c(0, 1), labels = bstatus.labels))
 
 ###### Set 1 plots: Ab distributions at main timepoints and delta by vaccine/placebo, naive/nnaive
@@ -91,14 +92,17 @@ for (panel in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera",
                 dat = dat.longer.immuno.subset.plot1_ %>% mutate(x="1"),
                 assays = assays[grepl(panel, assays)],
                 times = set1_times_sub,
-                ylim = if (grepl("^B|Day", tm_subset) & panel=="bindSpike") {c(2, 7)
-                    } else if (grepl("^B|Day", tm_subset) & panel=="pseudoneutid50") {c(1, 6.5)
-                        } else if (grepl("Delta", tm_subset)) {c(-3, 4.2)} else if (study_name == "NextGen_Mock") {c(-3, 7)} else {c(-3, 4.5)},
+                ylim = c(floor(min(assay_lim[assays[grepl(panel, assays)], set1_times_sub, "lb"], na.rm = T)),
+                         ceiling(max(assay_lim[assays[grepl(panel, assays)], set1_times_sub, "ub"], na.rm = T))),#if (grepl("^B|Day", tm_subset) & panel=="bindSpike") {c(2, 7)
+                    #} else if (grepl("^B|Day", tm_subset) & panel=="pseudoneutid50") {c(1, 6.5)
+                     #   } else if (grepl("Delta", tm_subset)) {c(-3, 4.2)} else if (study_name == "NextGen_Mock") {c(-3, 7)} else {c(-3, 4.5)},
                 axis.x.text.size = 20,
-                strip.x.text.size = ifelse(grepl("pseudoneutid50$", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("T4|T8", panel), 10, ifelse(grepl("IgG|IgA", panel), 6, 10)))),
-                panel.text.size = ifelse(grepl("pseudoneutid50$", panel), 7, ifelse(grepl("T4|T8|pseudoneutid50", panel), 6, 4.5)),
-                facet.y.var = vars(Trt),
-                facet.x.var = vars(assay_label2),
+                strip.x.text.size = ifelse(study_name == "NextGen_Mock", 25, 10),
+                strip.y.text.size = ifelse(grepl("pseudoneutid50$", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("T4|T8", panel), 18, ifelse(grepl("IgG|IgA", panel), 8, 10)))),
+                panel.text.size = ifelse(grepl("pseudoneutid50$", panel), 7, ifelse(grepl("T4|T8|pseudoneutid50", panel), 6, ifelse(grepl("IgG|IgA", panel), 3, 4.5))),
+                facet.y.var = if (study_name == "NextGen_Mock") vars(assay_label2) else vars(Trt),
+                facet.x.var = if (study_name == "NextGen_Mock") vars(Trt) else vars(assay_label2),
+                label_format = ifelse(panel %in% c("T4", "T8"), "percent", "log10"), 
                 color.map = c("Investigational Vaccine" = "#1749FF", "Comparator Vaccine" = "#009E73"))
             
             for (i in 1:length(set1_times_sub)){
@@ -107,8 +111,8 @@ for (panel in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera",
                                     ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
                                            ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
                 ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), 
-                       width = if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {30} else {16}, 
-                       height = 16)
+                       width =  16, 
+                       height = if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {40} else if (grepl("pseudoneutid50", panel)) {22} else {16})
             }
         }
     }
@@ -122,20 +126,22 @@ if (study_name == "NextGen_Mock") {
             dat = dat.longer.immuno.subset.plot1.3.whole %>% mutate(x="1"),
             assays = assays[grepl(panel, assays)],
             times = "B",
-            ylim = c(-3, 7),
+            ylim = c(floor(min(assay_lim[assays[grepl(panel, assays)], "B", "lb"], na.rm = T)),
+                     ceiling(max(assay_lim[assays[grepl(panel, assays)], "B", "ub"], na.rm = T))),
             axis.x.text.size = 20,
-            strip.x.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("tcell", panel), 10, ifelse(grepl("IgG|IgA", panel), 6, 10)))),
+            strip.y.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 25, ifelse(grepl("pseudoneutid50", panel), 15, ifelse(grepl("tcell", panel), 10, ifelse(grepl("IgG|IgA", panel), 6, 10)))),
             panel.text.size = ifelse(grepl("pseudoneutid50$|bindN", panel), 7, ifelse(grepl("tcell|pseudoneutid50", panel), 6, 4.5)),
-            facet.y.var = vars(Trt),
-            facet.x.var = vars(assay_label2),
+            facet.y.var = vars(assay_label2),
+            facet.x.var = vars(Trt),
+            label_format = ifelse(panel %in% c("T4", "T8"), "percent", "log10"),
             color.map = c("Pooled Arm" = "#FF6F1B"))
         
         for (i in 1){
             
             file_name <- paste0("/", panel, "_at_B_final.pdf")
             ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), 
-                   width = if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {30} else {16}, 
-                   height = 8)
+                   width = 8, 
+                   height = if (grepl("IgG|IgA", panel) & study_name == "NextGen_Mock") {30} else {16})
         }
     }
 }
@@ -228,13 +234,17 @@ for (panel in if (study_name == "NextGen_Mock") {
         x.var = "time",
         x.lb = if (study_name == "NextGen_Mock") {c("D01","D31","D91","D181","D366")} else if (study_name == "VAT08"){c("D1","D22","D43")},
         assays = if (study_name == "NextGen_Mock") {set2_assays[grepl(panel, set2_assays)]} else {set2_assays[grepl(panel, set2_assays) & !grepl("mdw", set2_assays)]},
-        ylim = if (grepl("T4|T8", panel)) {c(-2.2, 2.5)} else {c(1, 6.5)},
+        ylim = c(floor(min(assay_lim[assays[grepl(panel, set2_assays)], , "lb"], na.rm = T)),
+                 ceiling(max(assay_lim[assays[grepl(panel, set2_assays)], , "ub"], na.rm = T))),#if (grepl("T4|T8", panel)) {c(-2.2, 2.5)} else {c(1, 6.5)},
+        ybreaks = if (study_name == "NextGen_Mock") {seq(-2, 7, 1)} else {c(0,2,4,6)},
         times = if (study_name == "NextGen_Mock") {c("B","Day31","Day91","Day181","Day366")} else if (study_name == "VAT08"){c("B","Day22","Day43")},
-        strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, 12),
+        strip.text.x.size = ifelse(panel=="pseudoneutid50", 25, ifelse(study_name == "NextGen_Mock", 25, 12)),
+        strip.text.y.size = ifelse(study_name == "NextGen_Mock", 13, 25), 
         panel.text.size = ifelse(panel=="pseudoneutid50", 6, 4),
-        facet.y.var = vars(Trt), 
-        facet.x.var = vars(assay_label_short),
+        facet.y.var = if (study_name == "NextGen_Mock") vars(assay_label_short) else vars(Trt), 
+        facet.x.var = if (study_name == "NextGen_Mock") vars(Trt) else vars(assay_label_short),
         y.axis.lb = ifelse(study_name == "NextGen_Mock", " ", ""),
+        label_format = ifelse(grepl("T4|T8", panel), "percent", "log10"),
         color.map = c("Investigational Vaccine" = "#1749FF", "Comparator Vaccine" = "#009E73")
     )
     
@@ -586,6 +596,7 @@ for (a in assays){
                     height = 5.5,
                     width = 5.5,
                     column_label_size = 10,
+                    label_format = ifelse(grepl("T4|T8", a), "percent", "log10"),
                     write_to_file = F
                 ) 
                 i = i + 1
@@ -608,7 +619,7 @@ for (a in assays){
             )
             # Add bottom space with an empty grob
             bottom_space <- textGrob(" ", gp = gpar(fontsize = 10)) 
-            combined_p <- grid.arrange(row_plot, bottom_space, ncol = 1, heights = c(1, 0.8))
+            combined_p <- grid.arrange(row_plot, bottom_space, ncol = 1, heights = c(1, 0.7))
             
         } else {combined_p <- grid.arrange(
             grid.arrange(arrangeGrob(plot_grid(
@@ -623,7 +634,7 @@ for (a in assays){
         ggsave(filename = paste0(
             save.results.to, "/pairs_across_timepoints_", a, 
             if (study_name == "NextGen_Mock" & length(times_sub) == 5) "_initial", 
-            if (study_name == "NextGen_Mock" & length(times_sub) == 3) "_final", ".pdf"), plot = combined_p, width = 8, height = 9, units="in")
+            if (study_name == "NextGen_Mock" & length(times_sub) == 3) "_final", ".pdf"), plot = combined_p, width = 8, height = 8, units="in")
     }
 }
 
