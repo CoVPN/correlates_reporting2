@@ -1,6 +1,7 @@
 {
 library(methods)
 library(dplyr)
+library(glue)
 library(kyotil)
 library(copcor)
 library(marginalizedRisk)
@@ -94,11 +95,13 @@ if (!is.null(config$assay_metadata)) {
     
   } else if (TRIAL=="covail_tcell") {
     # add S1 and S2 to assay_metadata
-    tmp=assay_metadata$assay[8:nrow(assay_metadata)]
+    tmp = assay_metadata$assay
+    tmp = tmp[startsWith(tmp, "cd")]
     N=tmp[endsWith(tmp, ".N") & startsWith(tmp, "c")]
     S=tmp[endsWith(tmp, ".S") & startsWith(tmp, "c")]
     # sort S by BA.4.5 and N
     S = c(S[endsWith(S,"_COV2.CON.S")], S[endsWith(S,"_BA.4.5.S")])
+    FS=tmp[grepl("_FS", tmp)]
     
     tmp = subset(assay_metadata, assay %in% S)
     S1 = paste0(tmp$assay, "1"); tmp1 = tmp; tmp1$assay = S1; tmp1$assay_label_short = sub(".S \\(\\%\\)", ".S1 (%)", tmp1$assay_label_short); tmp1$assay_label = paste0(tmp1$assay_label, "1"); tmp1$panel="S1"
@@ -579,7 +582,12 @@ if (TRIAL=="covail_tcell") {
   pos1 = sapply(tmp%.%"_resp", function(x) sum(dat.tmp[[x]] * dat.tmp$ph2.D15.tcell * dat.tmp$wt.D15.tcell, na.rm=T)/sum(dat.tmp$ph1.D15.tcell))
   exploratory = tmp[pos1>=0.1]
   
-  exploratory = sort(setdiff(exploratory, c(primary, secondary)))
+  # add FS markers
+  FS_vars = c("B"%.%FS, "Day15"%.%FS)
+  exploratory = c(exploratory, FS_vars)
+  
+  # Day15cd8_FS_Wuhan.N is excluded due to low dynamic range-3rd quartile is 0.0007
+  exploratory = sort(setdiff(exploratory, c(primary, secondary, "Day15cd8_FS_Wuhan.N", "Bcd8_FS_Wuhan.N")))
 }
 
 
@@ -885,6 +893,7 @@ if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
   
 } else if (TRIAL=="covail_tcell") {
   assays1 = subset(assay_metadata, panel=="tcell", assay, drop=T)
+  assays1 = setdiff(assays1, c("cd8_FS_Wuhan.N")) # these two cause trouble for getting marker cutpoints because the cutpoints are so small
   all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
   
 } else if (TRIAL=="janssen_partA_VL") {
@@ -908,12 +917,23 @@ if (!is.null(all.markers1)) {
   cat("set marker.cutpoints attribute\n")
   marker.cutpoints = list()
   for (a in all.markers1) {
-    # get cut points
+    # get cut points from the second group
     tmpname = names(table(dat_proc[[a%.%"cat"]]))[2]
     tmpname = substr(tmpname, 2, nchar(tmpname)-1)
     tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
-    tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
-    marker.cutpoints[[a]] <- tmpname
+    cp = setdiff(tmpname,c(Inf, -Inf)) # if there are two categories, remove the second cut point, which is Inf
+  
+    if (len(table(dat_proc[[a%.%"cat"]])) != len(cp)+1) {
+      # get cut points from the first group
+      tmpname = names(table(dat_proc[[a%.%"cat"]]))[1]
+      tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+      tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
+      cp2 = setdiff(tmpname,c(Inf, -Inf)) # if there are two categories, remove the second cut point, which is Inf
+      cp=sort(unique(c(cp, cp2)))
+    }
+    
+    if (len(table(dat_proc[[a%.%"cat"]])) != len(cp)+1) stop(glue("fail to get cut points for {a}"))
+    marker.cutpoints[[a]] <- cp
   }
   attr(dat_proc, "marker.cutpoints")=marker.cutpoints
 }

@@ -47,7 +47,7 @@ for (COR in c("D15to91covail_tcell", "D15to181covail_tcell")) {
   
       level=3 #  title indent
       show.tertile.curves <- show.forestplots <- T
-      show.q = marker_set==1
+      show.q = marker_set=="primary"
       has.alt <- show.risk.curves <- show.ve.curves <- plot.geq <- F
       res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE); cat(res, sep = '\n')
     }

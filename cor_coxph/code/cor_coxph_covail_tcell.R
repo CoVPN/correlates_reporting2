@@ -60,10 +60,10 @@ for (a in names(marker.cutpoints)) {
 # secondary=setdiff(secondary, c("Bcd4_IL4.IL5.IL13.154_Wuhan.N"))
 
 # note that arm 16 and 17 are excluded, because no T cells are done for them. This is different from the antibody correlates where 16 and 17 are included.
-dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
-dat.onedoseModerna = subset(dat_proc, ph1.D15 & arm %in% c(1,2,5,6))
-dat.onedosePfizer  = subset(dat_proc, ph1.D15 & arm %in% c(7,9,12))
-dat.sanofi = subset(dat_proc, ph1.D15 & TrtSanofi==1)
+dat.onedosemRNA  =    subset(dat_proc, ph1.D15.tcell & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
+dat.onedoseModerna = subset(dat_proc, ph1.D15.tcell & arm %in% c(1,2,5,6))
+dat.onedosePfizer  = subset(dat_proc, ph1.D15.tcell & arm %in% c(7,9,12))
+dat.sanofi = subset(dat_proc, ph1.D15.tcell & TrtSanofi==1)
 
 # all cases have covid lineage observed
 
@@ -163,7 +163,7 @@ for (trt in trts) {
     )
     
     cor_coxph_risk_tertile_incidence_curves (
-      form.0,
+      form.0 = if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
       dat = dat.1,
       fname.suffix,
       save.results.to,
@@ -179,7 +179,8 @@ for (trt in trts) {
       
       dat.plac = dat.0,
       for.title = "",
-      trt.label = trt.label
+      trt.label = trt.label, 
+      verbose=T
     )
     
     
