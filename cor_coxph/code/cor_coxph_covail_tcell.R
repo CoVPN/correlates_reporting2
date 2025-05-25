@@ -163,7 +163,7 @@ for (trt in trts) {
     )
     
     cor_coxph_risk_tertile_incidence_curves (
-      form.0,
+      form.0 = if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
       dat = dat.1,
       fname.suffix,
       save.results.to,
@@ -179,7 +179,8 @@ for (trt in trts) {
       
       dat.plac = dat.0,
       for.title = "",
-      trt.label = trt.label
+      trt.label = trt.label, 
+      verbose=T
     )
     
     

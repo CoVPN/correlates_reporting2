@@ -32,7 +32,7 @@ get.short.name=function(assays){
 
 panels=unique(assay_metadata$panel)
 marker_sets = panels
-# marker_sets='pseudoneutid50_sera' # 
+# marker_sets='pseudoneutid50_sera' #
 message(paste(marker_sets, collapse = "\n"))
 ```
 
@@ -41,7 +41,7 @@ message(paste(marker_sets, collapse = "\n"))
 
 ```{r forestplot, echo=FALSE, results='asis'}
 for (marker_set in marker_sets) {
-  fig_parts <- c("\\begin{figure}[H]\n\\centering\n")
+  fig_parts <- c("\\newpage\n\\begin{figure}[H]\n\\centering\n")
   for (i in seq_along(labels)) {
     label <- labels[i]
     COR = CORs[i] %.% ifelse(marker_set=="tcell", "_tcell", "")
@@ -66,7 +66,7 @@ for (marker_set in marker_sets) {
   
   fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Correlate of risk analyses of {marker_set} markers. Covariate-adjusted hazard ratios (HRs) of COVID-19 (A, B: 7 to {t0} days post D31, C, D: 7 to {t1} days post D31) per 10-fold increase in the designated immune marker at D01, at D31, or for D31/D01 fold-change as indicated. Cases acquired a COVID-19 endpoint (A, B) 7 days post D31 through {t0} days post D31 or (C, D) 7 days post D31 through {t1} days post D31. (A, C) Investigational Vaccine arm; (B, D) Comparator Vaccine arm. Non-cases have no evidence of SARS-CoV-2 infection (i.e., never tested nucleic acid amplification/PCR positive) after D01 up to the date by which the last enrolled participant reached {t1} days post D31 ({date}).  HRs were estimated using inverse probability sampling weighted Cox regression models; 95% confidence intervals (CIs) and Wald-based p-values are shown. Analyses adjust for the randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub) (ccIAS). FWER, family-wise error rate adjusted p-value. N, Nucleocapsid protein. D50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."))  %.% "}")
   
-  fig_parts <- c(fig_parts, "\\end{figure}\n\\newpage\n")
+  fig_parts <- c(fig_parts, "\\end{figure}\n")
   
   txt = paste(fig_parts, collapse = "\n")
   # message(txt) # for debugging tex
@@ -77,18 +77,23 @@ for (marker_set in marker_sets) {
 
 # Trichotomized cumulative incidence curves
 
+\newpage
+
 ```{r trichotomized cumulative incidence curves, echo=FALSE, results='asis'}
 for (marker_set in marker_sets) {
   cat ("## ", marker_set, "\n")
   .assays = subset(assay_metadata, panel==marker_set, assay, drop=T)
   for (a in .assays) {
     short_label = get.short.name(a)
+    
+    ## one arm each figure
+    
     captions <- c(
       "D01 "%.%short_label%.%", Investigational vaccine.", 
       "D01 "%.%short_label%.%", Comparator vaccine.", 
       "D31 "%.%short_label%.%", Investigational vaccine.", 
       "D31 "%.%short_label%.%", Comparator vaccine.")
-    fig_parts <- c("\\begin{figure}[H]\n\\centering\n")
+    fig_parts <- c("\\newpage\n\\begin{figure}[H]\n\\centering\n")
     
     for (i in seq_along(captions)) {
       caption <- captions[i]
@@ -114,7 +119,42 @@ for (marker_set in marker_sets) {
     txt = paste(fig_parts, collapse = "\n")
     # message(txt) # for debugging tex
     cat(txt, "\n")
-  }
+    
+    
+    
+    ## both arms per figure
+    
+    captions <- c(
+      "D01 "%.%short_label%.%".", 
+      "D31 "%.%short_label%.%".")
+    fig_parts <- c("\\begin{figure}[H]\n\\centering\n")
+    
+    for (i in seq_along(captions)) {
+      caption <- captions[i]
+      pathCoRoutput <- "cor_coxph/output/nextgen_mock/D31toM12_nextgen_mock"  %.% ifelse(marker_set=="tcell", "_tcell", "")
+      tp <- c("B", "Day31")[i]
+      fname.suffix <- "InvVacc_" %.% marker_set %.% "_CtlVacc_" %.% marker_set
+      
+      file <- glue("{pathCoRoutput}/{tp}{a}_marginalized_risks_cat_{fname.suffix}.pdf")
+      entry <- paste0("\\subfloat[\\textbf{", caption, "}]{\n\\includegraphics[width=0.45\\textwidth]{", file, "}}")
+      fig_parts <- c(fig_parts, entry)
+      
+      if (i %% 2 == 1) {
+        fig_parts <- c(fig_parts, "\\hfill")
+      } else {
+        fig_parts <- c(fig_parts, "\\\\")
+      }
+    }
+    
+    fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Covariate-adjusted cumulative incidence of COVID-19 by Low, Medium, High tertile of {short_label}. (A) By D01 marker tertile subgroups for the Investigational and Comparator Vaccine arms; (B) By D31 marker tertile subgroups for the Investigational and Comparator Vaccine arms. COVID-19 endpoints are counted between 7 and {t1} days post D31. Antibody marker cut-points defining each tertile (based on the Investigational Vaccine arm) are shown in the upper-left inset panel in each plot. Analyses adjust for randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub) (ccIAS). ID50, 50% inhibitory dilution neutralizing antibody titer. nAb, neutralizing antibody titer."))  %.% "}")
+    
+    fig_parts <- c(fig_parts, "\\end{figure}\n")
+    
+    txt = paste(fig_parts, collapse = "\n")
+    # message(txt) # for debugging tex
+    cat(txt, "\n")
+    
+    }
 }
 ```
 
