@@ -216,3 +216,20 @@ tab[is.na(tab)]=""
 kable(tab)
 
 ```
+
+
+
+
+```{r antilog transforming percentages}
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum.tcell), subset =  ~ ph2.D15.tcell, data = subset(dat.onedosemRNA, naive==0))
+
+fits=list(
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ I(10^(Day15cd4_IFNg.IL2_BA.4.5.S)) + FOIstandardized + standardized_risk_score + strata(stage), design)
+,
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ Day15cd4_IFNg.IL2_BA.4.5.S + FOIstandardized + standardized_risk_score + strata(stage), design)
+)
+tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
+tab[is.na(tab)]=""
+kable(tab)
+
+```

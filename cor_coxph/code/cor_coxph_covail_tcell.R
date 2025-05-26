@@ -8,8 +8,9 @@ Sys.setenv(TRIAL = "covail_tcell"); source(here::here("..", "_common.R")); sourc
 # source("~/copcor/R/cor_coxph_coef_1.R")
 
 marker_sets = c("primary", "secondary", "exploratory")
-trts=1:8 # onedosemRNA, etc
-# trt=8; marker_set = 2
+trts=1:8 
+# trt=8
+
 
 {
 Sys.setenv(VERBOSE = 1) 
