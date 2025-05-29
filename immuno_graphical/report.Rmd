@@ -183,8 +183,8 @@ for (bsero in bstatus.labels.2) {
                     times_selected <- if(study_name=="VAT08") {list(tps_no_delta_over_tinterm[c(1,4,5)])
                         # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
                     } else if (study_name == "NextGen_Mock") {list(
-                        tps_no_delta_over_tinterm[c(1,2,6)], # "B", "Day31", "Day181"
-                        tps_no_delta_over_tinterm[c(3,7)] # "Delta31overB", "Delta181overB"
+                        tps_no_delta_over_tinterm[c(1,2,6,3,7)]#, # "B", "Day31", "Day181", "Delta31overB", "Delta181overB"
+                        #tps_no_delta_over_tinterm[c()] # 
                     ) 
                     } else {list(tps_no_fold_change)}
                     
@@ -193,6 +193,9 @@ for (bsero in bstatus.labels.2) {
                     #    study_name == "NextGen_Mock" & !grepl("T4|T8", asy) & grepl("bind|pseudo", asy) ~ " (RIS cohort)",
                         #study_name == "NextGen_Mock" & !grepl("T4|T8", asy) & grepl("bind", asy) ~ " (RIS or RIS-PBMC cohort)",
                     #    TRUE ~ immuno_postfix_label)
+                    specimen_type <- paste0("based on ", ifelse(grepl("sera", asy), "sera", ifelse(grepl("nasal", asy), "nasal lining", ifelse(grepl("saliva", asy), "saliva", "PBMC"))))
+                    cohort_name <- ifelse(grepl("sera", asy), "(RIS-sera). ", ifelse(grepl("nasal", asy), "(RIS-nasal). ", ifelse(grepl("saliva", asy), "(RIS-saliva). ", "(RIS-PBMC). ")))
+                    
                     bseroLabel <- ifelse(study_name == "NextGen_Mock", "", bseroLabel)
                     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_pair_by_assay.Rmd')), quiet = TRUE)
                     cat(res, sep = '\n')
@@ -266,6 +269,10 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
                     #    study_name == "NextGen_Mock" & asy %in% c("bAb", "nAb") ~ " (RIS cohort)",
                     #    study_name == "NextGen_Mock" & asy == "ics" ~ " (RIS-PBMC cohort)",
                     #    TRUE ~ immuno_postfix_label)
+                    specimen_type <- paste0("based on ", ifelse(grepl("sera", asy), "sera", ifelse(grepl("nasal", asy), "nasal lining", ifelse(grepl("saliva", asy), "saliva", "PBMC"))))
+                    cohort_name <- ifelse(grepl("sera", asy), "(RIS-sera). ", ifelse(grepl("nasal", asy), "(RIS-nasal). ", ifelse(grepl("saliva", asy), "(RIS-saliva). ", "(RIS-PBMC). ")))
+                    cohort_name <- ifelse(grepl("initial", tp), gsub("\\(", "(Track A ", cohort_name), cohort_name)
+                    
                     bseroLabel <- ifelse(study_name == "NextGen_Mock", "", bseroLabel)
                     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_rcdf.Rmd')), quiet = TRUE)
                     cat(res, sep = '\n')
@@ -503,7 +510,7 @@ if (attr(config,"config")=="janssen_partA_VL"){
 }
 ```
 
-## Spider plot of antibody markers for RIS or RIS-PBMC cohort
+## Spider plots of antibody markers for RIS or RIS-PBMC cohort
 ```{r, echo=FALSE, results='asis'}
 ## Spider plot of antibody markers for overall per-protocol cohort
 
@@ -547,6 +554,10 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
                         #    study_name == "NextGen_Mock" & asy %in% c("bAb", "nAb") ~ " (RIS cohort)",
                         #    study_name == "NextGen_Mock" & asy == "ics" ~ " (RIS-PBMC cohort)",
                         #    TRUE ~ immuno_postfix_label)
+                        specimen_type <- paste0("based on ", ifelse(grepl("sera", asy), "sera", ifelse(grepl("nasal", asy), "nasal lining", ifelse(grepl("saliva", asy), "saliva", "PBMC"))))
+                        cohort_name <- ifelse(grepl("sera", asy), "(RIS-sera). ", ifelse(grepl("nasal", asy), "(RIS-nasal). ", ifelse(grepl("saliva", asy), "(RIS-saliva). ", "(RIS-PBMC). ")))
+                        cohort_name <- ifelse(grepl("initial", tp), gsub("\\(", "(Track A ", cohort_name), cohort_name)
+                        
                         res = knitr::knit_child(c(here::here('immuno_graphical', 'report_spider.Rmd')), quiet = TRUE)
                         cat(res, sep = '\n')
                         cat("\\clearpage", sep = '\n')
@@ -563,10 +574,9 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
 ## Set 1 plots: D01, D31, D91, D181, D366 Ab distributions
 ```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock")}
 
-for (a in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera", "T4", "T8")
-} else {c("bindSpike","pseudoneutid50")}){
-    
-    for (tp in if (study_name == "NextGen_Mock") {tps_no_fold_change} else {tps_no_delta_over_tinterm}){
+for (tp in if (study_name == "NextGen_Mock") {tps_no_fold_change} else {tps_no_delta_over_tinterm}){
+    for (a in if (study_name == "NextGen_Mock") {c("IgG_sera", "pseudoneutid50_sera", "T4", "T8")
+    } else {c("bindSpike","pseudoneutid50")}){
         
         tpLabel = ifelse(tp=="B", "Day01", tp)
         
@@ -575,6 +585,9 @@ for (a in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera", "T4
         #    study_name == "NextGen_Mock" & grepl("bind|pseudo", asy) ~ " (RIS cohort)",
         #    study_name == "NextGen_Mock" & asy == "tcell" ~ " (RIS-PBMC cohort)",
         #    TRUE ~ immuno_postfix_label) 
+        specimen_type <- paste0("based on ", ifelse(grepl("sera", a), "sera", ifelse(grepl("nasal", a), "nasal lining", ifelse(grepl("saliva", a), "saliva", "PBMC"))))
+        cohort_name <- ifelse(grepl("sera", a), "(RIS-sera). ", ifelse(grepl("nasal", a), "(RIS-nasal). ", ifelse(grepl("saliva", asy), "(RIS-saliva). ", "(RIS-PBMC). ")))
+        
         res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set1.Rmd')), quiet = TRUE)
         cat(res, sep = '\n')
         cat("\\clearpage", sep = '\n')
@@ -613,6 +626,11 @@ for (assay_grp in if (study_name == "NextGen_Mock") {
     assay_grp_lb = sub("^(.*?nAb ID50 )(.*?)(nAb ID50 )", "\\1\\2", # delete the second nab ID50
                        paste0(gsub("^Serum |^ |Serum IgG Spike |Serum IgA Spike | \\(AU/ml\\)|\\(AU/ml\\)", "", gsub("Serum IgG Spike D614 ", "bAb-IgG Spike Index", labels.assays.short[strsplit(assay_grp, "__")[[1]]])), collapse = " and ")
     )
+    
+    specimen_type <- paste0("based on ", ifelse(grepl("sera", assay_grp), "sera", ifelse(grepl("nasal", assay_grp), "nasal lining", ifelse(grepl("saliva", assay_grp), "saliva", "PBMC"))))
+    cohort_name <- ifelse(grepl("sera", assay_grp), "(RIS-sera). ", ifelse(grepl("nasal", assay_grp), "(RIS-nasal). ", ifelse(grepl("saliva", assay_grp), "(RIS-saliva). ", "(RIS-PBMC). ")))
+    cohort_name <- gsub("\\(", "(Track A ", cohort_name)
+        
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set2.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')
@@ -666,6 +684,10 @@ for (bsero in c("non_naive")){
                 #    study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181") ~ " (RIS or RIS-PBMC cohort)",
                 #    study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366") ~ " (Track A RIS-PBMC cohort)",
                 #    TRUE ~ immuno_postfix_label)
+                specimen_type <- paste0("based on ", ifelse(grepl("sera", asy) & !grepl("T4|T8", asy), "sera", ifelse(grepl("nasal", asy) & !grepl("T4|T8", asy), "nasal lining", ifelse(grepl("saliva", asy) & !grepl("T4|T8", asy), "saliva", ifelse(grepl("T4|T8", asy) & !grepl("sera|nasal|saliva", asy), "PBMC", "")))))
+                specimen_type <- ifelse(specimen_type == "based on ", paste0("based on ", str_extract(asy, "sera|saliva|nasal"), "/PBMC"), specimen_type)
+                cohort_name <- ifelse(grepl("sera", asy) & !grepl("T4|T8", asy), "(RIS-sera). ", ifelse(grepl("nasal", asy) & !grepl("T4|T8", asy), "(RIS-nasal). ", ifelse(grepl("saliva", asy) & !grepl("T4|T8", asy), "(RIS-saliva). ", ifelse(grepl("T4|T8", asy) & !grepl("sera|nasal|saliva", asy), "(RIS-PBMC). ", paste0("(RIS-", str_extract(asy, "sera|saliva|nasal"), "/RIS-PBMC). ") ))))
+                
                 res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set3.Rmd')), quiet = TRUE)
                 cat(res, sep = '\n')
                 cat("\\clearpage", sep = '\n')
@@ -703,6 +725,10 @@ for (cohort in if (study_name != "NextGen_Mock") {""} else {c("_initial", "_fina
     #    study_name == "NextGen_Mock" & grepl("bind|pseudo", a) ~ " (RIS cohort)",
     #    study_name == "NextGen_Mock" & grepl("T4|T8", a) ~ " (RIS-PBMC cohort)",
     #    TRUE ~ immuno_postfix_label)
+    specimen_type <- paste0("based on ", ifelse(grepl("sera", a), "sera", ifelse(grepl("nasal", a), "nasal lining", ifelse(grepl("saliva", a), "saliva", "PBMC"))))
+    cohort_name <- ifelse(grepl("sera", a), "(RIS-sera). ", ifelse(grepl("nasal", a), "(RIS-nasal). ", ifelse(grepl("saliva", a), "(RIS-saliva). ", "(RIS-PBMC). ")))
+    cohort_name <- ifelse(grepl("initial", cohort), gsub("\\(", "(Track A ", cohort_name), cohort_name)
+    
     res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set4.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
     cat("\\clearpage", sep = '\n')

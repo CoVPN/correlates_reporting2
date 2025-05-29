@@ -58,7 +58,7 @@ if (attr(config, "config") == "nextgen_mock") {
 }
 # ID50, at B, D22, D43, D22-B, D43-B
 # bindSpike, at B, D22, D43, D22-B, D43-B
-for (panel in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera", "T4", "T8")
+for (panel in if (study_name == "NextGen_Mock") {c("IgG_sera", "pseudoneutid50_sera", "T4", "T8")
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
@@ -126,7 +126,7 @@ for (panel in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera",
 
 # pooling two arms at D01 for NextGen_Mock
 if (study_name == "NextGen_Mock") {
-    for (panel in c("IgG", "pseudoneutid50_sera", "T4", "T8")) {
+    for (panel in c("IgG_sera", "pseudoneutid50_sera", "T4", "T8")) {
             
         f_1 <- f_by_time_assay(
             dat = dat.longer.immuno.subset.plot1.3.whole %>% mutate(x="1"),

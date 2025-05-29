@@ -276,8 +276,8 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
         times_selected <- if(study_name=="VAT08") {list(tps_no_delta_over_tinterm[c(1,4,5)])
           # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
           } else if (study_name == "NextGen_Mock") {list(
-              tps_no_delta_over_tinterm[c(1,2,6)], # "B", "Day31", "Day181"
-              tps_no_delta_over_tinterm[c(3,7)] # "Delta31overB", "Delta181overB"
+              tps_no_delta_over_tinterm[c(1,2,6,3,7)]#, # "B", "Day31", "Day181", "Delta31overB", "Delta181overB"
+              #tps_no_delta_over_tinterm[c()] # 
               ) 
           } else {list(tps_no_fold_change)} # "B", "Day29", "Day57"
         
@@ -316,9 +316,9 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                 column_labels = paste(gsub("ay ","", labels.time[times_selected[[tm]]]),
                                       "\n", labels.axis[, aa][1]),
                 column_label_size = ifelse(study_name=="VAT08", 4.5, 
-                                           max(5.4, min(8, 8 - (str_length(labels.axis[1, aa]) - 14) * (8 - 5.4) / (34 - 14)))
+                                           max(5.4, min(8, 8 - (str_length(labels.axis[1, aa]) - 14) * (8 - 5.4) / (34 - 14))) * 0.59
                                            ),
-                axis_label_size = ifelse(study_name=="VAT08", 7, ifelse(grepl("T4|T8", aa), 8, 9)),
+                axis_label_size = ifelse(grepl("T4|T8", aa), 4.9, ifelse(study_name == "NextGen_Mock", 6, ifelse(study_name=="VAT08", 7, 9))),
                 label_format = ifelse(grepl("T4|T8", aa), "percent", "log10"),
                 filename = paste0(
                   save.results.to, "/pairs_", aa, "_by_times_", ifelse(tm!=1, paste0(tm, "_"), ""), 
