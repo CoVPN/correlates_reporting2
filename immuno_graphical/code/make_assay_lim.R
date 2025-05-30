@@ -177,20 +177,17 @@ if (attr(config,"config")=="nextgen_mock") {
   assay_lim[, , "ub"] = 7
   assay_lim[, , "lb"] = 2
   
-  assay_lim["T4_IFNg_OR_IL2_N_BA.4.5", , "ub"] = 2.5
-  assay_lim["T8_IFNg_OR_IL2_N_BA.4.5", , "ub"] = 2.5
-  assay_lim["T4_IFNg_OR_IL2_Spike_BA.4.5", , "ub"] = 2.5
-  assay_lim["T8_IFNg_OR_IL2_Spike_BA.4.5", , "ub"] = 2.5
+  assay_lim[c("pseudoneutid50_sera", "pseudoneutid50_sera_XBB.1.5", "pseudoneutid50_sera_KP.2", "pseudoneutid50_sera_mdw"), , "ub"] = 6
   
-  assay_lim["T4_IFNg_OR_IL2_N_BA.4.5", c("B", "Day31"), "lb"] = -2.5
-  assay_lim["T8_IFNg_OR_IL2_N_BA.4.5", c("B", "Day31"), "lb"] = -2.5
-  assay_lim["T4_IFNg_OR_IL2_Spike_BA.4.5", c("B", "Day31"), "lb"] = -2.5
-  assay_lim["T8_IFNg_OR_IL2_Spike_BA.4.5", c("B", "Day31"), "lb"] = -2.5
+  assay_lim[c("T4_IFNg_OR_IL2_N_BA.4.5", "T8_IFNg_OR_IL2_N_BA.4.5", "T4_IFNg_OR_IL2_Spike_BA.4.5", "T8_IFNg_OR_IL2_Spike_BA.4.5"), c("B", "Day31", "Day91", "Day181", "Day366"), "ub"] = 1
+  
+  assay_lim[c("T4_IFNg_OR_IL2_N_BA.4.5", "T8_IFNg_OR_IL2_N_BA.4.5", "T4_IFNg_OR_IL2_Spike_BA.4.5", "T8_IFNg_OR_IL2_Spike_BA.4.5"), c("Delta31overB", "Delta91overB", "Delta181overB", "Delta366overB"), "ub"] = 1
+  
+  assay_lim[c("T4_IFNg_OR_IL2_N_BA.4.5", "T8_IFNg_OR_IL2_N_BA.4.5", "T4_IFNg_OR_IL2_Spike_BA.4.5", "T8_IFNg_OR_IL2_Spike_BA.4.5"), c("B", "Day31", "Delta31overB"), "lb"] = -2.6
+  
+  assay_lim[c("T4_IFNg_OR_IL2_N_BA.4.5", "T8_IFNg_OR_IL2_N_BA.4.5", "T4_IFNg_OR_IL2_Spike_BA.4.5", "T8_IFNg_OR_IL2_Spike_BA.4.5"), c("Delta91overB", "Delta181overB", "Delta366overB"), "lb"] = -1
 
-  assay_lim["T4_IFNg_OR_IL2_N_BA.4.5", c("Day91", "Day181", "Day366"), "lb"] = -1
-  assay_lim["T8_IFNg_OR_IL2_N_BA.4.5", c("Day91", "Day181", "Day366"), "lb"] = -1
-  assay_lim["T4_IFNg_OR_IL2_Spike_BA.4.5", c("Day91", "Day181", "Day366"), "lb"] = -1
-  assay_lim["T8_IFNg_OR_IL2_Spike_BA.4.5", c("Day91", "Day181", "Day366"), "lb"] = -1
+  assay_lim[c("T4_IFNg_OR_IL2_N_BA.4.5", "T8_IFNg_OR_IL2_N_BA.4.5", "T4_IFNg_OR_IL2_Spike_BA.4.5", "T8_IFNg_OR_IL2_Spike_BA.4.5"), c("Day91", "Day181", "Day366"), "lb"] = 0
 }
 
 # dup assay_lim to avoid dimention got dropped for the dataset with only one marker

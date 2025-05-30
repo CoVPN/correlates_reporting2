@@ -228,7 +228,7 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
 
  for(tp in if (study_name == "NextGen_Mock") {c(paste0(tps_no_fold_change, "_initial"), paste0(tps_no_fold_change[c(1,2,4)], "_final"))} else {times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]}) {
 
-    for (trt in c("trt_both", paste0("trt_", trt.labels.2[2]), if (study_name %in% c("VAT08", "NextGen_Mock")) paste0("trt_", trt.labels.2[1]))){
+    for (trt in c("trt_both", paste0("trt_", trt.labels.2[2]), if (study_name %in% c("VAT08")) paste0("trt_", trt.labels.2[1]))){
         
         if (attr(config,"config")=="prevent19_stage2") next # no these figures for prevent19_stage2
         
@@ -236,8 +236,8 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
         
         for (bsero in c("bstatus_both", "bstatus_Neg", "bstatus_Pos")){
             if (bsero=="bstatus_Pos" && if.pos.exist==0) next
-            if (bsero != "bstatus_both" & study_name == "NextGen_Mock") next # NextGen_Mock only have bstatus_both plot which only contains non-naive 
-            if (trt=="trt_both" && bsero!="bstatus_both" && study_name!="VAT08") next # trt_both is only for bstatus both if the study is VAT08
+            if ((bsero != "bstatus_Pos"| trt != "trt_both") & study_name == "NextGen_Mock") next # NextGen_Mock only have bstatus_Pos, trt_both plot
+            if (trt=="trt_both" && bsero!="bstatus_both" && !study_name %in% c("VAT08", "NextGen_Mock")) next # trt_both is only for bstatus both if the study is VAT08
             if (attr(config,"config")=="janssen_partA_VL" && !(trt==paste0("trt_", trt.labels.2[2]) && bsero=="bstatus_Neg")) next # only report for vaccine baseline neg for janssan_partA_VL
             
             bseroLabel <- ifelse(bsero=="bstatus_both", "by serostatus", ifelse(bsero=="bstatus_Neg", bstatus.labels.3[1], bstatus.labels.3[2]))
@@ -250,7 +250,7 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
             tpLabel <- gsub("ay ", "", labels.time[gsub("_initial|_final", "", tp)])
             
             for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")
-            } else if (study_name == "NextGen_Mock") {c("bAb_sera", "nAb_sera", "ics")
+            } else if (study_name == "NextGen_Mock") {c("bAb_IgG_sera", "bAb_IgA_sera", "nAb_sera", "ics")
             } else {c("","bAb","nAb","other")}){ # for VAT08 and janssen_partA_VL, only report for bAb and nAb
                 if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
                 if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
@@ -516,7 +516,11 @@ if (attr(config,"config")=="janssen_partA_VL"){
 
 if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
     
-    for (asy in c("bAb" ,"nAb", if (study_name == "NextGen_Mock") "ics")){
+    for (asy in if(study_name == "NextGen_Mock") {
+    c("bind.*IgG_sera", #"bind.*nasal", "bind.*saliva", 
+      "pseudo.*sera", #"pseudo.*nasal", "pseudo.*saliva", 
+      "ics")
+    } else {c("bind", "pseudo")}){
             if (study_name == "NextGen_Mock" & tp %in% c("Day whole", "Day initial") & asy == "ics") next # do not have these plots
         
         for (tp in #if(study_name=="VAT08") {c("Day", "Delta")} else {
@@ -685,8 +689,8 @@ for (bsero in c("non_naive")){
                 #    study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366") ~ " (Track A RIS-PBMC cohort)",
                 #    TRUE ~ immuno_postfix_label)
                 specimen_type <- paste0("based on ", ifelse(grepl("sera", asy) & !grepl("T4|T8", asy), "sera", ifelse(grepl("nasal", asy) & !grepl("T4|T8", asy), "nasal lining", ifelse(grepl("saliva", asy) & !grepl("T4|T8", asy), "saliva", ifelse(grepl("T4|T8", asy) & !grepl("sera|nasal|saliva", asy), "PBMC", "")))))
-                specimen_type <- ifelse(specimen_type == "based on ", paste0("based on ", str_extract(asy, "sera|saliva|nasal"), "/PBMC"), specimen_type)
-                cohort_name <- ifelse(grepl("sera", asy) & !grepl("T4|T8", asy), "(RIS-sera). ", ifelse(grepl("nasal", asy) & !grepl("T4|T8", asy), "(RIS-nasal). ", ifelse(grepl("saliva", asy) & !grepl("T4|T8", asy), "(RIS-saliva). ", ifelse(grepl("T4|T8", asy) & !grepl("sera|nasal|saliva", asy), "(RIS-PBMC). ", paste0("(RIS-", str_extract(asy, "sera|saliva|nasal"), "/RIS-PBMC). ") ))))
+                specimen_type <- ifelse(specimen_type == "based on ", paste0("based on ", str_extract(asy, "sera|saliva|nasal"), " and PBMC"), specimen_type)
+                cohort_name <- ifelse(grepl("sera", asy) & !grepl("T4|T8", asy), "(RIS-sera). ", ifelse(grepl("nasal", asy) & !grepl("T4|T8", asy), "(RIS-nasal). ", ifelse(grepl("saliva", asy) & !grepl("T4|T8", asy), "(RIS-saliva). ", ifelse(grepl("T4|T8", asy) & !grepl("sera|nasal|saliva", asy), "(RIS-PBMC). ", paste0("(RIS-", str_extract(asy, "sera|saliva|nasal"), ", RIS-PBMC). ") ))))
                 
                 res = knitr::knit_child(c(here::here('immuno_graphical', 'report_set3.Rmd')), quiet = TRUE)
                 cat(res, sep = '\n')

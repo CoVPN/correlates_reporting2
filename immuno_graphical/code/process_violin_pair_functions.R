@@ -199,7 +199,7 @@ f_by_time_assay <-
             left_join(assay_metadata, by="assay") %>%
             # adhoc code below
             mutate(panel = ifelse(study_name == "NextGen_Mock" & grepl("IgG", assay), "Binding IgG", panel)) %>%
-            mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", panel))) %>%
+            mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ifelse(grepl("T4|T8", assay), "Percent of T cells expressing indicated function", panel)))) %>%
             mutate(assay_label2 = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label),
                    
             ) %>%
