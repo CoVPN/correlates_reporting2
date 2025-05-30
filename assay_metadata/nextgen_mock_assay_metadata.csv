@@ -68,15 +68,15 @@ bindSpike_IgA_saliva,60,bindSpike_IgA_saliva_mdw,0,Inf,NA,0,Saliva Binding IgA A
 pseudoneutid50_sera,1,pseudoneutid50_sera,10,5598,NA,10,Serum neutralization to D614G,Serum nAb ID50 D614G (AU/ml),lloq,1,NA
 pseudoneutid50_sera,2,pseudoneutid50_sera_XBB.1.5,10,1302,NA,10,Serum neutralization to XBB.1.5,Serum nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_sera,3,pseudoneutid50_sera_KP.2,10,1302,NA,10,Serum neutralization to KP.2,Serum nAb ID50 KP.2 (AU/ml),lloq,1,NA
-pseudoneutid50_sera,4,pseudoneutid50_sera_mdw,0,Inf,NA,0,Serum neutralization breadth score,Serum nAb ID50 ID50 breadth score,lloq,1,NA
+pseudoneutid50_sera,4,pseudoneutid50_sera_mdw,0,Inf,NA,0,Serum neutralization breadth score,Serum nAb ID50 breadth score,lloq,1,NA
 pseudoneutid50_nasal,5,pseudoneutid50_nasal,10,5598,NA,10,Nasal neutralization to D614G,Nasal nAb ID50 D614G (AU/ml),lloq,1,NA
 pseudoneutid50_nasal,6,pseudoneutid50_nasal_XBB.1.5,10,1302,NA,10,Nasal neutralization to XBB.1.5,Nasal nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_nasal,7,pseudoneutid50_nasal_KP.2,10,1302,NA,10,Nasal neutralization to KP.2,Nasal nAb ID50 KP.2 (AU/ml),lloq,1,NA
-pseudoneutid50_nasal,8,pseudoneutid50_nasal_mdw,0,Inf,NA,0,Nasal neutralization breadth score,Nasal nAb ID50 ID50 breadth score,lloq,1,NA
+pseudoneutid50_nasal,8,pseudoneutid50_nasal_mdw,0,Inf,NA,0,Nasal neutralization breadth score,Nasal nAb ID50 breadth score,lloq,1,NA
 pseudoneutid50_saliva,9,pseudoneutid50_saliva,10,5598,NA,10,Saliva neutralization to D614G,Saliva nAb ID50 D614G (AU/ml),lloq,1,NA
 pseudoneutid50_saliva,10,pseudoneutid50_saliva_XBB.1.5,10,1302,NA,10,Saliva neutralization to XBB.1.5,Saliva nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_saliva,11,pseudoneutid50_saliva_KP.2,10,1302,NA,10,Saliva neutralization to KP.2,Saliva nAb ID50 KP.2 (AU/ml),lloq,1,NA
-pseudoneutid50_saliva,12,pseudoneutid50_saliva_mdw,0,Inf,NA,0,Saliva neutralization breadth score,Saliva nAb ID50 ID50 breadth score,lloq,1,NA
+pseudoneutid50_saliva,12,pseudoneutid50_saliva_mdw,0,Inf,NA,0,Saliva neutralization breadth score,Saliva nAb ID50 breadth score,lloq,1,NA
 tcell,1,T4_IFNg_OR_IL2_N_BA.4.5,NA,Inf,NA,NA,CD4+ T cells expressing IFN or IL2 to N BA.4.5,CD4+ T cells IFN/IL2 to N BA.4.5,lloq,1,0.001
 tcell,2,T4_IFNg_OR_IL2_Spike_BA.4.5,NA,Inf,NA,NA,CD4+ T cells expressing IFN or IL2 to Spike BA.4.5,CD4+ T cells IFN/IL2 to Spike BA.4.5,lloq,1,0.001
 tcell,3,T8_IFNg_OR_IL2_N_BA.4.5,NA,Inf,NA,NA,CD8+ T cells expressing IFN or IL2 to N BA.4.5,CD8+ T cells IFN/IL2 to N BA.4.5,lloq,1,0.001
