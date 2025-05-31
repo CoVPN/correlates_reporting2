@@ -62,7 +62,7 @@ for (panel in if (study_name == "NextGen_Mock") {c("IgG_sera", "pseudoneutid50_s
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
-    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA", "NextGen_Mock")) next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA", "nextGen_mock")) next # janssen_partA_VL doesn't need these plots
     
     if (attr(config,"config")=="vat08_combined" & panel=="pseudoneutid50") {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.nAb==1)
