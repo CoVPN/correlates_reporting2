@@ -66,9 +66,9 @@ if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("
 }
 
 if (study_name == "NextGen_Mock") {
-    assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
-    assay_immuno = assay_immuno[!grepl("nasal|saliva|bindN_IgA", assay_immuno)]
-    assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
+    assays = assays[!grepl("IgA_sera|pseudoneutid50_nasal|IgG_nasal|saliva|bindN_IgA", assays)]
+    assay_immuno = assay_immuno[!grepl("IgA_sera|pseudoneutid50_nasal|IgG_nasal|saliva|bindN_IgA", assay_immuno)]
+    assay_metadata = assay_metadata %>% filter(!grepl("IgA_sera|pseudoneutid50_nasal|IgG_nasal|saliva|bindN_IgA", assay))
 }
 ```
 
@@ -170,7 +170,8 @@ for (bsero in bstatus.labels.2) {
             
             for (asy in assay_immuno){
                 
-                for (times_index in c("", if (study_name == "NextGen_Mock") "_2")){
+                for (times_index in c(""#, if (study_name == "NextGen_Mock") "_2"
+                                      )){
                     
                     if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # no naive for NextGen_Mock
                     
@@ -250,7 +251,9 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
             tpLabel <- gsub("ay ", "", labels.time[gsub("_initial|_final", "", tp)])
             
             for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")
-            } else if (study_name == "NextGen_Mock") {c("bAb_IgG_sera", "bAb_IgA_sera", "nAb_sera", "ics")
+            } else if (study_name == "NextGen_Mock") {c("bAb_IgG_sera", "bAb_IgA_nasal", "nAb_sera", 
+                                   # "bAb_IgG_nasal", "nAb_nasal", "bAb_IgG_saliva", "bAb_IgA_saliva" "nAb_saliva",
+                                                        "ics")
             } else {c("","bAb","nAb","other")}){ # for VAT08 and janssen_partA_VL, only report for bAb and nAb
                 if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
                 if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
@@ -334,9 +337,8 @@ if (!study_name  %in% c("VAT08", "NextGen_Mock")) { # VAT08 and NextGen_Mock don
 ```
 
 
+```{r, echo=FALSE, results='asis', eval = study_name!="NextGen_Mock"}
 ## Box plots of antibody markers for RIS or RIS-PBMC cohort
-
-```{r, echo=FALSE, results='asis'}
 ## Box plots of antibody markers for overall per-protocol cohort
 
 ### Vaccine vs. Placebo (2 arms x 1 baseline status in each plot)
@@ -358,17 +360,25 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
     
     for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
         
-        for (pn in if (study_name != "NextGen_Mock") {""} else {c("IgG_sera", "IgA_sera", "pseudoneutid50_sera", "T4_T8")}) {
+        for (pn in if (study_name != "NextGen_Mock") {""} else {c("IgG_sera", "IgA_nasal", "pseudoneutid50_sera",
+                                                                  #"IgG_nasal", "pseudoneutid50_nasal", 
+                                                              #"IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva",
+                                                                  "T4_T8")}) {
         
         if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
         if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # NextGen_Mock doesn't have naive ppts
         
         tpLabel <- gsub("ay ", "", labels.time[tp])
         
-        immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), " (RIS or RIS-PBMC cohort)",
-                                       ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), " (Track A RIS-PBMC cohort)",
-                                              immuno_postfix_label)) 
-        bseroLabel <- ifelse(study_name == "NextGen_Mock", "", bseroLabel)
+        #immuno_postfix_label <- ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), " (RIS or RIS-PBMC cohort)",
+        #                               ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), " (Track A RIS-PBMC cohort)",
+        #                                      immuno_postfix_label)) 
+        #bseroLabel <- ifelse(study_name == "NextGen_Mock", "", bseroLabel)
+        
+        specimen_type <- paste0("based on ", ifelse(grepl("sera", pn), "sera", ifelse(grepl("nasal", pn), "nasal lining", ifelse(grepl("saliva", pn), "saliva", "PBMC"))))
+        cohort_name <- ifelse(grepl("sera", pn), "(RIS-sera). ", ifelse(grepl("nasal", pn), "(RIS-nasal). ", ifelse(grepl("saliva", pn), "(RIS-saliva). ", "(RIS-PBMC). ")))
+        cohort_name <- ifelse(tp %in% c("Day91", "Day366"), gsub("\\(", "(Track A ", cohort_name), cohort_name)
+                    
         res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box.Rmd')), quiet = TRUE)
         cat(res, sep = '\n')
         cat("\\clearpage", sep = '\n')
@@ -416,7 +426,7 @@ include_graphics(here(
 
 <!-- ## RCDF plots of antibody markers by demographics for per-protocol cohort -->
     
-    ```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis'}
 
 if_no_minority = attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
                                               "janssen_la_partAsenior","janssen_la_partAnonsenior",
@@ -457,7 +467,7 @@ if (!study_name %in% c("VAT08", "NextGen_Mock")) {
 
 <!-- ## Boxplots of antibody markers by demographics for per-protocol cohort -->
     
-    ```{r, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis'}
 
 if_no_minority = attr(config,"config") %in% c("janssen_la_partA","janssen_sa_partA",
                                               "janssen_la_partAsenior","janssen_la_partAnonsenior",
@@ -517,11 +527,11 @@ if (attr(config,"config")=="janssen_partA_VL"){
 if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
     
     for (asy in if(study_name == "NextGen_Mock") {
-    c("bind.*IgG_sera", #"bind.*nasal", "bind.*saliva", 
+    c("bind.*IgG_sera", "bind.*nasal", #"bind.*saliva", 
       "pseudo.*sera", #"pseudo.*nasal", "pseudo.*saliva", 
       "ics")
     } else {c("bind", "pseudo")}){
-            if (study_name == "NextGen_Mock" & tp %in% c("Day whole", "Day initial") & asy == "ics") next # do not have these plots
+        #if (study_name == "NextGen_Mock" & tp %in% c("Day whole", "Day initial") & asy == "ics") next # do not have these plots
         
         for (tp in #if(study_name=="VAT08") {c("Day", "Delta")} else {
              c(if(attr(config,"config") != "nextgen_mock") "Day", 
@@ -559,6 +569,7 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
                         #    study_name == "NextGen_Mock" & asy == "ics" ~ " (RIS-PBMC cohort)",
                         #    TRUE ~ immuno_postfix_label)
                         specimen_type <- paste0("based on ", ifelse(grepl("sera", asy), "sera", ifelse(grepl("nasal", asy), "nasal lining", ifelse(grepl("saliva", asy), "saliva", "PBMC"))))
+                        unit_type <- ifelse(grepl("sera", asy), "serum", ifelse(grepl("nasal", asy), "nasal", ifelse(grepl("saliva", asy), "saliva", "PBMC")))
                         cohort_name <- ifelse(grepl("sera", asy), "(RIS-sera). ", ifelse(grepl("nasal", asy), "(RIS-nasal). ", ifelse(grepl("saliva", asy), "(RIS-saliva). ", "(RIS-PBMC). ")))
                         cohort_name <- ifelse(grepl("initial", tp), gsub("\\(", "(Track A ", cohort_name), cohort_name)
                         
@@ -576,7 +587,53 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
 
 \clearpage
 ## Set 1 plots: D01, D31, D91, D181, D366 Ab distributions
-```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock")}
+```{r, echo=FALSE, results='asis', eval = study_name=="NextGen_Mock"}
+## Box plots of antibody markers for RIS or RIS-PBMC cohort
+## Box plots of antibody markers for overall per-protocol cohort
+
+### Vaccine vs. Placebo (2 arms x 1 baseline status in each plot)
+### (VAT08) Baseline neg/pos vs. vaccine/placebo (2 arms x 2 baseline statuses in each plot)
+### (VAT08) Baseline neg/pos vs. vaccine/placebo vs. female/male (2 arms x 2 baseline statuses x 2 gender in each plot)
+
+for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus_gender"
+) )) { # only VAT08 report 2 extra kind of plots
+    
+    if (attr(config,"config")=="NextGen_Mock" & bsero==bstatus.labels.2[1]) next # NextGen_Mock only has non-naive
+    if (attr(config,"config")=="janssen_partA_VL") next # janssen_partA_VL do not report this
+    if (attr(config,"config")=="prevent19_stage2" & bsero==bstatus.labels.2[2]) next # prevent19_stage2 only has baseline neg
+    
+    bseroLabel <- c(bstatus.labels.3, if(study_name=="VAT08") c("naive + non-naive", "naive + non-naive") )[match(bsero, c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus_gender"
+    )))]
+    
+    if (bsero=="bstatus_gender") {gender_lb = " females + males"
+    } else {gender_lb=""}
+    
+    for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
+        
+        for (pn in if (study_name != "NextGen_Mock") {""} else {c(c("IgG_sera", "IgA_nasal", "pseudoneutid50_sera",
+                                                                  #"IgG_nasal", "pseudoneutid50_nasal", 
+                                                              #"IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva",
+                                                                  "T4_T8"))}) {
+        
+        if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
+        if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # NextGen_Mock doesn't have naive ppts
+        
+        tpLabel <- gsub("ay ", "", labels.time[tp])
+        
+        specimen_type <- paste0("based on ", ifelse(grepl("sera", pn), "sera", ifelse(grepl("nasal", pn), "nasal lining", ifelse(grepl("saliva", pn), "saliva", "PBMC"))))
+        cohort_name <- ifelse(grepl("sera", pn), "(RIS-sera). ", ifelse(grepl("nasal", pn), "(RIS-nasal). ", ifelse(grepl("saliva", pn), "(RIS-saliva). ", "(RIS-PBMC). ")))
+        cohort_name <- ifelse(tp %in% c("Day91", "Day366"), gsub("\\(", "(Track A ", cohort_name), cohort_name)
+                    
+        res = knitr::knit_child(c(here::here('immuno_graphical', 'report_box.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+        }
+    }
+}
+
+```
+
+```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08")}
 
 for (tp in if (study_name == "NextGen_Mock") {tps_no_fold_change} else {tps_no_delta_over_tinterm}){
     for (a in if (study_name == "NextGen_Mock") {c("IgG_sera", "pseudoneutid50_sera", "T4", "T8")
@@ -611,11 +668,11 @@ for (assay_grp in if (study_name == "NextGen_Mock") {
      "bindSpike_IgG_sera_KP.2$|bindSpike_IgG_sera_KP.3$",
      "bindSpike_IgG_sera_LB.1$|bindN_IgG_sera$",
      
-     "bindSpike_IgA_sera$|bindSpike_IgA_sera_delta_AY.4$",
-     "bindSpike_IgA_sera_BA.5$|bindSpike_IgA_sera_BA.2.86$",
-     "bindSpike_IgA_sera_XBB.1.5$|bindSpike_IgA_sera_JN.1$",
-     "bindSpike_IgA_sera_KP.2$|bindSpike_IgA_sera_KP.3$",
-     "bindSpike_IgA_sera_LB.1$",
+     "bindSpike_IgA_nasal$|bindSpike_IgA_nasal_delta_AY.4$",
+     "bindSpike_IgA_nasal_BA.5$|bindSpike_IgA_nasal_BA.2.86$",
+     "bindSpike_IgA_nasal_XBB.1.5$|bindSpike_IgA_nasal_JN.1$",
+     "bindSpike_IgA_nasal_KP.2$|bindSpike_IgA_nasal_KP.3$",
+     "bindSpike_IgA_nasal_LB.1$",
      
      "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$", 
      
@@ -661,25 +718,25 @@ for (bsero in c("non_naive")){
             tpLabel = ifelse(tp=="B", "Day01", tp)
             
             for (asy in if (study_name != "NextGen_Mock") {""} else {
-                c("IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", "T4", "T8", 
-                  "IgG_sera|bindSpike_IgA_sera", "IgG_sera|pseudoneutid50_sera", "IgG_sera|T4", "IgG_sera|T8",
-                  "bindSpike_IgA_sera|pseudoneutid50_sera", "bindSpike_IgA_sera|T4", "bindSpike_IgA_sera|T8",
+                c("IgG_sera", "bindSpike_IgA_nasal", "pseudoneutid50_sera", "T4", "T8", 
+                  "IgG_sera_KP.2|bindSpike_IgA_nasal_KP.2", "IgG_sera_KP.2|pseudoneutid50_sera", "IgG_sera_KP.2|T4", "IgG_sera_KP.2|T8",
+                  "bindSpike_IgA_nasal_KP.2|pseudoneutid50_sera", "bindSpike_IgA_nasal_KP.2|T4", "bindSpike_IgA_nasal_KP.2|T8",
                   "pseudoneutid50_sera|T4", "pseudoneutid50_sera|T8", "T4|T8")
                 }) {
                 assay_n = length(assays)
 
                 asy_lb = case_when(asy == "IgG_sera" ~ "bAb-IgG Spike and bAb-IgG Nucleocapsid concentrations",
-                                   asy == "bindSpike_IgA_sera" ~ "bAb-IgA Spike concentrations",
+                                   asy == "bindSpike_IgA_nasal" ~ "bAb-IgA Spike concentrations",
                                    asy == "pseudoneutid50_sera" ~ "nAb-ID50 titers",
                                    asy == "T4" ~ "CD4+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "T8" ~ "CD8+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   asy == "IgG_sera|bindSpike_IgA_sera" ~ "bAb-IgG Spike, bAb-IgG Nucleocapsid and bAb-IgA Spike concentrations",
-                                   asy == "IgG_sera|pseudoneutid50_sera" ~ "bAb-IgG Spike, bAb-IgG Nucleocapsid concentrations and nAb-ID50 titers",
-                                   asy == "IgG_sera|T4" ~ "bAb-IgG Spike, bAb-IgG Nucleocapsid concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   asy == "IgG_sera|T8" ~ "bAb-IgG Spike, bAb-IgG Nucleocapsid concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   asy == "bindSpike_IgA_sera|pseudoneutid50_sera" ~ "bAb-IgA Spike concentrations and nAb-ID50 titers",
-                                   asy == "bindSpike_IgA_sera|T4" ~ "bAb-IgA Spike concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   asy == "bindSpike_IgA_sera|T8" ~ "bAb-IgA Spike concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "IgG_sera_KP.2|bindSpike_IgA_nasal_KP.2" ~ "bAb-IgG Spike KP.2 and bAb-IgA Spike KP.2 concentrations",
+                                   asy == "IgG_sera_KP.2|pseudoneutid50_sera" ~ "bAb-IgG Spike KP.2 concentrations and nAb-ID50 titers",
+                                   asy == "IgG_sera_KP.2|T4" ~ "bAb-IgG Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "IgG_sera_KP.2|T8" ~ "bAb-IgG Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_nasal_KP.2|pseudoneutid50_sera" ~ "bAb-IgA Spike KP.2 concentrations and nAb-ID50 titers",
+                                   asy == "bindSpike_IgA_nasal_KP.2|T4" ~ "bAb-IgA Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_nasal_KP.2|T8" ~ "bAb-IgA Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "pseudoneutid50_sera|T4" ~ "nAb-ID50 titers and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "pseudoneutid50_sera|T8" ~ "nAb-ID50 titers and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "T4|T8" ~ "CD4+ and CD8+ T-cell markers to Spike and Nucleocapsid peptides")

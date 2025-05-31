@@ -810,7 +810,7 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
             scale_x_continuous(
                 limits = rr, # use maximum range of rr.x and rr.y here in order to show a complete histogram
                 breaks = breaks,
-                labels = scales::math_format(10^.x)
+                labels = scale_label
             ) + ylim(0, 1.25)
     }
     
@@ -948,7 +948,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
         pairplots[j, j] <- pairplots[j, j] +
             scale_x_continuous(
                 limits = rr, breaks = breaks,
-                labels = label_math(10^.x)
+                labels = scale_label
             ) + ylim(0, 1.3)
     }
     

@@ -318,7 +318,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                 column_label_size = ifelse(study_name=="VAT08", 4.5, 
                                            max(5.4, min(8, 8 - (str_length(labels.axis[1, aa]) - 14) * (8 - 5.4) / (34 - 14))) * 0.59
                                            ),
-                axis_label_size = ifelse(grepl("T4|T8", aa), 4.9, ifelse(study_name == "NextGen_Mock", 6, ifelse(study_name=="VAT08", 7, 9))),
+                axis_label_size = ifelse(grepl("T4|T8", aa), 4.7, ifelse(study_name == "NextGen_Mock", 6, ifelse(study_name=="VAT08", 7, 9))),
                 label_format = ifelse(grepl("T4|T8", aa), "percent", "log10"),
                 filename = paste0(
                   save.results.to, "/pairs_", aa, "_by_times_", ifelse(tm!=1, paste0(tm, "_"), ""), 
@@ -714,7 +714,10 @@ for (bstatus in 1:2) {
   
   for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
     
-    for (pn in if (study_name != "NextGen_Mock") {""} else {c("IgG_sera", "IgA_sera", "pseudoneutid50_sera", "T4_T8")}) {
+    for (pn in if (study_name != "NextGen_Mock") {""} else {c("IgG_sera", "IgA_nasal", "pseudoneutid50_sera", 
+                                                              #"IgG_nasal", "pseudoneutid50_nasal", 
+                                                              #"IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva", 
+                                                              "T4_T8")}) {
       # subset for prevent19_stage2
       if(attr(config,"config")=="prevent19_stage2") {
         subdat_box1_ = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.", gsub("ay","",tp))]==1), ]
@@ -737,6 +740,13 @@ for (bstatus in 1:2) {
         y = tp,
         color = "Trt",
         facet_by = "assay",
+        palette = if (study_name == "NextGen_Mock") {c("#1749FF", "#378252")} else {c(
+          "#1749FF", "#D92321",
+          "#0AB7C9", "#FF6F1B",
+          "#810094", "#378252",
+          "#FF5EBF", "#3700A5",
+          "#8F8F8F", "#787873"
+        )},
         ylim = assay_lim[assay_sub, tp, ],
         plot_LLOX = !grepl("Delta", tp), # "B", "Day29", "Day57"
         POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
@@ -753,7 +763,8 @@ for (bstatus in 1:2) {
                         ifelse(attr(config,"config")=="prevent19_stage2", 10, 
                                ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 10.5,
                                       ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 3.5,
-                                             7)))),
+                                             6.8)))),
+        add_violin = ifelse(study_name == "NextGen_Mock", T, F),
         filename = paste0(
           save.results.to, "/boxplots_", tp, "_x_trt_", 
           ifelse(study_name == "NextGen_Mock", paste0(pn, "_"), ""),
@@ -1087,7 +1098,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                                     TRUE ~ "")
             
             if (attr(config,"config")=="janssen_partA_VL" & (trt==trt.labels[1] | bsero=="Pos")) next
-            if (attr(config,"config") == "nextgen_mock" & tm %in% c("Day whole", "Day initial") & ab == "ics") next # include negative values
+            #if (attr(config,"config") == "nextgen_mock" & tm %in% c("Day whole", "Day initial") & ab == "ics") next # include negative values
             
             # calculate geometric mean of IPS weighted readouts
             times_spider = if (study_name=="VAT08") {times_[c(1,2,3)]
@@ -1132,7 +1143,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               pivot_longer(!Ptid:Trt, names_to = "time_assay", values_to = "value") %>%
               mutate(assay = gsub(paste0(paste0("^",times_spider), collapse="|"), "", time_assay),
                      time = gsub(paste0(assays_, collapse="|"), "", time_assay),
-                     time_assay = NULL) %>%
+                     time_assay = NULL,
+                     value = 10^value) %>%
               pivot_wider(names_from = assay, values_from = value) %>%
               group_by(time, Bserostatus, Region, Trt) %>%
               summarise(across(all_of(assays_), ~ exp(sum(log(.x * wt), na.rm=T) / sum(wt, na.rm=T)))) %>%
@@ -1190,18 +1202,18 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             color = c(if(study_name=="VAT08") "#0AB7C9", "#FF6F1B", "#FF5EBF", "dodgerblue", "chartreuse3", "#009E73")[1:length(times_spider)]
             legend_lb = labels.time[times_spider]
 
-            spider_range = if(attr(config,"config")=="janssen_partA_VL") {seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
+            spider_range = if(attr(config,"config")=="janssen_partA_VL") {10^seq(1, 1.2, (1.2-1)/4)} else {10^seq(0, ceiling(find_max), (ceiling(find_max))/4)}
             radarchart(dat.plot, 
                        axistype=1 , 
                        # Customize the polygon
                        pcol = scales::alpha(color, 0.7), plwd=1.5, pty=c(15), plty=1,
                        pfcol = scales::alpha(color, 0.2),
                        #custom the grid
-                       cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^", spider_range), 
+                       cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=if (study_name == "NextGen_Mock") {paste0(log10(spider_range), "%")} else {paste0("10^", log10(spider_range))}, 
                        #label size
                        vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12 | max(nchar(assays_)) > 25, 0.7, 1)),
                        #title
-                       title=paste0("Geometric Means ", ifelse(grepl("bind", ab), "of bAb Markers, ", ifelse(grepl("pseudo", ab), "of nAb Markers, ", "of ICS Markers, ")), 
+                       title=paste0("Geometric Means ", ifelse(grepl("bind", ab), "of bAb Markers, ", ifelse(grepl("pseudo", ab), "of nAb Markers, ", ifelse(grepl("ics", ab), "of CD4+ and CD8+ Markers, ", ""))), 
                                     if (study_name == "NextGen_Mock") {""} else {paste0(bstatus.labels.2[bsero + 1], " ")}, trt.labels[trt + 1],
                                     ifelse(reg!="all", paste0(", ", reg_lb_long), "")),
                        #title size
