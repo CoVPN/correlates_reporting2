@@ -8,21 +8,24 @@ t0=151
 t1=339
 date="2027/10/01"
 labels <- c(
-  "M6, Investigational vaccine.", 
-  "M6, Comparator vaccine.", 
-  "M12, Investigational vaccine.", 
-  "M12, Comparator vaccine.")
-CORs = c(
-  "D31toM6_nextgen_mock", 
-  "D31toM6_nextgen_mock", 
-  "D31toM12_nextgen_mock", 
-  "D31toM12_nextgen_mock")
+  "M6, Investigational vaccine", 
+  "M6, Comparator vaccine", 
+  "M12, Investigational vaccine", 
+  "M12, Comparator vaccine")
 fname.suffixes <- c(
         "InvVacc_",
         "CtlVacc_",
         "InvVacc_",
         "CtlVacc_"
       )
+
+labels2 <- c(
+  "M6", 
+  "M12")
+CORs = c(
+  "D31toM6_nextgen_mock", 
+  "D31toM12_nextgen_mock")
+
 
 get.short.name=function(assays){
   all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
@@ -44,7 +47,7 @@ for (marker_set in marker_sets) {
   fig_parts <- c("\\newpage\n\\begin{figure}[H]\n\\centering\n")
   for (i in seq_along(labels)) {
     label <- labels[i]
-    COR = CORs[i] %.% ifelse(marker_set=="tcell", "_tcell", "")
+    COR = CORs[as.integer((i+1)/2)] %.% ifelse(marker_set=="tcell", "_tcell", "")
     pathCoRoutput <- "cor_coxph/output/nextgen_mock/" %.% COR
     fname.suffix <- c(
       "InvVacc_",
@@ -163,23 +166,34 @@ for (marker_set in marker_sets) {
 # Cox model tables for continuous markers
 
 ```{r cox cont, echo=FALSE, results='asis'}
-for (marker_set in marker_sets) {
-  fig_parts <- c("\\newpage\n")
-  for (i in seq(1, len(labels), by=2)) {
+for (i in 1:len(labels2)) {
+  cat ("## ", labels2[i], "\n")
+  
+  for (marker_set in marker_sets) {
     COR = CORs[i] %.% ifelse(marker_set=="tcell", "_tcell", "")
-    config.cor <- config::get(config = COR)
-    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-
     pathCoRoutput <- "cor_coxph/output/nextgen_mock/" %.% COR
+    
     fname.suffix <- "2arms_" %.% marker_set
     
     cat("\\setlength{\\tabcolsep}{.5ex}\n",
       "\\small\n",
       paste0("  \\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_", fname.suffix, "}\n"),
       "\\normalsize\n",
-      "$\\ast\\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers.\n",
-      "\\newpage"
+      "$\\ast\\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers.\n"
     )
+    
+    cat("\\bigskip\n\n",
+        "\\begin{table}[H]\n",
+        '  \\caption{Number of cases and non-cases by ph2 status among the Investigational (left) and Comparator (right) vaccine recipients in the PPI Set that are eligible for sampling for inclusion in immune correlates analyses. ph2 = 1 indicates membership in the appropriat ccIAS participant sets included in the correlates analyses.}\n',
+        "  \\begin{center}\n",
+        paste0("    \\input{", pathCoRoutput, "/tab1_InvVacc_", marker_set, "}"),
+        paste0("    \\input{", pathCoRoutput, "/tab1_CtlVacc_", marker_set, "}\\\\\n"),
+        "  \\end{center}\n",
+        "\\end{table}\n"
+    )
+    
+    cat("\\newpage\n")
+
   }
 }
 ```
@@ -195,7 +209,7 @@ for (i in seq_along(labels)) {
 
   for (marker_set in marker_sets) {
     # cat ("### ", marker_set, "\n")
-    COR = CORs[i] %.% ifelse(marker_set=="tcell", "_tcell", "")
+    COR = CORs[as.integer((i+1)/2)] %.% ifelse(marker_set=="tcell", "_tcell", "")
     pathCoRoutput <- "cor_coxph/output/nextgen_mock/" %.% COR
     fname.suffix <- fname.suffixes[i] %.% marker_set
 
