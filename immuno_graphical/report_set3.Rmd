@@ -1,9 +1,9 @@
 \begin{figure}[H]
 \center
 
-\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_by_time_", tp, "_", assay_n, "_markers_", bsero, "_", trt, ".pdf"))`}
+\includegraphics[width=1\textwidth]{`r here("immuno_graphical", "output", attr(config,"config"), paste0("pairs_by_time_", tp, "_", ifelse(study_name != "NextGen_Mock", assay_n, gsub("\\|", "_and_", asy)), "_markers_", bsero, "_", trt, if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) "_final", if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) "_initial", ".pdf"))`}
 
-\caption{`r paste0("Correlation plots across the markers at ", tpLabel, " in ", gsub("_", " ", bsero), ifelse(trt=="vac", " vaccine group participants", " participants"), immuno_postfix_label)`}
+\caption{`r if (study_name != "NextGen_Mock") paste0("Correlation plots across the markers at ", tpLabel, " in ",  gsub("_", " ", bsero), " ", ifelse(trt == "vac", tolower(trt.labels[2]), ifelse(trt == "pla", tolower(trt.labels[1]), ifelse(trt == "vac_pla", "pooled", ""))), " group", immuno_postfix_label)             else if (tp == "B") paste0("\\\\Figure 16. Pairwise scatterplots and Spearman rank correlations of ", asy_lb, " at D01", ifelse(grepl("sera", asy), " based on sera", ifelse(grepl("nasal", asy), " based on nasal fluid", ifelse(grepl("saliva", asy), " based on saliva", ""))), ", pooling over the Investigational Vaccine arm and Comparator Vaccine arm (RIS). ", if (!asy %in% c("T4", "T8", "T4|T8")) "AU, Arbitrary Units. ", if (grepl("IgG_sera", asy)) " N, Nucleocapsid protein.")              else if (tp != "B") paste0("\\\\Figure 17. Pairwise scatterplots and Spearman rank correlations of ", asy_lb, " at ", gsub("ay", "", tpLabel), ifelse(grepl("sera", asy), " based on sera", ifelse(grepl("nasal", asy), " based on nasal fluid", ifelse(grepl("saliva", asy), " based on saliva", ""))), ", for the ", tolower(trt.labels[ifelse(trt=="vac", 2, 1)]), "arm (RIS). ", if (!asy %in% c("T4", "T8", "T4|T8")) "AU, Arbitrary Units. ", if (grepl("IgG_sera", asy)) " N, Nucleocapsid protein.")`}
 
 \end{figure}
 
