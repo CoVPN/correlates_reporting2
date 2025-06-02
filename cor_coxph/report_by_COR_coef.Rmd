@@ -12,7 +12,7 @@ Each row represents results from one model with a single immune biomarker. The f
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`}
 \normalsize
-$\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
+$\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. 
 
 `r if (!show.q) '<!--'`
 `r tmp = paste0(sub("^[^/]+/", "", pathCoRoutput), "/pvals.perm.", fname.suffix, ".Rdata")`
@@ -22,7 +22,7 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 
 <!-- additional notes -->
 `r if (!TRIAL %in% c("covail_tcell")) '<!--'`
- For functionality score (FS) markers, the table shows HR per 0.01 increase in score.
+**** The table shows HRs per 0.01 increase for functionality score (FS) markers, and HRs per 3 fold increase for other T-cell markers.
 `r if (!TRIAL %in% c("covail_tcell")) '-->'`
 
 
@@ -33,7 +33,7 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_scaled_`r fname.suffix`}
 \normalsize
-$\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
+$\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. 
 
 `r if (!show.q) '<!--'`
 $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers `r if(TRIAL=="PREVENT19") "(not including categorical bindSpike due to there being no case in the upper tertile)"` using the `r ifelse(file.exists(tmp), "Westfall and Young permutation", "Holm and FDR")` method`r ifelse(file.exists(tmp), " (\\protect\\input\\{" %.%tmp%.% "\\} replicates)", "")`.
@@ -48,7 +48,7 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 \small
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`_2}
 \normalsize
-$\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. Case indicator: `r EventIndPrimary`
+$\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. 
 
 `r if (!has.alt)'-->'`
 
@@ -130,7 +130,7 @@ if(TRIAL %in% c("azd1222")) {
 \\begin{figure}
 \\center
 \\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_", fname.suffix, ".pdf}
-\\caption{Forest plots depicting hazard ratios per 10-fold change in marker, x-axis on the antilog scale. Case indicator: ", escape(EventIndPrimary), "}
+\\caption{Forest plots depicting hazard ratios", ifelse(TRIAL=="covail_tcell", "", " per 10-fold increment in the marker"), ", x-axis on the antilog scale. Case indicator: ", escape(EventIndPrimary), "}
 \\end{figure}
 ", sep="")
   
@@ -139,7 +139,7 @@ if(TRIAL %in% c("azd1222")) {
 \\begin{figure}
 \\center
 \\includegraphics[width=.8\\textwidth,keepaspectratio]{", pathCoRoutput, "/hr_forest_log_", fname.suffix, ".pdf}
-\\caption{Forest plots depicting hazard ratios per 10-fold change in marker, x-axis on the log scale. Case indicator: ", escape(EventIndPrimary), "}
+\\caption{Forest plots depicting hazard ratios", ifelse(TRIAL=="covail_tcell", "", " per 10-fold increment in the marker"), ", x-axis on the log scale. Case indicator: ", escape(EventIndPrimary), "}
 \\end{figure}
 ", sep="")
   
