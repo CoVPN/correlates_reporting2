@@ -5,6 +5,12 @@ Sys.setenv(VERBOSE = 1)
 source(here::here("..", "_common.R")) 
 
 
+trts=c(1,0)
+marker_sets = unique(assay_metadata$panel)
+# marker_sets='pseudoneutid50_sera'
+# marker_set='pseudoneutid50_sera'
+
+
 {
   library(kyotil) # p.adj.perm, getFormattedSummary
   library(marginalizedRisk)
@@ -22,8 +28,8 @@ source(here::here("..", "_common.R"))
   myprint(verbose)
   
   # hack
-  source("~/copcor/R/cor_coxph_risk_tertile_incidence_curves_2arms.R")
-  
+  # source("~/copcor/R/cor_coxph_coef_1.R")
+
   # path for figures and tables etc
   save.results.to = here::here("output")
   if (!dir.exists(save.results.to))
@@ -106,11 +112,6 @@ cor_coxph_risk_no_marker (
 ###################################################################################################
 # Univariate models
 
-trts=c(1,0)
-marker_sets = unique(assay_metadata$panel)
-# marker_sets='pseudoneutid50_sera'
-# marker_set='pseudoneutid50_sera'
-
 for (trt in trts) {
   
   if (trt==1) {
@@ -136,6 +137,11 @@ for (trt in trts) {
     
     fname.suffix = fname.suffix.0%.%"_"%.%marker_set
     assays = subset(assay_metadata, panel==marker_set, assay, drop=T)
+    if (len(assays)==0) {
+      warning("no assays found")
+      next
+    }
+    
     all.markers=c(paste0("Day", tpeak, assays), paste0("B", assays), paste0("Delta", tpeak, "overB", assays))
     tmp = get.short.name(assays); all.markers.names.short = c(glue("D{tpeak} {tmp}"), glue("D01 {tmp}"), glue("D{tpeak}/D01 {tmp}"))
     names(all.markers.names.short) = all.markers
@@ -169,73 +175,107 @@ for (trt in trts) {
       cmp.label = cmp.label,
       verbose = T
     )
-  
-    cor_coxph_risk_tertile_incidence_curves (
-      form.0,
-      dat = dat.1,
-      fname.suffix,
-      save.results.to,
-      config,
-      config.cor,
-      tfinal.tpeak,
-  
-      markers = all.markers,
-      markers.names.short = all.markers.names.short,
-      markers.names.long = all.markers.names.long,
-      marker.cutpoints,
-      assay_metadata,
-  
-      dat.plac = dat.0,
-      for.title = "",
-      
-      trt.label = trt.label,
-      cmp.label = cmp.label
-    )
+    
+    # these curves are made for two arms together below
+    # cor_coxph_risk_tertile_incidence_curves (
+    #   form.0,
+    #   dat = dat.1,
+    #   fname.suffix,
+    #   save.results.to,
+    #   config,
+    #   config.cor,
+    #   tfinal.tpeak,
+    # 
+    #   markers = all.markers,
+    #   markers.names.short = all.markers.names.short,
+    #   markers.names.long = all.markers.names.long,
+    #   marker.cutpoints,
+    #   assay_metadata,
+    # 
+    #   dat.plac = dat.0,
+    #   for.title = "",
+    # 
+    #   trt.label = trt.label,
+    #   cmp.label = cmp.label
+    # )
   
   }
 
 }
 
 
-# putting trichotomized incidence curves from two arms on the same plot
+# putting corcoxph tables from two arms in the same table
 for (marker_set in marker_sets) {
+
+  load(glue("{save.results.to}/coxph_slopes_InvVacc_{marker_set}.Rdata"))
+  tab.cont.1 = tab.cont
+  load(glue("{save.results.to}/coxph_slopes_CtlVacc_{marker_set}.Rdata"))
+  tab.cont.2 = tab.cont
+
+  header=paste0("\\hline\n 
+         \\multicolumn{1}{l}{} & \\multicolumn{4}{c}{Investigational} & \\multicolumn{4}{c}{Comparator} \\\\
+         \\multicolumn{1}{l}{} & \\multicolumn{1}{c}{No. cases /} & \\multicolumn{2}{c}{HR} & \\multicolumn{1}{c}{P-value}  &
+                                 \\multicolumn{1}{c}{No. cases /} & \\multicolumn{2}{c}{HR} & \\multicolumn{1}{c}{P-value}  \\\\ 
+         \\multicolumn{1}{l}{Immunologic Marker} & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{} &
+                                                   \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{} \\\\ 
+         \\hline\n 
+    ")
   
-  assays = subset(assay_metadata, panel==marker_set, assay, drop=T)
-  all.markers=c(paste0("Day", tpeak, assays), paste0("B", assays), paste0("Delta", tpeak, "overB", assays))
-  tmp = get.short.name(assays); all.markers.names.short = c(glue("D{tpeak} {tmp}"), glue("D01 {tmp}"), glue("D{tpeak}/D01 {tmp}"))
-  names(all.markers.names.short) = all.markers
-  all.markers.names.long = 
-    c(as.matrix(labels.title)[DayPrefix%.%tpeak, assays], 
-      as.matrix(labels.title)["B", assays], 
-      as.matrix(labels.title)["Delta"%.%tpeak%.%"overB", assays])
-  names(all.markers.names.long) = all.markers
+  fname.suffix = "2arms_"%.%marker_set
   
-  cor_coxph_risk_tertile_incidence_curves_2arms (
-    form.0,
-    dat = dat.vacc,
-    fname.suffix = "InvVacc_"%.%marker_set,
-    save.results.to,
-    config,
-    config.cor,
-    tfinal.tpeak,
-    
-    markers = all.markers,
-    markers.names.short = all.markers.names.short,
-    markers.names.long = all.markers.names.long,
-    marker.cutpoints,
-    assay_metadata,
-    
-    dat.plac,
-    for.title = "",
-    
-    trt.label = trt.label,
-    cmp.label = cmp.label, 
-    
-    fname.suffix.2 = "CtlVacc_"%.%marker_set
+  mytex(cbind(tab.cont.1, tab.cont.2), 
+        file.name="CoR_univariable_svycoxph_pretty_"%.%fname.suffix, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
+        col.headers=header,
+        longtable=T, 
+        label=paste0("tab:CoR_univariable_svycoxph_pretty_2arms"), 
+        caption.placement = "top", 
+        caption=paste0("Inference for Day ", config.cor$tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, 
+                       " in the ", escape(marker_set), " group: Hazard ratios. Baseline covariates adjusted for: ", escape(paste(deparse(form.0[[3]]), collapse = " ")), 
+                       ", endpoint variable: ", escape(config.cor$EventIndPrimary), ".")
   )
   
 }
 
+
+# # putting trichotomized incidence curves from two arms on the same plot
+# for (marker_set in marker_sets) {
+#   
+#   assays = subset(assay_metadata, panel==marker_set, assay, drop=T)
+#   all.markers=c(paste0("Day", tpeak, assays), paste0("B", assays), paste0("Delta", tpeak, "overB", assays))
+#   tmp = get.short.name(assays); all.markers.names.short = c(glue("D{tpeak} {tmp}"), glue("D01 {tmp}"), glue("D{tpeak}/D01 {tmp}"))
+#   names(all.markers.names.short) = all.markers
+#   all.markers.names.long = 
+#     c(as.matrix(labels.title)[DayPrefix%.%tpeak, assays], 
+#       as.matrix(labels.title)["B", assays], 
+#       as.matrix(labels.title)["Delta"%.%tpeak%.%"overB", assays])
+#   names(all.markers.names.long) = all.markers
+#   
+#   cor_coxph_risk_tertile_incidence_curves_2arms (
+#     form.0,
+#     dat = dat.vacc,
+#     fname.suffix = "InvVacc_"%.%marker_set,
+#     save.results.to,
+#     config,
+#     config.cor,
+#     tfinal.tpeak,
+#     
+#     markers = all.markers,
+#     markers.names.short = all.markers.names.short,
+#     markers.names.long = all.markers.names.long,
+#     marker.cutpoints,
+#     assay_metadata,
+#     
+#     dat.plac,
+#     for.title = "",
+#     
+#     trt.label = trt.label,
+#     cmp.label = cmp.label, 
+#     
+#     fname.suffix.2 = "CtlVacc_"%.%marker_set
+#   )
+#   
+# }
+# 
 
 
 ################################################################################

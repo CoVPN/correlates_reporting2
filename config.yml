@@ -30,6 +30,7 @@ default: &default
 
 
 
+# for sanofi stage 1 and stage 2 trials
 # not extending ows trial b/c don't want Bserostatus defined, which affects subset in _common.R
 vat08_combined: &vat08_combined
   data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250417.csv
@@ -1634,7 +1635,7 @@ nextgen_mock: &nextgen_mock
   time_labels: [Day 01, Day 31, D31 fold-rise over D01]
   study_name: NextGen_Mock
   assay_metadata: assay_metadata/nextgen_mock_assay_metadata.csv
-  covariates: ~.+ HighRiskInd
+  covariates: ~.+ factor(demo.stratum)
   low_efficacy: no
   num_boot_replicates: 100
   num_perm_replicates: 100
@@ -1648,7 +1649,6 @@ D31toM12_nextgen_mock:
   EventIndPrimary: COVIDIndD31_7toM12
   EventTimePrimary: COVIDTimeD31toM12
   Earlyendpoint: 
-  covariates: ~.+ HighRiskInd
   tpeak: 31
   tpeaklag: 7
   tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
@@ -1663,7 +1663,6 @@ D31toM12_nextgen_mock_tcell:
   EventIndPrimary:  COVIDIndD31_7toM12
   EventTimePrimary: COVIDTimeD31toM12
   Earlyendpoint: 
-  covariates: ~.+ HighRiskInd
   tpeak: 31
   tpeaklag: 7
   tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
@@ -1678,7 +1677,6 @@ D31toM6_nextgen_mock:
   EventIndPrimary: COVIDIndD31_7toM6
   EventTimePrimary: COVIDTimeD31toM6
   Earlyendpoint: 
-  covariates: ~.+ HighRiskInd
   tpeak: 31
   tpeaklag: 7
   tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
@@ -1693,7 +1691,6 @@ D31toM6_nextgen_mock_tcell:
   EventIndPrimary:  COVIDIndD31_7toM6
   EventTimePrimary: COVIDTimeD31toM6
   Earlyendpoint: 
-  covariates: ~.+ HighRiskInd
   tpeak: 31
   tpeaklag: 7
   tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm

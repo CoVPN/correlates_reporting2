@@ -37,7 +37,7 @@ message(paste(marker_sets, collapse = "\n"))
 ```
 
 
-# Forest plots
+# Cox model forest plots for continuous markers
 
 ```{r forestplot, echo=FALSE, results='asis'}
 for (marker_set in marker_sets) {
@@ -64,7 +64,7 @@ for (marker_set in marker_sets) {
     }
   }
   
-  fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Correlate of risk analyses of {marker_set} markers. Covariate-adjusted hazard ratios (HRs) of COVID-19 (A, B: 7 to {t0} days post D31, C, D: 7 to {t1} days post D31) per 10-fold increase in the designated immune marker at D01, at D31, or for D31/D01 fold-change as indicated. Cases acquired a COVID-19 endpoint (A, B) 7 days post D31 through {t0} days post D31 or (C, D) 7 days post D31 through {t1} days post D31. (A, C) Investigational Vaccine arm; (B, D) Comparator Vaccine arm. Non-cases have no evidence of SARS-CoV-2 infection (i.e., never tested nucleic acid amplification/PCR positive) after D01 up to the date by which the last enrolled participant reached {t1} days post D31 ({date}).  HRs were estimated using inverse probability sampling weighted Cox regression models; 95% confidence intervals (CIs) and Wald-based p-values are shown. Analyses adjust for the randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub) (ccIAS). FWER, family-wise error rate adjusted p-value. N, Nucleocapsid protein. D50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."))  %.% "}")
+  fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Correlate of risk analyses of {marker_set} markers for the {ifelse(marker_set=='tcell', 'ccIAS-PBMC', 'ccIAS')} analysis set. Covariate-adjusted hazard ratios (HRs) of COVID-19 (A, B: 7 to {t0} days post D31, C, D: 7 to {t1} days post D31) per 10-fold increase in the designated immune marker at D01, at D31, or for D31/D01 fold-change as indicated. Cases acquired a COVID-19 endpoint (A, B) 7 days post D31 through {t0} days post D31 or (C, D) 7 days post D31 through {t1} days post D31. (A, C) Investigational Vaccine arm; (B, D) Comparator Vaccine arm. Non-cases have no evidence of SARS-CoV-2 infection (i.e., never tested nucleic acid amplification/PCR positive) after D01 up to the date by which the last enrolled participant reached {t1} days post D31 ({date}).  HRs were estimated using inverse probability sampling weighted Cox regression models; 95% confidence intervals (CIs) and Wald-based p-values are shown. Analyses adjust for the randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub). FWER, family-wise error rate adjusted p-value. N, Nucleocapsid protein. D50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."))  %.% "}")
   
   fig_parts <- c(fig_parts, "\\end{figure}\n")
   
@@ -81,7 +81,7 @@ for (marker_set in marker_sets) {
 
 ```{r trichotomized cumulative incidence curves, echo=FALSE, results='asis'}
 for (marker_set in marker_sets) {
-  cat ("## ", marker_set, "\n")
+  cat ("## ", marker_set, "\n\\newpage\n")
   .assays = subset(assay_metadata, panel==marker_set, assay, drop=T)
   for (a in .assays) {
     short_label = get.short.name(a)
@@ -93,7 +93,7 @@ for (marker_set in marker_sets) {
       "D01 "%.%short_label%.%", Comparator vaccine.", 
       "D31 "%.%short_label%.%", Investigational vaccine.", 
       "D31 "%.%short_label%.%", Comparator vaccine.")
-    fig_parts <- c("\\newpage\n\\begin{figure}[H]\n\\centering\n")
+    fig_parts <- c("\\begin{figure}[H]\n\\centering\n")
     
     for (i in seq_along(captions)) {
       caption <- captions[i]
@@ -112,7 +112,7 @@ for (marker_set in marker_sets) {
       }
     }
     
-    fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Covariate-adjusted cumulative incidence of COVID-19 by Low, Medium, High tertile of {short_label}. (A, B) By D01 marker tertile subgroups for the Investigational and Comparator Vaccine arms; (C, D) By D31 marker tertile subgroups for the Investigational and Comparator Vaccine arms. COVID-19 endpoints are counted between 7 and {t1} days post D31. Antibody marker cut-points defining each tertile (based on the Investigational Vaccine arm) are shown in the upper-left inset panel in each plot. The gray line in each plot is the overall cumulative incidence rate curve in the vaccine arm being compared, where the last point shown is the last event time in the comparison arm. The overall P-value is from a generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Low, Medium, and High tertile groups. Analyses adjust for randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub) (ccIAS). ID50, 50% inhibitory dilution neutralizing antibody titer. nAb, neutralizing antibody titer."))  %.% "}")
+    fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Covariate-adjusted cumulative incidence of COVID-19 by Low, Medium, High tertile of {short_label} for the {ifelse(marker_set=='tcell', 'ccIAS-PBMC', 'ccIAS')} analysis set. (A, B) By D01 marker tertile subgroups for the Investigational and Comparator Vaccine arms; (C, D) By D31 marker tertile subgroups for the Investigational and Comparator Vaccine arms. COVID-19 endpoints are counted between 7 and {t1} days post D31. Antibody marker cut-points defining each tertile (based on the Investigational Vaccine arm) are shown in the upper-left inset panel in each plot. The gray line in each plot is the overall cumulative incidence rate curve in the vaccine arm being compared, where the last point shown is the last event time in the comparison arm. The overall P-value is from a generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Low, Medium, and High tertile groups. Analyses adjust for randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub). ID50, 50% inhibitory dilution neutralizing antibody titer. nAb, neutralizing antibody titer."))  %.% "}")
     
     fig_parts <- c(fig_parts, "\\end{figure}\n\\newpage\n")
     
@@ -146,9 +146,9 @@ for (marker_set in marker_sets) {
       }
     }
     
-    fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Covariate-adjusted cumulative incidence of COVID-19 by Low, Medium, High tertile of {short_label}. (A) By D01 marker tertile subgroups for the Investigational and Comparator Vaccine arms; (B) By D31 marker tertile subgroups for the Investigational and Comparator Vaccine arms. COVID-19 endpoints are counted between 7 and {t1} days post D31. Antibody marker cut-points defining each tertile (based on the Investigational Vaccine arm) are shown in the upper-left inset panel in each plot. Analyses adjust for randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub) (ccIAS). ID50, 50% inhibitory dilution neutralizing antibody titer. nAb, neutralizing antibody titer."))  %.% "}")
+    fig_parts <- c(fig_parts, "\\caption{"%.% escape_latex(glue("Covariate-adjusted cumulative incidence of COVID-19 by Low, Medium, High tertile of {short_label} for the {ifelse(marker_set=='tcell', 'ccIAS-PBMC', 'ccIAS')} analysis set. (A) By D01 marker tertile subgroups for the Investigational and Comparator Vaccine arms; (B) By D31 marker tertile subgroups for the Investigational and Comparator Vaccine arms. COVID-19 endpoints are counted between 7 and {t1} days post D31. Antibody marker cut-points defining each tertile (based on the Investigational Vaccine arm) are shown in the upper-left inset panel in each plot. Analyses adjust for randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub). ID50, 50% inhibitory dilution neutralizing antibody titer. nAb, neutralizing antibody titer."))  %.% "}")
     
-    fig_parts <- c(fig_parts, "\\end{figure}\n")
+    fig_parts <- c(fig_parts, "\\end{figure}\n\\newpage\n")
     
     txt = paste(fig_parts, collapse = "\n")
     # message(txt) # for debugging tex
@@ -159,7 +159,33 @@ for (marker_set in marker_sets) {
 ```
 
 
-# Cox models
+
+# Cox model tables for continuous markers
+
+```{r cox cont, echo=FALSE, results='asis'}
+for (marker_set in marker_sets) {
+  fig_parts <- c("\\newpage\n")
+  for (i in seq(1, len(labels), by=2)) {
+    COR = CORs[i] %.% ifelse(marker_set=="tcell", "_tcell", "")
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+
+    pathCoRoutput <- "cor_coxph/output/nextgen_mock/" %.% COR
+    fname.suffix <- "2arms_" %.% marker_set
+    
+    cat("\\setlength{\\tabcolsep}{.5ex}\n",
+      "\\small\n",
+      paste0("  \\input{", pathCoRoutput, "/CoR_univariable_svycoxph_pretty_", fname.suffix, "}\n"),
+      "\\normalsize\n",
+      "$\\ast\\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers.\n",
+      "\\newpage"
+    )
+  }
+}
+```
+
+
+# Cox model tables for trichotomized markers
 
 ```{r, echo=FALSE, results='asis'}
 
@@ -168,7 +194,7 @@ for (i in seq_along(labels)) {
   cat ("## ", label, "\n")
 
   for (marker_set in marker_sets) {
-    cat ("### ", marker_set, "\n")
+    # cat ("### ", marker_set, "\n")
     COR = CORs[i] %.% ifelse(marker_set=="tcell", "_tcell", "")
     pathCoRoutput <- "cor_coxph/output/nextgen_mock/" %.% COR
     fname.suffix <- fname.suffixes[i] %.% marker_set
@@ -187,8 +213,8 @@ for (i in seq_along(labels)) {
     show.tertile.curves=F
     show.forestplots=F
     has.alt <- show.risk.curves <- show.ve.curves <- plot.geq <- show.q <- F
-    level=3 #  title indent
-    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE); cat(res, sep = '\n')
+    level=2 #  title indent
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tri.Rmd')), quiet = TRUE); cat(res, sep = '\n')
   
     cat ("\\newpage\n")
   }
