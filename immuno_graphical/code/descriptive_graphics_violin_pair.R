@@ -58,11 +58,11 @@ if (attr(config, "config") == "nextgen_mock") {
 }
 # ID50, at B, D22, D43, D22-B, D43-B
 # bindSpike, at B, D22, D43, D22-B, D43-B
-for (panel in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera", "T4", "T8")
+for (panel in if (study_name == "NextGen_Mock") {c("IgG_sera", "pseudoneutid50_sera", "T4", "T8")
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
-    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
+    if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA", "nextGen_mock")) next # janssen_partA_VL doesn't need these plots
     
     if (attr(config,"config")=="vat08_combined" & panel=="pseudoneutid50") {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1 %>% filter(ph2.immuno.nAb==1)
@@ -125,8 +125,8 @@ for (panel in if (study_name == "NextGen_Mock") {c("IgG", "pseudoneutid50_sera",
 }
 
 # pooling two arms at D01 for NextGen_Mock
-if (study_name == "NextGen_Mock") {
-    for (panel in c("IgG", "pseudoneutid50_sera", "T4", "T8")) {
+if (study_name == "NextGen_Mock" & study_name != "NextGen_Mock") {
+    for (panel in c("IgG_sera", "pseudoneutid50_sera", "T4", "T8")) {
             
         f_1 <- f_by_time_assay(
             dat = dat.longer.immuno.subset.plot1.3.whole %>% mutate(x="1"),
@@ -214,11 +214,11 @@ for (panel in if (study_name == "NextGen_Mock") {
        "bindSpike_IgG_sera_KP.2$|bindSpike_IgG_sera_KP.3$",
        "bindSpike_IgG_sera_LB.1$|bindN_IgG_sera$",
        
-       "bindSpike_IgA_sera$|bindSpike_IgA_sera_delta_AY.4$",
-       "bindSpike_IgA_sera_BA.5$|bindSpike_IgA_sera_BA.2.86$",
-       "bindSpike_IgA_sera_XBB.1.5$|bindSpike_IgA_sera_JN.1$",
-       "bindSpike_IgA_sera_KP.2$|bindSpike_IgA_sera_KP.3$",
-       "bindSpike_IgA_sera_LB.1$",
+       "bindSpike_IgA_nasal$|bindSpike_IgA_nasal_delta_AY.4$",
+       "bindSpike_IgA_nasal_BA.5$|bindSpike_IgA_nasal_BA.2.86$",
+       "bindSpike_IgA_nasal_XBB.1.5$|bindSpike_IgA_nasal_JN.1$",
+       "bindSpike_IgA_nasal_KP.2$|bindSpike_IgA_nasal_KP.3$",
+       "bindSpike_IgA_nasal_LB.1$",
        
        "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$", 
        
@@ -522,9 +522,9 @@ for (grp in c("non_naive_vac_pla",
         }
         
         for (asy in if (study_name != "NextGen_Mock") {""} else {
-            c("IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", "T4", "T8", 
-              "IgG_sera|bindSpike_IgA_sera", "IgG_sera|pseudoneutid50_sera", "IgG_sera|T4", "IgG_sera|T8",
-              "bindSpike_IgA_sera|pseudoneutid50_sera", "bindSpike_IgA_sera|T4", "bindSpike_IgA_sera|T8",
+            c("IgG_sera", "bindSpike_IgA_nasal", "pseudoneutid50_sera", "T4", "T8", 
+              "IgG_sera_KP.2|bindSpike_IgA_nasal_KP.2", "IgG_sera_KP.2|pseudoneutid50_sera", "IgG_sera_KP.2|T4", "IgG_sera_KP.2|T8",
+              "bindSpike_IgA_nasal_KP.2|pseudoneutid50_sera", "bindSpike_IgA_nasal_KP.2|T4", "bindSpike_IgA_nasal_KP.2|T8",
               "pseudoneutid50_sera|T4", "pseudoneutid50_sera|T8", "T4|T8")}) { 
             
             if (asy == "") {assays_sub = assays_sub_
@@ -545,7 +545,8 @@ for (grp in c("non_naive_vac_pla",
                 column_labels = assay_metadata$assay_label_short[match(assays_sub, assay_metadata$assay)],
                 height = max(1.3 * length(assays_sub) + 0.1, 5.5),
                 width = max(1.3 * length(assays_sub), 5.5),
-                column_label_size = ifelse(max(nchar(paste(assay_metadata$assay_label_short)))>28, 4, 6.5),
+                column_label_size = ifelse(max(nchar(paste(assay_metadata$assay_label_short))) > 28 & length(assays_sub) >= 4, 4, ifelse(length(assays_sub) == 2, 6.5, 6)),
+                label_format = ifelse((grepl("T4", asy) | grepl("T8", asy)) & !grepl("pseudo|bind", asy), "percent", "log10"),
                 filename = paste0(
                     save.results.to, "/pairs_by_time_", t,
                     "_", ifelse(asy == "", length(assays_sub), gsub("\\|", "_and_", asy)), "_markers_", grp, 
@@ -606,10 +607,11 @@ for (a in assays){
                                     ifelse(study_name == "NextGen_Mock", "wt", "wt.subcohort")),
                     plot_title = "",
                     column_labels = gsub("B", "Day01", times_sub),
+                    axis_label_size = ifelse(study_name == "NextGen_Mock", 7, 9),
                     height = 5.5,
                     width = 5.5,
                     column_label_size = 10,
-                    label_format = ifelse(grepl("T4|T8", a), "percent", "log10"),
+                    label_format = ifelse((grepl("T4", a) | grepl("T8", a)) & !grepl("pseudo|bind", a), "percent", "log10"),
                     write_to_file = F
                 ) 
                 i = i + 1

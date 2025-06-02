@@ -796,6 +796,7 @@ covid_corr_scatter_facets <- function(plot_dat,
 #' @param axis_titles_y: string vector: y-axis titles for the panels.
 #' @param axis_title_size: scalar: font size of the axis title.
 #' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
+#' @param add_violin: violin option, default is F
 #' @param arrange_nrow: integer: number of rows to arrange the panels.
 #' @param arrange_ncol: integer: number of columns to arrange the panels.
 #' @param panel_titles: string vector: subtitles of each panel.
@@ -852,6 +853,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
                                       width = 3 * arrange_ncol,
                                       units = "in",
                                       label_format = "log10",
+                                      add_violin = FALSE,
                                       filename) {
   plot_dat <- plot_dat[!is.na(plot_dat[, x]), ]
   # make a subset of data with 30 sample points for the jitter in each subgroup
@@ -891,8 +893,15 @@ covid_corr_boxplot_facets <- function(plot_dat,
       subset(plot_dat, plot_dat[, facet_by] ==
         unique(plot_dat[, facet_by])[aa]),
       aes_string(x = x, y = y, color = color)
-      ) +
-      geom_jitter(
+      )
+    
+    # Optionally add violin layer
+    if (add_violin) {
+      boxplot_list[[aa]] <- boxplot_list[[aa]] +
+        geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE)
+    }
+    
+    boxplot_list[[aa]] <- boxplot_list[[aa]] + geom_jitter(
         data = subset(
           boxplot_jitter_points,
           boxplot_jitter_points[, facet_by] == unique(boxplot_jitter_points[, facet_by])[aa]),
@@ -953,6 +962,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
       }
     }
   }
+  
   output_plot <- ggarrange(
     plotlist = boxplot_list, ncol = arrange_ncol,
     nrow = arrange_nrow, common.legend = TRUE,
