@@ -833,7 +833,7 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
             pairplots[j, k] <- pairplots[j, k] +
                 stat_smooth(
                     method = "loess", color = "red", se = FALSE,
-                    lwd = loess_lwd, span = 1
+                    lwd = loess_lwd
                 ) +
                 scale_x_continuous(
                     limits = ranges[[x_var]],#rr.x, 
@@ -1009,7 +1009,7 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
             pairplots[j, k] <- pairplots[j, k] +
                 stat_smooth(
                     method = "loess", color = "red", se = FALSE,
-                    lwd = loess_lwd, span = 1
+                    lwd = loess_lwd
                 ) +
                 scale_x_continuous(
                     limits = ranges[[x_var]],#rr, 
