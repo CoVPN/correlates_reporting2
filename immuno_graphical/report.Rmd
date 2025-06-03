@@ -66,9 +66,9 @@ if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("
 }
 
 if (study_name == "NextGen_Mock") {
-    assays = assays[!grepl("IgA_sera|pseudoneutid50_nasal|IgG_nasal|saliva|bindN_IgA", assays)]
-    assay_immuno = assay_immuno[!grepl("IgA_sera|pseudoneutid50_nasal|IgG_nasal|saliva|bindN_IgA", assay_immuno)]
-    assay_metadata = assay_metadata %>% filter(!grepl("IgA_sera|pseudoneutid50_nasal|IgG_nasal|saliva|bindN_IgA", assay))
+    assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
+    assay_immuno = assay_immuno[!grepl("nasal|saliva|bindN_IgA", assay_immuno)]
+    assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
 }
 ```
 
@@ -113,7 +113,7 @@ immuno_postfix_label = switch(study_name,
 ```
 
 \clearpage
-## Pairs plots of antibody markers for RIS or RIS-PBMC cohort
+## Pairs plots of antibody markers for specimen-specific cohorts
 
 ```{r, echo=FALSE, results='asis'}
 ## Pairs plots of antibody markers for overall per-protocal cohort
@@ -212,7 +212,7 @@ for (bsero in bstatus.labels.2) {
 ```
 
 \clearpage
-## RCDF plots of antibody markers for RIS or RIS-PBMC cohort
+## RCDF plots of antibody markers for specimen-specific cohorts
 ```{r, echo=FALSE, results='asis'}
 ## RCDF plots of antibody markers for overall per-protocol cohort
 
@@ -251,8 +251,8 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
             tpLabel <- gsub("ay ", "", labels.time[gsub("_initial|_final", "", tp)])
             
             for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")
-            } else if (study_name == "NextGen_Mock") {c("bAb_IgG_sera", "bAb_IgA_nasal", "nAb_sera", 
-                                   # "bAb_IgG_nasal", "nAb_nasal", "bAb_IgG_saliva", "bAb_IgA_saliva" "nAb_saliva",
+            } else if (study_name == "NextGen_Mock") {c("bAb_IgG_sera", "bAb_IgA_sera", "nAb_sera", 
+                                   # "bAb_IgG_nasal", "bAb_IgA_nasal", "nAb_nasal", "bAb_IgG_saliva", "bAb_IgA_saliva" "nAb_saliva",
                                                         "ics")
             } else {c("","bAb","nAb","other")}){ # for VAT08 and janssen_partA_VL, only report for bAb and nAb
                 if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
@@ -338,7 +338,7 @@ if (!study_name  %in% c("VAT08", "NextGen_Mock")) { # VAT08 and NextGen_Mock don
 
 
 ```{r, echo=FALSE, results='asis', eval = study_name!="NextGen_Mock"}
-## Box plots of antibody markers for RIS or RIS-PBMC cohort
+## Box plots of antibody markers for specimen-specific cohorts
 ## Box plots of antibody markers for overall per-protocol cohort
 
 ### Vaccine vs. Placebo (2 arms x 1 baseline status in each plot)
@@ -520,14 +520,14 @@ if (attr(config,"config")=="janssen_partA_VL"){
 }
 ```
 
-## Spider plots of antibody markers for RIS or RIS-PBMC cohort
+## Spider plots of antibody markers for specimen-specific cohorts
 ```{r, echo=FALSE, results='asis'}
 ## Spider plot of antibody markers for overall per-protocol cohort
 
 if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
     
     for (asy in if(study_name == "NextGen_Mock") {
-    c("bind.*IgG_sera", "bind.*nasal", #"bind.*saliva", 
+    c("bind.*sera", #"bind.*nasal", #"bind.*saliva", 
       "pseudo.*sera", #"pseudo.*nasal", "pseudo.*saliva", 
       "ics")
     } else {c("bind", "pseudo")}){
@@ -588,7 +588,7 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
 \clearpage
 ## Set 1 plots: D01, D31, D91, D181, D366 Ab distributions
 ```{r, echo=FALSE, results='asis', eval = study_name=="NextGen_Mock"}
-## Box plots of antibody markers for RIS or RIS-PBMC cohort
+## Box plots of antibody markers for specimen-specific cohorts
 ## Box plots of antibody markers for overall per-protocol cohort
 
 ### Vaccine vs. Placebo (2 arms x 1 baseline status in each plot)
@@ -610,8 +610,8 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
     
     for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
         
-        for (pn in if (study_name != "NextGen_Mock") {""} else {c(c("IgG_sera", "IgA_nasal", "pseudoneutid50_sera",
-                                                                  #"IgG_nasal", "pseudoneutid50_nasal", 
+        for (pn in if (study_name != "NextGen_Mock") {""} else {c(c("IgG_sera", "IgA_sera", "pseudoneutid50_sera",
+                                                                  #"IgG_nasal", "IgA_nasal", "pseudoneutid50_nasal", 
                                                               #"IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva",
                                                                   "T4_T8"))}) {
         
@@ -668,11 +668,11 @@ for (assay_grp in if (study_name == "NextGen_Mock") {
      "bindSpike_IgG_sera_KP.2$|bindSpike_IgG_sera_KP.3$",
      "bindSpike_IgG_sera_LB.1$|bindN_IgG_sera$",
      
-     "bindSpike_IgA_nasal$|bindSpike_IgA_nasal_delta_AY.4$",
-     "bindSpike_IgA_nasal_BA.5$|bindSpike_IgA_nasal_BA.2.86$",
-     "bindSpike_IgA_nasal_XBB.1.5$|bindSpike_IgA_nasal_JN.1$",
-     "bindSpike_IgA_nasal_KP.2$|bindSpike_IgA_nasal_KP.3$",
-     "bindSpike_IgA_nasal_LB.1$",
+     "bindSpike_IgA_sera$|bindSpike_IgA_sera_delta_AY.4$",
+     "bindSpike_IgA_sera_BA.5$|bindSpike_IgA_sera_BA.2.86$",
+     "bindSpike_IgA_sera_XBB.1.5$|bindSpike_IgA_sera_JN.1$",
+     "bindSpike_IgA_sera_KP.2$|bindSpike_IgA_sera_KP.3$",
+     "bindSpike_IgA_sera_LB.1$",
      
      "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$", 
      
@@ -718,25 +718,25 @@ for (bsero in c("non_naive")){
             tpLabel = ifelse(tp=="B", "Day01", tp)
             
             for (asy in if (study_name != "NextGen_Mock") {""} else {
-                c("IgG_sera", "bindSpike_IgA_nasal", "pseudoneutid50_sera", "T4", "T8", 
-                  "IgG_sera_KP.2|bindSpike_IgA_nasal_KP.2", "IgG_sera_KP.2|pseudoneutid50_sera", "IgG_sera_KP.2|T4", "IgG_sera_KP.2|T8",
-                  "bindSpike_IgA_nasal_KP.2|pseudoneutid50_sera", "bindSpike_IgA_nasal_KP.2|T4", "bindSpike_IgA_nasal_KP.2|T8",
+                c("IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", "T4", "T8", 
+                  "IgG_sera_KP.2|bindSpike_IgA_sera_KP.2", "IgG_sera_KP.2|pseudoneutid50_sera", "IgG_sera_KP.2|T4", "IgG_sera_KP.2|T8",
+                  "bindSpike_IgA_sera_KP.2|pseudoneutid50_sera", "bindSpike_IgA_sera_KP.2|T4", "bindSpike_IgA_sera_KP.2|T8",
                   "pseudoneutid50_sera|T4", "pseudoneutid50_sera|T8", "T4|T8")
                 }) {
                 assay_n = length(assays)
 
                 asy_lb = case_when(asy == "IgG_sera" ~ "bAb-IgG Spike and bAb-IgG Nucleocapsid concentrations",
-                                   asy == "bindSpike_IgA_nasal" ~ "bAb-IgA Spike concentrations",
+                                   asy == "bindSpike_IgA_sera" ~ "bAb-IgA Spike concentrations",
                                    asy == "pseudoneutid50_sera" ~ "nAb-ID50 titers",
                                    asy == "T4" ~ "CD4+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "T8" ~ "CD8+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   asy == "IgG_sera_KP.2|bindSpike_IgA_nasal_KP.2" ~ "bAb-IgG Spike KP.2 and bAb-IgA Spike KP.2 concentrations",
+                                   asy == "IgG_sera_KP.2|bindSpike_IgA_sera_KP.2" ~ "bAb-IgG Spike KP.2 and bAb-IgA Spike KP.2 concentrations",
                                    asy == "IgG_sera_KP.2|pseudoneutid50_sera" ~ "bAb-IgG Spike KP.2 concentrations and nAb-ID50 titers",
                                    asy == "IgG_sera_KP.2|T4" ~ "bAb-IgG Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "IgG_sera_KP.2|T8" ~ "bAb-IgG Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   asy == "bindSpike_IgA_nasal_KP.2|pseudoneutid50_sera" ~ "bAb-IgA Spike KP.2 concentrations and nAb-ID50 titers",
-                                   asy == "bindSpike_IgA_nasal_KP.2|T4" ~ "bAb-IgA Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   asy == "bindSpike_IgA_nasal_KP.2|T8" ~ "bAb-IgA Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_sera_KP.2|pseudoneutid50_sera" ~ "bAb-IgA Spike KP.2 concentrations and nAb-ID50 titers",
+                                   asy == "bindSpike_IgA_sera_KP.2|T4" ~ "bAb-IgA Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_sera_KP.2|T8" ~ "bAb-IgA Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "pseudoneutid50_sera|T4" ~ "nAb-ID50 titers and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "pseudoneutid50_sera|T8" ~ "nAb-ID50 titers and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "T4|T8" ~ "CD4+ and CD8+ T-cell markers to Spike and Nucleocapsid peptides")

@@ -214,11 +214,11 @@ for (panel in if (study_name == "NextGen_Mock") {
        "bindSpike_IgG_sera_KP.2$|bindSpike_IgG_sera_KP.3$",
        "bindSpike_IgG_sera_LB.1$|bindN_IgG_sera$",
        
-       "bindSpike_IgA_nasal$|bindSpike_IgA_nasal_delta_AY.4$",
-       "bindSpike_IgA_nasal_BA.5$|bindSpike_IgA_nasal_BA.2.86$",
-       "bindSpike_IgA_nasal_XBB.1.5$|bindSpike_IgA_nasal_JN.1$",
-       "bindSpike_IgA_nasal_KP.2$|bindSpike_IgA_nasal_KP.3$",
-       "bindSpike_IgA_nasal_LB.1$",
+       "bindSpike_IgA_sera$|bindSpike_IgA_sera_delta_AY.4$",
+       "bindSpike_IgA_sera_BA.5$|bindSpike_IgA_sera_BA.2.86$",
+       "bindSpike_IgA_sera_XBB.1.5$|bindSpike_IgA_sera_JN.1$",
+       "bindSpike_IgA_sera_KP.2$|bindSpike_IgA_sera_KP.3$",
+       "bindSpike_IgA_sera_LB.1$",
        
        "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$", 
        
@@ -522,9 +522,9 @@ for (grp in c("non_naive_vac_pla",
         }
         
         for (asy in if (study_name != "NextGen_Mock") {""} else {
-            c("IgG_sera", "bindSpike_IgA_nasal", "pseudoneutid50_sera", "T4", "T8", 
-              "IgG_sera_KP.2|bindSpike_IgA_nasal_KP.2", "IgG_sera_KP.2|pseudoneutid50_sera", "IgG_sera_KP.2|T4", "IgG_sera_KP.2|T8",
-              "bindSpike_IgA_nasal_KP.2|pseudoneutid50_sera", "bindSpike_IgA_nasal_KP.2|T4", "bindSpike_IgA_nasal_KP.2|T8",
+            c("IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", "T4", "T8", 
+              "IgG_sera_KP.2|bindSpike_IgA_sera_KP.2", "IgG_sera_KP.2|pseudoneutid50_sera", "IgG_sera_KP.2|T4", "IgG_sera_KP.2|T8",
+              "bindSpike_IgA_sera_KP.2|pseudoneutid50_sera", "bindSpike_IgA_sera_KP.2|T4", "bindSpike_IgA_sera_KP.2|T8",
               "pseudoneutid50_sera|T4", "pseudoneutid50_sera|T8", "T4|T8")}) { 
             
             if (asy == "") {assays_sub = assays_sub_
