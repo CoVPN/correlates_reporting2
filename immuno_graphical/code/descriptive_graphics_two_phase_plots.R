@@ -1160,8 +1160,9 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             
             max_min <- rbind(rep(find_max,
                                  ncol(dat.spider.by.time)), 
-                             rep(#10^min(0, ceiling(find_min)),
-                               0, ncol(dat.spider.by.time)))
+                             rep(10^min(0, ceiling(find_min)),
+                               #0, 
+                               ncol(dat.spider.by.time)))
             colnames(max_min) <- colnames(dat.spider.by.time)
             rownames(max_min) <- c("max", "min")
             
@@ -1208,7 +1209,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
 
             spider_range = if(attr(config,"config")=="janssen_partA_VL") {10^seq(1, 1.2, (1.2-1)/4) # hard code for the range here
               #seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
-            } else if (study_name == "NextGen_Mock" & ab != "ics") {seq(2, 6, 1)#seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
+            } else if (study_name == "NextGen_Mock" & ab != "ics") {10^seq(2, 6, 1)#seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
             } else if (study_name == "NextGen_Mock" & ab == "ics") {10^seq(-2, 2, 1)#10^seq(floor(log10(find_min)), ceiling(log10(find_max)), by = 1)
               }
             radarchart(dat.plot, 
