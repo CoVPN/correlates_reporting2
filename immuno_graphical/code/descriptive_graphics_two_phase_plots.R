@@ -1143,8 +1143,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               pivot_longer(!Ptid:Trt, names_to = "time_assay", values_to = "value") %>%
               mutate(assay = gsub(paste0(paste0("^",times_spider), collapse="|"), "", time_assay),
                      time = gsub(paste0(assays_, collapse="|"), "", time_assay),
-                     time_assay = NULL#,
-                     #value = 10^value
+                     time_assay = NULL,
+                     value = 10^value
                      ) %>% 
               # in order to make this work for the negative ICS value, use 10^.x to calculate geomean 
               pivot_wider(names_from = assay, values_from = value) %>%
@@ -1206,17 +1206,19 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             color = c(if(study_name=="VAT08") "#0AB7C9", "#FF6F1B", "#FF5EBF", "dodgerblue", "chartreuse3", "#009E73")[1:length(times_spider)]
             legend_lb = labels.time[times_spider]
 
-            spider_range = if(attr(config,"config")=="janssen_partA_VL") {#10^seq(1, 1.2, (1.2-1)/4) # hard code for the range here
-              seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
-            #} else if (study_name == "NextGen_Mock" & ab != "ics") {seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
-            #} else if (study_name == "NextGen_Mock" & ab == "ics") {10^seq(floor(log10(find_min)), ceiling(log10(find_max)), by = 1)}
+            spider_range = if(attr(config,"config")=="janssen_partA_VL") {10^seq(1, 1.2, (1.2-1)/4) # hard code for the range here
+              #seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
+            } else if (study_name == "NextGen_Mock" & ab != "ics") {seq(2, 6, 1)#seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
+            } else if (study_name == "NextGen_Mock" & ab == "ics") {10^seq(-2, 2, 1)#10^seq(floor(log10(find_min)), ceiling(log10(find_max)), by = 1)
+              }
             radarchart(dat.plot, 
                        axistype=1 , 
                        # Customize the polygon
                        pcol = scales::alpha(color, 0.7), plwd=1.5, pty=c(15), plty=1,
                        pfcol = scales::alpha(color, 0.2),
                        #custom the grid
-                       cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=paste0("10^", spider_range),#if (study_name == "NextGen_Mock" & ab == "ics") {paste0(spider_range, "%")} else {paste0("10^", round(log10(spider_range), 2))}, 
+                       cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=#paste0("10^", spider_range),#
+                         if (study_name == "NextGen_Mock" & ab == "ics") {paste0(spider_range, "%")} else {paste0("10^", round(log10(spider_range), 2))}, 
                        #label size
                        vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12 | max(nchar(assays_)) > 25, 0.7, 1)),
                        #title
