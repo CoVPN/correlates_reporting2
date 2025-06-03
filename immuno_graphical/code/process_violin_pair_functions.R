@@ -329,7 +329,7 @@ f_longitude_by_assay <- function(
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scale_label) +
-                labs(x = "Assay", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(gsub("\\$", "", gsub("\\|", "_", panel)))), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
+                labs(x = "Time point", y = ifelse(y.axis.lb!="", y.axis.lb, unique(panel)), title = paste(ifelse(y.axis.lb!="", y.axis.lb, unique(gsub("\\$", "", gsub("\\|", "_", panel)))), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
     
@@ -732,25 +732,54 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
                                  filename,
                                  write_to_file = T) {
     dat.tmp <- plot_dat[, paste0(time, assays)]
-    rr <- range(dat.tmp, na.rm = TRUE)
-    rr.x <- range(dat.tmp[, 1: (ncol(dat.tmp)-1)], na.rm = TRUE)
-    rr.y <- range(dat.tmp[, 2: ncol(dat.tmp)], na.rm = TRUE)
     
-    if (rr[1] == rr[2]) {
-        rr <- c(rr[1] - 1, rr[2] + 1)
-    }
+    #rr <- range(dat.tmp, na.rm = TRUE)
+    #rr.x <- range(dat.tmp[, 1: (ncol(dat.tmp)-1)], na.rm = TRUE)
+    #rr.y <- range(dat.tmp[, 2: ncol(dat.tmp)], na.rm = TRUE)
     
-    if (rr[2] - rr[1] < 2) {
-        rr <- floor(rr[1]):ceiling(rr[2])
-    }
+    #if (rr[1] == rr[2]) {
+    #    rr <- c(rr[1] - 1, rr[2] + 1)
+    #}
     
-    breaks <- floor(rr[1]):ceiling(rr[2])
+    #if (rr[2] - rr[1] < 2) {
+    #    rr <- floor(rr[1]):ceiling(rr[2])
+    #}
     
-    rr <- c(floor(rr[1]), ceiling(rr[2]))
+    #breaks <- floor(rr[1]):ceiling(rr[2])
     
-    if (max(breaks) - min(breaks) >= 6) {
-        breaks <- breaks[breaks %% 2 == 0]
-    }
+    #rr <- c(floor(rr[1]), ceiling(rr[2]))
+    
+    #if (max(breaks) - min(breaks) >= 6) {
+    #    breaks <- breaks[breaks %% 2 == 0]
+    #}
+    
+    # Get variable names
+    var_names <- colnames(dat.tmp)
+    
+    # Compute ranges with integer limits
+    ranges <- setNames(
+        lapply(dat.tmp, function(col) {
+            rg <- range(col, na.rm = TRUE)
+            c(floor(rg[1]), ceiling(rg[2]))
+        }),
+        var_names
+    )
+    
+    # Create integer breaks (try to get 5 evenly spaced ones)
+    breaks_list <- setNames(
+        lapply(ranges, function(rg) {
+            len <- rg[2] - rg[1]
+            if (len < 4) {
+                # if range is narrow, just return full seq
+                seq(rg[1], rg[2])
+            } else {
+                # otherwise, generate approx 5 breaks
+                pretty(seq(rg[1], rg[2]), n = 5) %>% 
+                    round() %>% unique() %>% sort()
+            }
+        }),
+        var_names
+    )
     
     pairplots <- ggpairs(
         data = dat.tmp, title = plot_title,
@@ -781,7 +810,9 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
             plot.margin = margin(2, 2, 2, 2)
         )
     pairplots[1, 1] <- pairplots[1, 1] +
-        scale_x_continuous(limits = rr.x, breaks = breaks) + ylim(0, 1.25)
+        scale_x_continuous(limits = ranges[[var_names[1]]],#rr.x, 
+                               breaks = breaks_list[[var_names[1]]],#breaks
+                               ) + ylim(0, 1.25)
     
     scale_label <- switch(label_format,
                           "log10" = scales::label_math(10^.x),
@@ -791,25 +822,34 @@ covid_corr_pairplots <- function(plot_dat, ## data for plotting
     )
     
     for (j in 2:pairplots$nrow) {
+        
+        diag_var <- var_names[j]
+        
         for (k in 1:(j - 1)) {
+            
+            x_var <- var_names[k]
+            y_var <- var_names[j]
+            
             pairplots[j, k] <- pairplots[j, k] +
                 stat_smooth(
                     method = "loess", color = "red", se = FALSE,
-                    lwd = loess_lwd
+                    lwd = loess_lwd, span = 1
                 ) +
                 scale_x_continuous(
-                    limits = rr.x, breaks = breaks,
+                    limits = ranges[[x_var]],#rr.x, 
+                    breaks = breaks_list[[x_var]],#breaks,
                     labels = scale_label
                 ) +
                 scale_y_continuous(
-                    limits = rr.y, breaks = breaks,
+                    limits = ranges[[y_var]],#rr.y, 
+                    breaks = breaks_list[[y_var]],#breaks,
                     labels = scale_label
                 )
         }
         pairplots[j, j] <- pairplots[j, j] +
             scale_x_continuous(
-                limits = rr, # use maximum range of rr.x and rr.y here in order to show a complete histogram
-                breaks = breaks,
+                limits = ranges[[diag_var]],#rr, # use maximum range of rr.x and rr.y here in order to show a complete histogram
+                breaks = breaks_list[[diag_var]],#breaks,
                 labels = scale_label
             ) + ylim(0, 1.25)
     }
@@ -871,27 +911,55 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
                                          label_format = "log10",
                                          filename) {
     dat.tmp <- plot_dat[, paste0(times, assay)]
-    rr <- range(dat.tmp, na.rm = TRUE)
+    #rr <- range(dat.tmp, na.rm = TRUE)
     
-    if (rr[1] == rr[2]) {
-        rr <- c(rr[1] - 1, rr[2] + 1)
-    }
+    #if (rr[1] == rr[2]) {
+    #    rr <- c(rr[1] - 1, rr[2] + 1)
+    #}
     
-    if (rr[2] - rr[1] < 2) {
-        rr <- c(floor(rr[1]), ceiling(rr[2]))
-    }
+    #if (rr[2] - rr[1] < 2) {
+    #    rr <- c(floor(rr[1]), ceiling(rr[2]))
+    #}
     
-    breaks <- floor(rr[1]):ceiling(rr[2])
+    #breaks <- floor(rr[1]):ceiling(rr[2])
     
-    if (rr[2] > ceiling(rr[1])) {
-        breaks <- ceiling(rr[1]):floor(rr[2])
-    } else {
-        breaks <- floor(rr[1]):ceiling(rr[2]) ## breaks on the axis
-    }
+    #if (rr[2] > ceiling(rr[1])) {
+    #    breaks <- ceiling(rr[1]):floor(rr[2])
+    #} else {
+    #    breaks <- floor(rr[1]):ceiling(rr[2]) ## breaks on the axis
+    #}
     
-    if (max(breaks) - min(breaks) >= 6) {
-        breaks <- breaks[breaks %% 2 == 0]
-    }
+    #if (max(breaks) - min(breaks) >= 6) {
+    #    breaks <- breaks[breaks %% 2 == 0]
+    #}
+    
+    # Get variable names
+    var_names <- colnames(dat.tmp)
+    
+    # Compute ranges with integer limits
+    ranges <- setNames(
+        lapply(dat.tmp, function(col) {
+            rg <- range(col, na.rm = TRUE)
+            c(floor(rg[1]), ceiling(rg[2]))
+        }),
+        var_names
+    )
+    
+    # Create integer breaks (try to get 5 evenly spaced ones)
+    breaks_list <- setNames(
+        lapply(ranges, function(rg) {
+            len <- rg[2] - rg[1]
+            if (len < 4) {
+                # if range is narrow, just return full seq
+                seq(rg[1], rg[2])
+            } else {
+                # otherwise, generate approx 5 breaks
+                pretty(seq(rg[1], rg[2]), n = 5) %>% 
+                    round() %>% unique() %>% sort()
+            }
+        }),
+        var_names
+    )
     
     pairplots <- ggpairs(
         data = dat.tmp, title = plot_title,
@@ -920,7 +988,9 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
             panel.grid.minor = element_blank()
         )
     pairplots[1, 1] <- pairplots[1, 1] +
-        scale_x_continuous(limits = rr, breaks = breaks) + ylim(0, 1.3)
+        scale_x_continuous(limits = ranges[[var_names[1]]], #rr, 
+                           breaks = breaks_list[[var_names[1]]], #breaks
+                               ) + ylim(0, 1.3)
     
     scale_label <- switch(label_format,
                           "log10" = scales::label_math(10^.x),
@@ -930,24 +1000,32 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
     )
     
     for (j in 2:pairplots$nrow) {
+        diag_var <- var_names[j]
         for (k in 1:(j - 1)) {
+            
+            x_var <- var_names[k]
+            y_var <- var_names[j]
+            
             pairplots[j, k] <- pairplots[j, k] +
                 stat_smooth(
                     method = "loess", color = "red", se = FALSE,
-                    lwd = loess_lwd
+                    lwd = loess_lwd, span = 1
                 ) +
                 scale_x_continuous(
-                    limits = rr, breaks = breaks,
+                    limits = ranges[[x_var]],#rr, 
+                    breaks = breaks_list[[x_var]],#breaks,
                     labels = scale_label
                 ) +
                 scale_y_continuous(
-                    limits = rr, breaks = breaks,
+                    limits = ranges[[y_var]],#rr, 
+                    breaks = breaks_list[[y_var]],#breaks,
                     labels = scale_label
                 )
         }
         pairplots[j, j] <- pairplots[j, j] +
             scale_x_continuous(
-                limits = rr, breaks = breaks,
+                limits = ranges[[diag_var]],#rr, 
+                breaks = breaks_list[[diag_var]],#breaks,
                 labels = scale_label
             ) + ylim(0, 1.3)
     }
