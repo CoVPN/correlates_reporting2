@@ -628,10 +628,10 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
           if (nextgen_output_flag >= 2) "IgA_sera", 
           if (nextgen_output_flag >= 2) "pseudoneutid50_sera",
           if (nextgen_output_flag == 3) "IgG_nasal", 
-          if (nextgen_output_flag == 3) "IgA_nasal"
+          if (nextgen_output_flag == 3) "IgA_nasal",
           if (nextgen_output_flag == 3) "pseudoneutid50_nasal", 
-          if (nextgen_output_flag == 3) "IgG_saliva"
-          if (nextgen_output_flag == 3) "IgA_saliva"
+          if (nextgen_output_flag == 3) "IgG_saliva",
+          if (nextgen_output_flag == 3) "IgA_saliva",
           if (nextgen_output_flag == 3) "pseudoneutid50_saliva",
           if (nextgen_output_flag >= 2) "T4_T8")}) {
         
