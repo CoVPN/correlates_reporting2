@@ -771,20 +771,57 @@ for (bsero in c("non_naive")){
                 }) {
                 assay_n = length(assays)
 
-                asy_lb = case_when(grepl("IgG_(sera|nasal|saliva)", asy) ~ "bAb-IgG Spike and bAb-IgG Nucleocapsid concentrations",
-                                   grepl("bindSpike_IgA_(sera|nasal|saliva)", asy) ~ "bAb-IgA Spike concentrations",
-                                   grepl("pseudoneutid50_(sera|nasal|saliva)", asy) ~ "nAb-ID50 titers",
+                asy_lb = case_when(asy == "IgG_sera" ~ "bAb-IgG Spike and bAb-IgG Nucleocapsid concentrations",
+                                   asy == "IgG_nasal" ~ "bAb-IgG Spike and bAb-IgG Nucleocapsid concentrations",
+                                   asy == "IgG_saliva" ~ "bAb-IgG Spike and bAb-IgG Nucleocapsid concentrations",
+                                   
+                                   asy == "bindSpike_IgA_sera" ~ "bAb-IgA Spike concentrations",
+                                   asy == "bindSpike_IgA_nasal" ~ "bAb-IgA Spike concentrations",
+                                   asy == "bindSpike_IgA_saliva" ~ "bAb-IgA Spike concentrations",
+                                   
+                                   asy == "pseudoneutid50_sera" ~ "nAb-ID50 titers",
+                                   asy == "pseudoneutid50_nasal" ~ "nAb-ID50 titers",
+                                   asy == "pseudoneutid50_saliva" ~ "nAb-ID50 titers",
+                                   
                                    asy == "T4" ~ "CD4+ T-cell markers to Spike and Nucleocapsid peptides",
                                    asy == "T8" ~ "CD8+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   grepl("IgG_(sera|nasal|saliva)_KP.2\\|bindSpike_IgA_(sera|nasal|saliva)_KP.2", asy) ~ "bAb-IgG Spike KP.2 and bAb-IgA Spike KP.2 concentrations",
-                                   grepl("IgG_(sera|nasal|saliva)_KP.2\\|pseudoneutid50_(sera|nasal|saliva)", asy) ~ "bAb-IgG Spike KP.2 concentrations and nAb-ID50 titers",
-                                   grepl("IgG_(sera|nasal|saliva)_KP.2\\|T4", asy) ~ "bAb-IgG Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   grepl("IgG_(sera|nasal|saliva)_KP.2\\|T8", asy) ~ "bAb-IgG Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   grepl("bindSpike_IgA_(sera|nasal|saliva)_KP.2\\|pseudoneutid50_(sera|nasal|saliva)", asy) ~ "bAb-IgA Spike KP.2 concentrations and nAb-ID50 titers",
-                                   grepl("bindSpike_IgA_(sera|nasal|saliva)_KP.2\\|T4", asy) ~ "bAb-IgA Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   grepl("bindSpike_IgA_(sera|nasal|saliva)_KP.2\\|T8", asy) ~ "bAb-IgA Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   grepl("pseudoneutid50_(sera|nasal|saliva)\\|T4", asy) ~ "nAb-ID50 titers and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
-                                   grepl("pseudoneutid50_(sera|nasal|saliva)\\|T8", asy) ~ "nAb-ID50 titers and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   
+                                   asy == "IgG_sera_KP.2|bindSpike_IgA_sera_KP.2" ~ "bAb-IgG Spike KP.2 and bAb-IgA Spike KP.2 concentrations",
+                                   asy == "IgG_nasal_KP.2|bindSpike_IgA_nasal_KP.2" ~ "bAb-IgG Spike KP.2 and bAb-IgA Spike KP.2 concentrations",
+                                   asy == "IgG_saliva_KP.2|bindSpike_IgA_saliva_KP.2" ~ "bAb-IgG Spike KP.2 and bAb-IgA Spike KP.2 concentrations",
+                                   
+                                   asy == "IgG_sera_KP.2|pseudoneutid50_sera" ~ "bAb-IgG Spike KP.2 concentrations and nAb-ID50 titers",
+                                   asy == "IgG_nasal_KP.2|pseudoneutid50_nasal" ~ "bAb-IgG Spike KP.2 concentrations and nAb-ID50 titers",
+                                   asy == "IgG_saliva_KP.2|pseudoneutid50_saliva" ~ "bAb-IgG Spike KP.2 concentrations and nAb-ID50 titers",
+                                   
+                                   asy == "IgG_sera_KP.2|T4" ~ "bAb-IgG Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "IgG_nasal_KP.2|T4" ~ "bAb-IgG Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "IgG_saliva_KP.2|T4" ~ "bAb-IgG Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   
+                                   asy == "IgG_sera_KP.2|T8" ~ "bAb-IgG Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "IgG_nasal_KP.2|T8" ~ "bAb-IgG Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "IgG_saliva_KP.2|T8" ~ "bAb-IgG Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   
+                                   asy == "bindSpike_IgA_sera_KP.2|pseudoneutid50_sera" ~ "bAb-IgA Spike KP.2 concentrations and nAb-ID50 titers",
+                                   asy == "bindSpike_IgA_nasal_KP.2|pseudoneutid50_nasal" ~ "bAb-IgA Spike KP.2 concentrations and nAb-ID50 titers",
+                                   asy == "bindSpike_IgA_saliva_KP.2|pseudoneutid50_saliva" ~ "bAb-IgA Spike KP.2 concentrations and nAb-ID50 titers",
+                                   
+                                   asy == "bindSpike_IgA_sera_KP.2|T4" ~ "bAb-IgA Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_nasal_KP.2|T4" ~ "bAb-IgA Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_saliva_KP.2|T4" ~ "bAb-IgA Spike KP.2 concentrations and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   
+                                   asy == "bindSpike_IgA_sera_KP.2|T8" ~ "bAb-IgA Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_nasal_KP.2|T8" ~ "bAb-IgA Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "bindSpike_IgA_saliva_KP.2|T8" ~ "bAb-IgA Spike KP.2 concentrations and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   
+                                   asy == "pseudoneutid50_sera|T4" ~ "nAb-ID50 titers and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "pseudoneutid50_nasal|T4" ~ "nAb-ID50 titers and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "pseudoneutid50_saliva|T4" ~ "nAb-ID50 titers and CD4+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   
+                                   asy == "pseudoneutid50_sera|T8" ~ "nAb-ID50 titers and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "pseudoneutid50_nasal|T8" ~ "nAb-ID50 titers and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   asy == "pseudoneutid50_saliva|T8" ~ "nAb-ID50 titers and CD8+ T-cell markers to Spike and Nucleocapsid peptides",
+                                   
                                    asy == "T4|T8" ~ "CD4+ and CD8+ T-cell markers to Spike and Nucleocapsid peptides")
                 
                 #immuno_postfix_label <- case_when(
