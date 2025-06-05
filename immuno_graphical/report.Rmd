@@ -69,7 +69,8 @@ if (study_name == "NextGen_Mock") {
     assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
     assay_immuno = assay_immuno[!grepl("nasal|saliva|bindN_IgA", assay_immuno)]
     assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
-    nextgen_output_flag = "sera_only_ics" # "whole_report"  # "BARDA_TLF"
+    nextgen_output_flag = 2 # sera_only_ics, as default with assay_metadata filtered to sera only assays, 
+                            # options: 3 (whole_report)  1 (BARDA_TLF)
 }
 ```
 
@@ -169,7 +170,14 @@ for (bsero in bstatus.labels.2) {
                 }
             }
             
-            for (asy in assay_immuno){
+          
+          
+          
+            if (study_name == "NextGen_Mock" & nextgen_output_flag == 1) {
+              assay_immuno_ = pseudoneutid50_sera_XBB.1.5
+            } else {assay_immuno_ = assay_immuno}
+          
+            for (asy in assay_immuno_){
                 
                 for (times_index in c(""#, if (study_name == "NextGen_Mock") "_2"
                                       )){
@@ -253,9 +261,10 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
             
             for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")
             } else if (study_name == "NextGen_Mock") {
-              c("bAb_IgG_sera", "bAb_IgA_sera", "nAb_sera", 
-                if (nextgen_output_flag == "whole report") c("bAb_IgG_nasal", "bAb_IgA_nasal", "nAb_nasal", "bAb_IgG_saliva", "bAb_IgA_saliva", "nAb_saliva"),
-                "ics")
+              c(if (nextgen_output_flag >= 2) c("bAb_IgG_sera", "bAb_IgA_sera", "nAb_sera", 
+                if (nextgen_output_flag == 3) c("bAb_IgG_nasal", "bAb_IgA_nasal", "nAb_nasal", "bAb_IgG_saliva", "bAb_IgA_saliva", "nAb_saliva"),
+                if (nextgen_output_flag >= 2) "ics",
+                if (nextgen_output_flag == 1) "pseudoneutid50_sera_XBB.1.5"))
             } else {c("","bAb","nAb","other")}){ # for VAT08 and janssen_partA_VL, only report for bAb and nAb
                 if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
                 if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
@@ -529,15 +538,17 @@ if (attr(config,"config")=="janssen_partA_VL"){
 if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
     
     for (asy in if(study_name == "NextGen_Mock") {
-    c("bind.*sera", if (nextgen_output_flag == "whole report") c("bind.*nasal", "bind.*saliva"), 
-      "pseudo.*sera", if (nextgen_output_flag == "whole report") c("pseudo.*nasal", "pseudo.*saliva"), 
-      "ics")
+    c("bind.*sera", 
+      if (nextgen_output_flag == 3) c("bind.*nasal", "bind.*saliva"), 
+      if (nextgen_output_flag >= 2) "pseudo.*sera", 
+      if (nextgen_output_flag == 3) c("pseudo.*nasal", "pseudo.*saliva"), 
+      if (nextgen_output_flag >= 2) "ics")
     } else {c("bind", "pseudo")}){
         #if (study_name == "NextGen_Mock" & tp %in% c("Day whole", "Day initial") & asy == "ics") next # do not have these plots
         
         for (tp in #if(study_name=="VAT08") {c("Day", "Delta")} else {
              c(if(attr(config,"config") != "nextgen_mock") "Day", 
-               if(attr(config,"config") == "nextgen_mock") "Day initial", # "Day91", "Day366" Track A
+               if(attr(config,"config") == "nextgen_mock" & nextgen_output_flag >= 2) "Day initial", # "Day91", "Day366" Track A
                if(attr(config,"config") == "nextgen_mock") "Day whole" # "B", "Day31", "Day181" whole
                #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
              )#}
@@ -612,10 +623,17 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
     
     for(tp in times_[!times_ %in% c(paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]) {
         
-        for (pn in if (study_name != "NextGen_Mock") {""} else {c(c("IgG_sera", "IgA_sera", "pseudoneutid50_sera",
-                                                                  #"IgG_nasal", "IgA_nasal", "pseudoneutid50_nasal", 
-                                                              #"IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva",
-                                                                  "T4_T8"))}) {
+        for (pn in if (study_name != "NextGen_Mock") {""} else {c(
+          if (nextgen_output_flag >= 1) "IgG_sera",
+          if (nextgen_output_flag >= 2) "IgA_sera", 
+          if (nextgen_output_flag >= 2) "pseudoneutid50_sera",
+          if (nextgen_output_flag == 3) "IgG_nasal", 
+          if (nextgen_output_flag == 3) "IgA_nasal"
+          if (nextgen_output_flag == 3) "pseudoneutid50_nasal", 
+          if (nextgen_output_flag == 3) "IgG_saliva"
+          if (nextgen_output_flag == 3) "IgA_saliva"
+          if (nextgen_output_flag == 3) "pseudoneutid50_saliva",
+          if (nextgen_output_flag >= 2) "T4_T8")}) {
         
         if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
         if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # NextGen_Mock doesn't have naive ppts
@@ -638,7 +656,11 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
 ```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08")}
 
 for (tp in if (study_name == "NextGen_Mock") {tps_no_fold_change} else {tps_no_delta_over_tinterm}){
-    for (a in if (study_name == "NextGen_Mock") {c("IgG_sera", "pseudoneutid50_sera", if (nextgen_output_flag == "whole report") c("IgG_nasal", "pseudoneutid50_nasal", "IgG_saliva", "pseudoneutid50_saliva"), "T4", "T8")
+    for (a in if (study_name == "NextGen_Mock") {c(
+      "IgG_sera", 
+      "pseudoneutid50_sera", 
+      if (nextgen_output_flag == 3) c("IgG_nasal", "pseudoneutid50_nasal", "IgG_saliva", "pseudoneutid50_saliva"), 
+      "T4", "T8")
     } else {c("bindSpike","pseudoneutid50")}){
         
         tpLabel = ifelse(tp=="B", "Day01", tp)
@@ -664,47 +686,48 @@ for (tp in if (study_name == "NextGen_Mock") {tps_no_fold_change} else {tps_no_d
 ```{r, echo=FALSE, results='asis', eval=study_name %in% c("VAT08", "NextGen_Mock")}
 
 for (assay_grp in if (study_name == "NextGen_Mock") {
-    gsub("\\|", "__", gsub("\\$", "", c("bindSpike_IgG_sera$|bindSpike_IgG_sera_delta_AY.4$",
-     "bindSpike_IgG_sera_BA.5$|bindSpike_IgG_sera_BA.2.86$",
-     "bindSpike_IgG_sera_XBB.1.5$|bindSpike_IgG_sera_JN.1$",
-     "bindSpike_IgG_sera_KP.2$|bindSpike_IgG_sera_KP.3$",
-     "bindSpike_IgG_sera_LB.1$|bindN_IgG_sera$",
+    gsub("\\|", "__", gsub("\\$", "", c(
+      "bindSpike_IgG_sera$|bindSpike_IgG_sera_delta_AY.4$",
+     if (nextgen_output_flag >= 2) c("bindSpike_IgG_sera_BA.5$|bindSpike_IgG_sera_BA.2.86$",
+                                     "bindSpike_IgG_sera_XBB.1.5$|bindSpike_IgG_sera_JN.1$",
+                                     "bindSpike_IgG_sera_KP.2$|bindSpike_IgG_sera_KP.3$",
+                                     "bindSpike_IgG_sera_LB.1$|bindN_IgG_sera$",
      
-     "bindSpike_IgA_sera$|bindSpike_IgA_sera_delta_AY.4$",
-     "bindSpike_IgA_sera_BA.5$|bindSpike_IgA_sera_BA.2.86$",
-     "bindSpike_IgA_sera_XBB.1.5$|bindSpike_IgA_sera_JN.1$",
-     "bindSpike_IgA_sera_KP.2$|bindSpike_IgA_sera_KP.3$",
-     "bindSpike_IgA_sera_LB.1$",
+                                     "bindSpike_IgA_sera$|bindSpike_IgA_sera_delta_AY.4$",
+                                     "bindSpike_IgA_sera_BA.5$|bindSpike_IgA_sera_BA.2.86$",
+                                     "bindSpike_IgA_sera_XBB.1.5$|bindSpike_IgA_sera_JN.1$",
+                                     "bindSpike_IgA_sera_KP.2$|bindSpike_IgA_sera_KP.3$",
+                                     "bindSpike_IgA_sera_LB.1$"), 
      
-     "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$", 
+     "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$",
      
-     if (nextgen_output_flag == "whole_report") c("bindSpike_IgG_nasal$|bindSpike_IgG_nasal_delta_AY.4$",
-       "bindSpike_IgG_nasal_BA.5$|bindSpike_IgG_nasal_BA.2.86$",
-       "bindSpike_IgG_nasal_XBB.1.5$|bindSpike_IgG_nasal_JN.1$",
-       "bindSpike_IgG_nasal_KP.2$|bindSpike_IgG_nasal_KP.3$",
-       "bindSpike_IgG_nasal_LB.1$|bindN_IgG_nasal$",
+     if (nextgen_output_flag == 3) c("bindSpike_IgG_nasal$|bindSpike_IgG_nasal_delta_AY.4$",
+                                     "bindSpike_IgG_nasal_BA.5$|bindSpike_IgG_nasal_BA.2.86$",
+                                     "bindSpike_IgG_nasal_XBB.1.5$|bindSpike_IgG_nasal_JN.1$",
+                                     "bindSpike_IgG_nasal_KP.2$|bindSpike_IgG_nasal_KP.3$",
+                                     "bindSpike_IgG_nasal_LB.1$|bindN_IgG_nasal$",
        
-       "bindSpike_IgA_nasal$|bindSpike_IgA_nasal_delta_AY.4$",
-       "bindSpike_IgA_nasal_BA.5$|bindSpike_IgA_nasal_BA.2.86$",
-       "bindSpike_IgA_nasal_XBB.1.5$|bindSpike_IgA_nasal_JN.1$",
-       "bindSpike_IgA_nasal_KP.2$|bindSpike_IgA_nasal_KP.3$",
-       "bindSpike_IgA_nasal_LB.1$",
+                                     "bindSpike_IgA_nasal$|bindSpike_IgA_nasal_delta_AY.4$",
+                                     "bindSpike_IgA_nasal_BA.5$|bindSpike_IgA_nasal_BA.2.86$",
+                                     "bindSpike_IgA_nasal_XBB.1.5$|bindSpike_IgA_nasal_JN.1$",
+                                     "bindSpike_IgA_nasal_KP.2$|bindSpike_IgA_nasal_KP.3$",
+                                     "bindSpike_IgA_nasal_LB.1$",
        
-       "pseudoneutid50_nasal_KP.2$|pseudoneutid50_nasal_XBB.1.5$",
+                                     "pseudoneutid50_nasal_KP.2$|pseudoneutid50_nasal_XBB.1.5$",
        
-       "bindSpike_IgG_saliva$|bindSpike_IgG_saliva_delta_AY.4$",
-       "bindSpike_IgG_saliva_BA.5$|bindSpike_IgG_saliva_BA.2.86$",
-       "bindSpike_IgG_saliva_XBB.1.5$|bindSpike_IgG_saliva_JN.1$",
-       "bindSpike_IgG_saliva_KP.2$|bindSpike_IgG_saliva_KP.3$",
-       "bindSpike_IgG_saliva_LB.1$|bindN_IgG_saliva$",
+                                     "bindSpike_IgG_saliva$|bindSpike_IgG_saliva_delta_AY.4$",
+                                     "bindSpike_IgG_saliva_BA.5$|bindSpike_IgG_saliva_BA.2.86$",
+                                     "bindSpike_IgG_saliva_XBB.1.5$|bindSpike_IgG_saliva_JN.1$",
+                                     "bindSpike_IgG_saliva_KP.2$|bindSpike_IgG_saliva_KP.3$",
+                                     "bindSpike_IgG_saliva_LB.1$|bindN_IgG_saliva$",
        
-       "bindSpike_IgA_saliva$|bindSpike_IgA_saliva_delta_AY.4$",
-       "bindSpike_IgA_saliva_BA.5$|bindSpike_IgA_saliva_BA.2.86$",
-       "bindSpike_IgA_saliva_XBB.1.5$|bindSpike_IgA_saliva_JN.1$",
-       "bindSpike_IgA_saliva_KP.2$|bindSpike_IgA_saliva_KP.3$",
-       "bindSpike_IgA_saliva_LB.1$",
+                                     "bindSpike_IgA_saliva$|bindSpike_IgA_saliva_delta_AY.4$",
+                                     "bindSpike_IgA_saliva_BA.5$|bindSpike_IgA_saliva_BA.2.86$",
+                                     "bindSpike_IgA_saliva_XBB.1.5$|bindSpike_IgA_saliva_JN.1$",
+                                     "bindSpike_IgA_saliva_KP.2$|bindSpike_IgA_saliva_KP.3$",
+                                     "bindSpike_IgA_saliva_LB.1$",
        
-       "pseudoneutid50_saliva_KP.2$|pseudoneutid50_saliva_XBB.1.5$"),
+                                     "pseudoneutid50_saliva_KP.2$|pseudoneutid50_saliva_XBB.1.5$"),
      
      "T4_IFNg_OR_IL2_N_BA.4.5$|T4_IFNg_OR_IL2_Spike_BA.4.5$",
      
@@ -739,6 +762,8 @@ for (bsero in c("non_naive")){
     for (trt in c("vac_pla", if (study_name == "NextGen_Mock") "vac", if (study_name == "NextGen_Mock") "pla")){
         
         for (tp in tps_no_fold_change){
+          
+            if (study_name == "NextGen_Mock" & nextgen_output_flag == 1 & !tp %in% c("B", "Day31")) next
             
             if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) next # skip for now
             
@@ -748,18 +773,18 @@ for (bsero in c("non_naive")){
             tpLabel = ifelse(tp=="B", "Day01", tp)
             
             for (asy in if (study_name != "NextGen_Mock") {""} else {
-                c("IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", 
+                c("IgG_sera", 
                   
-                  if (nextgen_output_flag == "whole_report") c(
-                    "IgG_nasal", "bindSpike_IgA_nasal", "pseudoneutid50_nasal",
-                    "IgG_saliva", "bindSpike_IgA_saliva", "pseudoneutid50_saliva",),
+                  if (nextgen_output_flag >= 2) c("bindSpike_IgA_sera", "pseudoneutid50_sera"), 
                   
-                  "T4", "T8", 
+                  if (nextgen_output_flag == 3) c("IgG_nasal", "bindSpike_IgA_nasal", "pseudoneutid50_nasal", "IgG_saliva", "bindSpike_IgA_saliva", "pseudoneutid50_saliva"),
+                  
+                  if (nextgen_output_flag >= 2) c("T4", "T8", 
                   "IgG_sera_KP.2|bindSpike_IgA_sera_KP.2", "IgG_sera_KP.2|pseudoneutid50_sera", "IgG_sera_KP.2|T4", "IgG_sera_KP.2|T8",
                   "bindSpike_IgA_sera_KP.2|pseudoneutid50_sera", "bindSpike_IgA_sera_KP.2|T4", "bindSpike_IgA_sera_KP.2|T8",
-                  "pseudoneutid50_sera|T4", "pseudoneutid50_sera|T8", 
+                  "pseudoneutid50_sera|T4", "pseudoneutid50_sera|T8"), 
                   
-                  if (nextgen_output_flag == "whole_report") c("IgG_nasal_KP.2|bindSpike_IgA_nasal_KP.2", "IgG_nasal_KP.2|pseudoneutid50_nasal", "IgG_nasal_KP.2|T4", "IgG_nasal_KP.2|T8",
+                  if (nextgen_output_flag == 3) c("IgG_nasal_KP.2|bindSpike_IgA_nasal_KP.2", "IgG_nasal_KP.2|pseudoneutid50_nasal", "IgG_nasal_KP.2|T4", "IgG_nasal_KP.2|T8",
                     "bindSpike_IgA_nasal_KP.2|pseudoneutid50_nasal", "bindSpike_IgA_nasal_KP.2|T4", "bindSpike_IgA_nasal_KP.2|T8",
                     "pseudoneutid50_nasal|T4", "pseudoneutid50_nasal|T8", 
               
@@ -767,7 +792,7 @@ for (bsero in c("non_naive")){
                     "bindSpike_IgA_saliva_KP.2|pseudoneutid50_saliva", "bindSpike_IgA_saliva_KP.2|T4", "bindSpike_IgA_saliva_KP.2|T8",
                     "pseudoneutid50_saliva|T4", "pseudoneutid50_saliva|T8"),
                   
-                  "T4|T8")
+                  if (nextgen_output_flag >= 2) "T4|T8")
                 }) {
                 assay_n = length(assays)
 
@@ -865,6 +890,8 @@ for (bsero in c("naive")){
 for (cohort in if (study_name != "NextGen_Mock") {""} else {c("_initial", "_final")}){
    
     for (a in assays){
+      
+    if (study_name == "NextGen_Mock" & nextgen_output_flag == 1 & a != "pseudoneutid50_sera_XBB.1.5") next
     #immuno_postfix_label <- case_when(
     #    study_name == "NextGen_Mock" & grepl("bind|pseudo", a) ~ " (RIS cohort)",
     #    study_name == "NextGen_Mock" & grepl("T4|T8", a) ~ " (RIS-PBMC cohort)",

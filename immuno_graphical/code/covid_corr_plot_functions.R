@@ -856,8 +856,11 @@ covid_corr_boxplot_facets <- function(plot_dat,
                                       add_violin = FALSE,
                                       filename) {
   plot_dat <- plot_dat[!is.na(plot_dat[, x]), ]
+  plot_dat[[x]] <- as.factor(plot_dat[[x]])
+  plot_dat[[facet_by]] <- as.factor(plot_dat[[facet_by]])
   # make a subset of data with 30 sample points for the jitter in each subgroup
   # defined by Trt:Bserostatus
+  xlab_use_letters <- (length(unique(plot_dat[[x]])) > 2)
   if (xlab_use_letters) {
     legend <- paste0(
       LETTERS[1:nlevels(plot_dat[, x])],

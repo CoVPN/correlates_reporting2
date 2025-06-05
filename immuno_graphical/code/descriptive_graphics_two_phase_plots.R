@@ -475,7 +475,8 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
              "bind.*IgG_sera", "bind.*IgG_nasal", "bind.*IgG_saliva", 
              "bind.*IgA_sera", "bind.*IgA_nasal", "bind.*IgA_saliva",
              "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", 
-             "ADCP", "T4|T8")) {
+             "ADCP", "T4|T8",
+             "pseudoneutid50_sera_XBB.1.5")) {
   
   Ab_lb = case_when(Ab=="ADCP" ~ "other_",
                     Ab=="bind" ~ "bAb_",
@@ -493,7 +494,9 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
                     Ab=="pseudo.*nasal" ~ "nAb_nasal_",
                     Ab=="pseudo.*saliva" ~ "nAb_saliva_",
                     
-                    Ab=="T4|T8" ~ "ics_")
+                    Ab=="T4|T8" ~ "ics_",
+                    
+                    Ab=="pseudoneutid50_sera_XBB.1.5" ~ "pseudoneutid50_sera_XBB.1.5_")
   
   rcdf_assays <- assay_immuno[grepl(Ab, assay_immuno)]
   
@@ -745,6 +748,8 @@ for (bstatus in 1:2) {
                                      levels = levels(subdat_box1$assay)[c(2:11, 1)])
       }
       
+      if (study_name == "NextGen_Mock" & tp == "B") {subdat_box1$Trt = "Pooled Arm"}
+      
       assay_sub = levels(subdat_box1$assay)
         
       covid_corr_boxplot_facets(
@@ -755,7 +760,9 @@ for (bstatus in 1:2) {
         y = tp,
         color = "Trt",
         facet_by = "assay",
-        palette = if (study_name == "NextGen_Mock") {c("#1749FF", "#378252")} else {c(
+        palette = if (study_name == "NextGen_Mock" & tp == "B") {c("#FF6F1B")
+          } else if (study_name == "NextGen_Mock" & tp != "B") {c("#1749FF", "#378252")
+          } else {c(
           "#1749FF", "#D92321",
           "#0AB7C9", "#FF6F1B",
           "#810094", "#378252",
@@ -769,7 +776,7 @@ for (bstatus in 1:2) {
         ULOQ = log10(uloqs[assay_sub]),
         arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 4, 2)),
         arrange_nrow = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 3, ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 1, 2))),
-        legend = setNames(trt.labels, trt.labels),
+        #legend = setNames(trt.labels, trt.labels),
         axis_titles_y = labels.axis[tp, assay_sub] %>% unlist(),
         label_format = ifelse(all(grepl("T4|T8", assay_sub)==1), "percent", "log10"),
         panel_titles = labels.title2[tp, assay_sub] %>% unlist(),
