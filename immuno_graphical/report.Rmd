@@ -175,7 +175,10 @@ for (bsero in bstatus.labels.2) {
           
             if (study_name == "NextGen_Mock" & nextgen_output_flag == 1) {
               assay_immuno_ = "pseudoneutid50_sera_XBB.1.5"
+              
             } else {assay_immuno_ = assay_immuno}
+          
+            if (study_name == "NextGen_Mock" & nextgen_output_flag == 1 & trt == "comparator_vaccine") next
           
             for (asy in assay_immuno_){
                 
@@ -261,10 +264,10 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
             
             for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")
             } else if (study_name == "NextGen_Mock") {
-              c(if (nextgen_output_flag >= 2) c("bAb_IgG_sera", "bAb_IgA_sera", "nAb_sera", 
+              c(if (nextgen_output_flag >= 2) c("bAb_IgG_sera", "bAb_IgA_sera", "nAb_sera"), 
                 if (nextgen_output_flag == 3) c("bAb_IgG_nasal", "bAb_IgA_nasal", "nAb_nasal", "bAb_IgG_saliva", "bAb_IgA_saliva", "nAb_saliva"),
                 if (nextgen_output_flag >= 2) "ics",
-                if (nextgen_output_flag == 1) "pseudoneutid50_sera_XBB.1.5"))
+                if (nextgen_output_flag == 1) "pseudoneutid50_sera_XBB.1.5")
             } else {c("","bAb","nAb","other")}){ # for VAT08 and janssen_partA_VL, only report for bAb and nAb
                 if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
                 if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
@@ -538,11 +541,11 @@ if (attr(config,"config")=="janssen_partA_VL"){
 if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
     
     for (asy in if(study_name == "NextGen_Mock") {
-    c("bind.*sera", 
+    c(if (nextgen_output_flag >= 1) "bind.*sera", 
       if (nextgen_output_flag == 3) c("bind.*nasal", "bind.*saliva"), 
-      if (nextgen_output_flag >= 2) "pseudo.*sera", 
+      if (nextgen_output_flag >= 1) "pseudo.*sera", 
       if (nextgen_output_flag == 3) c("pseudo.*nasal", "pseudo.*saliva"), 
-      if (nextgen_output_flag >= 2) "ics")
+      if (nextgen_output_flag >= 1) "ics")
     } else {c("bind", "pseudo")}){
         #if (study_name == "NextGen_Mock" & tp %in% c("Day whole", "Day initial") & asy == "ics") next # do not have these plots
         
@@ -634,6 +637,8 @@ for (bsero in c(bstatus.labels.2, if(study_name=="VAT08") c("bstatus"#, "bstatus
           if (nextgen_output_flag == 3) "IgA_saliva",
           if (nextgen_output_flag == 3) "pseudoneutid50_saliva",
           if (nextgen_output_flag >= 2) "T4_T8")}) {
+          
+          if (study_name == "NextGen_Mock" & nextgen_output_flag == 1 & !tp %in% c("B", "Day31")) next
         
         if (study_name %in% c("VAT08", "NextGen_Mock") && grepl("Delta", tp)) next # only report main timepoints for VAT08, NextGen_Mock
         if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # NextGen_Mock doesn't have naive ppts
@@ -763,7 +768,7 @@ for (bsero in c("non_naive")){
         
         for (tp in tps_no_fold_change){
           
-            if (study_name == "NextGen_Mock" & nextgen_output_flag == 1 & !tp %in% c("B", "Day31")) next
+            if (study_name == "NextGen_Mock" & nextgen_output_flag == 1 & (!tp %in% c("B", "Day31") | trt == "pla")) next
             
             if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) next # skip for now
             

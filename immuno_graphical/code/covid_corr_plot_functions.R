@@ -515,19 +515,11 @@ covid_corr_rcdf <- function(plot_dat,
                               "#1749FF", "#D92321", "#0AB7C9",
                               "#FF6F1B", "#810094", "#378252",
                               "#FF5EBF", "#3700A5", "#8F8F8F",
-                              "#787873",
-                              "#FFC20A",  # warm yellow
-                              "#009E73",  # teal green
-                              "#E69F00",  # amber
-                              "#56B4E9",  # light blue
-                              "#CC79A7",  # light magenta
-                              "#F0E442",  # soft yellow
-                              "#999933",  # olive
-                              "#D55E00",  # dark orange
-                              "#0072B2",  # steel blue
-                              "#A65628",  # brown
-                              "#DC267F",  # vibrant pink
-                              "#117733"   # forest green
+                              "#787873", "#FFC20A", "#009E73",
+                              "#E69F00", "#56B4E9", "#CC79A7",
+                              "#F0E442", "#999933", "#D55E00",
+                              "#0072B2", "#A65628", "#DC267F",
+                              "#117733"
                             ),
                             xlab,
                             lwd = 1,
@@ -545,59 +537,53 @@ covid_corr_rcdf <- function(plot_dat,
                             width = 8,
                             units = "in",
                             filename) {
-  plot_dat <- plot_dat[!is.na(plot_dat[, color]), ]
+  plot_dat <- plot_dat[!is.na(plot_dat[[color]]), ]
+  plot_dat[[x]] <- as.numeric(as.character(plot_dat[[x]]))
+  plot_dat[[weight]] <- as.numeric(as.character(plot_dat[[weight]]))
   if (!is.null(lty)) {
+    plot_dat[[lty]] <- as.factor(plot_dat[[lty]])
     rcdf_dat <- plot_dat[, unique(c(x, lty, weight, color))] %>%
-      split(., list(.[, lty], .[, color])) %>%
+      split(., list(.[[lty]], .[[color]])) %>%
       lapply(function(subdat) {
         subdat <- subdat[complete.cases(subdat), ]
-        if (nrow(subdat) == 0) return(NULL) else {
-          ecdf_fct <- with(subdat, spatstat.geom::ewcdf(subdat[, x],
-                                                        subdat[, weight]))
-          rcdf_mat <- data.frame(x = seq(xlim[1], xlim[2], length.out = 500),
-                                 lty = rep(subdat[1, lty], 500),
-                                 color = rep(subdat[1, color], 500))
-          rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
-          names(rcdf_mat) <- c(x, lty, color, "rcdf")
-          return(rcdf_mat)
-        }
+        if (nrow(subdat) == 0) return(NULL)
+        ecdf_fct <- spatstat.geom::ewcdf(subdat[[x]], weights = subdat[[weight]])
+        rcdf_mat <- data.frame(
+          x = seq(xlim[1], xlim[2], length.out = 500),
+          lty = rep(subdat[[lty]][1], 500),
+          color = rep(subdat[[color]][1], 500)
+        )
+        rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
+        names(rcdf_mat) <- c(x, lty, color, "rcdf")
+        return(rcdf_mat)
       }) %>% bind_rows()
   } else {
     rcdf_dat <- plot_dat[, unique(c(x, weight, color))] %>%
-      split(., list(.[, color])) %>%
+      split(., list(.[[color]])) %>%
       lapply(function(subdat) {
         subdat <- subdat[complete.cases(subdat), ]
-        if (nrow(subdat) == 0) return(NULL) else {
-          ecdf_fct <- with(subdat, spatstat.geom::ewcdf(subdat[, x],
-                                                        subdat[, weight]))
-          rcdf_mat <- data.frame(x = seq(xlim[1], xlim[2], length.out = 500),
-                                 color = rep(subdat[1, color], 500))
-          rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
-          names(rcdf_mat) <- c(x, color, "rcdf")
-          return(rcdf_mat)
-        }
+        if (nrow(subdat) == 0) return(NULL)
+        ecdf_fct <- spatstat.geom::ewcdf(subdat[[x]], weights = subdat[[weight]])
+        rcdf_mat <- data.frame(
+          x = seq(xlim[1], xlim[2], length.out = 500),
+          color = rep(subdat[[color]][1], 500)
+        )
+        rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
+        names(rcdf_mat) <- c(x, color, "rcdf")
+        return(rcdf_mat)
       }) %>% bind_rows()
   }
-  
+
   scale_label <- switch(label_format,
                         "log10" = scales::label_math(10^.x),
                         "percent" = function(x) {
                           paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
-                        }
-  )
-  
-  output_plot <- ggplot(
-    rcdf_dat,
-    aes_string(
-      x = x, y = "rcdf", color = color, lty = lty
-    )
-  ) +
-    geom_step(lwd = lwd) +
+                        })
+
+  output_plot <- ggplot(rcdf_dat, aes_string(x = x, y = "rcdf", color = color, lty = lty)) +
+    geom_step(linewidth = lwd) +
     theme_pubr() +
-    scale_x_continuous(
-      limits = xlim, labels = scale_label,
-      breaks = xbreaks
-    ) +
+    scale_x_continuous(limits = xlim, labels = scale_label, breaks = xbreaks) +
     scale_color_manual(values = palette) +
     ylab("Reverse ECDF") +
     xlab(xlab) +
@@ -614,11 +600,136 @@ covid_corr_rcdf <- function(plot_dat,
       axis.text = element_text(size = axis_size)
     )
 
+  ggsave(filename = filename, plot = output_plot, width = width, height = height, units = units)
+}
+
+# adhoc version for nextgen: 
+covid_corr_rcdf_facet_adhoc <- function(plot_dat,
+                                        x,
+                                        color,
+                                        lty = NULL,
+                                        facet_by = NULL,
+                                        weight,
+                                        palette = c(
+                                          "#1749FF", "#D92321", "#0AB7C9",
+                                          "#FF6F1B", "#810094", "#378252",
+                                          "#FF5EBF", "#3700A5", "#8F8F8F",
+                                          "#787873", "#FFC20A", "#009E73",
+                                          "#E69F00", "#56B4E9", "#CC79A7",
+                                          "#F0E442", "#999933", "#D55E00",
+                                          "#0072B2", "#A65628", "#DC267F",
+                                          "#117733"
+                                        ),
+                                        xlab,
+                                        lwd = 1,
+                                        xlim = c(-2, 8),
+                                        xbreaks = 1,
+                                        panel_titles = "",
+                                        panel_title_size = 14,
+                                        legend_position = "right",
+                                        legend,
+                                        legend_size = 14,
+                                        legend_nrow = 10,
+                                        axis_title_size = 16,
+                                        axis_size = 16,
+                                        axis_titles = NULL,
+                                        label_format = "log10",
+                                        units = "in",
+                                        arrange_nrow =
+                                          ceiling(length(unique(plot_dat[,facet_by])) / 2),
+                                        arrange_ncol = 2,
+                                        height = 3 * arrange_nrow + 0.5,
+                                        width = 3 * arrange_ncol,
+                                        filename) {
+  plot_dat <- plot_dat[!is.na(plot_dat[[color]]), ]
+  plot_dat[[x]] <- as.numeric(as.character(plot_dat[[x]]))
+  plot_dat[[weight]] <- as.numeric(as.character(plot_dat[[weight]]))
+  if (!is.null(lty)) {
+    plot_dat[[lty]] <- as.factor(plot_dat[[lty]])
+    rcdf_dat <- plot_dat[, unique(c(x, lty, weight, color, facet_by))] %>%
+      split(., list(.[[lty]], .[[color]], .[[facet_by]])) %>%
+      lapply(function(subdat) {
+        subdat <- subdat[complete.cases(subdat), ]
+        if (nrow(subdat) == 0) return(NULL)
+        ecdf_fct <- spatstat.geom::ewcdf(subdat[[x]], weights = subdat[[weight]])
+        rcdf_mat <- data.frame(
+          x = seq(xlim[1], xlim[2], length.out = 500),
+          lty = rep(subdat[[lty]][1], 500),
+          color = rep(subdat[[color]][1], 500),
+          facet_by = rep(subdat[[facet_by]][1], 500)
+        )
+        rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
+        names(rcdf_mat) <- c(x, lty, color, facet_by, "rcdf")
+        return(rcdf_mat)
+      }) %>% bind_rows()
+  } else {
+    rcdf_dat <- plot_dat[, unique(c(x, weight, color, facet_by))] %>%
+      split(., list(.[[color]], .[[facet_by]])) %>%
+      lapply(function(subdat) {
+        subdat <- subdat[complete.cases(subdat), ]
+        if (nrow(subdat) == 0) return(NULL)
+        ecdf_fct <- spatstat.geom::ewcdf(subdat[[x]], weights = subdat[[weight]])
+        rcdf_mat <- data.frame(
+          x = seq(xlim[1], xlim[2], length.out = 500),
+          color = rep(subdat[[color]][1], 500),
+          facet_by = rep(subdat[[facet_by]][1], 500)
+        )
+        rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
+        names(rcdf_mat) <- c(x, color, facet_by, "rcdf")
+        return(rcdf_mat)
+      }) %>% bind_rows()
+  }
+  
+  scale_label <- switch(label_format,
+                        "log10" = scales::label_math(10^.x),
+                        "percent" = function(x) {
+                          paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                        })
+  
+  rcdf_list <- vector("list", length(unique(plot_dat[, facet_by])))
+  for (aa in 1:length(unique(plot_dat[, facet_by]))) {
+    rcdf_list[[aa]] <- ggplot(
+      subset(rcdf_dat, rcdf_dat[, facet_by] ==
+               levels(rcdf_dat[, facet_by])[aa]),
+      aes_string(x = x, y = "rcdf", color = color, lty = lty)
+    ) +
+      geom_step(lwd = lwd) +
+      theme_pubr(legend = "none") +
+      ylab("Reverse ECDF") +
+      xlab(xlab) +
+      scale_x_continuous(
+        labels = label_math(10^.x), limits = xlim,
+        breaks = seq(xlim[1], xlim[2], by = xbreaks)
+      ) +
+      scale_color_manual(
+        values = palette,
+        labels = legend
+      ) +
+      ggtitle(panel_titles[aa]) +
+      guides(color = guide_legend(nrow = legend_nrow, byrow = TRUE)) +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = panel_title_size),
+        legend.title = element_blank(),
+        legend.text = element_text(size = legend_size, face = "bold"),
+        panel.grid.minor.y = element_line(),
+        panel.grid.major.y = element_line(),
+        axis.title = element_text(size = axis_title_size),
+        axis.text = element_text(size = axis_size)
+      )
+  }
+  
+  output_plot <- ggarrange(
+    plotlist = rcdf_list, ncol = arrange_ncol, nrow = arrange_nrow,
+    common.legend = TRUE, legend = "bottom",
+    align = "h"
+  )
+  
   ggsave(
     filename = filename, plot = output_plot, width = width,
     height = height, units = units
   )
 }
+
 
 ###############################################################################
 

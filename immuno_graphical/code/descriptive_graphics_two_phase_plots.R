@@ -475,8 +475,9 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
              "bind.*IgG_sera", "bind.*IgG_nasal", "bind.*IgG_saliva", 
              "bind.*IgA_sera", "bind.*IgA_nasal", "bind.*IgA_saliva",
              "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", 
-             "ADCP", "T4|T8",
-             "pseudoneutid50_sera_XBB.1.5")) {
+             "ADCP", "T4|T8"#,
+             #"pseudoneutid50_sera_XBB.1.5"
+             )) {
   
   Ab_lb = case_when(Ab=="ADCP" ~ "other_",
                     Ab=="bind" ~ "bAb_",
@@ -494,9 +495,10 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
                     Ab=="pseudo.*nasal" ~ "nAb_nasal_",
                     Ab=="pseudo.*saliva" ~ "nAb_saliva_",
                     
-                    Ab=="T4|T8" ~ "ics_",
+                    Ab=="T4|T8" ~ "ics_"#,
                     
-                    Ab=="pseudoneutid50_sera_XBB.1.5" ~ "pseudoneutid50_sera_XBB.1.5_")
+                    #Ab=="pseudoneutid50_sera_XBB.1.5" ~ "pseudoneutid50_sera_XBB.1.5_"
+                    )
   
   rcdf_assays <- assay_immuno[grepl(Ab, assay_immuno)]
   
@@ -645,7 +647,8 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
   # RCDF plot 
   # two treatment arms, one baseline status per plot
   #-----------------------------------------------
-  if (study_name %in% c("VAT08", "NextGen_Mock")){
+  if (study_name %in% c("VAT08"#, "NextGen_Mock"
+                        )){
     print("RCDF 4:")
     for (bstatus in 1:2) {
       if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next
@@ -700,6 +703,95 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
       }
     }
   }
+}
+
+#-----------------------------------------------
+# RCDF plot 
+# two treatment arms, one baseline status side by side, all timepoints per plot
+#-----------------------------------------------
+
+if (study_name %in% c("NextGen_Mock")){
+  print("RCDF 5:")
+  
+  for (Ab in assays) {
+
+  Ab_lb = paste0(Ab, "_")
+  
+  rcdf_assays <- assay_immuno[grepl(Ab, assay_immuno)]
+  
+  if (length(rcdf_assays) == 0) next
+
+    for (bstatus in 2) {
+      
+      for (tp in c("_initial", "_final")){
+        
+        for (trt in trt.labels){
+      
+        subdat_rcdf5_ = subset(dat.long.twophase.sample, Bserostatus == bstatus.labels[bstatus] & assay %in% rcdf_assays & trt == trt)
+        
+        if (study_name == "NextGen_Mock" & grepl("_final", tp)) {
+          subdat_rcdf5 = subdat_rcdf5_ %>%
+            mutate(wt = ifelse(grepl("T4|T8", Ab), wt.AB.immuno, wt.immuno))  # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
+        } else if (study_name == "NextGen_Mock" & grepl("_initial", tp)) {
+          subdat_rcdf5 = subdat_rcdf5_ %>% 
+            filter(Track == "A") %>%
+            mutate(wt = wt.AB.immuno)
+        } else {subdat_rcdf5 = subdat_rcdf5_}
+        
+        if (tp == "_initial") {
+          subdat_rcdf5_long = subdat_rcdf5 %>% 
+            pivot_longer(
+              cols = c("B", "Day31", "Day91", "Day181", "Day366"),
+              names_to = "time",
+              values_to = "value"
+            )
+        } else if (tp == "_final"){
+          subdat_rcdf5_long = subdat_rcdf5 %>% 
+            pivot_longer(
+              cols = c("B", "Day31", "Day181"),
+              names_to = "time",
+              values_to = "value"
+            )
+        }
+        
+        subdat_rcdf5_long$time_labels <-
+          factor(subdat_rcdf5_long$time,
+                 levels = tps_no_fold_change,
+                 labels = labels.time[tps_no_fold_change])
+        
+        covid_corr_rcdf_facet_adhoc(
+          plot_dat = subdat_rcdf5_long,
+          x = "value", # at each time
+          color = "time_labels",
+          lty = NULL,
+          facet_by = "Trt",
+          weight =  "wt",
+          xlab = if (grepl("T4|T8", Ab)) {"Percent of T cells expressing indicated function"
+          } else if (grepl("bind", Ab)) {"Concentration of binding antibodies (AU/ml)"
+          } else if (grepl("pseudo", Ab)) {"nAb ID50 titer (AU/ml)"},
+          xlim = c(min(assay_lim[rcdf_assays, , 1]), 
+                   max(assay_lim[rcdf_assays, , 2])),
+          xbreaks = 1,
+          panel_titles = paste0(ifelse(study_name == "NextGen_Mock" & trt == trt.labels[1], "(B) ",
+                                       ifelse(study_name == "NextGen_Mock" & trt == trt.labels[2], "(A) ", "")), 
+                                trt),
+          legend_size = 8,
+          legend = setNames(trt.labels, trt.labels), 
+          axis_size = ifelse(attr(config,"config")=="nextgen_mock", 10, 16), 
+          label_format = ifelse(grepl("T4|T8", Ab), "percent", "log10"),
+          legend_nrow = ifelse(length(rcdf_assays) < 15, length(rcdf_assays), ceiling(length(rcdf_assays)/2)),
+          arrange_ncol = 2,
+          arrange_nrow = 1,
+          width = 5,
+          filename = paste0(
+            save.results.to, "/Marker_Rcdf_", Ab_lb,
+            "_trt_both_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, tp, ".pdf"
+          )
+        )
+        } # end of trt
+      } # end of initial vs final
+  } # end of bsero
+  } # end of assay
 }
 
 #-----------------------------------------------
