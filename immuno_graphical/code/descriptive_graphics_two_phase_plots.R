@@ -1301,6 +1301,24 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               
               if (nrow(dat.plot)==2) next
               
+              filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tm)), "_", ifelse(reg!="all", reg_lb, ""), gsub("\\.\\*", "_", ab), "_", tolower(bstatus.labels.2[bsero + 1]), "_", "trt_comparison", #trt.labels.2[trt + 1], 
+                                ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
+                                       ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
+              pdf(filename, width = ifelse(study_name == "NextGen_Mock", 15, 5.5), height = 6.5)
+              par(mfrow=#if (study_name=="VAT08") {c(2,2)} else {
+                    c(1, 2) #c(1,1)#}
+                  , mar=c(0.1,0.1,1,0.1))
+              
+              legend_lb = labels.time[times_spider]
+              
+              spider_range = if(attr(config,"config")=="janssen_partA_VL") {10^seq(1, 1.2, (1.2-1)/4) # hard code for the range here
+                #seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
+              } else if (study_name == "NextGen_Mock" & ab != "ics") {10^seq(2, 6, 1)#seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
+              } else if (study_name == "NextGen_Mock" & ab == "ics") {10^seq(-2, 2, 1)#10^seq(floor(log10(find_min)), ceiling(log10(find_max)), by = 1)
+              }
+              
+              color = c(if(study_name=="VAT08") "#0AB7C9", "#FF6F1B", "#FF5EBF", "dodgerblue", "chartreuse3", "#009E73")[1:length(times_spider)]
+              
               # Save plot data for use in side-by-side plotting
               plot_list[[as.character(trt)]] <- list(
                 dat.plot = dat.plot,
@@ -1317,24 +1335,6 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             ############# figure start here
             # Proceed only if both trt=0 and trt=1 plots are available
             if (length(plot_list) == 2) {
-              
-              filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tm)), "_", ifelse(reg!="all", reg_lb, ""), gsub("\\.\\*", "_", ab), "_", tolower(bstatus.labels.2[bsero + 1]), "_", "trt_comparison", #trt.labels.2[trt + 1], 
-                                ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
-                                       ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
-              pdf(filename, width = ifelse(study_name == "NextGen_Mock", 15, 5.5), height = 6.5)
-              par(mfrow=#if (study_name=="VAT08") {c(2,2)} else {
-                    c(1, 2) #c(1,1)#}
-                  , mar=c(0.1,0.1,1,0.1))
-              
-              color = c(if(study_name=="VAT08") "#0AB7C9", "#FF6F1B", "#FF5EBF", "dodgerblue", "chartreuse3", "#009E73")[1:length(times_spider)]
-              legend_lb = labels.time[times_spider]
-  
-              spider_range = if(attr(config,"config")=="janssen_partA_VL") {10^seq(1, 1.2, (1.2-1)/4) # hard code for the range here
-                #seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
-              } else if (study_name == "NextGen_Mock" & ab != "ics") {10^seq(2, 6, 1)#seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
-              } else if (study_name == "NextGen_Mock" & ab == "ics") {10^seq(-2, 2, 1)#10^seq(floor(log10(find_min)), ceiling(log10(find_max)), by = 1)
-              }
-              
               
               for (trt in trt_pair[c(2,1)]) {
                 

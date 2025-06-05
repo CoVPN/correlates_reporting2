@@ -261,7 +261,8 @@ for (panel in if (study_name == "NextGen_Mock") {
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
     
-    
+    strs <- gsub("\\$$", "", unlist(strsplit(panel, "\\|")))
+    if (any(strs %in% assays) == FALSE) next
     
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
@@ -276,7 +277,6 @@ for (panel in if (study_name == "NextGen_Mock") {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
     }
     
-    if (study_name == "NextGen_Mock")
     
     f_2 <- f_longitude_by_assay(
         dat = dat.longer.immuno.subset.plot1_,
