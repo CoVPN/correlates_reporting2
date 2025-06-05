@@ -625,14 +625,14 @@ covid_corr_rcdf_facet_adhoc <- function(plot_dat,
                                         xlim = c(-2, 8),
                                         xbreaks = 1,
                                         panel_titles = "",
-                                        panel_title_size = 14,
+                                        panel_title_size = 6,
                                         legend_position = "right",
                                         legend,
-                                        legend_size = 14,
+                                        legend_size = 5,
                                         legend_nrow = 10,
-                                        axis_title_size = 16,
+                                        axis_title_size = 6,
                                         axis_size = 16,
-                                        axis_titles = NULL,
+                                        overall_title = NULL,
                                         label_format = "log10",
                                         units = "in",
                                         arrange_nrow =
@@ -641,9 +641,15 @@ covid_corr_rcdf_facet_adhoc <- function(plot_dat,
                                         height = 3 * arrange_nrow + 0.5,
                                         width = 3 * arrange_ncol,
                                         filename) {
+  
   plot_dat <- plot_dat[!is.na(plot_dat[[color]]), ]
   plot_dat[[x]] <- as.numeric(as.character(plot_dat[[x]]))
   plot_dat[[weight]] <- as.numeric(as.character(plot_dat[[weight]]))
+  
+  if (!is.null(facet_by)) {
+    plot_dat[[facet_by]] <- factor(plot_dat[[facet_by]])
+  }
+  
   if (!is.null(lty)) {
     plot_dat[[lty]] <- as.factor(plot_dat[[lty]])
     rcdf_dat <- plot_dat[, unique(c(x, lty, weight, color, facet_by))] %>%
@@ -687,10 +693,11 @@ covid_corr_rcdf_facet_adhoc <- function(plot_dat,
                         })
   
   rcdf_list <- vector("list", length(unique(plot_dat[, facet_by])))
-  for (aa in 1:length(unique(plot_dat[, facet_by]))) {
+  
+  facet_levels <- unique(rcdf_dat[[facet_by]])
+  for (aa in seq_along(facet_levels)) {
     rcdf_list[[aa]] <- ggplot(
-      subset(rcdf_dat, rcdf_dat[, facet_by] ==
-               levels(rcdf_dat[, facet_by])[aa]),
+      subset(rcdf_dat, rcdf_dat[[facet_by]] == facet_levels[aa]),
       aes_string(x = x, y = "rcdf", color = color, lty = lty)
     ) +
       geom_step(lwd = lwd) +
@@ -718,11 +725,29 @@ covid_corr_rcdf_facet_adhoc <- function(plot_dat,
       )
   }
   
-  output_plot <- ggarrange(
+  if (is.null(facet_by)) {
+    rcdf_list <- list(
+      ggplot(rcdf_dat, aes_string(x = x, y = "rcdf", color = color, lty = lty)) +
+        geom_step(lwd = lwd) +
+        theme_pubr(legend = legend_position) + # <- Adjust here
+        ylab("Reverse ECDF") + xlab(xlab)
+    )
+  }
+  
+  combined_plot <- ggarrange(
     plotlist = rcdf_list, ncol = arrange_ncol, nrow = arrange_nrow,
     common.legend = TRUE, legend = "bottom",
     align = "h"
   )
+  
+  output_plot <- if (!is.null(overall_title)) {
+    annotate_figure(
+      combined_plot,
+      top = text_grob(overall_title, face = "bold", size = 8, hjust = 0.5)
+    )
+  } else {
+    combined_plot
+  }
   
   ggsave(
     filename = filename, plot = output_plot, width = width,

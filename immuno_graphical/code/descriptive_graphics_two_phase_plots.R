@@ -716,10 +716,6 @@ if (study_name %in% c("NextGen_Mock")){
   for (Ab in assays) {
 
   Ab_lb = paste0(Ab, "_")
-  
-  rcdf_assays <- assay_immuno[grepl(Ab, assay_immuno)]
-  
-  if (length(rcdf_assays) == 0) next
 
     for (bstatus in 2) {
       
@@ -727,7 +723,7 @@ if (study_name %in% c("NextGen_Mock")){
         
         for (trt in trt.labels){
       
-        subdat_rcdf5_ = subset(dat.long.twophase.sample, Bserostatus == bstatus.labels[bstatus] & assay %in% rcdf_assays & trt == trt)
+        subdat_rcdf5_ = subset(dat.long.twophase.sample, Bserostatus == bstatus.labels[bstatus] & assay %in% Ab & trt == trt)
         
         if (study_name == "NextGen_Mock" & grepl("_final", tp)) {
           subdat_rcdf5 = subdat_rcdf5_ %>%
@@ -769,17 +765,16 @@ if (study_name %in% c("NextGen_Mock")){
           xlab = if (grepl("T4|T8", Ab)) {"Percent of T cells expressing indicated function"
           } else if (grepl("bind", Ab)) {"Concentration of binding antibodies (AU/ml)"
           } else if (grepl("pseudo", Ab)) {"nAb ID50 titer (AU/ml)"},
-          xlim = c(min(assay_lim[rcdf_assays, , 1]), 
-                   max(assay_lim[rcdf_assays, , 2])),
+          xlim = c(min(assay_lim[Ab, , 1]), 
+                   max(assay_lim[Ab, , 2])),
           xbreaks = 1,
-          panel_titles = paste0(ifelse(study_name == "NextGen_Mock" & trt == trt.labels[1], "(B) ",
-                                       ifelse(study_name == "NextGen_Mock" & trt == trt.labels[2], "(A) ", "")), 
-                                trt),
+          panel_titles = c(paste0("(A) ", trt.labels[2]), paste0("(B) ", trt.labels[1])),
           legend_size = 8,
           legend = setNames(trt.labels, trt.labels), 
-          axis_size = ifelse(attr(config,"config")=="nextgen_mock", 10, 16), 
+          axis_size = 5, 
+          overall_title = labels.assays.short[Ab],
           label_format = ifelse(grepl("T4|T8", Ab), "percent", "log10"),
-          legend_nrow = ifelse(length(rcdf_assays) < 15, length(rcdf_assays), ceiling(length(rcdf_assays)/2)),
+          legend_nrow = 1,
           arrange_ncol = 2,
           arrange_nrow = 1,
           width = 5,
