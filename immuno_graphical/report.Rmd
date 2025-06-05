@@ -265,10 +265,14 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
             
             for (asy in if(study_name=="VAT08" | attr(config,"config")=="janssen_partA_VL") {c("bAb","nAb")
             } else if (study_name == "NextGen_Mock") {
-              c(if (nextgen_output_flag >= 2) c("bAb_IgG_sera", "bAb_IgA_sera", "nAb_sera"), 
-                if (nextgen_output_flag == 3) c("bAb_IgG_nasal", "bAb_IgA_nasal", "nAb_nasal", "bAb_IgG_saliva", "bAb_IgA_saliva", "nAb_saliva"),
-                if (nextgen_output_flag >= 2) "ics",
-                if (nextgen_output_flag == 1) "pseudoneutid50_sera_XBB.1.5")
+              c(if (nextgen_output_flag >= 2) assays[grepl("bind.*sera", assays)],
+                if (nextgen_output_flag >= 2) "pseudoneutid50_sera",
+                if (nextgen_output_flag == 1) "pseudoneutid50_sera_XBB.1.5",
+                if (nextgen_output_flag >= 2) "pseudoneutid50_sera_KP.2",
+                if (nextgen_output_flag >= 2) "pseudoneutid50_sera_mdw",
+                if (nextgen_output_flag == 3) assays[grepl("nasal|saliva", assays)],
+                if (nextgen_output_flag >= 2) assays[grepl("T4|T8", assays)])
+                
             } else {c("","bAb","nAb","other")}){ # for VAT08 and janssen_partA_VL, only report for bAb and nAb
                 if ( (sum(grepl("bind", assays))==0 & asy=="bAb") | (sum(grepl("neut", assays))==0 & asy=="nAb") | (sum(grepl("ADCP", assays))==0 & asy=="other")) next
                 if (asy=="" & (trt!="trt_both" | bsero!="bstatus_both")) next  # trt_both & bstatus_both are only for all assays
