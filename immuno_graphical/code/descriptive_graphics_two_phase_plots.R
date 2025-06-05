@@ -1171,11 +1171,11 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             
             # stack with max and min values
             find_max = round(max(dat.spider.by.time %>% summarise(across(where(is.numeric), ~ max(.x, na.rm = TRUE)))), 1)
-            find_min = round(min(dat.spider.by.time %>% summarise(across(where(is.numeric), ~ max(.x, na.rm = TRUE)))), 1)
+            find_min = round(min(dat.spider.by.time %>% summarise(across(where(is.numeric), ~ min(.x, na.rm = TRUE)))), 1)
             
             max_min <- rbind(rep(find_max,
                                  ncol(dat.spider.by.time)), 
-                             rep(10^min(0, ceiling(find_min)),
+                             rep(min(0, floor(find_min)),
                                #0, 
                                ncol(dat.spider.by.time)))
             colnames(max_min) <- colnames(dat.spider.by.time)
@@ -1197,7 +1197,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               } else {contains("pseudoneutid50")})
             
             # those without any data will have a weighted geomean equal to 1 because exp(0)=1, set these to NA
-            idx <- dat.plot == 1 #exp(10^0)#1
+            idx <- dat.plot == exp(10^0)#1
             idx[1:2, ] <- FALSE
             dat.plot[idx] <- NA
             
@@ -1250,6 +1250,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
             legend("bottomleft", legend=legend_lb, lty=5, pch=c(15),
                    col=color, bty="n", ncol=3, cex=0.7,
                    inset=c(0.01, 0))
+            # print(data.frame(Time = times_spider, Label = legend_lb, Color = color))
             
             dev.off()
             }
