@@ -4,9 +4,9 @@ renv::activate(project = here::here(".."))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 if (study_name == "NextGen_Mock") {
-  assays = assays[!grepl("IgA_sera|pseudoneutid50_nasal|IgG_nasal|saliva|bindN_IgA", assays)]
+  assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
   labels.assays.short = labels.assays.short[assays]
-  assay_metadata = assay_metadata %>% filter(!grepl("IgA_sera|pseudoneutid50_nasal|IgG_nasal|saliva|bindN_IgA", assay))
+  assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
 } # will remove later
 #-----------------------------------------------
 
