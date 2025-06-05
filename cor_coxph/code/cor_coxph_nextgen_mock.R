@@ -1,4 +1,4 @@
-# COR="D31toM12_nextgen_mock";
+# COR="D31toM12_nextgen_mock_sera";
 # COR="D31toM12_nextgen_mock_tcell";
 Sys.setenv(TRIAL = "nextgen_mock")
 Sys.setenv(VERBOSE = 1)
@@ -7,7 +7,7 @@ source(here::here("..", "_common.R"))
 
 trts=c(1,0)
 marker_sets = unique(assay_metadata$panel)
-# marker_sets='pseudoneutid50_sera'
+marker_sets='pseudoneutid50_sera'
 # marker_set='pseudoneutid50_sera'
 
 
@@ -177,27 +177,27 @@ for (trt in trts) {
     )
     
     # these curves are made for two arms together below
-    # cor_coxph_risk_tertile_incidence_curves (
-    #   form.0,
-    #   dat = dat.1,
-    #   fname.suffix,
-    #   save.results.to,
-    #   config,
-    #   config.cor,
-    #   tfinal.tpeak,
-    # 
-    #   markers = all.markers,
-    #   markers.names.short = all.markers.names.short,
-    #   markers.names.long = all.markers.names.long,
-    #   marker.cutpoints,
-    #   assay_metadata,
-    # 
-    #   dat.plac = dat.0,
-    #   for.title = "",
-    # 
-    #   trt.label = trt.label,
-    #   cmp.label = cmp.label
-    # )
+    cor_coxph_risk_tertile_incidence_curves (
+      form.0,
+      dat = dat.1,
+      fname.suffix,
+      save.results.to,
+      config,
+      config.cor,
+      tfinal.tpeak,
+
+      markers = all.markers,
+      markers.names.short = all.markers.names.short,
+      markers.names.long = all.markers.names.long,
+      marker.cutpoints,
+      assay_metadata,
+
+      dat.plac = dat.0,
+      for.title = "",
+
+      trt.label = trt.label,
+      cmp.label = cmp.label
+    )
   
   }
 
@@ -237,45 +237,45 @@ for (marker_set in marker_sets) {
 }
 
 
-# # putting trichotomized incidence curves from two arms on the same plot
-# for (marker_set in marker_sets) {
-#   
-#   assays = subset(assay_metadata, panel==marker_set, assay, drop=T)
-#   all.markers=c(paste0("Day", tpeak, assays), paste0("B", assays), paste0("Delta", tpeak, "overB", assays))
-#   tmp = get.short.name(assays); all.markers.names.short = c(glue("D{tpeak} {tmp}"), glue("D01 {tmp}"), glue("D{tpeak}/D01 {tmp}"))
-#   names(all.markers.names.short) = all.markers
-#   all.markers.names.long = 
-#     c(as.matrix(labels.title)[DayPrefix%.%tpeak, assays], 
-#       as.matrix(labels.title)["B", assays], 
-#       as.matrix(labels.title)["Delta"%.%tpeak%.%"overB", assays])
-#   names(all.markers.names.long) = all.markers
-#   
-#   cor_coxph_risk_tertile_incidence_curves_2arms (
-#     form.0,
-#     dat = dat.vacc,
-#     fname.suffix = "InvVacc_"%.%marker_set,
-#     save.results.to,
-#     config,
-#     config.cor,
-#     tfinal.tpeak,
-#     
-#     markers = all.markers,
-#     markers.names.short = all.markers.names.short,
-#     markers.names.long = all.markers.names.long,
-#     marker.cutpoints,
-#     assay_metadata,
-#     
-#     dat.plac,
-#     for.title = "",
-#     
-#     trt.label = trt.label,
-#     cmp.label = cmp.label, 
-#     
-#     fname.suffix.2 = "CtlVacc_"%.%marker_set
-#   )
-#   
-# }
-# 
+# putting trichotomized incidence curves from two arms on the same plot
+for (marker_set in marker_sets) {
+
+  assays = subset(assay_metadata, panel==marker_set, assay, drop=T)
+  all.markers=c(paste0("Day", tpeak, assays), paste0("B", assays), paste0("Delta", tpeak, "overB", assays))
+  tmp = get.short.name(assays); all.markers.names.short = c(glue("D{tpeak} {tmp}"), glue("D01 {tmp}"), glue("D{tpeak}/D01 {tmp}"))
+  names(all.markers.names.short) = all.markers
+  all.markers.names.long =
+    c(as.matrix(labels.title)[DayPrefix%.%tpeak, assays],
+      as.matrix(labels.title)["B", assays],
+      as.matrix(labels.title)["Delta"%.%tpeak%.%"overB", assays])
+  names(all.markers.names.long) = all.markers
+
+  cor_coxph_risk_tertile_incidence_curves_2arms (
+    form.0,
+    dat = dat.vacc,
+    fname.suffix = "InvVacc_"%.%marker_set,
+    save.results.to,
+    config,
+    config.cor,
+    tfinal.tpeak,
+
+    markers = all.markers,
+    markers.names.short = all.markers.names.short,
+    markers.names.long = all.markers.names.long,
+    marker.cutpoints,
+    assay_metadata,
+
+    dat.plac,
+    for.title = "",
+
+    trt.label = trt.label,
+    cmp.label = cmp.label,
+
+    fname.suffix.2 = "CtlVacc_"%.%marker_set
+  )
+
+}
+
 
 
 ################################################################################

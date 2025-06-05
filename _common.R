@@ -134,8 +134,14 @@ if (!is.null(config$assay_metadata)) {
     } else if (COR == "D57azd1222_stage2_delta_bAb" | COR == "D57azd1222_stage2_severe_bAb") {
       assay_metadata = subset(assay_metadata, panel=='bindSpike')
       
-    } else if (endsWith(COR, "nextgen_mock")) {
-      assay_metadata = subset(assay_metadata, !panel %in% c("tcell") )
+    } else if (endsWith(COR, "nextgen_mock_sera")) {
+      assay_metadata = subset(assay_metadata, endsWith(panel, "_sera"))
+      
+    } else if (endsWith(COR, "nextgen_mock_saliva")) {
+      assay_metadata = subset(assay_metadata, endsWith(panel, "_saliva"))
+      
+    } else if (endsWith(COR, "nextgen_mock_nasal")) {
+      assay_metadata = subset(assay_metadata, endsWith(panel, "_nasal"))
       
     } else if (endsWith(COR, "nextgen_mock_tcell")) {
       assay_metadata = subset(assay_metadata, panel %in% c("tcell") )

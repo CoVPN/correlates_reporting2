@@ -97,6 +97,54 @@ tab[is.na(tab)]=""
 kable(tab)
 ```
 
+```{r with covariates}
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum.tcell), subset =  ~ ph2.D15.tcell, data = subset(dat.onedosemRNA, naive==0))
+
+ff=c("Bcd4_IFNg.IL2_BA.4.5.S  + Day15pseudoneutid50_BA.4.BA.5"
+      , "Bcd4_IFNg.IL2_BA.4.5.S+ Bpseudoneutid50_BA.4.BA.5"
+      , "Day15cd4_IFNg.IL2_BA.4.5.S + Day15pseudoneutid50_BA.4.BA.5"
+      , "Day15cd4_IFNg.IL2_BA.4.5.S + Bpseudoneutid50_BA.4.BA.5"
+      )
+
+fits=list(
+#   svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S + Day15cd4_IFNg.IL2_BA.4.5.S + Bpseudoneutid50_BA.4.BA.5 + Day15pseudoneutid50_BA.4.BA.5+ FOIstandardized + standardized_risk_score + strata(stage), design)
+# ,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S  + Day15pseudoneutid50_BA.4.BA.5+ FOIstandardized + standardized_risk_score + strata(stage), design)
+,
+#   svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S + Day15cd4_IFNg.IL2_BA.4.5.S+ FOIstandardized + standardized_risk_score + strata(stage), design)
+# ,
+#   svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bpseudoneutid50_BA.4.BA.5 + Day15pseudoneutid50_BA.4.BA.5+ FOIstandardized + standardized_risk_score + strata(stage), design)
+# ,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S+ Bpseudoneutid50_BA.4.BA.5 + FOIstandardized + standardized_risk_score + strata(stage), design)
+,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Day15cd4_IFNg.IL2_BA.4.5.S + Day15pseudoneutid50_BA.4.BA.5+ FOIstandardized + standardized_risk_score + strata(stage), design)
+,
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Day15cd4_IFNg.IL2_BA.4.5.S + Bpseudoneutid50_BA.4.BA.5+ FOIstandardized + standardized_risk_score + strata(stage), design)
+# ,
+#   svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S + Day15pseudoneutid50_BA.4.BA.5 + Bcd4_IFNg.IL2_Wuhan.N+ FOIstandardized + standardized_risk_score + strata(stage), design)
+# ,
+#   svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ Bcd4_IFNg.IL2_BA.4.5.S + Bcd4_IFNg.IL2_Wuhan.N+ FOIstandardized + standardized_risk_score + strata(stage), design)
+)
+
+# per 10 fold
+tab1=getFormattedSummary(fits, robust=T, exp=T, type=12); 
+tab1[is.na(tab1)]=""
+kable(tab1)
+
+# per 3 fold
+tab2=getFormattedSummary(fits, robust=T, exp=T, type=12, scale.factor=log10(3)); 
+tab2[is.na(tab2)]=""
+kable(tab2)
+
+# generalized wald test p values
+tab3=getFormattedSummary(fits, robust=T, exp=T, type=13, rows=c(1,2)); tab3
+
+# combine the first row of tab2 and the second row of tab1
+tab = t(rbind(tab2[1,], tab1[2,]))
+tab=cbind(ff, tab, genWald = drop(tab3))
+kable(tab)
+
+```
 
 
 ```{r some markers have low dynamic range}
