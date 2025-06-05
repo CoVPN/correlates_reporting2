@@ -69,7 +69,7 @@ if (study_name == "NextGen_Mock") {
     assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
     assay_immuno = assay_immuno[!grepl("nasal|saliva|bindN_IgA", assay_immuno)]
     assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
-    nextgen_output_flag = 2 # sera_only_ics, as default with assay_metadata filtered to sera only assays, 
+    nextgen_output_flag = 1 # sera_only_ics, as default with assay_metadata filtered to sera only assays, 
                             # options: 3 (whole_report)  1 (BARDA_TLF)
 }
 ```
@@ -174,7 +174,7 @@ for (bsero in bstatus.labels.2) {
           
           
             if (study_name == "NextGen_Mock" & nextgen_output_flag == 1) {
-              assay_immuno_ = pseudoneutid50_sera_XBB.1.5
+              assay_immuno_ = "pseudoneutid50_sera_XBB.1.5"
             } else {assay_immuno_ = assay_immuno}
           
             for (asy in assay_immuno_){
