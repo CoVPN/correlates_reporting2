@@ -299,6 +299,13 @@ f_longitude_by_assay <- function(
                           }
     )
     
+    facet_x_name <- as_label(facet.x.var[[1]])
+    facet_levels <- unique(dat[[facet_x_name]])
+    facet_labels <- setNames(
+        paste0("(", LETTERS[seq_along(facet_levels)], ") ", facet_levels),
+        facet_levels
+    )
+    
     p2 <- dat %>%
         filter(assay %in% assays & time %in% times) %>%
         left_join(assay_metadata, by="assay") %>%
@@ -306,7 +313,7 @@ f_longitude_by_assay <- function(
         mutate(assay_label_short = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label)) %>%
         ungroup() %>%
             ggplot(aes(x = !!sym(x.var), y = !!sym("value"))) +
-                facet_grid(rows = facet.y.var, col = facet.x.var) +
+                facet_grid(rows = facet.y.var, col = facet.x.var, labeller = labeller(.cols = facet_labels)) +
                 
                 geom_violin(aes(color = Trt), scale = "width", na.rm = TRUE, show.legend = FALSE) +
                 geom_line(aes(group = Ptid, color = Trt), alpha = 0.3) +

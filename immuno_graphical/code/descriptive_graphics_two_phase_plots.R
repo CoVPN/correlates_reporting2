@@ -307,7 +307,8 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                                               ifelse(attr(config,"config")=="nextgen_mock" & grepl("bind|pseudo", aa), "wt.immuno",
                                                      ifelse(attr(config,"config")=="nextgen_mock" & grepl("T4|T8", aa), "wt.AB.immuno",
                                 "wt.subcohort"))))),
-                plot_title = paste0(
+                plot_title = paste0(ifelse(study_name == "NextGen_Mock" & trt == 0, "(B) ",
+                                           ifelse(study_name == "NextGen_Mock" & trt == 1, "(A) ", "")),
                   labels.assays[aa], ": ",
                   if (study_name == "NextGen_Mock") {""} else {paste0(bstatus.labels.3[bserostatus + 1], " ")},
                   tolower(trt.labels)[trt + 1], " arm"
@@ -436,7 +437,9 @@ for (tp in if(!study_name %in% c("VAT08")) {tps_no_B_and_delta_over_tinterm} els
     xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
     arrange_ncol = ifelse(study_name %in% c("VAT08", "NextGen_Mock"), 4, 3),
     arrange_nrow = ceiling(length(assay_immuno) / 3),
-    panel_titles = labels.title2[tp, ] %>% unlist(),
+    panel_titles = paste0(ifelse(study_name == "NextGen_Mock" & trt == 0, "(B) ",
+                                 ifelse(study_name == "NextGen_Mock" & trt == 1, "(A) ", "")), 
+                          labels.title2[tp, ] %>% unlist()),
     axis_titles = labels.axis[tp, ] %>% unlist(),
     xbreaks = ifelse(study_name=="VAT08", 2, 1),
     axis_title_size = ifelse(study_name == "NextGen_Mock", 8, 10),
@@ -542,7 +545,9 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
         xbreaks = seq(floor(min(assay_lim[rcdf_assays, gsub("_initial", "", tp), 1])), 
                       ceiling(max(assay_lim[rcdf_assays, gsub("_initial", "", tp), 2])), 
                       ifelse(study_name=="VAT08", 3, 1)),
-        plot_title = paste0(labels.time[gsub("_initial", "", tp)], " Ab Markers"),
+        plot_title = paste0(ifelse(study_name == "NextGen_Mock" & trt == 0, "(B) ",
+                                   ifelse(study_name == "NextGen_Mock" & trt == 1, "(A) ", "")), 
+                            paste0(labels.time[gsub("_initial", "", tp)], " Ab Markers")),
         legend_size = ifelse(length(rcdf_assays) > 15, 5, ifelse(length(rcdf_assays) >= 4, 8, 14)), 
         axis_size = ifelse(attr(config,"config")=="nextgen_mock", 10, 16), 
         label_format = ifelse(Ab == "T4|T8", "percent", "log10"),
@@ -675,7 +680,9 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
           xbreaks = seq(floor(min(assay_lim[rcdf_assays, gsub("_initial", "", tp), 1])), 
                         ceiling(max(assay_lim[rcdf_assays, gsub("_initial", "", tp), 2])), 
                         ifelse(study_name=="VAT08", 3, 1)),
-          plot_title = paste0(labels.time[gsub("_initial", "", tp)], " Ab Markers"),
+          plot_title = paste0(ifelse(study_name == "NextGen_Mock" & trt == 0, "(B) ",
+                                     ifelse(study_name == "NextGen_Mock" & trt == 1, "(A) ", "")), 
+                              paste0(labels.time[gsub("_initial", "", tp)], " Ab Markers")),
           legend_size = ifelse(length(rcdf_assays) > 15, 5, ifelse(length(rcdf_assays) >= 4, 8, 14)), 
           axis_size = ifelse(attr(config,"config")=="nextgen_mock", 10, 16), 
           label_format = ifelse(Ab == "T4|T8", "percent", "log10"),
@@ -715,9 +722,11 @@ for (bstatus in 1:2) {
   for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
     
     for (pn in if (study_name != "NextGen_Mock") {""} else {c("IgG_sera", "IgA_sera", "pseudoneutid50_sera", 
-                                                              #"IgG_nasal", "IgA_nasal", "pseudoneutid50_nasal", 
-                                                              #"IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva", 
+                                                              "IgG_nasal", "IgA_nasal", "pseudoneutid50_nasal", 
+                                                              "IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva", 
                                                               "T4_T8")}) {
+      if (study_name == "NextGen_Mock" & any(grepl(pn, assays)) == FALSE) next
+      
       # subset for prevent19_stage2
       if(attr(config,"config")=="prevent19_stage2") {
         subdat_box1_ = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.", gsub("ay","",tp))]==1), ]
@@ -730,7 +739,13 @@ for (bstatus in 1:2) {
       if (pn == "") {subdat_box1 = subdat_box1_
       } else {subdat_box1 = subdat_box1_ %>% filter(grepl(gsub("T4_T8", "T4|T8", pn), assay)) %>% mutate(assay = droplevels(assay))}
       
-      assay_sub = unique(as.character(subdat_box1$assay))
+      # reorder per Peter's request
+      if (study_name == "NextGen_Mock" & grepl("IgG", pn)) {
+        subdat_box1$assay <- factor(subdat_box1$assay,
+                                     levels = levels(subdat_box1$assay)[c(2:11, 1)])
+      }
+      
+      assay_sub = levels(subdat_box1$assay)
         
       covid_corr_boxplot_facets(
         plot_dat = subset(subdat_box1,
@@ -749,9 +764,9 @@ for (bstatus in 1:2) {
         )},
         ylim = assay_lim[assay_sub, tp, ],
         plot_LLOX = !grepl("Delta", tp), # "B", "Day29", "Day57"
-        POS.CUTOFFS = log10(pos.cutoffs[assay_immuno]),
-        LLOX = log10(lloxs[assay_immuno]),
-        ULOQ = log10(uloqs[assay_immuno]),
+        POS.CUTOFFS = log10(pos.cutoffs[assay_sub]),
+        LLOX = log10(lloxs[assay_sub]),
+        ULOQ = log10(uloqs[assay_sub]),
         arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 4, 2)),
         arrange_nrow = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 3, ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 1, 2))),
         legend = setNames(trt.labels, trt.labels),

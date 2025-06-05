@@ -924,7 +924,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
       xlab("") +
       scale_fill_manual(values = palette) +
       scale_color_manual(values = palette, labels = legend) +
-      ggtitle(panel_titles[aa]) +
+      ggtitle(paste0("(", LETTERS[aa], ") ", panel_titles[aa])) +
       theme(
         plot.title = element_text(hjust = 0.5, size = panel_title_size),
         panel.border = element_rect(fill = NA),

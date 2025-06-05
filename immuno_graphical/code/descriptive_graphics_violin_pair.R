@@ -58,9 +58,11 @@ if (attr(config, "config") == "nextgen_mock") {
 }
 # ID50, at B, D22, D43, D22-B, D43-B
 # bindSpike, at B, D22, D43, D22-B, D43-B
-for (panel in if (study_name == "NextGen_Mock") {c("IgG_sera", "pseudoneutid50_sera", "T4", "T8")
+for (panel in if (study_name == "NextGen_Mock") {c("IgG_sera", "pseudoneutid50_sera", "IgG_nasal", "pseudoneutid50_nasal", "IgG_saliva", "pseudoneutid50_saliva", "T4", "T8")
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
+    
+    if (any(grepl(panel, assays)) == FALSE) next
     
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA", "nextGen_mock")) next # janssen_partA_VL doesn't need these plots
     
@@ -126,7 +128,9 @@ for (panel in if (study_name == "NextGen_Mock") {c("IgG_sera", "pseudoneutid50_s
 
 # pooling two arms at D01 for NextGen_Mock
 if (study_name == "NextGen_Mock" & study_name != "NextGen_Mock") {
-    for (panel in c("IgG_sera", "pseudoneutid50_sera", "T4", "T8")) {
+    for (panel in c("IgG_sera", "pseudoneutid50_sera", "IgG_nasal", "pseudoneutid50_nasal", "IgG_saliva", "pseudoneutid50_saliva", "T4", "T8")) {
+        
+        if (any(grepl(panel, assays)) == FALSE) next
             
         f_1 <- f_by_time_assay(
             dat = dat.longer.immuno.subset.plot1.3.whole %>% mutate(x="1"),
@@ -222,12 +226,42 @@ for (panel in if (study_name == "NextGen_Mock") {
        
        "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$", 
        
+       "bindSpike_IgG_nasal$|bindSpike_IgG_nasal_delta_AY.4$",
+       "bindSpike_IgG_nasal_BA.5$|bindSpike_IgG_nasal_BA.2.86$",
+       "bindSpike_IgG_nasal_XBB.1.5$|bindSpike_IgG_nasal_JN.1$",
+       "bindSpike_IgG_nasal_KP.2$|bindSpike_IgG_nasal_KP.3$",
+       "bindSpike_IgG_nasal_LB.1$|bindN_IgG_nasal$",
+       
+       "bindSpike_IgA_nasal$|bindSpike_IgA_nasal_delta_AY.4$",
+       "bindSpike_IgA_nasal_BA.5$|bindSpike_IgA_nasal_BA.2.86$",
+       "bindSpike_IgA_nasal_XBB.1.5$|bindSpike_IgA_nasal_JN.1$",
+       "bindSpike_IgA_nasal_KP.2$|bindSpike_IgA_nasal_KP.3$",
+       "bindSpike_IgA_nasal_LB.1$",
+       
+       "pseudoneutid50_nasal_KP.2$|pseudoneutid50_nasal_XBB.1.5$",
+       
+       "bindSpike_IgG_saliva$|bindSpike_IgG_saliva_delta_AY.4$",
+       "bindSpike_IgG_saliva_BA.5$|bindSpike_IgG_saliva_BA.2.86$",
+       "bindSpike_IgG_saliva_XBB.1.5$|bindSpike_IgG_saliva_JN.1$",
+       "bindSpike_IgG_saliva_KP.2$|bindSpike_IgG_saliva_KP.3$",
+       "bindSpike_IgG_saliva_LB.1$|bindN_IgG_saliva$",
+       
+       "bindSpike_IgA_saliva$|bindSpike_IgA_saliva_delta_AY.4$",
+       "bindSpike_IgA_saliva_BA.5$|bindSpike_IgA_saliva_BA.2.86$",
+       "bindSpike_IgA_saliva_XBB.1.5$|bindSpike_IgA_saliva_JN.1$",
+       "bindSpike_IgA_saliva_KP.2$|bindSpike_IgA_saliva_KP.3$",
+       "bindSpike_IgA_saliva_LB.1$",
+       
+       "pseudoneutid50_saliva_KP.2$|pseudoneutid50_saliva_XBB.1.5$",
+       
        "T4_IFNg_OR_IL2_N_BA.4.5$|T4_IFNg_OR_IL2_Spike_BA.4.5$",
        
        "T8_IFNg_OR_IL2_N_BA.4.5$|T8_IFNg_OR_IL2_Spike_BA.4.5$"
        )
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
+    
+    
     
     if (attr(config,"config") %in% c("janssen_partA_VL", "janssen_pooled_partA")) next # janssen_partA_VL doesn't need these plots
     
@@ -241,6 +275,8 @@ for (panel in if (study_name == "NextGen_Mock") {
     } else {
         dat.longer.immuno.subset.plot1_ = dat.longer.immuno.subset.plot1
     }
+    
+    if (study_name == "NextGen_Mock")
     
     f_2 <- f_longitude_by_assay(
         dat = dat.longer.immuno.subset.plot1_,
@@ -522,10 +558,27 @@ for (grp in c("non_naive_vac_pla",
         }
         
         for (asy in if (study_name != "NextGen_Mock") {""} else {
-            c("IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", "T4", "T8", 
+            c("IgG_sera", "bindSpike_IgA_sera", "pseudoneutid50_sera", 
+              "IgG_nasal", "bindSpike_IgA_nasal", "pseudoneutid50_nasal",
+              "IgG_saliva", "bindSpike_IgA_saliva", "pseudoneutid50_saliva",
+              "T4", "T8", 
+              
               "IgG_sera_KP.2|bindSpike_IgA_sera_KP.2", "IgG_sera_KP.2|pseudoneutid50_sera", "IgG_sera_KP.2|T4", "IgG_sera_KP.2|T8",
               "bindSpike_IgA_sera_KP.2|pseudoneutid50_sera", "bindSpike_IgA_sera_KP.2|T4", "bindSpike_IgA_sera_KP.2|T8",
-              "pseudoneutid50_sera|T4", "pseudoneutid50_sera|T8", "T4|T8")}) { 
+              "pseudoneutid50_sera|T4", "pseudoneutid50_sera|T8", 
+              
+              "IgG_nasal_KP.2|bindSpike_IgA_nasal_KP.2", "IgG_nasal_KP.2|pseudoneutid50_nasal", "IgG_nasal_KP.2|T4", "IgG_nasal_KP.2|T8",
+              "bindSpike_IgA_nasal_KP.2|pseudoneutid50_nasal", "bindSpike_IgA_nasal_KP.2|T4", "bindSpike_IgA_nasal_KP.2|T8",
+              "pseudoneutid50_nasal|T4", "pseudoneutid50_nasal|T8", 
+              
+              "IgG_saliva_KP.2|bindSpike_IgA_saliva_KP.2", "IgG_saliva_KP.2|pseudoneutid50_saliva", "IgG_saliva_KP.2|T4", "IgG_saliva_KP.2|T8",
+              "bindSpike_IgA_saliva_KP.2|pseudoneutid50_saliva", "bindSpike_IgA_saliva_KP.2|T4", "bindSpike_IgA_saliva_KP.2|T8",
+              "pseudoneutid50_saliva|T4", "pseudoneutid50_saliva|T8", 
+              
+              "T4|T8")}) { 
+            
+            parts <- strsplit(asy, "\\|")[[1]]
+            if (!  (any(grepl(parts[1], assays)) & any(grepl(parts[length(parts)], assays)))  ) next
             
             if (asy == "") {assays_sub = assays_sub_
             } else {assays_sub = assays_sub_[grepl(asy, assays_sub_)]}
@@ -619,8 +672,8 @@ for (a in assays){
         }
 
     
-        y.grob.1 <- textGrob(trt.labels[2], gp=gpar(fontface="bold", col="black", fontsize=9)) # Vaccine
-        y.grob.2 <- textGrob(trt.labels[1], gp=gpar(fontface="bold", col="black", fontsize=9)) # Placebo
+        y.grob.1 <- textGrob(paste0("(A) ", trt.labels[2]), gp=gpar(fontface="bold", col="black", fontsize=9)) # Vaccine
+        y.grob.2 <- textGrob(paste0("(A) ", trt.labels[1]), gp=gpar(fontface="bold", col="black", fontsize=9)) # Placebo
         y.grob.3 <- textGrob(bstatus.labels.3[1], gp=gpar(fontface="bold", col="black", fontsize=9)) # Naive
         y.grob.4 <- textGrob(bstatus.labels.3[2], gp=gpar(fontface="bold", col="black", fontsize=9)) # Non-naive
         
