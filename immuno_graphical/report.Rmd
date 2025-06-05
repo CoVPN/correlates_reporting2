@@ -557,7 +557,7 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
             for (bsero in bstatus.labels.2) {
                 if (study_name == "NextGen_Mock" & bsero == bstatus.labels.2[1]) next # NextGen_Mock only has non-naive
                 
-                for (trt in trt.labels.2[2:1]) {
+                for (trt in if (study_name == "NextGen_Mock") "trt_comparison" else {trt.labels.2[2:1]}) {
                     
                     for (reg in if(attr(config,"config")=="janssen_partA_VL") {c("LATAM_","ZA_")} else {""}){
                         
