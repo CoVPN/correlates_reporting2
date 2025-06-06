@@ -76,6 +76,18 @@ if (is.null(config$threshold_grid_size)) {
 
 if (!is.null(config$assay_metadata)) {
   
+  # a shared function for nextgen project
+  # returns PBMC, sera, saliva, nasal etc
+  get_sample_type=function(panel) {
+    if (panel=="PBMC") {
+      "PBMC"
+    } else if (panel=="bindN") {
+      "bindN"
+    } else {
+      last(strsplit(panel, "_")[[1]])
+    }
+  }
+  
   # created named lists for assay metadata to easier access, e.g. assay_labels_short["bindSpike"]
   assay_metadata = read.csv(paste0(dirname(attr(config,"file")),"/",config$assay_metadata))
   

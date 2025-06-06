@@ -28,7 +28,7 @@ marker_sets='pseudoneutid50_sera'
   myprint(verbose)
   
   # hack
-  # source("~/copcor/R/cor_coxph_coef_1.R")
+  source("~/copcor/R/cor_coxph_risk_tertile_incidence_curves_2arms.R")
 
   # path for figures and tables etc
   save.results.to = here::here("output")
@@ -176,32 +176,32 @@ for (trt in trts) {
       verbose = T
     )
     
-    # these curves are made for two arms together below
-    cor_coxph_risk_tertile_incidence_curves (
-      form.0,
-      dat = dat.1,
-      fname.suffix,
-      save.results.to,
-      config,
-      config.cor,
-      tfinal.tpeak,
-
-      markers = all.markers,
-      markers.names.short = all.markers.names.short,
-      markers.names.long = all.markers.names.long,
-      marker.cutpoints,
-      assay_metadata,
-
-      dat.plac = dat.0,
-      for.title = "",
-
-      trt.label = trt.label,
-      cmp.label = cmp.label
-    )
+    # # put six curves in the same plot
+    # cor_coxph_risk_tertile_incidence_curves (
+    #   form.0,
+    #   dat = dat.1,
+    #   fname.suffix,
+    #   save.results.to,
+    #   config,
+    #   config.cor,
+    #   tfinal.tpeak,
+    # 
+    #   markers = all.markers,
+    #   markers.names.short = all.markers.names.short,
+    #   markers.names.long = all.markers.names.long,
+    #   marker.cutpoints,
+    #   assay_metadata,
+    # 
+    #   dat.plac = dat.0,
+    #   for.title = "",
+    # 
+    #   trt.label = trt.label,
+    #   cmp.label = cmp.label
+    # )
   
-  }
+  } # end marker_set loop
 
-}
+} # end trt loop
 
 
 # putting corcoxph tables from two arms in the same table
@@ -229,9 +229,18 @@ for (marker_set in marker_sets) {
         longtable=T, 
         label=paste0("tab:CoR_univariable_svycoxph_pretty_2arms"), 
         caption.placement = "top", 
-        caption=paste0("Inference for Day ", config.cor$tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, 
-                       " in the ", escape(marker_set), " group: Hazard ratios. Baseline covariates adjusted for: ", escape(paste(deparse(form.0[[3]]), collapse = " ")), 
-                       ", endpoint variable: ", escape(config.cor$EventIndPrimary), ".")
+        caption = escape_latex(glue("
+Inferences for D01 and D31 antibody marker covariate-adjusted correlates of risk of COVID-19 through {tfinal.tpeak} days post D31 for the Investigational and Comparator Vaccine arms. \\
+Non-cases have no evidence of SARS-CoV-2 infection (i.e., never tested nucleic acid amplification/PCR positive) after D01 up to the date by which the last enrolled participant reached {tfinal.tpeak} days post D31. \\
+HRs were estimated using inverse probability sampling weighted Cox regression models; 95% confidence intervals (CIs) and Wald-based p-values are shown. \\
+Analyses adjust for the randomization strata and baseline risk score via an inverse probability sampling weighted Cox model (cor_coxph module at CoVPN GitHub) (ccIAS-sera). \\
+No. cases: number of COVID-19 endpoints eligible for correlates analysis regardless of whether antibody markers are available (phase 1/PPI set cases). \\
+No. at-risk: number of participants eligible for correlates analysis regardless of whether antibody markers are available (Phase 1/PPI Set cases). \\
+N: Nucleocapsid protein. ID50: 50% inhibitory serum dilution neutralizing antibody titer. nAb: neutralizing antibody.
+\n"))
+        # caption=paste0("Inference for Day ", config.cor$tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, 
+                       # " in the ", escape(marker_set), " group: Hazard ratios. Baseline covariates adjusted for: ", escape(paste(deparse(form.0[[3]]), collapse = " ")), 
+                       # ", endpoint variable: ", escape(config.cor$EventIndPrimary), ".")
   )
   
 }

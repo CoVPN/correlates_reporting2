@@ -1683,7 +1683,7 @@ D31toM12_nextgen_mock_nasal:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
-D31toM12_nextgen_mock_tcell:
+D31toM12_nextgen_mock_PBMC:
   ph1: ph1.AB.D31_7
   ph2: ph2.AB.D31_7
   wt:  wt.AB.D31_7
@@ -1739,7 +1739,7 @@ D31toM6_nextgen_mock_nasal:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
-D31toM6_nextgen_mock_tcell:
+D31toM6_nextgen_mock_PBMC:
   ph1: ph1.AB.D31_7
   ph2: ph2.AB.D31_7
   wt:  wt.AB.D31_7
