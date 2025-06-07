@@ -1,11 +1,11 @@
 {
-library(methods)
-library(dplyr)
-library(glue)
-library(kyotil)
-library(copcor)
-library(marginalizedRisk)
-library(survival)
+library("kyotil")
+quiet_library("methods")
+quiet_library("dplyr")
+quiet_library("glue")
+quiet_library("copcor")
+quiet_library("marginalizedRisk")
+quiet_library("survival")
 
 # use local copies of some copcor files as a quick workaround to renv
 # if (file.exists("~/copcor/R/cor_coxph_coef_1.R")) source("~/copcor/R/cor_coxph_coef_1.R")
@@ -24,7 +24,8 @@ if(!exists("verbose")) verbose=0
 if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
 
-    
+cat("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running _common.R ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+
 # COR defines the analysis to be done, e.g. D14
 if(!exists("COR")) {
     if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
@@ -75,6 +76,18 @@ if (is.null(config$threshold_grid_size)) {
 # assay metadata
 
 if (!is.null(config$assay_metadata)) {
+  
+  # a shared function for nextgen project
+  # returns PBMC, sera, saliva, nasal etc
+  get_sample_type=function(panel) {
+    if (panel=="PBMC") {
+      "PBMC"
+    } else if (panel=="bindN") {
+      "bindN"
+    } else {
+      last(strsplit(panel, "_")[[1]])
+    }
+  }
   
   # created named lists for assay metadata to easier access, e.g. assay_labels_short["bindSpike"]
   assay_metadata = read.csv(paste0(dirname(attr(config,"file")),"/",config$assay_metadata))
@@ -134,8 +147,14 @@ if (!is.null(config$assay_metadata)) {
     } else if (COR == "D57azd1222_stage2_delta_bAb" | COR == "D57azd1222_stage2_severe_bAb") {
       assay_metadata = subset(assay_metadata, panel=='bindSpike')
       
-    } else if (endsWith(COR, "nextgen_mock")) {
-      assay_metadata = subset(assay_metadata, !panel %in% c("tcell") )
+    } else if (endsWith(COR, "nextgen_mock_sera")) {
+      assay_metadata = subset(assay_metadata, endsWith(panel, "_sera"))
+      
+    } else if (endsWith(COR, "nextgen_mock_saliva")) {
+      assay_metadata = subset(assay_metadata, endsWith(panel, "_saliva"))
+      
+    } else if (endsWith(COR, "nextgen_mock_nasal")) {
+      assay_metadata = subset(assay_metadata, endsWith(panel, "_nasal"))
       
     } else if (endsWith(COR, "nextgen_mock_tcell")) {
       assay_metadata = subset(assay_metadata, panel %in% c("tcell") )
@@ -489,7 +508,6 @@ include_bindN <- !study_name %in% c("PREVENT19","AZD1222","VAT08m")
 
 # COR-related config
 if (exists("COR")) {
-    myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE") {
         if (contain(TRIAL, "EUA")) {
@@ -685,8 +703,17 @@ if (exists("COR")) {
       if(!is.null(config.cor$covariates)) {
         config$covariates = config.cor$covariates
       }
+      
       form.0 = update (form.s, as.formula(config$covariates))
       print(form.0)
+      
+      # multivariate_assays_2 may come from config or config.cor, the latter, if exists, overwrites the former
+      if(!is.null(config.cor$multivariate_assays_2)) {
+        config$multivariate_assays_2 = config.cor$multivariate_assays_2
+      }
+      if( is.null(config.cor$multivariate_assays_2) & !is.null(config$multivariate_assays_2)) {
+        config.cor$multivariate_assays_2 = config$multivariate_assays_2
+      }
     }
     
     ###########################################################
@@ -1332,3 +1359,6 @@ ggsave_custom <- function(filename = default_name(plot),
   ggsave(filename = filename, height = height, width = width, ...)
 }
 }
+
+
+cat("\n\n\n")
