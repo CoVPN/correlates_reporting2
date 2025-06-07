@@ -1,11 +1,11 @@
 {
-library(methods)
-library(dplyr)
-library(glue)
-library(kyotil)
-library(copcor)
-library(marginalizedRisk)
-library(survival)
+library("kyotil")
+quiet_library("methods")
+quiet_library("dplyr")
+quiet_library("glue")
+quiet_library("copcor")
+quiet_library("marginalizedRisk")
+quiet_library("survival")
 
 # use local copies of some copcor files as a quick workaround to renv
 # if (file.exists("~/copcor/R/cor_coxph_coef_1.R")) source("~/copcor/R/cor_coxph_coef_1.R")
@@ -24,7 +24,8 @@ if(!exists("verbose")) verbose=0
 if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
 
-    
+cat("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running _common.R ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+
 # COR defines the analysis to be done, e.g. D14
 if(!exists("COR")) {
     if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
@@ -507,7 +508,6 @@ include_bindN <- !study_name %in% c("PREVENT19","AZD1222","VAT08m")
 
 # COR-related config
 if (exists("COR")) {
-    myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE") {
         if (contain(TRIAL, "EUA")) {
@@ -703,8 +703,17 @@ if (exists("COR")) {
       if(!is.null(config.cor$covariates)) {
         config$covariates = config.cor$covariates
       }
+      
       form.0 = update (form.s, as.formula(config$covariates))
       print(form.0)
+      
+      # multivariate_assays_2 may come from config or config.cor, the latter, if exists, overwrites the former
+      if(!is.null(config.cor$multivariate_assays_2)) {
+        config$multivariate_assays_2 = config.cor$multivariate_assays_2
+      }
+      if( is.null(config.cor$multivariate_assays_2) & !is.null(config$multivariate_assays_2)) {
+        config.cor$multivariate_assays_2 = config$multivariate_assays_2
+      }
     }
     
     ###########################################################
@@ -1350,3 +1359,6 @@ ggsave_custom <- function(filename = default_name(plot),
   ggsave(filename = filename, height = height, width = width, ...)
 }
 }
+
+
+cat("\n\n\n")

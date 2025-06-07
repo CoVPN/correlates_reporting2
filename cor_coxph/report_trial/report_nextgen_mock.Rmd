@@ -13,6 +13,7 @@ fname.suffixes <- c(
         "CtlVacc_"
       )
 
+# these are partial CORs, to be appended with sera etc conditioning on the marker_set
 CORs = c(
   "D31toM6_nextgen_mock", 
   "D31toM12_nextgen_mock")
@@ -206,6 +207,30 @@ for (i in 1:len(CORs)) { #
 } 
 ```
 
+# Multivariate Cox models
+
+```{r, echo=FALSE, results='asis'}
+CORs2 = c(
+  "D31toM6_nextgen_mock_sera", 
+  "D31toM12_nextgen_mock_sera")
+
+for (i in 1:len(CORs2)) { 
+  if (!is.null(config$multivariate_assays_2) | !is.null(config::get(config = CORs2[i])$multivariate_assays_2)) {
+    cat ("## ", CORs[i], "\n\n")
+    
+    for (j in 1:2) {
+      fname.suffix <- c(
+        "InvVacc_",
+        "CtlVacc_"
+      )[j] %.% "pseudoneutid50_sera"
+  
+      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_multivariate_assays_2.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+      cat("\\newpage\n")
+    }
+  }
+}
+```
 
 
 

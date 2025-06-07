@@ -12,24 +12,26 @@ marker_sets='pseudoneutid50_sera'
 
 
 {
-  library(kyotil) # p.adj.perm, getFormattedSummary
-  library(marginalizedRisk)
-  library(tools) # toTitleCase
-  library(survey)
-  library(glue)
-  library(plotrix) # weighted.hist
-  library(parallel)
-  library(forestplot)
-  library(Hmisc) # wtd.quantile, cut2
-  library(xtable) # this is a dependency of kyotil
+  library("kyotil") # p.adj.perm, getFormattedSummary
+  quiet_library("marginalizedRisk")
+  quiet_library("tools") # toTitleCase
+  quiet_library("survey")
+  quiet_library("glue")
+  quiet_library("plotrix") # weighted.hist
+  quiet_library("parallel")
+  quiet_library("forestplot")
+  quiet_library("Hmisc") # wtd.quantile, cut2
+  quiet_library("xtable") # this is a dependency of kyotil
+  
   source(here::here("code", "params.R"))
   time.start = Sys.time()
-  myprint(study_name)
   myprint(verbose)
   
   # hack
-  source("~/copcor/R/cor_coxph_risk_tertile_incidence_curves_2arms.R")
-
+  # source("~/copcor/R/cor_coxph_coef_1.R")
+  
+  cat("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_coxph ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+  
   # path for figures and tables etc
   save.results.to = here::here("output")
   if (!dir.exists(save.results.to))
@@ -40,7 +42,7 @@ marker_sets='pseudoneutid50_sera'
   save.results.to = paste0(save.results.to, "/", COR, "/")
   if (!dir.exists(save.results.to))
     dir.create(save.results.to)
-  print(paste0("save.results.to equals ", save.results.to))
+  myprint(save.results.to)
   
   for (a in c("Day31"%.%assays)) {
     dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
@@ -172,8 +174,8 @@ for (trt in trts) {
       forestplot.markers=NULL, 
       for.title="",
       run.trichtom=TRUE,
-      cmp.label = cmp.label,
-      verbose = T
+      cmp.label,
+      verbose = F
     )
     
     # # put six curves in the same plot
@@ -204,7 +206,7 @@ for (trt in trts) {
 } # end trt loop
 
 
-# putting corcoxph tables from two arms in the same table
+# putting Cox tables from two arms in the same table
 for (marker_set in marker_sets) {
 
   load(glue("{save.results.to}/coxph_slopes_InvVacc_{marker_set}.Rdata"))
