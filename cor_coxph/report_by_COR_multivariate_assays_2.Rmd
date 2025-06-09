@@ -1,0 +1,6 @@
+\begin{table}[H]
+\caption{Multivariate Cox regression models with sets of two or three specified antibody markers at D01 or D31. Analyses adjust for the randomization strata and baseline risk score via inverse probability sampling weights (ccIAS-`r get_sample_type(marker_set)`). P-values for individual markers are included plus generalized Wald p-values for the sets of markers in a given model. }
+\begin{center}
+    \input{`r pathCoRoutput`/CoR_multivariate_assays_2_svycoxph_pretty_`r fname.suffix`}\\
+\end{center}
+\end{table}

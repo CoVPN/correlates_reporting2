@@ -28,6 +28,16 @@ abmarkers=assays[startsWith(assays,"bind") | startsWith(assays,"pseudo")]
 
 ```{r}
 myboxplot(Day31bindSpike_IgA_saliva_LB.1~Trt, subset(dat_proc, ph2.D31_7==1))
+myboxplot(Day31bindSpike_IgA_sera_LB.1~Trt, subset(dat_proc, ph2.D31_7==1))
+myboxplot(Day31bindSpike_IgG_sera_LB.1~Trt, subset(dat_proc, ph2.D31_7==1))
 
-
+# tune distribution
+dat_cpy = dat_proc
+set.seed(0)
+kp=runif(nrow(dat_cpy))>0.4
+dat_cpy$Trt = ifelse(kp, dat_proc$Trt, 1-dat_proc$Trt)
+myboxplot(Day31bindSpike_IgA_saliva_LB.1~Trt, subset(dat_cpy, ph2.D31_7==1))
+quantile(subset(dat_cpy, select=Day31bindSpike_IgA_saliva_LB.1), c(1/3, 2/3), na.rm=T)
+quantile(subset(dat_cpy, Trt==1, Day31bindSpike_IgA_saliva_LB.1), c(1/3, 2/3), na.rm=T)
+quantile(subset(dat_cpy, Trt==0, Day31bindSpike_IgA_saliva_LB.1), c(1/3, 2/3), na.rm=T)
 ```

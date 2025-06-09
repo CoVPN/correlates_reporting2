@@ -181,8 +181,8 @@ covid_corr_pairplots_for_verification <- function(plot_dat, ## data for plotting
              size = corr_size,
              seed = seed,
              file_name = corr_file_name,
-             strata = subdat[, strata],
-             weight = subdat[, weight]
+             strata = plot_dat[, strata],
+             weight = plot_dat[, weight]
         )
     ),
     lower = list(
@@ -300,8 +300,8 @@ covid_corr_pairplots_by_time <- function(plot_dat, ## data for plotting
         wrap(ggally_cor_resample,
              stars = FALSE,
              size = corr_size,
-             strata = subdat[, strata],
-             weight = subdat[, weight]
+             strata = plot_dat[, strata],
+             weight = plot_dat[, weight]
         )
     ),
     lower = list(
@@ -497,6 +497,7 @@ covid_corr_rcdf_facets <- function(plot_dat,
 #' @param axis_size: scalar: font size of the axis labels.
 #' @param axis_titles: string vector: axis titles for the panels.
 #' @param axis_title_size: scalar: font size of the axis title.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
 #' @param arrange_nrow: integer: number of rows to arrange the panels.
 #' @param arrange_ncol: integer: number of columns to arrange the panels.
 #' @param height: scalar: plot height.
@@ -514,7 +515,11 @@ covid_corr_rcdf <- function(plot_dat,
                               "#1749FF", "#D92321", "#0AB7C9",
                               "#FF6F1B", "#810094", "#378252",
                               "#FF5EBF", "#3700A5", "#8F8F8F",
-                              "#787873"
+                              "#787873", "#FFC20A", "#009E73",
+                              "#E69F00", "#56B4E9", "#CC79A7",
+                              "#F0E442", "#999933", "#D55E00",
+                              "#0072B2", "#A65628", "#DC267F",
+                              "#117733"
                             ),
                             xlab,
                             lwd = 1,
@@ -524,62 +529,66 @@ covid_corr_rcdf <- function(plot_dat,
                             plot_title_size = 14,
                             legend_position = "right",
                             legend_size = 14,
+                            legend_nrow = 10,
                             axis_title_size = 16,
                             axis_size = 16,
+                            label_format = "log10",
                             height = 5,
                             width = 8,
                             units = "in",
                             filename) {
-  plot_dat <- plot_dat[!is.na(plot_dat[, color]), ]
+  plot_dat <- plot_dat[!is.na(plot_dat[[color]]), ]
+  plot_dat[[x]] <- as.numeric(as.character(plot_dat[[x]]))
+  plot_dat[[weight]] <- as.numeric(as.character(plot_dat[[weight]]))
   if (!is.null(lty)) {
+    plot_dat[[lty]] <- as.factor(plot_dat[[lty]])
     rcdf_dat <- plot_dat[, unique(c(x, lty, weight, color))] %>%
-      split(., list(.[, lty], .[, color])) %>%
+      split(., list(.[[lty]], .[[color]])) %>%
       lapply(function(subdat) {
         subdat <- subdat[complete.cases(subdat), ]
-        if (nrow(subdat) == 0) return(NULL) else {
-          ecdf_fct <- with(subdat, spatstat.geom::ewcdf(subdat[, x],
-                                                        subdat[, weight]))
-          rcdf_mat <- data.frame(x = seq(xlim[1], xlim[2], length.out = 500),
-                                 lty = rep(subdat[1, lty], 500),
-                                 color = rep(subdat[1, color], 500))
-          rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
-          names(rcdf_mat) <- c(x, lty, color, "rcdf")
-          return(rcdf_mat)
-        }
+        if (nrow(subdat) == 0) return(NULL)
+        ecdf_fct <- spatstat.geom::ewcdf(subdat[[x]], weights = subdat[[weight]])
+        rcdf_mat <- data.frame(
+          x = seq(xlim[1], xlim[2], length.out = 500),
+          lty = rep(subdat[[lty]][1], 500),
+          color = rep(subdat[[color]][1], 500)
+        )
+        rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
+        names(rcdf_mat) <- c(x, lty, color, "rcdf")
+        return(rcdf_mat)
       }) %>% bind_rows()
   } else {
     rcdf_dat <- plot_dat[, unique(c(x, weight, color))] %>%
-      split(., list(.[, color])) %>%
+      split(., list(.[[color]])) %>%
       lapply(function(subdat) {
         subdat <- subdat[complete.cases(subdat), ]
-        if (nrow(subdat) == 0) return(NULL) else {
-          ecdf_fct <- with(subdat, spatstat.geom::ewcdf(subdat[, x],
-                                                        subdat[, weight]))
-          rcdf_mat <- data.frame(x = seq(xlim[1], xlim[2], length.out = 500),
-                                 color = rep(subdat[1, color], 500))
-          rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
-          names(rcdf_mat) <- c(x, color, "rcdf")
-          return(rcdf_mat)
-        }
+        if (nrow(subdat) == 0) return(NULL)
+        ecdf_fct <- spatstat.geom::ewcdf(subdat[[x]], weights = subdat[[weight]])
+        rcdf_mat <- data.frame(
+          x = seq(xlim[1], xlim[2], length.out = 500),
+          color = rep(subdat[[color]][1], 500)
+        )
+        rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
+        names(rcdf_mat) <- c(x, color, "rcdf")
+        return(rcdf_mat)
       }) %>% bind_rows()
   }
 
-  output_plot <- ggplot(
-    rcdf_dat,
-    aes_string(
-      x = x, y = "rcdf", color = color, lty = lty
-    )
-  ) +
-    geom_step(lwd = lwd) +
+  scale_label <- switch(label_format,
+                        "log10" = scales::label_math(10^.x),
+                        "percent" = function(x) {
+                          paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                        })
+
+  output_plot <- ggplot(rcdf_dat, aes_string(x = x, y = "rcdf", color = color, lty = lty)) +
+    geom_step(linewidth = lwd) +
     theme_pubr() +
-    scale_x_continuous(
-      limits = xlim, labels = label_math(10^.x),
-      breaks = xbreaks
-    ) +
+    scale_x_continuous(limits = xlim, labels = scale_label, breaks = xbreaks) +
     scale_color_manual(values = palette) +
     ylab("Reverse ECDF") +
     xlab(xlab) +
     ggtitle(plot_title) +
+    guides(color = guide_legend(nrow = legend_nrow, byrow = TRUE)) +
     theme(
       plot.title = element_text(hjust = 0.5, size = plot_title_size),
       legend.position = legend_position,
@@ -591,11 +600,161 @@ covid_corr_rcdf <- function(plot_dat,
       axis.text = element_text(size = axis_size)
     )
 
+  ggsave(filename = filename, plot = output_plot, width = width, height = height, units = units)
+}
+
+# adhoc version for nextgen: 
+covid_corr_rcdf_facet_adhoc <- function(plot_dat,
+                                        x,
+                                        color,
+                                        lty = NULL,
+                                        facet_by = NULL,
+                                        weight,
+                                        palette = c(
+                                          "#1749FF", "#D92321", "#0AB7C9",
+                                          "#FF6F1B", "#810094", "#378252",
+                                          "#FF5EBF", "#3700A5", "#8F8F8F",
+                                          "#787873", "#FFC20A", "#009E73",
+                                          "#E69F00", "#56B4E9", "#CC79A7",
+                                          "#F0E442", "#999933", "#D55E00",
+                                          "#0072B2", "#A65628", "#DC267F",
+                                          "#117733"
+                                        ),
+                                        xlab,
+                                        lwd = 1,
+                                        xlim = c(-2, 8),
+                                        xbreaks = 1,
+                                        panel_titles = "",
+                                        panel_title_size = 6,
+                                        legend_position = "right",
+                                        legend,
+                                        legend_size = 5,
+                                        legend_nrow = 10,
+                                        axis_title_size = 6,
+                                        axis_size = 16,
+                                        overall_title = NULL,
+                                        label_format = "log10",
+                                        units = "in",
+                                        arrange_nrow =
+                                          ceiling(length(unique(plot_dat[,facet_by])) / 2),
+                                        arrange_ncol = 2,
+                                        height = 3 * arrange_nrow + 0.5,
+                                        width = 3 * arrange_ncol,
+                                        filename) {
+  
+  plot_dat <- plot_dat[!is.na(plot_dat[[color]]), ]
+  plot_dat[[x]] <- as.numeric(as.character(plot_dat[[x]]))
+  plot_dat[[weight]] <- as.numeric(as.character(plot_dat[[weight]]))
+  
+  if (!is.null(facet_by)) {
+    plot_dat[[facet_by]] <- factor(plot_dat[[facet_by]])
+  }
+  
+  if (!is.null(lty)) {
+    plot_dat[[lty]] <- as.factor(plot_dat[[lty]])
+    rcdf_dat <- plot_dat[, unique(c(x, lty, weight, color, facet_by))] %>%
+      split(., list(.[[lty]], .[[color]], .[[facet_by]])) %>%
+      lapply(function(subdat) {
+        subdat <- subdat[complete.cases(subdat), ]
+        if (nrow(subdat) == 0) return(NULL)
+        ecdf_fct <- spatstat.geom::ewcdf(subdat[[x]], weights = subdat[[weight]])
+        rcdf_mat <- data.frame(
+          x = seq(xlim[1], xlim[2], length.out = 500),
+          lty = rep(subdat[[lty]][1], 500),
+          color = rep(subdat[[color]][1], 500),
+          facet_by = rep(subdat[[facet_by]][1], 500)
+        )
+        rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
+        names(rcdf_mat) <- c(x, lty, color, facet_by, "rcdf")
+        return(rcdf_mat)
+      }) %>% bind_rows()
+  } else {
+    rcdf_dat <- plot_dat[, unique(c(x, weight, color, facet_by))] %>%
+      split(., list(.[[color]], .[[facet_by]])) %>%
+      lapply(function(subdat) {
+        subdat <- subdat[complete.cases(subdat), ]
+        if (nrow(subdat) == 0) return(NULL)
+        ecdf_fct <- spatstat.geom::ewcdf(subdat[[x]], weights = subdat[[weight]])
+        rcdf_mat <- data.frame(
+          x = seq(xlim[1], xlim[2], length.out = 500),
+          color = rep(subdat[[color]][1], 500),
+          facet_by = rep(subdat[[facet_by]][1], 500)
+        )
+        rcdf_mat$rcdf <- 1 - ecdf_fct(rcdf_mat$x)
+        names(rcdf_mat) <- c(x, color, facet_by, "rcdf")
+        return(rcdf_mat)
+      }) %>% bind_rows()
+  }
+  
+  scale_label <- switch(label_format,
+                        "log10" = scales::label_math(10^.x),
+                        "percent" = function(x) {
+                          paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                        })
+  
+  rcdf_list <- vector("list", length(unique(plot_dat[, facet_by])))
+  
+  facet_levels <- unique(rcdf_dat[[facet_by]])
+  for (aa in seq_along(facet_levels)) {
+    rcdf_list[[aa]] <- ggplot(
+      subset(rcdf_dat, rcdf_dat[[facet_by]] == facet_levels[aa]),
+      aes_string(x = x, y = "rcdf", color = color, lty = lty)
+    ) +
+      geom_step(lwd = lwd) +
+      theme_pubr(legend = "none") +
+      ylab("Reverse ECDF") +
+      xlab(xlab) +
+      scale_x_continuous(
+        labels = label_math(10^.x), limits = xlim,
+        breaks = seq(xlim[1], xlim[2], by = xbreaks)
+      ) +
+      scale_color_manual(
+        values = palette,
+        labels = legend
+      ) +
+      ggtitle(panel_titles[aa]) +
+      guides(color = guide_legend(nrow = legend_nrow, byrow = TRUE)) +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = panel_title_size),
+        legend.title = element_blank(),
+        legend.text = element_text(size = legend_size, face = "bold"),
+        panel.grid.minor.y = element_line(),
+        panel.grid.major.y = element_line(),
+        axis.title = element_text(size = axis_title_size),
+        axis.text = element_text(size = axis_size)
+      )
+  }
+  
+  if (is.null(facet_by)) {
+    rcdf_list <- list(
+      ggplot(rcdf_dat, aes_string(x = x, y = "rcdf", color = color, lty = lty)) +
+        geom_step(lwd = lwd) +
+        theme_pubr(legend = legend_position) + # <- Adjust here
+        ylab("Reverse ECDF") + xlab(xlab)
+    )
+  }
+  
+  combined_plot <- ggarrange(
+    plotlist = rcdf_list, ncol = arrange_ncol, nrow = arrange_nrow,
+    common.legend = TRUE, legend = "bottom",
+    align = "h"
+  )
+  
+  output_plot <- if (!is.null(overall_title)) {
+    annotate_figure(
+      combined_plot,
+      top = text_grob(overall_title, face = "bold", size = 8, hjust = 0.5)
+    )
+  } else {
+    combined_plot
+  }
+  
   ggsave(
     filename = filename, plot = output_plot, width = width,
     height = height, units = units
   )
 }
+
 
 ###############################################################################
 
@@ -772,6 +931,8 @@ covid_corr_scatter_facets <- function(plot_dat,
 #' @param axis_size: scalar: font size of the axis labels.
 #' @param axis_titles_y: string vector: y-axis titles for the panels.
 #' @param axis_title_size: scalar: font size of the axis title.
+#' @param label_format: x-axis label shown like 10^-2 or 0.01%, options are "log10" or "percent"
+#' @param add_violin: violin option, default is F
 #' @param arrange_nrow: integer: number of rows to arrange the panels.
 #' @param arrange_ncol: integer: number of columns to arrange the panels.
 #' @param panel_titles: string vector: subtitles of each panel.
@@ -827,10 +988,15 @@ covid_corr_boxplot_facets <- function(plot_dat,
                                       height = 3 * arrange_nrow + 0.5,
                                       width = 3 * arrange_ncol,
                                       units = "in",
+                                      label_format = "log10",
+                                      add_violin = FALSE,
                                       filename) {
   plot_dat <- plot_dat[!is.na(plot_dat[, x]), ]
+  plot_dat[[x]] <- as.factor(plot_dat[[x]])
+  plot_dat[[facet_by]] <- as.factor(plot_dat[[facet_by]])
   # make a subset of data with 30 sample points for the jitter in each subgroup
   # defined by Trt:Bserostatus
+  xlab_use_letters <- (length(unique(plot_dat[[x]])) > 2)
   if (xlab_use_letters) {
     legend <- paste0(
       LETTERS[1:nlevels(plot_dat[, x])],
@@ -852,6 +1018,13 @@ covid_corr_boxplot_facets <- function(plot_dat,
       }
     }) %>%
     bind_rows()
+  
+  scale_label <- switch(label_format,
+                        "log10" = scales::label_math(10^.x),
+                        "percent" = function(x) {
+                          paste0(format(10^x, digits = 3, trim = TRUE, scientific = FALSE, drop0trailing = TRUE), "%")
+                        }
+  )
 
   boxplot_list <- vector("list", length(unique(plot_dat[, facet_by])))
   for (aa in 1:length(unique(plot_dat[, facet_by]))) {
@@ -859,8 +1032,15 @@ covid_corr_boxplot_facets <- function(plot_dat,
       subset(plot_dat, plot_dat[, facet_by] ==
         unique(plot_dat[, facet_by])[aa]),
       aes_string(x = x, y = y, color = color)
-      ) +
-      geom_jitter(
+      )
+    
+    # Optionally add violin layer
+    if (add_violin) {
+      boxplot_list[[aa]] <- boxplot_list[[aa]] +
+        geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE)
+    }
+    
+    boxplot_list[[aa]] <- boxplot_list[[aa]] + geom_jitter(
         data = subset(
           boxplot_jitter_points,
           boxplot_jitter_points[, facet_by] == unique(boxplot_jitter_points[, facet_by])[aa]),
@@ -873,17 +1053,17 @@ covid_corr_boxplot_facets <- function(plot_dat,
         alpha = "none", fill = "none",
         color = guide_legend(nrow = legend_nrow, byrow = TRUE)
       ) +
-      scale_x_discrete(labels = xlabels) +
+      scale_x_discrete(labels = gsub(" ", "\n", xlabels)) +
       scale_y_continuous(
-        limits = ylim[aa, ], labels = label_math(10^.x),
-        breaks = seq(ylim[aa, 1], ylim[aa, 2], by = ybreaks)
+        limits = ylim[aa, ], labels = scale_label,
+        breaks = seq(floor(ylim[aa, 1]), ceiling(ylim[aa, 2]), by = ybreaks)
       ) +
       theme_pubr(legend = "none") +
       ylab(axis_titles_y[aa]) +
       xlab("") +
       scale_fill_manual(values = palette) +
       scale_color_manual(values = palette, labels = legend) +
-      ggtitle(panel_titles[aa]) +
+      ggtitle(paste0("(", LETTERS[aa], ") ", panel_titles[aa])) +
       theme(
         plot.title = element_text(hjust = 0.5, size = panel_title_size),
         panel.border = element_rect(fill = NA),
@@ -921,6 +1101,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
       }
     }
   }
+  
   output_plot <- ggarrange(
     plotlist = boxplot_list, ncol = arrange_ncol,
     nrow = arrange_nrow, common.legend = TRUE,

@@ -1,10 +1,16 @@
 # primary_assays: optional. 
 #       If not defined, multitesting adjustment is over all assays. If defined, multitesting adjustment is only over this subset. If this set is empty, then no multitesting adjustment is done
 
-# multivariate_assays and additional_models are optional. 
-#       The difference between the two is that in multivariate_assays for each formula, two models are fit, once scaled and once non-scaled 
+# multivariate_assays, multivariate_assays2, and additional_models are optional. 
+#       The difference between multivariate_assays and additional_models is that in multivariate_assays for each formula, two models are fit, once scaled and once non-scaled 
 #           and that in multivariate_assays, a generalized wald test p value is computed over all markers
 #       another difference is that covariates is automatically adjusted in multivariate but not in additional
+
+# multivariate_assays2 is a new addition on 6/7. Changes to how multivariate_assays: 
+#       only one model is fit (if scale is needed, it should be in the formula)
+#       timepoint should be part of formula
+#       if not 10 fold, it should changed in formula
+#       all model results go in one table
 
 # interaction: optional. 
 #       For each interaction model, a regression coefficient table and two marginalized risk curves plots with bootstrap are made, one with marker a on the x axis and evaluated at three levels of marker b,
@@ -30,6 +36,7 @@ default: &default
 
 
 
+# for sanofi stage 1 and stage 2 trials
 # not extending ows trial b/c don't want Bserostatus defined, which affects subset in _common.R
 vat08_combined: &vat08_combined
   data_cleaned: /trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250417.csv
@@ -1626,7 +1633,7 @@ D43D91:
 # NextGen Mock
 
 nextgen_mock: &nextgen_mock
-  data_cleaned: /trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20250521.csv
+  data_cleaned: /trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20250605.csv
   sampling_scheme: case_cohort
   two_marker_timepoints: no
   timepoints: [31]
@@ -1634,28 +1641,59 @@ nextgen_mock: &nextgen_mock
   time_labels: [Day 01, Day 31, D31 fold-rise over D01]
   study_name: NextGen_Mock
   assay_metadata: assay_metadata/nextgen_mock_assay_metadata.csv
-  covariates: ~.+ HighRiskInd
+  covariates: ~.+ factor(demo.stratum)
   low_efficacy: no
   num_boot_replicates: 100
   num_perm_replicates: 100
 
 
-D31toM12_nextgen_mock:
+D31toM12_nextgen_mock_sera:
   ph1: ph1.D31_7
-  ph2: ph2.D31_7
-  wt: wt.D31_7
+  ph2: ph2.sera.D31_7
+  wt:  wt.sera.D31_7
   WtStratum: Wstratum
   EventIndPrimary: COVIDIndD31_7toM12
   EventTimePrimary: COVIDTimeD31toM12
   Earlyendpoint: 
-  covariates: ~.+ HighRiskInd
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+  multivariate_assays_2: [
+    ~.+ Day31pseudoneutid50_sera + Bpseudoneutid50_sera, 
+    ~.+ Day31pseudoneutid50_sera + Day31bindSpike_IgA_sera 
+  ]
+
+D31toM12_nextgen_mock_saliva:
+  ph1: ph1.D31_7
+  ph2: ph2.saliva.D31_7
+  wt:  wt.saliva.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD31_7toM12
+  EventTimePrimary: COVIDTimeD31toM12
+  Earlyendpoint: 
   tpeak: 31
   tpeaklag: 7
   tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
-D31toM12_nextgen_mock_tcell:
+D31toM12_nextgen_mock_nasal:
+  ph1: ph1.D31_7
+  ph2: ph2.nasal.D31_7
+  wt:  wt.nasal.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD31_7toM12
+  EventTimePrimary: COVIDTimeD31toM12
+  Earlyendpoint: 
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+D31toM12_nextgen_mock_PBMC:
   ph1: ph1.AB.D31_7
   ph2: ph2.AB.D31_7
   wt:  wt.AB.D31_7
@@ -1663,29 +1701,58 @@ D31toM12_nextgen_mock_tcell:
   EventIndPrimary:  COVIDIndD31_7toM12
   EventTimePrimary: COVIDTimeD31toM12
   Earlyendpoint: 
-  covariates: ~.+ HighRiskInd
   tpeak: 31
   tpeaklag: 7
   tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+  multivariate_assays2: [
+    ~.+ Day31pseudoneutid50_sera + BT8_IFNg_OR_IL2_N_Index
+  ]
 
-D31toM6_nextgen_mock:
+D31toM6_nextgen_mock_sera:
   ph1: ph1.D31_7
-  ph2: ph2.D31_7
-  wt: wt.D31_7
+  ph2: ph2.sera.D31_7
+  wt:  wt.sera.D31_7
   WtStratum: Wstratum
   EventIndPrimary: COVIDIndD31_7toM6
   EventTimePrimary: COVIDTimeD31toM6
   Earlyendpoint: 
-  covariates: ~.+ HighRiskInd
   tpeak: 31
   tpeaklag: 7
   tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
-D31toM6_nextgen_mock_tcell:
+D31toM6_nextgen_mock_saliva:
+  ph1: ph1.D31_7
+  ph2: ph2.saliva.D31_7
+  wt:  wt.saliva.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD31_7toM6
+  EventTimePrimary: COVIDTimeD31toM6
+  Earlyendpoint: 
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+D31toM6_nextgen_mock_nasal:
+  ph1: ph1.D31_7
+  ph2: ph2.nasal.D31_7
+  wt:  wt.nasal.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD31_7toM6
+  EventTimePrimary: COVIDTimeD31toM6
+  Earlyendpoint: 
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+D31toM6_nextgen_mock_PBMC:
   ph1: ph1.AB.D31_7
   ph2: ph2.AB.D31_7
   wt:  wt.AB.D31_7
@@ -1693,7 +1760,6 @@ D31toM6_nextgen_mock_tcell:
   EventIndPrimary:  COVIDIndD31_7toM6
   EventTimePrimary: COVIDTimeD31toM6
   Earlyendpoint: 
-  covariates: ~.+ HighRiskInd
   tpeak: 31
   tpeaklag: 7
   tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
@@ -1718,8 +1784,7 @@ covail: &covail
   covariates: ~.+ FOIstandardized + standardized_risk_score
   low_efficacy: no
   num_boot_replicates: 1000
-  num_perm_replicates: 10
-  primary_assays: []
+  num_perm_replicates: 5000
 
 # a copy of covail, used to drive Makefile
 covail_sanofi: &covail_sanofi

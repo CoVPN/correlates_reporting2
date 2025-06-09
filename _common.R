@@ -1,10 +1,11 @@
 {
-library(methods)
-library(dplyr)
-library(kyotil)
-library(copcor)
-library(marginalizedRisk)
-library(survival)
+library("kyotil")
+quiet_library("methods")
+quiet_library("dplyr")
+quiet_library("glue")
+quiet_library("copcor")
+quiet_library("marginalizedRisk")
+quiet_library("survival")
 
 # use local copies of some copcor files as a quick workaround to renv
 # if (file.exists("~/copcor/R/cor_coxph_coef_1.R")) source("~/copcor/R/cor_coxph_coef_1.R")
@@ -23,7 +24,8 @@ if(!exists("verbose")) verbose=0
 if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
 if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
 
-    
+cat("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running _common.R ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+
 # COR defines the analysis to be done, e.g. D14
 if(!exists("COR")) {
     if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
@@ -75,6 +77,18 @@ if (is.null(config$threshold_grid_size)) {
 
 if (!is.null(config$assay_metadata)) {
   
+  # a shared function for nextgen project
+  # returns PBMC, sera, saliva, nasal etc
+  get_sample_type=function(panel) {
+    if (panel=="PBMC") {
+      "PBMC"
+    } else if (panel=="bindN") {
+      "bindN"
+    } else {
+      last(strsplit(panel, "_")[[1]])
+    }
+  }
+  
   # created named lists for assay metadata to easier access, e.g. assay_labels_short["bindSpike"]
   assay_metadata = read.csv(paste0(dirname(attr(config,"file")),"/",config$assay_metadata))
   
@@ -94,11 +108,13 @@ if (!is.null(config$assay_metadata)) {
     
   } else if (TRIAL=="covail_tcell") {
     # add S1 and S2 to assay_metadata
-    tmp=assay_metadata$assay[8:nrow(assay_metadata)]
+    tmp = assay_metadata$assay
+    tmp = tmp[startsWith(tmp, "cd")]
     N=tmp[endsWith(tmp, ".N") & startsWith(tmp, "c")]
     S=tmp[endsWith(tmp, ".S") & startsWith(tmp, "c")]
     # sort S by BA.4.5 and N
     S = c(S[endsWith(S,"_COV2.CON.S")], S[endsWith(S,"_BA.4.5.S")])
+    FS=tmp[grepl("_FS", tmp)]
     
     tmp = subset(assay_metadata, assay %in% S)
     S1 = paste0(tmp$assay, "1"); tmp1 = tmp; tmp1$assay = S1; tmp1$assay_label_short = sub(".S \\(\\%\\)", ".S1 (%)", tmp1$assay_label_short); tmp1$assay_label = paste0(tmp1$assay_label, "1"); tmp1$panel="S1"
@@ -131,8 +147,14 @@ if (!is.null(config$assay_metadata)) {
     } else if (COR == "D57azd1222_stage2_delta_bAb" | COR == "D57azd1222_stage2_severe_bAb") {
       assay_metadata = subset(assay_metadata, panel=='bindSpike')
       
-    } else if (endsWith(COR, "nextgen_mock")) {
-      assay_metadata = subset(assay_metadata, !panel %in% c("tcell") )
+    } else if (endsWith(COR, "nextgen_mock_sera")) {
+      assay_metadata = subset(assay_metadata, endsWith(panel, "_sera"))
+      
+    } else if (endsWith(COR, "nextgen_mock_saliva")) {
+      assay_metadata = subset(assay_metadata, endsWith(panel, "_saliva"))
+      
+    } else if (endsWith(COR, "nextgen_mock_nasal")) {
+      assay_metadata = subset(assay_metadata, endsWith(panel, "_nasal"))
       
     } else if (endsWith(COR, "nextgen_mock_tcell")) {
       assay_metadata = subset(assay_metadata, panel %in% c("tcell") )
@@ -486,7 +508,6 @@ include_bindN <- !study_name %in% c("PREVENT19","AZD1222","VAT08m")
 
 # COR-related config
 if (exists("COR")) {
-    myprint(COR)
     # making sure we are inadvertently using the wrong COR
     if(study_name=="ENSEMBLE") {
         if (contain(TRIAL, "EUA")) {
@@ -579,7 +600,12 @@ if (TRIAL=="covail_tcell") {
   pos1 = sapply(tmp%.%"_resp", function(x) sum(dat.tmp[[x]] * dat.tmp$ph2.D15.tcell * dat.tmp$wt.D15.tcell, na.rm=T)/sum(dat.tmp$ph1.D15.tcell))
   exploratory = tmp[pos1>=0.1]
   
-  exploratory = sort(setdiff(exploratory, c(primary, secondary)))
+  # add FS markers
+  FS_vars = c("B"%.%FS, "Day15"%.%FS)
+  exploratory = c(exploratory, FS_vars)
+  
+  # Day15cd8_FS_Wuhan.N is excluded due to low dynamic range-3rd quartile is 0.0007
+  exploratory = sort(setdiff(exploratory, c(primary, secondary, "Day15cd8_FS_Wuhan.N", "Bcd8_FS_Wuhan.N")))
 }
 
 
@@ -677,8 +703,17 @@ if (exists("COR")) {
       if(!is.null(config.cor$covariates)) {
         config$covariates = config.cor$covariates
       }
+      
       form.0 = update (form.s, as.formula(config$covariates))
       print(form.0)
+      
+      # multivariate_assays_2 may come from config or config.cor, the latter, if exists, overwrites the former
+      if(!is.null(config.cor$multivariate_assays_2)) {
+        config$multivariate_assays_2 = config.cor$multivariate_assays_2
+      }
+      if( is.null(config.cor$multivariate_assays_2) & !is.null(config$multivariate_assays_2)) {
+        config.cor$multivariate_assays_2 = config$multivariate_assays_2
+      }
     }
     
     ###########################################################
@@ -885,6 +920,7 @@ if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
   
 } else if (TRIAL=="covail_tcell") {
   assays1 = subset(assay_metadata, panel=="tcell", assay, drop=T)
+  assays1 = setdiff(assays1, c("cd8_FS_Wuhan.N")) # these two cause trouble for getting marker cutpoints because the cutpoints are so small
   all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
   
 } else if (TRIAL=="janssen_partA_VL") {
@@ -908,12 +944,23 @@ if (!is.null(all.markers1)) {
   cat("set marker.cutpoints attribute\n")
   marker.cutpoints = list()
   for (a in all.markers1) {
-    # get cut points
+    # get cut points from the second group
     tmpname = names(table(dat_proc[[a%.%"cat"]]))[2]
     tmpname = substr(tmpname, 2, nchar(tmpname)-1)
     tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
-    tmpname = setdiff(tmpname,Inf) # if there are two categories, remove the second cut point, which is Inf
-    marker.cutpoints[[a]] <- tmpname
+    cp = setdiff(tmpname,c(Inf, -Inf)) # if there are two categories, remove the second cut point, which is Inf
+  
+    if (len(table(dat_proc[[a%.%"cat"]])) != len(cp)+1) {
+      # get cut points from the first group
+      tmpname = names(table(dat_proc[[a%.%"cat"]]))[1]
+      tmpname = substr(tmpname, 2, nchar(tmpname)-1)
+      tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
+      cp2 = setdiff(tmpname,c(Inf, -Inf)) # if there are two categories, remove the second cut point, which is Inf
+      cp=sort(unique(c(cp, cp2)))
+    }
+    
+    if (len(table(dat_proc[[a%.%"cat"]])) != len(cp)+1) stop(glue("fail to get cut points for {a}"))
+    marker.cutpoints[[a]] <- cp
   }
   attr(dat_proc, "marker.cutpoints")=marker.cutpoints
 }
@@ -1312,3 +1359,6 @@ ggsave_custom <- function(filename = default_name(plot),
   ggsave(filename = filename, height = height, width = width, ...)
 }
 }
+
+
+cat("\n\n\n")
