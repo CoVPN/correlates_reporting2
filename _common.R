@@ -569,7 +569,7 @@ if (!file.exists(path_to_data)) stop ("_common.R: dataset not available ========
 dat_proc <- read.csv(path_to_data)
 
 #
-if(config$sampling_scheme == 'case_cohort') stopifnot(!is.null(dat_proc$SubcohortInd))
+# if(config$sampling_scheme == 'case_cohort') stopifnot(!is.null(dat_proc$SubcohortInd))
 
 
 if (TRIAL=="covail_tcell") {

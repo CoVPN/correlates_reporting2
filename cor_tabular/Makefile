@@ -45,6 +45,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail))
 	Rscript code/make_table_all_covail.R D15to91
 	Rscript code/make_table_all_covail.R D92to181
 	Rscript code/make_table_all_covail.R D15to181
+	Rscript code/make_table_all_covail.R D15to91covail_tcell
+	Rscript code/make_table_all_covail.R D92to181covail_tcell
+	Rscript code/make_table_all_covail.R D15to181covail_tcell
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
 	Rscript code/make_table_all_VL.R D29VLvariant
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
