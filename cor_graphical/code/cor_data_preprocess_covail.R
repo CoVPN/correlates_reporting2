@@ -14,8 +14,16 @@ source(here::here("..", "_common.R"))
 source(here::here("code/cor_graphics_functions_covail.R"))
 #-----------------------------------------------
 
-times=c("B","Day15","Day29","Day91","Delta15overB")
-#times=c("BD1","BD29","DD1","DeltaBD29overBD1","DeltaDD1overBD1")
+#calculate Delta91overB
+dat_proc$Delta91overBpseudoneutid50_D614G <- log10(10^dat_proc$Day91pseudoneutid50_D614G/10^dat_proc$Bpseudoneutid50_D614G)
+dat_proc$Delta91overBpseudoneutid50_Delta <- log10(10^dat_proc$Day91pseudoneutid50_Delta/10^dat_proc$Bpseudoneutid50_Delta)
+dat_proc$Delta91overBpseudoneutid50_Beta <- log10(10^dat_proc$Day91pseudoneutid50_Beta/10^dat_proc$Bpseudoneutid50_Beta)
+dat_proc$Delta91overBpseudoneutid50_BA.1 <- log10(10^dat_proc$Day91pseudoneutid50_BA.1/10^dat_proc$Bpseudoneutid50_BA.1)
+dat_proc$Delta91overBpseudoneutid50_BA.4.BA.5 <- log10(10^dat_proc$Day91pseudoneutid50_BA.4.BA.5/10^dat_proc$Bpseudoneutid50_BA.4.BA.5)
+dat_proc$Delta91overBpseudoneutid50_MDW <- log10(10^dat_proc$Day91pseudoneutid50_MDW/10^dat_proc$Bpseudoneutid50_MDW)
+
+
+times=c("B","Day15","Day29","Day91","Delta15overB","Delta29overB","Delta91overB")
 
 
 #remove pseudoneutid50Duke_BA.2.12.1
@@ -25,14 +33,11 @@ uloqs=assay_metadata$uloq; names(uloqs)=assays
 pos.cutoffs=assay_metadata$pos.cutoff; names(pos.cutoffs)=assays
 loqs=assay_metadata$lloq; names(loqs)=assays
 
-#dat$EventIndPrimary=dat$EventIndOmicronBD29
-#dat$EventTimePrimary=dat$EventTimeOmicronBD29
-#dat.cp <- dat
 
 #dat.mock <- read.csv("/trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20240105.csv")
 
 #remove pseudoneutid50Duke_BA.2.12.1
-dat.cp <- dat.mock%>%
+dat.cp <- dat_proc%>%
   select(-contains(c('BA.2.12.1')))%>%
   mutate(TrtB_moderna=ifelse(!is.na(TrtB) & arm %in% c(1,2,4:6), TrtB, NA),
          TrtB_pfizer=ifelse(!is.na(TrtB) & arm %in% c(7:9,12,16,17), TrtB, NA))
@@ -63,9 +68,12 @@ dat <- dat.cp %>% select(Ptid,
                          stage,
                          naive,
                          Perprotocol,Immunemarkerset,ImmunemarkersetD92toD181,
-                         COVIDtimeD22toD91,COVIDIndD22toD91,COVIDtimeD92toD181,COVIDIndD92toD181,COVIDtimeD22toD181,COVIDIndD22toD181,COVIDtimeD22toend,COVIDIndD22toend,
+                         COVIDtimeD22toD91,COVIDIndD22toD91,COVIDtimeD92toD181,COVIDIndD92toD181,COVIDtimeD22toD181,COVIDIndD22toD181,
+                         #COVIDtimeD22toend,
+                         COVIDIndD22toend,
                          AsympInfectIndD15to29, AsympInfectIndD30to91,AsympInfectIndD15to91,AsympInfectIndD92to181,AsympInfectIndD182to271,AsympInfectIndD15to181,
                          ph1.D15, ph1.D92, wt.D15,
+                         FOIoriginal,
                          all_of(immuno_vars))
 
 # create case vs non-case indicators
@@ -100,7 +108,7 @@ for (tt in seq_along(times)) {
   dat.long.assay_value[, dat.long.assay_value.names[tt]] <- unlist(lapply(
     # B, Day15, Day29, Day91, Delta15overB
     dat_mock_col_names,
-
+    
     function(nn) {
       if (nn %in% colnames(dat)) {
         dat[, nn]
@@ -160,7 +168,7 @@ dat.longer.cor.subset <- dat.long.cor.subset %>%
 
 # define response rates
 resp <- getResponder(dat.cp, post_times = times[times %in% c("B","Day15")], 
-               assays=assays, pos.cutoffs = pos.cutoffs)
+                     assays=assays, pos.cutoffs = pos.cutoffs)
 
 resp_by_time_assay <- resp[, c("Ptid", colnames(resp)[grepl("Resp", colnames(resp))])] %>%
   tidyr::pivot_longer(!Ptid, names_to = "category", values_to = "response")
@@ -170,10 +178,10 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
   mutate(cohort_event = case_when(COVIDIndD22toD91==1 ~ "D22-D91 Cases",
                                   COVIDIndD92toD181==1 ~ "D92-D181 Cases",
                                   COVIDIndD22toD181==0 ~ "Non-Cases")
-         ) %>%
-    rbind(dat.longer.cor.subset %>%
-            mutate(cohort_event = case_when(COVIDIndD22toD181==1 ~ "D22-D181 Cases"))%>%
-            filter(cohort_event=="D22-D181 Cases"))%>%
+  ) %>%
+  rbind(dat.longer.cor.subset %>%
+          mutate(cohort_event = case_when(COVIDIndD22toD181==1 ~ "D22-D181 Cases"))%>%
+          filter(cohort_event=="D22-D181 Cases"))%>%
   mutate(cohort_event=factor(cohort_event,levels = c("Non-Cases","D22-D91 Cases","D92-D181 Cases","D22-D181 Cases")))
 
 
@@ -188,6 +196,7 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
          lbval2,
          lb,
          lb2,
+         FOIoriginal,
          cohort_event) %>%
   left_join(resp_by_time_assay, by=c("Ptid", "category"))%>%
   filter(time %in% c("B","Day15","Delta15overB"))
@@ -291,3 +300,37 @@ saveRDS(dat.longer.cor.subset.plot1.5, file = here::here("data_clean", "longer_c
 
 
 
+
+######## Manuscript #1
+
+#### for figures 1.1.3, non-case vs case, male vs female, 13 one-dose mRNA booster arms pooled (naive vs. non-naive), by B, Day 15, Delta15overB
+groupby_vars1.1.3=c("cohort_event", "naive", "Sex", "time", "assay")
+
+# define response rate
+dat.longer.cor.subset.plot1.1.3 <- get_desc_by_group(subset(dat.longer.cor.subset,dat.longer.cor.subset$TrtonedosemRNA==1), groupby_vars1.1.3)
+write.csv(dat.longer.cor.subset.plot1.1.3, file = here::here("data_clean", "longer_cor_data_plot1.1.3.csv"), row.names=F)
+saveRDS(dat.longer.cor.subset.plot1.1.3, file = here::here("data_clean", "longer_cor_data_plot1.1.3.rds"))
+
+
+######## Manuscript #2 - Sanofi brief communication to Clin Inf Dis
+
+#### supp figures 1, Violin box plots of the distribution of fore of infection (FOI) score of 
+#vaccine recipients by COVID-19 outcome status by individual vaccine and pooled over vaccine arms. 
+#Do not need boost-proximal/boost-distal cases just need all cases vs. non-cases.  
+
+dat.longer.cor.subset.plot2.1 <-dat.longer.cor.subset%>%
+  filter(stage==3,cohort_event %in% c("Non-Cases","D22-D181 Cases"))%>%
+  select(Ptid,arm,FOIoriginal,cohort_event)%>%
+  distinct()
+
+write.csv(dat.longer.cor.subset.plot2.1, file = here::here("data_clean", "longer_cor_data_plot2.1.csv"), row.names=F)
+saveRDS(dat.longer.cor.subset.plot2.1, file = here::here("data_clean", "longer_cor_data_plot2.1.rds"))
+
+
+#### for supp figures 9, 10, 11, non-case vs case, 3 Sanofi booster arms pooled, naive, by B, Day 15, Delta15overB
+groupby_vars2.2=c("cohort_event", "naive", "time", "assay")
+
+# define response rate
+dat.longer.cor.subset.plot2.2 <- get_desc_by_group(subset(dat.longer.cor.subset,dat.longer.cor.subset$stage==3), groupby_vars2.2)
+write.csv(dat.longer.cor.subset.plot2.2, file = here::here("data_clean", "longer_cor_data_plot2.2.csv"), row.names=F)
+saveRDS(dat.longer.cor.subset.plot2.2, file = here::here("data_clean", "longer_cor_data_plot2.2.rds"))

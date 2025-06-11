@@ -46,7 +46,7 @@ knitr::asis_output("\\AddToShipoutPictureFG{
 <!-- ``` -->
 
 
-# Disclaimers
+\textbf{Disclaimers}
 
 `r if (!is_ows_trial)'<!--'`
 
