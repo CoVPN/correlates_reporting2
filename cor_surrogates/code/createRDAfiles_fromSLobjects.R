@@ -184,3 +184,15 @@ if(study_name == "ENSEMBLE"){
   
   saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29.rds"))
 }
+
+
+if(study_name == "COVAIL"){
+  cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryIncludeNotMolecConfirmedD29", trt = "vaccine") %>%
+    mutate(varset = str_replace(file, "CVSLaucs_vacc_COVIDIndD22toD91_", ""),
+           varset = str_replace(varset, "varset_", ""),
+           varset = str_replace(varset, ".rds", ""),
+           varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
+    arrange(varsetNo)
+  
+  saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_COVIDIndD22toD91.rds"))
+}

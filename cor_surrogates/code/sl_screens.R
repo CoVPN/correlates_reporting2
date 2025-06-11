@@ -366,6 +366,15 @@ SL.ranger.yes <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), ca
 }
 
 
+# neural nets with size 2 and 5
+SL.nnet.2 <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), size = 2, ...) {
+  SL.nnet(Y = Y, X = X, newX = newX, family = family, obsWeights = obsWeights, size = size, ...)
+}
+SL.nnet.5 <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), size = 5, ...) {
+  SL.nnet(Y = Y, X = X, newX = newX, family = family, obsWeights = obsWeights, size = size, ...)
+}
+
+
 
 # ksvm with kernel = "rbfdot" or "polydot"
 SL.ksvm.rbfdot <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), kernel = "rbfdot", ...) {
@@ -378,6 +387,12 @@ SL.ksvm.polydot <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), 
 
 # Lasso with alpha 0 or 1
 SL.glmnet.0 <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), alpha = 0, ...) {
+  SL.glmnet(Y = Y, X = X, newX = newX, family = family, obsWeights = obsWeights, alpha = alpha, ...)
+}
+SL.glmnet.0.33 <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), alpha = 0.33, ...) {
+  SL.glmnet(Y = Y, X = X, newX = newX, family = family, obsWeights = obsWeights, alpha = alpha, ...)
+}
+SL.glmnet.0.67 <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), alpha = 0.67, ...) {
   SL.glmnet(Y = Y, X = X, newX = newX, family = family, obsWeights = obsWeights, alpha = alpha, ...)
 }
 SL.glmnet.1 <- function(Y, X, newX, family, obsWeights = rep(1, length(Y)), alpha = 1, ...) {
@@ -456,6 +471,14 @@ if (run_prod) {
                   #"SL.gam", "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars",
                   "SL.xgboost.4.no", #"SL.xgboost.2.no", "SL.xgboost.2.yes", "SL.xgboost.4.yes",
                   "SL.ranger.no") #, "SL.ranger.yes"  
+  } else if (Sys.getenv("TRIAL") == "covail_tcell"){
+    methods1 <- c("SL.mean", "SL.glm", 
+                  "SL.bayesglm", 
+                  "SL.glmnet.0", "SL.glmnet.0.33", "SL.glmnet.0.67", "SL.glmnet.1", 
+                  #"SL.xgboost.2.no", 
+                  "SL.xgboost.4.no", 
+                  #"SL.xgboost.2.yes", "SL.xgboost.4.yes",
+                  "SL.ranger.no", "SL.ranger.yes") 
   }
 
   # learners in the method2 are learners that can have screens
@@ -466,6 +489,14 @@ if (run_prod) {
   } else if(Sys.getenv("TRIAL") %in% c("janssen_pooled_partA", "janssen_la_partA")){
     methods2 <- c("SL.glm", "SL.bayesglm", "SL.glm.interaction", "SL.gam",
                   "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars") 
+  } else if(Sys.getenv("TRIAL") %in% c("covail_tcell")){
+    methods2 <- c("SL.glm", 
+                  "SL.bayesglm", 
+                  "SL.glm.interaction", "SL.gam",
+                  #"SL.ksvm.rbfdot", "SL.ksvm.polydot", 
+                  "SL.nnet.2", "SL.nnet.5"
+                  #"SL.polymars"
+                  ) 
   }
 } else {
   # NOTE: smaller library for ~faster~ demo run

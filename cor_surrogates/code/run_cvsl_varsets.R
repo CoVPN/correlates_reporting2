@@ -1,6 +1,7 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 # Sys.setenv(TRIAL = "janssen_pooled_partA")
+# Sys.setenv(TRIAL = "covail_tcell")
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -19,6 +20,9 @@ job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 # common setup for CV super learners and variable importance
 source(here::here("code", "cor_surrogates_setup.R"))
 
+
+for (job_id in 1:2) { # DO THIS ONLY FOR COVAIL
+  
 # grab the current variable set based on the job id
 this_var_set <- varset_matrix[job_id, ]
 cat("\n Running", varset_names[job_id], "variable set \n")
@@ -123,3 +127,5 @@ if (job_id == 1) {
        V_outer, varset_names, individualMarkers, SL_library, file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 }
 cat("\n Finished ", varset_names[job_id], "variable set \n") 
+
+} # DO THIS ONLY FOR COVAIL
