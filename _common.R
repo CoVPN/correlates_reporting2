@@ -1,5 +1,7 @@
 {
 library("kyotil")
+quiet_library <- function(pkg) suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+len <- function(x) length(x)
 quiet_library("methods")
 quiet_library("dplyr")
 quiet_library("glue")
