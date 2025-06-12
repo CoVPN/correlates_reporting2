@@ -511,15 +511,15 @@
     },
     "copcor": {
       "Package": "copcor",
-      "Version": "2024.8-30",
+      "Version": "2025.6-1",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "CoVPN",
       "RemoteRepo": "copcor",
       "RemoteRef": "main",
-      "RemoteSha": "0fb5b0e4b050c83b49d35d6d9710eb5c48c754ad",
-      "Hash": "1782e9cb65a0acd7fb0a5462b8e6e677"
+      "RemoteSha": "ec7f6433c3e74bd46b463535bfb3b35b3346ce90",
+      "Hash": "398836f51e736368b963b580ff13e968"
     },
     "corrplot": {
       "Package": "corrplot",
@@ -1119,15 +1119,15 @@
     },
     "kyotil": {
       "Package": "kyotil",
-      "Version": "2024.12-18",
+      "Version": "2025.6-7",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "youyifong",
       "RemoteRepo": "kyotil",
       "RemoteRef": "master",
-      "RemoteSha": "2cd065caec9a1d229d35fbeb71634089b0d26288",
-      "Hash": "c49a880c54bd8634a37bae69e3e5d056"
+      "RemoteSha": "684eed5c1470bbafe4bdca5de895a8c36117f789",
+      "Hash": "95febccb7ef8e6410303dbf715ef8e07"
     },
     "labeling": {
       "Package": "labeling",
