@@ -118,6 +118,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
 else ifeq ($(TRIAL),$(filter $(TRIAL), covail_tcell))
 	Rscript code/cor_coxph_covail_tcell.R D15to91covail_tcell
 	Rscript code/cor_coxph_covail_tcell.R D15to181covail_tcell
+else ifeq ($(TRIAL),$(filter $(TRIAL), covail_frnt))
+	Rscript code/cor_coxph_covail_frnt.R D15to91covail_frnt
+	Rscript code/cor_coxph_covail_frnt.R D15to181covail_frnt
 endif
 
 collate:

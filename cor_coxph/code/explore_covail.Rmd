@@ -25,11 +25,12 @@ dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1)
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
-tmp=assay_metadata$assay[8:nrow(assay_metadata)]
-S1=tmp[!endsWith(tmp, ".N")]%.%"1"; S1
-S2=tmp[!endsWith(tmp, ".N")]%.%"2"; S2
-N=tmp[endsWith(tmp, "Wuhan.N")]; N
+S1=assays[!endsWith(assays, ".N")]%.%"1"; S1
+S2=assays[!endsWith(assays, ".N")]%.%"2"; S2
+N=assays[endsWith(assays, "Wuhan.N")]; N
 tcellvv=c(S1, S2, N)
+frnt50=assays[startsWith(assays, "frnt50")]; frnt50
+frnt80=assays[startsWith(assays, "frnt80")]; frnt80
 
 f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
 
@@ -88,8 +89,41 @@ mytable(dat_proc$treatment_assigned)
 ```
 
 ```{r missingness of FRNT data}
+# with(subset(dat_proc, ph1.D15.tcell==1), mytable(!is.na(Day15frnt50_D614G), ph2.D15.tcell))
+
 with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), !is.na(Day15cd4_154_BA.4.5.S1)))
-with(subset(dat_proc, ph1.D15.tcell==1), mytable(!is.na(Day15frnt50_D614G), ph2.D15.tcell))
+
+with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), arm))
+
+
+for (a in frnt50) {
+  print(a)
+  print(with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(get(glue("B{a}"))), !is.na(get(glue("Day15{a}"))), COVIDIndD22toD91                                                      )))
+}
+
+par(mfrow=c(2,2))
+for (a in frnt50) {
+  with(subset(dat_mapped, ph1.D15==1), corplot((get(glue("B{a}"))), (get(glue("Day15{a}")))                                                      , main=a))
+}
+
+mypairs(subset(dat_mapped, ph1.D15==1)[,glue("Day15{frnt50}")])
+
+for (a in frnt80) {
+  print(a)
+  print(with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(get(glue("B{a}"))), !is.na(get(glue("Day15{a}"))), COVIDIndD22toD91                                                      )))
+}
+
+par(mfrow=c(2,2))
+for (a in frnt80) {
+  with(subset(dat_mapped, ph1.D15==1), corplot((get(glue("B{a}"))), (get(glue("Day15{a}")))                                                      , main=a))
+}
+
+
+par(mfrow=c(2,2))
+for (a in frnt50) {
+  with(subset(dat_mapped, ph1.D15==1), corplot((get(glue("Day15{a}"))), (get(glue("Day15{sub('50','80',a)}")))                                                      , main=a))
+}
+
 ```
 
 
