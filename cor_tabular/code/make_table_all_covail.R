@@ -514,7 +514,10 @@ tab_assay <- lapply(1:Trtn, function(x, comp.i=c("Non-Cases", "Cases")){
               est=glm(mag_value~Case)$coefficients[2], 
               ci_l=unique(ifelse(class(try(confint(glm(mag_value~Case))))=="try-error", NA, confint(glm(mag_value~Case))[2,1])),
               ci_u=unique(ifelse(class(try(confint(glm(mag_value~Case))))=="try-error", NA, confint(glm(mag_value~Case))[2,2])),.groups="drop") %>% 
-    mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Non-Cases vs Cases") %>% 
+    mutate(comp="Non-Cases vs Cases", 
+	`Ratios of GMT/GMC`=ifelse(grepl("FS", mag_cat),
+	sprintf("%.2f\n(%.2f, %.2f)", est, ci_l, ci_u),
+	sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u))) %>% 
     inner_join(distinct(labels_all, mag_cat, Visit, Marker))
 
   
@@ -631,7 +634,10 @@ tab_assay_status <- lapply(1:Trtn, function(x, comp.i=c("Non-Cases", "Cases")){
               ci_l=unique(ifelse(class(try(confint(glm(mag_value~Case))))=="try-error", NA, confint(glm(mag_value~Case))[2,1])),
               ci_u=unique(ifelse(class(try(confint(glm(mag_value~Case))))=="try-error", NA, confint(glm(mag_value~Case))[2,2])),
               .groups="drop") %>% 
-    mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Non-Cases vs Cases") %>% 
+    mutate(comp="Non-Cases vs Cases",
+		`Ratios of GMT/GMC`=ifelse(grepl("FS", mag_cat),
+		sprintf("%.2f\n(%.2f, %.2f)", est, ci_l, ci_u),
+		sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u))) %>% 
     inner_join(distinct(labels_all, mag_cat, Visit, Marker))
   
   
@@ -767,7 +773,10 @@ tab_gmtr_nnaive <- tab_assay_status %>%
                 ci_l=unique(ifelse(class(try(confint(glm(mag_value~CaseNevercase))))=="try-error", NA, confint(glm(mag_value~CaseNevercase))[2,1])),
                 ci_u=unique(ifelse(class(try(confint(glm(mag_value~CaseNevercase))))=="try-error", NA, confint(glm(mag_value~CaseNevercase))[2,2])),
                 .groups="drop") %>% 
-      mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Never-Cases vs Cases") %>% 
+      mutate(comp="Never-Cases vs Cases",
+  		`Ratios of GMT/GMC`=ifelse(grepl("FS", mag_cat),
+		sprintf("%.2f\n(%.2f, %.2f)", est, ci_l, ci_u),
+		sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u))) %>% 
       inner_join(distinct(labels_all, mag_cat, Visit, Marker))
     
     
@@ -877,7 +886,10 @@ tab_assay_status_nevercase <- lapply(1:Trtn, function(x, comp.i=c("Never-Cases",
               est=glm(mag_value~CaseNevercase)$coefficients[2], 
               ci_l=unique(ifelse(class(try(confint(glm(mag_value~CaseNevercase))))=="try-error", NA, confint(glm(mag_value~CaseNevercase))[2,1])), 
               ci_u=unique(ifelse(class(try(confint(glm(mag_value~CaseNevercase))))=="try-error", NA, confint(glm(mag_value~CaseNevercase))[2,2])), .groups="drop") %>% 
-    mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Never-Cases vs Cases") %>% 
+    mutate(comp="Never-Cases vs Cases",
+		`Ratios of GMT/GMC`=ifelse(grepl("FS", mag_cat),
+		sprintf("%.2f\n(%.2f, %.2f)", est, ci_l, ci_u),
+		sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u))) %>% 
     inner_join(distinct(labels_all, mag_cat, Visit, Marker))
   
   
