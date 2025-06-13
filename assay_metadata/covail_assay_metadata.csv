@@ -6,14 +6,14 @@ id50,4,pseudoneutid50_BA.1,66,27104,40,40,PsV Neutralization to BA.1,Pseudovirus
 id50,5,pseudoneutid50_BA.4.BA.5,57,58293,40,40,PsV Neutralization to BA.4/BA.5,Pseudovirus-nAb BA.4/BA.5 (AU/ml),lod,1,NA
 id50,6,pseudoneutid50_MDW,-1000000,Inf,40,NA,PsV Neutralization breadth score,Pseudovirus-nAb ID50 breadth score,lod,1,NA
 id50Duke,4,pseudoneutid50Duke_BA.2.12.1,66,27104,40,40,Duke PsV Neutralization to BA.2.12.1,Duke Pseudovirus-nAb BA.2.12.1 (AU/ml),lod,0,NA
-frnt50,1,frnt50_D614G,20,43740,20,20,Focus Reduction Neutralization Titer 50% to D614G,FRNT50 D614G (titer),lod,1,NA
-frnt50,2,frnt50_BA.1,20,43740,20,20,Focus Reduction Neutralization Titer 50% to BA.1,FRNT50 BA.1 (titer),lod,1,NA
-frnt50,3,frnt50_BA.2.12.1,20,43740,20,20,Focus Reduction Neutralization Titer 50% to BA.2.12.1,FRNT50 BA.2.12.1 (titer),lod,1,NA
-frnt50,4,frnt50_BA.4.BA.5,20,43740,20,20,Focus Reduction Neutralization Titer 50% to BA.4/BA.5,FRNT50 BA.4/BA.5 (titer),lod,1,NA
-frnt80,5,frnt80_D614G,20,43740,20,20,Focus Reduction Neutralization Titer 80% to D614G,FRNT80 D614G (titer),lod,1,NA
-frnt80,6,frnt80_BA.1,20,43740,20,20,Focus Reduction Neutralization Titer 80% to BA.1,FRNT80 BA.1 (titer),lod,1,NA
-frnt80,7,frnt80_BA.2.12.1,20,43740,20,20,Focus Reduction Neutralization Titer 80% to BA.2.12.1,FRNT80 BA.2.12.1(titer),lod,1,NA
-frnt80,8,frnt80_BA.4.BA.5,20,43740,20,20,Focus Reduction Neutralization Titer 80% to BA.4/BA.5,FRNT80 BA.4/BA.5 (titer),lod,1,NA
+frnt50,1,frnt50_D614G,20,43740,20,20,Focus Reduction Neutralization Titer 50% to D614G,FRNT50 D614G (Titer),lod,1,NA
+frnt50,2,frnt50_BA.1,20,43740,20,20,Focus Reduction Neutralization Titer 50% to BA.1,FRNT50 BA.1 (Titer),lod,1,NA
+frnt50,3,frnt50_BA.2,20,43740,20,20,Focus Reduction Neutralization Titer 50% to BA.2,FRNT50 BA.2 (Titer),lod,1,NA
+frnt50,4,frnt50_BA.4.BA.5,20,43740,20,20,Focus Reduction Neutralization Titer 50% to BA.4/BA.5,FRNT50 BA.4/BA.5 (Titer),lod,1,NA
+frnt80,5,frnt80_D614G,20,43740,20,20,Focus Reduction Neutralization Titer 80% to D614G,FRNT80 D614G (Titer),lod,1,NA
+frnt80,6,frnt80_BA.1,20,43740,20,20,Focus Reduction Neutralization Titer 80% to BA.1,FRNT80 BA.1 (Titer),lod,1,NA
+frnt80,7,frnt80_BA.2,20,43740,20,20,Focus Reduction Neutralization Titer 80% to BA.2,FRNT80 BA.2 (Titer),lod,1,NA
+frnt80,8,frnt80_BA.4.BA.5,20,43740,20,20,Focus Reduction Neutralization Titer 80% to BA.4/BA.5,FRNT80 BA.4/BA.5 (Titer),lod,1,NA
 tcell,1,cd4_IFNg.IL2_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 to COV2.CON.S,CD4+ T cells IFN-g and/or IL-2 COV2.CON.S (%),lod,1,0.001
 tcell,2,cd4_IFNg.IL2_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 to BA.4.5.S,CD4+ T cells IFN-g and/or IL-2 BA.4.5.S (%),lod,1,0.001
 tcell,3,cd4_IFNg.IL2_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 to Wuhan N,CD4+ T cells IFN-g and/or IL-2 Wuhan N (%),lod,1,0.001

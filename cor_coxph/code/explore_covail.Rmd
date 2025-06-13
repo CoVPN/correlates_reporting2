@@ -87,6 +87,13 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
+```{availability of FRNT data}
+mytable(!is.na(dat_mapped$Day15frnt50_D614G), dat_mapped$ph1.D15)
+
+with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), !is.na(Day15cd4_154_BA.4.5.S1)))
+```
+
+
 ```{r FS scatterplots, fig.height=6, fig.width=6}
 par(mfrow=c(2,2)); reduce_margin()
 corplot(Day15cd4_FS_Wuhan.N~Bcd4_FS_Wuhan.N,  dat_mapped)
