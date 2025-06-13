@@ -7,8 +7,6 @@ quiet_library("copcor")
 quiet_library("marginalizedRisk")
 quiet_library("survival")
 
-# use local copies of some copcor files as a quick workaround to renv
-# if (file.exists("~/copcor/R/cor_coxph_coef_1.R")) source("~/copcor/R/cor_coxph_coef_1.R")
 
 # disable lower level parallelization in favor of higher level of parallelization
 library(RhpcBLASctl)

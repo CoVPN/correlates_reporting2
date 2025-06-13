@@ -87,10 +87,9 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
-```{availability of FRNT data}
-mytable(!is.na(dat_mapped$Day15frnt50_D614G), dat_mapped$ph1.D15)
-
+```{r missingness of FRNT data}
 with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), !is.na(Day15cd4_154_BA.4.5.S1)))
+with(subset(dat_proc, ph1.D15.tcell==1), mytable(!is.na(Day15frnt50_D614G), ph2.D15.tcell))
 ```
 
 
