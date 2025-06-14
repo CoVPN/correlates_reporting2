@@ -1,16 +1,9 @@
-<!-- Includes HR tables for continuous markers, forest plots, risk/VE curves. -->
-
-```{r, echo=FALSE, results='asis'}
-#paste(concatList(rep('#',level)), ifelse(fname.suffix=="","",fname.suffix%.%", "), COR)
-```
-
 ```{r, echo=FALSE, results='asis'}
 if (!TRIAL %in% c("nextgen_mock")) { # some trials are organized differently, e.g. may have tables from two treatment arms together
   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```
-
 
 
 ```{r, echo=FALSE, results='asis'}
@@ -21,22 +14,16 @@ if (show.ve.curves) {
 ```
 
 
-
-
-<!-- HR tables for trichotomized markers, tertile incidence plots. -->
 \clearpage
-
-`r paste(concatList(rep('#',level+1)))`  Trichotomized markers
-
 ```{r, echo=FALSE, results='asis'}
+cat(paste(concatList(rep('#',level+1)), "Trichotomized markers"))
 res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tri.Rmd')), quiet = TRUE)
 cat(res, sep = '\n')
 ```
 
+
 <!-- multiple_regression -->
-
 ```{r, echo=FALSE, results='asis'}
-
   tmp = config$multivariate_assays
   if (exists("multivariate_assays")) {
     tmp = multivariate_assays
@@ -48,7 +35,6 @@ cat(res, sep = '\n')
       cat(res, sep = '\n')
     }
   }
-
 ```
 
 
