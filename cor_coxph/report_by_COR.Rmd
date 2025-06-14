@@ -16,9 +16,11 @@ if (show.ve.curves) {
 
 \clearpage
 ```{r, echo=FALSE, results='asis'}
-cat(paste(concatList(rep('#',level+1)), "Trichotomized markers"))
-res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tri.Rmd')), quiet = TRUE)
-cat(res, sep = '\n')
+if (TRIAL!='covail_frnt') { # skip trichotomized because hard to compare with id50 results
+  cat(paste(concatList(rep('#',level+1)), "Trichotomized markers"))
+  res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tri.Rmd')), quiet = TRUE)
+  cat(res, sep = '\n')
+}
 ```
 
 

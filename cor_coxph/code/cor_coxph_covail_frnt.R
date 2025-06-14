@@ -6,6 +6,9 @@ Sys.setenv(TRIAL = "covail_frnt")
 source(here::here("..", "_common.R")) 
 source(here::here("code", "params.R"))
 
+# hack
+# source("~/copcor/R/cor_coxph_coef_1.R")
+# source("~/copcor/R/cor_coxph_risk_tertile_incidence_curves.R")
 
 {
 Sys.setenv(VERBOSE = 1) 
@@ -87,240 +90,122 @@ use.svy = F
 has.plac = F
 
 frnt=assays[startsWith(assays, "frnt")]; 
-assays = frnt
+id50=c("pseudoneutid50_D614G", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5")
+
+marker_sets = c("frnt", "id50")
+trts=1:8 
 
 }
 
 
+for (trt in trts) {
 
-
-################################################################################
-# Peak Obj 1-3 for mRNA vaccines
-
-# 1, 11 and 12 are main effects models
-# 2 and 21 are itxn models: marker * naive
-# 3 and 31 are itxn models: D15 marker * baseline marker
-# Note that 4 and 5 here are not peak object 4 and 5
-# 4: like 1, but subset to naive
-# 5: like 1, but subset to nnaive
-
-for (iObj in c(4,5)) {
-#for (iObj in c(1,11,12,2,21,3,31,4,5)) {
-  # iObj=5; iPop=7
+  if (trt==1) {
+    dat=subset(dat.onedosemRNA, naive==0)
+    fname.suffix.0 = 'mRNA_onedose_NN'
+  } else if (trt==2) {
+    dat=subset(dat.onedosemRNA, TrtA==1 & naive==0)
+    fname.suffix.0 = 'mRNA_Moderna_NN'
+    next
+    # skip because svycoxph error from too few cases in some markers
+  } else if (trt==3) {
+    dat=subset(dat.onedosemRNA, TrtA==0 & naive==0)
+    fname.suffix.0 = 'mRNA_Pfizer_NN'
+    next
+    # skip because svycoxph error from too few cases in some markers
+  } else if (trt==4) {
+    dat=subset(dat.sanofi, naive==0)
+    fname.suffix.0 = 'mRNA_Sanofi_NN'
+    next
+    # skip for now. no baseline id50 cat marker defined for this cohort
+    
+  } else if (trt==5) {
+    dat=subset(dat.onedosemRNA, naive==1)
+    fname.suffix.0 = 'mRNA_onedose_N'
+  } else if (trt==6) {
+    dat=subset(dat.onedosemRNA, TrtA==1 & naive==1)
+    fname.suffix.0 = 'mRNA_Moderna_N'
+    next
+    # skip because svycoxph error from too few cases in some markers
+  } else if (trt==7) {
+    dat=subset(dat.onedosemRNA, TrtA==0 & naive==1)
+    fname.suffix.0 = 'mRNA_Pfizer_N'
+    next
+    # skip because svycoxph error from too few cases in some markers
+  } else if (trt==8) {
+    dat=subset(dat.sanofi, naive==1)
+    fname.suffix.0 = 'mRNA_Sanofi_N'
+    next
+    # skip for now. no baseline id50 cat marker defined for this cohort
+  } 
+    
+  cat("\n\n")
   
-  # define the list of all.markers to work on
-  # an item in the list need not be a single marker but is more like a formula
-
-  if(iObj %in% c(1,4,5)) {
-    all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
-    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
-    
-  } else if(iObj==11){
-    # B marker + D15/B
-    all.markers = sapply(assays, function (a) paste0("B",a, "centered + Delta15overB",a, "centered"))
-    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    # parameters for R script
-    nCoef=2
-    col.headers=c("center(B)", "center(D15/B)")
-    
-  } else if(iObj==12){
-    # B marker + D15 + D15^2
-    all.markers = sapply(assays, function (a) paste0("B",a, "centered + Day15",a, "centered + I(Day15",a, "centered^2)"))
-    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    # parameters for R script
-    nCoef=3
-    col.headers=c("center(B)", "center(D15)", "center(D15)**2")
-    
-  } else if(iObj==2){
-    # interaction naive x D15 marker
-    all.markers = c(sapply(assays, function (a) paste0("naive * Day15",a, "centered")),
-                    sapply(assays, function (a) paste0("naive * Delta15overB",a, "centered")))
-    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
-    # parameters for R script
-    nCoef=3
-    col.headers=c("naive", "center(D15 or fold)", "naive:center(D15 or fold)")
-    
-  } else if(iObj==21){
-    # interaction (1-naive) x D15 marker
-    all.markers = c(sapply(assays, function (a) paste0("I(1-naive) * Day15",a, "centered")),
-                    sapply(assays, function (a) paste0("I(1-naive) * Delta15overB",a, "centered")))
-    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
-    nCoef=3
-    col.headers=c("I(1-naive)", "center(D15 or fold)", "I(1-naive):center(D15 or fold)")
-
-  } else if(iObj==3){
-    # interaction B marker x D15 marker or D15/B
-    all.markers = c(sapply(assays, function (a) paste0("B",a, "centered * Day15",a, "centered")),
-                    sapply(assays, function (a) paste0("B",a, "centered * Delta15overB",a, "centered"))
-    )
-    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
-    # parameters for R script
-    nCoef=3
-    col.headers=c("center(B)", "center(D15 or fold)", "center(B):center(D15 or fold)")
-    
-  } else if(iObj==31){
-    # B_cat marker x D15 marker or D15/B
-    all.markers = c(sapply(assays, function (a) paste0("B",a, "cat * Day15",a, "centered")),
-                    sapply(assays, function (a) paste0("B",a, "cat * Delta15overB",a, "centered")))
-    all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-    all.markers.names.short = c("D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
-    # table col names
-    col1="Med B:center(D15 or fold)"
-    col2="High B:center(D15 or fold)"
-    col3="center(D15 or fold) at Low B"
-    col4="center(D15 or fold) at Med B"
-    col5="center(D15 or fold) at High B"
-    
-  }
-  names(all.markers.names.short) = all.markers
+  # table of ph1 and ph2 cases
+  tab1 = with(dat, table(ph2, EventIndPrimary))
+  names(dimnames(tab1))[2] = "Event Indicator"; print(tab1)
   
-  # repeat all objectives over several subpopulations, save results with different fname.suffix
-  for (iPop in 1:4) {
+  design <- twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum), subset =  ~ ph2, data = dat)
+  
+  for (marker_set in marker_sets) {
     cat("\n")
-    myprint(iObj, iPop)
+    myprint(marker_set)
     
-    if (iPop==1) {
-      dat=dat.onedosemRNA
-      fname.suffix = 'mRNA_onedose'
-    } else if (iPop==2) {
-      dat=subset(dat.onedosemRNA, TrtA==1)
-      fname.suffix = 'mRNA_Moderna'
-    } else if (iPop==3) {
-      dat=subset(dat.onedosemRNA, TrtA==0)
-      fname.suffix = 'mRNA_Pfizer'
-    } else if (iPop==4) {
-      dat=dat.sanofi
-      fname.suffix = 'mRNA_Pfizer'
-      
-    # } else if (iPop==4) {
-    #   dat=subset(dat.onedosemRNA, TrtB==1)
-    #   fname.suffix = 'mRNA_Prototype'
-    # } else if (iPop==5) {
-    #   dat=subset(dat.onedosemRNA, TrtB==0)
-    #   fname.suffix = 'mRNA_Omicron-Containing'
-    #   
-    # } else if (iPop==6) {
-    #   dat=subset(dat.onedosemRNA, TrtC==1)
-    #   fname.suffix = 'mRNA_Bivalent'
-    # } else if (iPop==7) {
-    #   dat=subset(dat.onedosemRNA, TrtC==0)
-    #   fname.suffix = 'mRNA_Monovalent'
-    } 
+    fname.suffix = fname.suffix.0%.%"_"%.%marker_set
+    assays=get(marker_set)
+    all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
+    # all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
+    # all.markers.names.short = c("B "%.%all.markers.names.short, "D15 "%.%all.markers.names.short, "D15/B "%.%all.markers.names.short)
+    # names(all.markers.names.short) = all.markers
     
-    if(iObj==4) dat=subset(dat, naive==1)
-    if(iObj==5) dat=subset(dat, naive==0)
+    all.markers.names.short <- all.markers.names.long <- all.markers
+    names(all.markers.names.short) = all.markers
+    names(all.markers.names.long) = all.markers
     
-    # table of ph1 and ph2 cases
-    tab1 = with(dat, table(ph2, EventIndPrimary))
-    names(dimnames(tab1))[2] = "Event Indicator"; print(tab1)
-    mytex(tab1, file.name = "tab1_" %.% fname.suffix%.%ifelse(iObj==4, "_N", "_NN"), save2input.only = T, input.foldername = save.results.to)
+    mytex(tab1, file.name = "tab1_" %.% fname.suffix, save2input.only = T, input.foldername = save.results.to)
     
-    # if(iObj==4 | iObj==5) {
-    #   cor_coxph_coef_1(
-    #     form.0,
-    #     design_or_dat = dat,
-    #     fname.suffix=fname.suffix%.%ifelse(iObj==4, "_N", "_NN"),
-    #     save.results.to,
-    #     config,
-    #     config.cor,
-    #     
-    #     all.markers,
-    #     all.markers.names.short,
-    #     
-    #     dat.plac = NULL,
-    #     show.q=F, # whether to show fwer and q values in tables
-    #     run.trichtom=T,
-    #     verbose = T)
-    #   
-    #   # trichotomitized curves
-    #   cor_coxph_risk_tertile_incidence_curves(
-    #     # need to remove naive from formula. otherwise risk will be NA
-    #     form.0 = as.formula(
-    #       sub("naive", 1, # if naive is the first covariate, there will be no +, so the next line won't work
-    #         sub("\\+ naive", "", paste0(deparse(form.0,width.cutoff=500)))
-    #       )
-    #     ),
-    #     dat,
-    #     fname.suffix=fname.suffix%.%ifelse(iObj==4, "_N", "_NN"),
-    #     save.results.to,
-    #     config,
-    #     config.cor,
-    #     tfinal.tpeak,
-    #     
-    #     markers = all.markers,
-    #     markers.names.short = all.markers.names.short,
-    #     markers.names.long = all.markers.names.long,
-    #     marker.cutpoints,
-    #     assay_metadata,
-    #     
-    #     dat.plac = NULL,
-    #     for.title="", 
-    #     verbose=T
-    #   )
-    # } 
-  }
-  
-  
-  
-  
-}
+    cat("\n")
+    
+    cor_coxph_coef_1(
+      form.0,
+      design_or_dat = design,
+      fname.suffix,
+      save.results.to,
+      config,
+      config.cor,
+
+      markers = all.markers,
+      markers.names.short = all.markers.names.short,
+
+      dat.plac = NULL,
+      show.q=F, 
+      run.trichtom=T,
+      verbose = T)
 
 
-################################################################################
-# Peak Obj 4
+    cor_coxph_risk_tertile_incidence_curves(
+      form.0,
+      dat,
+      fname.suffix,
+      save.results.to,
+      config,
+      config.cor,
+      tfinal.tpeak,
 
-# same formula, repeated 3 times
-# for (iPop in 1:3) {
-#   if (iPop==1) {
-#     dat=subset(dat.onedosemRNA, TrtA %in% c(1,0))
-#     fname.suffix = 'mRNA_Mod_Pfi'
-#     
-#     all.markers = sapply(assays, function (a) paste0("TrtA * Day15",a, "centered"))
-#     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-#     # parameters for R script
-#     nCoef=3
-#     col.headers=c("TrtA Moderna~Pfizer", "center(D15)", "TrtA:center(D15)")
-#     
-#   } else if (iPop==2) {
-#     dat=subset(dat.onedosemRNA, TrtB %in% c(1,0))
-#     fname.suffix = 'mRNA_Pro_Omi'
-#     
-#     all.markers = sapply(assays, function (a) paste0("TrtB * Day15",a, "centered"))
-#     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-#     # parameters for R script
-#     nCoef=3
-#     col.headers=c("TrtB Prot~Omicron", "center(D15)", "TrtB:center(D15)")
-#     
-#   } else if (iPop==3) {
-#     dat=subset(dat.onedosemRNA, TrtC %in% c(1,0))
-#     fname.suffix = 'mRNA_Bi_Mono'
-#     
-#     all.markers = sapply(assays, function (a) paste0("TrtC * Day15",a, "centered"))
-#     all.markers.names.short = sub("Pseudovirus-", "", assay_metadata$assay_label_short[match(assays,assay_metadata$assay)])
-#     # parameters for R script
-#     nCoef=3
-#     col.headers=c("TrtC Biv~Monovalent", "center(D15)", "TrtC:center(D15)")
-#   } 
-#   
-#   cor_coxph_coef_n (
-#     form.0,
-#     design_or_dat = dat,
-#     fname.suffix,
-#     save.results.to,
-#     config,
-#     config.cor,
-#     all.markers,
-#     all.markers.names.short,
-#     
-#     nCoef,
-#     col.headers,
-#     verbose = T)
-# }
+      markers = all.markers,
+      markers.names.short = all.markers.names.short,
+      markers.names.long = all.markers.names.long,
+      marker.cutpoints,
+      assay_metadata,
+
+      dat.plac = NULL,
+      for.title="",
+      verbose=T
+    )
   
+  } # end loop marker_set
+
+} # end loop trt
 
 
 

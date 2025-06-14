@@ -88,6 +88,13 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
+
+```{r overlap of FRNT and nAb}
+with(subset(dat_proc, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), !is.na(Day15cd4_154_BA.4.5.S1)))
+
+mytable(dat_proc$ph2.D15.frnt, dat_proc$ph2.D15)
+```
+
 ```{r missingness of FRNT data}
 # with(subset(dat_proc, ph1.D15.tcell==1), mytable(!is.na(Day15frnt50_D614G), ph2.D15.tcell))
 
