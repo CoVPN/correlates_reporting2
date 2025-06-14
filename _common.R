@@ -919,7 +919,7 @@ if (TRIAL %in% c("covail", "covail_sanofi")) {
   all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
   
 } else if (TRIAL=="covail_frnt") {
-  assays1 = subset(assay_metadata, panel=="frnt50"|panel=="frnt80", assay, drop=T)
+  assays1 = subset(assay_metadata, panel %in% c("frnt50", "frnt80", "id50"), assay, drop=T)
   all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
   
 } else if (TRIAL=="covail_tcell") {
