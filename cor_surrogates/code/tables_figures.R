@@ -94,7 +94,8 @@ caption <- "All learner-screen combinations (16 in total) used as input to the S
 tab <- cvaucs_vacc %>%
   filter(!Learner %in% c("SL", "Discrete SL")) %>%
   select(Learner, Screen) %>%
-  mutate(Screen = fct_relevel(Screen, c("all", "glmnet", "univar_logistic_pval",
+  mutate(Screen = fct_relevel(Screen, c("all", #"glmnet", 
+                                        "univar_logistic_pval",
                                         "highcor_random")),
          Learner = as.factor(Learner)) %>%
   arrange(Learner, Screen) %>%
@@ -254,7 +255,7 @@ components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + Day 29 ADCP markers and combination scores across the four markers",
                                                         "Baseline risk factors + all individual Day 29 marker variables and their combination scores (Full model of Day 29 markers)"))
 }
-if (study_name %in% c("COVAIL")) {
+if (study_name %in% c("COVAIL") & non_naive == FALSE) {
   caption <- "The 13 variable sets on which an estimated optimal surrogate was built."
   
   only_varsets <- varset_names[1:13]
@@ -275,6 +276,43 @@ if (study_name %in% c("COVAIL")) {
                                                         "Baseline risk factors + D15 antibody markers against BA.1 + D15 primary and secondary T cell markers ",
                                                         "Baseline risk factors + D1 and D15 antibody markers against BA.1 + D1 and D15 primary and secondary T cell markers",
                                                         "Baseline risk factors + D1 and D15 antibody markers against BA.1 + D1 and D15 [primary, secondary, and exploratory T cell markers"))
+}
+if (study_name %in% c("COVAIL") & non_naive == TRUE) {
+  caption <- "The 28 variable sets on which an estimated optimal surrogate was built."
+  
+  only_varsets <- varset_names[1:28]
+  
+  tab <- data.frame(`Variable Set Name` = varset_names[1:28],
+                    `Variables included in the set` = c(
+                      "Baseline risk factors only (Reference model): includes baseline risk score only",
+                      #"Baseline risk factors only (Reference model): includes baseline risk score, standardized FOI score, insert and stage (vaccine manufacturer) info",
+                      "Baseline risk factors + D1 antibody markers against BA.1",
+                      "Baseline risk factors + D15 antibody markers against BA.1",
+                      "Baseline risk factors + D1 and D15 antibody markers against BA.1",
+                      "Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D1 primary CD4+ T cell marker Functionality Score (FS) Spike BA.4/5", 
+                      "Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index", 
+                      "Baseline risk score + D1 primary CD4+ T cell marker FS N Index", 
+                      "Baseline risk score + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5", 
+                      "Baseline risk score + D15 primary CD4+ T cell marker FS Spike BA.4/5", 
+                      "Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5", 
+                      "Baseline risk score + D1 primary CD4+ T cell marker FS Spike BA.4/5 + D15 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D1 primary CD4+ T cell marker FS N Index + D15 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS N Index",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS N Index",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 N Index",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS N Index"))
 }
 
 tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "varsets.csv"))
