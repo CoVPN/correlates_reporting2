@@ -1,6 +1,9 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 # Sys.setenv(TRIAL = "janssen_pooled_partA")
+Sys.setenv(TRIAL = "covail_tcell")
+# COR = "D15to91covail_tcell"
+COR = "D15to181covail_tcell"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -66,8 +69,13 @@ if (study_name == "ENSEMBLE") {
   vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
 }
 if (study_name == "COVAIL") {
-  cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_COVIDIndD22toD91.rds"))
-  #vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
+  if(COR == "D15to91covail_tcell"){
+    cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_COVIDIndD22toD91.rds"))
+    #vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
+  } else if(COR == "D15to181covail_tcell"){
+    cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_COVIDIndD22toD181.rds"))
+    #vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
+  }
 }
 
 ph2_vacc_ptids <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "ph2_vacc_ptids.rds"))
@@ -252,7 +260,9 @@ if (study_name %in% c("COVAIL")) {
   only_varsets <- varset_names[1:13]
   
   tab <- data.frame(`Variable Set Name` = varset_names[1:13],
-                    `Variables included in the set` = c("Baseline risk factors only (Reference model): includes baseline risk core and the standardized FOI score only",
+                    `Variables included in the set` = c(
+                      "Baseline risk factors only (Reference model): includes baseline risk score and the standardized FOI score only",
+                      #"Baseline risk factors only (Reference model): includes baseline risk score, standardized FOI score, insert and stage (vaccine manufacturer) info",
                                                         "Baseline risk factors + D1 antibody markers against BA.1",
                                                         "Baseline risk factors + D15 antibody markers against BA.1",
                                                         "Baseline risk factors + D1 and D15 antibody markers against BA.1",
@@ -312,6 +322,7 @@ dev.off()
 # plot ROC curve and pred.Prob with SL, Discrete SL and top 2 best-performing individual Learners for all 12 variable sets
 for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
   variableSet = unique(cvaucs_vacc$varset)[i]
+  print(paste0("Processing ", variableSet))
   dat <- cvaucs_vacc %>% filter(varset==variableSet)
 
   top2 <- bind_rows(
@@ -336,7 +347,13 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
   } else if(study_name == "ENSEMBLE"){
     cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
   } else if(study_name == "COVAIL"){
-    cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+    
+    if(COR == "D15to91covail_tcell"){
+      cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+    } else if(COR == "D15to181covail_tcell"){
+      cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+    }
+    
   }
   
   pred <- get_cv_predictions(cv_fit = cvfit[[rseed]], cvaucDAT = top2, markerDAT = NULL)
@@ -465,7 +482,11 @@ if(!study_name %in% c("HVTN705")){
     } else if(Sys.getenv("TRIAL") %in% c("janssen_pooled_partA", "janssen_la_partA")){
       cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
     } else if(Sys.getenv("TRIAL") %in% c("covail_tcell")){
-      cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+      if(COR == "D15to91covail_tcell"){
+        cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+      } else if(COR == "D15to181covail_tcell"){
+        cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+      }
     }
     
     # For selected random seed (rseed variable), get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds
@@ -527,7 +548,22 @@ if(!study_name %in% c("HVTN705")){
             fold = j)
       }
       
-      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_all", "SL.glmnet.0.67_screen_all", "SL.glmnet.1_screen_all")) {
+      # For SL.nnet
+      if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.nnet.2_screen_univariate_logistic_pval",
+                                                     "SL.nnet.2_screen_glmnet", 
+                                                     "SL.nnet.2_screen_highcor_random")) {
+        
+        model <- flevr::extract_importance_polymars(polymars.obj$fit, feature_names = cvfits[[rseed]]$AllSL[[j]]$varNames[cvfits[[rseed]]$AllSL[[j]]$whichScreen[grepl(gsub("^[^_]*_", "", cvfits[[rseed]]$whichDiscreteSL[[j]]), rownames(cvfits[[rseed]]$AllSL[[j]]$whichScreen)),]]) %>%
+          filter(!is.na(importance)) %>%
+          as.data.frame() %>%
+          select(feature, importance) %>%
+          rename(`Coefficient` = `importance`) %>%
+          mutate(
+            Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
+            fold = j)
+      }
+      
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_all", "SL.glmnet.0.33_screen_all", "SL.glmnet.0.67_screen_all", "SL.glmnet.1_screen_all")) {
         
         # model <- coef(cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object, s = "lambda.min") %>%
         #   as.matrix() %>%

@@ -25,7 +25,7 @@ source(here::here("..", "_common.R"))
 packages <- c(
   "tidyverse", "quadprog", "here", "methods", "SuperLearner", "e1071",
   "glmnet", "kyotil", "argparse", "vimp", "nloptr", "RhpcBLASctl",
-  "reticulate", "FSDAM", "ranger", "xgboost", "conflicted"
+  "reticulate", "FSDAM", "ranger", "xgboost", "conflicted", "recipes"
 )
 
 # Load packages quietly
@@ -300,10 +300,48 @@ if (study_name == "HVTN705") {
 
 # Read in data from COVAIL study
 if (study_name %in% c("COVAIL")) {
+  
+  # non_naive = FALSE
+  non_naive = TRUE
+  
+  trt.arms.for.analysis <- c(1:2, 4:12)
+  # trt.arms.for.analysis <- c(1:2, 4:15)
+  
   # baseline risk factors
-  briskfactors <- c("risk_score", "FOIstandardized")
-  #vaccine_info <- "treatment_actual"
-  briskfactors_correction <- "Y ~ x + X$risk_score + X$FOIstandardized"
+  bRiskFactors_includes_insert.stage.info = FALSE
+  
+  dat_proc_updated <- dat_proc %>% 
+    mutate(Delta15overBpseudoneutid50_BA.1_2fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(2)), 1, 0),
+           Delta15overBpseudoneutid50_BA.1_4fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(4)), 1, 0)) %>%
+    mutate(Trt = 1,   # defined to sync with code below!
+           stage = case_when(stage == 1 ~ "Moderna",
+                             stage == 2 ~ "Pfizer.1",
+                             stage == 3 ~ "Sanofi",
+                             stage == 4 ~ "Pfizer.2"),
+           Trtgrp = case_when(Trtgrp == "Beta with no Omicron" ~ "Beta.no.Omicron",
+                              Trtgrp == "monovalent Prototype insert only" ~ "mono.Proto.insert.only",
+                              Trtgrp == "Omicron" ~ "Omicron")) 
+  
+  # Identify the endpoint variable
+  if(COR == "D15to91covail_tcell"){ 
+    endpoint <- "COVIDIndD22toD91"
+  } else if(COR == "D15to181covail_tcell"){
+    endpoint <- "COVIDIndD22toD181"
+  }
+  
+  if(bRiskFactors_includes_insert.stage.info == TRUE & non_naive == FALSE){
+    briskfactors <- c("risk_score", "FOIstandardized", "stage_Pfizer.1", "stage_Sanofi", "Trtgrp_mono.Proto.insert.only", "Trtgrp_Omicron")
+    briskfactors_correction <- "Y ~ x + X$risk_score + X$FOIstandardized + X$stage_Pfizer.1 + X$stage_Sanofi +X$Trtgrp_mono.Proto.insert.only + X$Trtgrp_Omicron"
+  } else if(bRiskFactors_includes_insert.stage.info == FALSE & non_naive == FALSE){
+    briskfactors <- c("risk_score", "FOIstandardized")
+    briskfactors_correction <- "Y ~ x + X$risk_score + X$FOIstandardized"
+  } else if(bRiskFactors_includes_insert.stage.info == FALSE & non_naive == TRUE){
+    briskfactors <- c("risk_score")
+    briskfactors_correction <- "Y ~ x + X$risk_score"
+  }
+  
+  wt <- "wt.D15.tcell"            # already set by COR
+  ptidvar <- "Ptid"
   
   individualMarkers <- c("Bpseudoneutid50_BA.1",
                          "Day15pseudoneutid50_BA.1",
@@ -331,42 +369,50 @@ if (study_name %in% c("COVAIL")) {
                   "Bcd8_TNFa_BA.4.5.S",                 "Day15cd8_TNFa_BA.4.5.S",             "Bcd4_154_BA.4.5.S",                  "Day15cd4_154_BA.4.5.S",             
                   "Day15cd4_CXCR5.154_BA.4.5.S",        "Bcd8_IFNg.IL2.TNFa_BA.4.5.S",        "Day15cd8_IFNg.IL2.TNFa_BA.4.5.S")
   
-
-  # Identify the endpoint variable
-  endpoint <- "COVIDIndD22toD91" # ", as already set by COR
-  wt <- "wt.D15.tcell"            # already set by COR
-  ptidvar <- "Ptid"
-  trt.arms.for.analysis <- c(1:2, 4:12)
-  # trt.arms <- c(1:2, 4:15)
   
   # Create combined new dataset which has imputed values of demographics (for phase 1 data) from dat.covar.imp AND
   # imputed values for markers (for phase 2 data) from dat.wide.v
-  dat.ph1 <- dat_proc %>%
-    filter(ph1 == 1) %>%
-    filter(naive == 1 & arm %in% trt.arms.for.analysis) %>%
-    mutate(Delta15overBpseudoneutid50_BA.1_2fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(2)), 1, 0),
-           Delta15overBpseudoneutid50_BA.1_4fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(4)), 1, 0)) %>%
+    
+  if(non_naive == FALSE){
+    dat.ph1_init = dat_proc_updated %>%
+      filter(ph1 == 1) %>%
+      filter(naive == 1 & arm %in% trt.arms.for.analysis)
+  } else if(non_naive == TRUE){
+    dat.ph1_init = dat_proc_updated %>%
+      filter(ph1 == 1) %>%
+      filter(naive == 0 & arm %in% trt.arms.for.analysis)
+  }
+  
+  ##############################
+  if(bRiskFactors_includes_insert.stage.info){
+    inputMod <- dat.ph1_init %>%
+      mutate(stage = as.factor(stage),
+             Trtgrp = as.factor(Trtgrp))
+    
+    rec <- recipe(~ stage + Trtgrp, data = inputMod)
+    dummies <- rec %>%
+      step_unknown(stage, Trtgrp, new_level = "missing") %>%
+      step_dummy(stage, Trtgrp) %>%
+      prep(training = inputMod)
+    inputMod <- inputMod %>% bind_cols(bake(dummies, new_data = NULL))
+    # %>%
+    #   select(-c(Country, Region, CalDtEnrollIND))
+    # names(inputMod)<-gsub("\\_",".",names(inputMod))
+  } else {
+    inputMod <- dat.ph1_init
+  }
+  
+  #############################
+  
+  dat.ph1 <- inputMod %>%
     # Drop any observation with NA values in Ptid, Trt, briskfactors, endpoint and wt.D57
-    drop_na(Ptid, arm, all_of(briskfactors), all_of(endpoint), all_of(wt)) %>%
-    arrange(desc(get(endpoint))) %>% 
-    mutate(Trt = 1)  # defined to sync with code below!
-  
-  # inputMod <- dat.ph1 %>%
-  #   mutate(Vacc = as.factor(treatment_actual)) 
-  # 
-  # rec <- recipe(~ treatment_actual, data = inputMod)
-  # dummies <- rec %>%
-  #   step_dummy(treatment_actual) %>%
-  #   prep(training = inputMod)
-  # inputMod <- inputMod %>% bind_cols(bake(dummies, new_data = NULL)) 
-  # # %>%
-  # #   select(-c(Country, Region, CalDtEnrollIND))
-  # names(inputMod)<-gsub("\\_",".",names(inputMod))
-  
+    drop_na(Ptid, all_of(briskfactors), all_of(endpoint), all_of(wt)) %>%
+    arrange(desc(get(endpoint)))  
+
   # phase two data (all variables measured on all participants in phase 2 data)
   dat.ph2_init <- dat.ph1 %>%
     filter(ph2 == TRUE) %>%
-    select(Ptid, arm, Trt, all_of(briskfactors), all_of(endpoint), all_of(wt), any_of(markerVars)) %>%
+    select(Ptid, Trt, all_of(briskfactors), all_of(endpoint), all_of(wt), any_of(markerVars)) %>%
     #drop_na(Day57bindSpike, Day57bindRBD, Day57pseudoneutid50, Day57pseudoneutid80) %>%
     arrange(desc(get(endpoint)))
 }
@@ -598,7 +644,7 @@ if (study_name %in% c("ENSEMBLE")) {
 if (study_name %in% c("COVAIL")) {
   # finalize marker data
   markers <- dat.ph2 %>%
-    select(-all_of(ptidvar), -arm, -Trt, -all_of(briskfactors), -all_of(endpoint), -all_of(wt)) %>%
+    select(-all_of(ptidvar), -Trt, -all_of(briskfactors), -all_of(endpoint), -all_of(wt)) %>%
     colnames()
 }
 
@@ -859,7 +905,7 @@ if (study_name %in% c("ENSEMBLE")) {
 
 
 
-if (study_name %in% c("COVAIL")) {
+if (study_name %in% c("COVAIL") & non_naive == FALSE) {
   # 1. None (No markers; only baseline risk variables), phase 2 data; This is Variable Set 3 in SAP!
   varset_baselineRiskFactors <- rep(FALSE, length(markers))
   
@@ -987,6 +1033,120 @@ if (study_name %in% c("COVAIL")) {
 
 
 
+if (study_name %in% c("COVAIL") & non_naive == TRUE) {
+  
+  ########################################################
+  p_markers = markers[markers %in% primary]
+  s_markers = markers[markers %in% secondary]
+  ps_markers = c(markers[markers %in% primary],  
+                 markers[markers %in% secondary])
+  pse_markers = c(markers[markers %in% primary],  
+                  markers[markers %in% secondary],
+                  markers[markers %in% exploratory])
+  
+  ########################################################
+  
+  varsets = list(
+      # 1. None (No markers; only baseline risk variables), phase 2 data; This is Variable Set 3 in SAP!
+      varset_baselineRiskFactors <- rep(FALSE, length(markers)),
+      
+      # Baseline factors + D1 antibody markers against BA.1 (antibody markers are highly correlated so we only consider BA.1) 
+      varset_pnabID50_BA.1_D1 = str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15"),
+      #"Bpseudoneutid50_BA.1"    "Bpseudoneutid50_BA.1cat"
+      
+      # Baseline factors + D15 antibody markers against BA.1 
+      varset_pnabID50_BA.1_D15 = str_detect(markers, "BA\\.1") & str_detect(markers, "Day15|Delta15"),
+      # "Day15pseudoneutid50_BA.1"    "Day15pseudoneutid50_BA.1cat"
+      
+      # Baseline factors + D1 and D15 antibody markers against BA.1
+      varset_pnabID50_BA.1_D1nD15 = str_detect(markers, "BA\\.1"),
+      # [1] "Bpseudoneutid50_BA.1"
+      # [2] "Day15pseudoneutid50_BA.1"
+      # [3] "Delta15overBpseudoneutid50_BA.1_2fold"
+      # [4] "Delta15overBpseudoneutid50_BA.1_4fold"
+      
+    
+      
+      # Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
+      varset_cd4_IFNg.IL2_BA.4.5_D1 = str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Day15|Delta15"),
+      # Baseline risk score + D1 primary CD4+ T cell marker Functionality Score (FS) Spike BA.4/5 
+      varset_cd4_FS_BA.4.5_D1 = str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5") & !str_detect(markers, "Day15|Delta15"),
+      # Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index 
+      varset_cd4_IFNg.IL2_Wuhan.N_D1 = str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Day15|Delta15"),
+      # Baseline risk score + D1 primary CD4+ T cell marker FS N Index 
+      varset_cd4_FS_Wuhan.N_D1 = str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Day15|Delta15"),
+      # Baseline risk score + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
+      varset_cd4_IFNg.IL2_BA.4.5_D1 = str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
+      # Baseline risk score + D15 primary CD4+ T cell marker FS Spike BA.4/5 
+      varset_cd4_FS_Wuhan.N_D1 = str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
+      # Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
+      varset_cd4_IFNg.IL2_BA.4.5_D1nD15 = str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154"),
+      # Baseline risk score + D1 primary CD4+ T cell marker FS Spike BA.4/5 + D15 primary CD4+ T cell marker FS Spike BA.4/5 
+      varset_cd4_FS_BA.4.5_D1nD15 = str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5"), 
+      # Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
+      varset_cd4_IFNg.IL2_Wuhan.N_D1_BA.4.5_D15 = (str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Day15|Delta15")) | 
+        (str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4")),
+      # Baseline risk score + D1 primary CD4+ T cell marker FS N Index + D15 primary CD4+ T cell marker FS Spike BA.4/5 
+      varset_cd4_FS_Wuhan.N_D1_FS_BA.4.5_D15 = (str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Day15|Delta15")) | 
+        (str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4")),
+      # Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
+      varset_pnabID50_BA.1_cd4_IFNg.IL2_BA.4.5_D1 = (str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15"))  |   
+        (str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Day15|Delta15")),
+      # Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS Spike BA.4/5 
+      varset_pnabID50_BA.1_cd4_FS_BA.4.5_D1 = (str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15"))  |   
+        (str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Day15|Delta15")),
+      # Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index 
+      varset_pnabID50_BA.1_cd4_IFNg.IL2_Wuhan.N_D1 = (str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15"))  |   
+        (str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Day15|Delta15")),
+      # Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS N Index 
+      varset_pnabID50_BA.1_cd4_FS_Wuhan.N_D1 = (str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15"))  |   
+        (str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Day15|Delta15")),
+      # Baseline risk score + D1 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
+      varset_pnabID50_BA.1_D1_cd4_IFNg.IL2_BA.4.5_D15 = (str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
+      # Baseline risk score + D1 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS Spike BA.4/5 
+      varset_pnabID50_BA.1_D1_cd4_FS_BA.4.5_D15 = (str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
+      # Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
+      varset_pnabID50_BA.1_D15_cd4_IFNg.IL2_BA.4.5_D1 = (str_detect(markers, "BA\\.1") & str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Day15|Delta15"),
+      # Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS Spike BA.4/5 
+      varset_pnabID50_BA.1_D15_cd4_FS_BA.4.5_D1 = (str_detect(markers, "BA\\.1") & str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Day15|Delta15"),
+      # Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index 
+      varset_pnabID50_BA.1_D15_cd4_IFNg.IL2_Wuhan.N_D1 = (str_detect(markers, "BA\\.1") & str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Day15|Delta15"),
+      # Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS N Index 
+      varset_pnabID50_BA.1_D15_cd4_FS_Wuhan.N_D1 = (str_detect(markers, "BA\\.1") & str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Day15|Delta15"),
+      # Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
+      varset_pnabID50_BA.1_D15_cd4_IFNg.IL2_BA.4.5_D15 = (str_detect(markers, "BA\\.1") & str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
+      # Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS Spike BA.4/5 
+      varset_pnabID50_BA.1_D15_cd4_FS_BA.4.5_D15 = (str_detect(markers, "BA\\.1") & str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
+      # Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 N Index 
+      varset_pnabID50_BA.1_D15_cd4_IFNg.IL2_Wuhan.N_D15 = (str_detect(markers, "BA\\.1") & str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Bcd4"),
+      # Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS N Index 
+      varset_pnabID50_BA.1_D15_cd4_FS_Wuhan.N_D15 = (str_detect(markers, "BA\\.1") & str_detect(markers, "Day15|Delta15")) | 
+        str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Bcd4")
+  )
+  
+  varset_names = names(varsets) %>%
+    replace(1, "varset_baselineRiskFactors") %>%
+    data.frame(varset = .) %>%
+    mutate(varset = paste0(row_number(), "_", str_remove(varset, "^varset_"))) %>%
+    pull(varset)
+  
+  # set up a matrix of all
+  varset_matrix <- do.call(rbind, varsets)
+}
+
+
+
+
+
 
 # add on all of the individual marker variables
 for (i in seq_len(length(markers))) {
@@ -1093,12 +1253,15 @@ if(Sys.getenv("TRIAL") %in%  c("janssen_pooled_partA", "janssen_la_partA")){
   V_outer <- 5
 }
 
-if (sum(dat.ph2 %>% pull(endpoint)) <= 25) {
+if (sum(dat.ph2 %>% pull(endpoint)) <= 25 & study_name != "COVAIL") {
   V_inner <- length(Y) - 1
   maxVar <- 5
-} else if(sum(dat.ph2 %>% pull(endpoint)) > 25){
+} else if(sum(dat.ph2 %>% pull(endpoint)) > 25  & study_name != "COVAIL"){
   V_inner <- 5
   maxVar <- floor(nv/6)
+} else if(sum(dat.ph2 %>% pull(endpoint)) <= 30 & study_name == "COVAIL"){
+  V_inner <- length(Y) 
+  maxVar <- 3
 }
 
 if (study_name == "COVE"){
