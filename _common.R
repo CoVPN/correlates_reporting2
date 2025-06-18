@@ -9,8 +9,6 @@ quiet_library("copcor")
 quiet_library("marginalizedRisk")
 quiet_library("survival")
 
-# use local copies of some copcor files as a quick workaround to renv
-# if (file.exists("~/copcor/R/cor_coxph_coef_1.R")) source("~/copcor/R/cor_coxph_coef_1.R")
 
 # disable lower level parallelization in favor of higher level of parallelization
 library(RhpcBLASctl)
@@ -874,7 +872,7 @@ if (exists("COR")) {
         # except for 
         #   janssen_partA_VL because for variants analysis, there is not just one tfinal.tpeak
         #   prevent19_stage2, azd1222_stage2 because CoR only
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "covail_tcell", "prevent19_stage2", "azd1222_stage2")) {
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "covail_tcell", "covail_frnt", "prevent19_stage2", "azd1222_stage2")) {
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==0 & ph1), tfinal.tpeak)   
           overall.ve = c(1 - prev.vacc/prev.plac) 
@@ -916,8 +914,12 @@ if (exists("COR")) {
 # this has to be done after the previous block b/c attribute is lost after subsetting
 
 all.markers1 = NULL
-if (TRIAL=="covail" | TRIAL=="covail_sanofi") {
+if (TRIAL %in% c("covail", "covail_sanofi")) {
   assays1 = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
+  all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
+  
+} else if (TRIAL=="covail_frnt") {
+  assays1 = subset(assay_metadata, panel %in% c("frnt50", "frnt80", "id50"), assay, drop=T)
   all.markers1 = c("B"%.%assays1, "Day15"%.%assays1, "Delta15overB"%.%assays1)
   
 } else if (TRIAL=="covail_tcell") {
@@ -1149,7 +1151,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age <= 14"
   )
   
-} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "nextgen_mock")) {
+} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "nextgen_mock")) {
   # do nothing
   
 } else stop("unknown study_name 2")
@@ -1231,7 +1233,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name=="HVTN705") {
   # do nothing
   
-} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell")) {
+} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt")) {
   # do nothing
   
 } else if (TRIAL == "nvx_uk302") {

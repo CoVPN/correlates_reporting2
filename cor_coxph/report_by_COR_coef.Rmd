@@ -1,9 +1,6 @@
 <!-- HR tables for continuous markers, forest plots. -->
 
 `r if (exists("coef_page_notes")) if(coef_page_notes!="") coef_page_notes`
-`r if (!exists("has.scaled")) has.scaled=T`
-`r if (!exists("show.sample.size")) show.sample.size=T`
-
 
 
 Each row represents results from one model with a single immune biomarker. The first table shows HRs per 10-fold increase (unless otherwise noted) and the second table shows HRs per SD increase. 
@@ -27,7 +24,6 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 
 
 `r if (!has.scaled) '<!--'`
-
 \clearpage
 \setlength{\tabcolsep}{.5ex}
 \small
@@ -42,6 +38,7 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
 `r if (!has.scaled) '<!--'`
 
 
+
 `r if (!has.alt) '<!--'`
 \clearpage
 \setlength{\tabcolsep}{.5ex}
@@ -49,9 +46,7 @@ $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the se
   \input{`r pathCoRoutput`/CoR_univariable_svycoxph_pretty_`r fname.suffix`_2}
 \normalsize
 $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this cohort. Both are ph1 numbers. 
-
 `r if (!has.alt)'-->'`
-
 
 
 
@@ -72,9 +67,7 @@ $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this co
 
 <!-- Table 1, commented out for covail -->
 `r if (attr(config,"config") %in% c("covail") | !show.sample.size) '<!--'`
-
 \bigskip
-
 \begin{table}[H]
 \caption{Number of cases (`r escape(EventIndPrimary)`) and non-cases in the `r escape(fname.suffix)` group by ph2 status.}
 \begin{center}
@@ -87,9 +80,7 @@ $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this co
 
 <!-- additional counts tables if existed -->
 `r if (!TRIAL %in% c("janssen_partA_VL")) '<!--'`
-
 \bigskip
-
 \begin{table}[H]
 \caption{Number of cases and non-cases by ph2 (with ancestral Abs measured). There are more non-cases in ph2 than the previous table, which is for ph2 subjects with variants Abs measured.}
 \begin{center}
@@ -97,16 +88,13 @@ $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this co
 \end{center}
 \end{table}
 
-
 \bigskip
-
 \begin{table}[H]
 \caption{Number of competing cases by ph2}
 \begin{center}
   \input{`r pathCoRoutput`/tab1_competing_`r fname.suffix`}\\
 \end{center}
 \end{table}
-
 `r if (!TRIAL %in% c("janssen_partA_VL"))'-->'`
 
 

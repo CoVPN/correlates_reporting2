@@ -1,4 +1,7 @@
 # Sys.setenv(TRIAL = "janssen_la_partA")
+Sys.setenv(TRIAL = "covail_tcell")
+# COR = "D15to91covail_tcell"
+COR = "D15to181covail_tcell"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -27,7 +30,7 @@ load(file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"
 get_fancy_screen_names <- function(avgs){
   return(avgs %>%
            mutate(fancyScreen = case_when(Screen == "screen_highcor_random" ~ "highcor_random",
-                                          Screen == "screen_glmnet" ~ "glmnet",
+                                          #Screen == "screen_glmnet" ~ "glmnet",
                                           Screen == "screen_univariate_logistic_pval" ~ "univar_logistic_pval",
                                           Screen == "screen_all" ~ "all",
                                           TRUE ~ as.character(Screen)))
@@ -183,4 +186,29 @@ if(study_name == "ENSEMBLE"){
     arrange(varsetNo)
   
   saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29.rds"))
+}
+
+
+if(study_name == "COVAIL"){
+  if(COR == "D15to91covail_tcell"){
+    cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "COVIDIndD22toD91", trt = "vaccine") %>%
+      mutate(varset = str_replace(file, "CVSLaucs_vacc_COVIDIndD22toD91_", ""),
+             varset = str_replace(varset, "varset_", ""),
+             varset = str_replace(varset, ".rds", ""),
+             varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
+      arrange(varsetNo)
+    
+    saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_COVIDIndD22toD91.rds"))
+    
+  } else if (COR == "D15to181covail_tcell"){
+    cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "COVIDIndD22toD181", trt = "vaccine") %>%
+      mutate(varset = str_replace(file, "CVSLaucs_vacc_COVIDIndD22toD181_", ""),
+             varset = str_replace(varset, "varset_", ""),
+             varset = str_replace(varset, ".rds", ""),
+             varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
+      arrange(varsetNo)
+    
+    saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_COVIDIndD22toD181.rds"))
+    
+  }
 }

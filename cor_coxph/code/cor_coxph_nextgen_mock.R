@@ -178,28 +178,28 @@ for (trt in trts) {
       verbose = F
     )
     
-    # # put six curves in the same plot
-    # cor_coxph_risk_tertile_incidence_curves (
-    #   form.0,
-    #   dat = dat.1,
-    #   fname.suffix,
-    #   save.results.to,
-    #   config,
-    #   config.cor,
-    #   tfinal.tpeak,
-    # 
-    #   markers = all.markers,
-    #   markers.names.short = all.markers.names.short,
-    #   markers.names.long = all.markers.names.long,
-    #   marker.cutpoints,
-    #   assay_metadata,
-    # 
-    #   dat.plac = dat.0,
-    #   for.title = "",
-    # 
-    #   trt.label = trt.label,
-    #   cmp.label = cmp.label
-    # )
+    # put six curves in the same plot
+    cor_coxph_risk_tertile_incidence_curves (
+      form.0,
+      dat = dat.1,
+      fname.suffix,
+      save.results.to,
+      config,
+      config.cor,
+      tfinal.tpeak,
+
+      markers = all.markers,
+      markers.names.short = all.markers.names.short,
+      markers.names.long = all.markers.names.long,
+      marker.cutpoints,
+      assay_metadata,
+
+      dat.plac = dat.0,
+      for.title = "",
+
+      trt.label = trt.label,
+      cmp.label = cmp.label
+    )
   
   } # end marker_set loop
 

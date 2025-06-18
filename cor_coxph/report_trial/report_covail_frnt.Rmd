@@ -1,0 +1,73 @@
+```{r, echo=FALSE, results='asis'}
+show.sample.size <- has.scaled <- show.tertile.curves <- show.forestplots <- T
+show.q <- has.alt <- show.risk.curves <- show.ve.curves <- plot.geq <- F
+
+special.note = paste0("$\\ddagger$ Count cases starting 7 days post Day 15.")
+
+frnt=assays[startsWith(assays, "frnt")]; 
+id50=c("pseudoneutid50_D614G", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5")
+
+```
+
+
+<!-- Objective 1, 2 and 3 -->
+```{r, echo=FALSE, results='asis'}
+
+# tables made in iObj 21 is part of the 2
+for (COR in c("D15to181covail_frnt", "D15to91covail_frnt")) {
+  
+  cat("\n# Univariate, ", sub("D15to", "D22to", COR), "\n\n", sep="")
+  
+  pathCoRoutput <- paste0("cor_coxph/output/", TRIAL, "/", COR)
+  config.cor <- config::get(config = COR)
+  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  
+  marker_sets = c("frnt", "id50")
+  trts=1:8 
+
+  for (trt in trts) {
+  
+    if (trt==1) {
+      fname.suffix.0 = 'mRNA_onedose_NN'
+    } else if (trt==2) {
+      fname.suffix.0 = 'mRNA_Moderna_NN'
+      next
+    } else if (trt==3) {
+      fname.suffix.0 = 'mRNA_Pfizer_NN'
+      next
+    } else if (trt==4) {
+      fname.suffix.0 = 'mRNA_Sanofi_NN'
+      next
+      # skip for now. no baseline id50 cat marker defined for this cohort
+    
+    } else if (trt==5) {
+      fname.suffix.0 = 'mRNA_onedose_N'
+    } else if (trt==6) {
+      fname.suffix.0 = 'mRNA_Moderna_N'
+      next
+    } else if (trt==7) {
+      fname.suffix.0 = 'mRNA_Pfizer_N'
+      next
+    } else if (trt==8) {
+      fname.suffix.0 = 'mRNA_Sanofi_N'
+      # skip for now. no baseline id50 cat marker defined for this cohort
+      next
+    } 
+    
+    cat("\n## ", fname.suffix.0)
+    
+    for (marker_set in marker_sets) {
+      assays=get(marker_set)
+      all.markers = c("B"%.%assays, "Day15"%.%assays, "Delta15overB"%.%assays)
+
+      cat("\n### ", marker_set, sep="")
+      fname.suffix = fname.suffix.0%.%"_"%.%marker_set
+
+      level=3 #  title indent
+      res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
+      cat(res, sep = '\n')
+  
+    }
+  }
+}
+```
