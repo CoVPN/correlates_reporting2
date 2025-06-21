@@ -90,11 +90,91 @@ tab[is.na(tab)]=""
 kable(tab)
 
 fits=list(
-  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)), design)
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)), design)
 )
 tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
 tab[is.na(tab)]=""
 kable(tab)
+
+fits=list(
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15cd4_IFNg.IL2_BA.4.5.S)), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15cd4_IFNg.IL2_BA.4.5.S)), design)
+)
+tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
+tab[is.na(tab)]=""
+kable(tab)
+
+fits=list(
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(scale(Bcd4_FS_BA.4.5.S)) * I(scale(Bpseudoneutid50_D614G)), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ I(scale(Bcd4_FS_BA.4.5.S)) * I(scale(Bpseudoneutid50_D614G)), design)
+)
+tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
+tab[is.na(tab)]=""
+kable(tab)
+
+
+fits=list(
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Bpseudoneutid50_D614G)), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Bpseudoneutid50_D614G)), design)
+)
+tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
+tab[is.na(tab)]=""
+kable(tab)
+
+
+fits=list(
+  svyglm(COVIDIndD22toD181 ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + I(scale(Day15pseudoneutid50_BA.1)), design),
+  svyglm(COVIDIndD22toD181 ~ I(scale(Day15pseudoneutid50_BA.1)) , design),
+  svyglm(COVIDIndD22toD181 ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)), design),
+  svyglm(COVIDIndD22toD91 ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + I(scale(Day15pseudoneutid50_BA.1)), design),
+  svyglm(COVIDIndD22toD91 ~ I(scale(Day15pseudoneutid50_BA.1)) , design),
+  svyglm(COVIDIndD22toD91 ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)), design)
+)
+sapply(fits, trainauc, w=T)
+sapply(fits, trainauc)
+
+library(aucm)
+fit.a = rauc(COVIDIndD22toD181 ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + I(scale(Day15pseudoneutid50_BA.1)), dat = subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell))
+fit.a$train.auc
+
+fit.e = eauc(COVIDIndD22toD181 ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + I(scale(Day15pseudoneutid50_BA.1)), dat = subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell))
+fastauc(drop(with(subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell), I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + fit.e$coef[2]*I(scale(Day15pseudoneutid50_BA.1))))
+, subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, COVIDIndD22toD181, drop=T))
+
+
+
+summary(fits[[1]])
+summary(fits[[2]])
+summary(fits[[3]])
+summary(fits[[4]])
+
+trainauc(fits[[1]])
+trainauc(fits[[2]])
+trainauc(fits[[3]])
+trainauc(fits[[4]])
+
+
+tab=getFormattedSummary(fits, robust=T, exp=T, type=5); 
+tab[is.na(tab)]=""
+kable(tab)
+
+ 
+```
+
+
+```{r scatterplot of t cell and nAb markers}
+
+corplot(Bcd4_IFNg.IL2_BA.4.5.S~Day15pseudoneutid50_BA.1, subset(dat.onedosemRNA, naive==0), col=subset(dat.onedosemRNA, naive==0, COVIDIndD22toD181, drop=T)+1, cex=1.2)
+abline(h=wtd.quantile(subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, Bcd4_IFNg.IL2_BA.4.5.S, drop=T), subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, wt.D15.tcell, drop=T), .5))
+abline(v=wtd.quantile(subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, Day15pseudoneutid50_BA.1, drop=T), subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, wt.D15.tcell, drop=T), .5))
+
+corplot(Bpseudoneutid50_BA.1~Day15pseudoneutid50_BA.1, subset(dat.onedosemRNA, naive==0), col=subset(dat.onedosemRNA, naive==0, COVIDIndD22toD181, drop=T)+1, cex=1.2)
+abline(h=wtd.quantile(subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, Bpseudoneutid50_BA.1, drop=T), subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, wt.D15.tcell, drop=T), .5))
+abline(v=wtd.quantile(subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, Day15pseudoneutid50_BA.1, drop=T), subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, wt.D15.tcell, drop=T), .5))
+
+corplot(Bcd4_FS_BA.4.5.S~Day15pseudoneutid50_BA.1, subset(dat.onedosemRNA, naive==0), col=subset(dat.onedosemRNA, naive==0, COVIDIndD22toD181, drop=T)+1, cex=2)
+
 ```
 
 ```{r with covariates}
@@ -189,7 +269,7 @@ mytable(subset(dat.onedosemRNA, naive==0, Day15cd4_IL4.IL5.IL13.154_BA.4.5.S_alt
 
 ```
 
-There isno obvious issues with model fitting with Day15cd4_154_BA.4.5.S continuous, which is highly significant, especially after covariates adjustment. The trichotomized version has overall p value 0.089. 
+There are no obvious issues with model fitting with Day15cd4_154_BA.4.5.S continuous, which is highly significant, especially after covariates adjustment. The trichotomized version has overall p value 0.089. 
 ```{r fits}
 a="Day15cd4_154_BA.4.5.S" #
 
