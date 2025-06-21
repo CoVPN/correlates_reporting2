@@ -1,5 +1,6 @@
 # COR="D15to91covail_frnt"
 # COR="D15to181covail_frnt"
+# COR="D92to181covail_frnt"
 
 renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "covail_frnt")
@@ -12,16 +13,16 @@ source(here::here("code", "params.R"))
 
 {
 Sys.setenv(VERBOSE = 1) 
-library(kyotil) # p.adj.perm, getFormattedSummary
-library(xtable) # this is a dependency of kyotil
-library(marginalizedRisk)
-library(tools) # toTitleCase
-library(survey)
-library(plotrix) # weighted.hist
-library(parallel)
-library(Hmisc) # wtd.quantile, cut2
-library(mitools)
-library(glue)
+quiet_library("kyotil") # p.adj.perm, getFormattedSummary
+quiet_library("xtable") # this is a dependency of kyotil
+quiet_library("marginalizedRisk")
+quiet_library("tools") # toTitleCase
+quiet_library("survey")
+quiet_library("plotrix") # weighted.hist
+quiet_library("parallel")
+quiet_library("Hmisc") # wtd.quantile, cut2
+quiet_library("mitools")
+quiet_library("glue")
 
 time.start=Sys.time()
 print(date())
@@ -52,27 +53,35 @@ for (a in c("Day15"%.%assays, "B"%.%assays, "Delta15overB"%.%assays)) {
   dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
 }
 
-dat.sanofi =      subset(dat_proc, ph1.D15.frnt & TrtSanofi==1)
-dat.onedosemRNA = subset(dat_proc, ph1.D15.frnt & TrtonedosemRNA==1) 
-
-
 # all cases have covid lineage observed
 
 if (COR=="D15to181covail_frnt") {
   form.0 = update(Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ 1, as.formula(config$covariates))
+  dat.sanofi =      subset(dat_proc, ph1.D15.frnt & TrtSanofi==1)
+  dat.onedosemRNA = subset(dat_proc, ph1.D15.frnt & TrtonedosemRNA==1) 
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD181
   dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD181
   
+  trts=1:8 
+  
 } else if (COR=="D15to91covail_frnt") {
   form.0 = update(Surv(COVIDtimeD22toD91, COVIDIndD22toD91) ~ 1, as.formula(config$covariates))
+  dat.sanofi =      subset(dat_proc, ph1.D15.frnt & TrtSanofi==1)
+  dat.onedosemRNA = subset(dat_proc, ph1.D15.frnt & TrtonedosemRNA==1) 
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD22toD91
   dat.sanofi$yy     =dat.sanofi$COVIDIndD22toD91
   
+  trts=1:8 
+  
 } else if (COR=="D92to181covail_frnt") {
   form.0 = update(Surv(COVIDtimeD92toD181, COVIDIndD92toD181) ~ 1, as.formula(config$covariates))
+  dat.sanofi =      subset(dat_proc, ph1.D92.frnt & TrtSanofi==1)
+  dat.onedosemRNA = subset(dat_proc, ph1.D92.frnt & TrtonedosemRNA==1) 
   dat.onedosemRNA$yy=dat.onedosemRNA$COVIDIndD92toD181
   dat.sanofi$yy     =dat.sanofi$COVIDIndD92toD181
 
+  trts=c(1,5:8) 
+  
 } else stop("Wrong COR: "%.% COR)
 
 
@@ -93,7 +102,6 @@ frnt=assays[startsWith(assays, "frnt")];
 id50=c("pseudoneutid50_D614G", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5")
 
 marker_sets = c("frnt", "id50")
-trts=1:8 
 
 }
 
@@ -106,12 +114,12 @@ for (trt in trts) {
   } else if (trt==2) {
     dat=subset(dat.onedosemRNA, TrtA==1 & naive==0)
     fname.suffix.0 = 'mRNA_Moderna_NN'
-    next
+    
     # skip because svycoxph error from too few cases in some markers
   } else if (trt==3) {
     dat=subset(dat.onedosemRNA, TrtA==0 & naive==0)
     fname.suffix.0 = 'mRNA_Pfizer_NN'
-    next
+    
     # skip because svycoxph error from too few cases in some markers
   } else if (trt==4) {
     dat=subset(dat.sanofi, naive==0)
@@ -125,12 +133,12 @@ for (trt in trts) {
   } else if (trt==6) {
     dat=subset(dat.onedosemRNA, TrtA==1 & naive==1)
     fname.suffix.0 = 'mRNA_Moderna_N'
-    next
+    
     # skip because svycoxph error from too few cases in some markers
   } else if (trt==7) {
     dat=subset(dat.onedosemRNA, TrtA==0 & naive==1)
     fname.suffix.0 = 'mRNA_Pfizer_N'
-    next
+    
     # skip because svycoxph error from too few cases in some markers
   } else if (trt==8) {
     dat=subset(dat.sanofi, naive==1)
@@ -139,7 +147,8 @@ for (trt in trts) {
     # skip for now. no baseline id50 cat marker defined for this cohort
   } 
     
-  cat("\n\n")
+  cat("\n",fname.suffix.0,"\n")
+  
   
   # table of ph1 and ph2 cases
   tab1 = with(dat, table(ph2, EventIndPrimary))
@@ -176,32 +185,33 @@ for (trt in trts) {
 
       markers = all.markers,
       markers.names.short = all.markers.names.short,
+      
+      run.trichtom=F,
 
       dat.plac = NULL,
       show.q=F, 
-      run.trichtom=T,
       verbose = T)
 
 
-    cor_coxph_risk_tertile_incidence_curves(
-      form.0,
-      dat,
-      fname.suffix,
-      save.results.to,
-      config,
-      config.cor,
-      tfinal.tpeak,
-
-      markers = all.markers,
-      markers.names.short = all.markers.names.short,
-      markers.names.long = all.markers.names.long,
-      marker.cutpoints,
-      assay_metadata,
-
-      dat.plac = NULL,
-      for.title="",
-      verbose=T
-    )
+    # cor_coxph_risk_tertile_incidence_curves(
+    #   form.0,
+    #   dat,
+    #   fname.suffix,
+    #   save.results.to,
+    #   config,
+    #   config.cor,
+    #   tfinal.tpeak,
+    # 
+    #   markers = all.markers,
+    #   markers.names.short = all.markers.names.short,
+    #   markers.names.long = all.markers.names.long,
+    #   marker.cutpoints,
+    #   assay_metadata,
+    # 
+    #   dat.plac = NULL,
+    #   for.title="",
+    #   verbose=T
+    # )
   
   } # end loop marker_set
 
