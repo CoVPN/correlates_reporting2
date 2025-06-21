@@ -526,8 +526,8 @@ drop_predVars_with_fewer_0s_or_1s <- function(dat, pred_vars) {
     unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))
     # Remove a variable if the number of cases in the variable = 1 subgroup is <= 3 or the number of cases in the variable = 0 subgroup is <= 3
     for (i in 1:length(pred_vars)) {
-      if ((dat %>% select(starts_with(pred_vars[i])) %>% unique())[[1]] == c(0,1) | 
-          (dat %>% select(starts_with(pred_vars[i])) %>% unique())[[1]] == c(1,0)) {
+      print(paste0(i, " ", pred_vars[i]))
+      if (is_var_binary(dat %>% select(starts_with(pred_vars[i])) %>% pull)) {
         if (dat %>% filter(get(pred_vars[i]) == 1) %>% pull(endpoint) %>% sum() <= 3 | dat %>% filter(get(pred_vars[i]) == 0) %>% pull(endpoint) %>% sum() <= 3){
           dat <- dat %>% select(-starts_with(pred_vars[i]))
           print(paste0(pred_vars[i], " dropped from risk score analysis as the number of cases in the variable = 1 or 0 subgroup is <= 3."))
@@ -547,6 +547,40 @@ drop_predVars_with_fewer_0s_or_1s <- function(dat, pred_vars) {
   return(dat)
 }
 
+
+
+
+
+#' Check if a variable is binary or continuous
+#'
+#' This function checks whether a given numeric variable contains exactly two 
+#' distinct values (0 and 1) and thus is considered a binary variable, or 
+#' if the variable contains more than two distinct values and is considered 
+#' continuous.
+#'
+#' @param var A numeric vector to be checked. This function assumes the variable 
+#' is numeric (either integer or double).
+#'
+#' @return A logical value (`TRUE` or `FALSE`):
+#' - `TRUE` if the variable contains exactly two distinct values, 0 and 1 (binary).
+#' - `FALSE` if the variable is continuous (contains more than two distinct values).
+#'
+#' @examples
+#' # Example 1: Binary variable
+#' binary_var <- c(0, 1, 0, 1, 1)
+#' is_var_binary(binary_var)  # Should return TRUE
+#'
+#' # Example 2: Continuous variable
+#' continuous_var <- c(1.1, 2.5, 3.7, 0.4, 5.6)
+#' is_var_binary(continuous_var)  # Should return FALSE
+#'
+#' @export
+is_var_binary <- function(var) {
+  is_binary <- is.numeric(var) && length(unique(var)) == 2 && all(unique(var) %in% c(0, 1))
+  
+  # Return TRUE if binary, otherwise FALSE
+  return(is_binary)
+}
 
 
 # # remove any binary risk variables that have more than 5% values missing
@@ -866,6 +900,10 @@ plot_predicted_probabilities <- function(pred, weights = rep(1, length(pred$pred
     cases = "Post Day 210 Cases"
     disease_name = "HIV"
   }
+  if(study_name == "COVAIL"){
+    cases = "Post Day 22 to Day 91 Cases"
+    disease_name = "COVID-19"
+  }
   pred %>%
     mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>%
     ggplot(aes(x = Ychar, y = pred, color = Ychar)) +
@@ -946,7 +984,12 @@ make_forest_plot_demo <- function(avgs) {
 # Create forest plot for all variable sets for either SL or discrete SL
 # @param cvaucs_vacc dataframe containing Variable Sets, Screen, Learner, AUC estimates and CIs as columns
 # @return list of 2 ggplot objects: one containing forest plot and the other containing labels (Variable Sets and CV-AUCs)
-make_forest_plot_SL_allVarSets <- function(dat, learner.choice = "SL"){
+make_forest_plot_SL_allVarSets <- function(dat, 
+                                           learner.choice = "SL",
+                                           learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm"),
+                                           names.plot.margin = unit(c(0.1,-0.15,0.65,-0.15),"cm"),
+                                           y_at = 35.2){
+  
   allSLs <- dat %>% filter(Learner == learner.choice) %>%
     mutate(varsetNo = sapply(strsplit(varset, "_"), `[`, 1),
            varsetNo = as.numeric(varsetNo)) %>%
@@ -1085,7 +1128,10 @@ make_forest_plot_prod <- function(avgs) {
 # Create forest plot in general
 # @param avgs dataframe containing Screen, Learner, AUC estimates and CIs as columns
 # @return list of 2 ggplot objects: one containing forest plot and the other containing labels (Screen, Learner and CV-AUCs)
-make_forest_plot <- function(avgs){
+make_forest_plot <- function(avgs, 
+                             PLOT.MARGIN = unit(c(3.4,-0.15,1,-0.15),"cm"),
+                             NAMES.PLOT.MARGIN = unit(c(1.6,-0.15,1.5,-0.15),"cm"),
+                             y_at = 18.75){
 
   if(Sys.getenv("TRIAL") == "hvtn705second"){
     PLOT.MARGIN = unit(c(3.4,-0.15,1,-0.15),"cm")

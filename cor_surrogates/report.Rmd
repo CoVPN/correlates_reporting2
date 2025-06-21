@@ -4,7 +4,9 @@ header-includes:
    
 title: "`r ifelse(Sys.getenv('TRIAL') == 'janssen_pooled_partA', 'ENSEMBLE Optimal Surrogate Analysis Report: janssen_pooled_partA', 
                      ifelse(Sys.getenv('TRIAL') == 'janssen_la_partA', 'ENSEMBLE Optimal Surrogate Analysis Report: janssen_la_partA', 
-                     'NA'))`"
+                     ifelse(Sys.getenv('TRIAL') == 'covail_tcell', 'COVAIL Optimal Surrogate Analysis Report', 
+                     'NA')))`"
+                     
 subtitle: "`r Sys.Date()`"
 
 output:
@@ -16,6 +18,18 @@ output:
   toc: true
 ---
 
+
+Non-Naive cohort  
+One-dose mRNA vaccine arms (1-2, 4-12)     
+<!-- One-dose vaccine arms (1-2, 4-15)    -->
+<!-- Proximal cases    -->
+All cases        
+Reference Model uses risk score only
+<!-- Reference Model uses bRiskFactors only    -->
+<!-- Reference Model uses bRiskFactors + insert + stage info     -->
+
+\vspace{4cm}
+
 ```{r, include = FALSE}
 library(here)
 here::i_am("cor_surrogates/report.Rmd")
@@ -23,5 +37,41 @@ here::i_am("cor_surrogates/report.Rmd")
 
 \tableofcontents
 
-```{r, child=here("cor_surrogates", 'report_sub_janssen_pooled_partA.Rmd')}
+<!-- ```{r, child=here("cor_surrogates", 'report_sub_covail_naive_1dosemRNA_proximalcases_bRiskFactors.Rmd')} -->
+<!-- ``` -->
+
+<!-- ```{r, child=here("cor_surrogates", 'report_sub_covail_naive_1dosemRNA_proximalcases_bRiskFactors.insert.stage.Rmd')} -->
+<!-- ``` -->
+
+<!-- ```{r, child=here("cor_surrogates", 'report_sub_covail_naive_1dosemRNA_allcases_bRiskFactors.Rmd')} -->
+<!-- ``` -->
+
+
+<!-- ```{r, child=here("cor_surrogates", 'report_sub_covail_naive_1dosemRNA_allcases_bRiskFactors.insert.stage.Rmd')} -->
+<!-- ``` -->
+
+
+<!-- ```{r, child=here("cor_surrogates", 'report_sub_covail_naive_1dose_proximalcases_bRiskFactors.Rmd')} -->
+<!-- ``` -->
+
+
+
+<!-- ```{r, child=here("cor_surrogates", 'report_sub_covail_naive_1dose_proximalcases_bRiskFactors.insert.stage.Rmd')} -->
+<!-- ``` -->
+
+
+
+<!-- ```{r, child=here("cor_surrogates", 'report_sub_covail_naive_1dose_allcases_bRiskFactors.Rmd')} -->
+<!-- ``` -->
+
+
+<!-- ```{r, child=here("cor_surrogates", 'report_sub_covail_naive_1dose_allcases_bRiskFactors.insert.stage.Rmd')} -->
+<!-- ``` -->
+
+```{r, child=here("cor_surrogates", 'report_sub_covail_non-naive_1dosemRNA_allcases_riskscore.Rmd')}
 ```
+
+
+<!-- ```{r, child=here("cor_surrogates", 'report_sub_covail_non-naive_1dose_allcases_riskscore.Rmd')} -->
+<!-- ``` -->
+
