@@ -546,10 +546,10 @@ if (attr(config,"config")=="janssen_partA_VL"){
 if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
     
     for (asy in if(study_name == "NextGen_Mock") {
-    c(if (nextgen_output_flag >= 1) "bind.*sera", 
-      if (nextgen_output_flag == 3) c("bind.*nasal", "bind.*saliva"), 
-      if (nextgen_output_flag >= 1) "pseudo.*sera", 
-      if (nextgen_output_flag == 3) c("pseudo.*nasal", "pseudo.*saliva"), 
+    c(if (nextgen_output_flag >= 1) "bind_sera", 
+      if (nextgen_output_flag == 3) c("bind_nasal", "bind_saliva"), 
+      if (nextgen_output_flag >= 1) "pseudo_sera", 
+      if (nextgen_output_flag == 3) c("pseudo_nasal", "pseudo_saliva"), 
       if (nextgen_output_flag >= 1) "ics")
     } else {c("bind", "pseudo")}){
         #if (study_name == "NextGen_Mock" & tp %in% c("Day whole", "Day initial") & asy == "ics") next # do not have these plots
