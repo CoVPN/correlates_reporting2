@@ -556,8 +556,7 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
         
         for (tp in #if(study_name=="VAT08") {c("Day", "Delta")} else {
              c(if(attr(config,"config") != "nextgen_mock") "Day", 
-               if(attr(config,"config") == "nextgen_mock" & nextgen_output_flag >= 2) "Day initial", # "Day91", "Day366" Track A
-               if(attr(config,"config") == "nextgen_mock") "Day whole" # "B", "Day31", "Day181" whole
+               if(attr(config,"config") == "nextgen_mock") c("Day initial", "Day whole")
                #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
              )#}
         ) {
