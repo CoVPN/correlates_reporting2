@@ -254,9 +254,13 @@ for (panel in if (study_name == "NextGen_Mock") {
        
        "pseudoneutid50_saliva_KP.2$|pseudoneutid50_saliva_XBB.1.5$",
        
-       "T4_IFNg_OR_IL2_N_BA.4.5$|T4_IFNg_OR_IL2_Spike_BA.4.5$",
+       "T4_IFNg_OR_IL2_N_Index$",
        
-       "T8_IFNg_OR_IL2_N_BA.4.5$|T8_IFNg_OR_IL2_Spike_BA.4.5$"
+       "T4_IFNg_OR_IL2_Spike_KP.2$|T4_IFNg_OR_IL2_Spike_Index.D614$",
+       
+       "T8_IFNg_OR_IL2_N_Index$",
+       
+       "T8_IFNg_OR_IL2_Spike_KP.2$|T8_IFNg_OR_IL2_Spike_Index.D614$"
        )
     } else {c("pseudoneutid50", "bindSpike")}){
     # by naive/non-naive, vaccine/placebo
