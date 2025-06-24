@@ -88,6 +88,24 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
+```{r missingness of FRNT data}
+
+# dat_proc$Day91frnt50_any = with(dat_proc, !is.na(Day91frnt50_D614G) | !is.na(Day91frnt50_BA.1) | !is.na(Day91frnt50_BA.2) | !is.na(Day91frnt50_BA.4.BA.5) | !is.na(Day181frnt50_D614G) | !is.na(Day181frnt50_BA.1) | !is.na(Day181frnt50_BA.2) | !is.na(Day181frnt50_BA.4.BA.5))
+# dat_proc$Day181frnt50_any = with(dat_proc, !is.na(Day181frnt50_D614G) | !is.na(Day181frnt50_BA.1) | !is.na(Day181frnt50_BA.2) | !is.na(Day181frnt50_BA.4.BA.5))
+
+dat_proc$Day91frnt_missing_cnt = with(dat_proc, is.na(Day91frnt50_D614G) + is.na(Day91frnt50_BA.1) + is.na(Day91frnt50_BA.2) + is.na(Day91frnt50_BA.4.BA.5) + is.na(Day91frnt80_D614G) + is.na(Day91frnt80_BA.1) + is.na(Day91frnt80_BA.2) + is.na(Day91frnt80_BA.4.BA.5) )
+dat_proc$Day181frnt_missing_cnt = with(dat_proc, is.na(Day181frnt50_D614G) + is.na(Day181frnt50_BA.1) + is.na(Day181frnt50_BA.2) + is.na(Day181frnt50_BA.4.BA.5) + is.na(Day181frnt80_D614G) + is.na(Day181frnt80_BA.1) + is.na(Day181frnt80_BA.2) + is.na(Day181frnt80_BA.4.BA.5) )
+
+# with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day91frnt50_any), (Day181frnt50_any), COVIDIndD22toD181))
+# with(subset(dat_proc, ph2.D15.frnt==1), mytable(!is.na(Day91frnt50_any), !is.na(Day181frnt50_any), COVIDIndD22toD91))
+# with(subset(dat_proc, ph2.D15.frnt==1), mytable(!is.na(Day91frnt50_any), !is.na(Day181frnt50_any), COVIDIndD92toD181))
+
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day91frnt_missing_cnt), COVIDIndD22toD181))
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day181frnt_missing_cnt), COVIDIndD22toD181))
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day91frnt_missing_cnt), (Day181frnt_missing_cnt), COVIDIndD92toD181))
+
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day91frnt_missing_cnt), COVIDIndD22toD91))
+```
 
 ```{r overlap of FRNT and nAb}
 with(subset(dat_proc, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), !is.na(Day15cd4_154_BA.4.5.S1)))
@@ -102,6 +120,10 @@ with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), !is.na(D
 
 with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), arm))
 
+mytable(apply((!is.na(dat_mapped[dat_mapped$ph1.D15==1 & dat_mapped$arm<=15, c(glue("B{c(frnt50,frnt80)}"), glue("Day15{c(frnt50,frnt80)}"))])), 1, sum))
+
+sum(dat_proc$ph2.D15.frnt)
+sum(dat_proc$ph1.D15.frnt)
 
 for (a in frnt50) {
   print(a)
@@ -172,7 +194,7 @@ round(res,3)
 ```
 
 All the CD8 values for positive responders are above -1.5.
-```{r}
+```{r, fig.width=8, fig.height=4}
 par(mfrow=c(1,4)); reduce_margin()
 lim=c(-3,1)
 myboxplot(Bcd8_IFNg.IL2_BA.4.5.S~Bcd8_IFNg.IL2_BA.4.5.S_resp, dat_proc[dat_proc$naive==0,], ylim=lim, xlab="response call", main="D01"); abline(h=-1.7, col=2)
@@ -184,8 +206,33 @@ mtext("Naive", side=3, at=0, line=0.8)
 
 par(mfrow=c(1,2));  par(mar=c(4,3,2,1), mgp = c(1.5, 0.5, 0))
 lim=c(-3,1)
-myboxplot(Bcd4_IFNg.IL2_BA.4.5.S~naive, dat_proc, ylim=lim, xlab="naive", main="D01", test='w');# abline(h=-1.7, col=2)
-myboxplot(Day15cd4_IFNg.IL2_BA.4.5.S~naive, dat_proc, ylim=lim, xlab="naive", main="D15", test="w");# abline(h=-1.7, col=2)
+myboxplot(Bcd4_IFNg.IL2_BA.4.5.S~naive, subset(dat_proc, ph2.D15.tcell), ylim=lim, xlab="naive", main="D01", test='w');# abline(h=-1.7, col=2)
+myboxplot(Day15cd4_IFNg.IL2_BA.4.5.S~naive, subset(dat_proc, ph2.D15.tcell), ylim=lim, xlab="naive", main="D15", test="w");# abline(h=-1.7, col=2)
+
+library(survey)
+design <- svydesign(ids = ~1, data = subset(dat_proc, ph2.D15.tcell), weights = ~wt.D15.tcell)
+
+par(mfrow=c(1,4));  par(mar=c(4,3,2,1), mgp = c(1.5, 0.5, 0))
+svyranktest(Bcd4_IFNg.IL2_BA.4.5.S~naive, design)
+svyranktest(Bcd4_IFNg.IL2_COV2.CON.S~naive, design)
+svyranktest(Bcd4_FS_BA.4.5.S~naive, design)
+svyranktest(Bcd4_FS_COV2.CON.S~naive, design)
+
+myboxplot(Bcd4_IFNg.IL2_BA.4.5.S~naive, subset(dat_proc, ph2.D15.tcell), ylim=lim, xlab="naive", main="D01", test='');# abline(h=-1.7, col=2)
+myboxplot(Bcd4_IFNg.IL2_COV2.CON.S~naive, subset(dat_proc, ph2.D15.tcell), ylim=lim, xlab="naive", main="D01", test='');# abline(h=-1.7, col=2)
+myboxplot(Bcd4_FS_BA.4.5.S~naive, subset(dat_proc, ph2.D15.tcell), xlab="naive", main="D01", test='');# abline(h=-1.7, col=2)
+myboxplot(Bcd4_FS_COV2.CON.S~naive, subset(dat_proc, ph2.D15.tcell), xlab="naive", main="D01", test='');# abline(h=-1.7, col=2)
+
+
+myboxplot(Bcd4_FS_BA.4.5.S~naive+COVIDIndD22toD91, subset(dat_proc, ph2.D15.tcell), xlab="naive.case", main="D01", test='');# abline(h=-1.7, col=2)
+myboxplot(Bpseudoneutid50_D614G~naive+COVIDIndD22toD91, subset(dat_proc, ph2.D15==1), xlab="naive.case", main="D01", test='');# abline(h=-1.7, col=2)
+
+corplot(Bcd4_FS_BA.4.5.S~Bpseudoneutid50_D614G, dat_proc, col=ifelse(dat_proc$naive, 4, 1), pch=ifelse(dat_proc$COVIDIndD22toD91==1, 3, 1))
+
+par(mfrow=c(1,2)); shrink_margin()
+corplot(Bcd4_FS_BA.4.5.S~Bpseudoneutid50_D614G, subset(dat_proc, naive==0), pch=1, col=subset(dat_proc, naive==0, COVIDIndD22toD91,drop=T)+1, xlim=range(dat_proc$Bpseudoneutid50_D614G, na.rm=T), ylim=range(dat_proc$Bcd4_FS_BA.4.5.S, na.rm=T), main="non-naive")
+corplot(Bcd4_FS_BA.4.5.S~Bpseudoneutid50_D614G, subset(dat_proc, naive==1), pch=1, col=subset(dat_proc, naive==1, COVIDIndD22toD91, drop=T)+1, xlim=range(dat_proc$Bpseudoneutid50_D614G, na.rm=T), ylim=range(dat_proc$Bcd4_FS_BA.4.5.S, na.rm=T), main="naive")
+
 ```
 
 
