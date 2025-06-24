@@ -1304,7 +1304,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tm)), "_", ifelse(reg!="all", reg_lb, ""), gsub("\\.\\*", "_", ab), "_", tolower(bstatus.labels.2[bsero + 1]), "_", "trt_comparison", #trt.labels.2[trt + 1], 
                                 ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
                                        ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
-              pdf(filename, width = ifelse(study_name == "NextGen_Mock", 15, 5.5), height = 6.5)
+              try(pdf(filename, width = ifelse(study_name == "NextGen_Mock", 15, 5.5), height = 6.5, onefile = TRUE), silent = FALSE)
+              cat("Saving to:", filename, "\n")
               par(mfrow=#if (study_name=="VAT08") {c(2,2)} else {
                     c(1, 2) #c(1,1)#}
                   , mar=c(0.1,0.1,1,0.1))
@@ -1365,7 +1366,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                 legend("bottomleft", legend=p$legend_lb, lty=5, pch=c(15), col=p$color, bty="n", ncol=3, cex=0.7, inset=c(0.01, 0))
               }
               
-            dev.off()
+              dev.off()
             } # end of plot_list
           } # end of trt_pair
         } # end of bsero
