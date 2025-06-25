@@ -159,15 +159,25 @@ tab=getFormattedSummary(fits, robust=T, exp=T, type=5);
 tab[is.na(tab)]=""
 kable(tab)
 
+
+
  
+```
+
+```{r}
+
+dat.tmp = subset(dat_proc, naive==0 & ph2.D15.tcell & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
+fastauc(dat.tmp$Bcd4_IFNg.IL2_BA.4.5.S, dat.tmp$COVIDIndD22toD181)
+fastauc(dat.tmp$Day15cd4_IFNg.IL2_BA.4.5.S, dat.tmp$COVIDIndD22toD181)
+
 ```
 
 
 ```{r scatterplot of t cell and nAb markers}
 
-corplot(Bcd4_IFNg.IL2_BA.4.5.S~Day15pseudoneutid50_BA.1, subset(dat.onedosemRNA, naive==0), col=subset(dat.onedosemRNA, naive==0, COVIDIndD22toD181, drop=T)+1, cex=1.2)
+corplot(Bcd4_IFNg.IL2_BA.4.5.S~Day15pseudoneutid50_BA.4.BA.5, subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell), col=subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, COVIDIndD22toD181, drop=T)+1, cex=1.2)
 abline(h=wtd.quantile(subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, Bcd4_IFNg.IL2_BA.4.5.S, drop=T), subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, wt.D15.tcell, drop=T), .5))
-abline(v=wtd.quantile(subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, Day15pseudoneutid50_BA.1, drop=T), subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, wt.D15.tcell, drop=T), .5))
+abline(v=wtd.quantile(subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, Day15pseudoneutid50_BA.4.BA.5, drop=T), subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, wt.D15.tcell, drop=T), .5))
 
 corplot(Bpseudoneutid50_BA.1~Day15pseudoneutid50_BA.1, subset(dat.onedosemRNA, naive==0), col=subset(dat.onedosemRNA, naive==0, COVIDIndD22toD181, drop=T)+1, cex=1.2)
 abline(h=wtd.quantile(subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, Bpseudoneutid50_BA.1, drop=T), subset(dat.onedosemRNA, naive==0 & ph2.D15.tcell, wt.D15.tcell, drop=T), .5))
