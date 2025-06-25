@@ -1,6 +1,10 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 # Sys.setenv(TRIAL = "janssen_pooled_partA")
+# Sys.setenv(TRIAL = "covail_tcell")
+Sys.setenv(TRIAL = "covail_tcell")
+# COR = "D15to91covail_tcell"
+COR = "D15to181covail_tcell"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -11,14 +15,21 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
+conflicted::conflict_prefer("filter", "dplyr")
+conflicted::conflict_prefer("summarise", "dplyr")
+
 # obtain the job id
 #args <- commandArgs(trailingOnly = TRUE)
 #job_id <- as.numeric(args[2])
-job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+# job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+job_id = 1
 
 # common setup for CV super learners and variable importance
 source(here::here("code", "cor_surrogates_setup.R"))
 
+
+for (job_id in 26) { # DO THIS ONLY FOR COVAIL
+  
 # grab the current variable set based on the job id
 this_var_set <- varset_matrix[job_id, ]
 cat("\n Running", varset_names[job_id], "variable set \n")
@@ -73,6 +84,7 @@ cvsl_args %>% add_row(Argument = "vimp package version",
 # ---------------------------------------------------------------------------------
 # ensure reproducibility
 set.seed(20210216)
+# if non-naive and 1 dose mRNA arm then varset 26 does not work with the above seed. So use set.seed(20250616) !!
 seeds <- round(runif(10, 1000, 10000)) # average over 10 random starts
 
 # disable parallelization in openBLAS and openMP
@@ -123,3 +135,5 @@ if (job_id == 1) {
        V_outer, varset_names, individualMarkers, SL_library, file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 }
 cat("\n Finished ", varset_names[job_id], "variable set \n") 
+
+} # DO THIS ONLY FOR COVAIL

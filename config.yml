@@ -1769,7 +1769,7 @@ D31toM6_nextgen_mock_PBMC:
 
 
 ################################################################################
-# COVAIL
+# COVAIL    
 # Note that for data processing, covail is the only TRIAL label. But for reporting2, there are multiple variants.
 
 covail: &covail

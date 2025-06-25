@@ -1,6 +1,13 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 # Sys.setenv(TRIAL = "janssen_pooled_partA")
+# Sys.setenv(TRIAL = "covail_tcell")
+# COR = "D15to91covail_tcell"
+# Dataset-level metadata (export TRIAL=covail_tcell) 
+# Objective-level metadata (export COR=D15to91covail_tcell)
+Sys.setenv(TRIAL = "covail_tcell")
+# COR = "D15to91covail_tcell"
+COR = "D15to181covail_tcell"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))

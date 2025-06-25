@@ -1,6 +1,9 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 # Sys.setenv(TRIAL = "janssen_pooled_partA")
+Sys.setenv(TRIAL = "covail_tcell")
+# COR = "D15to91covail_tcell"
+COR = "D15to181covail_tcell"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -35,20 +38,20 @@ method <- "method.CC_nloglik" # since SuperLearner relies on this to be in Globa
 ggplot2::theme_set(theme_cowplot())
 load(paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 
-# Get vimps in one dataframe: ----------------------------------------------------------
-pooled_ests_lst <- list.files(here(paste0("output/", Sys.getenv("TRIAL"))), pattern = "pooled_ests_*") %>%
-    tibble(file = .) %>%
-    mutate(listdat = lapply(paste0("output/", Sys.getenv("TRIAL"), "/", file), readRDS))
-
-all_estimates = as.data.frame(do.call("rbind", pooled_ests_lst$listdat))
-
-# add on the variable set name
-vim_estimates <- all_estimates %>%
-    mutate(variable_set = rep(varset_names, each = 2), .before = "s")
-
-# save the output
-saveRDS(vim_estimates, file = paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.rds"))
-# ----------------------------------------------------------------------------------------
+# # Get vimps in one dataframe: ----------------------------------------------------------
+# pooled_ests_lst <- list.files(here(paste0("output/", Sys.getenv("TRIAL"))), pattern = "pooled_ests_*") %>%
+#     tibble(file = .) %>%
+#     mutate(listdat = lapply(paste0("output/", Sys.getenv("TRIAL"), "/", file), readRDS))
+# 
+# all_estimates = as.data.frame(do.call("rbind", pooled_ests_lst$listdat))
+# 
+# # add on the variable set name
+# vim_estimates <- all_estimates %>%
+#     mutate(variable_set = rep(varset_names, each = 2), .before = "s")
+# 
+# # save the output
+# saveRDS(vim_estimates, file = paste0("output/", Sys.getenv("TRIAL"), "/vim_estimates.rds"))
+# # ----------------------------------------------------------------------------------------
 # read in the results; note that createRDAfiles_fromSLobjects has to be run prior to this
 
 if (study_name %in% c("COVE", "MockCOVE")) {
@@ -65,12 +68,22 @@ if (study_name == "ENSEMBLE") {
   cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29.rds"))
   vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
 }
+if (study_name == "COVAIL") {
+  if(COR == "D15to91covail_tcell"){
+    cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_COVIDIndD22toD91.rds"))
+    #vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
+  } else if(COR == "D15to181covail_tcell"){
+    cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_COVIDIndD22toD181.rds"))
+    #vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
+  }
+}
+
 ph2_vacc_ptids <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "ph2_vacc_ptids.rds"))
 
 # Select the random seed from which to display results
 if(study_name %in% c("COVE", "MockCOVE", "HVTN705")){
   rseed = 1
-} else if(study_name %in% c("ENSEMBLE")){
+} else if(study_name %in% c("ENSEMBLE", "COVAIL")){
   rseed = 2
 }
 
@@ -81,7 +94,8 @@ caption <- "All learner-screen combinations (16 in total) used as input to the S
 tab <- cvaucs_vacc %>%
   filter(!Learner %in% c("SL", "Discrete SL")) %>%
   select(Learner, Screen) %>%
-  mutate(Screen = fct_relevel(Screen, c("all", "glmnet", "univar_logistic_pval",
+  mutate(Screen = fct_relevel(Screen, c("all", #"glmnet", 
+                                        "univar_logistic_pval",
                                         "highcor_random")),
          Learner = as.factor(Learner)) %>%
   arrange(Learner, Screen) %>%
@@ -241,6 +255,65 @@ components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + Day 29 ADCP markers and combination scores across the four markers",
                                                         "Baseline risk factors + all individual Day 29 marker variables and their combination scores (Full model of Day 29 markers)"))
 }
+if (study_name %in% c("COVAIL") & non_naive == FALSE) {
+  caption <- "The 13 variable sets on which an estimated optimal surrogate was built."
+  
+  only_varsets <- varset_names[1:13]
+  
+  tab <- data.frame(`Variable Set Name` = varset_names[1:13],
+                    `Variables included in the set` = c(
+                      "Baseline risk factors only (Reference model): includes baseline risk score and the standardized FOI score only",
+                      #"Baseline risk factors only (Reference model): includes baseline risk score, standardized FOI score, insert and stage (vaccine manufacturer) info",
+                                                        "Baseline risk factors + D1 antibody markers against BA.1",
+                                                        "Baseline risk factors + D15 antibody markers against BA.1",
+                                                        "Baseline risk factors + D1 and D15 antibody markers against BA.1",
+                                                        "Baseline risk factors + D1 primary and secondary T cell markers",
+                                                        "Baseline risk factors + D15 primary and secondary T cell markers",
+                                                        "Baseline risk factors + D1 and D15 primary and secondary T cell markers",
+                                                        "Baseline risk factors + D1 antibody markers against BA.1 + D1 primary and secondary T cell markers ",
+                                                        "Baseline risk factors + D1 antibody markers against BA.1 + D15 primary and secondary T cell markers ",
+                                                        "Baseline risk factors + D15 antibody markers against BA.1 + D1 primary and secondary T cell markers ",
+                                                        "Baseline risk factors + D15 antibody markers against BA.1 + D15 primary and secondary T cell markers ",
+                                                        "Baseline risk factors + D1 and D15 antibody markers against BA.1 + D1 and D15 primary and secondary T cell markers",
+                                                        "Baseline risk factors + D1 and D15 antibody markers against BA.1 + D1 and D15 [primary, secondary, and exploratory T cell markers"))
+}
+if (study_name %in% c("COVAIL") & non_naive == TRUE) {
+  caption <- "The 28 variable sets on which an estimated optimal surrogate was built."
+  
+  only_varsets <- varset_names[1:28]
+  
+  tab <- data.frame(`Variable Set Name` = varset_names[1:28],
+                    `Variables included in the set` = c(
+                      "Baseline risk factors only (Reference model): includes baseline risk score only",
+                      #"Baseline risk factors only (Reference model): includes baseline risk score, standardized FOI score, insert and stage (vaccine manufacturer) info",
+                      "Baseline risk factors + D1 antibody markers against BA.1",
+                      "Baseline risk factors + D15 antibody markers against BA.1",
+                      "Baseline risk factors + D1 and D15 antibody markers against BA.1",
+                      "Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D1 primary CD4+ T cell marker Functionality Score (FS) Spike BA.4/5", 
+                      "Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index", 
+                      "Baseline risk score + D1 primary CD4+ T cell marker FS N Index", 
+                      "Baseline risk score + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5", 
+                      "Baseline risk score + D15 primary CD4+ T cell marker FS Spike BA.4/5", 
+                      "Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5", 
+                      "Baseline risk score + D1 primary CD4+ T cell marker FS Spike BA.4/5 + D15 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D1 primary CD4+ T cell marker FS N Index + D15 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS N Index",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D1 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker IFN-g/IL-2 N Index",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D1 primary CD4+ T cell marker FS N Index",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS Spike BA.4/5",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 N Index",
+                      "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS N Index"))
+}
 
 tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "varsets.csv"))
 
@@ -251,30 +324,43 @@ options(bitmapType = "cairo")
 for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
   variableSet = unique(cvaucs_vacc$varset)[i]
   png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
-  top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet))
+  top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet),
+                                  PLOT.MARGIN = unit(c(3.4,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
+                                  NAMES.PLOT.MARGIN = unit(c(1.5,-0.15,1.0,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
+                                  y_at = 31) # Add y-coordinate at which the header for names needs to be
   grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
   dev.off()
 }
 
 # All Superlearners
 learner.choice = "SL"
-png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
-top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), learner.choice)
+png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1100, height=1100)
+top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), 
+                                              learner.choice,
+                                              learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm"), # Adjusts trbl for forest plot
+                                              names.plot.margin = unit(c(0.6,-0.15,1.6,-0.05),"cm"), # Adjusts trbl for learner-screen names plot
+                                              y_at = 13.7) # Add y-coordinate at which the header for names needs to be
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
 
 # All discrete.SLs
 learner.choice = "Discrete SL"
-png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1000, height=1100)
-top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), learner.choice)
+png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1100, height=1100)
+top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), 
+                                              learner.choice,
+                                              learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm"), # Adjusts trbl for forest plot
+                                              names.plot.margin = unit(c(0.6,-0.15,1.6,-0.05),"cm"), # Adjusts trbl for learner-screen names plot
+                                              y_at = 13.7) # Add y-coordinate at which the header for names needs to be
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
 
 #################################################################################################################################
 #################################################################################################################################
+
 # plot ROC curve and pred.Prob with SL, Discrete SL and top 2 best-performing individual Learners for all 12 variable sets
 for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
   variableSet = unique(cvaucs_vacc$varset)[i]
+  print(paste0("Processing ", variableSet))
   dat <- cvaucs_vacc %>% filter(varset==variableSet)
 
   top2 <- bind_rows(
@@ -298,8 +384,16 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
     cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
   } else if(study_name == "ENSEMBLE"){
     cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
+  } else if(study_name == "COVAIL"){
+    
+    if(COR == "D15to91covail_tcell"){
+      cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+    } else if(COR == "D15to181covail_tcell"){
+      cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+    }
+    
   }
-
+  
   pred <- get_cv_predictions(cv_fit = cvfit[[rseed]], cvaucDAT = top2, markerDAT = NULL)
   # #Take average of predictions from the 10 random seeds
   # pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2) %>% rename(pred1 = pred) %>%
@@ -333,6 +427,8 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
       p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D210))
     } else if(study_name == "ENSEMBLE"){
       p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D29))
+    } else if(study_name == "COVAIL"){
+      p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D15.tcell))
     }
   print(p1)
   dev.off()
@@ -416,17 +512,24 @@ if(!study_name %in% c("HVTN705")){
   for(i in 1:length(only_varsets)) {
     print(i)
     variableSet = only_varsets[i]
+    print(variableSet)
 
     # Get cvsl fit and extract cv predictions
     if(Sys.getenv("TRIAL") == "moderna_real"){
       cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
     } else if(Sys.getenv("TRIAL") %in% c("janssen_pooled_partA", "janssen_la_partA")){
       cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
+    } else if(Sys.getenv("TRIAL") %in% c("covail_tcell")){
+      if(COR == "D15to91covail_tcell"){
+        cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+      } else if(COR == "D15to181covail_tcell"){
+        cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+      }
     }
     
     # For selected random seed (rseed variable), get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds
     for (j in seq_along(cvfits[[rseed]]$whichDiscreteSL)) {
-      print(j)
+      print(paste0("j = ", j))
       if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glm_screen_univariate_logistic_pval", 
                                                  "SL.glm.interaction_screen_highcor_random",
                                                  "SL.glm_screen_all",
@@ -483,13 +586,42 @@ if(!study_name %in% c("HVTN705")){
             fold = j)
       }
       
-      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_all", "SL.glmnet.1_screen_all")) {
+      # For SL.nnet
+      if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.nnet.2_screen_univariate_logistic_pval",
+                                                     "SL.nnet.2_screen_glmnet", 
+                                                     "SL.nnet.2_screen_highcor_random")) {
         
-        model <- coef(cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object, s = "lambda.min") %>%
+        model <- flevr::extract_importance_polymars(polymars.obj$fit, feature_names = cvfits[[rseed]]$AllSL[[j]]$varNames[cvfits[[rseed]]$AllSL[[j]]$whichScreen[grepl(gsub("^[^_]*_", "", cvfits[[rseed]]$whichDiscreteSL[[j]]), rownames(cvfits[[rseed]]$AllSL[[j]]$whichScreen)),]]) %>%
+          filter(!is.na(importance)) %>%
+          as.data.frame() %>%
+          select(feature, importance) %>%
+          rename(`Coefficient` = `importance`) %>%
+          mutate(
+            Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
+            fold = j)
+      }
+      
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_all", "SL.glmnet.0.33_screen_all", "SL.glmnet.0.67_screen_all", "SL.glmnet.1_screen_all")) {
+        
+        # model <- coef(cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object, s = "lambda.min") %>%
+        #   as.matrix() %>%
+        #   as.data.frame() %>%
+        #   tibble::rownames_to_column(var = "Predictors") %>%
+        #   rename(`Coefficient` = "s1") %>%
+        #   mutate(`Odds Ratio` = exp(`Coefficient`),
+        #          Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
+        #          fold = j)
+        
+        beta_matrix <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$glmnet.fit$beta
+        lambda_selected <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$lambda.min
+        lambda_index <- which(cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$lambda == lambda_selected)
+        beta_selected <- beta_matrix[, lambda_index]
+        
+        model <- beta_selected %>%
           as.matrix() %>%
           as.data.frame() %>%
           tibble::rownames_to_column(var = "Predictors") %>%
-          rename(`Coefficient` = "s1") %>%
+          rename(`Coefficient` = "V1") %>%
           mutate(`Odds Ratio` = exp(`Coefficient`),
                  Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
                  fold = j)
@@ -550,114 +682,114 @@ if("Feature" %in% colnames(all_varsets_models)){
     write.csv(here("output", Sys.getenv("TRIAL"), "all_varsets_all_folds_discreteSLmodels.csv"))
 }
 
-# Variable importance forest plots ---------------------------------------------
-# save off all variable importance estimates as a table
-vim_estimates %>%
-  filter(quantity == "VIM") %>%
-  #select(-group) %>%
-  write.csv(here("output", Sys.getenv("TRIAL"), "vim_estimates.csv"))
-vim_estimates %>%
-  filter(quantity == "Predictiveness") %>%
-  #select(-group) %>%
-  write.csv(here("output", Sys.getenv("TRIAL"), "vim_predictiveness_estimates.csv"))
-
-num_digits <- 3
-plot_vim_init <- vim_estimates %>%
-  mutate(text_ci = paste0(round(est, num_digits), " [",
-                        round(ci_ll, num_digits), ", ",
-                        round(ci_ul, num_digits), "]")) 
-
-group_ests <- plot_vim_init %>%
-  filter(group)
-individual_ests <- plot_vim_init %>%
-  filter(!group)
-
-# Groups
-plot_group_vim <- group_ests %>%
-  mutate(plot_ord = as.numeric(gsub("_[^_]*", "", variable_set)),
-         plot_name = factor(plot_ord, levels = plot_ord, labels = variable_set))
-est_group_vims <- plot_group_vim %>% filter(quantity == "VIM")
-est_group_predictiveness <- plot_group_vim %>% filter(quantity == "Predictiveness")
-
-group_vim_text_pos <- round(max(est_group_vims$ci_ul, na.rm = TRUE), 2) + 0.05
-group_vim_forest_plot <- est_group_vims %>%
-  filter(!grepl("base", variable_set)) %>%
-  mutate(plot_name = fct_reorder(plot_name, est, .desc = F)) %>%
-  ggplot(aes(x = est, y = plot_name)) +
-  geom_point(color = "blue") +
-  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
-  geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims)-1), label = text_ci), hjust = "left") +
-  ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
-  xlab("Estimated Difference in CV-AUC [95% CI]") +
-  ylab("Variable Set Name") +
-  xlim(c(0, group_vim_text_pos + 0.1)) +
-  geom_vline(xintercept = 0.5, lty = "dashed") +
-  theme_bw()
-
-ggsave(
-  group_vim_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "group_vim_forest_plot.png"),
-  width = 11.5, height = 10, units = "in", dpi = 300
-)
-
-group_pred_text_pos <- round(max(est_group_predictiveness$ci_ul, na.rm = TRUE), 2) + 0.05
-group_pred_forest_plot <- est_group_predictiveness %>%
-  mutate(plot_name = fct_reorder(plot_name, est, .desc = F)) %>%
-  ggplot(aes(x = est, y = plot_name)) +
-  geom_point(color = "blue") +
-  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
-  geom_text(aes(x = rep(group_pred_text_pos, nrow(est_group_predictiveness)), label = text_ci), hjust = "left") +
-  ggtitle("Estimated Predictiveness") +
-  xlab("CV-AUC") +
-  ylab("Variable Set Name") +
-  xlim(c(0, group_pred_text_pos + 0.2)) +
-  geom_vline(xintercept = 0.5, lty = "dashed") +
-  theme_bw()
-
-ggsave(
-  group_pred_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "group_pred_forest_plot.png"),
-  width = 11.5, height = 10, units = "in", dpi = 300
-)
-
-# Individual variables
-plot_individual_vim <- individual_ests
-est_individual_vims <- plot_individual_vim %>% filter(quantity == "VIM")
-est_individual_predictiveness <- plot_individual_vim %>% filter(quantity == "Predictiveness")
-
-individual_vim_text_pos <- round(max(est_individual_vims$ci_ul, na.rm = TRUE), 2) + 0.05
-individual_vim_forest_plot <- est_individual_vims %>%
-  mutate(variable_set = fct_reorder(variable_set, est, .desc = F)) %>%
-  ggplot(aes(x = est, y = variable_set)) +
-  geom_point(color = "blue") +
-  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
-  geom_text(aes(x = rep(individual_vim_text_pos, nrow(est_individual_vims)), label = text_ci), hjust = "left") +
-  ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
-  xlab("Estimated Difference in CV-AUC") +
-  ylab("Variable Name") +
-  xlim(c(0, individual_vim_text_pos + 0.1)) +
-  geom_vline(xintercept = 0.5, lty = "dashed") +
-  theme_bw()
-
-ggsave(
-  individual_vim_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "individual_vim_forest_plot.png"),
-  width = 11.5, height = 10, units = "in", dpi = 300
-)
-
-individual_pred_text_pos <- round(max(est_individual_predictiveness$ci_ul, na.rm = TRUE), 2) + 0.05
-individual_pred_forest_plot <- est_individual_predictiveness %>%
-  mutate(variable_set = fct_reorder(variable_set, est, .desc = F)) %>%
-  ggplot(aes(x = est, y = variable_set)) +
-  geom_point(color = "blue") +
-  geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
-  geom_text(aes(x = rep(individual_pred_text_pos, nrow(est_individual_predictiveness)), label = text_ci), hjust = "left") +
-  ggtitle("Estimated Predictiveness") +
-  xlab("CV-AUC") +
-  ylab("Variable Name") +
-  xlim(c(0, individual_pred_text_pos + 0.2)) +
-  geom_vline(xintercept = 0.5, lty = "dashed") +
-  theme_bw()
-
-ggsave(
-  individual_pred_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "individual_pred_forest_plot.png"),
-  width = 11.5, height = 10, units = "in", dpi = 300
-)
-
+# # Variable importance forest plots ---------------------------------------------
+# # save off all variable importance estimates as a table
+# vim_estimates %>%
+#   filter(quantity == "VIM") %>%
+#   #select(-group) %>%
+#   write.csv(here("output", Sys.getenv("TRIAL"), "vim_estimates.csv"))
+# vim_estimates %>%
+#   filter(quantity == "Predictiveness") %>%
+#   #select(-group) %>%
+#   write.csv(here("output", Sys.getenv("TRIAL"), "vim_predictiveness_estimates.csv"))
+# 
+# num_digits <- 3
+# plot_vim_init <- vim_estimates %>%
+#   mutate(text_ci = paste0(round(est, num_digits), " [",
+#                         round(ci_ll, num_digits), ", ",
+#                         round(ci_ul, num_digits), "]")) 
+# 
+# group_ests <- plot_vim_init %>%
+#   filter(group)
+# individual_ests <- plot_vim_init %>%
+#   filter(!group)
+# 
+# # Groups
+# plot_group_vim <- group_ests %>%
+#   mutate(plot_ord = as.numeric(gsub("_[^_]*", "", variable_set)),
+#          plot_name = factor(plot_ord, levels = plot_ord, labels = variable_set))
+# est_group_vims <- plot_group_vim %>% filter(quantity == "VIM")
+# est_group_predictiveness <- plot_group_vim %>% filter(quantity == "Predictiveness")
+# 
+# group_vim_text_pos <- round(max(est_group_vims$ci_ul, na.rm = TRUE), 2) + 0.05
+# group_vim_forest_plot <- est_group_vims %>%
+#   filter(!grepl("base", variable_set)) %>%
+#   mutate(plot_name = fct_reorder(plot_name, est, .desc = F)) %>%
+#   ggplot(aes(x = est, y = plot_name)) +
+#   geom_point(color = "blue") +
+#   geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
+#   geom_text(aes(x = rep(group_vim_text_pos, nrow(est_group_vims)-1), label = text_ci), hjust = "left") +
+#   ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
+#   xlab("Estimated Difference in CV-AUC [95% CI]") +
+#   ylab("Variable Set Name") +
+#   xlim(c(0, group_vim_text_pos + 0.1)) +
+#   geom_vline(xintercept = 0.5, lty = "dashed") +
+#   theme_bw()
+# 
+# ggsave(
+#   group_vim_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "group_vim_forest_plot.png"),
+#   width = 11.5, height = 10, units = "in", dpi = 300
+# )
+# 
+# group_pred_text_pos <- round(max(est_group_predictiveness$ci_ul, na.rm = TRUE), 2) + 0.05
+# group_pred_forest_plot <- est_group_predictiveness %>%
+#   mutate(plot_name = fct_reorder(plot_name, est, .desc = F)) %>%
+#   ggplot(aes(x = est, y = plot_name)) +
+#   geom_point(color = "blue") +
+#   geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
+#   geom_text(aes(x = rep(group_pred_text_pos, nrow(est_group_predictiveness)), label = text_ci), hjust = "left") +
+#   ggtitle("Estimated Predictiveness") +
+#   xlab("CV-AUC") +
+#   ylab("Variable Set Name") +
+#   xlim(c(0, group_pred_text_pos + 0.2)) +
+#   geom_vline(xintercept = 0.5, lty = "dashed") +
+#   theme_bw()
+# 
+# ggsave(
+#   group_pred_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "group_pred_forest_plot.png"),
+#   width = 11.5, height = 10, units = "in", dpi = 300
+# )
+# 
+# # Individual variables
+# plot_individual_vim <- individual_ests
+# est_individual_vims <- plot_individual_vim %>% filter(quantity == "VIM")
+# est_individual_predictiveness <- plot_individual_vim %>% filter(quantity == "Predictiveness")
+# 
+# individual_vim_text_pos <- round(max(est_individual_vims$ci_ul, na.rm = TRUE), 2) + 0.05
+# individual_vim_forest_plot <- est_individual_vims %>%
+#   mutate(variable_set = fct_reorder(variable_set, est, .desc = F)) %>%
+#   ggplot(aes(x = est, y = variable_set)) +
+#   geom_point(color = "blue") +
+#   geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
+#   geom_text(aes(x = rep(individual_vim_text_pos, nrow(est_individual_vims)), label = text_ci), hjust = "left") +
+#   ggtitle("Estimated Importance Relative to Baseline Risk Factors") +
+#   xlab("Estimated Difference in CV-AUC") +
+#   ylab("Variable Name") +
+#   xlim(c(0, individual_vim_text_pos + 0.1)) +
+#   geom_vline(xintercept = 0.5, lty = "dashed") +
+#   theme_bw()
+# 
+# ggsave(
+#   individual_vim_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "individual_vim_forest_plot.png"),
+#   width = 11.5, height = 10, units = "in", dpi = 300
+# )
+# 
+# individual_pred_text_pos <- round(max(est_individual_predictiveness$ci_ul, na.rm = TRUE), 2) + 0.05
+# individual_pred_forest_plot <- est_individual_predictiveness %>%
+#   mutate(variable_set = fct_reorder(variable_set, est, .desc = F)) %>%
+#   ggplot(aes(x = est, y = variable_set)) +
+#   geom_point(color = "blue") +
+#   geom_errorbarh(aes(xmin = ci_ll, xmax = ci_ul), height = 0.3, color = "blue") +
+#   geom_text(aes(x = rep(individual_pred_text_pos, nrow(est_individual_predictiveness)), label = text_ci), hjust = "left") +
+#   ggtitle("Estimated Predictiveness") +
+#   xlab("CV-AUC") +
+#   ylab("Variable Name") +
+#   xlim(c(0, individual_pred_text_pos + 0.2)) +
+#   geom_vline(xintercept = 0.5, lty = "dashed") +
+#   theme_bw()
+# 
+# ggsave(
+#   individual_pred_forest_plot, file = here::here("figs", Sys.getenv("TRIAL"), "individual_pred_forest_plot.png"),
+#   width = 11.5, height = 10, units = "in", dpi = 300
+# )
+# 
