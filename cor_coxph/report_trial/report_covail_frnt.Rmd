@@ -44,9 +44,7 @@ for (COR in c("D15to181covail_frnt", "D15to91covail_frnt", "D92to181covail_frnt"
       
     } else if (trt==4) {
       fname.suffix.0 = 'mRNA_Sanofi_NN'
-      next
-      # skip for now. no baseline id50 cat marker defined for this cohort
-    
+
     } else if (trt==5) {
       fname.suffix.0 = 'mRNA_onedose_N'
     } else if (trt==6) {
@@ -57,8 +55,6 @@ for (COR in c("D15to181covail_frnt", "D15to91covail_frnt", "D92to181covail_frnt"
       
     } else if (trt==8) {
       fname.suffix.0 = 'mRNA_Sanofi_N'
-      # skip for now. no baseline id50 cat marker defined for this cohort
-      next
     } 
     
     cat("\n## ", fname.suffix.0)

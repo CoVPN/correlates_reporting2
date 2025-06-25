@@ -114,18 +114,13 @@ for (trt in trts) {
   } else if (trt==2) {
     dat=subset(dat.onedosemRNA, TrtA==1 & naive==0)
     fname.suffix.0 = 'mRNA_Moderna_NN'
-    
-    # skip because svycoxph error from too few cases in some markers
   } else if (trt==3) {
     dat=subset(dat.onedosemRNA, TrtA==0 & naive==0)
     fname.suffix.0 = 'mRNA_Pfizer_NN'
-    
-    # skip because svycoxph error from too few cases in some markers
   } else if (trt==4) {
     dat=subset(dat.sanofi, naive==0)
     fname.suffix.0 = 'mRNA_Sanofi_NN'
-    next
-    # skip for now. no baseline id50 cat marker defined for this cohort
+    # no baseline id50 cat marker defined for this cohort
     
   } else if (trt==5) {
     dat=subset(dat.onedosemRNA, naive==1)
@@ -133,18 +128,13 @@ for (trt in trts) {
   } else if (trt==6) {
     dat=subset(dat.onedosemRNA, TrtA==1 & naive==1)
     fname.suffix.0 = 'mRNA_Moderna_N'
-    
-    # skip because svycoxph error from too few cases in some markers
   } else if (trt==7) {
     dat=subset(dat.onedosemRNA, TrtA==0 & naive==1)
     fname.suffix.0 = 'mRNA_Pfizer_N'
-    
-    # skip because svycoxph error from too few cases in some markers
   } else if (trt==8) {
     dat=subset(dat.sanofi, naive==1)
     fname.suffix.0 = 'mRNA_Sanofi_N'
-    next
-    # skip for now. no baseline id50 cat marker defined for this cohort
+    # no baseline id50 cat marker defined for this cohort
   } 
     
   cat("\n",fname.suffix.0,"\n")
