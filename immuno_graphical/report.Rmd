@@ -556,7 +556,7 @@ if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_
         
         for (tp in #if(study_name=="VAT08") {c("Day", "Delta")} else {
              c(if(attr(config,"config") != "nextgen_mock") "Day", 
-               if(attr(config,"config") == "nextgen_mock") c("Day initial", "Day whole")
+               if(attr(config,"config") == "nextgen_mock") c(if (nextgen_output_flag >= 1) "Day initial", if (nextgen_output_flag >= 2) "Day whole")
                #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
              )#}
         ) {
@@ -738,11 +738,11 @@ for (assay_grp in if (study_name == "NextGen_Mock") {
        
                                      "pseudoneutid50_saliva_KP.2$|pseudoneutid50_saliva_XBB.1.5$"),
        
-       "T4_IFNg_OR_IL2_N_Index$",
+       if (nextgen_output_flag >= 2) "T4_IFNg_OR_IL2_N_Index$",
        
        "T4_IFNg_OR_IL2_Spike_KP.2$|T4_IFNg_OR_IL2_Spike_Index.D614$",
        
-       "T8_IFNg_OR_IL2_N_Index$",
+       if (nextgen_output_flag >= 2) "T8_IFNg_OR_IL2_N_Index$",
        
        "T8_IFNg_OR_IL2_Spike_KP.2$|T8_IFNg_OR_IL2_Spike_Index.D614$")))
 } else {c("bAb","bAb_mdw","nAb","nAb_mdw")}){
