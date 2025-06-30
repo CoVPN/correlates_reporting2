@@ -7,6 +7,7 @@
 #Sys.setenv(TRIAL = "azd1222_stage2") # D57azd1222_stage2_delta_nAb, D57azd1222_stage2_delta_bAb, D57azd1222_stage2_severe_nAb, D57azd1222_stage2_severe_bAb
 #Sys.setenv(TRIAL = "nvx_uk302") # D35nvx_uk302
 #Sys.setenv(TRIAL = "prevent19nvx") # D35prevent19nvx
+#Sys.setenv(TRIAL = "nextgen_mock") # D31toM12_nextgen_mock_sera (ph2.AB.trackA/ph2.sera.D31_7, wt.AB.D31_7/wt.sera.D31_7)
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -210,6 +211,17 @@ if (study_name=="IARCHPV"){
                  "Non-Cases"))
     )
   
+  } else if (study_name=="NextGen_Mock") {
+    
+    dat <- dat %>%
+      mutate(cohort_event = factor(
+        case_when(Perprotocol==1 & !!as.name(config.cor$ph2)==1 & 
+                    !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+                  Perprotocol==1 & !!as.name(config.cor$ph2)==1 &  
+                    !!as.name(config.cor$EventIndPrimary)==0 ~ "Non-Cases"),
+        levels = c("Cases", "Non-Cases"))
+      )
+    
   } else {# keep other two timepoint studies except for Moderna, AZ and Sanofi here
   
   dat <- dat %>%
@@ -345,6 +357,9 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
 } else if ((study_name %in% c("PREVENT19","AZD1222") & grepl("stage2", COR)) | study_name == "VAT08"){
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoQ", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoQ, LLoD))
+} else if (study_name %in% c("NextGen_Mock")){
+  dat.long$lb = "LoQ"
+  dat.long$lbval =  with(dat.long, LLoQ, LLoD)
 } else { # e.g. prevent19nvx
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))

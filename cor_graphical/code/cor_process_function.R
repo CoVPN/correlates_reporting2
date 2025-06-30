@@ -55,9 +55,23 @@ getResponder <- function(data,
       }
       
       # if (!is.na(pos.cutoffs[j])
-      if ((grepl("bind|ACE2", j) & study_name!="VAT08") | COR == "D29VLvariant" | grepl("stage2", COR)) {
+      if ((grepl("bind|ACE2", j) & !study_name %in% c("VAT08", "NextGen_Mock")) | COR == "D29VLvariant" | grepl("stage2", COR)) {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
         if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
+      } else if (study_name == "NextGen_Mock") {
+        
+        # 1 if baseline < lloq, post-baseline >= 4 * lloq
+        # if lloq <= Baseline < uloq, post-baseline >= 4 * baseline
+        data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
+        data[, paste0(post, "Resp")] <- as.numeric(
+          (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > 4 * log10(pos.cutoffs[j])) |
+            (data[, bl] >= log10(pos.cutoffs[j]) & data[, bl] < log10(uloqs[j]) & as.numeric(10^data[, post]/10^data[, bl] >= responderFR)) |
+            data[, bl] < log10(uloqs[j]) & data[, post] >= log10(uloqs[j]) & as.numeric(uloqs[j]/10^data[, bl] < responderFR) ) 
+        
+        over_uloq <- which(!is.na(data[, bl]) & data[, bl] >= log10(uloqs[j]))
+        data[over_uloq, paste0(bl, "Resp")] <- NA
+        data[over_uloq, paste0(post, "Resp")] <- NA
+        
       } else {
         data[, paste0(post, "Resp")] <- as.numeric(
           (data[, bl] < log10(pos.cutoffs[j]) & data[, post] > log10(pos.cutoffs[j])) |
@@ -85,6 +99,9 @@ get_resp_by_group <- function(dat=dat, group=group){
     
     dat[which(dat$time=="Day 43" & grepl("bind", dat$assay)), "wt"]=dat[which(dat$time=="Day 43" & grepl("bind", dat$assay)), "wt.D43.bAb"]
     dat[which(dat$time=="Day 43" & grepl("pseudoneutid", dat$assay)), "wt"]=dat[which(dat$time=="Day 43" & grepl("pseudoneutid", dat$assay)), "wt.D43.nAb"]
+  } else if (study_name == "NextGen_Mock") {
+    data$wt = data[, config.cor$wt]  # ccIAD
+    
   } else {
     dat[which(dat$time=="Day 1"), "wt"] = 1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
     dat[which(dat$time==paste0("Day ",timepoints[1])), "wt"] = dat[which(dat$time==paste0("Day ",timepoints[1])), paste0("wt.D",timepoints[1])]

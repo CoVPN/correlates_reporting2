@@ -18,6 +18,10 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real azd1222 azd1222_bAb)
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 	Rscript code/cor_data_preprocess.R D22D43omi # Yiwen's
 	Rscript code/cor_graphics_all.R D22D43omi
+	
+else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
+	Rscript code/cor_data_preprocess.R D31toM12_nextgen_mock_sera # Yiwen's
+	Rscript code/cor_graphics_all.R D31toM12_nextgen_mock_sera
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
 	Rscript code/cor_data_preprocess.R D35prevent19_stage2_delta # Yiwen's

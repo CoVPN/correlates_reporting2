@@ -35,7 +35,10 @@ if(attr(config,"config")=="janssen_pooled_partA") {
 } else if (attr(config,"config")=="azd1222_stage2") {
   times_ = c("Day57","Day90","Day180","Day360")
   labels.time = c("Day 57","Day 90", "Day 180", "Day 360"); names(labels.time) = times_
-}else {times_ = times}
+} else if (attr(config,"config")=="nextgen_mock") {
+  times_ = c("B", "Day31", "Delta31overB", "Day181")
+  labels.time = c("Day 1","Day 31", "D31 fold-rise over D1", "Day 181"); names(labels.time) = times_
+} else {times_ = times}
 
 
 

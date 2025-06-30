@@ -499,6 +499,7 @@ if (COR=="D29VLvariant"){
     ggsave(plot = f_2_adhoc[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 12)
         
 }
+
 set2.1_assays = assays[!assays %in% c("bindSpike_mdw")]
 if(attr(config,"config") == "prevent19_stage2"){set2.1_assays <- set2.1_assays[grepl("Delta$|Delta1$|D614", set2.1_assays)]}
 
@@ -560,38 +561,40 @@ for (i in 1:length(set2.1_assays)) {
                         "_longitudinal_by_case_non_case.pdf")
     ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 12)
     
-    if (study_name=="VAT08" & unique(dat.longer.cor.subset.plot1_$Trialstage)==2){ # adhoc request for Sanofi stage 2: only include one case group: 28-180 or 28-150 days post PD2
-        
-        time_cohort.lb <- c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:3], "\n", "C2"))
-        
-        f_2 <- f_longitude_by_assay(
-            dat = dat.longer.cor.subset.plot1_ %>%
-                filter(cohort_event %in% c("C2","Non-Cases")) %>%
-                filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
-                mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
-                                            levels = time_cohort.lb,
-                                            labels = time_cohort.lb),
-                       Trt_nnaive = factor(paste(Trt, Bserostatus), 
-                                           levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
-                                           labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))),
-            x.var = "time_cohort",
-            x.lb = time_cohort.lb,
-            facet.y.var = vars(Trt_nnaive),
+    if ("Trialstage" %in% colnames(dat.longer.cor.subset.plot1_)) {
+        if (study_name=="VAT08" & unique(dat.longer.cor.subset.plot1_$Trialstage)==2){ # adhoc request for Sanofi stage 2: only include one case group: 28-180 or 28-150 days post PD2
             
-            assays = set2.1_assays[c(i,i+1)],
-            panel.text.size = 4,
-            ylim = if (grepl("bind", set2.1_assays[c(i,i+1)])) {c(2, 7)} else {c(1, 6.5)}, 
-            ybreaks = if (grepl("bind", set2.1_assays[c(i,i+1)])) {c(2,3,4,5,6)} else {c(1,2,3,4,5,6)},
-            axis.text.x.size = 9.5,
-            lgdbreaks = c("C2", "Non-Cases", "Non-Responders"),
-            lgdlabels = c("C2"=sprintf("C2: 28-%s days PD2 cases",day), "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders"),
-            chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("C2", "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-            chtpchs = setNames(c(19, 19, 2), c("C2", "Non-Cases", "Non-Responders")))
-        
-        file_name <- paste0(paste0(set2.1_assays[c(i,i+1)], 
-                                   collapse="_"), 
-                            "_longitudinal_by_case_non_case_v2.pdf")
-        ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 12)
+            time_cohort.lb <- c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:3], "\n", "C2"))
+            
+            f_2 <- f_longitude_by_assay(
+                dat = dat.longer.cor.subset.plot1_ %>%
+                    filter(cohort_event %in% c("C2","Non-Cases")) %>%
+                    filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
+                    mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
+                                                levels = time_cohort.lb,
+                                                labels = time_cohort.lb),
+                           Trt_nnaive = factor(paste(Trt, Bserostatus), 
+                                               levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
+                                               labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))),
+                x.var = "time_cohort",
+                x.lb = time_cohort.lb,
+                facet.y.var = vars(Trt_nnaive),
+                
+                assays = set2.1_assays[c(i,i+1)],
+                panel.text.size = 4,
+                ylim = if (grepl("bind", set2.1_assays[c(i,i+1)])) {c(2, 7)} else {c(1, 6.5)}, 
+                ybreaks = if (grepl("bind", set2.1_assays[c(i,i+1)])) {c(2,3,4,5,6)} else {c(1,2,3,4,5,6)},
+                axis.text.x.size = 9.5,
+                lgdbreaks = c("C2", "Non-Cases", "Non-Responders"),
+                lgdlabels = c("C2"=sprintf("C2: 28-%s days PD2 cases",day), "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders"),
+                chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("C2", "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+                chtpchs = setNames(c(19, 19, 2), c("C2", "Non-Cases", "Non-Responders")))
+            
+            file_name <- paste0(paste0(set2.1_assays[c(i,i+1)], 
+                                       collapse="_"), 
+                                "_longitudinal_by_case_non_case_v2.pdf")
+            ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 16, height = 12)
+        }
     }
 }
 
