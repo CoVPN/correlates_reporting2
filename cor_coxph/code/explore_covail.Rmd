@@ -88,12 +88,33 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
-```{r missingness of FRNT data}
+```{r frnt data missingness}
+dat_proc$Day15frnt_missing_cnt <- dat_mapped$Day15frnt_missing_cnt <- with(dat_mapped, is.na(Day15frnt50_D614G) + is.na(Day15frnt50_BA.1) + is.na(Day15frnt50_BA.2) + is.na(Day15frnt50_BA.4.BA.5) + is.na(Day15frnt80_D614G) + is.na(Day15frnt80_BA.1) + is.na(Day15frnt80_BA.2) + is.na(Day15frnt80_BA.4.BA.5)) 
+
+dat_proc$Bfrnt_missing_cnt <- dat_mapped$Bfrnt_missing_cnt <- with(dat_mapped, is.na(Bfrnt50_D614G) + is.na(Bfrnt50_BA.1) + is.na(Bfrnt50_BA.2) + is.na(Bfrnt50_BA.4.BA.5) + is.na(Bfrnt80_D614G) + is.na(Bfrnt80_BA.1) + is.na(Bfrnt80_BA.2) + is.na(Bfrnt80_BA.4.BA.5)) 
+
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day15frnt_missing_cnt), COVIDIndD22toD181))
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Bfrnt_missing_cnt), COVIDIndD22toD181))
+
+
+dat_proc$B_Day15frnt_missing_cnt = dat_proc$Bfrnt_missing_cnt + dat_proc$Day15frnt_missing_cnt
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((B_Day15frnt_missing_cnt), COVIDIndD22toD181))
+nrow(subset(dat_proc, ph2.D15.frnt==1))
+
+
+with(subset(dat_proc, ph2.D15.frnt==1 & stage<3 & COVIDIndD22toD181==1), mytable(TrtA, stage, naive))
+
+with(subset(dat_proc, ph2.D15.frnt==1 & stage<3 & COVIDIndD22toD181==0), mytable(TrtA, stage, naive))
+
+```
+
+
+```{r missingness of FRNT data D91 and D181}
 
 # dat_proc$Day91frnt50_any = with(dat_proc, !is.na(Day91frnt50_D614G) | !is.na(Day91frnt50_BA.1) | !is.na(Day91frnt50_BA.2) | !is.na(Day91frnt50_BA.4.BA.5) | !is.na(Day181frnt50_D614G) | !is.na(Day181frnt50_BA.1) | !is.na(Day181frnt50_BA.2) | !is.na(Day181frnt50_BA.4.BA.5))
 # dat_proc$Day181frnt50_any = with(dat_proc, !is.na(Day181frnt50_D614G) | !is.na(Day181frnt50_BA.1) | !is.na(Day181frnt50_BA.2) | !is.na(Day181frnt50_BA.4.BA.5))
 
-dat_proc$Day91frnt_missing_cnt = with(dat_proc, is.na(Day91frnt50_D614G) + is.na(Day91frnt50_BA.1) + is.na(Day91frnt50_BA.2) + is.na(Day91frnt50_BA.4.BA.5) + is.na(Day91frnt80_D614G) + is.na(Day91frnt80_BA.1) + is.na(Day91frnt80_BA.2) + is.na(Day91frnt80_BA.4.BA.5) )
+dat_proc$Day91frnt_missing_cnt = with(dat_proc, is.na(Day91frnt50_D614G) + is.na(Day91frnt50_BA.1) + is.na(Day91frnt50_BA.2) + is.na(Day91frnt50_BA.4.BA.5) + is.na(Day91frnt80_D614G) + is.na(Day91frnt80_BA.1) + is.na(Day91frnt80_BA.2) + is.na(Day91frnt80_BA.4.BA.5))
 dat_proc$Day181frnt_missing_cnt = with(dat_proc, is.na(Day181frnt50_D614G) + is.na(Day181frnt50_BA.1) + is.na(Day181frnt50_BA.2) + is.na(Day181frnt50_BA.4.BA.5) + is.na(Day181frnt80_D614G) + is.na(Day181frnt80_BA.1) + is.na(Day181frnt80_BA.2) + is.na(Day181frnt80_BA.4.BA.5) )
 
 # with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day91frnt50_any), (Day181frnt50_any), COVIDIndD22toD181))

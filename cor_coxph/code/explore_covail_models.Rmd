@@ -131,7 +131,7 @@ fits=list(
   svyglm(COVIDIndD22toD91 ~ I(scale(Day15pseudoneutid50_BA.1)) , design),
   svyglm(COVIDIndD22toD91 ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)), design)
 )
-sapply(fits, trainauc, w=T)
+# sapply(fits, trainauc, w=T)
 sapply(fits, trainauc)
 
 library(aucm)
@@ -167,8 +167,16 @@ kable(tab)
 ```{r}
 
 dat.tmp = subset(dat_proc, naive==0 & ph2.D15.tcell & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
+
 fastauc(dat.tmp$Bcd4_IFNg.IL2_BA.4.5.S, dat.tmp$COVIDIndD22toD181)
-fastauc(dat.tmp$Day15cd4_IFNg.IL2_BA.4.5.S, dat.tmp$COVIDIndD22toD181)
+
+fastauc(dat.tmp$Day15pseudoneutid50_BA.1, dat.tmp$COVIDIndD22toD181)
+
+fit = glm(COVIDIndD22toD181 ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.1)), dat.tmp, family="binomial")
+trainauc(fit)
+
+  
+# fastauc(dat.tmp$Day15cd4_IFNg.IL2_BA.4.5.S, dat.tmp$COVIDIndD22toD181)
 
 ```
 
