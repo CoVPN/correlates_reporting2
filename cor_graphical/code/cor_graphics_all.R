@@ -49,6 +49,7 @@ cases_lb <- if (study_name=="VAT08"){
     } else {c("C2")}
     
     } else if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {paste0(config.cor$txt.endpoint, " Cases")
+    } else if (study_name == "NextGen_Mock") {"Cases"
     } else {"Post-Peak Cases"}
 
 cases_lb2 <- if (study_name=="VAT08"){ 
@@ -73,19 +74,24 @@ if (study_name=="VAT08") {
 print(paste0("save.results.to equals ", save.results.to))
 
 ###### Set 1 plots: Ab distributions for assays of one panel, at set1_times, by case/non-case (by naive/non-naive, vaccine/placebo)
-set1_times <- labels.time[!grepl(paste0("over D", tinterm), labels.time)] # "Day 1" "Day 22" "Day 43" "D22 fold-rise over D1"  "D43 fold-rise over D1"
+set1_times <- if (study_name == "NextGen_Mock") {labels.time[1:3]} else {labels.time[!grepl(paste0("over D", tinterm), labels.time)]} # "Day 1" "Day 22" "Day 43" "D22 fold-rise over D1"  "D43 fold-rise over D1"
 if (attr(config,"config") == "prevent19_stage2"){
     set1_times <- set1_times[!set1_times %in% c("Booster Day 1", "Disease Day 1")]
 } else if (attr(config,"config") == "azd1222_stage2") {set1_times <- set1_times[set1_times!="Day 360"]
 } else if (attr(config,"config") == "prevent19nvx") {set1_times <- set1_times[set1_times!="Day 1"]}
 
-for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")){
+for (panel in if (study_name == "NextGen_Mock") {assays[!grepl("IgA", assays)]} else {c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")}){
     
-    if (sum(grepl(substr(panel, 1, 4), assay_metadata$assay))==0) next
-    if (attr(config,"config") == "vat08_combined") next # do not plot in this format for vat08
+    set1_assays <- if(panel=="bindSpike_sub_stage2") {c("bindSpike_D614","bindSpike_Delta1")
+        } else if (attr(config,"config")=="prevent19nvx") {assays
+        } else if (study_name == "NextGen_Mock") {panel
+        } else {assays[grepl(substr(panel, 1, 4), assays)]}
     
-    assay_num = length(assays[grepl(substr(panel,1,4), assays)])
+    assay_num = length(set1_assays)
     if (panel=="bindSpike_sub_stage2") assay_num = 2
+    
+    if (assay_num == 0) next
+    if (attr(config,"config") == "vat08_combined") next # do not plot in this format for vat08
     
     for (tm_subset in c("Day", if(sum(grepl("fold", set1_times))>0) "fold")){
         
@@ -97,28 +103,30 @@ for (panel in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") 
         f_1 <- f_case_non_case_by_time_assay(
             dat = dat.longer.cor.subset.plot1 %>%
                 mutate(Trt_nnaive = factor(paste(Trt, Bserostatus), 
-                                           levels = paste(rep(c("Vaccine","Placebo"),each=2), bstatus.labels),
-                                           labels = paste0(rep(c("Vaccine","Placebo"),each=2), "\n", bstatus.labels.2))),
+                                           levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
+                                           labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2))),
             
             facet.y.var = vars(Trt_nnaive),
-            assays = if(panel=="bindSpike_sub_stage2") {c("bindSpike_D614","bindSpike_Delta1")
-                } else if (attr(config,"config")=="prevent19nvx") {assays} else {assays[grepl(substr(panel, 1, 4), assays)]},
+            assays = set1_assays,
             times = set1_times_sub,
-            ylim = if (attr(config,"config") == "nvx_uk302") {c(1, 6)} else if (attr(config,"config") == "prevent19nvx") {c(0,6.6)} else if (study_name == "VAT08" & tm_subset == "Day") {c(0, 4.2)} else if (study_name == "VAT08" & tm_subset == "fold") {c(-3, 4.2)} else {c(0, 5.5)}, 
+            ylim = if (attr(config,"config") == "nvx_uk302") {c(1, 6)} else if (attr(config,"config") == "prevent19nvx") {c(0,6.6)} else if (study_name == "VAT08" & tm_subset == "Day") {c(0, 4.2)} else if (study_name == "NextGen_Mock" & tm_subset == "Day") {c(0, 6.5)} else if (study_name %in% c("VAT08", "NextGen_Mock") & tm_subset == "fold") {c(-3, 4.2)} else {c(0, 5.5)}, 
             ybreaks = if (attr(config,"config") == "nvx_uk302") {c(1,2,3,4,5)} else if (attr(config,"config") == "prevent19nvx") {c(0,1,2,3,4,5,6)} else if (study_name == "VAT08" & tm_subset == "Day") {c(0, 1, 2, 3, 4)} else if (study_name == "VAT08" & tm_subset == "fold") {c(-3, -2, -1, 0, 1, 2, 3, 4)} else {c(0,1,2,3,4,5)},
             axis.x.text.size = ifelse(assay_num > 7 & length(cases_lb)==3, 13, ifelse(assay_num > 5, 20, ifelse(assay_num > 3, 25, 32))),
             strip.x.text.size = ifelse(assay_num > 7, 10, ifelse(assay_num > 5, 18, ifelse(assay_num > 3, 25, 32))),
             panel.text.size = ifelse(assay_num > 7 && length(cases_lb)==3, 4.5, ifelse(assay_num > 5, 6, ifelse(assay_num > 3, 7, 12))),
             scale.x.discrete.lb = c(cases_lb, "Non-Cases"),
-            lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
-            lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
-            chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-            chtpchs = setNames(c(if(length(cases_lb)==3) 19, 19, if(length(cases_lb)==3) 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")))
+            colorby = ifelse(study_name == "NextGen_Mock", "Trt", "cohort_event"),
+            #lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
+            #lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
+            chtcols = if (study_name == "NextGen_Mock") {setNames(c("#1749FF", "#378252"), trt.labels[2:1])} else {setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders"))}, # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+            chtpchs = setNames(c(if(length(cases_lb)==3) 19, 19, if(length(cases_lb)==3) 19, 19, 2), c(cases_lb, "Non-Cases", "Non-Responders")),
+            y.axis.lb = ifelse(study_name == "NextGen_Mock", " ", "")
+            )
         
         for (i in 1:length(set1_times_sub)){
             
             file_name <- paste0(panel, "_by_case_non_case_at_", set1_times_sub[i], ".pdf")
-            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = 30, height = 22)
+            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = ifelse(assay_num == 1, 22, 30), height = 22)
         }
         
         # adhoc output for prevent19_stage2

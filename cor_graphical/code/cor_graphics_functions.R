@@ -15,12 +15,14 @@
 #' @param facet.x.var horizontal facet variable 
 #' @param facet.y.var vertical facet variable 
 #' @param pointby a variable name by which different color and shape of point will be drawn, e.g, "cohort_col", "cohort_col2"
+#' @param colorby a variable name by which different color will be drawn, default "cohort_event", e.g, "Trt"
 #' @param chtcols color panel for points
 #' @param chtpchs shape panel for points
-#' @param lgdbreaks breaks for point legend
-#' @param lgdlabels labels for point legend
+## @param lgdbreaks breaks for point legend
+## @param lgdlabels labels for point legend
 #' @param scale.x.discrete.lb label for x axis categories
 #' @param guide_legend_ncol number of cols for legend
+#' @param y.axis.lb y-axis label, if empty, it has default value pooled from the assay_metadata
 #' @return A ggplot object list for violin + box plot without lines
 f_case_non_case_by_time_assay <- 
     function(dat,
@@ -34,12 +36,14 @@ f_case_non_case_by_time_assay <-
              facet.x.var = vars(assay_label_short),
              facet.y.var, # = vars(Trt_nnaive),
              pointby = "cohort_col",
+             colorby = "cohort_event",
              scale.x.discrete.lb = c("Omicron Cases", "Non-Cases"),
-             lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
-             lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+             #lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+             #lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
              chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
              chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders")),
-             guide_legend_ncol = 1
+             guide_legend_ncol = 1,
+             y.axis.lb = ""
              ) {
         
     plot_theme <- theme_bw(base_size = 25) +
@@ -73,14 +77,14 @@ f_case_non_case_by_time_assay <-
             ggplot(data = d, aes(x = cohort_event, y = value)) +
                 #facet_rep_wrap(Trt_nnaive ~ assay_label_short, repeat.tick.labels = TRUE) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
-                geom_violin(aes(color = cohort_event), scale = "width", na.rm = TRUE, show.legend = FALSE) +
-                geom_boxplot(aes(color = cohort_event), width = 0.25, lwd = 1.5, alpha = 0.15, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
-                scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                geom_violin(aes(color = .data[[colorby]]), scale = "width", na.rm = TRUE, show.legend = FALSE) +
+                geom_boxplot(aes(color = .data[[colorby]]), width = 0.25, lwd = 1.5, alpha = 0.15, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
+                scale_color_manual(name = "", values = chtcols[names(chtcols)!="Non-Responders"], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
-                geom_jitter(aes(color = .data[[pointby]], shape = .data[[pointby]]), width = 0.3, height = 0, size = 1.1, show.legend = TRUE) +
-                scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
-                scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                geom_jitter(aes(color = .data[[colorby]], shape = .data[[pointby]]), width = 0.3, height = 0, size = 1.1, show.legend = TRUE) +
+                scale_color_manual(name = "", values = chtcols, breaks = names(chtcols), labels = names(chtcols), drop=FALSE) +
+                scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
                 geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
@@ -94,7 +98,7 @@ f_case_non_case_by_time_assay <-
                 
                 #scale_x_discrete(labels = scale.x.discrete.lb, drop=FALSE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scales::math_format(10^.x)) +
-                labs(x = "Cohort", y = unique(d$panel), title = paste(unique(d$panel), "distributions by case/non-case", if (unique(d$time)!="") "at", unique(d$time)), color = "Category", shape = "Category") +
+                labs(x = "Cohort", y = ifelse(y.axis.lb!="", y.axis.lb, unique(d$panel)), title = paste(unique(d$panel), "distributions by case/non-case", if (unique(d$time)!="") "at", unique(d$time)), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = guide_legend_ncol), shape = guide_legend(ncol = guide_legend_ncol))
         })
