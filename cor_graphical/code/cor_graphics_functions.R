@@ -310,8 +310,9 @@ f_case_non_case_by_time_assay_wrap <-
 #' @param facet.y.var vertical facet variable
 #' @param split.var group split variable in string, e.g., "panel", "assay_variant"
 #' @param pointby a variable name by which different color and shape of point will be drawn, e.g, "cohort_col", "cohort_col2"
-#' @param lgdbreaks breaks for point legend 
-#' @param lgdlabels labels for point legend 
+#' @param colorby a variable name by which different color will be drawn, default "cohort_event", e.g, "Trt"
+# @param lgdbreaks breaks for point legend 
+# @param lgdlabels labels for point legend 
 #' @param chtcols color panel for points
 #' @param chtpchs shape panel for points
 #' @param strip.text.y.size strip label size for y-axis, e.g., assay label, default is 25
@@ -329,8 +330,9 @@ f_longitude_by_assay <- function(
     facet.y.var, #= vars(Trt_nnaive),
     split.var = "panel",
     pointby = "cohort_col",
-    lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
-    lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+    colorby = "cohort_event",
+    #lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+    #lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
     chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     strip.text.y.size = 25,
@@ -363,7 +365,7 @@ f_longitude_by_assay <- function(
         ungroup() %>%
         group_split(.[[split.var]]) %>% # e.g., "panel" variable from assay_metadata
         purrr::map(function(d){
-            ggplot(data = d, aes(x = .data[[x.var]], y = .data[["value"]], color = "cohort_event")) +
+            ggplot(data = d, aes(x = .data[[x.var]], y = .data[["value"]], color = .data[[colorby]])) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
                 
                 geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE) +
@@ -371,12 +373,12 @@ f_longitude_by_assay <- function(
                 geom_boxplot(width = 0.25, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                scale_color_manual(name = "", values = chtcols[names(chtcols)!="Non-Responders"], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
-                geom_point(aes(color = .data[[pointby]], shape = .data[[pointby]]), size = 3, alpha = 0.6, show.legend = TRUE) +
-                scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
-                scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                geom_point(aes(color = .data[[colorby]], shape = .data[[pointby]]), size = 3, alpha = 0.6, show.legend = TRUE) +
+                scale_color_manual(name = "", values = chtcols, breaks = names(chtcols), labels = names(chtcols), drop=FALSE) +
+                scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 
                 geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes(x = .data[[x.var]], label = .data[["N_RespRate"]], y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +

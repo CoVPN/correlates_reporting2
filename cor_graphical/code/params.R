@@ -19,7 +19,7 @@ if (study_name=="IARCHPV") {
     bstatus.labels.2 <- c("naive", "non-naive")
     
   } else if (study_name == "NextGen_Mock") {
-    trt.labels <- c("Comparator Vaccine", "Investigational Vaccine")
+    trt.labels <- c("(B) Comparator Vaccine", "(A) Investigational Vaccine")
     bstatus.labels <-  c("Naive", "Non-naive")
     bstatus.labels.2 <- c("", "")
     

@@ -582,7 +582,7 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
 # only keep fold change over B for do.fold.change.overB=1: e.g. vat08
 if (do.fold.change.overB==1 | study_name %in% c("VAT08")){
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
-} else if (grepl("stage2", COR)){ # keep all timepoints in times_ for stage 2 studies, such as prevent19 stage2
+} else if (grepl("stage2", COR) | study_name %in% c("NextGen_Mock")){ # keep all timepoints in times_ for stage 2 studies, such as prevent19 stage2
   dat.longer.cor.subset <- dat.longer.cor.subset
 } else ( # exclude delta timepoints
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl(ifelse(study_name!="IARCHPV", "Day|Mon", "M"), time)) # IARCHPV uses "M" instead of "Day" in the assay variables
@@ -667,63 +667,63 @@ if (study_name=="IARCHPV") {
 }
 
 dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset_, groupby_vars1)
-dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>%
-  mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
-         lb = ifelse(grepl("Day|M", time), lb, ""),
-         lbval = ifelse(grepl("Day|M", time), lbval, NA),
-         lb2 = ifelse(grepl("Day|M", time), lb2, ""),
-         lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+#dat.longer.cor.subset.plot1 <- dat.longer.cor.subset.plot1 %>%
+#  mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+#         lb = ifelse(grepl("Day|M", time), lb, ""),
+#         lbval = ifelse(grepl("Day|M", time), lbval, NA),
+#         lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+#         lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
 write.csv(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.csv"), row.names=F)
 saveRDS(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.rds"))
 
 # make subsample
-plot.25sample1 <- get_sample_by_group(dat.longer.cor.subset.plot1, groupby_vars1)
-write.csv(plot.25sample1, file = here("data_clean", "plot.25sample1.csv"), row.names=F)
-saveRDS(plot.25sample1, file = here("data_clean", "plot.25sample1.rds"))
+#plot.25sample1 <- get_sample_by_group(dat.longer.cor.subset.plot1, groupby_vars1)
+#write.csv(plot.25sample1, file = here("data_clean", "plot.25sample1.csv"), row.names=F)
+#saveRDS(plot.25sample1, file = here("data_clean", "plot.25sample1.rds"))
 
 # adhoc for vat08 stage2
 if (study_name=="VAT08") {
   # group by S_pos
   dat.longer.cor.subset.plot1.adhoc <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1, "immune_history"))
-  dat.longer.cor.subset.plot1.adhoc <- dat.longer.cor.subset.plot1.adhoc %>%
-    mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
-           lb = ifelse(grepl("Day|M", time), lb, ""),
-           lbval = ifelse(grepl("Day|M", time), lbval, NA),
-           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
-           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  #dat.longer.cor.subset.plot1.adhoc <- dat.longer.cor.subset.plot1.adhoc %>%
+  #  mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+  #         lb = ifelse(grepl("Day|M", time), lb, ""),
+  #         lbval = ifelse(grepl("Day|M", time), lbval, NA),
+  #         lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+  #         lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
   write.csv(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.rds"))
   
   # group by S_pos and pool the vaccine and placebo
   dat.longer.cor.subset.plot1.adhoc2 <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1[groupby_vars1!="Trt"], "immune_history"))
-  dat.longer.cor.subset.plot1.adhoc2 <- dat.longer.cor.subset.plot1.adhoc2 %>%
-      mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
-             lb = ifelse(grepl("Day|M", time), lb, ""),
-             lbval = ifelse(grepl("Day|M", time), lbval, NA),
-             lb2 = ifelse(grepl("Day|M", time), lb2, ""),
-             lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  #dat.longer.cor.subset.plot1.adhoc2 <- dat.longer.cor.subset.plot1.adhoc2 %>%
+  #    mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+  #           lb = ifelse(grepl("Day|M", time), lb, ""),
+  #           lbval = ifelse(grepl("Day|M", time), lbval, NA),
+  #           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+  #           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
   write.csv(dat.longer.cor.subset.plot1.adhoc2, file = here("data_clean", "longer_cor_data_plot1_adhoc2.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot1.adhoc2, file = here("data_clean", "longer_cor_data_plot1_adhoc2.rds"))
   
   # group by S_pos, pool the vaccine and placebo, pool cohort_event
   dat.longer.cor.subset.plot1.adhoc3 <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1[groupby_vars1!="Trt" & groupby_vars1!="cohort_event"], "immune_history"))
-  dat.longer.cor.subset.plot1.adhoc3 <- dat.longer.cor.subset.plot1.adhoc3 %>%
-    mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
-           lb = ifelse(grepl("Day|M", time), lb, ""),
-           lbval = ifelse(grepl("Day|M", time), lbval, NA),
-           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
-           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  #dat.longer.cor.subset.plot1.adhoc3 <- dat.longer.cor.subset.plot1.adhoc3 %>%
+  #  mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+  #         lb = ifelse(grepl("Day|M", time), lb, ""),
+  #         lbval = ifelse(grepl("Day|M", time), lbval, NA),
+  #         lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+  #         lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
   write.csv(dat.longer.cor.subset.plot1.adhoc3, file = here("data_clean", "longer_cor_data_plot1_adhoc3.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot1.adhoc3, file = here("data_clean", "longer_cor_data_plot1_adhoc3.rds"))
   
   # group by S_pos, pool cohort_event
   dat.longer.cor.subset.plot1.adhoc4 <- get_resp_by_group(dat.longer.cor.subset_, c(groupby_vars1[groupby_vars1!="cohort_event"], "immune_history"))
-  dat.longer.cor.subset.plot1.adhoc4 <- dat.longer.cor.subset.plot1.adhoc4 %>%
-    mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
-           lb = ifelse(grepl("Day|M", time), lb, ""),
-           lbval = ifelse(grepl("Day|M", time), lbval, NA),
-           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
-           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  #dat.longer.cor.subset.plot1.adhoc4 <- dat.longer.cor.subset.plot1.adhoc4 %>%
+  #  mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+  #         lb = ifelse(grepl("Day|M", time), lb, ""),
+  #         lbval = ifelse(grepl("Day|M", time), lbval, NA),
+  #         lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+  #         lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
   write.csv(dat.longer.cor.subset.plot1.adhoc4, file = here("data_clean", "longer_cor_data_plot1_adhoc4.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot1.adhoc4, file = here("data_clean", "longer_cor_data_plot1_adhoc4.rds"))
 }
@@ -749,12 +749,12 @@ if (attr(config,"config")=="janssen_pooled_partA") {
   dat.longer.cor.subset.adhoc = dat.longer.cor.subset.adhoc %>% filter(!is.na(value))
   
   dat.longer.cor.subset.plot1.adhoc <- get_resp_by_group(dat.longer.cor.subset.adhoc, groupby_vars1_adhoc)
-  dat.longer.cor.subset.plot1.adhoc <- dat.longer.cor.subset.plot1.adhoc %>%
-    mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
-           lb = ifelse(grepl("Day|M", time), lb, ""),
-           lbval = ifelse(grepl("Day|M", time), lbval, NA),
-           lb2 = ifelse(grepl("Day|M", time), lb2, ""),
-           lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
+  #dat.longer.cor.subset.plot1.adhoc <- dat.longer.cor.subset.plot1.adhoc %>%
+  #  mutate(N_RespRate = ifelse(grepl("Day|M", time) && !is.na(pos.cutoffs), N_RespRate, ""),
+  #         lb = ifelse(grepl("Day|M", time), lb, ""),
+  #         lbval = ifelse(grepl("Day|M", time), lbval, NA),
+  #         lb2 = ifelse(grepl("Day|M", time), lb2, ""),
+  #         lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
   saveRDS(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.rds"))
 }
 
@@ -771,17 +771,17 @@ if (!study_name %in% c("IARCHPV","UK302")) { # IARCHPV, UK302 doesn't have high 
   
   # define response rate
   dat.longer.cor.subset.plot3 <- get_resp_by_group(dat.longer.cor.subset_, groupby_vars3)
-  dat.longer.cor.subset.plot3 <- dat.longer.cor.subset.plot3 %>%
-    mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
-           lb = ifelse(grepl("Day", time), lb, ""),
-           lbval = ifelse(grepl("Day", time), lbval, NA),
-           lb2 = ifelse(grepl("Day", time), lb2, ""),
-           lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
+  #dat.longer.cor.subset.plot3 <- dat.longer.cor.subset.plot3 %>%
+  #  mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+  #         lb = ifelse(grepl("Day", time), lb, ""),
+  #         lbval = ifelse(grepl("Day", time), lbval, NA),
+  #         lb2 = ifelse(grepl("Day", time), lb2, ""),
+  #         lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
   saveRDS(dat.longer.cor.subset.plot3, file = here("data_clean", "longer_cor_data_plot3.rds"))
   
   # make subsample
-  plot.25sample3 <- get_sample_by_group(dat.longer.cor.subset.plot3, groupby_vars3)
-  saveRDS(plot.25sample3, file = here("data_clean", "plot.25sample3.rds"))
+  #plot.25sample3 <- get_sample_by_group(dat.longer.cor.subset.plot3, groupby_vars3)
+  #saveRDS(plot.25sample3, file = here("data_clean", "plot.25sample3.rds"))
 }
 
 saveRDS(as.data.frame(dat.longer.cor.subset),
@@ -795,12 +795,12 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
   dat.longer.cor.subset = dat.longer.cor.subset %>% filter(!is.na(value))
   
   dat.longer.cor.subset.plot.variant <- get_resp_by_group(dat.longer.cor.subset, groupby_vars_variant)
-  dat.longer.cor.subset.plot.variant <- dat.longer.cor.subset.plot.variant %>%
-    mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
-           lb = ifelse(grepl("Day", time), lb, ""),
-           lbval = ifelse(grepl("Day", time), lbval, NA),
-           lb2 = ifelse(grepl("Day", time), lb2, ""),
-           lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
+  #dat.longer.cor.subset.plot.variant <- dat.longer.cor.subset.plot.variant %>%
+  #  mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+  #         lb = ifelse(grepl("Day", time), lb, ""),
+  #         lbval = ifelse(grepl("Day", time), lbval, NA),
+  #         lb2 = ifelse(grepl("Day", time), lb2, ""),
+  #         lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
   # unique(dat.longer.cor.subset.plot4[, c("N_RespRate","cohort_event2","assay","counts","Region")])
   write.csv(dat.longer.cor.subset.plot.variant, file = here("data_clean", "longer_cor_data_plot_variant.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot.variant, file = here("data_clean", "longer_cor_data_plot_variant.rds"))
@@ -812,12 +812,12 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR=="D29VLvariant")
   dat.longer.cor.subset = dat.longer.cor.subset %>% filter(!is.na(value))
   
   dat.longer.cor.subset.plot.variant.2 <- get_resp_by_group(dat.longer.cor.subset, groupby_vars_variant_2)
-  dat.longer.cor.subset.plot.variant.2 <- dat.longer.cor.subset.plot.variant.2 %>%
-    mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
-           lb = ifelse(grepl("Day", time), lb, ""),
-           lbval = ifelse(grepl("Day", time), lbval, NA),
-           lb2 = ifelse(grepl("Day", time), lb2, ""),
-           lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
+  #dat.longer.cor.subset.plot.variant.2 <- dat.longer.cor.subset.plot.variant.2 %>%
+  #  mutate(N_RespRate = ifelse(grepl("Day", time), N_RespRate, ""),
+  #         lb = ifelse(grepl("Day", time), lb, ""),
+  #         lbval = ifelse(grepl("Day", time), lbval, NA),
+  #         lb2 = ifelse(grepl("Day", time), lb2, ""),
+  #         lbval2 = ifelse(grepl("Day", time), lbval2, NA)) # set fold-rise resp to ""
   # unique(dat.longer.cor.subset.plot4[, c("N_RespRate","cohort_event2","assay","counts","Region")])
   write.csv(dat.longer.cor.subset.plot.variant.2, file = here("data_clean", "longer_cor_data_plot_variant_2.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot.variant.2, file = here("data_clean", "longer_cor_data_plot_variant_2.rds"))

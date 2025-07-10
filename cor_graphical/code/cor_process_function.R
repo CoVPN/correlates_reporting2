@@ -100,7 +100,8 @@ get_resp_by_group <- function(dat=dat, group=group){
     dat[which(dat$time=="Day 43" & grepl("bind", dat$assay)), "wt"]=dat[which(dat$time=="Day 43" & grepl("bind", dat$assay)), "wt.D43.bAb"]
     dat[which(dat$time=="Day 43" & grepl("pseudoneutid", dat$assay)), "wt"]=dat[which(dat$time=="Day 43" & grepl("pseudoneutid", dat$assay)), "wt.D43.nAb"]
   } else if (study_name == "NextGen_Mock") {
-    data$wt = data[, config.cor$wt]  # ccIAD
+    dat$wt = dat[, "ph2.AB.trackA"]  # ccIAS, # initial, 5 timepoints, on Track A ccIAS-PBMC
+    dat$wt2 = dat[, config.cor$wt] # final, 3 timepoints, on whole ccIAS-PBMC
     
   } else {
     dat[which(dat$time=="Day 1"), "wt"] = 1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
@@ -113,12 +114,12 @@ get_resp_by_group <- function(dat=dat, group=group){
   dat_resp_by_group <-
     dat %>% filter(complete==1) %>%
     group_by_at(group) %>%
-    mutate(counts = n(),
+    mutate(counts = ifelse(study_name == "NextGen_Mock", sum(!is.na(response) & as.numeric(Track == "A")), n()),
            #counts_severe = sum(severe, na.rm=T),
            # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
-           num = sum(response * wt, na.rm=T), 
+           num = ifelse(study_name == "NextGen_Mock", sum(response * wt * as.numeric(Track == "A"), na.rm=T), sum(response * wt, na.rm=T)), 
            #num_severe = sum(response * wt & severe==1, na.rm=T),
-           denom = sum(wt, na.rm=T),
+           denom = ifelse(study_name == "NextGen_Mock", sum(wt * as.numeric(Track == "A"), na.rm=T), sum(wt, na.rm=T)),
            #denom_severe = sum(wt & severe==1, na.rm=T),
            # test N_RespRate = paste0(counts, "\n", sum(response, na.rm=T), ",", round(sum(response, na.rm=T)/counts*100, 1), ",", LLoD),
            N_RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n",round(num/denom*100, 1),"%"), ""),
@@ -127,9 +128,48 @@ get_resp_by_group <- function(dat=dat, group=group){
            q1 = quantile(value, 0.25, na.rm=T),
            median = median(value, na.rm=T),
            q3 = quantile(value, 0.75, na.rm=T),
-           max= max(value))
+           max= max(value)) %>%
+    mutate(N_RespRate = ifelse(grepl("mdw", assay), "", N_RespRate))
   
-  return(dat_resp_by_group)
+  if (study_name == "NextGen_Mock") {
+    dat$wt2 <- dat[[config.cor$wt]]
+  }
+  
+  if (study_name == "NextGen_Mock") {
+    dat_resp_by_group2 <-
+      dat %>% filter(complete == 1 & grepl("bind|pseudo", assay)) %>%
+      filter(.data[[config.cor$ph2]] == 1) %>% # condition for the whole RIS for bAb/nAb and RIS-PBMC for ICS
+      group_by_at(group) %>%
+      mutate(counts = sum(!is.na(response)),
+             num = sum(response * wt2, na.rm=T),
+             denom = sum(wt2, na.rm=T),
+             #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
+             N_RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+             min = min(value, na.rm=T),
+             q1 = quantile(value, 0.25, na.rm=T),
+             median = median(value, na.rm=T),
+             q3 = quantile(value, 0.75, na.rm=T),
+             max= max(value, na.rm=T)) %>%
+      #bind_rows(dat %>% filter(complete == 1 & grepl("T4|T8", assay)) %>%
+      #            filter(.data[[config.cor$ph2]] == 1) %>% # condition for the whole RIS for bAb/nAb and RIS-PBMC for ICS
+      #            group_by_at(group) %>%
+      #            mutate(counts = sum(!is.na(response)),
+      #                   num = sum(response * wt, na.rm=T),
+      #                   denom = sum(wt, na.rm=T),
+      #                   N_RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+      #                   min = min(value, na.rm=T),
+      #                   q1 = quantile(value, 0.25, na.rm=T),
+      #                   median = median(value, na.rm=T),
+      #                   q3 = quantile(value, 0.75, na.rm=T),
+      #                   max= max(value, na.rm=T))) %>%
+      mutate(N_RespRate = ifelse(grepl("mdw", assay), "", N_RespRate))
+  }
+  
+  if (exists("dat_resp_by_group2")) {
+    return(list(dat_resp_by_group = dat_resp_by_group, dat_resp_by_group2 = dat_resp_by_group2))
+  } else {
+    return(dat_resp_by_group)
+  }
 }
 
 # a function to get 100 non-case sample by group for points & lines in line plot 
