@@ -269,7 +269,7 @@ if (study_name == "NextGen_Mock") {
       
       for (version in c("", if (COR_postfix_list == "D22D43omi_stage2") "_v2")){
         for (assay_grp in assay_grp_list){
-          for (tm in c(if(attr(config, "config") == "nextgen_mock") "Day initial", "Day whole")){
+          for (tm in c(if(attr(config, "config") == "nextgen_mock" & nextgen_output_flag == 3) "Day initial", "Day whole")){
               
             if (attr(config,"config") == "prevent19nvx") next # no need for prevent19nvx
   
