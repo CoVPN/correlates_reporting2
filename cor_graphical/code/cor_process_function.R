@@ -122,7 +122,7 @@ get_resp_by_group <- function(dat=dat, group=group){
            denom = ifelse(study_name == "NextGen_Mock", sum(wt * as.numeric(Track == "A"), na.rm=T), sum(wt, na.rm=T)),
            #denom_severe = sum(wt & severe==1, na.rm=T),
            # test N_RespRate = paste0(counts, "\n", sum(response, na.rm=T), ",", round(sum(response, na.rm=T)/counts*100, 1), ",", LLoD),
-           N_RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n",round(num/denom*100, 1),"%"), ""),
+           N_RespRate = ifelse(!grepl("Delta|fold", time) && !is.na(pos.cutoffs), paste0(counts, "\n",round(num/denom*100, 1),"%"), ""),
            #N_RespRate_severe = paste0(counts_severe, "\n",round(num_severe/denom_severe*100, 1),"%"),
            min = min(value),
            q1 = quantile(value, 0.25, na.rm=T),
@@ -144,7 +144,7 @@ get_resp_by_group <- function(dat=dat, group=group){
              num = sum(response * wt2, na.rm=T),
              denom = sum(wt2, na.rm=T),
              #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
-             N_RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+             N_RespRate = ifelse(!grepl("Delta|fold", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
              min = min(value, na.rm=T),
              q1 = quantile(value, 0.25, na.rm=T),
              median = median(value, na.rm=T),

@@ -46,7 +46,7 @@ f_case_non_case_by_time_assay <-
              y.axis.lb = ""
              ) {
         
-    plot_theme <- theme_bw(base_size = 25) +
+    plot_theme <- theme_bw(base_size = 32) +
         theme(plot.title = element_text(hjust = 0.5),
               axis.text.x = element_text(size = axis.x.text.size),
               axis.text.y = element_text(size = 25),
@@ -82,13 +82,13 @@ f_case_non_case_by_time_assay <-
                 scale_color_manual(name = "", values = chtcols[names(chtcols)!="Non-Responders"], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
-                geom_jitter(aes(color = .data[[colorby]], shape = .data[[pointby]]), width = 0.3, height = 0, size = 1.1, show.legend = TRUE) +
+                geom_jitter(aes(color = .data[[colorby]], shape = .data[[pointby]]), width = 0.3, height = 0, size = 2.1, show.legend = TRUE) +
                 scale_color_manual(name = "", values = chtcols, breaks = names(chtcols), labels = names(chtcols), drop=FALSE) +
                 scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -201,7 +201,7 @@ f_case_non_case_by_time_assay_adhoc <-
                     scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
-                    geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                     geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                     
                     geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
@@ -278,7 +278,7 @@ f_case_non_case_by_time_assay_wrap <-
                     scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
-                    geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                     geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
                     
                     geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
@@ -380,7 +380,7 @@ f_longitude_by_assay <- function(
                 scale_color_manual(name = "", values = chtcols, breaks = names(chtcols), labels = names(chtcols), drop=FALSE) +
                 scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 
-                geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"N\nRate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes(x = .data[[x.var]], label = .data[["N_RespRate"]], y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
@@ -483,7 +483,7 @@ f_longitude_by_assay_adhoc <- function(
                 scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, drop=FALSE) +
                 scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, drop=FALSE) +
                 
-                geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.1, y = rate.y), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(RespRate!="","\nRate",""), x = 0.1, y = rate.y), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes_string(x = x.var, label = "RespRate", y = "rate.y"), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
@@ -1045,7 +1045,7 @@ f_case_non_case_by_time_assay_wrap_adhoc <-
                     scale_fill_manual(name = "Region", values = c("Africa" = "#33A02C", "AsiaPac" = "#E31A1C", "LatAm" = "#1F78B4")) +
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
-                    geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                     geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
                     
                     geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
