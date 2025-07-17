@@ -162,7 +162,7 @@ if (study_name == "NextGen_Mock") {
                     )
       
       # SET 1
-      for (a in if (study_name == "NextGen_Mock") {c(if (nextgen_output_flag >= 1) assays[1], if (nextgen_output_flag == 3) assays[!grepl("IgA", assays)][-1])
+      for (a in if (study_name == "NextGen_Mock") {c(if (nextgen_output_flag == 1) assays[4], if (nextgen_output_flag == 3) assays[!grepl("IgA", assays)])
         } else {c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")}){
              
         if ((grepl("nab", COR_postfix) & !grepl("pseudoneutid50", a)) | (grepl("bab", COR_postfix) & !grepl("bindSpike", a))) next # for AZ stage 2
@@ -264,7 +264,7 @@ if (study_name == "NextGen_Mock") {
         } else if (grepl("nab", COR_postfix)){ # for azd1222_stage2
           assays[grepl("pseudoneutid50", assays)]
         } else if (study_name == "NextGen_Mock") {
-          c(if (nextgen_output_flag >= 1) assays[1], if (nextgen_output_flag == 3) assays[!grepl("mdw", assays)][-1])
+          c(if (nextgen_output_flag == 1) assays[4], if (nextgen_output_flag == 3) assays[!grepl("mdw", assays)])
         } else {assays}
       
       for (version in c("", if (COR_postfix_list == "D22D43omi_stage2") "_v2")){
