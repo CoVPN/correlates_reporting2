@@ -87,8 +87,8 @@ f_case_non_case_by_time_assay <-
                 scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.92), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.92), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -316,7 +316,8 @@ f_case_non_case_by_time_assay_wrap <-
 #' @param chtcols color panel for points
 #' @param chtpchs shape panel for points
 #' @param strip.text.y.size strip label size for y-axis, e.g., assay label, default is 25
-#' @param axis.text.x.size x-axis label size, default is 9.5, e.g., cases, non-cases 
+#' @param axis.text.x.size x-axis label size, default is 9.5, e.g., cases, non-cases
+#' @param y.axis.lb y-axis label, if empty, it has default value pooled from the assay_metadata 
 #' @return A ggplot object list for longitudinal violin + box plot with lines
 f_longitude_by_assay <- function(
     dat,
@@ -336,7 +337,8 @@ f_longitude_by_assay <- function(
     chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     strip.text.y.size = 25,
-    axis.text.x.size = 9.5
+    axis.text.x.size = 9.5,
+    y.axis.lb = ""
     ) {
     
     plot_theme <- theme_bw() +
@@ -380,7 +382,7 @@ f_longitude_by_assay <- function(
                 scale_color_manual(name = "", values = chtcols, breaks = names(chtcols), labels = names(chtcols), drop=FALSE) +
                 scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 
-                geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"N\nRate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"\nRate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes(x = .data[[x.var]], label = .data[["N_RespRate"]], y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
@@ -391,7 +393,7 @@ f_longitude_by_assay <- function(
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scales::math_format(10^.x)) +
-                labs(x = "Cohort", y = unique(d[[split.var]]), title = paste(unique(d[[split.var]]), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
+                labs(x = "Cohort", y = ifelse(y.axis.lb!="", y.axis.lb, unique(d[[split.var]])), title = paste(unique(d[[split.var]]), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
         })
