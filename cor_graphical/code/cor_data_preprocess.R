@@ -216,10 +216,17 @@ if (study_name=="IARCHPV"){
     dat <- dat %>%
       mutate(cohort_event = factor(
         case_when(Perprotocol==1 & !!as.name(config.cor$ph2)==1 & 
-                    !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
+                    !!as.name(config.cor$EventIndPrimary)==1 & 
+                    !!as.name(config.cor$EventTimePrimary) >= 7 & !!as.name(config.cor$EventTimePrimary) <= 181 ~ "Vaccination-Proximal Cases",
+                  
+                  Perprotocol==1 & !!as.name(config.cor$ph2)==1 & 
+                    !!as.name(config.cor$EventIndPrimary)==1 & 
+                    !!as.name(config.cor$EventTimePrimary) > 181 ~ "Vaccination-Distal Cases",
+                  
                   Perprotocol==1 & !!as.name(config.cor$ph2)==1 &  
-                    !!as.name(config.cor$EventIndPrimary)==0 ~ "Non-Cases"),
-        levels = c("Cases", "Non-Cases"))
+                    AnyinfectionD1==0 ~ "Non-Cases"),
+        
+        levels = c("Vaccination-Proximal Cases", "Vaccination-Distal Cases", "Non-Cases"))
       )
     
   } else {# keep other two timepoint studies except for Moderna, AZ and Sanofi here
@@ -358,7 +365,7 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoQ", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoQ, LLoD))
 } else if (study_name %in% c("NextGen_Mock")){
-  dat.long$lb = "LoQ"
+  dat.long$lb = "LLoQ"
   dat.long$lbval =  with(dat.long, LLoQ, LLoD)
 } else { # e.g. prevent19nvx
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
