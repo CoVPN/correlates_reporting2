@@ -1633,7 +1633,7 @@ D43D91:
 # NextGen Mock
 
 nextgen_mock: &nextgen_mock
-  data_cleaned: /trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20250605.csv
+  data_cleaned: /trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20250716.csv
   sampling_scheme: case_cohort
   two_marker_timepoints: no
   timepoints: [31]
@@ -1773,7 +1773,7 @@ D31toM6_nextgen_mock_PBMC:
 # Note that for data processing, covail is the only TRIAL label. But for reporting2, there are multiple variants.
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250621.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250709.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]

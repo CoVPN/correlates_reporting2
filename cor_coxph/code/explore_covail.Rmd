@@ -34,6 +34,12 @@ frnt80=assays[startsWith(assays, "frnt80")]; frnt80
 
 f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
 
+# compare all Pfizer and all Moderna and onedosemRNA to decide whether to stratify by stage or not
+dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
+dat.onedoseModerna = subset(dat.onedosemRNA, arm<=6)
+dat.onedosePfizer  = subset(dat.onedosemRNA, arm> 6)
+
+
 dat.ocp.pfizer=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
     "Wildtype/Prototype (Pfizer 1)"
   , "Omicron (Pfizer 1)"
@@ -87,6 +93,86 @@ convert2IU=function(tmp) {
 mytable(dat_proc$treatment_assigned)
 
 ```
+```{r SeromYxDataJuly7_2025}
+dat=read.csv("/trials/covpn/COVAILcorrelates/download_data/covail/SeromYxDataJuly7_2025.csv")
+len(unique(dat$subjid))
+dat_proc$hasSeromYx = dat_proc$Ptid %in% unique(dat$subjid)
+mytable(dat_proc$hasSeromYx, dat_proc$ph2.D15.tcell)
+```
+
+
+```{r}
+# comparing different ph2 indicators
+
+mytable(dat_proc$ph1.D15, dat_proc$ph1.D15.frnt)
+mytable(dat_proc$ph1.D15.tcell, dat_proc$ph1.D15.frnt)
+
+kp=dat_proc$ph1.D15.tcell
+mytable(dat_proc$ph2.D15.frnt[kp], dat_proc$ph2.D15.tcell[kp])
+mytable(dat_proc$hasSeromYx[kp], dat_proc$ph2.D15.tcell[kp])
+
+
+mytable(dat_proc$ph2.D15.tcell, dat_proc$ph2.D15.frnt, dat_proc$ph1.D15)
+mytable(dat_proc$ph2.D15.tcell, dat_proc$ph2.D15.frnt, dat_proc$ph2.D15)
+
+mytable(dat_proc$ph2.D15.tcell, dat_proc$arm, dat_proc$TrtonedosemRNA==1)
+mytable(dat_proc$ph2.D15.frnt, dat_proc$arm, dat_proc$TrtonedosemRNA==1)
+
+mytable(dat_proc$TwophasesampIndD15.tcell, dat_proc$arm, dat_proc$TrtonedosemRNA==1)
+mytable(dat_proc$TwophasesampIndD15.frnt,  dat_proc$arm, dat_proc$TrtonedosemRNA==1)
+
+with(subset(dat_proc, TrtonedosemRNA==1 & ph1.D15), mytable(ph2.D15.tcell, ph2.D15.frnt, naive, COVIDIndD22toD181))
+with(subset(dat_proc, stage==3 & ph1.D15), mytable(ph2.D15.tcell, ph2.D15.frnt, naive, COVIDIndD22toD181))
+
+with(subset(dat_proc, TrtonedosemRNA==1 & ph1.D15), mytable(ph2.D15.tcell, hasSeromYx, naive, COVIDIndD22toD181))
+with(subset(dat_proc, stage==3 & ph1.D15), mytable(ph2.D15.tcell, hasSeromYx, naive))
+
+with(subset(dat_proc, TrtonedosemRNA==1 & ph1.D15), mytable(ph2.D15.frnt, hasSeromYx, naive))
+with(subset(dat_proc, stage==3 & ph1.D15), mytable(ph2.D15.frnt, hasSeromYx, naive))
+```
+
+
+```{r baseline and peak t cell marker relationship, fig.width=12, fig.height=6}
+
+par(mfrow=c(1,2)); shrink_margin()
+corplot(Day15cd4_IFNg.IL2_BA.4.5.S~Bcd4_IFNg.IL2_BA.4.5.S, subset(dat_proc), col=ifelse(dat_proc$naive,"darkgreen","purple"), asp=1)
+corplot(Day15pseudoneutid50_BA.4.BA.5~Bpseudoneutid50_BA.4.BA.5, subset(dat_proc), col=ifelse(dat_proc$naive,"darkgreen","purple"), asp=1)
+
+fits=list(
+  # all=lm(Day15pseudoneutid50_BA.4.BA.5~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, dat_proc),
+  # all.casedeletion=lm(Day15pseudoneutid50_BA.4.BA.5~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, subset(dat_proc, SubcohortInd.casedeletion)),
+  D15neut_mRNA=lm(Day15pseudoneutid50_BA.4.BA.5~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, dat.onedosemRNA),
+  D15neut_mRNA.casedeletion=lm(Day15pseudoneutid50_BA.4.BA.5~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, subset(dat.onedosemRNA, SubcohortInd.casedeletion))
+)
+tab1=getFormattedSummary(fits, robust=T, type=5)[-1,]
+
+fits=list(
+  # all=lm(Day15cd4_IFNg.IL2_BA.4.5.S~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, dat_proc),
+  # all.casedeletion=lm(Day15cd4_IFNg.IL2_BA.4.5.S~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, subset(dat_proc, SubcohortInd.casedeletion)),
+  D15CD4_mRNA=lm(Day15cd4_IFNg.IL2_BA.4.5.S~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, dat.onedosemRNA),
+  D15CD4_mRNA.casedeletion=lm(Day15cd4_IFNg.IL2_BA.4.5.S~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, subset(dat.onedosemRNA, SubcohortInd.casedeletion))
+)
+tab2=getFormattedSummary(fits, robust=T, type=5)[-1,]
+
+
+print(cbind(tab1, tab2), align="c")
+
+```
+
+
+
+
+```{r make a new indicator to mimic subcohort}
+kp=dat_proc$ph2.D15.tcell
+mytable(dat_proc$wt.D15.tcell[kp], dat_proc$arm[kp], dat_proc$COVIDIndD22toD181[kp])
+sum(dat_proc$wt.D15.tcell[kp])
+
+```
+
+
+
+
+
 
 ```{r frnt data missingness}
 dat_proc$Day15frnt_missing_cnt <- dat_mapped$Day15frnt_missing_cnt <- with(dat_mapped, is.na(Day15frnt50_D614G) + is.na(Day15frnt50_BA.1) + is.na(Day15frnt50_BA.2) + is.na(Day15frnt50_BA.4.BA.5) + is.na(Day15frnt80_D614G) + is.na(Day15frnt80_BA.1) + is.na(Day15frnt80_BA.2) + is.na(Day15frnt80_BA.4.BA.5)) 
