@@ -1,0 +1,57 @@
+---
+title: "Iliad"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(copcor)
+library(survey)
+library(kyotil)
+library(glue)
+library(Hmisc)
+library(knitr)
+```
+
+
+```{r 202}
+TRIAL="iliad_ib202p"
+
+config.processing <- config::get(config = TRIAL, file="/home/yfong/correlates_processing/config.yml") 
+dat_mapped=read.csv(config.processing$mapped_data)
+
+config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml") 
+dat_proc=read.csv(config.reporting$data_cleaned)
+
+assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/{TRIAL}_assay_metadata.csv'))
+
+f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
+
+mytable(dat_mapped$Trt) # 21 0s and 24 1s
+mytable(dat_mapped$Perprotocol) # all 1
+mytable(dat_mapped$EventIndPrimaryC14) # all 1
+
+summary(dat_mapped$Day28_FHA_Serum_IgA)
+summary(10**(dat_mapped$Day28_FHA_Serum_IgA))
+
+```
+
+
+```{r 201}
+TRIAL="iliad_ib201p"
+
+config.processing <- config::get(config = TRIAL, file="/home/yfong/correlates_processing/config.yml") 
+dat_mapped=read.csv(config.processing$mapped_data)
+
+config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml") 
+dat_proc=read.csv(config.reporting$data_cleaned)
+
+assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/{TRIAL}_assay_metadata.csv'))
+
+f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
+
+mytable(dat_mapped$Trt01) # 149 0s and 148 1s and 160 2s
+mytable(dat_mapped$Trt02) # 263 1s and 194 NAs
+
+```
