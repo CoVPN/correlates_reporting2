@@ -19,5 +19,5 @@ Serum_IgG,2,FIM,FIM_Serum_IgG,1.311,2000,NA,1.311,Fimbriae types 2 and 3 (AU/mL)
 Serum_IgG,3,PRN,PRN_Serum_IgG,0.852,1300,NA,0.852,Pertactin (IU/mL) (Serum IgG),"Prn (Serum IgG, IU/mL)",lloq,1
 Serum_IgG,4,PT,PT_Serum_IgG,4.391,6700,NA,4.391,Pertussis Toxin (IU/mL) (Serum IgG),"PT (Serum IgG, IU/mL)",lloq,1
 Serum_IgG,5,WCE,WCE_Serum_IgG,8.192,5000,NA,8.192,Whole Cell Extract (AU/mL) (Serum IgG),"WCE (Serum IgG, AU/mL)",lloq,1
-SBA,1,NA,PRN_Neg,20,NA,NA,20,Serum Bactericidal Activity Pertactin- (Titer),SBA PRN- (Titer),lloq,1
-SBA,2,NA,PRN_Pos,9,NA,NA,9,Serum Bactericidal Activity Pertactin+ (Titer),SBA PRN+ (Titer),lloq,1
+SBA,1,NA,PRN_Neg_SBA,20,NA,NA,20,Serum Bactericidal Activity Pertactin- (Titer),SBA PRN- (Titer),lloq,1
+SBA,2,NA,PRN_Pos_SBA,9,NA,NA,9,Serum Bactericidal Activity Pertactin+ (Titer),SBA PRN+ (Titer),lloq,1
