@@ -42,7 +42,7 @@ if(attr(config,"config")=="janssen_pooled_partA") {
   labels.time = c("Day 57","Day 90", "Day 180", "Day 360"); names(labels.time) = times_
 } else if (attr(config,"config")=="nextgen_mock") {
   times_ = c("B", "Day31", "Delta31overB", "Day91", "Day181", "Day366")
-  labels.time = c("Day 1","Day 31", "D31 fold-rise over D1", "Day 91", "Day 181", "Day 366"); names(labels.time) = times_
+  labels.time = c("D01","D31", "D31 fold-rise over D01", "D91", "D181", "D366"); names(labels.time) = times_
 } else {times_ = times}
 
 

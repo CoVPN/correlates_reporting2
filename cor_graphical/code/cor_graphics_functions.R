@@ -87,8 +87,8 @@ f_case_non_case_by_time_assay <-
                 scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.92), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.92), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.97), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.97), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -98,7 +98,7 @@ f_case_non_case_by_time_assay <-
                 
                 #scale_x_discrete(labels = scale.x.discrete.lb, drop=FALSE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scales::math_format(10^.x)) +
-                labs(x = "Cohort", y = ifelse(y.axis.lb!="", y.axis.lb, unique(d$panel)), title = paste(unique(d$panel), "distributions by case/non-case", if (unique(d$time)!="") "at", unique(d$time)), color = "Category", shape = "Category") +
+                labs(x = "Cohort", y = ifelse(y.axis.lb!="", y.axis.lb, unique(d$panel)), title = paste(unique(d$panel), "distributions by case/non-case", if (unique(d$time)!="") "at", ifelse(study_name == "NextGen_Mock", grepl("ay ", "", unique(d$time)), unique(d$time))), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = guide_legend_ncol), shape = guide_legend(ncol = guide_legend_ncol))
         })
@@ -342,7 +342,7 @@ f_longitude_by_assay <- function(
     ) {
     
     plot_theme <- theme_bw() +
-        theme(plot.title = element_text(hjust = 0.5),
+        theme(plot.title = element_text(hjust = 0.5, size = 32),
               axis.text.x = element_text(size = axis.text.x.size),
               axis.text.y = element_text(size = 18),
               axis.title = element_text(size = 24, face="bold"),
