@@ -98,7 +98,7 @@ f_case_non_case_by_time_assay <-
                 
                 #scale_x_discrete(labels = scale.x.discrete.lb, drop=FALSE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scales::math_format(10^.x)) +
-                labs(x = "Cohort", y = ifelse(y.axis.lb!="", y.axis.lb, unique(d$panel)), title = paste(unique(d$panel), "distributions by case/non-case", if (unique(d$time)!="") "at", ifelse(study_name == "NextGen_Mock", grepl("ay ", "", unique(d$time)), unique(d$time))), color = "Category", shape = "Category") +
+                labs(x = "Cohort", y = ifelse(y.axis.lb!="", y.axis.lb, unique(d$panel)), title = paste(unique(d$panel), "distributions by case/non-case", if (unique(d$time)!="") "at", ifelse(study_name == "NextGen_Mock", gsub("ay ", "", unique(d$time)), unique(d$time))), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = guide_legend_ncol), shape = guide_legend(ncol = guide_legend_ncol))
         })

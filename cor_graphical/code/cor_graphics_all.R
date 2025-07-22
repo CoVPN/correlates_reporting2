@@ -98,7 +98,9 @@ for (panel in if (study_name == "NextGen_Mock") {assays[!grepl("IgA", assays)]} 
     if (assay_num == 0) next
     if (attr(config,"config") == "vat08_combined") next # do not plot in this format for vat08
     
-    for (tm_subset in c("Day|^D(01|31)$", if(sum(grepl("fold", set1_times))>0) "fold")){
+    for (tm_subset in c("Day", 
+                        "^D01$", "^D31$", # just for NextGen_Mock
+                        if(sum(grepl("fold", set1_times))>0) "fold")){
         
         set1_times_sub = set1_times[grepl(tm_subset, set1_times)]
         if (length(set1_times_sub) == 0) next
@@ -111,7 +113,12 @@ for (panel in if (study_name == "NextGen_Mock") {assays[!grepl("IgA", assays)]} 
                 mutate(cohort_event = factor(cohort_event,
                                              levels = c("Vaccination-Proximal Cases", "Vaccination-Distal Cases", "Non-Cases"), 
                                              labels = c("Vaccination-\nProximal\nCases", "Vaccination-\nDistal\nCases", "Non-Cases")),
-                       responder = ifelse(response==0 & !is.na(response), "Negative", "Positive"))
+                       responder = case_when(response==0 & !is.na(response) & time == "D01" ~ "Negative",
+                                             response==1 & !is.na(response) & time == "D01" ~ "Positive",
+                                             response==0 & !is.na(response) & time == "D31" ~ "Non-Responders",
+                                             response==1 & !is.na(response) & time == "D31" ~ "Responders",
+                                             time == "D31 fold-rise over D01" & is.na(response) ~ "All",
+                                             TRUE ~ ""))
             
         } else {dat.longer.cor.subset.plot1_ = dat.longer.cor.subset.plot1}
         
@@ -137,7 +144,10 @@ for (panel in if (study_name == "NextGen_Mock") {assays[!grepl("IgA", assays)]} 
             #lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
             #lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
             chtcols = if (study_name == "NextGen_Mock") {setNames(c("#1749FF", "#378252"), trt.labels[2:1])} else {setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders"))}, # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-            chtpchs = if (study_name == "NextGen_Mock") {setNames(c(19, 2), c("Positive", "Negative"))} else {setNames(c(rep(19, length(cases_lb) + 1, 2)), c(cases_lb, "Non-Cases", "Non-Responders"))},
+            chtpchs = if (study_name == "NextGen_Mock" & tm_subset == "^D01$") {setNames(c(19, 2), c("Positive", "Negative"))
+                } else if (study_name == "NextGen_Mock" & tm_subset == "^D31$") {setNames(c(19, 2), c("Responders", "Non-Responders"))
+                } else if (study_name == "NextGen_Mock" & tm_subset == "fold") {setNames(19, "All")
+                } else {setNames(c(rep(19, length(cases_lb) + 1, 2)), c(cases_lb, "Non-Cases", "Non-Responders"))},
             y.axis.lb = ifelse(study_name == "NextGen_Mock", " ", "")
             )
         
@@ -603,7 +613,7 @@ for (i in 1:length(set2.1_assays)) {
                     } 
                     
                     dat.longer.cor.subset.plot1_ <- dat.longer.cor.subset.plot1_ %>%
-                        mutate(responder = ifelse(response==0 & !is.na(response), "Negative", "Positive"))
+                        mutate(responder = ifelse(response==0 & !is.na(response), "Non-Responders", "Responders"))
                     
                 } else {dat.longer.cor.subset.plot1_ = dat.longer.cor.subset.plot1}
             
@@ -631,7 +641,7 @@ for (i in 1:length(set2.1_assays)) {
                 #lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
                 #lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
                 chtcols = if (study_name == "NextGen_Mock") {setNames(c("#1749FF", "#378252"), trt.labels[2:1])} else {setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders"))}, # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-                chtpchs = if (study_name == "NextGen_Mock") {setNames(c(19, 2), c("Positive", "Negative"))} else {setNames(c(rep(19, length(cases_lb) + 1, 2)), c(cases_lb, "Non-Cases", "Non-Responders"))},
+                chtpchs = if (study_name == "NextGen_Mock") {setNames(c(19, 2), c("Responders", "Non-Responders"))} else {setNames(c(rep(19, length(cases_lb) + 1, 2)), c(cases_lb, "Non-Cases", "Non-Responders"))},
                 y.axis.lb = ifelse(study_name == "NextGen_Mock", " ", "")
                 )
                 
