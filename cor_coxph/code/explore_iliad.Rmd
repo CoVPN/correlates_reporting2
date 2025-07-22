@@ -25,16 +25,30 @@ config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_re
 dat_proc=read.csv(config.reporting$data_cleaned)
 
 assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/{TRIAL}_assay_metadata.csv'))
+assays = assay_metadata$assay
+panels = unique(assay_metadata$panel)
+antigens = setdiff(unique(assay_metadata$antigen), NA)
 
 f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
+
 
 mytable(dat_mapped$Trt) # 21 0s and 24 1s
 mytable(dat_mapped$Perprotocol) # all 1
 mytable(dat_mapped$EventIndPrimaryC14) # all 1
 
 summary(dat_mapped$Day28_FHA_Serum_IgA)
-summary(10**(dat_mapped$Day28_FHA_Serum_IgA))
+summary(10**(dat_mapped$Day28_FHA_Serum_IgA)) # min is half lloq
 
+summary(dat_mapped$Day28_FHA_Nasal_IgA)
+summary(10**(dat_mapped$Day28_FHA_Nasal_IgA)) # min is half lloq
+
+```
+
+```{r}
+for (p in panels[c(1,3,4)]) {
+mypairs(dat_mapped[,glue("Day28_{antigens}_{p}")])
+}
+mypairs(dat_mapped[,glue("Day28_{assays[6:10]}")])
 ```
 
 

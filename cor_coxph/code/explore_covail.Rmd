@@ -129,6 +129,9 @@ with(subset(dat_proc, stage==3 & ph1.D15), mytable(ph2.D15.tcell, hasSeromYx, na
 
 with(subset(dat_proc, TrtonedosemRNA==1 & ph1.D15), mytable(ph2.D15.frnt, hasSeromYx, naive))
 with(subset(dat_proc, stage==3 & ph1.D15), mytable(ph2.D15.frnt, hasSeromYx, naive))
+
+with(subset(dat_proc, TrtonedosemRNA==1 & ph1.D15), mytable(ph2.D15.tcell, hasSeromYx, naive, COVIDIndD22toD181))
+
 ```
 
 
