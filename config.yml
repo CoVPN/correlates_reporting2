@@ -1773,7 +1773,7 @@ D31toM6_nextgen_mock_PBMC:
 # Note that for data processing, covail is the only TRIAL label. But for reporting2, there are multiple variants.
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250709.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250726.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
@@ -1792,10 +1792,14 @@ covail_sanofi: &covail_sanofi
 
 covail_tcell: &covail
   inherits: covail
-  primary_markers: [Bcd4_IFNg.IL2_Wuhan.N, Bcd4_IFNg.IL2_BA.4.5.S, Day15cd4_IFNg.IL2_BA.4.5.S, Bcd4_FS_Wuhan.N, Bcd4_FS_BA.4.5.S, Day15cd4_FS_BA.4.5.S]
-  secondary_markers: [Bcd4_IFNg.IL2.154_Wuhan.N, Bcd4_IFNg.IL2.154_BA.4.5.S, Bcd8_IFNg.IL2_BA.4.5.S, Day15cd4_IFNg.IL2.154_BA.4.5.S, Day15cd4_IL21_BA.4.5.S, Day15cd8_IFNg.IL2_BA.4.5.S]
 
 covail_frnt: &covail
+  inherits: covail
+
+covail_seromyx: &covail
+  inherits: covail
+
+covail_xassays: &covail
   inherits: covail
 
 #### COR labels
@@ -2010,6 +2014,62 @@ D15to181covail_frnt:
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 
+D15to91covail_seromyx: 
+  ph1: ph1.D15.seromyx
+  ph2: ph2.D15.seromyx
+  wt: wt.D15.seromyx
+  WtStratum: Wstratum.seromyx
+  EventIndPrimary: COVIDIndD22toD91
+  EventTimePrimary: COVIDTimeD22toD91
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  torigin: 15
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+D15to181covail_seromyx:
+  ph1: ph1.D15.seromyx
+  ph2: ph2.D15.seromyx
+  wt: wt.D15.seromyx
+  WtStratum: Wstratum.seromyx
+  EventIndPrimary: COVIDIndD22toD181
+  EventTimePrimary: COVIDTimeD22toD181
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  torigin: 15
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+
+D15to91covail_xassays: 
+  ph1: ph1.D15.xassays
+  ph2: ph2.D15.xassays
+  wt: wt.D15.xassays
+  WtStratum: Wstratum.xassays
+  EventIndPrimary: COVIDIndD22toD91
+  EventTimePrimary: COVIDTimeD22toD91
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  torigin: 15
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
+
+D15to181covail_xassays:
+  ph1: ph1.D15.xassays
+  ph2: ph2.D15.xassays
+  wt: wt.D15.xassays
+  WtStratum: Wstratum.xassays
+  EventIndPrimary: COVIDIndD22toD181
+  EventTimePrimary: COVIDTimeD22toD181
+  Earlyendpoint: EarlyendpointD15
+  tpeak: 15
+  tpeaklag: 7
+  torigin: 15
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
 ################################################################################
 # ILIAD    

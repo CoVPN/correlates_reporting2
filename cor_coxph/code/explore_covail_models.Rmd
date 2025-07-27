@@ -22,16 +22,28 @@ dat=subset(dat_proc, ph1.D15 & TrtonedosemRNA==1)
 
 assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata.csv')
 assays=assay_metadata$assay
+
 tmp=assay_metadata$assay[8:nrow(assay_metadata)]
-S1=tmp[!endsWith(tmp, ".N")]%.%"1"; S1
-S2=tmp[!endsWith(tmp, ".N")]%.%"2"; S2
-N=tmp[endsWith(tmp, "Wuhan.N")]; N
+tcellsubsets = sub("_Wuhan.N", "", tmp[endsWith(tmp, ".N")]); tcellsubsets
+S=tmp[endsWith(tmp, ".S") & startsWith(tmp, "c")]
+S1=c(tcellsubsets%.%"_COV2.CON.S1", tcellsubsets%.%"_BA.4.5.S1")
+S2=c(tcellsubsets%.%"_COV2.CON.S2", tcellsubsets%.%"_BA.4.5.S2")
+N=tcellsubsets%.%"_Wuhan.N"
 tcellvv=c(S1, S2, N)
+
+nAbs = setdiff(assays[startsWith(assays, "pseudoneutid50_")], c('pseudoneutid50_MDW'))
+frnt=assays[startsWith(assays, "frnt")]
+
+# special treatment for seromyx
+# there are 198 assays, which are not tracked in assay metadata
+tmp=read.csv("/trials/covpn/COVAILcorrelates/download_data/covail/SeromYxDataJuly23_2025.csv")
+tmp$assay= paste0(tmp$tgttype, "_", tmp$vstrain)
+seromyx=sort(unique(tmp$assay))
+
 
 f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
 
 primary = config.reporting$primary_markers
-nAbs=subset(assay_metadata, panel=="id50", assay, drop=T)
 
 # compare all Pfizer and all Moderna and onedosemRNA to decide whether to stratify by stage or not
 dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
@@ -52,14 +64,39 @@ mytable(dat.onedosemRNA$ph1.D15.tcell, dat.onedosemRNA$ph1.D15)
 
 ```
 
-
-
-### Exploratory
-
 ```{r, fig.width=8, fig.height=8}
 mypairs(dat_proc[,c("Bcd4_IFNg.IL2_Wuhan.N", "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S", "Bpseudoneutid50_D614G", "Day15pseudoneutid50_D614G", "Bpseudoneutid50_BA.4.BA.5", "Day15pseudoneutid50_BA.4.BA.5")])
 mypairs(dat_proc[,c("Bcd4_IFNg.IL2_Wuhan.N", "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S")])
 ```
+
+
+
+## Multivariate models having pseudo neut and T cell and seromyx
+
+
+```{r}
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum.tcell), subset =  ~ ph2.D15.tcell, data = subset(dat.onedosemRNA, naive==0))
+
+fits=list(
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(Day15TIGG_BA45S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(Day15IGA1_BA45S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(Day15G2AH_BA45S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(BTIGG_BA45S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(BIGA1_BA45S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(BG2AH_BA45S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(Delta15overBTIGG_BA45S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(Delta15overBIGA1_BA45S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(Delta15overBG2AH_BA45S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(Delta15overBpseudoneutid50_BA.4.BA.5) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(Delta15overBfrnt50_BA.4.BA.5) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ scale(Delta15overBcd4_IFNg.IL2_BA.4.5.S) + I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design)
+)
+tab=getFormattedSummary(fits, robust=T, exp=T); 
+tab[is.na(tab)]=""
+kable(tab)
+```
+
 
 ## Multivariate models having pseudo neut and FRNT
 
@@ -75,8 +112,32 @@ kable(tab)
 ```
 
 
+```{r check if frnt can be fit with xassays}
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum.xassays), subset =  ~ ph2.D15.xassays, data = subset(dat.onedosemRNA, naive==0))
+
+fits=list(
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ scale(Day15frnt50_BA.4.BA.5) + scale(Day15pseudoneutid50_BA.4.BA.5) + FOIstandardized + standardized_risk_score + strata(stage), design)
+)
+tab=getFormattedSummary(fits, robust=T, exp=T); 
+tab[is.na(tab)]=""
+kable(tab)
+```
+
+
 ## Multivariate models having pseudo neut and T cell
 
+```{r checking if ph2.d15.xassays still works}
+design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum.xassays), subset =  ~ ph2.D15.xassays, data = subset(dat.onedosemRNA, naive==0))
+
+# yes interaction for D22toD91
+fits=list(
+  svycoxph(f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design),
+  svycoxph(f=Surv(COVIDtimeD22toD91, COVIDIndD22toD91)   ~ I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) * I(scale(Day15pseudoneutid50_BA.4.BA.5)) + FOIstandardized + standardized_risk_score + strata(stage), design)
+)
+tab=getFormattedSummary(fits, robust=T, exp=T); 
+tab[is.na(tab)]=""
+kable(tab)
+```
 
 ```{r interaction models with covariates}
 design=  twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum.tcell), subset =  ~ ph2.D15.tcell, data = subset(dat.onedosemRNA, naive==0))

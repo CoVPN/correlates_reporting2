@@ -594,6 +594,28 @@ if(config$sampling_scheme == 'case_cohort') stopifnot(!is.null(dat_proc$Subcohor
 
 
 if (TRIAL=="covail_tcell") {
+  primary.ls=list(
+    naive   =c(
+      "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S", 
+      "Bcd8_IFNg.IL2_BA.4.5.S", "Day15cd8_IFNg.IL2_BA.4.5.S"),
+    nonnaive=c(
+      "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S", 
+      "Bcd8_IFNg.IL2_BA.4.5.S", "Day15cd8_IFNg.IL2_BA.4.5.S",
+      "Bcd4_IFNg.IL2_Wuhan.N"))
+  
+  secondary.ls=list(
+    naive   =c(
+      "Bcd4_FS_BA.4.5.S", "Bcd8_FS_BA.4.5.S", 
+      "Day15cd4_FS_BA.4.5.S", "Day15cd8_FS_BA.4.5.S",
+      "Day15cd4_IFNg.IL2.154_BA.4.5.S", "Day15cd4_IL21_BA.4.5.S"
+    ),
+   nonnaive=c(  
+      "Bcd4_FS_BA.4.5.S", "Bcd8_FS_BA.4.5.S", 
+      "Day15cd4_FS_BA.4.5.S", "Day15cd8_FS_BA.4.5.S",
+      "Day15cd4_IFNg.IL2.154_BA.4.5.S", "Day15cd4_IL21_BA.4.5.S", 
+      "Bcd4_IFNg.IL2.154_Wuhan.N", "Bcd4_IFNg.IL2.154_BA.4.5.S", "Bcd4_FS_Wuhan.N"
+  ))
+
   # filter exploratory markers by pos rate among NN
   tmp=c("B"%.%N, "Day15"%.%N, "B"%.%S, "Day15"%.%S)
   dat.tmp = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17) & naive==0)
