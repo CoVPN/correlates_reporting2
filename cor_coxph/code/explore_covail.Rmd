@@ -95,6 +95,13 @@ mytable(dat_proc$treatment_assigned)
 ```
 
 ```{r}
+mytable (dat_proc$ph2.D92.tcell, dat_proc$ph2.D15.tcell)
+mytable (dat_proc$ph2.D92.seromyx, dat_proc$ph2.D15.seromyx)
+mytable(dat_proc$ph2.D92.tcell, dat_proc$ph2.D92.seromyx)
+```
+
+
+```{r}
 # examine IgA2 using analysis dataset
 corplot(Day15IGA2_XBB116S ~ BIGA2_XBB116S, dat_proc)
 mytable(is.na(dat_proc$BIGA2_XBB116S))
@@ -113,7 +120,7 @@ tmp=data.frame(panel=ifelse(sapply(strsplit(seromyx, "_"), function (x) contain(
                assay_label=seromyx, 
                assay_label_short=seromyx, llox_label="lod", for_correlates=1, trunc=NA)
 
-assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata_without seromyx.csv')
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata_without_seromyx.csv')
 assay_metadata=rbind(assay_metadata, tmp)
 write.csv(assay_metadata, '~/correlates_reporting2/assay_metadata/covail_assay_metadata1.csv', row.names=F)
 ```
