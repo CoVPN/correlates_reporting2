@@ -93,11 +93,102 @@ convert2IU=function(tmp) {
 mytable(dat_proc$treatment_assigned)
 
 ```
+
+```{r}
+# examine IgA2 using analysis dataset
+corplot(Day15IGA2_XBB116S ~ BIGA2_XBB116S, dat_proc)
+mytable(is.na(dat_proc$BIGA2_XBB116S))
+```
+
+
+```{r}
+# manually add seromyx to assay metadata file
+dat=read.csv("/trials/covpn/COVAILcorrelates/download_data/covail/SeromYxDataJuly23_2025.csv")
+dat$assay= paste0(dat$tgttype, "_", dat$vstrain)
+seromyx=sort(unique(dat$assay))
+tmp=data.frame(panel=ifelse(sapply(strsplit(seromyx, "_"), function (x) contain(x[1],"IG")), "bAb", "Fc"), 
+               order_in_panel=NA, 
+               assay=seromyx, 
+               lloq=NA, uloq=Inf, lod=NA, pos.cutoff=NA, 
+               assay_label=seromyx, 
+               assay_label_short=seromyx, llox_label="lod", for_correlates=1, trunc=NA)
+
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata_without seromyx.csv')
+assay_metadata=rbind(assay_metadata, tmp)
+write.csv(assay_metadata, '~/correlates_reporting2/assay_metadata/covail_assay_metadata1.csv', row.names=F)
+```
+
+```{r}
+# check to make sure the only changes between covail_data_processed_20250725.csv and covail_data_processed_20250709.csv is the added seromyx data
+
+dat1=read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20250709.csv")
+
+dat2=read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20250725.csv")
+dat3=dat2[,colnames(dat2)%in%colnames(dat1)]
+identical(dat1, dat3)
+
+# covail_data_processed_20250726.csv is also the same but without frnt columns
+dat2=read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20250726.csv")
+dat3=dat2[,colnames(dat2)%in%colnames(dat1)]
+identical(dat1[,!contain(colnames(dat1), "frnt")], dat3[,!contain(colnames(dat3), "frnt")])
+
+```
+
 ```{r SeromYxDataJuly7_2025}
-dat=read.csv("/trials/covpn/COVAILcorrelates/download_data/covail/SeromYxDataJuly7_2025.csv")
+dat=read.csv("/trials/covpn/COVAILcorrelates/download_data/covail/SeromYxDataJuly23_2025.csv")
+dat$assay= paste0(dat$tgttype, "_", dat$vstrain)
 len(unique(dat$subjid))
+mytable(dat$assay, dat$visno)
+
 dat_proc$hasSeromYx = dat_proc$Ptid %in% unique(dat$subjid)
 mytable(dat_proc$hasSeromYx, dat_proc$ph2.D15.tcell)
+
+tmp=subset(dat, visno==3)
+sort(mytable(tmp$assay))
+
+assays=sort(unique(tmp$assay))
+
+antigen="XBB116S" #BA45S
+aa=assays[endsWith(assays, antigen)]
+wide = myreshapewide(formula=aresulta~assay, tmp, idvar="subjid", keep.extra.col = F)
+# add nAb
+wide$neut = dat_proc$Day15pseudoneutid50_BA.4.BA.5[match(wide$subjid, dat_proc$Ptid)]
+
+tmp2=wide[, c("neut", paste0("aresulta.",aa))]
+names(tmp2)=sub("aresulta.", "", names(tmp2))
+names(tmp2)=sub("_"%.%antigen, "", names(tmp2))
+tmp2[,2:ncol(tmp2)]=log(tmp2[,2:ncol(tmp2)])
+mypairs(tmp2, gap=0) # Total igg is highly correlated with FCR6 etc and moderately correlated with neut
+tmp2.d15=tmp2
+
+tmp=subset(dat, visno==1)
+tmp$assay= paste0(tmp$tgttype, "_", tmp$vstrain)
+sort(mytable(tmp$assay))
+
+assays=sort(unique(tmp$assay))
+
+antigen="XBB116S" #BA45S
+aa=assays[endsWith(assays, antigen)]
+wide.d1 = myreshapewide(formula=aresulta~assay, tmp, idvar="subjid", keep.extra.col = F)
+# add nAb
+wide.d1$neut = dat_proc$Day15pseudoneutid50_BA.4.BA.5[match(wide.d1$subjid, dat_proc$Ptid)]
+# sort
+wide.d1 = wide.d1[match(wide$subjid, wide.d1$subjid),]
+
+tmp2=wide.d1[, c("neut", paste0("aresulta.",aa))]
+names(tmp2)=sub("aresulta.", "", names(tmp2))
+names(tmp2)=sub("_"%.%antigen, "", names(tmp2))
+tmp2[,2:ncol(tmp2)]=log(tmp2[,2:ncol(tmp2)])
+mypairs(tmp2, gap=0) # Total igg is highly correlated with FCR6 etc and moderately correlated with neut
+tmp2.d1=tmp2
+
+par(mfrow=c(2,2)); shrink_margin()
+corplot(tmp2.d1$IGA1, tmp2.d15$IGA1, asp=1)
+corplot(tmp2.d1$IGA2, tmp2.d15$IGA2, asp=1)
+corplot(tmp2.d1$IGM, tmp2.d15$IGM, asp=1)
+corplot(tmp2.d1$TIGG, tmp2.d15$TIGG, asp=1)
+
+summary(tmp2.d1$IGA2)
 ```
 
 
