@@ -894,7 +894,7 @@ if (exists("COR")) {
         # except for 
         #   janssen_partA_VL because for variants analysis, there is not just one tfinal.tpeak
         #   prevent19_stage2, azd1222_stage2 because CoR only
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "covail_tcell", "covail_frnt", "prevent19_stage2", "azd1222_stage2")) {
+        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", "prevent19_stage2", "azd1222_stage2")) {
           prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==1 & ph1), tfinal.tpeak)
           prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==0 & ph1), tfinal.tpeak)   
           overall.ve = c(1 - prev.vacc/prev.plac) 
@@ -1173,7 +1173,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age <= 14"
   )
   
-} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "nextgen_mock")) {
+} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", "nextgen_mock")) {
   # do nothing
   
 } else stop("unknown study_name 2")
@@ -1255,7 +1255,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 } else if (study_name=="HVTN705") {
   # do nothing
   
-} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt")) {
+} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays")) {
   # do nothing
   
 } else if (TRIAL == "nvx_uk302") {
