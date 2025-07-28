@@ -94,6 +94,17 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
+```{r check missing data in _resp}
+
+vv=names(dat_proc)
+vv=vv[contain(vv, "_resp") & contain(vv, "Day15")]
+vv
+dat=dat_proc[dat_proc$ph2.D15.tcell, vv]
+dim(dat)
+complete.cases(dat)      
+
+```
+
 ```{r}
 mytable (dat_proc$ph2.D92.tcell, dat_proc$ph2.D15.tcell)
 mytable (dat_proc$ph2.D92.seromyx, dat_proc$ph2.D15.seromyx)
