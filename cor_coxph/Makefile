@@ -121,6 +121,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail_tcell))
 else ifeq ($(TRIAL),$(filter $(TRIAL), covail_frnt))
 	Rscript code/cor_coxph_covail_frnt.R D15to91covail_frnt
 	Rscript code/cor_coxph_covail_frnt.R D15to181covail_frnt
+	Rscript code/cor_coxph_covail_frnt.R D92to181covail_frnt
 endif
 
 collate:

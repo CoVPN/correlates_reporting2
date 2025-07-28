@@ -34,6 +34,12 @@ frnt80=assays[startsWith(assays, "frnt80")]; frnt80
 
 f=Surv(COVIDtimeD22toD181, COVIDIndD22toD181) ~ FOIstandardized + standardized_risk_score
 
+# compare all Pfizer and all Moderna and onedosemRNA to decide whether to stratify by stage or not
+dat.onedosemRNA =    subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17)) 
+dat.onedoseModerna = subset(dat.onedosemRNA, arm<=6)
+dat.onedosePfizer  = subset(dat.onedosemRNA, arm> 6)
+
+
 dat.ocp.pfizer=subset(dat_proc, ph1.D15==1 & treatment_assigned %in% c(
     "Wildtype/Prototype (Pfizer 1)"
   , "Omicron (Pfizer 1)"
@@ -88,6 +94,226 @@ mytable(dat_proc$treatment_assigned)
 
 ```
 
+```{r}
+mytable (dat_proc$ph2.D92.tcell, dat_proc$ph2.D15.tcell)
+mytable (dat_proc$ph2.D92.seromyx, dat_proc$ph2.D15.seromyx)
+mytable(dat_proc$ph2.D92.tcell, dat_proc$ph2.D92.seromyx)
+```
+
+
+```{r}
+# examine IgA2 using analysis dataset
+corplot(Day15IGA2_XBB116S ~ BIGA2_XBB116S, dat_proc)
+mytable(is.na(dat_proc$BIGA2_XBB116S))
+```
+
+
+```{r}
+# manually add seromyx to assay metadata file
+dat=read.csv("/trials/covpn/COVAILcorrelates/download_data/covail/SeromYxDataJuly23_2025.csv")
+dat$assay= paste0(dat$tgttype, "_", dat$vstrain)
+seromyx=sort(unique(dat$assay))
+tmp=data.frame(panel=ifelse(sapply(strsplit(seromyx, "_"), function (x) contain(x[1],"IG")), "bAb", "Fc"), 
+               order_in_panel=NA, 
+               assay=seromyx, 
+               lloq=NA, uloq=Inf, lod=NA, pos.cutoff=NA, 
+               assay_label=seromyx, 
+               assay_label_short=seromyx, llox_label="lod", for_correlates=1, trunc=NA)
+
+assay_metadata=read.csv('~/correlates_reporting2/assay_metadata/covail_assay_metadata_without_seromyx.csv')
+assay_metadata=rbind(assay_metadata, tmp)
+write.csv(assay_metadata, '~/correlates_reporting2/assay_metadata/covail_assay_metadata1.csv', row.names=F)
+```
+
+```{r}
+# check to make sure the only changes between covail_data_processed_20250725.csv and covail_data_processed_20250709.csv is the added seromyx data
+
+dat1=read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20250709.csv")
+
+dat2=read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20250725.csv")
+dat3=dat2[,colnames(dat2)%in%colnames(dat1)]
+identical(dat1, dat3)
+
+# covail_data_processed_20250726.csv is also the same but without frnt columns
+dat2=read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20250726.csv")
+dat3=dat2[,colnames(dat2)%in%colnames(dat1)]
+identical(dat1[,!contain(colnames(dat1), "frnt")], dat3[,!contain(colnames(dat3), "frnt")])
+
+```
+
+```{r SeromYxDataJuly7_2025}
+dat=read.csv("/trials/covpn/COVAILcorrelates/download_data/covail/SeromYxDataJuly23_2025.csv")
+dat$assay= paste0(dat$tgttype, "_", dat$vstrain)
+len(unique(dat$subjid))
+mytable(dat$assay, dat$visno)
+
+dat_proc$hasSeromYx = dat_proc$Ptid %in% unique(dat$subjid)
+mytable(dat_proc$hasSeromYx, dat_proc$ph2.D15.tcell)
+
+tmp=subset(dat, visno==3)
+sort(mytable(tmp$assay))
+
+assays=sort(unique(tmp$assay))
+
+antigen="XBB116S" #BA45S
+aa=assays[endsWith(assays, antigen)]
+wide = myreshapewide(formula=aresulta~assay, tmp, idvar="subjid", keep.extra.col = F)
+# add nAb
+wide$neut = dat_proc$Day15pseudoneutid50_BA.4.BA.5[match(wide$subjid, dat_proc$Ptid)]
+
+tmp2=wide[, c("neut", paste0("aresulta.",aa))]
+names(tmp2)=sub("aresulta.", "", names(tmp2))
+names(tmp2)=sub("_"%.%antigen, "", names(tmp2))
+tmp2[,2:ncol(tmp2)]=log(tmp2[,2:ncol(tmp2)])
+mypairs(tmp2, gap=0) # Total igg is highly correlated with FCR6 etc and moderately correlated with neut
+tmp2.d15=tmp2
+
+tmp=subset(dat, visno==1)
+tmp$assay= paste0(tmp$tgttype, "_", tmp$vstrain)
+sort(mytable(tmp$assay))
+
+assays=sort(unique(tmp$assay))
+
+antigen="XBB116S" #BA45S
+aa=assays[endsWith(assays, antigen)]
+wide.d1 = myreshapewide(formula=aresulta~assay, tmp, idvar="subjid", keep.extra.col = F)
+# add nAb
+wide.d1$neut = dat_proc$Day15pseudoneutid50_BA.4.BA.5[match(wide.d1$subjid, dat_proc$Ptid)]
+# sort
+wide.d1 = wide.d1[match(wide$subjid, wide.d1$subjid),]
+
+tmp2=wide.d1[, c("neut", paste0("aresulta.",aa))]
+names(tmp2)=sub("aresulta.", "", names(tmp2))
+names(tmp2)=sub("_"%.%antigen, "", names(tmp2))
+tmp2[,2:ncol(tmp2)]=log(tmp2[,2:ncol(tmp2)])
+mypairs(tmp2, gap=0) # Total igg is highly correlated with FCR6 etc and moderately correlated with neut
+tmp2.d1=tmp2
+
+par(mfrow=c(2,2)); shrink_margin()
+corplot(tmp2.d1$IGA1, tmp2.d15$IGA1, asp=1)
+corplot(tmp2.d1$IGA2, tmp2.d15$IGA2, asp=1)
+corplot(tmp2.d1$IGM, tmp2.d15$IGM, asp=1)
+corplot(tmp2.d1$TIGG, tmp2.d15$TIGG, asp=1)
+
+summary(tmp2.d1$IGA2)
+```
+
+
+```{r}
+# comparing different ph2 indicators
+
+mytable(dat_proc$ph1.D15, dat_proc$ph1.D15.frnt)
+mytable(dat_proc$ph1.D15.tcell, dat_proc$ph1.D15.frnt)
+
+kp=dat_proc$ph1.D15.tcell
+mytable(dat_proc$ph2.D15.frnt[kp], dat_proc$ph2.D15.tcell[kp])
+mytable(dat_proc$hasSeromYx[kp], dat_proc$ph2.D15.tcell[kp])
+
+
+mytable(dat_proc$ph2.D15.tcell, dat_proc$ph2.D15.frnt, dat_proc$ph1.D15)
+mytable(dat_proc$ph2.D15.tcell, dat_proc$ph2.D15.frnt, dat_proc$ph2.D15)
+
+mytable(dat_proc$ph2.D15.tcell, dat_proc$arm, dat_proc$TrtonedosemRNA==1)
+mytable(dat_proc$ph2.D15.frnt, dat_proc$arm, dat_proc$TrtonedosemRNA==1)
+
+mytable(dat_proc$TwophasesampIndD15.tcell, dat_proc$arm, dat_proc$TrtonedosemRNA==1)
+mytable(dat_proc$TwophasesampIndD15.frnt,  dat_proc$arm, dat_proc$TrtonedosemRNA==1)
+
+with(subset(dat_proc, TrtonedosemRNA==1 & ph1.D15), mytable(ph2.D15.tcell, ph2.D15.frnt, naive, COVIDIndD22toD181))
+with(subset(dat_proc, stage==3 & ph1.D15), mytable(ph2.D15.tcell, ph2.D15.frnt, naive, COVIDIndD22toD181))
+
+with(subset(dat_proc, TrtonedosemRNA==1 & ph1.D15), mytable(ph2.D15.tcell, hasSeromYx, naive, COVIDIndD22toD181))
+with(subset(dat_proc, stage==3 & ph1.D15), mytable(ph2.D15.tcell, hasSeromYx, naive))
+
+with(subset(dat_proc, TrtonedosemRNA==1 & ph1.D15), mytable(ph2.D15.frnt, hasSeromYx, naive))
+with(subset(dat_proc, stage==3 & ph1.D15), mytable(ph2.D15.frnt, hasSeromYx, naive))
+
+with(subset(dat_proc, TrtonedosemRNA==1 & ph1.D15), mytable(ph2.D15.tcell, hasSeromYx, naive, COVIDIndD22toD181))
+
+```
+
+
+```{r baseline and peak t cell marker relationship, fig.width=12, fig.height=6}
+
+par(mfrow=c(1,2)); shrink_margin()
+corplot(Day15cd4_IFNg.IL2_BA.4.5.S~Bcd4_IFNg.IL2_BA.4.5.S, subset(dat_proc), col=ifelse(dat_proc$naive,"darkgreen","purple"), asp=1)
+corplot(Day15pseudoneutid50_BA.4.BA.5~Bpseudoneutid50_BA.4.BA.5, subset(dat_proc), col=ifelse(dat_proc$naive,"darkgreen","purple"), asp=1)
+
+fits=list(
+  # all=lm(Day15pseudoneutid50_BA.4.BA.5~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, dat_proc),
+  # all.casedeletion=lm(Day15pseudoneutid50_BA.4.BA.5~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, subset(dat_proc, SubcohortInd.casedeletion)),
+  D15neut_mRNA=lm(Day15pseudoneutid50_BA.4.BA.5~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, dat.onedosemRNA),
+  D15neut_mRNA.casedeletion=lm(Day15pseudoneutid50_BA.4.BA.5~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, subset(dat.onedosemRNA, SubcohortInd.casedeletion))
+)
+tab1=getFormattedSummary(fits, robust=T, type=5)[-1,]
+
+fits=list(
+  # all=lm(Day15cd4_IFNg.IL2_BA.4.5.S~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, dat_proc),
+  # all.casedeletion=lm(Day15cd4_IFNg.IL2_BA.4.5.S~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, subset(dat_proc, SubcohortInd.casedeletion)),
+  D15CD4_mRNA=lm(Day15cd4_IFNg.IL2_BA.4.5.S~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, dat.onedosemRNA),
+  D15CD4_mRNA.casedeletion=lm(Day15cd4_IFNg.IL2_BA.4.5.S~I(scale(Bpseudoneutid50_BA.4.BA.5))+I(scale(Bcd4_IFNg.IL2_BA.4.5.S)) + naive + I(as.factor(arm)) + COVIDIndD22toD181 + Age + Sex, subset(dat.onedosemRNA, SubcohortInd.casedeletion))
+)
+tab2=getFormattedSummary(fits, robust=T, type=5)[-1,]
+
+
+print(cbind(tab1, tab2), align="c")
+
+```
+
+
+
+
+```{r make a new indicator to mimic subcohort}
+kp=dat_proc$ph2.D15.tcell
+mytable(dat_proc$wt.D15.tcell[kp], dat_proc$arm[kp], dat_proc$COVIDIndD22toD181[kp])
+sum(dat_proc$wt.D15.tcell[kp])
+
+```
+
+
+
+
+
+
+```{r frnt data missingness}
+dat_proc$Day15frnt_missing_cnt <- dat_mapped$Day15frnt_missing_cnt <- with(dat_mapped, is.na(Day15frnt50_D614G) + is.na(Day15frnt50_BA.1) + is.na(Day15frnt50_BA.2) + is.na(Day15frnt50_BA.4.BA.5) + is.na(Day15frnt80_D614G) + is.na(Day15frnt80_BA.1) + is.na(Day15frnt80_BA.2) + is.na(Day15frnt80_BA.4.BA.5)) 
+
+dat_proc$Bfrnt_missing_cnt <- dat_mapped$Bfrnt_missing_cnt <- with(dat_mapped, is.na(Bfrnt50_D614G) + is.na(Bfrnt50_BA.1) + is.na(Bfrnt50_BA.2) + is.na(Bfrnt50_BA.4.BA.5) + is.na(Bfrnt80_D614G) + is.na(Bfrnt80_BA.1) + is.na(Bfrnt80_BA.2) + is.na(Bfrnt80_BA.4.BA.5)) 
+
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day15frnt_missing_cnt), COVIDIndD22toD181))
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Bfrnt_missing_cnt), COVIDIndD22toD181))
+
+
+dat_proc$B_Day15frnt_missing_cnt = dat_proc$Bfrnt_missing_cnt + dat_proc$Day15frnt_missing_cnt
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((B_Day15frnt_missing_cnt), COVIDIndD22toD181))
+nrow(subset(dat_proc, ph2.D15.frnt==1))
+
+
+with(subset(dat_proc, ph2.D15.frnt==1 & stage<3 & COVIDIndD22toD181==1), mytable(TrtA, stage, naive))
+
+with(subset(dat_proc, ph2.D15.frnt==1 & stage<3 & COVIDIndD22toD181==0), mytable(TrtA, stage, naive))
+
+```
+
+
+```{r missingness of FRNT data D91 and D181}
+
+# dat_proc$Day91frnt50_any = with(dat_proc, !is.na(Day91frnt50_D614G) | !is.na(Day91frnt50_BA.1) | !is.na(Day91frnt50_BA.2) | !is.na(Day91frnt50_BA.4.BA.5) | !is.na(Day181frnt50_D614G) | !is.na(Day181frnt50_BA.1) | !is.na(Day181frnt50_BA.2) | !is.na(Day181frnt50_BA.4.BA.5))
+# dat_proc$Day181frnt50_any = with(dat_proc, !is.na(Day181frnt50_D614G) | !is.na(Day181frnt50_BA.1) | !is.na(Day181frnt50_BA.2) | !is.na(Day181frnt50_BA.4.BA.5))
+
+dat_proc$Day91frnt_missing_cnt = with(dat_proc, is.na(Day91frnt50_D614G) + is.na(Day91frnt50_BA.1) + is.na(Day91frnt50_BA.2) + is.na(Day91frnt50_BA.4.BA.5) + is.na(Day91frnt80_D614G) + is.na(Day91frnt80_BA.1) + is.na(Day91frnt80_BA.2) + is.na(Day91frnt80_BA.4.BA.5))
+dat_proc$Day181frnt_missing_cnt = with(dat_proc, is.na(Day181frnt50_D614G) + is.na(Day181frnt50_BA.1) + is.na(Day181frnt50_BA.2) + is.na(Day181frnt50_BA.4.BA.5) + is.na(Day181frnt80_D614G) + is.na(Day181frnt80_BA.1) + is.na(Day181frnt80_BA.2) + is.na(Day181frnt80_BA.4.BA.5) )
+
+# with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day91frnt50_any), (Day181frnt50_any), COVIDIndD22toD181))
+# with(subset(dat_proc, ph2.D15.frnt==1), mytable(!is.na(Day91frnt50_any), !is.na(Day181frnt50_any), COVIDIndD22toD91))
+# with(subset(dat_proc, ph2.D15.frnt==1), mytable(!is.na(Day91frnt50_any), !is.na(Day181frnt50_any), COVIDIndD92toD181))
+
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day91frnt_missing_cnt), COVIDIndD22toD181))
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day181frnt_missing_cnt), COVIDIndD22toD181))
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day91frnt_missing_cnt), (Day181frnt_missing_cnt), COVIDIndD92toD181))
+
+with(subset(dat_proc, ph2.D15.frnt==1), mytable((Day91frnt_missing_cnt), COVIDIndD22toD91))
+```
 
 ```{r overlap of FRNT and nAb}
 with(subset(dat_proc, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), !is.na(Day15cd4_154_BA.4.5.S1)))
@@ -102,6 +328,10 @@ with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), !is.na(D
 
 with(subset(dat_mapped, ph1.D15==1), mytable(!is.na(Day15frnt50_D614G), arm))
 
+mytable(apply((!is.na(dat_mapped[dat_mapped$ph1.D15==1 & dat_mapped$arm<=15, c(glue("B{c(frnt50,frnt80)}"), glue("Day15{c(frnt50,frnt80)}"))])), 1, sum))
+
+sum(dat_proc$ph2.D15.frnt)
+sum(dat_proc$ph1.D15.frnt)
 
 for (a in frnt50) {
   print(a)
@@ -172,7 +402,7 @@ round(res,3)
 ```
 
 All the CD8 values for positive responders are above -1.5.
-```{r}
+```{r, fig.width=8, fig.height=4}
 par(mfrow=c(1,4)); reduce_margin()
 lim=c(-3,1)
 myboxplot(Bcd8_IFNg.IL2_BA.4.5.S~Bcd8_IFNg.IL2_BA.4.5.S_resp, dat_proc[dat_proc$naive==0,], ylim=lim, xlab="response call", main="D01"); abline(h=-1.7, col=2)
@@ -184,8 +414,33 @@ mtext("Naive", side=3, at=0, line=0.8)
 
 par(mfrow=c(1,2));  par(mar=c(4,3,2,1), mgp = c(1.5, 0.5, 0))
 lim=c(-3,1)
-myboxplot(Bcd4_IFNg.IL2_BA.4.5.S~naive, dat_proc, ylim=lim, xlab="naive", main="D01", test='w');# abline(h=-1.7, col=2)
-myboxplot(Day15cd4_IFNg.IL2_BA.4.5.S~naive, dat_proc, ylim=lim, xlab="naive", main="D15", test="w");# abline(h=-1.7, col=2)
+myboxplot(Bcd4_IFNg.IL2_BA.4.5.S~naive, subset(dat_proc, ph2.D15.tcell), ylim=lim, xlab="naive", main="D01", test='w');# abline(h=-1.7, col=2)
+myboxplot(Day15cd4_IFNg.IL2_BA.4.5.S~naive, subset(dat_proc, ph2.D15.tcell), ylim=lim, xlab="naive", main="D15", test="w");# abline(h=-1.7, col=2)
+
+library(survey)
+design <- svydesign(ids = ~1, data = subset(dat_proc, ph2.D15.tcell), weights = ~wt.D15.tcell)
+
+par(mfrow=c(1,4));  par(mar=c(4,3,2,1), mgp = c(1.5, 0.5, 0))
+svyranktest(Bcd4_IFNg.IL2_BA.4.5.S~naive, design)
+svyranktest(Bcd4_IFNg.IL2_COV2.CON.S~naive, design)
+svyranktest(Bcd4_FS_BA.4.5.S~naive, design)
+svyranktest(Bcd4_FS_COV2.CON.S~naive, design)
+
+myboxplot(Bcd4_IFNg.IL2_BA.4.5.S~naive, subset(dat_proc, ph2.D15.tcell), ylim=lim, xlab="naive", main="D01", test='');# abline(h=-1.7, col=2)
+myboxplot(Bcd4_IFNg.IL2_COV2.CON.S~naive, subset(dat_proc, ph2.D15.tcell), ylim=lim, xlab="naive", main="D01", test='');# abline(h=-1.7, col=2)
+myboxplot(Bcd4_FS_BA.4.5.S~naive, subset(dat_proc, ph2.D15.tcell), xlab="naive", main="D01", test='');# abline(h=-1.7, col=2)
+myboxplot(Bcd4_FS_COV2.CON.S~naive, subset(dat_proc, ph2.D15.tcell), xlab="naive", main="D01", test='');# abline(h=-1.7, col=2)
+
+
+myboxplot(Bcd4_FS_BA.4.5.S~naive+COVIDIndD22toD91, subset(dat_proc, ph2.D15.tcell), xlab="naive.case", main="D01", test='');# abline(h=-1.7, col=2)
+myboxplot(Bpseudoneutid50_D614G~naive+COVIDIndD22toD91, subset(dat_proc, ph2.D15==1), xlab="naive.case", main="D01", test='');# abline(h=-1.7, col=2)
+
+corplot(Bcd4_FS_BA.4.5.S~Bpseudoneutid50_D614G, dat_proc, col=ifelse(dat_proc$naive, 4, 1), pch=ifelse(dat_proc$COVIDIndD22toD91==1, 3, 1))
+
+par(mfrow=c(1,2)); shrink_margin()
+corplot(Bcd4_FS_BA.4.5.S~Bpseudoneutid50_D614G, subset(dat_proc, naive==0), pch=1, col=subset(dat_proc, naive==0, COVIDIndD22toD91,drop=T)+1, xlim=range(dat_proc$Bpseudoneutid50_D614G, na.rm=T), ylim=range(dat_proc$Bcd4_FS_BA.4.5.S, na.rm=T), main="non-naive")
+corplot(Bcd4_FS_BA.4.5.S~Bpseudoneutid50_D614G, subset(dat_proc, naive==1), pch=1, col=subset(dat_proc, naive==1, COVIDIndD22toD91, drop=T)+1, xlim=range(dat_proc$Bpseudoneutid50_D614G, na.rm=T), ylim=range(dat_proc$Bcd4_FS_BA.4.5.S, na.rm=T), main="naive")
+
 ```
 
 
