@@ -2,9 +2,10 @@
 # Sys.setenv(TRIAL = "moderna_real")
 # Sys.setenv(TRIAL = "janssen_pooled_partA")
 # Sys.setenv(TRIAL = "covail_tcell")
-Sys.setenv(TRIAL = "covail_tcell")
-# COR = "D15to91covail_tcell"
-COR = "D15to181covail_tcell"
+Sys.setenv(TRIAL = "covail_xassays")
+
+# COR = "D15to91covail_xassays"
+COR = "D15to181covail_xassays"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -28,7 +29,7 @@ job_id = 1
 source(here::here("code", "cor_surrogates_setup.R"))
 
 
-for (job_id in 26) { # DO THIS ONLY FOR COVAIL
+for (job_id in 1:28) { # DO THIS ONLY FOR COVAIL
   
 # grab the current variable set based on the job id
 this_var_set <- varset_matrix[job_id, ]
@@ -85,6 +86,7 @@ cvsl_args %>% add_row(Argument = "vimp package version",
 # ensure reproducibility
 set.seed(20210216)
 # if non-naive and 1 dose mRNA arm then varset 26 does not work with the above seed. So use set.seed(20250616) !!
+set.seed(20250616)
 seeds <- round(runif(10, 1000, 10000)) # average over 10 random starts
 
 # disable parallelization in openBLAS and openMP

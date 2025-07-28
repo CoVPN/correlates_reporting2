@@ -1064,7 +1064,6 @@ if (study_name %in% c("COVAIL") & non_naive == TRUE) {
       # [2] "Day15pseudoneutid50_BA.1"
       # [3] "Delta15overBpseudoneutid50_BA.1_2fold"
       # [4] "Delta15overBpseudoneutid50_BA.1_4fold"
-      
     
       
       # Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
@@ -1076,9 +1075,9 @@ if (study_name %in% c("COVAIL") & non_naive == TRUE) {
       # Baseline risk score + D1 primary CD4+ T cell marker FS N Index 
       varset_cd4_FS_Wuhan.N_D1 = str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "Wuhan.N") & !str_detect(markers, "154|Day15|Delta15"),
       # Baseline risk score + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
-      varset_cd4_IFNg.IL2_BA.4.5_D1 = str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
+      varset_cd4_IFNg.IL2_BA.4.5_D15 = str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
       # Baseline risk score + D15 primary CD4+ T cell marker FS Spike BA.4/5 
-      varset_cd4_FS_Wuhan.N_D1 = str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
+      varset_cd4_FS_Wuhan.N_D15 = str_detect(markers, "cd4") & str_detect(markers, "FS") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154|Bcd4"),
       # Baseline risk score + D1 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 + D15 primary CD4+ T cell marker IFN-g/IL-2 Spike BA.4/5 
       varset_cd4_IFNg.IL2_BA.4.5_D1nD15 = str_detect(markers, "cd4") & str_detect(markers, "IFNg.IL2") & str_detect(markers, "BA.4.5") & !str_detect(markers, "154"),
       # Baseline risk score + D1 primary CD4+ T cell marker FS Spike BA.4/5 + D15 primary CD4+ T cell marker FS Spike BA.4/5 

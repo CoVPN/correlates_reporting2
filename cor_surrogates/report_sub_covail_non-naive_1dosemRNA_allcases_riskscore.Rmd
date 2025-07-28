@@ -88,7 +88,7 @@ cvsl_args %>%
 
 \clearpage
 ```{r variable-sets, warning=FALSE, echo=FALSE}
-caption <- "All variable sets (13 in total) with immunological markers for which Super Learner was run."
+caption <- "All variable sets (28 in total) with immunological markers for which Super Learner was run."
 
 read.csv(here("cor_surrogates", "output", Sys.getenv("TRIAL"), "varsets.csv"),
          row.names = 1, header = TRUE) %>%

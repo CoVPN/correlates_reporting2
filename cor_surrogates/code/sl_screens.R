@@ -472,7 +472,8 @@ if (run_prod) {
                   "SL.xgboost.4.no", #"SL.xgboost.2.no", "SL.xgboost.2.yes", "SL.xgboost.4.yes",
                   "SL.ranger.no") #, "SL.ranger.yes"  
   } else if (Sys.getenv("TRIAL") == "covail_tcell"){
-    methods1 <- c("SL.mean", "SL.glm"#, 
+    methods1 <- c("SL.mean", 
+                  "SL.glm"#, 
                   #"SL.bayesglm", 
                   #"SL.glmnet.0", "SL.glmnet.0.33", "SL.glmnet.0.67", "SL.glmnet.1" #, 
                   #"SL.xgboost.2.no", 
@@ -502,7 +503,8 @@ if (run_prod) {
 } else {
   # NOTE: smaller library for ~faster~ demo run
   # learners in the method1 are also combined with no screen
-  methods1 <- c("SL.mean", "SL.glm")
+  methods1 <- c("SL.mean", 
+                "SL.glm")
 
   # learners in the method2 are learners that can have screens
   methods2 <- c("SL.glm")
