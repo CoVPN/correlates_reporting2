@@ -14,7 +14,7 @@ id50=c("pseudoneutid50_D614G", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5"
 ```{r, echo=FALSE, results='asis'}
 
 # tables made in iObj 21 is part of the 2
-for (COR in c("D15to181covail_frnt", "D15to91covail_frnt")) {
+for (COR in c("D15to181covail_frnt", "D15to91covail_frnt", "D92to181covail_frnt")) {
   
   cat("\n# Univariate, ", sub("D15to", "D22to", COR), "\n\n", sep="")
   
@@ -23,7 +23,14 @@ for (COR in c("D15to181covail_frnt", "D15to91covail_frnt")) {
   for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
   
   marker_sets = c("frnt", "id50")
-  trts=1:8 
+  
+  if (COR=="D15to181covail_frnt") {
+    trts=1:8 
+  } else if (COR=="D15to91covail_frnt") {
+    trts=1:8 
+  } else if (COR=="D92to181covail_frnt") {
+    trts=c(1,5:8) 
+  } else stop("Wrong COR: "%.% COR)
 
   for (trt in trts) {
   
@@ -31,27 +38,23 @@ for (COR in c("D15to181covail_frnt", "D15to91covail_frnt")) {
       fname.suffix.0 = 'mRNA_onedose_NN'
     } else if (trt==2) {
       fname.suffix.0 = 'mRNA_Moderna_NN'
-      next
+      
     } else if (trt==3) {
       fname.suffix.0 = 'mRNA_Pfizer_NN'
-      next
+      
     } else if (trt==4) {
       fname.suffix.0 = 'mRNA_Sanofi_NN'
-      next
-      # skip for now. no baseline id50 cat marker defined for this cohort
-    
+
     } else if (trt==5) {
       fname.suffix.0 = 'mRNA_onedose_N'
     } else if (trt==6) {
       fname.suffix.0 = 'mRNA_Moderna_N'
-      next
+      
     } else if (trt==7) {
       fname.suffix.0 = 'mRNA_Pfizer_N'
-      next
+      
     } else if (trt==8) {
       fname.suffix.0 = 'mRNA_Sanofi_N'
-      # skip for now. no baseline id50 cat marker defined for this cohort
-      next
     } 
     
     cat("\n## ", fname.suffix.0)

@@ -1,76 +1,274 @@
-panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates,trunc
-id50,1,pseudoneutid50_D614G,47,198904,40,40,PsV Neutralization to D614G,Pseudovirus-nAb D614G (AU/ml),lod,1,NA
-id50,2,pseudoneutid50_Delta,50,145858,40,40,PsV Neutralization to Delta,Pseudovirus-nAb Delta (AU/ml),lod,1,NA
-id50,3,pseudoneutid50_Beta,44,35879,40,40,PsV Neutralization to Beta,Pseudovirus-nAb Beta (AU/ml),lod,1,NA
-id50,4,pseudoneutid50_BA.1,66,27104,40,40,PsV Neutralization to BA.1,Pseudovirus-nAb BA.1 (AU/ml),lod,1,NA
-id50,5,pseudoneutid50_BA.4.BA.5,57,58293,40,40,PsV Neutralization to BA.4/BA.5,Pseudovirus-nAb BA.4/BA.5 (AU/ml),lod,1,NA
-id50,6,pseudoneutid50_MDW,-1000000,Inf,40,NA,PsV Neutralization breadth score,Pseudovirus-nAb ID50 breadth score,lod,1,NA
-id50Duke,4,pseudoneutid50Duke_BA.2.12.1,66,27104,40,40,Duke PsV Neutralization to BA.2.12.1,Duke Pseudovirus-nAb BA.2.12.1 (AU/ml),lod,0,NA
-frnt50,1,frnt50_D614G,20,43740,20,20,Focus Reduction Neutralization Titer 50% to D614G,FRNT50 D614G (Titer),lod,1,NA
-frnt50,2,frnt50_BA.1,20,43740,20,20,Focus Reduction Neutralization Titer 50% to BA.1,FRNT50 BA.1 (Titer),lod,1,NA
-frnt50,3,frnt50_BA.2,20,43740,20,20,Focus Reduction Neutralization Titer 50% to BA.2,FRNT50 BA.2 (Titer),lod,1,NA
-frnt50,4,frnt50_BA.4.BA.5,20,43740,20,20,Focus Reduction Neutralization Titer 50% to BA.4/BA.5,FRNT50 BA.4/BA.5 (Titer),lod,1,NA
-frnt80,5,frnt80_D614G,20,43740,20,20,Focus Reduction Neutralization Titer 80% to D614G,FRNT80 D614G (Titer),lod,1,NA
-frnt80,6,frnt80_BA.1,20,43740,20,20,Focus Reduction Neutralization Titer 80% to BA.1,FRNT80 BA.1 (Titer),lod,1,NA
-frnt80,7,frnt80_BA.2,20,43740,20,20,Focus Reduction Neutralization Titer 80% to BA.2,FRNT80 BA.2 (Titer),lod,1,NA
-frnt80,8,frnt80_BA.4.BA.5,20,43740,20,20,Focus Reduction Neutralization Titer 80% to BA.4/BA.5,FRNT80 BA.4/BA.5 (Titer),lod,1,NA
-tcell,1,cd4_IFNg.IL2_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 to COV2.CON.S,CD4+ T cells IFN-g and/or IL-2 COV2.CON.S (%),lod,1,0.001
-tcell,2,cd4_IFNg.IL2_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 to BA.4.5.S,CD4+ T cells IFN-g and/or IL-2 BA.4.5.S (%),lod,1,0.001
-tcell,3,cd4_IFNg.IL2_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 to Wuhan N,CD4+ T cells IFN-g and/or IL-2 Wuhan N (%),lod,1,0.001
-tcell,4,cd8_IFNg.IL2_COV2.CON.S,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 to COV2.CON.S,CD8+ T cells IFN-g and/or IL-2 COV2.CON.S (%),lod,1,0.001
-tcell,5,cd8_IFNg.IL2_BA.4.5.S,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 to BA.4.5.S,CD8+ T cells IFN-g and/or IL-2 BA.4.5.S (%),lod,1,0.001
-tcell,6,cd8_IFNg.IL2_Wuhan.N,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 to Wuhan N,CD8+ T cells IFN-g and/or IL-2 Wuhan N (%),lod,1,0.001
-tcell,7,cd4_IFNg.IL2.154_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to COV2.CON.S,CD4+ T cells IFN-g and/or IL-2 and/or CD154 COV2.CON.S (%),lod,1,0.001
-tcell,8,cd4_IFNg.IL2.154_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to BA.4.5.S,CD4+ T cells IFN-g and/or IL-2 and/or CD154 BA.4.5.S (%),lod,1,0.001
-tcell,9,cd4_IFNg.IL2.154_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to Wuhan N,CD4+ T cells IFN-g and/or IL-2 and/or CD154 Wuhan N (%),lod,1,0.001
-tcell,10,cd4_IL4.IL5.IL13.154_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to COV2.CON.S,CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 COV2.CON.S (%),lod,1,0.001
-tcell,11,cd4_IL4.IL5.IL13.154_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to BA.4.5.S,CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 BA.4.5.S (%),lod,1,0.001
-tcell,12,cd4_IL4.IL5.IL13.154_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to Wuhan N,CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 Wuhan N (%),lod,1,0.001
-tcell,13,cd4_IL21_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-21 to COV2.CON.S,CD4+ T cells IL-21 COV2.CON.S (%),lod,1,0.001
-tcell,14,cd4_IL21_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-21 to BA.4.5.S,CD4+ T cells IL-21 BA.4.5.S (%),lod,1,0.001
-tcell,15,cd4_IL21_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IL-21 to Wuhan N,CD4+ T cells IL-21 Wuhan N (%),lod,1,0.001
-tcell,16,cd4_IFNg_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g to COV2.CON.S,CD4+ T cells IFN-g COV2.CON.S (%),lod,1,0.001
-tcell,17,cd4_IFNg_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g to BA.4.5.S,CD4+ T cells IFN-g BA.4.5.S (%),lod,1,0.001
-tcell,18,cd4_IFNg_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IFN-g to Wuhan N,CD4+ T cells IFN-g Wuhan N (%),lod,1,0.001
-tcell,19,cd4_IL2_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-2 to COV2.CON.S,CD4+ T cells IL-2 COV2.CON.S (%),lod,1,0.001
-tcell,20,cd4_IL2_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-2 to BA.4.5.S,CD4+ T cells IL-2 BA.4.5.S (%),lod,1,0.001
-tcell,21,cd4_IL2_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IL-2 to Wuhan N,CD4+ T cells IL-2 Wuhan N (%),lod,1,0.001
-tcell,22,cd4_TNFa_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing TNF-a to COV2.CON.S,CD4+ T cells TNF-a COV2.CON.S (%),lod,1,0.001
-tcell,23,cd4_TNFa_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing TNF-a to BA.4.5.S,CD4+ T cells TNF-a BA.4.5.S (%),lod,1,0.001
-tcell,24,cd4_TNFa_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing TNF-a to Wuhan N,CD4+ T cells TNF-a Wuhan N (%),lod,1,0.001
-tcell,25,cd8_IFNg_COV2.CON.S,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g to COV2.CON.S,CD8+ T cells IFN-g COV2.CON.S (%),lod,1,0.001
-tcell,26,cd8_IFNg_BA.4.5.S,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g to BA.4.5.S,CD8+ T cells IFN-g BA.4.5.S (%),lod,1,0.001
-tcell,27,cd8_IFNg_Wuhan.N,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g to Wuhan N,CD8+ T cells IFN-g Wuhan N (%),lod,1,0.001
-tcell,28,cd8_IL2_COV2.CON.S,NA,Inf,NA,NA,CD8+ T cells expressing IL-2 to COV2.CON.S,CD8+ T cells IL-2 COV2.CON.S (%),lod,1,0.001
-tcell,29,cd8_IL2_BA.4.5.S,NA,Inf,NA,NA,CD8+ T cells expressing IL-2 to BA.4.5.S,CD8+ T cells IL-2 BA.4.5.S (%),lod,1,0.001
-tcell,30,cd8_IL2_Wuhan.N,NA,Inf,NA,NA,CD8+ T cells expressing IL-2 to Wuhan N,CD8+ T cells IL-2 Wuhan N (%),lod,1,0.001
-tcell,31,cd8_TNFa_COV2.CON.S,NA,Inf,NA,NA,CD8+ T cells expressing TNF-a to COV2.CON.S,CD8+ T cells TNF-a COV2.CON.S (%),lod,1,0.001
-tcell,32,cd8_TNFa_BA.4.5.S,NA,Inf,NA,NA,CD8+ T cells expressing TNF-a to BA.4.5.S,CD8+ T cells TNF-a BA.4.5.S (%),lod,1,0.001
-tcell,33,cd8_TNFa_Wuhan.N,NA,Inf,NA,NA,CD8+ T cells expressing TNF-a to Wuhan N,CD8+ T cells TNF-a Wuhan N (%),lod,1,0.001
-tcell,34,cd4_154_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing CD154 to COV2.CON.S,CD4+ T cells CD154 COV2.CON.S (%),lod,1,0.001
-tcell,35,cd4_154_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing CD154 to BA.4.5.S,CD4+ T cells CD154 BA.4.5.S (%),lod,1,0.001
-tcell,36,cd4_154_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing CD154 to Wuhan N,CD4+ T cells CD154 Wuhan N (%),lod,1,0.001
-tcell,37,cd4_IL17a_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-17a to COV2.CON.S,CD4+ T cells IL-17a COV2.CON.S (%),lod,1,0.001
-tcell,38,cd4_IL17a_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-17a to BA.4.5.S,CD4+ T cells IL-17a BA.4.5.S (%),lod,1,0.001
-tcell,39,cd4_IL17a_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IL-17a to Wuhan N,CD4+ T cells IL-17a Wuhan N (%),lod,1,0.001
-tcell,40,cd4_IL4.154_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-4 and CD154 to COV2.CON.S,CD4+ T cells IL-4 and CD154 COV2.CON.S (%),lod,1,0.001
-tcell,41,cd4_IL4.154_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-4 and CD154 to BA.4.5.S,CD4+ T cells IL-4 and CD154 BA.4.5.S (%),lod,1,0.001
-tcell,42,cd4_IL4.154_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IL-4 and CD154 to Wuhan N,CD4+ T cells IL-4 and CD154 Wuhan N (%),lod,1,0.001
-tcell,43,cd4_IL5.IL13.154_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to COV2.CON.S,CD4+ T cells IL-5 and/or IL-13 and CD154 COV2.CON.S (%),lod,1,0.001
-tcell,44,cd4_IL5.IL13.154_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to BA.4.5.S,CD4+ T cells IL-5 and/or IL-13 and CD154 BA.4.5.S (%),lod,1,0.001
-tcell,45,cd4_IL5.IL13.154_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to Wuhan N,CD4+ T cells IL-5 and/or IL-13 and CD154 Wuhan N (%),lod,1,0.001
-tcell,46,cd4_CXCR5.154_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing CXCR5 and/or CD154 to COV2.CON.S,CD4+ T cells CXCR5 and/or CD154 COV2.CON.S (%),lod,1,0.001
-tcell,47,cd4_CXCR5.154_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing CXCR5 and/or CD154 to BA.4.5.S,CD4+ T cells CXCR5 and/or CD154 BA.4.5.S (%),lod,1,0.001
-tcell,48,cd4_CXCR5.154_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing CXCR5 and/or CD154 to Wuhan N,CD4+ T cells CXCR5 and/or CD154 Wuhan N (%),lod,1,0.001
-tcell,49,cd4_CXCR5.IL21_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells expressing CXCR5 and/or IL-21 to COV2.CON.S,CD4+ T cells CXCR5 and/or IL-21 COV2.CON.S (%),lod,1,0.001
-tcell,50,cd4_CXCR5.IL21_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells expressing CXCR5 and/or IL-21 to BA.4.5.S,CD4+ T cells CXCR5 and/or IL-21 BA.4.5.S (%),lod,1,0.001
-tcell,51,cd4_CXCR5.IL21_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells expressing CXCR5 and/or IL-21 to Wuhan N,CD4+ T cells CXCR5 and/or IL-21 Wuhan N (%),lod,1,0.001
-tcell,52,cd8_IFNg.IL2.TNFa_COV2.CON.S,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to COV2.CON.S,CD8+ T cells IFN-g and/or IL-2 and/or TNF-a COV2.CON.S (%),lod,1,0.001
-tcell,53,cd8_IFNg.IL2.TNFa_BA.4.5.S,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to BA.4.5.S,CD8+ T cells IFN-g and/or IL-2 and/or TNF-a BA.4.5.S (%),lod,1,0.001
-tcell,54,cd8_IFNg.IL2.TNFa_Wuhan.N,NA,Inf,NA,NA,CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to Wuhan N,CD8+ T cells IFN-g and/or IL-2 and/or TNF-a Wuhan N (%),lod,1,0.001
-tcell,55,cd4_FS_COV2.CON.S,NA,Inf,NA,NA,CD4+ T cells functionality score to COV2.CON.S,CD4+ T cells functionality score COV2.CON.S,lod,1,NA
-tcell,56,cd4_FS_BA.4.5.S,NA,Inf,NA,NA,CD4+ T cells functionality score to BA.4.5.S,CD4+ T cells functionality score BA.4.5.S,lod,1,NA
-tcell,57,cd4_FS_Wuhan.N,NA,Inf,NA,NA,CD4+ T cells functionality score to Wuhan N,CD4+ T cells functionality score Wuhan N,lod,1,NA
-tcell,58,cd8_FS_COV2.CON.S,NA,Inf,NA,NA,CD8+ T cells functionality score to COV2.CON.S,CD8+ T cells functionality score COV2.CON.S,lod,1,NA
-tcell,59,cd8_FS_BA.4.5.S,NA,Inf,NA,NA,CD8+ T cells functionality score to BA.4.5.S,CD8+ T cells functionality score BA.4.5.S,lod,1,NA
-tcell,60,cd8_FS_Wuhan.N,NA,Inf,NA,NA,CD8+ T cells functionality score to Wuhan N,CD8+ T cells functionality score Wuhan N,lod,1,NA
+"panel","order_in_panel","assay","lloq","uloq","lod","pos.cutoff","assay_label","assay_label_short","llox_label","for_correlates","trunc"
+"id50",1,"pseudoneutid50_D614G",47,198904,40,40,"PsV Neutralization to D614G","Pseudovirus-nAb D614G (AU/ml)","lod",1,NA
+"id50",2,"pseudoneutid50_Delta",50,145858,40,40,"PsV Neutralization to Delta","Pseudovirus-nAb Delta (AU/ml)","lod",1,NA
+"id50",3,"pseudoneutid50_Beta",44,35879,40,40,"PsV Neutralization to Beta","Pseudovirus-nAb Beta (AU/ml)","lod",1,NA
+"id50",4,"pseudoneutid50_BA.1",66,27104,40,40,"PsV Neutralization to BA.1","Pseudovirus-nAb BA.1 (AU/ml)","lod",1,NA
+"id50",5,"pseudoneutid50_BA.4.BA.5",57,58293,40,40,"PsV Neutralization to BA.4/BA.5","Pseudovirus-nAb BA.4/BA.5 (AU/ml)","lod",1,NA
+"id50",6,"pseudoneutid50_MDW",-1000000,Inf,40,NA,"PsV Neutralization breadth score","Pseudovirus-nAb ID50 breadth score","lod",1,NA
+"id50Duke",4,"pseudoneutid50Duke_BA.2.12.1",66,27104,40,40,"Duke PsV Neutralization to BA.2.12.1","Duke Pseudovirus-nAb BA.2.12.1 (AU/ml)","lod",0,NA
+"frnt50",1,"frnt50_D614G",20,43740,20,20,"Focus Reduction Neutralization Titer 50% to D614G","FRNT50 D614G (Titer)","lod",1,NA
+"frnt50",2,"frnt50_BA.1",20,43740,20,20,"Focus Reduction Neutralization Titer 50% to BA.1","FRNT50 BA.1 (Titer)","lod",1,NA
+"frnt50",3,"frnt50_BA.2",20,43740,20,20,"Focus Reduction Neutralization Titer 50% to BA.2","FRNT50 BA.2 (Titer)","lod",1,NA
+"frnt50",4,"frnt50_BA.4.BA.5",20,43740,20,20,"Focus Reduction Neutralization Titer 50% to BA.4/BA.5","FRNT50 BA.4/BA.5 (Titer)","lod",1,NA
+"frnt80",5,"frnt80_D614G",20,43740,20,20,"Focus Reduction Neutralization Titer 80% to D614G","FRNT80 D614G (Titer)","lod",1,NA
+"frnt80",6,"frnt80_BA.1",20,43740,20,20,"Focus Reduction Neutralization Titer 80% to BA.1","FRNT80 BA.1 (Titer)","lod",1,NA
+"frnt80",7,"frnt80_BA.2",20,43740,20,20,"Focus Reduction Neutralization Titer 80% to BA.2","FRNT80 BA.2 (Titer)","lod",1,NA
+"frnt80",8,"frnt80_BA.4.BA.5",20,43740,20,20,"Focus Reduction Neutralization Titer 80% to BA.4/BA.5","FRNT80 BA.4/BA.5 (Titer)","lod",1,NA
+"tcell",1,"cd4_IFNg.IL2_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 to COV2.CON.S","CD4+ T cells IFN-g and/or IL-2 COV2.CON.S (%)","lod",1,0.001
+"tcell",2,"cd4_IFNg.IL2_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 to BA.4.5.S","CD4+ T cells IFN-g and/or IL-2 BA.4.5.S (%)","lod",1,0.001
+"tcell",3,"cd4_IFNg.IL2_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 to Wuhan N","CD4+ T cells IFN-g and/or IL-2 Wuhan N (%)","lod",1,0.001
+"tcell",4,"cd8_IFNg.IL2_COV2.CON.S",NA,Inf,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 to COV2.CON.S","CD8+ T cells IFN-g and/or IL-2 COV2.CON.S (%)","lod",1,0.001
+"tcell",5,"cd8_IFNg.IL2_BA.4.5.S",NA,Inf,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 to BA.4.5.S","CD8+ T cells IFN-g and/or IL-2 BA.4.5.S (%)","lod",1,0.001
+"tcell",6,"cd8_IFNg.IL2_Wuhan.N",NA,Inf,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 to Wuhan N","CD8+ T cells IFN-g and/or IL-2 Wuhan N (%)","lod",1,0.001
+"tcell",7,"cd4_IFNg.IL2.154_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to COV2.CON.S","CD4+ T cells IFN-g and/or IL-2 and/or CD154 COV2.CON.S (%)","lod",1,0.001
+"tcell",8,"cd4_IFNg.IL2.154_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to BA.4.5.S","CD4+ T cells IFN-g and/or IL-2 and/or CD154 BA.4.5.S (%)","lod",1,0.001
+"tcell",9,"cd4_IFNg.IL2.154_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing IFN-g and/or IL-2 and/or CD154 to Wuhan N","CD4+ T cells IFN-g and/or IL-2 and/or CD154 Wuhan N (%)","lod",1,0.001
+"tcell",10,"cd4_IL4.IL5.IL13.154_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to COV2.CON.S","CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 COV2.CON.S (%)","lod",1,0.001
+"tcell",11,"cd4_IL4.IL5.IL13.154_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to BA.4.5.S","CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 BA.4.5.S (%)","lod",1,0.001
+"tcell",12,"cd4_IL4.IL5.IL13.154_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing IL-4 and/or IL-5 and/or IL-13 and CD154 to Wuhan N","CD4+ T cells IL-4 and/or IL-5 and/or IL-13 and CD154 Wuhan N (%)","lod",1,0.001
+"tcell",13,"cd4_IL21_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-21 to COV2.CON.S","CD4+ T cells IL-21 COV2.CON.S (%)","lod",1,0.001
+"tcell",14,"cd4_IL21_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-21 to BA.4.5.S","CD4+ T cells IL-21 BA.4.5.S (%)","lod",1,0.001
+"tcell",15,"cd4_IL21_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing IL-21 to Wuhan N","CD4+ T cells IL-21 Wuhan N (%)","lod",1,0.001
+"tcell",16,"cd4_IFNg_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing IFN-g to COV2.CON.S","CD4+ T cells IFN-g COV2.CON.S (%)","lod",1,0.001
+"tcell",17,"cd4_IFNg_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing IFN-g to BA.4.5.S","CD4+ T cells IFN-g BA.4.5.S (%)","lod",1,0.001
+"tcell",18,"cd4_IFNg_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing IFN-g to Wuhan N","CD4+ T cells IFN-g Wuhan N (%)","lod",1,0.001
+"tcell",19,"cd4_IL2_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-2 to COV2.CON.S","CD4+ T cells IL-2 COV2.CON.S (%)","lod",1,0.001
+"tcell",20,"cd4_IL2_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-2 to BA.4.5.S","CD4+ T cells IL-2 BA.4.5.S (%)","lod",1,0.001
+"tcell",21,"cd4_IL2_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing IL-2 to Wuhan N","CD4+ T cells IL-2 Wuhan N (%)","lod",1,0.001
+"tcell",22,"cd4_TNFa_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing TNF-a to COV2.CON.S","CD4+ T cells TNF-a COV2.CON.S (%)","lod",1,0.001
+"tcell",23,"cd4_TNFa_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing TNF-a to BA.4.5.S","CD4+ T cells TNF-a BA.4.5.S (%)","lod",1,0.001
+"tcell",24,"cd4_TNFa_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing TNF-a to Wuhan N","CD4+ T cells TNF-a Wuhan N (%)","lod",1,0.001
+"tcell",25,"cd8_IFNg_COV2.CON.S",NA,Inf,NA,NA,"CD8+ T cells expressing IFN-g to COV2.CON.S","CD8+ T cells IFN-g COV2.CON.S (%)","lod",1,0.001
+"tcell",26,"cd8_IFNg_BA.4.5.S",NA,Inf,NA,NA,"CD8+ T cells expressing IFN-g to BA.4.5.S","CD8+ T cells IFN-g BA.4.5.S (%)","lod",1,0.001
+"tcell",27,"cd8_IFNg_Wuhan.N",NA,Inf,NA,NA,"CD8+ T cells expressing IFN-g to Wuhan N","CD8+ T cells IFN-g Wuhan N (%)","lod",1,0.001
+"tcell",28,"cd8_IL2_COV2.CON.S",NA,Inf,NA,NA,"CD8+ T cells expressing IL-2 to COV2.CON.S","CD8+ T cells IL-2 COV2.CON.S (%)","lod",1,0.001
+"tcell",29,"cd8_IL2_BA.4.5.S",NA,Inf,NA,NA,"CD8+ T cells expressing IL-2 to BA.4.5.S","CD8+ T cells IL-2 BA.4.5.S (%)","lod",1,0.001
+"tcell",30,"cd8_IL2_Wuhan.N",NA,Inf,NA,NA,"CD8+ T cells expressing IL-2 to Wuhan N","CD8+ T cells IL-2 Wuhan N (%)","lod",1,0.001
+"tcell",31,"cd8_TNFa_COV2.CON.S",NA,Inf,NA,NA,"CD8+ T cells expressing TNF-a to COV2.CON.S","CD8+ T cells TNF-a COV2.CON.S (%)","lod",1,0.001
+"tcell",32,"cd8_TNFa_BA.4.5.S",NA,Inf,NA,NA,"CD8+ T cells expressing TNF-a to BA.4.5.S","CD8+ T cells TNF-a BA.4.5.S (%)","lod",1,0.001
+"tcell",33,"cd8_TNFa_Wuhan.N",NA,Inf,NA,NA,"CD8+ T cells expressing TNF-a to Wuhan N","CD8+ T cells TNF-a Wuhan N (%)","lod",1,0.001
+"tcell",34,"cd4_154_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing CD154 to COV2.CON.S","CD4+ T cells CD154 COV2.CON.S (%)","lod",1,0.001
+"tcell",35,"cd4_154_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing CD154 to BA.4.5.S","CD4+ T cells CD154 BA.4.5.S (%)","lod",1,0.001
+"tcell",36,"cd4_154_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing CD154 to Wuhan N","CD4+ T cells CD154 Wuhan N (%)","lod",1,0.001
+"tcell",37,"cd4_IL17a_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-17a to COV2.CON.S","CD4+ T cells IL-17a COV2.CON.S (%)","lod",1,0.001
+"tcell",38,"cd4_IL17a_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-17a to BA.4.5.S","CD4+ T cells IL-17a BA.4.5.S (%)","lod",1,0.001
+"tcell",39,"cd4_IL17a_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing IL-17a to Wuhan N","CD4+ T cells IL-17a Wuhan N (%)","lod",1,0.001
+"tcell",40,"cd4_IL4.154_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-4 and CD154 to COV2.CON.S","CD4+ T cells IL-4 and CD154 COV2.CON.S (%)","lod",1,0.001
+"tcell",41,"cd4_IL4.154_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-4 and CD154 to BA.4.5.S","CD4+ T cells IL-4 and CD154 BA.4.5.S (%)","lod",1,0.001
+"tcell",42,"cd4_IL4.154_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing IL-4 and CD154 to Wuhan N","CD4+ T cells IL-4 and CD154 Wuhan N (%)","lod",1,0.001
+"tcell",43,"cd4_IL5.IL13.154_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to COV2.CON.S","CD4+ T cells IL-5 and/or IL-13 and CD154 COV2.CON.S (%)","lod",1,0.001
+"tcell",44,"cd4_IL5.IL13.154_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to BA.4.5.S","CD4+ T cells IL-5 and/or IL-13 and CD154 BA.4.5.S (%)","lod",1,0.001
+"tcell",45,"cd4_IL5.IL13.154_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing IL-5 and/or IL-13 and CD154 to Wuhan N","CD4+ T cells IL-5 and/or IL-13 and CD154 Wuhan N (%)","lod",1,0.001
+"tcell",46,"cd4_CXCR5.154_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing CXCR5 and/or CD154 to COV2.CON.S","CD4+ T cells CXCR5 and/or CD154 COV2.CON.S (%)","lod",1,0.001
+"tcell",47,"cd4_CXCR5.154_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing CXCR5 and/or CD154 to BA.4.5.S","CD4+ T cells CXCR5 and/or CD154 BA.4.5.S (%)","lod",1,0.001
+"tcell",48,"cd4_CXCR5.154_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing CXCR5 and/or CD154 to Wuhan N","CD4+ T cells CXCR5 and/or CD154 Wuhan N (%)","lod",1,0.001
+"tcell",49,"cd4_CXCR5.IL21_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells expressing CXCR5 and/or IL-21 to COV2.CON.S","CD4+ T cells CXCR5 and/or IL-21 COV2.CON.S (%)","lod",1,0.001
+"tcell",50,"cd4_CXCR5.IL21_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells expressing CXCR5 and/or IL-21 to BA.4.5.S","CD4+ T cells CXCR5 and/or IL-21 BA.4.5.S (%)","lod",1,0.001
+"tcell",51,"cd4_CXCR5.IL21_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells expressing CXCR5 and/or IL-21 to Wuhan N","CD4+ T cells CXCR5 and/or IL-21 Wuhan N (%)","lod",1,0.001
+"tcell",52,"cd8_IFNg.IL2.TNFa_COV2.CON.S",NA,Inf,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to COV2.CON.S","CD8+ T cells IFN-g and/or IL-2 and/or TNF-a COV2.CON.S (%)","lod",1,0.001
+"tcell",53,"cd8_IFNg.IL2.TNFa_BA.4.5.S",NA,Inf,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to BA.4.5.S","CD8+ T cells IFN-g and/or IL-2 and/or TNF-a BA.4.5.S (%)","lod",1,0.001
+"tcell",54,"cd8_IFNg.IL2.TNFa_Wuhan.N",NA,Inf,NA,NA,"CD8+ T cells expressing IFN-g and/or IL-2 and/or TNF-a to Wuhan N","CD8+ T cells IFN-g and/or IL-2 and/or TNF-a Wuhan N (%)","lod",1,0.001
+"tcell",55,"cd4_FS_COV2.CON.S",NA,Inf,NA,NA,"CD4+ T cells functionality score to COV2.CON.S","CD4+ T cells functionality score COV2.CON.S","lod",1,NA
+"tcell",56,"cd4_FS_BA.4.5.S",NA,Inf,NA,NA,"CD4+ T cells functionality score to BA.4.5.S","CD4+ T cells functionality score BA.4.5.S","lod",1,NA
+"tcell",57,"cd4_FS_Wuhan.N",NA,Inf,NA,NA,"CD4+ T cells functionality score to Wuhan N","CD4+ T cells functionality score Wuhan N","lod",1,NA
+"tcell",58,"cd8_FS_COV2.CON.S",NA,Inf,NA,NA,"CD8+ T cells functionality score to COV2.CON.S","CD8+ T cells functionality score COV2.CON.S","lod",1,NA
+"tcell",59,"cd8_FS_BA.4.5.S",NA,Inf,NA,NA,"CD8+ T cells functionality score to BA.4.5.S","CD8+ T cells functionality score BA.4.5.S","lod",1,NA
+"tcell",60,"cd8_FS_Wuhan.N",NA,Inf,NA,NA,"CD8+ T cells functionality score to Wuhan N","CD8+ T cells functionality score Wuhan N","lod",1,NA
+"Fc",NA,"C1Q_BA1S",NA,Inf,NA,NA,"C1Q_BA1S","C1Q_BA1S","lod",1,NA
+"Fc",NA,"C1Q_BA2S",NA,Inf,NA,NA,"C1Q_BA2S","C1Q_BA2S","lod",1,NA
+"Fc",NA,"C1Q_BA45S",NA,Inf,NA,NA,"C1Q_BA45S","C1Q_BA45S","lod",1,NA
+"Fc",NA,"C1Q_BETAS",NA,Inf,NA,NA,"C1Q_BETAS","C1Q_BETAS","lod",1,NA
+"Fc",NA,"C1Q_DELTAS",NA,Inf,NA,NA,"C1Q_DELTAS","C1Q_DELTAS","lod",1,NA
+"Fc",NA,"C1Q_JN1S",NA,Inf,NA,NA,"C1Q_JN1S","C1Q_JN1S","lod",1,NA
+"Fc",NA,"C1Q_OMICS",NA,Inf,NA,NA,"C1Q_OMICS","C1Q_OMICS","lod",1,NA
+"Fc",NA,"C1Q_WA1N",NA,Inf,NA,NA,"C1Q_WA1N","C1Q_WA1N","lod",1,NA
+"Fc",NA,"C1Q_WA1S",NA,Inf,NA,NA,"C1Q_WA1S","C1Q_WA1S","lod",1,NA
+"Fc",NA,"C1Q_XBB116S",NA,Inf,NA,NA,"C1Q_XBB116S","C1Q_XBB116S","lod",1,NA
+"Fc",NA,"C1Q_XBB15S",NA,Inf,NA,NA,"C1Q_XBB15S","C1Q_XBB15S","lod",1,NA
+"Fc",NA,"FCAR_BA1S",NA,Inf,NA,NA,"FCAR_BA1S","FCAR_BA1S","lod",1,NA
+"Fc",NA,"FCAR_BA2S",NA,Inf,NA,NA,"FCAR_BA2S","FCAR_BA2S","lod",1,NA
+"Fc",NA,"FCAR_BA45S",NA,Inf,NA,NA,"FCAR_BA45S","FCAR_BA45S","lod",1,NA
+"Fc",NA,"FCAR_BETAS",NA,Inf,NA,NA,"FCAR_BETAS","FCAR_BETAS","lod",1,NA
+"Fc",NA,"FCAR_DELTAS",NA,Inf,NA,NA,"FCAR_DELTAS","FCAR_DELTAS","lod",1,NA
+"Fc",NA,"FCAR_JN1S",NA,Inf,NA,NA,"FCAR_JN1S","FCAR_JN1S","lod",1,NA
+"Fc",NA,"FCAR_OMICS",NA,Inf,NA,NA,"FCAR_OMICS","FCAR_OMICS","lod",1,NA
+"Fc",NA,"FCAR_WA1N",NA,Inf,NA,NA,"FCAR_WA1N","FCAR_WA1N","lod",1,NA
+"Fc",NA,"FCAR_WA1S",NA,Inf,NA,NA,"FCAR_WA1S","FCAR_WA1S","lod",1,NA
+"Fc",NA,"FCAR_XBB116S",NA,Inf,NA,NA,"FCAR_XBB116S","FCAR_XBB116S","lod",1,NA
+"Fc",NA,"FCAR_XBB15S",NA,Inf,NA,NA,"FCAR_XBB15S","FCAR_XBB15S","lod",1,NA
+"Fc",NA,"FCR6_BA1S",NA,Inf,NA,NA,"FCR6_BA1S","FCR6_BA1S","lod",1,NA
+"Fc",NA,"FCR6_BA2S",NA,Inf,NA,NA,"FCR6_BA2S","FCR6_BA2S","lod",1,NA
+"Fc",NA,"FCR6_BA45S",NA,Inf,NA,NA,"FCR6_BA45S","FCR6_BA45S","lod",1,NA
+"Fc",NA,"FCR6_BETAS",NA,Inf,NA,NA,"FCR6_BETAS","FCR6_BETAS","lod",1,NA
+"Fc",NA,"FCR6_DELTAS",NA,Inf,NA,NA,"FCR6_DELTAS","FCR6_DELTAS","lod",1,NA
+"Fc",NA,"FCR6_JN1S",NA,Inf,NA,NA,"FCR6_JN1S","FCR6_JN1S","lod",1,NA
+"Fc",NA,"FCR6_OMICS",NA,Inf,NA,NA,"FCR6_OMICS","FCR6_OMICS","lod",1,NA
+"Fc",NA,"FCR6_WA1N",NA,Inf,NA,NA,"FCR6_WA1N","FCR6_WA1N","lod",1,NA
+"Fc",NA,"FCR6_WA1S",NA,Inf,NA,NA,"FCR6_WA1S","FCR6_WA1S","lod",1,NA
+"Fc",NA,"FCR6_XBB116S",NA,Inf,NA,NA,"FCR6_XBB116S","FCR6_XBB116S","lod",1,NA
+"Fc",NA,"FCR6_XBB15S",NA,Inf,NA,NA,"FCR6_XBB15S","FCR6_XBB15S","lod",1,NA
+"Fc",NA,"FCR7_BA1S",NA,Inf,NA,NA,"FCR7_BA1S","FCR7_BA1S","lod",1,NA
+"Fc",NA,"FCR7_BA2S",NA,Inf,NA,NA,"FCR7_BA2S","FCR7_BA2S","lod",1,NA
+"Fc",NA,"FCR7_BA45S",NA,Inf,NA,NA,"FCR7_BA45S","FCR7_BA45S","lod",1,NA
+"Fc",NA,"FCR7_BETAS",NA,Inf,NA,NA,"FCR7_BETAS","FCR7_BETAS","lod",1,NA
+"Fc",NA,"FCR7_DELTAS",NA,Inf,NA,NA,"FCR7_DELTAS","FCR7_DELTAS","lod",1,NA
+"Fc",NA,"FCR7_JN1S",NA,Inf,NA,NA,"FCR7_JN1S","FCR7_JN1S","lod",1,NA
+"Fc",NA,"FCR7_OMICS",NA,Inf,NA,NA,"FCR7_OMICS","FCR7_OMICS","lod",1,NA
+"Fc",NA,"FCR7_WA1N",NA,Inf,NA,NA,"FCR7_WA1N","FCR7_WA1N","lod",1,NA
+"Fc",NA,"FCR7_WA1S",NA,Inf,NA,NA,"FCR7_WA1S","FCR7_WA1S","lod",1,NA
+"Fc",NA,"FCR7_XBB116S",NA,Inf,NA,NA,"FCR7_XBB116S","FCR7_XBB116S","lod",1,NA
+"Fc",NA,"FCR7_XBB15S",NA,Inf,NA,NA,"FCR7_XBB15S","FCR7_XBB15S","lod",1,NA
+"Fc",NA,"G2AH_BA1S",NA,Inf,NA,NA,"G2AH_BA1S","G2AH_BA1S","lod",1,NA
+"Fc",NA,"G2AH_BA2S",NA,Inf,NA,NA,"G2AH_BA2S","G2AH_BA2S","lod",1,NA
+"Fc",NA,"G2AH_BA45S",NA,Inf,NA,NA,"G2AH_BA45S","G2AH_BA45S","lod",1,NA
+"Fc",NA,"G2AH_BETAS",NA,Inf,NA,NA,"G2AH_BETAS","G2AH_BETAS","lod",1,NA
+"Fc",NA,"G2AH_DELTAS",NA,Inf,NA,NA,"G2AH_DELTAS","G2AH_DELTAS","lod",1,NA
+"Fc",NA,"G2AH_JN1S",NA,Inf,NA,NA,"G2AH_JN1S","G2AH_JN1S","lod",1,NA
+"Fc",NA,"G2AH_OMICS",NA,Inf,NA,NA,"G2AH_OMICS","G2AH_OMICS","lod",1,NA
+"Fc",NA,"G2AH_WA1N",NA,Inf,NA,NA,"G2AH_WA1N","G2AH_WA1N","lod",1,NA
+"Fc",NA,"G2AH_WA1S",NA,Inf,NA,NA,"G2AH_WA1S","G2AH_WA1S","lod",1,NA
+"Fc",NA,"G2AH_XBB116S",NA,Inf,NA,NA,"G2AH_XBB116S","G2AH_XBB116S","lod",1,NA
+"Fc",NA,"G2AH_XBB15S",NA,Inf,NA,NA,"G2AH_XBB15S","G2AH_XBB15S","lod",1,NA
+"Fc",NA,"G2AR_BA1S",NA,Inf,NA,NA,"G2AR_BA1S","G2AR_BA1S","lod",1,NA
+"Fc",NA,"G2AR_BA2S",NA,Inf,NA,NA,"G2AR_BA2S","G2AR_BA2S","lod",1,NA
+"Fc",NA,"G2AR_BA45S",NA,Inf,NA,NA,"G2AR_BA45S","G2AR_BA45S","lod",1,NA
+"Fc",NA,"G2AR_BETAS",NA,Inf,NA,NA,"G2AR_BETAS","G2AR_BETAS","lod",1,NA
+"Fc",NA,"G2AR_DELTAS",NA,Inf,NA,NA,"G2AR_DELTAS","G2AR_DELTAS","lod",1,NA
+"Fc",NA,"G2AR_JN1S",NA,Inf,NA,NA,"G2AR_JN1S","G2AR_JN1S","lod",1,NA
+"Fc",NA,"G2AR_OMICS",NA,Inf,NA,NA,"G2AR_OMICS","G2AR_OMICS","lod",1,NA
+"Fc",NA,"G2AR_WA1N",NA,Inf,NA,NA,"G2AR_WA1N","G2AR_WA1N","lod",1,NA
+"Fc",NA,"G2AR_WA1S",NA,Inf,NA,NA,"G2AR_WA1S","G2AR_WA1S","lod",1,NA
+"Fc",NA,"G2AR_XBB116S",NA,Inf,NA,NA,"G2AR_XBB116S","G2AR_XBB116S","lod",1,NA
+"Fc",NA,"G2AR_XBB15S",NA,Inf,NA,NA,"G2AR_XBB15S","G2AR_XBB15S","lod",1,NA
+"Fc",NA,"G3AF_BA1S",NA,Inf,NA,NA,"G3AF_BA1S","G3AF_BA1S","lod",1,NA
+"Fc",NA,"G3AF_BA2S",NA,Inf,NA,NA,"G3AF_BA2S","G3AF_BA2S","lod",1,NA
+"Fc",NA,"G3AF_BA45S",NA,Inf,NA,NA,"G3AF_BA45S","G3AF_BA45S","lod",1,NA
+"Fc",NA,"G3AF_BETAS",NA,Inf,NA,NA,"G3AF_BETAS","G3AF_BETAS","lod",1,NA
+"Fc",NA,"G3AF_DELTAS",NA,Inf,NA,NA,"G3AF_DELTAS","G3AF_DELTAS","lod",1,NA
+"Fc",NA,"G3AF_JN1S",NA,Inf,NA,NA,"G3AF_JN1S","G3AF_JN1S","lod",1,NA
+"Fc",NA,"G3AF_OMICS",NA,Inf,NA,NA,"G3AF_OMICS","G3AF_OMICS","lod",1,NA
+"Fc",NA,"G3AF_WA1N",NA,Inf,NA,NA,"G3AF_WA1N","G3AF_WA1N","lod",1,NA
+"Fc",NA,"G3AF_WA1S",NA,Inf,NA,NA,"G3AF_WA1S","G3AF_WA1S","lod",1,NA
+"Fc",NA,"G3AF_XBB116S",NA,Inf,NA,NA,"G3AF_XBB116S","G3AF_XBB116S","lod",1,NA
+"Fc",NA,"G3AF_XBB15S",NA,Inf,NA,NA,"G3AF_XBB15S","G3AF_XBB15S","lod",1,NA
+"Fc",NA,"G3AV_BA1S",NA,Inf,NA,NA,"G3AV_BA1S","G3AV_BA1S","lod",1,NA
+"Fc",NA,"G3AV_BA2S",NA,Inf,NA,NA,"G3AV_BA2S","G3AV_BA2S","lod",1,NA
+"Fc",NA,"G3AV_BA45S",NA,Inf,NA,NA,"G3AV_BA45S","G3AV_BA45S","lod",1,NA
+"Fc",NA,"G3AV_BETAS",NA,Inf,NA,NA,"G3AV_BETAS","G3AV_BETAS","lod",1,NA
+"Fc",NA,"G3AV_DELTAS",NA,Inf,NA,NA,"G3AV_DELTAS","G3AV_DELTAS","lod",1,NA
+"Fc",NA,"G3AV_JN1S",NA,Inf,NA,NA,"G3AV_JN1S","G3AV_JN1S","lod",1,NA
+"Fc",NA,"G3AV_OMICS",NA,Inf,NA,NA,"G3AV_OMICS","G3AV_OMICS","lod",1,NA
+"Fc",NA,"G3AV_WA1N",NA,Inf,NA,NA,"G3AV_WA1N","G3AV_WA1N","lod",1,NA
+"Fc",NA,"G3AV_WA1S",NA,Inf,NA,NA,"G3AV_WA1S","G3AV_WA1S","lod",1,NA
+"Fc",NA,"G3AV_XBB116S",NA,Inf,NA,NA,"G3AV_XBB116S","G3AV_XBB116S","lod",1,NA
+"Fc",NA,"G3AV_XBB15S",NA,Inf,NA,NA,"G3AV_XBB15S","G3AV_XBB15S","lod",1,NA
+"Fc",NA,"GR2B_BA1S",NA,Inf,NA,NA,"GR2B_BA1S","GR2B_BA1S","lod",1,NA
+"Fc",NA,"GR2B_BA2S",NA,Inf,NA,NA,"GR2B_BA2S","GR2B_BA2S","lod",1,NA
+"Fc",NA,"GR2B_BA45S",NA,Inf,NA,NA,"GR2B_BA45S","GR2B_BA45S","lod",1,NA
+"Fc",NA,"GR2B_BETAS",NA,Inf,NA,NA,"GR2B_BETAS","GR2B_BETAS","lod",1,NA
+"Fc",NA,"GR2B_DELTAS",NA,Inf,NA,NA,"GR2B_DELTAS","GR2B_DELTAS","lod",1,NA
+"Fc",NA,"GR2B_JN1S",NA,Inf,NA,NA,"GR2B_JN1S","GR2B_JN1S","lod",1,NA
+"Fc",NA,"GR2B_OMICS",NA,Inf,NA,NA,"GR2B_OMICS","GR2B_OMICS","lod",1,NA
+"Fc",NA,"GR2B_WA1N",NA,Inf,NA,NA,"GR2B_WA1N","GR2B_WA1N","lod",1,NA
+"Fc",NA,"GR2B_WA1S",NA,Inf,NA,NA,"GR2B_WA1S","GR2B_WA1S","lod",1,NA
+"Fc",NA,"GR2B_XBB116S",NA,Inf,NA,NA,"GR2B_XBB116S","GR2B_XBB116S","lod",1,NA
+"Fc",NA,"GR2B_XBB15S",NA,Inf,NA,NA,"GR2B_XBB15S","GR2B_XBB15S","lod",1,NA
+"Fc",NA,"GR3B_BA1S",NA,Inf,NA,NA,"GR3B_BA1S","GR3B_BA1S","lod",1,NA
+"Fc",NA,"GR3B_BA2S",NA,Inf,NA,NA,"GR3B_BA2S","GR3B_BA2S","lod",1,NA
+"Fc",NA,"GR3B_BA45S",NA,Inf,NA,NA,"GR3B_BA45S","GR3B_BA45S","lod",1,NA
+"Fc",NA,"GR3B_BETAS",NA,Inf,NA,NA,"GR3B_BETAS","GR3B_BETAS","lod",1,NA
+"Fc",NA,"GR3B_DELTAS",NA,Inf,NA,NA,"GR3B_DELTAS","GR3B_DELTAS","lod",1,NA
+"Fc",NA,"GR3B_JN1S",NA,Inf,NA,NA,"GR3B_JN1S","GR3B_JN1S","lod",1,NA
+"Fc",NA,"GR3B_OMICS",NA,Inf,NA,NA,"GR3B_OMICS","GR3B_OMICS","lod",1,NA
+"Fc",NA,"GR3B_WA1N",NA,Inf,NA,NA,"GR3B_WA1N","GR3B_WA1N","lod",1,NA
+"Fc",NA,"GR3B_WA1S",NA,Inf,NA,NA,"GR3B_WA1S","GR3B_WA1S","lod",1,NA
+"Fc",NA,"GR3B_XBB116S",NA,Inf,NA,NA,"GR3B_XBB116S","GR3B_XBB116S","lod",1,NA
+"Fc",NA,"GR3B_XBB15S",NA,Inf,NA,NA,"GR3B_XBB15S","GR3B_XBB15S","lod",1,NA
+"bAb",NA,"IGA1_BA1S",NA,Inf,NA,NA,"IGA1_BA1S","IGA1_BA1S","lod",1,NA
+"bAb",NA,"IGA1_BA2S",NA,Inf,NA,NA,"IGA1_BA2S","IGA1_BA2S","lod",1,NA
+"bAb",NA,"IGA1_BA45S",NA,Inf,NA,NA,"IGA1_BA45S","IGA1_BA45S","lod",1,NA
+"bAb",NA,"IGA1_BETAS",NA,Inf,NA,NA,"IGA1_BETAS","IGA1_BETAS","lod",1,NA
+"bAb",NA,"IGA1_DELTAS",NA,Inf,NA,NA,"IGA1_DELTAS","IGA1_DELTAS","lod",1,NA
+"bAb",NA,"IGA1_JN1S",NA,Inf,NA,NA,"IGA1_JN1S","IGA1_JN1S","lod",1,NA
+"bAb",NA,"IGA1_OMICS",NA,Inf,NA,NA,"IGA1_OMICS","IGA1_OMICS","lod",1,NA
+"bAb",NA,"IGA1_WA1N",NA,Inf,NA,NA,"IGA1_WA1N","IGA1_WA1N","lod",1,NA
+"bAb",NA,"IGA1_WA1S",NA,Inf,NA,NA,"IGA1_WA1S","IGA1_WA1S","lod",1,NA
+"bAb",NA,"IGA1_XBB116S",NA,Inf,NA,NA,"IGA1_XBB116S","IGA1_XBB116S","lod",1,NA
+"bAb",NA,"IGA1_XBB15S",NA,Inf,NA,NA,"IGA1_XBB15S","IGA1_XBB15S","lod",1,NA
+"bAb",NA,"IGA2_BA1S",NA,Inf,NA,NA,"IGA2_BA1S","IGA2_BA1S","lod",1,NA
+"bAb",NA,"IGA2_BA2S",NA,Inf,NA,NA,"IGA2_BA2S","IGA2_BA2S","lod",1,NA
+"bAb",NA,"IGA2_BA45S",NA,Inf,NA,NA,"IGA2_BA45S","IGA2_BA45S","lod",1,NA
+"bAb",NA,"IGA2_BETAS",NA,Inf,NA,NA,"IGA2_BETAS","IGA2_BETAS","lod",1,NA
+"bAb",NA,"IGA2_DELTAS",NA,Inf,NA,NA,"IGA2_DELTAS","IGA2_DELTAS","lod",1,NA
+"bAb",NA,"IGA2_JN1S",NA,Inf,NA,NA,"IGA2_JN1S","IGA2_JN1S","lod",1,NA
+"bAb",NA,"IGA2_OMICS",NA,Inf,NA,NA,"IGA2_OMICS","IGA2_OMICS","lod",1,NA
+"bAb",NA,"IGA2_WA1N",NA,Inf,NA,NA,"IGA2_WA1N","IGA2_WA1N","lod",1,NA
+"bAb",NA,"IGA2_WA1S",NA,Inf,NA,NA,"IGA2_WA1S","IGA2_WA1S","lod",1,NA
+"bAb",NA,"IGA2_XBB116S",NA,Inf,NA,NA,"IGA2_XBB116S","IGA2_XBB116S","lod",1,NA
+"bAb",NA,"IGA2_XBB15S",NA,Inf,NA,NA,"IGA2_XBB15S","IGA2_XBB15S","lod",1,NA
+"bAb",NA,"IGG1_BA1S",NA,Inf,NA,NA,"IGG1_BA1S","IGG1_BA1S","lod",1,NA
+"bAb",NA,"IGG1_BA2S",NA,Inf,NA,NA,"IGG1_BA2S","IGG1_BA2S","lod",1,NA
+"bAb",NA,"IGG1_BA45S",NA,Inf,NA,NA,"IGG1_BA45S","IGG1_BA45S","lod",1,NA
+"bAb",NA,"IGG1_BETAS",NA,Inf,NA,NA,"IGG1_BETAS","IGG1_BETAS","lod",1,NA
+"bAb",NA,"IGG1_DELTAS",NA,Inf,NA,NA,"IGG1_DELTAS","IGG1_DELTAS","lod",1,NA
+"bAb",NA,"IGG1_JN1S",NA,Inf,NA,NA,"IGG1_JN1S","IGG1_JN1S","lod",1,NA
+"bAb",NA,"IGG1_OMICS",NA,Inf,NA,NA,"IGG1_OMICS","IGG1_OMICS","lod",1,NA
+"bAb",NA,"IGG1_WA1N",NA,Inf,NA,NA,"IGG1_WA1N","IGG1_WA1N","lod",1,NA
+"bAb",NA,"IGG1_WA1S",NA,Inf,NA,NA,"IGG1_WA1S","IGG1_WA1S","lod",1,NA
+"bAb",NA,"IGG1_XBB116S",NA,Inf,NA,NA,"IGG1_XBB116S","IGG1_XBB116S","lod",1,NA
+"bAb",NA,"IGG1_XBB15S",NA,Inf,NA,NA,"IGG1_XBB15S","IGG1_XBB15S","lod",1,NA
+"bAb",NA,"IGG2_BA1S",NA,Inf,NA,NA,"IGG2_BA1S","IGG2_BA1S","lod",1,NA
+"bAb",NA,"IGG2_BA2S",NA,Inf,NA,NA,"IGG2_BA2S","IGG2_BA2S","lod",1,NA
+"bAb",NA,"IGG2_BA45S",NA,Inf,NA,NA,"IGG2_BA45S","IGG2_BA45S","lod",1,NA
+"bAb",NA,"IGG2_BETAS",NA,Inf,NA,NA,"IGG2_BETAS","IGG2_BETAS","lod",1,NA
+"bAb",NA,"IGG2_DELTAS",NA,Inf,NA,NA,"IGG2_DELTAS","IGG2_DELTAS","lod",1,NA
+"bAb",NA,"IGG2_JN1S",NA,Inf,NA,NA,"IGG2_JN1S","IGG2_JN1S","lod",1,NA
+"bAb",NA,"IGG2_OMICS",NA,Inf,NA,NA,"IGG2_OMICS","IGG2_OMICS","lod",1,NA
+"bAb",NA,"IGG2_WA1N",NA,Inf,NA,NA,"IGG2_WA1N","IGG2_WA1N","lod",1,NA
+"bAb",NA,"IGG2_WA1S",NA,Inf,NA,NA,"IGG2_WA1S","IGG2_WA1S","lod",1,NA
+"bAb",NA,"IGG2_XBB116S",NA,Inf,NA,NA,"IGG2_XBB116S","IGG2_XBB116S","lod",1,NA
+"bAb",NA,"IGG2_XBB15S",NA,Inf,NA,NA,"IGG2_XBB15S","IGG2_XBB15S","lod",1,NA
+"bAb",NA,"IGG3_BA1S",NA,Inf,NA,NA,"IGG3_BA1S","IGG3_BA1S","lod",1,NA
+"bAb",NA,"IGG3_BA2S",NA,Inf,NA,NA,"IGG3_BA2S","IGG3_BA2S","lod",1,NA
+"bAb",NA,"IGG3_BA45S",NA,Inf,NA,NA,"IGG3_BA45S","IGG3_BA45S","lod",1,NA
+"bAb",NA,"IGG3_BETAS",NA,Inf,NA,NA,"IGG3_BETAS","IGG3_BETAS","lod",1,NA
+"bAb",NA,"IGG3_DELTAS",NA,Inf,NA,NA,"IGG3_DELTAS","IGG3_DELTAS","lod",1,NA
+"bAb",NA,"IGG3_JN1S",NA,Inf,NA,NA,"IGG3_JN1S","IGG3_JN1S","lod",1,NA
+"bAb",NA,"IGG3_OMICS",NA,Inf,NA,NA,"IGG3_OMICS","IGG3_OMICS","lod",1,NA
+"bAb",NA,"IGG3_WA1N",NA,Inf,NA,NA,"IGG3_WA1N","IGG3_WA1N","lod",1,NA
+"bAb",NA,"IGG3_WA1S",NA,Inf,NA,NA,"IGG3_WA1S","IGG3_WA1S","lod",1,NA
+"bAb",NA,"IGG3_XBB116S",NA,Inf,NA,NA,"IGG3_XBB116S","IGG3_XBB116S","lod",1,NA
+"bAb",NA,"IGG3_XBB15S",NA,Inf,NA,NA,"IGG3_XBB15S","IGG3_XBB15S","lod",1,NA
+"bAb",NA,"IGG4_BA1S",NA,Inf,NA,NA,"IGG4_BA1S","IGG4_BA1S","lod",1,NA
+"bAb",NA,"IGG4_BA2S",NA,Inf,NA,NA,"IGG4_BA2S","IGG4_BA2S","lod",1,NA
+"bAb",NA,"IGG4_BA45S",NA,Inf,NA,NA,"IGG4_BA45S","IGG4_BA45S","lod",1,NA
+"bAb",NA,"IGG4_BETAS",NA,Inf,NA,NA,"IGG4_BETAS","IGG4_BETAS","lod",1,NA
+"bAb",NA,"IGG4_DELTAS",NA,Inf,NA,NA,"IGG4_DELTAS","IGG4_DELTAS","lod",1,NA
+"bAb",NA,"IGG4_JN1S",NA,Inf,NA,NA,"IGG4_JN1S","IGG4_JN1S","lod",1,NA
+"bAb",NA,"IGG4_OMICS",NA,Inf,NA,NA,"IGG4_OMICS","IGG4_OMICS","lod",1,NA
+"bAb",NA,"IGG4_WA1N",NA,Inf,NA,NA,"IGG4_WA1N","IGG4_WA1N","lod",1,NA
+"bAb",NA,"IGG4_WA1S",NA,Inf,NA,NA,"IGG4_WA1S","IGG4_WA1S","lod",1,NA
+"bAb",NA,"IGG4_XBB116S",NA,Inf,NA,NA,"IGG4_XBB116S","IGG4_XBB116S","lod",1,NA
+"bAb",NA,"IGG4_XBB15S",NA,Inf,NA,NA,"IGG4_XBB15S","IGG4_XBB15S","lod",1,NA
+"bAb",NA,"IGM_BA1S",NA,Inf,NA,NA,"IGM_BA1S","IGM_BA1S","lod",1,NA
+"bAb",NA,"IGM_BA2S",NA,Inf,NA,NA,"IGM_BA2S","IGM_BA2S","lod",1,NA
+"bAb",NA,"IGM_BA45S",NA,Inf,NA,NA,"IGM_BA45S","IGM_BA45S","lod",1,NA
+"bAb",NA,"IGM_BETAS",NA,Inf,NA,NA,"IGM_BETAS","IGM_BETAS","lod",1,NA
+"bAb",NA,"IGM_DELTAS",NA,Inf,NA,NA,"IGM_DELTAS","IGM_DELTAS","lod",1,NA
+"bAb",NA,"IGM_JN1S",NA,Inf,NA,NA,"IGM_JN1S","IGM_JN1S","lod",1,NA
+"bAb",NA,"IGM_OMICS",NA,Inf,NA,NA,"IGM_OMICS","IGM_OMICS","lod",1,NA
+"bAb",NA,"IGM_WA1N",NA,Inf,NA,NA,"IGM_WA1N","IGM_WA1N","lod",1,NA
+"bAb",NA,"IGM_WA1S",NA,Inf,NA,NA,"IGM_WA1S","IGM_WA1S","lod",1,NA
+"bAb",NA,"IGM_XBB116S",NA,Inf,NA,NA,"IGM_XBB116S","IGM_XBB116S","lod",1,NA
+"bAb",NA,"IGM_XBB15S",NA,Inf,NA,NA,"IGM_XBB15S","IGM_XBB15S","lod",1,NA
+"bAb",NA,"TIGG_BA1S",NA,Inf,NA,NA,"TIGG_BA1S","TIGG_BA1S","lod",1,NA
+"bAb",NA,"TIGG_BA2S",NA,Inf,NA,NA,"TIGG_BA2S","TIGG_BA2S","lod",1,NA
+"bAb",NA,"TIGG_BA45S",NA,Inf,NA,NA,"TIGG_BA45S","TIGG_BA45S","lod",1,NA
+"bAb",NA,"TIGG_BETAS",NA,Inf,NA,NA,"TIGG_BETAS","TIGG_BETAS","lod",1,NA
+"bAb",NA,"TIGG_DELTAS",NA,Inf,NA,NA,"TIGG_DELTAS","TIGG_DELTAS","lod",1,NA
+"bAb",NA,"TIGG_JN1S",NA,Inf,NA,NA,"TIGG_JN1S","TIGG_JN1S","lod",1,NA
+"bAb",NA,"TIGG_OMICS",NA,Inf,NA,NA,"TIGG_OMICS","TIGG_OMICS","lod",1,NA
+"bAb",NA,"TIGG_WA1N",NA,Inf,NA,NA,"TIGG_WA1N","TIGG_WA1N","lod",1,NA
+"bAb",NA,"TIGG_WA1S",NA,Inf,NA,NA,"TIGG_WA1S","TIGG_WA1S","lod",1,NA
+"bAb",NA,"TIGG_XBB116S",NA,Inf,NA,NA,"TIGG_XBB116S","TIGG_XBB116S","lod",1,NA
+"bAb",NA,"TIGG_XBB15S",NA,Inf,NA,NA,"TIGG_XBB15S","TIGG_XBB15S","lod",1,NA

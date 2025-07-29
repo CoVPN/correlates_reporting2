@@ -1,0 +1,1103 @@
+---
+title: "Threshold Analysis on Sanofi P3005 Data"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r, include = F, warning = F, message = F}
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F)
+
+library(npthreshold)
+library(SuperLearner)
+library(dplyr)
+library(ggplot2)
+library(sl3)
+library(DT)
+library(knitr)
+library(msm)
+```
+
+```{r}
+# old version of npthreshold code, used for this report 
+graphthresh <- function(res,
+                        monotone = F,
+                        ylabel = "Probability of COVID-19 by 85 Days Post Day 43 Visit",
+                        xlabel = "Threshold", 
+                        exp10 = F, 
+                        graph_ve = F, 
+                        title = "", 
+                        lod_limit = 2.4, 
+                        lod_label = "LLOQ/2",
+                        include_lod = T, 
+                        ylim = NULL){
+  
+  res_graph <- res %>% 
+    mutate(ci_lo = ifelse(ci_lo < 0, 0, ci_lo), 
+           ci_lo_monotone = ifelse(ci_lo_monotone < 0, 0, ci_lo_monotone)
+#           ci_hi = ifelse(ci_hi > 0.1, 0.1, ci_hi)
+#           ci_hi_monotone = ifelse(ci_hi_monotone > 0.1, 0.1, ci_hi_monotone)
+           )
+  
+  res_graph <- data.frame(res_graph)
+  
+  if (monotone){
+    y_var <- "estimate_monotone"
+    ci_lo_var <- "ci_lo_monotone"
+    ci_hi_var <- "ci_hi_monotone"
+  }
+  else{
+    y_var <- "estimate"
+    ci_lo_var <- "ci_lo"
+    ci_hi_var <- "ci_hi"
+  }
+  if (graph_ve){
+    res_graph <- res_graph %>% 
+      mutate(ve_monotone_ci_hi = ifelse(ve_monotone_ci_hi > 1, 1, ve_monotone_ci_hi))
+    
+    y_var <- "ve_monotone"
+    ci_lo_var <- "ve_monotone_ci_lo"
+    ci_hi_var <- "ve_monotone_ci_hi"
+    ylabel <- "Vaccine efficacy"
+  }
+  
+  if (!is.null(ylim)){
+    res_graph[,ci_lo_var] <- pmax(res_graph[, ci_lo_var], ylim[1])
+    res_graph[,ci_hi_var] <- pmin(res_graph[, ci_hi_var], ylim[2])
+  }
+  
+  plt <- ggplot2::ggplot(res_graph, ggplot2::aes(x = threshold, y = !!sym(y_var))) +
+    geom_point(size = 0.2) + 
+    geom_line() +
+    geom_ribbon(aes(ymin = !!sym(ci_lo_var), ymax = !!sym(ci_hi_var)), alpha = 0.3, color = NA) +
+    labs(x = "Thresholds", y = "Estimates (CI)") +
+    theme_minimal() +
+    scale_y_continuous(n.breaks = 10) +
+    scale_x_continuous(
+      limits = c(min(res$threshold), max(res$threshold))) +
+    xlab(xlabel) +
+    ylab(ylabel) + 
+    ggtitle(title) + 
+    theme(plot.title = element_text(hjust = 0.5)) 
+  
+  if (!is.null(ylim)){
+    plt <- plt + scale_y_continuous(n.breaks = 10, limits = ylim)
+  }
+  else{
+    plt <- plt + scale_y_continuous(n.breaks = 10)
+  }
+}
+
+
+custom_labels <- function(breaks) {
+      labels <- ifelse(breaks == lod_limit, lod_label, sprintf("10^%s  ", round(breaks,1)))
+      return(labels)
+    }
+
+add_rcdf <- function(ggthresh,
+                     data,
+                     weights,
+                     marker, 
+                     event, 
+                     time_var,
+                     tf, 
+                     monotone = F,
+                     exp10 = F,
+                     annotate = "", 
+                     lod_limit = 2.4, 
+                     lod_label = "LLOQ/2", 
+                     graph_ve = F, 
+                     ylim = NULL){
+  
+  
+  data_event <- data %>% 
+    filter(.data[[event]] == 1 & .data[[time_var]] <= tf) 
+  
+  shift_coef <- 0 
+  
+  if (graph_ve){
+    estimate_var <- "ve_monotone"
+
+    if (is.null(ylim)){
+      scale_coef <- 1
+    }
+    else{
+      scale_coef <- ylim[2] - ylim[1]
+      shift_coef <- ylim[1]
+    }
+
+    yright <- max(ggthresh$data[[estimate_var]])
+  }
+  else {
+    
+    if (is.null(ylim)){
+      scale_coef <- max(ggthresh$data$ci_hi, na.rm = T)
+    }
+    else{
+      scale_coef <- ylim[2]
+    }
+
+  if (monotone){
+    estimate_var <- "estimate_monotone"
+   }
+  else{
+    estimate_var <- "estimate"
+  }
+  yright <- min(ggthresh$data[[estimate_var]])
+  }
+  
+  data_event$y_inter <- approx(ggthresh$data$threshold, ggthresh$data[[estimate_var]],
+                               xout = data_event[,marker], 
+                               yright = yright)$y
+  
+  RCDF <- function(a) {
+    (sum(data[[weights]] * (data[[marker]] >= a)) /
+       sum(data[[weights]]) * scale_coef) + shift_coef
+  }
+  
+  RCDF <- Vectorize(RCDF)
+
+  col <- c(col2rgb("olivedrab3")) # orange, darkgoldenrod2
+  col <- rgb(col[1], col[2], col[3], alpha = 255 * 0.4, maxColorValue = 255)
+
+  if (is.null(ylim)){
+    plt <- ggthresh +
+      geom_point(aes_string(x = marker, y = "y_inter"), data = data_event, color = "blue") + 
+      stat_function(fun = RCDF, color = col,
+                    geom = "area", fill = col, alpha = 0.2) +
+        scale_y_continuous(
+          sec.axis = sec_axis(~ (. - shift_coef) / scale_coef,
+                              name = "Reverse CDF",
+                              breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1)))  +
+      theme(plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 0, hjust = 1),
+            axis.text.y = element_text(angle = 0, hjust = 1)) + 
+      geom_vline(xintercept = max(data_event[,marker]), 
+                 linetype = "dotted", 
+                 color = "red")
+  }
+  else{
+    plt <- ggthresh +
+      geom_point(aes_string(x = marker, y = "y_inter"), data = data_event, color = "blue") + 
+        stat_function(fun = RCDF, color = col, geom = "line") +
+        scale_y_continuous(
+          breaks = seq(ylim[1], ylim[2], by = ylim[3]),
+          sec.axis = sec_axis(~ (. - shift_coef) / scale_coef,
+                              name = "Reverse CDF",
+                              breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1)))  +
+      theme(plot.title = element_text(hjust = 0.5),
+            axis.text.x = element_text(angle = 0, hjust = 1),
+            axis.text.y = element_text(angle = 0, hjust = 1)) + 
+      geom_vline(xintercept = max(data_event[,marker]), 
+                 linetype = "dotted", 
+                 color = "red")
+  }
+  
+  
+  if (exp10){
+    # Find the minimum value from the data
+    min_value <- min(data[, marker], na.rm = TRUE)
+    
+    
+    if (min_value < ceiling(min(data[, marker], na.rm = TRUE)) - 0.1){
+    breaks <- c(min_value, 
+                ceiling(min_value):floor((max(data[, marker], na.rm = TRUE))))
+    }
+    else{
+    breaks <- c(min_value, 
+                (ceiling(min_value) + 1):floor((max(data[, marker], na.rm = TRUE))))
+    }
+
+    # Adjust scale_x_log10 to include custom limits and labels
+    plt <- plt + 
+      scale_x_continuous(
+        limits = c(min_value, 
+                   max(data[, marker], na.rm = TRUE)), 
+        breaks = breaks, 
+        labels = label_parsed(custom_labels(breaks))
+      ) 
+
+    # plt <- plt + scale_x_log10(limits = c(min(data[,marker]), max(data[,marker]))) 
+  }
+  else{
+    # Find the minimum value from the data
+    min_value <- min(data[, marker], na.rm = TRUE)
+
+    breaks <- (ceiling(min_value)):floor((max(data[, marker], na.rm = TRUE)))
+
+    plt <- plt +
+      scale_x_continuous(limits = c(min(data[,marker]), max(data[,marker])), 
+                         breaks = breaks,
+                         labels = label_parsed(custom_labels(breaks))
+)
+  }
+  
+  x_annotate_loc <- max(data[,marker]) * 0.85
+    
+  plt  + 
+    annotate("text", 
+             x = x_annotate_loc,  
+             y = ylim[2] * 0.95,  
+             label = annotate)
+  
+}
+
+```
+
+```{r, cache = T}
+# read data 
+df <- read.csv("vat08_combined_data_processed_20250321.csv")
+```
+
+```{r}
+# find last timepoint of event 
+
+# # stage 1, spike
+# df %>%
+#   filter(Trialstage==1 & Bserostatus==1 & ph2.D43.bAb) %>%
+#   filter(Trt == 1) %>%
+#   filter(EventIndOmicronD43M6hotdeck10 == 1) %>%
+#   arrange(desc(EventTimeOmicronD43M6hotdeck10)) %>%
+#   slice(1) %>%
+#   pull(EventTimeOmicronD43M6hotdeck10)
+# 
+# df %>%
+#   filter(Trialstage==1 & Bserostatus==1 & ph2.D43.bAb) %>%
+#   filter(Trt == 0) %>%
+#   filter(EventIndOmicronD43M6hotdeck10 == 1) %>%
+#   arrange(desc(EventTimeOmicronD43M6hotdeck10)) %>%
+#   slice(1) %>%
+#   pull(EventTimeOmicronD43M6hotdeck10)
+# 
+# 
+# # stage 1, nab
+# df %>%
+#   filter(Trialstage==1 & Bserostatus==1 & ph2.D43.st1.nAb.batch0and1) %>%
+#   filter(EventIndOmicronD43M6hotdeck10 == 1) %>%
+#   filter(Trt == 1) %>%
+#   arrange(desc(EventTimeOmicronD43M6hotdeck10)) %>%
+#   slice(1) %>%
+#   pull(EventTimeOmicronD43M6hotdeck10)
+# 
+# df %>%
+#   filter(Trialstage==1 & Bserostatus==1 & ph2.D43.st1.nAb.batch0and1) %>%
+#   filter(EventIndOmicronD43M6hotdeck10 == 1) %>%
+#   filter(Trt == 0) %>%
+#   arrange(desc(EventTimeOmicronD43M6hotdeck10)) %>%
+#   slice(1) %>%
+#   pull(EventTimeOmicronD43M6hotdeck10)
+# 
+# # stage 2, spike
+# df %>%
+#   filter(Trialstage==2 & Bserostatus==1 & ph2.D43.bAb) %>%
+#   filter(Trt == 1) %>%
+#   filter(EventIndOmicronD43M5hotdeck10 == 1) %>%
+#   arrange(desc(EventTimeOmicronD43M5hotdeck10)) %>%
+#   slice(1) %>%
+#   pull(EventTimeOmicronD43M5hotdeck10)
+# 
+# df %>%
+#   filter(Trialstage==2 & Bserostatus==1 & ph2.D43.bAb) %>%
+#   filter(Trt == 0) %>%
+#   filter(EventIndOmicronD43M5hotdeck10 == 1) %>%
+#   arrange(desc(EventTimeOmicronD43M5hotdeck10)) %>%
+#   slice(1) %>%
+#   pull(EventTimeOmicronD43M5hotdeck10)
+# 
+# 
+# # stage 2, nab
+# df %>%
+#   filter(Trialstage==2 & Bserostatus==1 & ph2.D43.nAb) %>%
+#   filter(EventIndOmicronD43M5hotdeck10 == 1) %>%
+#   filter(Trt == 1) %>%
+#   arrange(desc(EventTimeOmicronD43M5hotdeck10)) %>%
+#   slice(1) %>%
+#   pull(EventTimeOmicronD43M5hotdeck10)
+# 
+# 
+# df %>%
+#   filter(Trialstage==2 & Bserostatus==1 & ph2.D43.nAb) %>%
+#   filter(EventIndOmicronD43M5hotdeck10 == 1) %>%
+#   filter(Trt == 0) %>%
+#   arrange(desc(EventTimeOmicronD43M5hotdeck10)) %>%
+#   slice(1) %>%
+#   pull(EventTimeOmicronD43M5hotdeck10)
+```
+
+```{r}
+# process data 
+df <- df %>% 
+  mutate(Sex = factor(Sex), 
+         Region3 = factor(Region3))
+```
+
+```{r}
+spike_marker_list <- list(
+  Day43bindSpike = list(
+    readable = "IgG Spike Index Concentration (AU/ml)", 
+    shortname = "IgG Spike Index",
+    change_var = "Delta43overBbindSpike"
+  ), 
+  Day43bindSpike_beta = list(
+    readable = "IgG Beta Spike Concentration (AU/ml)", 
+    shortname = "IgG Spike Beta",
+    change_var = "Delta43overBbindSpike_beta"
+  ), 
+  Day43bindSpike_alpha = list(
+    readable = "IgG Alpha Spike Concentration (AU/ml)", 
+    shortname = "IgG Spike Alpha",
+    change_var = "Delta43overBbindSpike_alpha"
+  ),
+  Day43bindSpike_gamma = list(
+    readable = "IgG Gamma Spike Concentration (AU/ml)", 
+    shortname = "IgG Spike Gamma",
+    change_var = "Delta43overBbindSpike_gamma"
+  ),
+  Day43bindSpike_delta1 = list(
+    readable = "IgG Delta1 Spike Concentration (AU/ml)", 
+    shortname = "IgG Spike Delta1",
+    change_var = "Delta43overBbindSpike_delta1"
+  ),
+  Day43bindSpike_delta2 = list(
+    readable = "IgG Delta2 Spike Concentration (AU/ml)", 
+    shortname = "IgG Spike Delta2",
+    change_var = "Delta43overBbindSpike_delta2"
+  ),
+  Day43bindSpike_delta3 = list(
+    readable = "IgG Delta3 Spike Concentration (AU/ml)", 
+    shortname = "IgG Spike Delta3",
+    change_var = "Delta43overBbindSpike_delta3"
+  ),
+  Day43bindSpike_omicron = list(
+    readable = "IgG Omicron Spike Concentration (AU/ml)", 
+    shortname = "IgG Spike Omicron",
+    change_var = "Delta43overBbindSpike_omicron"
+  ),
+  Day43bindSpike_mdw = list(
+    readable = "IgG Spike Cross-reactivity Score (weighted average AU/ml)", 
+    shortname = "IgG Spike Cross-Reactivity Score",
+    change_var = "Delta43overBbindSpike_mdw"
+  )
+)
+```
+
+```{r}
+neut_marker_list <- list(
+  Day43pseudoneutid50 = list(
+    readable = "nAb ID50 reference titer (AU/ml)", 
+    shortname = "nAb ID50 Reference", 
+    change_var = "Delta43overBpseudoneutid50"
+  ), 
+  Day43pseudoneutid50_B.1.351 = list(
+    readable = "nAb ID50 titer for B.1.351 (AU/ml)", 
+    shortname = "nAb ID50 B.1.351", 
+    change_var = "Delta43overBpseudoneutid50_B.1.351"
+  ), 
+  Day43pseudoneutid50_BA.1 = list(
+    readable = "nAb ID50 titer for BA.1 (AU/ml)", 
+    shortname = "nAb ID50 BA.1", 
+    change_var = "Delta43overBpseudoneutid50_BA.1"
+  ),
+  Day43pseudoneutid50_BA.2 = list(
+    readable = "nAb ID50 titer for BA.2 (AU/ml)", 
+    shortname = "nAb ID50 BA.2", 
+    change_var = "Delta43overBpseudoneutid50_BA.2"
+  ),
+  Day43pseudoneutid50_BA.4.5 = list(
+    readable = "nAb ID50 titer for BA.4/5 (AU/ml)", 
+    shortname = "nAb ID50 BA.4/5", 
+    change_var = "Delta43overBpseudoneutid50_BA.4.5"
+  ),
+  Day43pseudoneutid50_mdw = list(
+    readable = "nAb ID50 Titer Breadth Score (weighted average AU/ml)", 
+    shortname = "nAb ID50 Breadth Score", 
+    change_var = "Delta43overBpseudoneutid50_mdw"
+  )
+)
+```
+
+```{r}
+stage_dict <- list(
+  Stage1 = list(
+    spike_filter = "Trialstage==1 & Bserostatus==1 & ph2.D43.bAb", 
+    neut_filter = "Trialstage==1 & Bserostatus==1 & ph2.D43.st1.nAb.batch0and1",
+    marginal_filter = "Trialstage==1 & Bserostatus==1 & ph1.D43",
+    spike_weight = "wt.D43.bAb", 
+    neut_weight = "wt.D43.st1.nAb.batch0and1", 
+    time_var = "EventTimeOmicronD43M6hotdeck10",
+    event_var = "EventIndOmicronD43M6hotdeck10", 
+    tf = 158
+  ), 
+  
+  Stage2 = list(
+    spike_filter = "Trialstage==2 & Bserostatus==1 & ph2.D43.bAb", 
+    neut_filter = "Trialstage==2 & Bserostatus==1 & ph2.D43.nAb",
+    marginal_filter = "Trialstage==2 & Bserostatus==1 & ph1.D43",
+    spike_weight = "wt.D43.bAb", 
+    neut_weight = "wt.D43.nAb", 
+    time_var = "EventTimeOmicronD43M5hotdeck10",
+    event_var = "EventIndOmicronD43M5hotdeck10",
+    tf = 124
+  )
+)
+```
+
+```{r}
+calc_delta_method <- function(row, placebo_incidence, placebo_se) {
+  # Extract values from the row
+  estimate_monotone <- row['estimate_monotone']
+  estimate_se  <- row['se']
+
+  # Variance-covariance matrix (assuming no covariance)
+  cov_matrix <- matrix(c(estimate_se^2, 0, 0, placebo_se^2), nrow = 2)
+  
+  # Calculate the standard error using the delta method
+  se_ratio <- deltamethod(~ x1 / x2, mean = c(estimate_monotone, placebo_incidence), 
+                          cov = cov_matrix)
+  
+  return(se_ratio)
+}
+
+```
+
+```{r}
+RCDF <- function(a, data, weights, marker) {
+  w <- data[[weights]]
+  x <- data[[marker]]
+  sapply(a, function(thresh) {
+    sum(w * (x >= thresh)) / sum(w)
+  })
+}
+```
+
+
+```{r}
+run_analysis_helper <- function(data,
+                                time_var, 
+                                event_var, 
+                                marker_var,
+                                weight_var = NULL, 
+                                covariates = c("standardized_risk_score"),
+                                xlabel = "Thresholds",
+                                tf = 128, 
+                                exp10 = F, 
+                                overall = F, 
+                                annotate = F, 
+                                placebo_incidence = NULL, 
+                                placebo_se = NULL, 
+                                title = "",
+                                lod_limit = 2.4, 
+                                lod_label = "LLOQ/2", 
+                                modify_left_point = F, 
+                                left_estimate = NULL, 
+                                left_se = NULL, 
+                                max_thresh = NULL){
+  
+  t0 <- data %>% 
+    filter(.data[[event_var]] == 1) %>% 
+    arrange(desc(time_var)) %>% 
+    slice(3) %>% 
+    pull(.data[[time_var]])
+  
+  
+  if (overall){
+    quants <- NULL
+  }
+  else{
+    if (is.null(max_thresh)){
+      max_thresh <- data %>% 
+        filter(.data[[event_var]] == 1) %>% 
+        arrange(desc(.data[[marker_var]])) %>% 
+        slice(3) %>% 
+        pull(.data[[marker_var]]) 
+    }
+  
+    quants <- seq(min(data[,marker_var]), max_thresh, 0.1)
+  }
+  
+  res <- thresholdSurv(data = data, 
+                       covariates = covariates,
+                       failure_time = time_var, 
+                       tf = tf, 
+                       event_type = event_var, 
+                       marker = marker_var,
+                       weights = weight_var,
+                       threshold_list = quants, 
+                       learner.treatment = Lrnr_glm$new(),
+                       learner.event_type = Lrnr_glm$new(),
+                       learner.failure_time = Lrnr_glm$new(),
+                       learner.censoring_time = Lrnr_glm$new(),
+                       verbose = F)
+  
+  if (modify_left_point){
+    res[1,"estimate"] <- left_estimate
+    res[1, "se"] <- left_se
+    res[1, "ci_lo"] <- left_estimate - (1.96 * left_se)
+    res[1, "ci_hi"] <- left_estimate + (1.96 * left_se)
+    
+    n_event_cutoff <- 10
+  
+    weights_for_iso <- sqrt(res$n_in_bin)
+    weights_for_iso[res$n_events_in_bin < n_event_cutoff] <- 0.01
+    weights_for_iso <- weights_for_iso / sum(weights_for_iso)
+    
+    res$estimate_monotone <- -isotone::gpava(res$threshold,
+                                             -res$estimate,
+                                             weights = weights_for_iso)$x
+    res$ci_lo_monotone <- res$estimate_monotone - (1.96 * res$se)
+    res$ci_hi_monotone <- res$estimate_monotone + (1.96 * res$se)
+
+  }
+  
+  if (!overall){
+  g1_monotone <- graphthresh(res, monotone = T, 
+                    ylabel = sprintf("Probability of COVID-19 by %s Days Post Day 43 Visit", 
+                                     tf), 
+                    xlabel = xlabel, 
+                    exp10 = exp10, 
+                    title = title, 
+                    ylim = c(0, 0.015, 0.003))
+  
+  g1 <- graphthresh(res, monotone = F, 
+                    ylabel = sprintf("Probability of COVID-19 by %s Days Post Day 43 Visit", 
+                                     tf), 
+                    xlabel = xlabel, 
+                    exp10 = exp10, 
+                    title = title, 
+                    ylim = c(0, 0.015, 0.003))
+  
+  if (annotate){
+    annotate_text <- sprintf("Placebo risk: %s", round(placebo_incidence, 3))
+  }
+  else{
+    annotate_text <- ""
+  }
+  
+  g2_monotone <- add_rcdf(g1_monotone, data = data, weights = weight_var, 
+                 marker = marker_var, 
+                 exp10 = exp10, 
+                 event = event_var, 
+                 time_var = time_var, 
+                 tf = tf, 
+                 monotone = T,
+                 annotate = annotate_text, 
+                 lod_limit = lod_limit, 
+                 lod_label = lod_label,
+                ylim = c(0, 0.015, 0.003))
+  
+  g2 <- add_rcdf(g1, data = data, weights = weight_var, 
+                 marker = marker_var, 
+                 exp10 = exp10, 
+                 event = event_var, 
+                 time_var = time_var, 
+                 tf = tf, 
+                 annotate = annotate_text, 
+                 lod_limit = lod_limit, 
+                 lod_label = lod_label, 
+                ylim = c(0, 0.015, 0.003))
+  }
+  else{
+    g2 <- NULL
+    g2_monotone <- NULL
+  }
+  
+  if (!is.null(placebo_incidence)){
+  res <- res %>% 
+    mutate(ve_monotone = 1 - (estimate_monotone / placebo_incidence))
+  
+  res$ve_se <- apply(res, 1, calc_delta_method, 
+                     placebo_incidence = placebo_incidence, 
+                     placebo_se = placebo_se)
+  
+  res <- res %>% 
+    mutate(ve_monotone_ci_lo = ve_monotone - (1.96 * ve_se), 
+           ve_monotone_ci_hi = ve_monotone + (1.96 * ve_se))
+
+  g_ve <- graphthresh(res, monotone = T, 
+                      xlabel = xlabel, 
+                      exp10 = exp10, 
+                      graph_ve = T, 
+                      title = title,
+                      include_lod = exp10, 
+                      ylim = c(-0.2, 1, 0.2))
+  
+  g_ve_rcdf <- add_rcdf(g_ve,
+                        data = data, 
+                        weights = weight_var, 
+                        marker = marker_var, 
+                        exp10 = exp10, 
+                        event = event_var, 
+                        time_var = time_var, 
+                        tf = tf, 
+                        annotate = "", 
+                        lod_limit = lod_limit, 
+                        lod_label = lod_label, 
+                        graph_ve = T, 
+                      ylim = c(-0.2, 1, 0.2))
+  }
+  else{
+    g_ve <- NULL
+    g_ve_rcdf <- NULL
+    res$ve_monotone <- NA 
+    res$ve_se <- NA 
+    res$ve_monotone_ci_lo <- NA 
+    res$ve_monotone_ci_hi <- NA 
+  }
+  
+  if (is.null(weight_var)){
+    weight_var <- "temp_weight"
+    data$temp_weight <- 1
+  }
+  
+  rcdf_vals <- RCDF(res$threshold, data, 
+                    weight_var, 
+                    marker_var)
+
+  list(
+    graph = g2, 
+    
+    graph_monotone = g2_monotone,
+    
+    graph_ve = g_ve_rcdf,
+    
+    table_monotone = res %>%
+      rename(Thresholdlog10 = threshold, 
+             Estimate = estimate_monotone, 
+             SE = se, 
+             `Lower CI` = ci_lo_monotone, 
+             `Upper CI` = ci_hi_monotone) %>% 
+      mutate(Threshold = 10^Thresholdlog10, 
+             RCDF = 1 - rcdf_vals) %>% 
+      rename(`Threshold (log10)` = Thresholdlog10) %>% 
+      select(`Threshold (log10)`, Threshold, RCDF, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))),
+    
+    table = res %>%
+      rename(Thresholdlog10 = threshold, 
+             Estimate = estimate, 
+             SE = se, 
+             `Lower CI` = ci_lo, 
+             `Upper CI` = ci_hi) %>% 
+      mutate(Threshold = 10^Thresholdlog10) %>% 
+      rename(`Threshold (log10)` = Thresholdlog10) %>% 
+      select(`Threshold (log10)`, Threshold, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))), 
+    
+    table_ve = res %>%
+      rename(Thresholdlog10 = threshold, 
+             Estimate = ve_monotone, 
+             SE = ve_se, 
+             `Lower CI` = ve_monotone_ci_lo, 
+             `Upper CI` = ve_monotone_ci_hi) %>% 
+      mutate(Threshold = 10^Thresholdlog10) %>% 
+      rename(`Threshold (log10)` = Thresholdlog10) %>% 
+      select(`Threshold (log10)`, Threshold, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))), 
+    
+    raw_table = res
+  )
+}
+```
+
+# Analysis notes 
+
+- **Updated 4/23 with new weights, only included Stage 2 results, and harmonized y-axis**
+- Reference timepoint is fixed at 158 days for Stage 1, 
+and 124 days for Stage 2, which is the 
+minimum timepoint for the latest COVID-19 endpoint across both vaccine and placebo arms. 
+- Adjusted for standardized_risk_score.
+- Showing estimates with pointwise confidence intervals. Both raw results and results
+assuming monotonicity are shown. For the VE scaled graphs, only included graphs 
+assuming monotonicity.
+- CIs for risk in graphs are bounded between 0 and 1. CIs for VE in graphs are bounded
+above by 1. 
+
+```{r results = "asis", fig.align='center', cache = T}
+for (stage in c(2)){
+  
+  cat(sprintf("\n\n# Stage %s \n", stage))
+  
+  stage_str <- sprintf("Stage%s", stage)
+  
+  neut_antibody_vars <- stage_dict[[stage_str]]$neut_antibody_vars
+  neut_antibody_change_vars <- stage_dict[[stage_str]]$neut_antibody_change_vars
+  spike_filter <- stage_dict[[stage_str]]$spike_filter
+  neut_filter <- stage_dict[[stage_str]]$neut_filter
+  spike_weight <- stage_dict[[stage_str]]$spike_weight
+  neut_weight <- stage_dict[[stage_str]]$neut_weight
+  time_var <- stage_dict[[stage_str]]$time_var
+  event_var <- stage_dict[[stage_str]]$event_var
+  tf <- stage_dict[[stage_str]]$tf
+  marginal_filter <- stage_dict[[stage_str]]$marginal_filter
+
+  # spike variables 
+  for (marker in names(spike_marker_list)){
+    
+    
+    placebo_max_thresh <- NULL
+    vaccine_max_thresh <- NULL
+    change_max_thresh <- NULL 
+
+    if (stage == 1 & marker == "Day43bindSpike"){
+      placebo_max_thresh <- 5.1 
+      vaccine_max_thresh <- 5.7
+    }
+    else if (stage == 1 & marker == "Day43bindSpike_beta"){
+      placebo_max_thresh <- 4.8 
+      vaccine_max_thresh <- 5.48
+    }
+    else if (stage == 1 & marker == "Day43bindSpike_omicron"){
+      placebo_max_thresh <- 4.3 
+      vaccine_max_thresh <- 5.1
+    }
+    else if (stage == 1 & marker == "Day43bindSpike_mdw"){
+      placebo_max_thresh <- 4.9 
+      vaccine_max_thresh <- 5.5
+    }
+    else if (stage == 2 & marker == "Day43bindSpike_mdw"){
+      change_max_thresh <- 2.06
+    }
+    lod_limit <- 2.4
+    lod_label <- "LLOQ/2"
+    
+    df_temp <- df %>% filter_(spike_filter)
+    df_marginal <- df %>% filter_(marginal_filter)
+    
+    xlabel <- sprintf("%s Threshold", spike_marker_list[[marker]]$readable)
+    xlabel_change <- sprintf("Fold-rise (D43/D01) %s Threshold",
+                             spike_marker_list[[marker]]$readable)
+    
+    df_vaccine <- df_temp %>% filter(Trt == 1)
+    df_placebo <- df_temp %>% filter(Trt == 0) 
+
+    # find placebo + vaccine incidence
+    res_placebo_overall <- run_analysis_helper(df_marginal %>% filter(Trt == 0),
+                                               time_var = time_var, 
+                                               event_var = event_var,
+                                               marker_var = "Trt", 
+                                               xlabel = xlabel, 
+                                               tf = tf, 
+                                               exp10 = T, 
+                                               overall = T)
+
+    res_vaccine_overall <- run_analysis_helper(df_marginal %>% filter(Trt == 1),
+                                               time_var = time_var, 
+                                               event_var = event_var,
+                                               marker_var = "Trt", 
+                                               xlabel = xlabel, 
+                                               tf = tf, 
+                                               exp10 = T, 
+                                               overall = T)
+    
+    incidence_placebo <- res_placebo_overall$raw_table$estimate
+    se_placebo <- res_placebo_overall$raw_table$se
+    incidence_vaccine <- res_vaccine_overall$raw_table$estimate
+    se_vaccine <- res_vaccine_overall$raw_table$se
+    
+    # create marker header
+    cat(sprintf("\n\n## %s {.tabset .tabset-fade} \n", spike_marker_list[[marker]]$shortname))
+    
+    # run vaccine analysis, output graph 
+    cat("\n\n### Vaccine {.tabset .tabset-fade} \n")
+    vaccine_title <- sprintf("Vaccine D43 %s", spike_marker_list[[marker]]$shortname)
+    placebo_title <- sprintf("Placebo D43 %s", spike_marker_list[[marker]]$shortname)
+    vaccine_change_title <- sprintf("Vaccine D43/D01 Fold-rise %s",
+                                    spike_marker_list[[marker]]$shortname)
+    
+    res <- run_analysis_helper(df_vaccine,
+                        time_var = time_var, 
+                        event_var = event_var,
+                        marker_var = marker, 
+                        weight_var = spike_weight, 
+                        xlabel = xlabel, 
+                        tf = tf, 
+                        exp10 = T, 
+                        annotate = T, 
+                        placebo_incidence = incidence_placebo, 
+                        placebo_se = se_placebo, 
+                        title = vaccine_title, 
+                        lod_limit = lod_limit, 
+                        lod_label = lod_label,
+                        modify_left_point = T, 
+                        left_estimate = incidence_vaccine, 
+                        left_se = se_vaccine, 
+                        max_thresh = vaccine_max_thresh)
+    
+    cat("\n\n#### Unscaled (not monotone) \n \n")
+
+    res$graph %>% print() 
+    
+    res$table %>% kable() %>% print()
+    
+    # write.csv(res$raw_table, 
+    #           file = sprintf("raw_res_only_standardized/Stage %s %s vaccine raw results.csv", stage, marker), 
+    #           row.names = F)
+    # 
+    
+    cat("\n\n#### Unscaled (monotone) \n \n")
+
+    res$graph_monotone %>% print() 
+    
+    res$table_monotone %>% kable() %>% print()
+    
+    cat("\n\n#### VE scale (1 minus risk / placebo risk) (monotone) \n")
+    
+    res$graph_ve %>% print() 
+    
+    res$table_ve %>% kable() %>% print()
+
+    
+    # run placebo analysis, output graph 
+    cat("\n\n### Placebo {.tabset .tabset-fade} \n")
+    
+    res <- run_analysis_helper(df_placebo,
+                        time_var = time_var, 
+                        event_var = event_var,
+                        marker_var = marker, 
+                        weight_var = spike_weight, 
+                        xlabel = xlabel, 
+                        tf = tf,
+                        exp10 = T, 
+                        title = placebo_title, 
+                        lod_limit = lod_limit, 
+                        lod_label = lod_label,
+                        modify_left_point = T, 
+                        left_estimate = incidence_placebo, 
+                        left_se = se_placebo, 
+                        max_thresh = placebo_max_thresh)
+    
+    cat("\n\n#### Not monotone \n")
+
+    res$graph %>% print() 
+    
+    res$table %>% kable() %>% print()
+    
+    # write.csv(res$raw_table, 
+    #           file = sprintf("raw_res_only_standardized/Stage %s %s placebo raw results.csv", stage, marker), 
+    #           row.names = F)
+
+    cat("\n\n#### Monotone \n")
+
+    res$graph_monotone %>% print() 
+    
+    res$table_monotone %>% kable() %>% print()
+
+    # run change analysis on vaccine only, output graph 
+    cat("\n\n### Vaccine (change) {.tabset .tabset-fade}  \n")
+    res <- run_analysis_helper(df_vaccine,
+                        time_var = time_var, 
+                        event_var = event_var,
+                        marker_var = spike_marker_list[[marker]]$change_var, 
+                        weight_var = spike_weight, 
+                        tf = tf,
+                        xlabel = xlabel_change, 
+                        annotate = T, 
+                        placebo_incidence = incidence_placebo, 
+                        title = vaccine_change_title, 
+                        left_estimate = incidence_vaccine, 
+                        left_se = se_vaccine, 
+                        max_thresh = change_max_thresh)
+    
+    cat("\n\n#### Unscaled (not monotone) \n")
+
+    res$graph %>% print() 
+    
+    res$table %>% kable() %>% print()
+    
+    # write.csv(res$raw_table, 
+    #           file = sprintf("raw_res_only_standardized/Stage %s %s vaccine change raw results.csv", stage, marker), 
+    #           row.names = F)
+    
+    cat("\n\n#### Unscaled (monotone) \n")
+
+    res$graph_monotone %>% print() 
+    
+    res$table_monotone %>% kable() %>% print()
+    
+    cat("\n\n#### VE scale (1 minus risk / placebo risk) (monotone) \n")
+    
+    res$graph_ve %>% print() 
+    
+    res$table_ve %>% kable() %>% print()
+
+  }
+  
+  # neutralizing antibody variables
+  for (marker in names(neut_marker_list)){
+    lod_limit <- 1.3 
+    lod_label <- "LOD/2"
+
+    xlabel <- sprintf("%s Threshold", neut_marker_list[[marker]]$readable)
+    xlabel_change <- sprintf("Fold-rise (D43/D01) %s", neut_marker_list[[marker]]$readable)
+
+    df_temp <- df %>% filter_(neut_filter)
+    df_marginal <- df %>% filter_(marginal_filter)
+
+    df_vaccine <- df_temp %>% filter(Trt == 1)
+    df_placebo <- df_temp %>% filter(Trt == 0)
+
+    if (stage == 1){
+      marker_new <- sprintf("%s_10", marker)
+      marker_change <- sprintf("%s_10", neut_marker_list[[marker]]$change_var)
+    }
+    else{
+      marker_new <- marker
+      marker_change <- neut_marker_list[[marker]]$change_var
+    }
+
+    # find placebo + vaccine incidence
+    res_placebo_overall <- run_analysis_helper(df_marginal %>% filter(Trt == 0),
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = "Trt",
+                        xlabel = xlabel,
+                        tf = tf,
+                        exp10 = T,
+                        overall = T)
+
+    res_vaccine_overall <- run_analysis_helper(df_marginal %>% filter(Trt == 1),
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = "Trt",
+                        xlabel = xlabel,
+                        tf = tf,
+                        exp10 = T,
+                        overall = T)
+
+    incidence_placebo <- res_placebo_overall$raw_table$estimate
+    se_placebo <- res_placebo_overall$raw_table$se
+    incidence_vaccine <- res_vaccine_overall$raw_table$estimate
+    se_vaccine <- res_vaccine_overall$raw_table$se
+
+    # create marker header
+    cat(sprintf("\n\n## %s {.tabset .tabset-fade} \n", neut_marker_list[[marker]]$shortname))
+
+    vaccine_title <- sprintf("Vaccine D43 %s", neut_marker_list[[marker]]$shortname)
+    placebo_title <- sprintf("Placebo D43 %s", neut_marker_list[[marker]]$shortname)
+    vaccine_change_title <- sprintf("Vaccine D43/D01 Fold-rise %s", neut_marker_list[[marker]]$shortname)
+
+    # run vaccine analysis, output graph
+    cat("\n\n### Vaccine {.tabset .tabset-fade} \n")
+
+    res <- run_analysis_helper(df_vaccine,
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_new,
+                        weight_var = neut_weight,
+                        xlabel = xlabel,
+                        tf = tf,
+                        exp10 = T,
+                        annotate = T,
+                        placebo_incidence = incidence_placebo,
+                        title = vaccine_title, 
+                        lod_limit = lod_limit, 
+                        lod_label = lod_label,
+                        modify_left_point = T, 
+                        left_estimate = incidence_vaccine, 
+                        left_se = se_vaccine)
+
+    cat("\n\n#### Unscaled (not monotone) \n")
+
+    res$graph %>% print()
+
+    res$table %>% kable() %>% print()
+
+    write.csv(res$raw_table,
+              file = sprintf("raw_res_only_standardized/Stage %s %s vaccine raw results.csv", stage, marker),
+              row.names = F)
+
+    cat("\n\n#### Unscaled (monotone) \n")
+
+    res$graph_monotone %>% print()
+
+    res$table_monotone %>% kable() %>% print()
+
+    cat("\n\n#### VE scale (1 minus risk / placebo risk) (monotone) \n")
+
+    res$graph_ve %>% print()
+
+    res$table_ve %>% kable() %>% print()
+
+    # run placebo analysis, output graph
+    cat("\n\n### Placebo {.tabset .tabset-fade} \n")
+
+    res <- run_analysis_helper(df_placebo,
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_new,
+                        weight_var = neut_weight,
+                        xlabel = xlabel,
+                        tf = tf,
+                        exp10 = T,
+                        title = placebo_title, 
+                        lod_limit = lod_limit, 
+                        lod_label = lod_label,
+                        modify_left_point = T, 
+                        left_estimate = incidence_placebo, 
+                        left_se = se_placebo)
+
+    cat("\n\n#### Not monotone \n")
+
+    res$graph %>% print()
+    res$table %>% kable() %>% print()
+
+    write.csv(res$raw_table,
+              file = sprintf("raw_res_only_standardized/Stage %s %s placebo raw results.csv", stage, marker),
+              row.names = F)
+
+    cat("\n\n#### Monotone \n")
+
+    res$graph_monotone %>% print()
+
+    res$table_monotone %>% kable() %>% print()
+
+
+    # run change analysis on vaccine only, output graph
+    cat("\n\n### Vaccine (change) {.tabset .tabset-fade} \n")
+    res <- run_analysis_helper(df_vaccine,
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_change,
+                        weight_var = neut_weight,
+                        tf = tf,
+                        xlabel = xlabel_change,
+                        annotate = T,
+                        placebo_incidence = incidence_placebo,
+                        title = vaccine_change_title,
+                        modify_left_point = T, 
+                        left_estimate = incidence_vaccine, 
+                        left_se = se_vaccine)
+
+    cat("\n\n#### Unscaled (not monotone) \n")
+
+    res$graph %>% print()
+
+    res$table %>% kable() %>% print()
+
+    # write.csv(res$raw_table,
+    #           file = sprintf("raw_res_only_standardized/Stage %s %s vaccine change raw results.csv", stage, marker),
+    #           row.names = F)
+
+    cat("\n\n#### Unscaled (monotone) \n")
+
+    res$graph_monotone %>% print()
+
+    res$table_monotone %>% kable() %>% print()
+
+    cat("\n\n#### VE scale (1 minus risk / placebo risk) (monotone) \n")
+
+    res$graph_ve %>% print()
+
+    res$table_ve %>% kable() %>% print()
+
+  }
+}
+```
+
+

@@ -1,0 +1,183 @@
+---
+title: "IB-201P and IB-202P Exploratory Plots (I)"
+output: 
+  pdf_document:
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(copcor)
+library(survey)
+library(kyotil)
+library(glue)
+library(Hmisc)
+library(knitr)
+library(GGally)
+```
+
+```{r data, echo=F, include=F}
+config.processing <- config::get(config = "iliad_ib202p", file="/home/yfong/correlates_processing/config.yml") 
+dat_mapped_202=read.csv(config.processing$mapped_data)
+
+config.processing <- config::get(config = "iliad_ib201p", file="/home/yfong/correlates_processing/config.yml") 
+dat_mapped_201=read.csv(config.processing$mapped_data)
+dat_mapped_201$Trt02[is.na(dat_mapped_201$Trt02)]=0
+
+# config.reporting  <- config::get(config = "iliad_ib202p, file="/home/yfong/correlates_reporting2/config.yml") 
+# dat_proc=read.csv(config.reporting$data_cleaned)
+
+assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/iliad_ib202p_assay_metadata.csv'))
+assays = assay_metadata$assay
+panels = unique(assay_metadata$panel)
+antigens = c("WCE", setdiff(unique(assay_metadata$antigen), c("WCE", NA)))
+
+mytable(dat_mapped_202$Trt) # 21 0s and 24 1s
+mytable(dat_mapped_202$Perprotocol) # all 1
+mytable(dat_mapped_202$EventIndPrimaryC14) # all 1
+
+summary(dat_mapped_202$Day28_FHA_Nasal_IgA)
+summary(10**(dat_mapped_202$Day28_FHA_Nasal_IgA)) # min is half lloq
+
+summary(dat_mapped_202$Day28_FHA_Serum_IgA)
+summary(10**(dat_mapped_202$Day28_FHA_Serum_IgA)) # min is half lloq
+```
+
+```{r}
+mytable(dat_mapped_201$Trt01, dat_mapped_201$Trt02)
+mytable(dat_mapped_202$Trt)
+```
+
+# Data missingness pattern
+
+
+
+# Boxplots comparing treatment groups and popluations
+
+The BPZE1-vaccinated in IB-201p have higher Day28_FHA_Nasal_IgA than those in IB-202p. The same is also true when we compare the comparison group. Is this true? Is it due to background differences? B_FHA_Nasal_IgA is missing from IB-202p, right?
+
+```{r boxplots, echo=F}
+ylim=c(-1.4,2.2)
+
+par(mfrow=c(1,3)); shrink_margin()
+myboxplot(Day28_FHA_Nasal_IgA~Trt01, dat_mapped_201, ylim=ylim, xlab="Trt01", main="IB-201p")
+myboxplot(Day28_FHA_Nasal_IgA~Trt02, dat_mapped_201, ylim=ylim, xlab="Trt02", main="IB-201p")
+myboxplot(Day28_FHA_Nasal_IgA~Trt,   dat_mapped_202, ylim=ylim, xlab="Trt", main="IB-202p")
+
+par(mfrow=c(1,3)); shrink_margin()
+myboxplot(B_FHA_Nasal_IgA~Trt01, dat_mapped_201, ylim=ylim, xlab="Trt01", main="IB-201p")
+myboxplot(B_FHA_Nasal_IgA~Trt02, dat_mapped_201, ylim=ylim, xlab="Trt02", main="IB-201p")
+# myboxplot(B_FHA_Nasal_IgA~Trt,   dat_mapped_202, ylim=ylim, xlab="Trt", main="IB-202p")
+
+wilcox.test(subset(dat_mapped_201, Trt01==0, Day28_FHA_Nasal_IgA, drop=T), 
+            subset(dat_mapped_202, Trt==1, Day28_FHA_Nasal_IgA, drop=T))
+
+
+```
+
+```{r scatterplot_age}
+
+par(mfrow=c(1,2))
+shrink_margin()
+plot(Day28_FHA_Nasal_IgA~Age, dat_mapped_201, ylim=ylim)
+abline(lm(Day28_FHA_Nasal_IgA~Age, dat_mapped_201))
+plot(Day28_FHA_Nasal_IgA~Age, dat_mapped_202, ylim=ylim)
+abline(lm(Day28_FHA_Nasal_IgA~Age, dat_mapped_202))
+
+```
+
+\clearpage
+
+# Pairs plots for different antigens within the same class
+
+```{r, echo=F}
+make_pairs=function(p) {
+  min_val = min(dat_mapped_201[,glue("Day28_{antigens}_{p}")], dat_mapped_202[,glue("Day28_{antigens}_{p}")], na.rm=T)
+  max_val = max(dat_mapped_201[,glue("Day28_{antigens}_{p}")], dat_mapped_202[,glue("Day28_{antigens}_{p}")], na.rm=T)
+  custom_continuous <- function(data, mapping, ...) {
+    ggplot(data = data, mapping = mapping) +
+      geom_point() +
+      xlim(min_val, max_val) + ylim(min_val, max_val)  # adjust these limits as needed
+  }
+
+  tmp = dat_mapped_201[,glue("Day28_{antigens}_{p}")]
+  tmp = tmp[complete.cases(tmp),]
+  capture.output(suppressWarnings(suppressMessages({  
+    p2 <- ggpairs(tmp,
+      lower = list(continuous = custom_continuous))+ theme(
+      strip.text = element_text(size = 7))
+    p2
+  })))
+  
+  tmp = dat_mapped_202[,glue("Day28_{antigens}_{p}")]
+  tmp = tmp[complete.cases(tmp),]
+  capture.output(suppressWarnings(suppressMessages({  
+    p1 <- ggpairs(tmp,
+      lower = list(continuous = custom_continuous)) + theme(
+      strip.text = element_text(size = 7))
+    p1
+  })))
+  
+}
+```
+
+\newpage
+```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap="Nasal IgA. Left: IB-201P; right: IB-202P."}
+a <- make_pairs (panels[1])
+```
+
+\newpage
+```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap="Normalized nasal IgA. Left: IB-201P; right: IB-202P."}
+a <- make_pairs (panels[2])
+```
+
+\newpage
+```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap="Serum IgA. Left: IB-201P; right: IB-202P."}
+a <- make_pairs (panels[3])
+```
+
+\newpage
+```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap="Serum IgG. Left: IB-201P; right: IB-202P."}
+a <- make_pairs (panels[4])
+```
+
+\newpage
+
+# Correlation between sIgA and normalized sIgA
+
+```{r correlation_between_sIgA_and_norm_sIgA, echo=F, fig.cap='Top: 201; bottom: 202.', fig.height=5.3, fig.width=14}
+par(mfrow=c(2,5)); par(mar = c(4, 3, 2, 1), mgp = c(2, 0.5, 0))
+for (a in antigens) {
+  corplot(dat_mapped_201[,glue('Day28_{a}_Nasal_IgA')], dat_mapped_201[,glue('Day28_{a}_Norm_Nasal_IgA')], method="p", add.diagonal.line=F, main=a, xlab="Nasal IgA", ylab="Norm Nasal IgA", cex.main=1.2)
+}
+for (a in antigens) {
+  corplot(dat_mapped_202[,glue('Day28_{a}_Nasal_IgA')], dat_mapped_202[,glue('Day28_{a}_Norm_Nasal_IgA')], method="p", add.diagonal.line=F, main=a, xlab="Nasal IgA", ylab="Norm Nasal IgA", cex.main=1.4)
+}
+```
+
+\newpage
+
+# Correlation between baseline and Day 28 markers
+
+```{r correlation_between_baseline_and_D28_201, echo=F, fig.width=10, fig.height=10, fig.cap="IB-201P Trt 01"}
+par(mfrow=c(5,5)); shrink_margin()
+
+for (a in assays[1:21]) {
+  corplot(dat_mapped_201[dat_mapped_201$Trt01==0,glue("B_{a}")], dat_mapped_201[dat_mapped_201$Trt01==0,glue("Day28_{a}")], main=a, xlab="Baseline", ylab="Day 28", method="p", cex.main=1)  
+}
+
+```
+
+
+```{r correlation_between_baseline_and_D28_202, echo=F, fig.width=10, fig.height=10, fig.cap="IB-202P Trt 1"}
+par(mfrow=c(5,5)); shrink_margin()
+
+for (a in assays[1:22]) {
+  if (!all(is.na(dat_mapped_202[,glue("B_{a}")]))) {
+    corplot(dat_mapped_202[dat_mapped_202$Trt==1,glue("B_{a}")], dat_mapped_202[dat_mapped_202$Trt==1,glue("Day28_{a}")], main=a, xlab="Baseline", ylab="Day 28", method="p", cex.main=1.1)  
+  } else {
+    empty.plot()
+  }
+}
+```
