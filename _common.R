@@ -106,7 +106,7 @@ if (!is.null(config$assay_metadata)) {
   } else if (TRIAL=='id27hpvnAb') {
     assay_metadata = subset(assay_metadata, panel=='id50')
     
-  } else if (TRIAL=="covail_tcell") {
+  } else if (TRIAL=="covail_tcell" | TRIAL=="covail_xassays") {
     # add S1 and S2 to assay_metadata
     tmp = assay_metadata$assay
     tmp = tmp[startsWith(tmp, "cd")]
@@ -593,7 +593,7 @@ dat_proc <- read.csv(path_to_data)
 if(config$sampling_scheme == 'case_cohort') stopifnot(!is.null(dat_proc$SubcohortInd))
 
 
-if (TRIAL=="covail_tcell") {
+if (TRIAL=="covail_tcell" | TRIAL=="covail_xassays") {
   primary.ls=list(
     naive   =c(
       "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S", 
@@ -620,14 +620,18 @@ if (TRIAL=="covail_tcell") {
   tmp=c("B"%.%N, "Day15"%.%N, "B"%.%S, "Day15"%.%S)
   dat.tmp = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17) & naive==0)
   pos1 = sapply(tmp%.%"_resp", function(x) sum(dat.tmp[[x]] * dat.tmp$ph2.D15.tcell * dat.tmp$wt.D15.tcell, na.rm=T)/sum(dat.tmp$ph1.D15.tcell))
-  exploratory = tmp[pos1>=0.1]
+  exploratory_all = tmp[pos1>=0.1]
   
-  # add FS markers
-  FS_vars = c("B"%.%FS, "Day15"%.%FS)
-  exploratory = c(exploratory, FS_vars)
+  # add FS markers, cd8_FS_Wuhan.N is excluded because Day15cd8_FS_Wuhan.N has a low dynamic range: 3rd quartile is 0.0007
+  FS_vars = c("B"%.%setdiff(FS, "cd8_FS_Wuhan.N"), "Day15"%.%setdiff(FS, "cd8_FS_Wuhan.N"))
+  exploratory_all = c(exploratory_all, FS_vars)
   
-  # Day15cd8_FS_Wuhan.N is excluded due to low dynamic range-3rd quartile is 0.0007
-  exploratory = sort(setdiff(exploratory, c(primary, secondary, "Day15cd8_FS_Wuhan.N", "Bcd8_FS_Wuhan.N")))
+  exploratory = list()
+  exploratory$naive = setdiff(exploratory_all, c(primary.ls$naive, secondary.ls$naive))
+  exploratory$naive = exploratory$naive[!endsWith(exploratory$naive, "_Wuhan.N")] # # remove all N
+  exploratory$nonnaive = setdiff(exploratory_all, c(primary.ls$nonnaive, secondary.ls$nonnaive))
+  exploratory$nonnaive = exploratory$nonnaive[! (endsWith(exploratory$nonnaive, "_Wuhan.N") & startsWith(exploratory$nonnaive, "Day15"))] # remove all Day 15 N
+  
 }
 
 
