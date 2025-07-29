@@ -593,7 +593,7 @@ dat_proc <- read.csv(path_to_data)
 if(config$sampling_scheme == 'case_cohort') stopifnot(!is.null(dat_proc$SubcohortInd))
 
 
-if (TRIAL=="covail_tcell") {
+if (TRIAL=="covail_tcell" | TRIAL=="covail_xassays") {
   primary.ls=list(
     naive   =c(
       "Bcd4_IFNg.IL2_BA.4.5.S", "Day15cd4_IFNg.IL2_BA.4.5.S", 
