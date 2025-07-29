@@ -626,11 +626,11 @@ if (TRIAL=="covail_tcell" | TRIAL=="covail_xassays") {
   FS_vars = c("B"%.%setdiff(FS, "cd8_FS_Wuhan.N"), "Day15"%.%setdiff(FS, "cd8_FS_Wuhan.N"))
   exploratory_all = c(exploratory_all, FS_vars)
   
-  exploratory = list()
-  exploratory$naive = setdiff(exploratory_all, c(primary.ls$naive, secondary.ls$naive))
-  exploratory$naive = exploratory$naive[!endsWith(exploratory$naive, "_Wuhan.N")] # # remove all N
-  exploratory$nonnaive = setdiff(exploratory_all, c(primary.ls$nonnaive, secondary.ls$nonnaive))
-  exploratory$nonnaive = exploratory$nonnaive[! (endsWith(exploratory$nonnaive, "_Wuhan.N") & startsWith(exploratory$nonnaive, "Day15"))] # remove all Day 15 N
+  exploratory.ls = list()
+  exploratory.ls$naive = setdiff(exploratory_all, c(primary.ls$naive, secondary.ls$naive))
+  exploratory.ls$naive = exploratory.ls$naive[!endsWith(exploratory.ls$naive, "_Wuhan.N")] # # remove all N
+  exploratory.ls$nonnaive = setdiff(exploratory_all, c(primary.ls$nonnaive, secondary.ls$nonnaive))
+  exploratory.ls$nonnaive = exploratory.ls$nonnaive[! (endsWith(exploratory.ls$nonnaive, "_Wuhan.N") & startsWith(exploratory.ls$nonnaive, "Day15"))] # remove all Day 15 N
   
 }
 
