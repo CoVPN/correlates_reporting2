@@ -471,15 +471,15 @@ if (run_prod) {
                   #"SL.gam", "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars",
                   "SL.xgboost.4.no", #"SL.xgboost.2.no", "SL.xgboost.2.yes", "SL.xgboost.4.yes",
                   "SL.ranger.no") #, "SL.ranger.yes"  
-  } else if (Sys.getenv("TRIAL") == "covail_tcell"){
+  } else if (Sys.getenv("TRIAL") %in% c("covail_tcell", "covail_xassays")){
     methods1 <- c("SL.mean", 
-                  "SL.glm"#, 
-                  #"SL.bayesglm", 
-                  #"SL.glmnet.0", "SL.glmnet.0.33", "SL.glmnet.0.67", "SL.glmnet.1" #, 
+                  "SL.glm",  
+                  "SL.bayesglm", 
+                  "SL.glmnet.0", "SL.glmnet.0.33", "SL.glmnet.0.67", "SL.glmnet.1", 
                   #"SL.xgboost.2.no", 
-                  #"SL.xgboost.4.no", 
+                  "SL.xgboost.4.no", 
                   #"SL.xgboost.2.yes", "SL.xgboost.4.yes",
-                  #"SL.ranger.no", "SL.ranger.yes"
+                  "SL.ranger.no", "SL.ranger.yes"
                   ) 
   }
 
@@ -491,12 +491,12 @@ if (run_prod) {
   } else if(Sys.getenv("TRIAL") %in% c("janssen_pooled_partA", "janssen_la_partA")){
     methods2 <- c("SL.glm", "SL.bayesglm", "SL.glm.interaction", "SL.gam",
                   "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars") 
-  } else if(Sys.getenv("TRIAL") %in% c("covail_tcell")){
-    methods2 <- c("SL.glm" #, 
-                  #"SL.bayesglm", 
-                  #"SL.glm.interaction", "SL.gam",
+  } else if(Sys.getenv("TRIAL") %in% c("covail_tcell", "covail_xassays")){
+    methods2 <- c("SL.glm", 
+                  "SL.bayesglm", 
+                  "SL.glm.interaction", "SL.gam",
                   #"SL.ksvm.rbfdot", "SL.ksvm.polydot", # never included as model fitting code breaks
-                  #"SL.nnet.2", "SL.nnet.5"
+                  "SL.nnet.2", "SL.nnet.5"
                   #"SL.polymars" # never included as model fitting code breaks
                   ) 
   }

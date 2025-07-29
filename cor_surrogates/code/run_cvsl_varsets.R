@@ -1,11 +1,15 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 # Sys.setenv(TRIAL = "janssen_pooled_partA")
+
 # Sys.setenv(TRIAL = "covail_tcell")
+# COR = "D15to91covail_xassays"
+# COR = "D15to181covail_xassays"
+
 Sys.setenv(TRIAL = "covail_xassays")
 
-# COR = "D15to91covail_xassays"
-COR = "D15to181covail_xassays"
+COR = "D15to91covail_xassays"
+#COR = "D15to181covail_xassays"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
