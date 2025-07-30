@@ -628,7 +628,7 @@ if (TRIAL=="covail_tcell" | TRIAL=="covail_xassays") {
   
   exploratory.ls = list()
   exploratory.ls$naive = setdiff(exploratory_all, c(primary.ls$naive, secondary.ls$naive))
-  exploratory.ls$naive = exploratory.ls$naive[!endsWith(exploratory.ls$naive, "_Wuhan.N")] # # remove all N
+  exploratory.ls$naive = exploratory.ls$naive[!endsWith(exploratory.ls$naive, "_Wuhan.N")] # remove all N
   exploratory.ls$nonnaive = setdiff(exploratory_all, c(primary.ls$nonnaive, secondary.ls$nonnaive))
   exploratory.ls$nonnaive = exploratory.ls$nonnaive[! (endsWith(exploratory.ls$nonnaive, "_Wuhan.N") & startsWith(exploratory.ls$nonnaive, "Day15"))] # remove all Day 15 N
   
