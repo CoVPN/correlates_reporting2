@@ -102,29 +102,27 @@ for (trt in trts) {
   # naive
   if (trt==1) {
     dat.1=subset(dat.onedosemRNA, naive==1);    fname.suffix.0 <- trt.label <- "OneDosemRNA_Naive"
-    primary = primary.ls$naive; secondary = secondary.ls$naive; exploratory = exploratory.ls$naive
   } else if (trt==2) {
     dat.1=subset(dat.onedoseModerna, naive==1); fname.suffix.0 <- trt.label <- "OneDoseModerna_Naive"
-    primary = primary.ls$naive; secondary = secondary.ls$naive; exploratory = exploratory.ls$naive
   } else if (trt==3) {
     dat.1=subset(dat.onedosePfizer, naive==1);  fname.suffix.0 <- trt.label <- "OneDosePfizer_Naive"
-    primary = primary.ls$naive; secondary = secondary.ls$naive; exploratory = exploratory.ls$naive
   } else if (trt==4) {
     dat.1=subset(dat.sanofi, naive==1);         fname.suffix.0 <- trt.label <- "Sanofi_Naive"
-    primary = primary.ls$naive; secondary = secondary.ls$naive; exploratory = exploratory.ls$naive
-    
+
   # nnaive  
   } else if (trt==5) {
     dat.1=subset(dat.onedosemRNA, naive==0);    fname.suffix.0 <- trt.label <- "OneDosemRNA_NNaive"
-    primary = primary.ls$nonnaive; secondary = secondary.ls$nonnaive; exploratory = exploratory.ls$nonnaive
   } else if (trt==6) {
     dat.1=subset(dat.onedoseModerna, naive==0); fname.suffix.0 <- trt.label <- "OneDoseModerna_NNaive"
-    primary = primary.ls$nonnaive; secondary = secondary.ls$nonnaive; exploratory = exploratory.ls$nonnaive
   } else if (trt==7) {
     dat.1=subset(dat.onedosePfizer, naive==0);  fname.suffix.0 <- trt.label <- "OneDosePfizer_NNaive"
-    primary = primary.ls$nonnaive; secondary = secondary.ls$nonnaive; exploratory = exploratory.ls$nonnaive
   } else if (trt==8) {
     dat.1=subset(dat.sanofi, naive==0);         fname.suffix.0 <- trt.label <- "Sanofi_NNaive"
+  }
+  
+  if (trt <= 4) {
+    primary = primary.ls$naive; secondary = secondary.ls$naive; exploratory = exploratory.ls$naive
+  } else {
     primary = primary.ls$nonnaive; secondary = secondary.ls$nonnaive; exploratory = exploratory.ls$nonnaive
   }
   
