@@ -103,6 +103,10 @@ dat=dat_proc[dat_proc$ph2.D15.tcell, vv]
 dim(dat)
 complete.cases(dat)      
 
+
+10**range(dat_proc[glue("B{c(frnt50,frnt80)}")], na.rm=T)
+10**range(dat_proc[glue("Day15{c(frnt50,frnt80)}")], na.rm=T)
+
 ```
 
 ```{r}
