@@ -1,24 +1,16 @@
-#Sys.setenv(TRIAL = "id27hpv"); COR="M18"; Sys.setenv(VERBOSE = 1) 
-#Sys.setenv(TRIAL = "id27hpvnAb"); COR="M18nAb"; Sys.setenv(VERBOSE = 1) 
-
-# restrict to <=14 year olds
-# Consider hpv31 infections, it seems that we only need to consider hpv18 and 31 ab. 
-# drop age group and add region in regression models. 
-# different weights
-
-print(paste0("starting time: ", date()))
-renv::activate(project = here::here(".."))     
-source(here::here("..", "_common.R")) # dat_proc is made
+# COR="C0iliad_ib202p"
+# renv::activate(project = here::here("..")) #  in .Rprofile
+Sys.setenv(TRIAL = "iliad_ib202p")
+Sys.setenv(VERBOSE = 1)
+source(here::here("..", "_common.R")) 
 
 
 {
 library(kyotil) # p.adj.perm, getFormattedSummary
-library(marginalizedRisk)
 library(survey)
 library(parallel)
 library(Hmisc) # wtd.quantile, cut2
 library(xtable) # this is a dependency of kyotil
-library (osDesign)
 
 source(here::here("code", "params.R"))
 time.start=Sys.time()
@@ -51,40 +43,14 @@ myprint(numPerm)
 dat_proc$yy=dat_proc[[config.cor$EventIndPrimary]]
 
 # there is only one analysis population
-dat.ph1=subset(dat_proc, ph1)
+dat.ph1=subset(dat_proc, ph1==1)
 
-
-# define trichotomized markers
-dat.ph1 = add.trichotomized.markers (dat.ph1, all.markers, wt.col.name="wt")
-
-# for the markers with low positive response rates, change to cut into to low and high
-for (a in c("M18bind_HPV33", "M18bind_HPV45", "M18bind_HPV52", "M18bind_HPV58", "M18pseudoneutid50_HPV45", "M18pseudoneutid50_HPV58")) {        
-    cutpoint=min(dat.ph1[[a]], na.rm = T)
-    dat.ph1[[a%.%'cat']] = cut(dat.ph1[[a]], breaks = c(-Inf, cutpoint, Inf))
-    attr(dat.ph1, "marker.cutpoints")[[a]] = cutpoint
+# save cut points to files
+marker.cutpoints = attr(dat_proc, "marker.cutpoints")
+for (a in names(marker.cutpoints)) {        
+  write(paste0(escape(a),     " [", concatList(round(marker.cutpoints[[a]], 2), ", "), ")%"), 
+        file=paste0(save.results.to, "cutpoints_", a,".txt"))
 }
-
-
-marker.cutpoints=attr(dat.ph1, "marker.cutpoints")
-for (a in all.markers) {        
-    q.a=marker.cutpoints[[a]]
-    if (startsWith(a, "Day")) {
-        # not fold change
-        write(paste0(labels.axis[1,marker.name.to.assay(a)], " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
-    } else {
-        # fold change
-        # gsub("_", "\\\_", a, fixed = TRUE) is a bandaid to escape the marker name for latex, which may have _
-        write(paste0(gsub("_", "\\_", a, fixed = TRUE), " [", concatList(round(q.a, 2), ", "), ")%"), file=paste0(save.results.to, "cutpoints_", a, "_"%.%study_name))
-    }
-}
-
-#create twophase design object
-design.vacc.seroneg<-twophase(id=list(~1,~1), strata=list(NULL,~Wstratum), subset=~ph2, data=dat.ph1)
-with(dat.ph1, table(Wstratum, ph2))
-    
-# create verification object to be populated by the following scripts
-rv=list() 
-rv$marker.cutpoints=marker.cutpoints
 
 # getting some quantiles
 #10**wtd.quantile(dat.ph1$Day57pseudoneutid50, dat.ph1$wt, c(0.025, 0.05, seq(.2,.9,by=0.01),seq(.9,.99,by=0.005)))
@@ -95,36 +61,13 @@ names(dimnames(tab))[2]="Event Indicator"
 print(tab)
 mytex(tab, file.name="tab1", save2input.only=T, input.foldername=save.results.to)
 
-
-# dat.ph1=subset(dat.ph1, M18pseudoneutid50_HPV52<2.5) # one outlier
-
-dat.ph2=subset(dat.ph1, ph2)
-
-
-tab=with(dat.ph1, table(tps.stratum, EventIndPrimary))
-nn0=tab[,1]
-nn1=tab[,2]
-
-
 begin=Sys.time()
-
 }
 
 
 
 ################################################################################
-# to decide adjustment variables
-
-if (TRIAL=='id27hpv') {
-  fit=glm(EventIndPrimary~AgeGroup + daysbtwnenrollment_and_susceptibility + single.dose, dat.ph1, family="binomial")
-  summary(fit)
-   # daysbtwnenrollment_and_susceptibility not significant, and hence not adjusted in the following
-}
-  
-
-
-################################################################################
-# get OR on continuous markers
+# get RR on continuous markers
 ################################################################################
 
 
@@ -153,7 +96,7 @@ for (i in 1:2) { # 1: not scaled, 2: scaled
     }
 }
 # if(TRIAL=='id27hpv' & COR=='M18') {
-#   assertthat::assert_that(all(abs(fits$M18bind_mdw$coef-c(-4.68354733703185,-0.102079236701852,-0.0989783451284477))<1e-6), msg = "failed cor_logistic unit testing: "%.%concatList(fits$M18bind_mdw$coef))    
+#   assertthat::assert_that(all(abs(fits$M18bind_mdw$coef-c(-4.68354733703185,-0.102079236701852,-0.0989783451284477))<1e-6), msg = "failed cor_poisson unit testing: "%.%concatList(fits$M18bind_mdw$coef))    
 # }
     
 
@@ -193,7 +136,7 @@ tab=getFormattedSummary(fits.scaled, robust=T, type=6)
 rownames(tab)[4]='scale(marker)'
 rownames(tab)[5]='itxn'
 colnames(tab)=sub("pseudoneutid50","ID50",colnames(tab)) # shorten if it is nAb variables
-mytex(t(tab), file.name=save.results.to%.%"CoR_itxn_logistic_pretty_scaled_"%.%study_name, align="r", silent=F, save2input.only=F)
+mytex(t(tab), file.name=save.results.to%.%"CoR_itxn_poisson_pretty_scaled_"%.%study_name, align="r", silent=F, save2input.only=F)
 
 
 
@@ -286,14 +229,14 @@ p.2=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FDR" ], 3, remove.lead
 tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p), p.2, p.1)
 rownames(tab.1)=all.markers.names.short
 tab.1
-mytex(tab.1, file.name="CoR_univariable_logistic_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
+mytex(tab.1, file.name="CoR_univariable_poisson_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
          \\multicolumn{1}{l}{", study_name, "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{OR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
          \\hline\n 
     "),
       longtable=T, 
-      label=paste0("tab:CoR_univariable_logistic_pretty"), 
+      label=paste0("tab:CoR_univariable_poisson_pretty"), 
       caption.placement = "top", 
       caption=paste0("Inference for ", DayPrefix, tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " pooled over treatment arms: Odds ratios per 10-fold increment in the marker*")
 )
@@ -307,14 +250,14 @@ rv$tab.1=tab.1.nop12
 tab.1.scaled=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est.scaled), t(ci.scaled), t(p), p.2, p.1)
 rownames(tab.1.scaled)=all.markers.names.short
 tab.1.scaled
-mytex(tab.1.scaled, file.name="CoR_univariable_logistic_pretty_scaled_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
+mytex(tab.1.scaled, file.name="CoR_univariable_poisson_pretty_scaled_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
          \\multicolumn{1}{l}{", (study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{OR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
          \\hline\n 
     "),
       longtable=T, 
-      label=paste0("tab:CoR_univariable_logistic_pretty_scaled"), 
+      label=paste0("tab:CoR_univariable_poisson_pretty_scaled"), 
       caption.placement = "top", 
       caption=paste0("Inference for ", DayPrefix, tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " pooled over treatment groups: Odds ratios per SD increment in the marker*")
 )
@@ -402,14 +345,14 @@ if (COR=='M18sus') {
 
 
 # use longtable because this table could be long, e.g. in hvtn705second
-mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_logistic_cat_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
+mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_poisson_cat_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
          \\multicolumn{1}{l}{", (study_name), "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Odds Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***} & \\multicolumn{1}{c}{value $\\dagger$} & \\multicolumn{1}{c}{FWER} \\\\ 
          \\hline\n 
       "),        
       longtable=T, 
-      label=paste0("tab:CoR_univariable_logistic_cat_pretty_", study_name), 
+      label=paste0("tab:CoR_univariable_poisson_cat_pretty_", study_name), 
       caption.placement = "top", 
       caption=paste0("Inference for ", DayPrefix, tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*")
 )

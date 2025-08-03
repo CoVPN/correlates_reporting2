@@ -2109,6 +2109,7 @@ C0iliad_ib202p:
   wt: wt.C0
   WtStratum: Wstratum
   EventIndPrimary: EventIndC9_11_14
-  tpeak: 0
+  tpeak: 28
+  tpeaklag: 0
   txt.endpoint: Pertussis
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed colonization endpoint.
