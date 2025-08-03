@@ -1,0 +1,47 @@
+<!-- ```{r, echo=FALSE} -->
+<!-- here::i_am("cor_poisson/report.Rmd") -->
+<!-- ``` -->
+
+
+
+```{r, echo=FALSE, message=FALSE}
+message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_poisson report ~~~~~~~~~~~~~~~~~~~~~~~~~")
+```
+
+
+
+```{r, echo=FALSE, results='asis'}
+
+tt=timepoints
+
+covariates_adjusted = covariates
+covariates_adjusted = sub("\\~\\.\\+","",covariates_adjusted)
+covariates_adjusted = sub("_","",covariates_adjusted)
+
+if(file.exists(here::here('cor_poisson', paste0('report_', tolower(study_name), '.Rmd')))) {
+  # trial-specific report, which also calls report_by_COR.Rmd
+  
+  message ("trial-specific report rmd found")
+  res = knitr::knit_child(c(here::here('cor_poisson', paste0('report_', tolower(study_name), '.Rmd'))), quiet = TRUE)
+  cat(res, sep = '\n')
+
+} else {
+  # generic report
+  
+  for (tpeak in tt) {
+    COR <- paste0(DayPrefix, tpeak)
+    config.cor <- config::get(config = COR)
+    for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+    special.note = ""
+    pathCoRoutput <- paste0("cor_poisson/output/", attr(config,"config"), "/", COR)
+    
+    all.markers=paste0(DayPrefix, tpeak, assays)
+    if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
+
+    res = knitr::knit_child(c(here::here('cor_poisson', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  }
+
+}
+```
