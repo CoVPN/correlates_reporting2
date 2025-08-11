@@ -103,6 +103,9 @@ get_resp_by_group <- function(dat=dat, group=group){
     dat$wt = dat[, "ph2.AB.trackA"]  # ccIAS, # initial, 5 timepoints, on Track A ccIAS-PBMC
     dat$wt2 = dat[, config.cor$wt] # final, 3 timepoints, on whole ccIAS-PBMC
     
+  } else if (study_name == "ILIAD_IB202P") {
+    dat$wt = dat[, config.cor$wt] 
+    
   } else {
     dat[which(dat$time=="Day 1"), "wt"] = 1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
     dat[which(dat$time==paste0("Day ",timepoints[1])), "wt"] = dat[which(dat$time==paste0("Day ",timepoints[1])), paste0("wt.D",timepoints[1])]

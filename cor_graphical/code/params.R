@@ -23,6 +23,10 @@ if (study_name=="IARCHPV") {
     bstatus.labels <-  c("Naive", "Non-naive")
     bstatus.labels.2 <- c("", "")
     
+  } else if (study_name == "ILIAD_IB202P") {
+    trt.labels <- c("PBO", "BPZE1")
+    bstatus.labels <- "Not applicable"
+    
   } else {
     trt.labels <- c("Placebo", "Vaccine")
     bstatus.labels <- c("Baseline Neg", "Baseline Pos")

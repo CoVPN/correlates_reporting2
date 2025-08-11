@@ -23,6 +23,10 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
 	Rscript code/cor_data_preprocess.R D31toM12_nextgen_mock_sera # Yiwen's
 	Rscript code/cor_graphics_all.R D31toM12_nextgen_mock_sera
 
+else ifeq ($(TRIAL),$(filter $(TRIAL), iliad_ib202p))
+	Rscript code/cor_data_preprocess.R C0iliad_ib202p # Yiwen's
+	Rscript code/cor_graphics_all.R C0iliad_ib202p
+
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
 	Rscript code/cor_data_preprocess.R D35prevent19_stage2_delta # Yiwen's
 	Rscript code/cor_graphics_all.R D35prevent19_stage2_delta
