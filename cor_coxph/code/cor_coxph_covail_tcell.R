@@ -108,7 +108,7 @@ for (trt in trts) {
     dat.1=subset(dat.onedosePfizer, naive==1);  fname.suffix.0 <- trt.label <- "OneDosePfizer_Naive"
   } else if (trt==4) {
     dat.1=subset(dat.sanofi, naive==1);         fname.suffix.0 <- trt.label <- "Sanofi_Naive"
-    
+
   # nnaive  
   } else if (trt==5) {
     dat.1=subset(dat.onedosemRNA, naive==0);    fname.suffix.0 <- trt.label <- "OneDosemRNA_NNaive"
@@ -118,6 +118,12 @@ for (trt in trts) {
     dat.1=subset(dat.onedosePfizer, naive==0);  fname.suffix.0 <- trt.label <- "OneDosePfizer_NNaive"
   } else if (trt==8) {
     dat.1=subset(dat.sanofi, naive==0);         fname.suffix.0 <- trt.label <- "Sanofi_NNaive"
+  }
+  
+  if (trt <= 4) {
+    primary = primary.ls$naive; secondary = secondary.ls$naive; exploratory = exploratory.ls$naive
+  } else {
+    primary = primary.ls$nonnaive; secondary = secondary.ls$nonnaive; exploratory = exploratory.ls$nonnaive
   }
   
   design.1 <- twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum), subset =  ~ ph2, data = dat.1)

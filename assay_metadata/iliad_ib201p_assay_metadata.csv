@@ -1,23 +1,22 @@
 panel,order_in_panel,antigen,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates
-Nasal_IgA,1,FHA,FHA_Nasal_IgA,0.085,130,NA,0.085,Filamentous Hemagglutinin (IU/mL) (Absolute S-IgA),"FHA (S-IgA, IU/mL)",lloq,1
-Nasal_IgA,2,FIM,FIM_Nasal_IgA,0.131,200,NA,0.131,Fimbriae types 2 and 3 (AU/mL) (Absolute S-IgA),"Fim2/3 (S-IgA, AU/mL)",lloq,1
-Nasal_IgA,3,PRN,PRN_Nasal_IgA,0.055,84,NA,0.055,Pertactin (IU/mL) (Absolute S-IgA),"Prn (S-IgA, IU/mL)",lloq,1
-Nasal_IgA,4,PT,PT_Nasal_IgA,0.085,130,NA,0.085,Pertussis Toxin (IU/mL) (Absolute S-IgA),"PT (S-IgA, IU/mL)",lloq,1
-Nasal_IgA,5,WCE,WCE_Nasal_IgA,0.8192,500,NA,0.8192,Whole Cell Extract (AU/mL) (Absolute S-IgA),"WCE (S-IgA, AU/mL)",lloq,1
-Norm_Nasal_IgA,6,FHA,FHA_Norm_Nasal_IgA,NA,NA,NA,NA,Filamentous Hemagglutinin (IU/(mg IgA)) (Normalized S-IgA),"FHA (Norm S-IgA, IU/mg)",lloq,1
-Norm_Nasal_IgA,7,FIM,FIM_Norm_Nasal_IgA,NA,NA,NA,NA,Fimbriae types 2 and 3 (AU/(mg IgA)) (Normalized S-IgA),"Fim2/3 (Norm S-IgA, AU/mg)",lloq,1
-Norm_Nasal_IgA,8,PRN,PRN_Norm_Nasal_IgA,NA,NA,NA,NA,Pertactin (IU/(mg IgA)) (Normalized S-IgA),"Prn (Norm S-IgA, IU/mg)",lloq,1
-Norm_Nasal_IgA,9,PT,PT_Norm_Nasal_IgA,NA,NA,NA,NA,Pertussis Toxin (IU/(mg IgA)) (Normalized S-IgA),"PT (Norm S-IgA, IU/mg)",lloq,1
-Norm_Nasal_IgA,10,WCE,WCE_Norm_Nasal_IgA,NA,NA,NA,NA,Whole Cell Extract (AU/(mg IgA)) (Normalized S-IgA),"WCE (Norm S-IgA, AU/mg)",lloq,1
-Serum_IgA,1,FHA,FHA_Serum_IgA,1.704,2600,NA,1.704,Filamentous Hemagglutinin (IU/mL) (Serum IgA),"FHA (Serum IgA, IU/mL)",lloq,1
-Serum_IgA,2,FIM,FIM_Serum_IgA,2.621,4000,NA,2.621,Fimbriae types 2 and 3 (AU/mL) (Serum IgA),"Fim2/3 (Serum IgA, AU/mL)",lloq,1
-Serum_IgA,3,PRN,PRN_Serum_IgA,1.101,1680,NA,1.101,Pertactin (IU/mL) (Serum IgA),"Prn (Serum IgA, IU/mL)",lloq,1
-Serum_IgA,4,PT,PT_Serum_IgA,1.704,2600,NA,1.704,Pertussis Toxin (IU/mL) (Serum IgA),"PT (Serum IgA, IU/mL)",lloq,1
-Serum_IgA,5,WCE,WCE_Serum_IgA,16.38,10000,NA,16.38,Whole Cell Extract (AU/mL) (Serum IgA),"WCE (Serum IgA, AU/mL)",lloq,1
-Serum_IgG,1,FHA,FHA_Serum_IgG,1.704,2600,NA,1.704,Filamentous Hemagglutinin (IU/mL) (Serum IgG),"FHA (Serum IgG, IU/mL)",lloq,1
-Serum_IgG,2,FIM,FIM_Serum_IgG,1.311,2000,NA,1.311,Fimbriae types 2 and 3 (AU/mL) (Serum IgG),"Fim2/3 (Serum IgG, AU/mL)",lloq,1
-Serum_IgG,3,PRN,PRN_Serum_IgG,0.852,1300,NA,0.852,Pertactin (IU/mL) (Serum IgG),"Prn (Serum IgG, IU/mL)",lloq,1
-Serum_IgG,4,PT,PT_Serum_IgG,4.391,6700,NA,4.391,Pertussis Toxin (IU/mL) (Serum IgG),"PT (Serum IgG, IU/mL)",lloq,1
-Serum_IgG,5,WCE,WCE_Serum_IgG,8.192,5000,NA,8.192,Whole Cell Extract (AU/mL) (Serum IgG),"WCE (Serum IgG, AU/mL)",lloq,1
-SBA,1,NA,PRN_Neg,20,NA,NA,20,Serum Bactericidal Activity Pertactin- (Titer),SBA PRN- (Titer),lloq,1
-SBA,2,NA,PRN_Pos,9,NA,NA,9,Serum Bactericidal Activity Pertactin+ (Titer),SBA PRN+ (Titer),lloq,1
+Nasal_IgA,1,WCE,WCE_Nasal_IgA,0.8192,500,NA,0.8192,Whole Cell Extract (AU/mL) (Absolute S-IgA),"WCE (S-IgA, AU/mL)",lloq,1
+Nasal_IgA,2,FHA,FHA_Nasal_IgA,0.085,130,NA,0.085,Filamentous Hemagglutinin (IU/mL) (Absolute S-IgA),"FHA (S-IgA, IU/mL)",lloq,1
+Nasal_IgA,3,FIM,FIM_Nasal_IgA,0.131,200,NA,0.131,Fimbriae types 2 and 3 (AU/mL) (Absolute S-IgA),"Fim2/3 (S-IgA, AU/mL)",lloq,1
+Nasal_IgA,4,PRN,PRN_Nasal_IgA,0.055,84,NA,0.055,Pertactin (IU/mL) (Absolute S-IgA),"Prn (S-IgA, IU/mL)",lloq,1
+Nasal_IgA,5,PT,PT_Nasal_IgA,0.085,130,NA,0.085,Pertussis Toxin (IU/mL) (Absolute S-IgA),"PT (S-IgA, IU/mL)",lloq,1
+Norm_Nasal_IgA,1,WCE,WCE_Norm_Nasal_IgA,NA,Inf,NA,NA,Whole Cell Extract (AU/(mg IgA)) (Normalized S-IgA),"WCE (Norm S-IgA, AU/mg)",lloq,1
+Norm_Nasal_IgA,2,FHA,FHA_Norm_Nasal_IgA,NA,Inf,NA,NA,Filamentous Hemagglutinin (IU/(mg IgA)) (Normalized S-IgA),"FHA (Norm S-IgA, IU/mg)",lloq,1
+Norm_Nasal_IgA,3,FIM,FIM_Norm_Nasal_IgA,NA,Inf,NA,NA,Fimbriae types 2 and 3 (AU/(mg IgA)) (Normalized S-IgA),"Fim2/3 (Norm S-IgA, AU/mg)",lloq,1
+Norm_Nasal_IgA,4,PRN,PRN_Norm_Nasal_IgA,NA,Inf,NA,NA,Pertactin (IU/(mg IgA)) (Normalized S-IgA),"Prn (Norm S-IgA, IU/mg)",lloq,1
+Norm_Nasal_IgA,5,PT,PT_Norm_Nasal_IgA,NA,Inf,NA,NA,Pertussis Toxin (IU/(mg IgA)) (Normalized S-IgA),"PT (Norm S-IgA, IU/mg)",lloq,1
+Serum_IgA,1,WCE,WCE_Serum_IgA,16.38,10000,NA,16.38,Whole Cell Extract (AU/mL) (Serum IgA),"WCE (Serum IgA, AU/mL)",lloq,1
+Serum_IgA,2,FHA,FHA_Serum_IgA,1.704,2600,NA,1.704,Filamentous Hemagglutinin (IU/mL) (Serum IgA),"FHA (Serum IgA, IU/mL)",lloq,1
+Serum_IgA,3,FIM,FIM_Serum_IgA,2.621,4000,NA,2.621,Fimbriae types 2 and 3 (AU/mL) (Serum IgA),"Fim2/3 (Serum IgA, AU/mL)",lloq,1
+Serum_IgA,4,PRN,PRN_Serum_IgA,1.101,1680,NA,1.101,Pertactin (IU/mL) (Serum IgA),"Prn (Serum IgA, IU/mL)",lloq,1
+Serum_IgA,5,PT,PT_Serum_IgA,1.704,2600,NA,1.704,Pertussis Toxin (IU/mL) (Serum IgA),"PT (Serum IgA, IU/mL)",lloq,1
+Serum_IgG,1,WCE,WCE_Serum_IgG,8.192,5000,NA,8.192,Whole Cell Extract (AU/mL) (Serum IgG),"WCE (Serum IgG, AU/mL)",lloq,1
+Serum_IgG,2,FHA,FHA_Serum_IgG,1.704,2600,NA,1.704,Filamentous Hemagglutinin (IU/mL) (Serum IgG),"FHA (Serum IgG, IU/mL)",lloq,1
+Serum_IgG,3,FIM,FIM_Serum_IgG,1.311,2000,NA,1.311,Fimbriae types 2 and 3 (AU/mL) (Serum IgG),"Fim2/3 (Serum IgG, AU/mL)",lloq,1
+Serum_IgG,4,PRN,PRN_Serum_IgG,0.852,1300,NA,0.852,Pertactin (IU/mL) (Serum IgG),"Prn (Serum IgG, IU/mL)",lloq,1
+Serum_IgG,5,PT,PT_Serum_IgG,4.391,6700,NA,4.391,Pertussis Toxin (IU/mL) (Serum IgG),"PT (Serum IgG, IU/mL)",lloq,1
+SBA,1,NA,PRN_Neg_SBA,20,Inf,NA,20,Serum Bactericidal Activity Pertactin- (Titer),SBA PRN- (Titer),lloq,1
