@@ -266,8 +266,8 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
     SL.library = sl_lib,
     control = list(saveFitLibrary = TRUE),
     method = method, cvControl = cvControl,
-    innerCvControl = innerCvControl
-    #, verbose = FALSE
+    innerCvControl = innerCvControl,
+    verbose = FALSE
   )
 
   aucs <- get_all_aucs(sl_fit = fit, scale = scale, ipc_scale = ipc_scale, weights = all_weights,
@@ -497,11 +497,11 @@ get.nonlinearPCA.scores <- function(dat){
 # @param pred_vars the vector of column names of predictor variables
 # @return a data frame upon removal of any binary predictor variables with fewer than 10 ptids that have a 0 or 1 for that variable (COVE analysis)
 # @return a data frame upon removal of any binary predictor variables with number of cases in the variable = 1 or 0 subgroup is <= 3 (ENSEMBLE analysis)
-drop_predVars_with_fewer_0s_or_1s <- function(dat, pred_vars) {
+drop_predVars_with_fewer_0s_or_1s <- function(dat, pred_vars, filepathname) {
   
   if(study_name == "COVE"){
     # delete the file drop_predVars_with_fewer_0s_or_1s.csv
-    unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))
+    unlink(here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"))
     # Remove binary risk variables with fewer than 10 ptids that have a 0 or 1 for that variable
     for (i in 1:length(pred_vars)) {
       if ((dat %>% select(starts_with(pred_vars[i])) %>% unique() %>% dim())[1] == 2) {
@@ -510,38 +510,38 @@ drop_predVars_with_fewer_0s_or_1s <- function(dat, pred_vars) {
           print(paste0(pred_vars[i], " dropped from risk score analysis as it had fewer than 10 1's or 0's."))
           # Also print to file
           paste0(pred_vars[i], " dropped from risk score analysis as it had fewer than 10 1's or 0's.") %>%
-            write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+            write.table(file = here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
         }
       }
     }
   }
   
-  if(study_name == "COVE" & !file.exists(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))){
+  if(study_name == "COVE" & !file.exists(here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"))){
     paste0("No binary input variable had fewer than 10 ptids with a 0 or 1 for that variable.") %>%
-      write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+      write.table(file = here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
   }
   
   if(study_name != "COVE"){
     # delete the file drop_predVars_with_fewer_0s_or_1s.csv
-    unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))
+    unlink(here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"))
     # Remove a variable if the number of cases in the variable = 1 subgroup is <= 3 or the number of cases in the variable = 0 subgroup is <= 3
     for (i in 1:length(pred_vars)) {
       print(paste0(i, " ", pred_vars[i]))
-      if (is_var_binary(dat %>% select(starts_with(pred_vars[i])) %>% pull)) {
+      if (is_var_binary(dat %>% select(pred_vars[i]) %>% pull)) {
         if (dat %>% filter(get(pred_vars[i]) == 1) %>% pull(endpoint) %>% sum() <= 3 | dat %>% filter(get(pred_vars[i]) == 0) %>% pull(endpoint) %>% sum() <= 3){
-          dat <- dat %>% select(-starts_with(pred_vars[i]))
+          dat <- dat %>% select(-pred_vars[i])
           print(paste0(pred_vars[i], " dropped from risk score analysis as the number of cases in the variable = 1 or 0 subgroup is <= 3."))
           # Also print to file
           paste0(pred_vars[i], " dropped from risk score analysis as the number of cases in the variable = 1 or 0 subgroup is <= 3.") %>%
-            write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+            write.table(file = here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
         }
       }
     }
   }
   
-  if(study_name != "COVE" & !file.exists(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))){
+  if(study_name != "COVE" & !file.exists(here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"))){
     paste0("No binary input variable had number of cases in the variable = 1 or 0 subgroup <= 3") %>%
-      write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+      write.table(file = here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
   }
   
   return(dat)
@@ -611,9 +611,9 @@ is_var_binary <- function(var) {
 # @param X dataframe containing all predictor variables
 # @param predVars the vector of column names of predictor variables
 # @return a data frame upon removal of any binary predictor variables that have more than 5% values missing
-drop_predVars_with_high_total_missing_values <- function(X, predVars) {
+drop_predVars_with_high_total_missing_values <- function(X, predVars, filepathname) {
   # delete the file drop_predVars_with_high_total_missing_values.csv
-  unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"))
+  unlink(here(filepathname, "drop_predVars_with_high_total_missing_values.csv"))
   covars_highNAvalues <- vector()
   for (i in 1:length(predVars)) {
     total_NAs <- sum(is.na(X %>% pull(predVars[i])))
@@ -623,14 +623,14 @@ drop_predVars_with_high_total_missing_values <- function(X, predVars) {
       print(paste0("WARNING: ", predVars[i], " variable has more than 5% values missing! This variable will be dropped from SuperLearner analysis."))
       # Also print to file
       paste0(predVars[i], " variable has more than 5% values missing and was dropped from risk score analysis.") %>%
-        write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+        write.table(file = here(filepathname, "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
       covars_highNAvalues <- predVars[i]
     }
   }
   
-  if(!file.exists(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"))){
+  if(!file.exists(here(filepathname, "drop_predVars_with_high_total_missing_values.csv"))){
     paste0("No variables had more than 5% values missing.") %>%
-      write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+      write.table(file = here(filepathname, "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
   }
   
   if(length(covars_highNAvalues) == 0)
@@ -900,8 +900,12 @@ plot_predicted_probabilities <- function(pred, weights = rep(1, length(pred$pred
     cases = "Post Day 210 Cases"
     disease_name = "HIV"
   }
-  if(study_name == "COVAIL"){
+  if(study_name == "COVAIL" & COR == "D15to91covail_xassays"){
     cases = "Post Day 22 to Day 91 Cases"
+    disease_name = "COVID-19"
+  }
+  if(study_name == "COVAIL" & COR == "D15to181covail_xassays"){
+    cases = "Post Day 22 to Day 181 Cases"
     disease_name = "COVID-19"
   }
   pred %>%
@@ -985,6 +989,7 @@ make_forest_plot_demo <- function(avgs) {
 # @param cvaucs_vacc dataframe containing Variable Sets, Screen, Learner, AUC estimates and CIs as columns
 # @return list of 2 ggplot objects: one containing forest plot and the other containing labels (Variable Sets and CV-AUCs)
 make_forest_plot_SL_allVarSets <- function(dat, 
+                                           varsets_to_display = Inf,
                                            learner.choice = "SL",
                                            learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm"),
                                            names.plot.margin = unit(c(0.1,-0.15,0.65,-0.15),"cm"),
@@ -996,6 +1001,12 @@ make_forest_plot_SL_allVarSets <- function(dat,
     arrange(varsetNo) %>%
     mutate(varset = fct_reorder(varset, AUC, .desc = F)) %>%
     arrange(-AUC)
+  
+  if(varsets_to_display != Inf){ # reduce varsets to display: top 30 or top 50 etc...
+    
+    allSLs = allSLs %>% head(varsets_to_display)
+    
+  }
 
   lowestXTick <- floor(min(allSLs$ci_ll)*10)/10
   highestXTick <- ceiling(max(allSLs$ci_ul)*10)/10

@@ -1,7 +1,7 @@
 # Sys.setenv(TRIAL = "janssen_la_partA")
-Sys.setenv(TRIAL = "covail_tcell")
-# COR = "D15to91covail_tcell"
-COR = "D15to181covail_tcell"
+# Sys.setenv(TRIAL = "covail_tcell")
+# # COR = "D15to91covail_tcell"
+# COR = "D15to181covail_tcell"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -22,7 +22,7 @@ library(stringr)
 suppressMessages(conflicted::conflict_prefer("filter", "dplyr"))
 suppressMessages(conflicted::conflict_prefer("summarise", "dplyr"))
 source(here("code", "utils.R"))
-load(file = paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
+load(file = here(file_path, "objects_for_running_SL.rda"))
 
 # Create fancy/tidy screen names for use in tables and figures
 # @param avgs dataframe containing Screen, Learner, AUCs information as columns
@@ -190,25 +190,25 @@ if(study_name == "ENSEMBLE"){
 
 
 if(study_name == "COVAIL"){
-  if(COR == "D15to91covail_tcell"){
-    cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "COVIDIndD22toD91", trt = "vaccine") %>%
+  if(COR %in% c("D15to91covail_tcell", "D15to91covail_xassays")){
+    cvaucs_vacc <- readin_SLobjects_fromFolder(file_path, file_pattern = "CVSLaucs*", endpoint = "COVIDIndD22toD91", trt = "vaccine") %>%
       mutate(varset = str_replace(file, "CVSLaucs_vacc_COVIDIndD22toD91_", ""),
              varset = str_replace(varset, "varset_", ""),
              varset = str_replace(varset, ".rds", ""),
              varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
       arrange(varsetNo)
     
-    saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_COVIDIndD22toD91.rds"))
+    saveRDS(cvaucs_vacc, file = here(file_path, "cvaucs_vacc_COVIDIndD22toD91.rds"))
     
-  } else if (COR == "D15to181covail_tcell"){
-    cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "COVIDIndD22toD181", trt = "vaccine") %>%
+  } else if (COR %in% c("D15to181covail_tcell", "D15to181covail_xassays")){
+    cvaucs_vacc <- readin_SLobjects_fromFolder(file_path, file_pattern = "CVSLaucs*", endpoint = "COVIDIndD22toD181", trt = "vaccine") %>%
       mutate(varset = str_replace(file, "CVSLaucs_vacc_COVIDIndD22toD181_", ""),
              varset = str_replace(varset, "varset_", ""),
              varset = str_replace(varset, ".rds", ""),
              varsetNo = as.numeric(sapply(strsplit(varset, "_"), `[`, 1))) %>%
       arrange(varsetNo)
     
-    saveRDS(cvaucs_vacc, file = paste0("output/", Sys.getenv("TRIAL"), "/cvaucs_vacc_COVIDIndD22toD181.rds"))
+    saveRDS(cvaucs_vacc, file = here(file_path, "cvaucs_vacc_COVIDIndD22toD181.rds"))
     
   }
 }

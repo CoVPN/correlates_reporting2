@@ -5,9 +5,13 @@
 # COR = "D15to91covail_tcell"
 # Dataset-level metadata (export TRIAL=covail_tcell) 
 # Objective-level metadata (export COR=D15to91covail_tcell)
-Sys.setenv(TRIAL = "covail_tcell")
+# Sys.setenv(TRIAL = "covail_tcell")
 # COR = "D15to91covail_tcell"
-COR = "D15to181covail_tcell"
+# COR = "D15to181covail_tcell"
+
+Sys.setenv(TRIAL = "covail_xassays")
+# COR = "D15to91covail_xassays"
+COR = "D15to181covail_xassays"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -26,7 +30,7 @@ varsets <- read.csv(paste0("output/", Sys.getenv("TRIAL"), "/varset_names.csv"),
 
 # Run all sbatch jobs through R!
 system(paste0("export TRIAL=", Sys.getenv("TRIAL")))
-for(varset_number in 1:nrow(varsets)){
+for(varset_number in 1:82){
   system(paste("sbatch code/submit_cluster_job.sh", varset_number))
 }
 

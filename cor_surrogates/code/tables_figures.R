@@ -1,9 +1,9 @@
 # Sys.setenv(TRIAL = "hvtn705second")
 # Sys.setenv(TRIAL = "moderna_real")
 # Sys.setenv(TRIAL = "janssen_pooled_partA")
-Sys.setenv(TRIAL = "covail_tcell")
-# COR = "D15to91covail_tcell"
-COR = "D15to181covail_tcell"
+# Sys.setenv(TRIAL = "covail_tcell")
+# # COR = "D15to91covail_tcell"
+# COR = "D15to181covail_tcell"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -14,7 +14,6 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 ## ----load-all-SLobjects, message=FALSE, error=FALSE, warning=FALSE----------------------------------------------------------------------------------------------------
-
 
 library("conflicted")
 library("tidyr")
@@ -36,7 +35,7 @@ conflict_prefer("load", "base")
 source(here("code", "utils.R"))
 method <- "method.CC_nloglik" # since SuperLearner relies on this to be in GlobalEnv
 ggplot2::theme_set(theme_cowplot())
-load(paste0("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
+load(here(file_path, "objects_for_running_SL.rda"))
 
 # # Get vimps in one dataframe: ----------------------------------------------------------
 # pooled_ests_lst <- list.files(here(paste0("output/", Sys.getenv("TRIAL"))), pattern = "pooled_ests_*") %>%
@@ -69,16 +68,16 @@ if (study_name == "ENSEMBLE") {
   vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
 }
 if (study_name == "COVAIL") {
-  if(COR == "D15to91covail_tcell"){
-    cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_COVIDIndD22toD91.rds"))
+  if(COR %in% c("D15to91covail_tcell", "D15to91covail_xassays")){
+    cvaucs_vacc <- readRDS(file = here(file_path, "cvaucs_vacc_COVIDIndD22toD91.rds"))
     #vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
-  } else if(COR == "D15to181covail_tcell"){
-    cvaucs_vacc <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "cvaucs_vacc_COVIDIndD22toD181.rds"))
+  } else if(COR %in% c("D15to181covail_tcell", "D15to181covail_xassays")){
+    cvaucs_vacc <- readRDS(file = here(file_path, "cvaucs_vacc_COVIDIndD22toD181.rds"))
     #vim_estimates <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "vim_estimates.rds")) 
   }
 }
 
-ph2_vacc_ptids <- readRDS(file = here::here("output", Sys.getenv("TRIAL"), "ph2_vacc_ptids.rds"))
+ph2_vacc_ptids <- readRDS(file = here(file_path, "ph2_vacc_ptids.rds"))
 
 # Select the random seed from which to display results
 if(study_name %in% c("COVE", "MockCOVE", "HVTN705")){
@@ -89,7 +88,7 @@ if(study_name %in% c("COVE", "MockCOVE", "HVTN705")){
 
 # Create tables ------------------------------------------------------------------------
 # Table of learner/screen combinations
-caption <- "All learner-screen combinations (16 in total) used as input to the Superlearner."
+# caption <- "All learner-screen combinations (16 in total) used as input to the Superlearner."
 
 tab <- cvaucs_vacc %>%
   filter(!Learner %in% c("SL", "Discrete SL")) %>%
@@ -128,7 +127,7 @@ if (!grepl("Mock", study_name) & study_name == "COVE") {
     arrange(Learner, `Screen*`)
 }
 
-tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "learner-screens.csv"))
+tab %>% write.csv(here(file_path, "learner-screens.csv"))
 
 # Table of variable set definitions
 if (study_name %in% c("COVE", "MockCOVE")) {
@@ -255,7 +254,7 @@ components of nonlinear PCA), and the maximum signal diversity score]",
                                                         "Baseline risk factors + Day 29 ADCP markers and combination scores across the four markers",
                                                         "Baseline risk factors + all individual Day 29 marker variables and their combination scores (Full model of Day 29 markers)"))
 }
-if (study_name %in% c("COVAIL") & non_naive == FALSE) {
+if (TRIAL == "covail_tcell" & non_naive == FALSE) {
   caption <- "The 13 variable sets on which an estimated optimal surrogate was built."
   
   only_varsets <- varset_names[1:13]
@@ -277,7 +276,7 @@ if (study_name %in% c("COVAIL") & non_naive == FALSE) {
                                                         "Baseline risk factors + D1 and D15 antibody markers against BA.1 + D1 and D15 primary and secondary T cell markers",
                                                         "Baseline risk factors + D1 and D15 antibody markers against BA.1 + D1 and D15 [primary, secondary, and exploratory T cell markers"))
 }
-if (study_name %in% c("COVAIL") & non_naive == TRUE) {
+if (TRIAL == "covail_tcell" & non_naive == TRUE) {
   caption <- "The 28 variable sets on which an estimated optimal surrogate was built."
   
   only_varsets <- varset_names[1:28]
@@ -314,55 +313,423 @@ if (study_name %in% c("COVAIL") & non_naive == TRUE) {
                       "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker IFN-g/IL-2 N Index",
                       "Baseline risk score + D15 antibody markers against BA.1 + D15 primary CD4+ T cell marker FS N Index"))
 }
-
-tab %>% write.csv(here("output", Sys.getenv("TRIAL"), "varsets.csv"))
-
-# Create figures ---------------------------------------------------------------
-# Forest plots for vaccine model
-# vaccine group
-options(bitmapType = "cairo")
-for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
-  variableSet = unique(cvaucs_vacc$varset)[i]
-  png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
-  top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet),
-                                  PLOT.MARGIN = unit(c(3.4,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
-                                  NAMES.PLOT.MARGIN = unit(c(1.5,-0.15,1.0,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
-                                  y_at = 31) # Add y-coordinate at which the header for names needs to be
-  grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
-  dev.off()
+if (TRIAL == "covail_xassays" & non_naive == FALSE) {
+  #caption <- "The 82 variable sets on which an estimated optimal surrogate was built."
+  
+  only_varsets <- varset_names[1:82]
+  
+  tab <- data.frame(`Variable Set Name` = varset_names[1:82],
+                    `Variables included in the set` = c(
+                      # Dynamic first entry
+                      if (setequal(briskfactors, "risk_score")) {
+                        "Baseline risk factors only (Reference model): includes baseline risk score only"
+                      } else if (all(c("risk_score", "FOIstandardized") %in% briskfactors) &&
+                                 !any(grepl("stage|Trtgrp", briskfactors))) {
+                        "Baseline risk factors only (Reference model): includes baseline risk score and standardized FOI score only"
+                      } else if (all(c("risk_score", "FOIstandardized") %in% briskfactors) &&
+                                 any(grepl("stage|Trtgrp", briskfactors))) {
+                        "Baseline risk factors only (Reference model): includes baseline risk score, standardized FOI score, insert and stage (vaccine manufacturer) info"
+                      },
+                      
+                      #"Baseline risk factors only (Reference model): includes baseline risk score and the standardized FOI score only",
+                      # "Baseline risk factors only (Reference model): includes baseline risk score, standardized FOI score, insert and stage (vaccine manufacturer) info",
+                      "Baseline factors + D1 nAb titers set",
+                      "Baseline factors + D15 nAb titers set",
+                      "Baseline factors + D1 and D15 nAb titers set",
+                      "Baseline factors + D1 CD4 T cell set",
+                      "Baseline factors + D15 CD4 T cell set",
+                      "Baseline factors + D1 and D15 CD4 T cell set",
+                      "Baseline factors + D1 CD8 T cell set",
+                      "Baseline factors + D15 CD8 T cell set",
+                      "Baseline factors + D1 and D15 CD8 T cell set",
+                      "Baseline factors + D1 Fc-spike set",
+                      "Baseline factors + D15 Fc-spike set",
+                      "Baseline factors + D1 and D15 Fc-Spike set",
+                      "Baseline factors + D1 bAb-spike set",
+                      "Baseline factors + D15 bAb-spike set",
+                      "Baseline factors + D1 and D15 bAb-Spike set",
+                      "Baseline factors + D1 combination markers set",
+                      "Baseline factors + D15 combination markers set",
+                      "Baseline factors + D1 and D15 combination markers set",
+                      "Baseline factors + D1 nAb titers set + D1 CD4 T cell set",
+                      "Baseline factors + D1 nAb titers set + D1 CD8 T cell set",
+                      "Baseline factors + D1 nAb titers set + D1 Fc-spike set",
+                      "Baseline factors + D1 nAb titers set + D1 bAb-spike set",
+                      "Baseline factors + D1 nAb titers set + D1 combination markers set",
+                      "Baseline factors + D1 nAb titers set + D15 CD4 T cell set",
+                      "Baseline factors + D1 nAb titers set + D15 CD8 T cell set",
+                      "Baseline factors + D1 nAb titers set + D15 Fc-spike set",
+                      "Baseline factors + D1 nAb titers set + D15 bAb-spike set",
+                      "Baseline factors + D1 nAb titers set + D15 combination markers set",
+                      "Baseline factors + D15 nAb titers set + D1 CD4 T cell set",
+                      "Baseline factors + D15 nAb titers set + D1 CD8 T cell set",
+                      "Baseline factors + D15 nAb titers set + D1 Fc-spike set",
+                      "Baseline factors + D15 nAb titers set + D1 bAb-spike set",
+                      "Baseline factors + D15 nAb titers set + D1 combination markers set",
+                      "Baseline factors + D15 nAb titers set + D15 CD4 T cell set",
+                      "Baseline factors + D15 nAb titers set + D15 CD8 T cell set",
+                      "Baseline factors + D15 nAb titers set + D15 Fc-spike set",
+                      "Baseline factors + D15 nAb titers set + D15 bAb-spike set",
+                      "Baseline factors + D15 nAb titers set + D15 combination markers set",
+                      "Baseline factors + D1 CD4 T cell set + D1 CD8 T cell set",
+                      "Baseline factors + D1 CD4 T cell set + D1 Fc-spike set",
+                      "Baseline factors + D1 CD4 T cell set + D1 bAb-spike set",
+                      "Baseline factors + D1 CD4 T cell set + D1 combination markers set",
+                      "Baseline factors + D1 CD4 T cell set + D15 CD8 T cell set",
+                      "Baseline factors + D1 CD4 T cell set + D15 Fc-spike set",
+                      "Baseline factors + D1 CD4 T cell set + D15 bAb-spike set",
+                      "Baseline factors + D1 CD4 T cell set + D15 combination markers set",
+                      "Baseline factors + D15 CD4 T cell set + D1 CD8 T cell set",
+                      "Baseline factors + D15 CD4 T cell set + D1 Fc-spike set",
+                      "Baseline factors + D15 CD4 T cell set + D1 bAb-spike set",
+                      "Baseline factors + D15 CD4 T cell set + D1 combination markers set",
+                      "Baseline factors + D15 CD4 T cell set + D15 CD8 T cell set",
+                      "Baseline factors + D15 CD4 T cell set + D15 Fc-spike set",
+                      "Baseline factors + D15 CD4 T cell set + D15 bAb-spike set",
+                      "Baseline factors + D15 CD4 T cell set + D15 combination markers set",
+                      "Baseline factors + D1 CD8 T cell set + D1 Fc-spike set",
+                      "Baseline factors + D1 CD8 T cell set + D1 bAb-spike set",
+                      "Baseline factors + D1 CD8 T cell set + D1 combination markers set",
+                      "Baseline factors + D1 CD8 T cell set + D15 Fc-spike set",
+                      "Baseline factors + D1 CD8 T cell set + D15 bAb-spike set",
+                      "Baseline factors + D1 CD8 T cell set + D15 combination markers set",
+                      "Baseline factors + D15 CD8 T cell set + D1 Fc-spike set",
+                      "Baseline factors + D15 CD8 T cell set + D1 bAb-spike set",
+                      "Baseline factors + D15 CD8 T cell set + D1 combination markers set",
+                      "Baseline factors + D15 CD8 T cell set + D15 Fc-spike set",
+                      "Baseline factors + D15 CD8 T cell set + D15 bAb-spike set",
+                      "Baseline factors + D15 CD8 T cell set + D15 combination markers set",
+                      "Baseline factors + D1 Fc-spike set + D1 bAb-spike set",
+                      "Baseline factors + D1 Fc-spike set + D1 combination markers set",
+                      "Baseline factors + D1 Fc-spike set + D15 bAb-spike set",
+                      "Baseline factors + D1 Fc-spike set + D15 combination markers set",
+                      "Baseline factors + D15 Fc-spike set + D1 bAb-spike set",
+                      "Baseline factors + D15 Fc-spike set + D1 combination markers set",
+                      "Baseline factors + D15 Fc-spike set + D15 bAb-spike set",
+                      "Baseline factors + D15 Fc-spike set + D15 combination markers set",
+                      "Baseline factors + D1 bAb-spike set + D1 combination markers set",
+                      "Baseline factors + D1 bAb-spike set + D15 combination markers set",
+                      "Baseline factors + D15 bAb-spike set + D1 combination markers set",
+                      "Baseline factors + D15 bAb-spike set + D15 combination markers set",
+                      "Baseline factors + All eight immunoassay sets at D1",
+                      "Baseline factors + All six immunoassay sets at D15 (always excluding D15 anti-N markers)",
+                      "Baseline factors + All six immunoassay sets at both D1 and at D15 (always excluding D15 anti-N markers)"))
+} else if (TRIAL == "covail_xassays" & non_naive == TRUE) {
+  #caption <- "The 109 variable sets on which an estimated optimal surrogate was built."
+  
+  only_varsets <- varset_names[1:109]
+  
+  tab <- data.frame(`Variable Set Name` = varset_names[1:109],
+                    `Variables included in the set` = c(
+                      # Dynamic first entry
+                      if (setequal(briskfactors, "risk_score")) {
+                        "Baseline risk factors only (Reference model): includes baseline risk score only"
+                      } else if (all(c("risk_score", "FOIstandardized") %in% briskfactors) &&
+                                 !any(grepl("stage|Trtgrp", briskfactors))) {
+                        "Baseline risk factors only (Reference model): includes baseline risk score and standardized FOI score only"
+                      } else if (all(c("risk_score", "FOIstandardized") %in% briskfactors) &&
+                                 any(grepl("stage|Trtgrp", briskfactors))) {
+                        "Baseline risk factors only (Reference model): includes baseline risk score, standardized FOI score, insert and stage (vaccine manufacturer) info"
+                      },
+                      
+                      #"Baseline risk factors only (Reference model): includes baseline risk score and the standardized FOI score only",
+                      #"Baseline risk factors only (Reference model): includes baseline risk score, standardized FOI score, insert and stage (vaccine manufacturer) info",
+                      "Baseline factors + D1 nAb titers set",
+                      "Baseline factors + D15 nAb titers set",
+                      "Baseline factors + D1 and D15 nAb titers set",
+                      "Baseline factors + D1 CD4 T cell set",
+                      "Baseline factors + D15 CD4 T cell set",
+                      "Baseline factors + D1 and D15 CD4 T cell set",
+                      "Baseline factors + D1 CD8 T cell set",
+                      "Baseline factors + D15 CD8 T cell set",
+                      "Baseline factors + D1 and D15 CD8 T cell set",
+                      "Baseline factors + D1 Fc-spike set",
+                      "Baseline factors + D15 Fc-spike set",
+                      "Baseline factors + D1 and D15 Fc-Spike set",
+                      "Baseline factors + D1 bAb-spike set",
+                      "Baseline factors + D15 bAb-spike set",
+                      "Baseline factors + D1 and D15 bAb-Spike set",
+                        "Baseline factors + D1 Fc-N set (only included in non-naive cohort)",
+                        "Baseline factors + D1 bAb-N set (only included in non-naive cohort)",
+                        "Baseline factors + D1 combination markers set",
+                        "Baseline factors + D15 combination markers set",
+                        "Baseline factors + D1 and D15 combination markers set",
+                        "Baseline factors + D1 nAb titers set + D1 CD4 T cell set",
+                        "Baseline factors + D1 nAb titers set + D1 CD8 T cell set",
+                        "Baseline factors + D1 nAb titers set + D1 Fc-spike set",
+                        "Baseline factors + D1 nAb titers set + D1 bAb-spike set",
+                        "Baseline factors + D1 nAb titers set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 nAb titers set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 nAb titers set + D1 combination markers set (combination markers include anti-N markers only in non-naïve cohort)",
+                        "Baseline factors + D1 nAb titers set + D15 CD4 T cell set",
+                        "Baseline factors + D1 nAb titers set + D15 CD8 T cell set",
+                        "Baseline factors + D1 nAb titers set + D15 Fc-spike set",
+                        "Baseline factors + D1 nAb titers set + D15 bAb-spike set",
+                        "Baseline factors + D1 nAb titers set + D15 combination markers set",
+                        "Baseline factors + D15 nAb titers set + D1 CD4 T cell set",
+                        "Baseline factors + D15 nAb titers set + D1 CD8 T cell set",
+                        "Baseline factors + D15 nAb titers set + D1 Fc-spike set",
+                        "Baseline factors + D15 nAb titers set + D1 bAb-spike set",
+                        "Baseline factors + D15 nAb titers set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 nAb titers set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 nAb titers set + D1 combination markers set (combination markers include anti-N markers only in non-naïve cohort)",
+                        "Baseline factors + D15 nAb titers set + D15 CD4 T cell set",
+                        "Baseline factors + D15 nAb titers set + D15 CD8 T cell set",
+                        "Baseline factors + D15 nAb titers set + D15 Fc-spike set",
+                        "Baseline factors + D15 nAb titers set + D15 bAb-spike set",
+                        "Baseline factors + D15 nAb titers set + D15 combination markers set",
+                        "Baseline factors + D1 CD4 T cell set + D1 CD8 T cell set",
+                        "Baseline factors + D1 CD4 T cell set + D1 Fc-spike set",
+                        "Baseline factors + D1 CD4 T cell set + D1 bAb-spike set",
+                        "Baseline factors + D1 CD4 T cell set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 CD4 T cell set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 CD4 T cell set + D1 combination markers set (combination markers include anti-N markers only in non-naïve cohort)",
+                        "Baseline factors + D1 CD4 T cell set + D15 CD8 T cell set",
+                        "Baseline factors + D1 CD4 T cell set + D15 Fc-spike set",
+                        "Baseline factors + D1 CD4 T cell set + D15 bAb-spike set",
+                        "Baseline factors + D1 CD4 T cell set + D15 combination markers set",
+                        "Baseline factors + D15 CD4 T cell set + D1 CD8 T cell set",
+                        "Baseline factors + D15 CD4 T cell set + D1 Fc-spike set",
+                        "Baseline factors + D15 CD4 T cell set + D1 bAb-spike set",
+                        "Baseline factors + D15 CD4 T cell set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 CD4 T cell set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 CD4 T cell set + D1 combination markers set (combination markers include anti-N markers only in non-naïve cohort)",
+                        "Baseline factors + D15 CD4 T cell set + D15 CD8 T cell set",
+                        "Baseline factors + D15 CD4 T cell set + D15 Fc-spike set",
+                        "Baseline factors + D15 CD4 T cell set + D15 bAb-spike set",
+                        "Baseline factors + D15 CD4 T cell set + D15 combination markers set",
+                        "Baseline factors + D1 CD8 T cell set + D1 Fc-spike set",
+                        "Baseline factors + D1 CD8 T cell set + D1 bAb-spike set",
+                        "Baseline factors + D1 CD8 T cell set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 CD8 T cell set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 CD8 T cell set + D1 combination markers set (combination markers include anti-N markers only in non-naïve cohort)",
+                        "Baseline factors + D1 CD8 T cell set + D15 Fc-spike set",
+                        "Baseline factors + D1 CD8 T cell set + D15 bAb-spike set",
+                        "Baseline factors + D1 CD8 T cell set + D15 combination markers set",
+                        "Baseline factors + D15 CD8 T cell set + D15 Fc-spike set",
+                        "Baseline factors + D15 CD8 T cell set + D15 bAb-spike set",
+                        "Baseline factors + D15 CD8 T cell set + D15 combination markers set",
+                        "Baseline factors + D15 CD8 T cell set + D1 Fc-spike set",
+                        "Baseline factors + D15 CD8 T cell set + D1 bAb-spike set",
+                        "Baseline factors + D15 CD8 T cell set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 CD8 T cell set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 CD8 T cell set + D1 combination markers set combination markers include anti-N markers only in non-naïve cohort)",
+                        "Baseline factors + D1 Fc-spike set + D1 bAb-spike set",
+                        "Baseline factors + D1 Fc-spike set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 Fc-spike set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 Fc-spike set + D1 combination markers set (combination markers include anti-N markers only in non-naïve cohort)",
+                        "Baseline factors + D1 Fc-spike set + D15 bAb-spike set",
+                        "Baseline factors + D1 Fc-spike set + D15 combination markers set",
+                        "Baseline factors + D15 Fc-spike set + D1 bAb-spike set",
+                        "Baseline factors + D15 Fc-spike set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 Fc-spike set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 Fc-spike set + D1 combination markers set (combination markers include anti-N markers only in non-naïve cohort)",
+                        "Baseline factors + D15 Fc-spike set + D15 bAb-spike set",
+                        "Baseline factors + D15 Fc-spike set + D15 combination markers set",
+                        "Baseline factors + D1 bAb-spike set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 bAb-spike set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 bAb-spike set + D1 combination markers set",
+                        "Baseline factors + D1 bAb-spike set + D15 combination markers set",
+                        "Baseline factors + D15 bAb-spike set + D1 Fc-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 bAb-spike set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D15 bAb-spike set + D1 combination markers set (combination markers include anti-N markers only in non-naïve cohort)",
+                        "Baseline factors + D15 bAb-spike set + D15 combination markers set",
+                        "Baseline factors + D1 Fc-N set + D1 bAb-N set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 Fc-N set + D1 combination markers set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 Fc-N set + D15 combination markers set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 bAb-N set + D1 combination markers set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + D1 bAb-N set + D15 combination markers set (this variable set only included for the non-naive cohort)",
+                        "Baseline factors + All eight immunoassay sets at D1 (markers including anti-N markers are only included in non-naïve cohort)",
+                        "Baseline factors + All eight immunoassay sets at D15 (always excluding D15 anti-N markers)",
+                        "Baseline factors + All eight immunoassay sets at both D1 and at D15 (markers including anti-N markers are only included in non-naïve cohort , and always excluding D15 anti-N markers for both the naïve and non-naïve cohorts)"))
 }
 
+
+tab %>% write.csv(here(file_path, "varsets.csv"))
+
+# Create figures ---------------------------------------------------------------
+# Forest Plots
+options(bitmapType = "cairo")
 # All Superlearners
 learner.choice = "SL"
-png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1100, height=1100)
+png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1100, height=1100)
 top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), 
+                                              varsets_to_display = 50,
                                               learner.choice,
-                                              learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm"), # Adjusts trbl for forest plot
-                                              names.plot.margin = unit(c(0.6,-0.15,1.6,-0.05),"cm"), # Adjusts trbl for learner-screen names plot
-                                              y_at = 13.7) # Add y-coordinate at which the header for names needs to be
+                                              learner.plot.margin = unit(c(1.0,0.2,0.8,-0.15),"cm"), # Adjusts trbl for forest plot
+                                              names.plot.margin = unit(c(-1.5,-0.15,0.45,-0.05),"cm"), # Adjusts trbl for learner-screen names plot
+                                              y_at = 51.7) # Add y-coordinate at which the header for names needs to be
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
 
 # All discrete.SLs
 learner.choice = "Discrete SL"
-png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1100, height=1100)
+png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1100, height=1100)
 top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), 
+                                              varsets_to_display = 50,
                                               learner.choice,
-                                              learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm"), # Adjusts trbl for forest plot
-                                              names.plot.margin = unit(c(0.6,-0.15,1.6,-0.05),"cm"), # Adjusts trbl for learner-screen names plot
-                                              y_at = 13.7) # Add y-coordinate at which the header for names needs to be
+                                              learner.plot.margin = unit(c(1.0,0.2,0.8,-0.15),"cm"), # Adjusts trbl for forest plot
+                                              names.plot.margin = unit(c(-1.5,-0.15,0.45,-0.05),"cm"), # Adjusts trbl for learner-screen names plot
+                                              y_at = 51.7) # Add y-coordinate at which the header for names needs to be
 grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
 dev.off()
 
+# Get SL & Discrete SL performance for all variable sets
+cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
+  arrange(-AUC) %>% filter(Learner == "SL") %>%
+  select(varset, AUCstr) %>%
+  write.csv(here(file_path, "SLperformance_allvarsets.csv"))
+
+cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
+  arrange(-AUC) %>% filter(Learner == "Discrete SL") %>%
+  select(varset, AUCstr) %>%
+  write.csv(here(file_path, "DiscreteSLperformance_allvarsets.csv"))
+
+# Based of Discrete SL performance, choose top 5 varsets and the reference model varset
+# Plot forest plots, ROC and pred prob plots only for these 6 varsets. 
+cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
+  arrange(-AUC) %>% filter(Learner == "Discrete SL")
+
+
+top5_plus_baseline <- cvaucs_vacc %>%
+  filter(!is.na(varsetNo), Learner == "Discrete SL") %>%
+  arrange(desc(AUC)) %>%
+  slice_head(n = 5) %>%
+  bind_rows(
+    cvaucs_vacc %>%
+      filter(varset == "1_baselineRiskFactors", Learner == "Discrete SL") 
+  ) 
+
+
+
+# # Forest plots for individual vaccine models
+# for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
+#   variableSet = unique(cvaucs_vacc$varset)[i]
+#   png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
+#   top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet),
+#                                   PLOT.MARGIN = unit(c(3.9,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
+#                                   NAMES.PLOT.MARGIN = unit(c(2.01,-0.15,1.0,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
+#                                   y_at = 31) # Add y-coordinate at which the header for names needs to be
+#   grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
+#   dev.off()
+# }
+
+# Forest plots for individual vaccine models
+for(i in 1:6) {
+  variableSet = top5_plus_baseline$varset[i]
+  png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
+  top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet),
+                                  PLOT.MARGIN = unit(c(3.9,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
+                                  NAMES.PLOT.MARGIN = unit(c(2.01,-0.15,1.0,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
+                                  y_at = 31) # Add y-coordinate at which the header for names needs to be
+  grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
+  dev.off()
+}
+
+
+
 #################################################################################################################################
 #################################################################################################################################
+
+# # plot ROC curve and pred.Prob with SL, Discrete SL and top 2 best-performing individual Learners for all 12 variable sets
+# for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
+#   variableSet = unique(cvaucs_vacc$varset)[i]
+#   print(paste0("Processing ", variableSet))
+#   dat <- cvaucs_vacc %>% filter(varset==variableSet)
+# 
+#   top2 <- bind_rows(
+#     dat %>%
+#       arrange(-AUC) %>%
+#       filter(!Learner %in% c("SL", "Discrete SL")) %>%
+#       dplyr::slice(1:2),
+#     dat %>%
+#       filter(Learner == "SL"),
+#     dat %>%
+#       filter(Learner == "Discrete SL")
+#   ) %>%
+#     mutate(LearnerScreen = ifelse(Learner == "SL", "Super Learner",
+#                                   ifelse(Learner == "Discrete SL", Learner,
+#                                          paste0(Learner, "_", Screen_fromRun))))
+# 
+#   # Get cvsl fit and extract cv predictions
+#   if(study_name %in% c("COVE", "MockCOVE")){
+#     cvfit <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
+#   } else if(study_name == "HVTN705"){
+#     cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_Delta.D210_", variableSet, ".rds")))
+#   } else if(study_name == "ENSEMBLE"){
+#     cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
+#   } else if(study_name == "COVAIL"){
+#     
+#     if(COR == "D15to91covail_tcell"){
+#       cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+#     } else if(COR == "D15to181covail_tcell"){
+#       cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+#     } else if(COR == "D15to91covail_xassays"){
+#       cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+#     } else if(COR == "D15to181covail_xassays"){
+#       cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+#     }
+#     
+#   }
+#   
+#   pred <- get_cv_predictions(cv_fit = cvfit[[rseed]], cvaucDAT = top2, markerDAT = NULL)
+#   # #Take average of predictions from the 10 random seeds
+#   # pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2) %>% rename(pred1 = pred) %>%
+#   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[2]], cvaucDAT = top2) %>% select(pred) %>% rename(pred2 = pred))  %>%
+#   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[3]], cvaucDAT = top2) %>% select(pred) %>% rename(pred3 = pred)) %>%
+#   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[4]], cvaucDAT = top2) %>% select(pred) %>% rename(pred4 = pred)) %>%
+#   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[5]], cvaucDAT = top2) %>% select(pred) %>% rename(pred5 = pred)) %>%
+#   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[6]], cvaucDAT = top2) %>% select(pred) %>% rename(pred6 = pred)) %>%
+#   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[7]], cvaucDAT = top2) %>% select(pred) %>% rename(pred7 = pred)) %>%
+#   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[8]], cvaucDAT = top2) %>% select(pred) %>% rename(pred8 = pred)) %>%
+#   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[9]], cvaucDAT = top2) %>% select(pred) %>% rename(pred9 = pred)) %>%
+#   #   bind_cols(get_cv_predictions(cv_fit = cvfits[[10]], cvaucDAT = top2) %>% select(pred) %>% rename(pred10 = pred)) %>%
+#   #   mutate(pred = rowMeans(select(., starts_with("pred")), na.rm = TRUE)) %>%
+#   #   #left_join(top2 %>% select(Screen_fromRun, Learner, Screen, AUC, LearnerScreen), by = c("algo" = "LearnerScreen")) %>%
+#   #   mutate(
+#   #     learnerScreen = paste0(Learner, "_", Screen),
+#   #     learnerScreen = ifelse(Learner %in% c("SL", "Discrete SL"), algo, learnerScreen),
+#   #     AUCchar = format(round(AUC, 3), nsmall = 3),
+#   #     learnerScreen = paste0(learnerScreen, " (", AUCchar, ")"),
+#   #     learnerScreen = reorder(learnerScreen, -AUC)
+#   #   )
+# 
+# 
+#   # plot ROC curve
+#   options(bitmapType = "cairo")
+#   png(file = here("figs", paste0(Sys.getenv("TRIAL"), "/ROCcurve_", variableSet, ".png")),
+#       width = 1000, height = 1000)
+#   if(study_name %in% c("COVE", "MockCOVE")){
+#     p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D57))
+#     } else if(study_name == "HVTN705"){
+#       p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D210))
+#     } else if(study_name == "ENSEMBLE"){
+#       p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D29))
+#     } else if(study_name == "COVAIL" & TRIAL == "covail_tcell"){
+#       p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D15.tcell))
+#     } else if(study_name == "COVAIL" & TRIAL == "covail_xassays"){
+#       p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D15.xassays))
+#     }
+#   print(p1)
+#   dev.off()
+# 
+#   # plot pred prob plot
+#   options(bitmapType = "cairo")
+#   png(file = here("figs", paste0(Sys.getenv("TRIAL"), "/predProb_", variableSet, ".png")),
+#       width = 1000, height = 1000)
+#   p2 <- plot_predicted_probabilities(pred)
+#   print(p2)
+#   dev.off()
+# }
+
+
 
 # plot ROC curve and pred.Prob with SL, Discrete SL and top 2 best-performing individual Learners for all 12 variable sets
-for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
-  variableSet = unique(cvaucs_vacc$varset)[i]
+for(i in 1:6) {
+  variableSet = top5_plus_baseline$varset[i]
   print(paste0("Processing ", variableSet))
   dat <- cvaucs_vacc %>% filter(varset==variableSet)
-
+  
   top2 <- bind_rows(
     dat %>%
       arrange(-AUC) %>%
@@ -376,7 +743,7 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
     mutate(LearnerScreen = ifelse(Learner == "SL", "Super Learner",
                                   ifelse(Learner == "Discrete SL", Learner,
                                          paste0(Learner, "_", Screen_fromRun))))
-
+  
   # Get cvsl fit and extract cv predictions
   if(study_name %in% c("COVE", "MockCOVE")){
     cvfit <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
@@ -387,9 +754,13 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
   } else if(study_name == "COVAIL"){
     
     if(COR == "D15to91covail_tcell"){
-      cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+      cvfit<- readRDS(file = here(file_path, paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
     } else if(COR == "D15to181covail_tcell"){
-      cvfit<- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+      cvfit<- readRDS(file = here(file_path, paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+    } else if(COR == "D15to91covail_xassays"){
+      cvfit<- readRDS(file = here(file_path, paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+    } else if(COR == "D15to181covail_xassays"){
+      cvfit<- readRDS(file = here(file_path, paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
     }
     
   }
@@ -415,27 +786,29 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
   #     learnerScreen = paste0(learnerScreen, " (", AUCchar, ")"),
   #     learnerScreen = reorder(learnerScreen, -AUC)
   #   )
-
-
+  
+  
   # plot ROC curve
   options(bitmapType = "cairo")
-  png(file = here("figs", paste0(Sys.getenv("TRIAL"), "/ROCcurve_", variableSet, ".png")),
+  png(file = here(file_path, "figs", paste0("ROCcurve_", variableSet, ".png")),
       width = 1000, height = 1000)
   if(study_name %in% c("COVE", "MockCOVE")){
     p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D57))
-    } else if(study_name == "HVTN705"){
-      p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D210))
-    } else if(study_name == "ENSEMBLE"){
-      p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D29))
-    } else if(study_name == "COVAIL"){
-      p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D15.tcell))
-    }
+  } else if(study_name == "HVTN705"){
+    p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D210))
+  } else if(study_name == "ENSEMBLE"){
+    p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D29))
+  } else if(study_name == "COVAIL" & TRIAL == "covail_tcell"){
+    p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D15.tcell))
+  } else if(study_name == "COVAIL" & TRIAL == "covail_xassays"){
+    p1 <- plot_roc_curves(predict = pred, cvaucDAT = top2, weights = ph2_vacc_ptids %>% pull(wt.D15.xassays))
+  }
   print(p1)
   dev.off()
-
+  
   # plot pred prob plot
   options(bitmapType = "cairo")
-  png(file = here("figs", paste0(Sys.getenv("TRIAL"), "/predProb_", variableSet, ".png")),
+  png(file = here(file_path, "figs", paste0("predProb_", variableSet, ".png")),
       width = 1000, height = 1000)
   p2 <- plot_predicted_probabilities(pred)
   print(p2)
@@ -443,77 +816,186 @@ for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nr
 }
 
 
-
-# Get SL & Discrete SL performance for all variable sets
-cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
-  arrange(-AUC) %>% filter(Learner == "SL") %>%
-  select(varset, AUCstr) %>%
-  write.csv(here("output", Sys.getenv("TRIAL"), "SLperformance_allvarsets.csv"))
-
-cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
-  arrange(-AUC) %>% filter(Learner == "Discrete SL") %>%
-  select(varset, AUCstr) %>%
-  write.csv(here("output", Sys.getenv("TRIAL"), "DiscreteSLperformance_allvarsets.csv"))
-
-# # Predicted probability of COVID-19 vs antibody marker (x-axis)
-# marker_cvaucs_vacc <- readin_SLobjects_fromFolder(data_folder, file_pattern = "CVSLaucs*", endpoint = "EventIndPrimaryD57", trt = "vaccine") %>%
-#   filter(file %in% c(paste0("CVSLaucs_vacc_EventIndPrimaryD57_", varset_names, ".rds"))) %>%
-#   filter(!file %in% cvaucs_vacc$file)
+# # For all variable sets, get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds from the 1st random seed!
+# if(!study_name %in% c("HVTN705")){
+#   
+#   for(i in 1:length(only_varsets)) {
+#     print(i)
+#     variableSet = only_varsets[i]
+#     print(variableSet)
 # 
-# for(i in 1:length(individualMarkers)) {
-#   varMarker = marker_cvaucs_vacc %>% filter(file == paste0("CVSLaucs_vacc_EventIndPrimaryD57_", individualMarkers[i], ".rds"))
-#   top2 <- bind_rows(
-#     varMarker %>%
-#       arrange(-AUC) %>%
-#       filter(!Learner %in% c("SL", "Discrete SL")) %>%
-#       dplyr::slice(1:2),
-#     varMarker %>%
-#       filter(Learner == "SL"),
-#     varMarker %>%
-#       filter(Learner == "Discrete SL")
-#   ) %>%
-#     mutate(LearnerScreen = ifelse(Learner == "SL", "Super Learner",
-#                                   ifelse(Learner == "Discrete SL", Learner,
-#                                          paste0(Learner, "_", Screen_fromRun))))
-# 
-#   # Get cvsl fit and extract cv predictions
-#   if(study_name %in% c("COVE", "MockCOVE")){
-#     cvfits <- readRDS(file = here("output", paste0("CVSLfits_vacc_EventIndPrimaryD57_", individualMarkers[i], ".rds")))
+#     # Get cvsl fit and extract cv predictions
+#     if(Sys.getenv("TRIAL") == "moderna_real"){
+#       cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
+#     } else if(Sys.getenv("TRIAL") %in% c("janssen_pooled_partA", "janssen_la_partA")){
+#       cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryIncludeNotMolecConfirmedD29_", variableSet, ".rds")))
+#     } else if(Sys.getenv("TRIAL") %in% c("covail_tcell")){
+#       if(COR == "D15to91covail_tcell"){
+#         cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+#       } else if(COR == "D15to181covail_tcell"){
+#         cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+#       }
+#     } else if(Sys.getenv("TRIAL") %in% c("covail_xassays")){
+#       if(COR == "D15to91covail_xassays"){
+#         cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+#       } else if(COR == "D15to181covail_xassays"){
+#         cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+#       }
+#     }
+#     
+#     # For selected random seed (rseed variable), get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds
+#     for (j in seq_along(cvfits[[rseed]]$whichDiscreteSL)) {
+#       print(paste0("j = ", j))
+#       if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glm_screen_univariate_logistic_pval", 
+#                                                  "SL.glm.interaction_screen_highcor_random",
+#                                                  "SL.glm_screen_all",
+#                                                  "SL.glm_screen_glmnet",
+#                                                  "SL.glm_screen_highcor_random",
+#                                                  "SL.glm.interaction_screen_glmnet",
+#                                                  "SL.glm.interaction_screen_univariate_logistic_pval",
+#                                                  "SL.gam_screen_glmnet",
+#                                                  "SL.gam_screen_univariate_logistic_pval",
+#                                                  "SL.gam_screen_highcor_random",
+#                                                  "SL.bayesglm_screen_all",
+#                                                  "SL.bayesglm_screen_glmnet",
+#                                                  "SL.bayesglm_screen_univariate_logistic_pval",
+#                                                  "SL.bayesglm_screen_highcor_random")) {
+#         
+#         model <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$coefficients %>%
+#           as.data.frame() %>%
+#           tibble::rownames_to_column(var = "Predictors") %>%
+#           rename(`Coefficient` = ".") %>%
+#           mutate(
+#             `Odds Ratio` = exp(`Coefficient`),
+#             Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
+#             fold = j)
+#       }
+#       
+#       # For SL.polymars
+#       if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.polymars_screen_glmnet", 
+#                                                      "SL.polymars_screen_univariate_logistic_pval",
+#                                                      "SL.polymars_screen_highcor_random")) {
+#         
+#         model <- flevr::extract_importance_polymars(polymars.obj$fit, feature_names = cvfits[[rseed]]$AllSL[[j]]$varNames[cvfits[[rseed]]$AllSL[[j]]$whichScreen[grepl(gsub("^[^_]*_", "", cvfits[[rseed]]$whichDiscreteSL[[j]]), rownames(cvfits[[rseed]]$AllSL[[j]]$whichScreen)),]]) %>%
+#           filter(!is.na(importance)) %>%
+#           as.data.frame() %>%
+#           select(feature, importance) %>%
+#           rename(`Coefficient` = `importance`,
+#                  Predictors = feature) %>%
+#           mutate(
+#             Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
+#             fold = j)
+#       }
+#       
+#       # For SL.ksvm
+#       if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.polymars_screen_glmnet", 
+#                                                      "SL.polymars_screen_univariate_logistic_pval",
+#                                                      "SL.polymars_screen_highcor_random")) {
+#         
+#         model <- flevr::extract_importance_polymars(polymars.obj$fit, feature_names = cvfits[[rseed]]$AllSL[[j]]$varNames[cvfits[[rseed]]$AllSL[[j]]$whichScreen[grepl(gsub("^[^_]*_", "", cvfits[[rseed]]$whichDiscreteSL[[j]]), rownames(cvfits[[rseed]]$AllSL[[j]]$whichScreen)),]]) %>%
+#           filter(!is.na(importance)) %>%
+#           as.data.frame() %>%
+#           select(feature, importance) %>%
+#           rename(`Coefficient` = `importance`) %>%
+#           mutate(
+#             Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
+#             fold = j)
+#       }
+#       
+#       # For SL.nnet
+#       if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.nnet.2_screen_univariate_logistic_pval",
+#                                                      "SL.nnet.2_screen_glmnet", 
+#                                                      "SL.nnet.2_screen_highcor_random")) {
+#         
+#         model <- flevr::extract_importance_polymars(polymars.obj$fit, feature_names = cvfits[[rseed]]$AllSL[[j]]$varNames[cvfits[[rseed]]$AllSL[[j]]$whichScreen[grepl(gsub("^[^_]*_", "", cvfits[[rseed]]$whichDiscreteSL[[j]]), rownames(cvfits[[rseed]]$AllSL[[j]]$whichScreen)),]]) %>%
+#           filter(!is.na(importance)) %>%
+#           as.data.frame() %>%
+#           select(feature, importance) %>%
+#           rename(`Coefficient` = `importance`) %>%
+#           mutate(
+#             Learner = cvfits[[rseed]]$whichDiscreteSL[[j]],
+#             fold = j)
+#       }
+#       
+#       if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_all", "SL.glmnet.0.33_screen_all", "SL.glmnet.0.67_screen_all", "SL.glmnet.1_screen_all")) {
+#         
+#         # model <- coef(cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object, s = "lambda.min") %>%
+#         #   as.matrix() %>%
+#         #   as.data.frame() %>%
+#         #   tibble::rownames_to_column(var = "Predictors") %>%
+#         #   rename(`Coefficient` = "s1") %>%
+#         #   mutate(`Odds Ratio` = exp(`Coefficient`),
+#         #          Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
+#         #          fold = j)
+#         
+#         beta_matrix <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$glmnet.fit$beta
+#         lambda_selected <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$lambda.min
+#         lambda_index <- which(cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$lambda == lambda_selected)
+#         beta_selected <- beta_matrix[, lambda_index]
+#         
+#         model <- beta_selected %>%
+#           as.matrix() %>%
+#           as.data.frame() %>%
+#           tibble::rownames_to_column(var = "Predictors") %>%
+#           rename(`Coefficient` = "V1") %>%
+#           mutate(`Odds Ratio` = exp(`Coefficient`),
+#                  Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
+#                  fold = j)
+#       }
+#       
+#       if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.xgboost.2.no_screen_all",
+#                                                   "SL.xgboost.4.no_screen_all",
+#                                                   "SL.xgboost.2.yes_screen_all",
+#                                                   "SL.xgboost.4.yes_screen_all")) {
+#         model <- xgboost::xgb.importance(model = cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object) %>%
+#           as.data.frame() %>%
+#           mutate(Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
+#                  fold = j)
+#       }
+#       
+#       if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.ranger.yes_screen_all", "SL.ranger.no_screen_all")) {
+#         model <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$variable.importance %>%
+#           as.data.frame() %>%
+#           rename(Importance = ".") %>%
+#           tibble::rownames_to_column(var = "Predictors") %>%
+#           mutate(Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
+#                  fold = j)
+#       }
+#       
+#       if (cvfits[[rseed]]$whichDiscreteSL[[j]] == "SL.mean_screen_all"){
+#         model <- data.frame(Learner="SL.mean_screen_all", 
+#                             fold = j) 
+#       }
+#       
+#       if (j == 1) {
+#         all_models <- model
+#       } else {
+#         all_models <- bind_rows(all_models, model)
+#       }
+#     }
+#     
+#     if (i == 1) {
+#       all_varsets_models <- all_models %>% mutate(varset = variableSet)
+#     } else {
+#       all_varsets_models <- bind_rows(all_varsets_models, 
+#                                       all_models %>% mutate(varset = variableSet))  
+#     }
+#     
+#     rm(variableSet, all_models, model)
 #   }
-# 
-#   pred <- get_cv_predictions(cv_fit = cvfits[[1]], cvaucDAT = top2, markerDAT = dat.ph2 %>% select(individualMarkers[i]))
-#   # plot
-#   options(bitmapType = "cairo")
-#   png(file = here("figs", paste0("marker_predProb_", individualMarkers[i], ".png")),
-#       width = 1000, height = 1000)
-#   xMarker = dat.ph2 %>% pull(individualMarkers[i])
-#   vecNum = match(str_split(individualMarkers[i], paste0(0:9, collapse = "|"))[[1]][3], assays)
-#   xlab = assay_labels_short[vecNum]
-#   titlelab = paste0(assay_labels[vecNum], "\n", "Day ", gsub("...([0-9]+).*$", "\\1", individualMarkers[i]))
-#   xdat =
-#   print(pred %>%
-#           ggplot(aes(x=dat.ph2 %>% select(individualMarkers[i]), y=pred)) +
-#           facet_wrap(~algo, ncol = 2, scales = "free") +
-#           geom_point(size=2, shape=23) +
-#           xlim(floor(min(dat.ph2 %>% pull(individualMarkers[i]))), ceiling(max(dat.ph2 %>% pull(individualMarkers[i])))) +
-#           labs(y = "Predicted probability of COVID-19 disease",
-#                x = xlab,
-#                title = titlelab) +
-#           scale_x_log10("x",
-#                         breaks = scales::trans_breaks("log10", function(y) 10^y),
-#                         labels = scales::trans_format("log10", math_format(10^.y))))
-#   dev.off()
 # }
+
+
 
 
 # For all variable sets, get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds from the 1st random seed!
 if(!study_name %in% c("HVTN705")){
   
-  for(i in 1:length(only_varsets)) {
+  for(i in 1:6) {
     print(i)
-    variableSet = only_varsets[i]
+    variableSet = top5_plus_baseline$varset[i]
     print(variableSet)
-
+    
     # Get cvsl fit and extract cv predictions
     if(Sys.getenv("TRIAL") == "moderna_real"){
       cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_EventIndPrimaryD57_", variableSet, ".rds")))
@@ -525,25 +1007,31 @@ if(!study_name %in% c("HVTN705")){
       } else if(COR == "D15to181covail_tcell"){
         cvfits <- readRDS(file = here("output", Sys.getenv("TRIAL"), paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
       }
+    } else if(Sys.getenv("TRIAL") %in% c("covail_xassays")){
+      if(COR == "D15to91covail_xassays"){
+        cvfits <- readRDS(file = here(file_path, paste0("CVSLfits_vacc_COVIDIndD22toD91_", variableSet, ".rds")))
+      } else if(COR == "D15to181covail_xassays"){
+        cvfits <- readRDS(file = here(file_path, paste0("CVSLfits_vacc_COVIDIndD22toD181_", variableSet, ".rds")))
+      }
     }
     
     # For selected random seed (rseed variable), get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds
     for (j in seq_along(cvfits[[rseed]]$whichDiscreteSL)) {
       print(paste0("j = ", j))
       if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glm_screen_univariate_logistic_pval", 
-                                                 "SL.glm.interaction_screen_highcor_random",
-                                                 "SL.glm_screen_all",
-                                                 "SL.glm_screen_glmnet",
-                                                 "SL.glm_screen_highcor_random",
-                                                 "SL.glm.interaction_screen_glmnet",
-                                                 "SL.glm.interaction_screen_univariate_logistic_pval",
-                                                 "SL.gam_screen_glmnet",
-                                                 "SL.gam_screen_univariate_logistic_pval",
-                                                 "SL.gam_screen_highcor_random",
-                                                 "SL.bayesglm_screen_all",
-                                                 "SL.bayesglm_screen_glmnet",
-                                                 "SL.bayesglm_screen_univariate_logistic_pval",
-                                                 "SL.bayesglm_screen_highcor_random")) {
+                                                     "SL.glm.interaction_screen_highcor_random",
+                                                     "SL.glm_screen_all",
+                                                     "SL.glm_screen_glmnet",
+                                                     "SL.glm_screen_highcor_random",
+                                                     "SL.glm.interaction_screen_glmnet",
+                                                     "SL.glm.interaction_screen_univariate_logistic_pval",
+                                                     "SL.gam_screen_glmnet",
+                                                     "SL.gam_screen_univariate_logistic_pval",
+                                                     "SL.gam_screen_highcor_random",
+                                                     "SL.bayesglm_screen_all",
+                                                     "SL.bayesglm_screen_glmnet",
+                                                     "SL.bayesglm_screen_univariate_logistic_pval",
+                                                     "SL.bayesglm_screen_highcor_random")) {
         
         model <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$coefficients %>%
           as.data.frame() %>%
@@ -628,9 +1116,9 @@ if(!study_name %in% c("HVTN705")){
       }
       
       if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.xgboost.2.no_screen_all",
-                                                  "SL.xgboost.4.no_screen_all",
-                                                  "SL.xgboost.2.yes_screen_all",
-                                                  "SL.xgboost.4.yes_screen_all")) {
+                                                      "SL.xgboost.4.no_screen_all",
+                                                      "SL.xgboost.2.yes_screen_all",
+                                                      "SL.xgboost.4.yes_screen_all")) {
         model <- xgboost::xgb.importance(model = cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object) %>%
           as.data.frame() %>%
           mutate(Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
@@ -669,17 +1157,21 @@ if(!study_name %in% c("HVTN705")){
   }
 }
 
+
+
+
+
 if("Feature" %in% colnames(all_varsets_models)){
   all_varsets_models %>% 
     mutate(`Predictors/Features` = ifelse(is.na(Predictors), Feature, Predictors)) %>%
     select(-c(Predictors, Feature)) %>%
     select(varset, fold, Learner, `Predictors/Features`, everything()) %>%
-    write.csv(here("output", Sys.getenv("TRIAL"), "all_varsets_all_folds_discreteSLmodels.csv"))
+    write.csv(here(file_path, "all_varsets_all_folds_discreteSLmodels.csv"))
 } else {
   all_varsets_models %>% 
     mutate(`Predictors/Features` = Predictors) %>%
     select(varset, fold, Learner, `Predictors/Features`, everything()) %>%
-    write.csv(here("output", Sys.getenv("TRIAL"), "all_varsets_all_folds_discreteSLmodels.csv"))
+    write.csv(here(file_path, "all_varsets_all_folds_discreteSLmodels.csv"))
 }
 
 # # Variable importance forest plots ---------------------------------------------
