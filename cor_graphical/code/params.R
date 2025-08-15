@@ -25,7 +25,8 @@ if (study_name=="IARCHPV") {
     
   } else if (study_name == "ILIAD_IB202P") {
     trt.labels <- c("PBO", "BPZE1")
-    bstatus.labels <- "Not applicable"
+    bstatus.labels <- 0
+    bstatus.labels.2 <- ""
     
   } else {
     trt.labels <- c("Placebo", "Vaccine")

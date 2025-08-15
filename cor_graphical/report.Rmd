@@ -17,12 +17,12 @@ library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
 
 
-if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302", "COVAIL", "NextGen_Mock")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
+if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302", "COVAIL", "NextGen_Mock", "ILIAD_IB202P")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
 
 # called in report_violin etc
-bsero <- ifelse(study_name=="IARCHPV", "", "BaselineNeg")
+bsero <- ifelse(study_name %in% c("IARCHPV", "ILIAD_IB202P"), "", "BaselineNeg")
 bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", 
                      ifelse(bsero=="BaselineNeg", "baseline negative", ""))
 
@@ -60,7 +60,7 @@ if (study_name == "NextGen_Mock") {
     assays = assays[!grepl("nasal|saliva|T4|T8", assays)]
     assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|T4|T8", assay))
     nextgen_output_flag = 1 # options: 3 (whole_report)  1 (BARDA_TLF)
-}
+} else (nextgen_output_flag = 999)
 
 #if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name), '.Rmd')))) {
   
@@ -88,6 +88,7 @@ if (study_name == "NextGen_Mock") {
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
   if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage2")
   if (study_name=="NextGen_Mock") COR_postfix_list <- c("D31toM12_nextgen_mock_sera")
+  if (study_name=="ILIAD_IB202P") COR_postfix_list <- c("C0iliad_ib202p")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
@@ -140,7 +141,7 @@ if (study_name == "NextGen_Mock") {
       }
     }
     
-  } else if (study_name == "VAT08" | attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","nvx_uk302","prevent19nvx", "nextgen_mock")){
+  } else if (study_name == "VAT08" | attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","nvx_uk302","prevent19nvx", "nextgen_mock", "iliad_ib202p")){
     
     for (COR_postfix in COR_postfix_list){
         
@@ -162,13 +163,13 @@ if (study_name == "NextGen_Mock") {
                     )
       
       # SET 1
-      for (a in if (study_name == "NextGen_Mock") {c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("IgA", assays)])
+      for (a in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == "NextGen_Mock") {c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("IgA", assays)])
         } else {c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")}){
              
         if ((grepl("nab", COR_postfix) & !grepl("pseudoneutid50", a)) | (grepl("bab", COR_postfix) & !grepl("bindSpike", a))) next # for AZ stage 2
         if (a == "pseudoneutid50" & attr(config,"config") %in% c("nvx_uk302","prevent19nvx")) next # no id50 for nvx_uk302, prevent19nvx
     
-        for (tp in if (study_name == "NextGen_Mock") {tps_no_delta_over_tinterm_lb[1:3]} else {tps_no_delta_over_tinterm_lb}){
+        for (tp in if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {tps_no_delta_over_tinterm_lb[1:3]} else {tps_no_delta_over_tinterm_lb}){
           
           if(attr(config,"config")=="azd1222_stage2" & tp=="Day 360") next # do not have this for azd1222_stage2
           
@@ -257,7 +258,15 @@ if (study_name == "NextGen_Mock") {
                           paste0(assays[!assays=="bindSpike_mdw"][9:10], collapse="_"),
                           paste0(assays[!assays=="bindSpike_mdw"][11:12], collapse="_"),
                           paste0(assays[!assays=="bindSpike_mdw"][13:14], collapse="_")
-        )} else if (attr(config,"config")=="prevent19_stage2"){
+        )} else if (attr(config,"config") == "iliad_ib202p") {
+          c(paste0(assays[1:2], collapse="_"), paste0(assays[3:4], collapse="_"),
+            paste0(assays[5:6], collapse="_"), paste0(assays[7:8], collapse="_"),
+            paste0(assays[9:10], collapse="_"), paste0(assays[11:12], collapse="_"),
+            paste0(assays[13:14], collapse="_"), paste0(assays[15:16], collapse="_"),
+            paste0(assays[17:18], collapse="_"), paste0(assays[19:20], collapse="_"),
+            paste0(assays[21:22], collapse="_")
+            )
+        } else if (attr(config,"config")=="prevent19_stage2"){
           c("pseudoneutid50_D614G_pseudoneutid50_Delta","bindSpike_D614_bindSpike_Delta1")
         } else if (grepl("bab", COR_postfix)){ # for azd1222_stage2
           assays[grepl("bindSpike", assays)]
@@ -304,8 +313,9 @@ if (study_name == "NextGen_Mock") {
       
       for (bsero in c("non_naive")){
         if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","prevent19nvx")) next # prevent19_stage2, azd1222_stage2, prevent19nvx don't have non_naive
+        if (attr(config,"config") == "iliad_ib202p") bsero = ""
         
-          for (trt in c("vac_pla")){
+          for (trt in if (attr(config,"config") == "iliad_ib202p") {c("vac", "pla")} else c("vac_pla")){
               
               for (tp in if(attr(config,"config")=="vat08_combined") {tps_no_delta_over_tinterm} else {tps_no_fold_change}){
                 
@@ -325,6 +335,8 @@ if (study_name == "NextGen_Mock") {
       }
       
       for (bsero in c("naive")){
+        
+        if (attr(config,"config") == "iliad_ib202p") next
           
           for (trt in c("vac")){
               

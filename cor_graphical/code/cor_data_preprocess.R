@@ -8,6 +8,7 @@
 #Sys.setenv(TRIAL = "nvx_uk302") # D35nvx_uk302
 #Sys.setenv(TRIAL = "prevent19nvx") # D35prevent19nvx
 #Sys.setenv(TRIAL = "nextgen_mock") # D31toM12_nextgen_mock_sera (ph2.AB.trackA/ph2.sera.D31_7, wt.AB.D31_7/wt.sera.D31_7)
+#Sys.setenv(TRIAL = "iliad_ib202p") # C0iliad_ib202p
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -229,6 +230,19 @@ if (study_name=="IARCHPV"){
         levels = c("Vaccination-Proximal Cases", "Vaccination-Distal Cases", "Non-Cases"))
       )
     
+  } else if (study_name=="ILIAD_IB202P") {
+    
+    dat <- dat %>%
+      mutate(cohort_event = factor(
+        case_when(Perprotocol==1 & !!as.name(config.cor$ph2)==1 & 
+                    !!as.name(config.cor$EventIndPrimary)==1 ~ "Positive",
+                  
+                  Perprotocol==1 & !!as.name(config.cor$ph2)==1 &  
+                    !!as.name(config.cor$EventIndPrimary)==0 ~ "Negative"),
+        
+        levels = c("Positive", "Negative"))
+      )
+    
   } else {# keep other two timepoint studies except for Moderna, AZ and Sanofi here
   
   dat <- dat %>%
@@ -321,20 +335,23 @@ dat.long <- cbind(dat.long.subject_level, dat.long.assay_value)
 
 ## change the labels of the factors for plot labels
 if (study_name=="IARCHPV") {dat.long$Trt <- factor(dat.long$Trt, levels = c(1, 2, 3, 4), labels = trt.labels)
+} else if (study_name == "ILIAD_IB202P"){
+  dat.long$Trt <- with(dat.long, ifelse(Trt == "BPZE1", 1, 0))
+  dat.long$Trt <- factor(dat.long$Trt, levels = c(0, 1), labels = trt.labels)
 } else {dat.long$Trt <- factor(dat.long$Trt, levels = c(0, 1), labels = trt.labels)}
 
 # no baseline serostatus for the IARCHPV study, set all Bserostatus to 0
-if (study_name=="IARCHPV") {
+if (study_name %in% c("IARCHPV", "ILIAD_IB202P")) {
   dat.long$Bserostatus=0
   dat.long$Bserostatus <- factor(dat.long$Bserostatus,
                                  levels = c(0),
                                  labels = bstatus.labels
   )
-} else{
+} else {
   dat.long$Bserostatus <- factor(dat.long$Bserostatus,
   levels = c(0, 1),
   labels = bstatus.labels
-)
+  )
 }
 
 
@@ -364,9 +381,9 @@ if ((study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") & COR!="D29VLvariant")
 } else if ((study_name %in% c("PREVENT19","AZD1222") & grepl("stage2", COR)) | study_name == "VAT08"){
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "LoQ", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), LLoQ, LLoD))
-} else if (study_name %in% c("NextGen_Mock")){
+} else if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")){
   dat.long$lb = "LLoQ"
-  dat.long$lbval =  with(dat.long, LLoQ, LLoD)
+  dat.long$lbval =  with(dat.long, LLoQ)
 } else { # e.g. prevent19nvx
   dat.long$lb = with(dat.long, ifelse(grepl("bind", assay), "Pos.Cut", "LoD"))
   dat.long$lbval =  with(dat.long, ifelse(grepl("bind", assay), pos.cutoffs, LLoD))
@@ -416,7 +433,7 @@ dat.long$age_geq_65_label <-
     )
   )
 
-if (!study_name %in% c("IARCHPV","UK302")) { # IARCHPV doesn't have the high risk, sex, ethnicity variable, UK302 doesn't need these
+if (!study_name %in% c("IARCHPV", "UK302", "ILIAD_IB202P")) { # IARCHPV doesn't have the high risk, sex, ethnicity variable, UK302 doesn't need these
   dat.long$highrisk_label <-
     with(
       dat.long,
@@ -427,29 +444,29 @@ if (!study_name %in% c("IARCHPV","UK302")) { # IARCHPV doesn't have the high ris
     )
 
 
-dat.long$age_risk_label <-
-  with(
-    dat.long,
-    factor(paste0(age.geq.65, HighRiskInd),
-           levels = c("00", "01", "10", "11"),
-           labels = c(
-             paste(younger_age, "not at risk"),
-             paste(younger_age, "at risk"),
-             paste(older_age, "not at risk"),
-             paste(older_age, "at risk")
-           )
+  dat.long$age_risk_label <-
+    with(
+      dat.long,
+      factor(paste0(age.geq.65, HighRiskInd),
+             levels = c("00", "01", "10", "11"),
+             labels = c(
+               paste(younger_age, "not at risk"),
+               paste(younger_age, "at risk"),
+               paste(older_age, "not at risk"),
+               paste(older_age, "at risk")
+             )
+      )
     )
-  )
 
 
-dat.long$sex_label <-
-  with(
-    dat.long,
-    factor(Sex,
-           levels = c(1, 0),
-           labels = c("Female", "Male")
+  dat.long$sex_label <-
+    with(
+      dat.long,
+      factor(Sex,
+             levels = c(1, 0),
+             labels = c("Female", "Male")
+      )
     )
-  )
 
   dat.long$ethnicity_label <-
     with(
@@ -468,7 +485,7 @@ dat.long$sex_label <-
 
 if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {minor_var = "URMforsubcohortsampling"} else {minor_var = "MinorityInd"}
 
-if (study_name!="IARCHPV") { # IARCHPV doesn't have the minority variable
+if (!study_name %in% c("IARCHPV", "ILIAD_IB202P")) { # IARCHPV doesn't have the minority variable
   dat.long$minority_label <-
       factor(dat.long[, minor_var],
              levels = c(0, 1),
@@ -589,7 +606,7 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
 # only keep fold change over B for do.fold.change.overB=1: e.g. vat08
 if (do.fold.change.overB==1 | study_name %in% c("VAT08")){
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
-} else if (grepl("stage2", COR) | study_name %in% c("NextGen_Mock")){ # keep all timepoints in times_ for stage 2 studies, such as prevent19 stage2
+} else if (grepl("stage2", COR) | study_name %in% c("NextGen_Mock", "ILIAD_IB202P")){ # keep all timepoints in times_ for stage 2 studies, such as prevent19 stage2
   dat.longer.cor.subset <- dat.longer.cor.subset
 } else ( # exclude delta timepoints
   dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(grepl(ifelse(study_name!="IARCHPV", "Day|Mon", "M"), time)) # IARCHPV uses "M" instead of "Day" in the assay variables
@@ -774,7 +791,7 @@ if (!study_name %in% c("IARCHPV","UK302")) { # IARCHPV, UK302 doesn't have high 
     dat.longer.cor.subset_ = dat.longer.cor.subset %>% filter(!is.na(value))
   }
   
-  groupby_vars3 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", "age_geq_65_label", "highrisk_label")
+  groupby_vars3 <- c("Trt", "Bserostatus", "cohort_event", "time", "assay", "age_geq_65_label", if (study_name != "ILIAD_IB202P") "highrisk_label")
   
   # define response rate
   dat.longer.cor.subset.plot3 <- get_resp_by_group(dat.longer.cor.subset_, groupby_vars3)
