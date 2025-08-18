@@ -1,75 +1,75 @@
 {
-library("kyotil")
-quiet_library <- function(pkg) suppressPackageStartupMessages(library(pkg, character.only = TRUE))
-len <- function(x) length(x)
-quiet_library("methods")
-quiet_library("dplyr")
-quiet_library("glue")
-quiet_library("copcor")
-quiet_library("marginalizedRisk")
-quiet_library("survival")
-
-
-# disable lower level parallelization in favor of higher level of parallelization
-library(RhpcBLASctl)
-blas_get_num_procs()
-blas_set_num_threads(1L)
-#stopifnot(blas_get_num_procs() == 1L) # Commented this out as it does not work as expected any more!
-omp_set_num_threads(1L)
-stopifnot(omp_get_max_threads() == 1L)
-    
-set.seed(98109)
-    
-if(!exists("verbose")) verbose=0
-if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
-if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
-
-cat("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running _common.R ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
-
-# COR defines the analysis to be done, e.g. D14
-if(!exists("COR")) {
+  library("kyotil")
+  quiet_library <- function(pkg) suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+  len <- function(x) length(x)
+  quiet_library("methods")
+  quiet_library("dplyr")
+  quiet_library("glue")
+  quiet_library("copcor")
+  quiet_library("marginalizedRisk")
+  quiet_library("survival")
+  
+  
+  # disable lower level parallelization in favor of higher level of parallelization
+  library(RhpcBLASctl)
+  blas_get_num_procs()
+  blas_set_num_threads(1L)
+  #stopifnot(blas_get_num_procs() == 1L) # Commented this out as it does not work as expected any more!
+  omp_set_num_threads(1L)
+  stopifnot(omp_get_max_threads() == 1L)
+  
+  set.seed(98109)
+  
+  if(!exists("verbose")) verbose=0
+  if (Sys.getenv("VERBOSE") %in% c("T","TRUE")) verbose=1
+  if (Sys.getenv("VERBOSE") %in% c("1", "2", "3")) verbose=as.integer(Sys.getenv("VERBOSE"))
+  
+  cat("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running _common.R ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+  
+  # COR defines the analysis to be done, e.g. D14
+  if(!exists("COR")) {
     if(!exists("Args")) Args <- commandArgs(trailingOnly=TRUE)
     if (length(Args)>0) {
-        COR=Args[1]
-        myprint(COR)
+      COR=Args[1]
+      myprint(COR)
     } else {
-        warning("No COR. This is okay if _common.R is sourced just to load common functions. If needed, COR can be defined through command line argument or in R script before _common.R is sourced.")
+      warning("No COR. This is okay if _common.R is sourced just to load common functions. If needed, COR can be defined through command line argument or in R script before _common.R is sourced.")
     }
-}
-
-# if DESCRIPTIVE env variable is set, then we are doing descriptive analyses, e.g. immuno_tabular, or cor_graphical
-DESCRIPTIVE = Sys.getenv("DESCRIPTIVE") %in% c("1", "T", "TRUE")
-myprint(DESCRIPTIVE)
-
-# if EXPOSUREPROXIMAL env variable is set, then we are doing exposure-proximal analyses
-EXPOSUREPROXIMAL = Sys.getenv("EXPOSUREPROXIMAL") %in% c("1", "T", "TRUE")
-myprint(EXPOSUREPROXIMAL)
-
-
-if(Sys.getenv("TRIAL")=="") {
-  stop(" *************************************  environmental variable TRIAL not defined  *************************************")
-}
-
-config <- config::get(config = Sys.getenv("TRIAL"))
-for(opt in names(config)) eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
-TRIAL=attr(config, "config")
-
-
-DayPrefix = switch (TRIAL, 
-                    'moderna_boost' = "BD", 
-                    'id27hpv' = "M",
-                    'id27hpvnAb' = "M",
-                    "Day")
-
-if (is.null(config$threshold_grid_size)) {
-  # Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
-  threshold_grid_size <- 30 
-} else {
-  threshold_grid_size = config$threshold_grid_size
-}
-
-
-
+  }
+  
+  # if DESCRIPTIVE env variable is set, then we are doing descriptive analyses, e.g. immuno_tabular, or cor_graphical
+  DESCRIPTIVE = Sys.getenv("DESCRIPTIVE") %in% c("1", "T", "TRUE")
+  myprint(DESCRIPTIVE)
+  
+  # if EXPOSUREPROXIMAL env variable is set, then we are doing exposure-proximal analyses
+  EXPOSUREPROXIMAL = Sys.getenv("EXPOSUREPROXIMAL") %in% c("1", "T", "TRUE")
+  myprint(EXPOSUREPROXIMAL)
+  
+  
+  if(Sys.getenv("TRIAL")=="") {
+    stop(" *************************************  environmental variable TRIAL not defined  *************************************")
+  }
+  
+  config <- config::get(config = Sys.getenv("TRIAL"))
+  for(opt in names(config)) eval(parse(text = paste0(names(config[opt])," <- config[[opt]]")))
+  TRIAL=attr(config, "config")
+  
+  
+  DayPrefix = switch (TRIAL, 
+                      'moderna_boost' = "BD", 
+                      'id27hpv' = "M",
+                      'id27hpvnAb' = "M",
+                      "Day")
+  
+  if (is.null(config$threshold_grid_size)) {
+    # Should be 15 at least for the plots of the threshold-response and its inverse to be representative of the true functions.
+    threshold_grid_size <- 30 
+  } else {
+    threshold_grid_size = config$threshold_grid_size
+  }
+  
+  
+  
 }
 
 ###################################################################################################
@@ -162,12 +162,12 @@ if (!is.null(config$assay_metadata)) {
     }
     
   }  
-
+  
   assays=assay_metadata$assay
   
   labels.assays=assay_metadata$assay_label; names(labels.assays)=assays
   labels.assays.short=assay_metadata$assay_label_short; names(labels.assays.short)=assays
-
+  
   lods=assay_metadata$lod; names(lods)=assays
   lloqs=assay_metadata$lloq; names(lloqs)=assays
   uloqs=assay_metadata$uloq; names(uloqs)=assays
@@ -175,7 +175,7 @@ if (!is.null(config$assay_metadata)) {
   lloxs=sapply(assays, function (a) assay_metadata[[llox_labels[a]]][assay_metadata$assay==a])
   
   
-
+  
 } else {
   
   lloxs=NULL
@@ -187,7 +187,7 @@ if (!is.null(config$assay_metadata)) {
     llox_labels = config$llox_label
   }
   names(llox_labels)=config$assays
-
+  
   # assays labels. This needs to come before all.markers
   labels.assays = config$assay_labels
   names(labels.assays) = config$assays
@@ -364,7 +364,7 @@ if (!is.null(config$assay_metadata)) {
     uloqs["bindNVXIgG"]=2904275
     pos.cutoffs["bindNVXIgG"]=500
     
-  
+    
   } else if(TRIAL=="azd1222") {
     
     # data less than lod is set to lod/2
@@ -454,7 +454,7 @@ if (!is.null(config$assay_metadata)) {
     uloqs["liveneutmn50"]=20157.44 
     pos.cutoffs["liveneutmn50"]=llods["liveneutmn50"] 
     
-  } else stop("unknown study_name 1")
+  } else stop("unknown study_name 1") # if there is assay metadata file, this will not be triggered
   
   
   # llox is for plotting and can be either llod or lloq depending on trials
@@ -469,99 +469,99 @@ if (!is.null(config$assay_metadata)) {
   # llox_label is treated differently b/c it may not contain bindN
   assay_metadata = cbinduneven(list(assay_metadata, llox_label=data.frame(llox_labels)))
   
-
+  
 }
 
 
 
 {
-# hacky fix for tabular, since unclear who else is using
-# the truncated labels.assays.short later
-labels.assays.short.tabular <- labels.assays.short
-
-labels.time = config$time_labels
-names(labels.time) = config$times
-
-# axis labeling
-labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
-labels.axis <- as.data.frame(labels.axis)
-rownames(labels.axis) <- times
-
-# title labeling
-labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
-labels.title <- as.data.frame(labels.title)
-colnames(labels.title) <- times
-# NOTE: hacky solution to deal with changes in the number of markers
-rownames(labels.title)[seq_along(assays)] <- assays
-labels.title <- as.data.frame(t(labels.title))
-
-
-do.fold.change=F
-do.fold.change.overB=F #TRIAL %in% c("vat08_combined")
-
-
-# if this flag is true, then the N IgG binding antibody is reported 
-# in the immuno report (but is not analyzed in the cor or cop reports).
-include_bindN <- !study_name %in% c("PREVENT19","AZD1222","VAT08m")
-
+  # hacky fix for tabular, since unclear who else is using
+  # the truncated labels.assays.short later
+  labels.assays.short.tabular <- labels.assays.short
+  
+  labels.time = config$time_labels
+  names(labels.time) = config$times
+  
+  # axis labeling
+  labels.axis <- outer(rep("", length(times)), labels.assays.short[assays], "%.%")
+  labels.axis <- as.data.frame(labels.axis)
+  rownames(labels.axis) <- times
+  
+  # title labeling
+  labels.title <- outer(labels.assays[assays], ": " %.% labels.time, paste0)
+  labels.title <- as.data.frame(labels.title)
+  colnames(labels.title) <- times
+  # NOTE: hacky solution to deal with changes in the number of markers
+  rownames(labels.title)[seq_along(assays)] <- assays
+  labels.title <- as.data.frame(t(labels.title))
+  
+  
+  do.fold.change=F
+  do.fold.change.overB=F #TRIAL %in% c("vat08_combined")
+  
+  
+  # if this flag is true, then the N IgG binding antibody is reported 
+  # in the immuno report (but is not analyzed in the cor or cop reports).
+  include_bindN <- !study_name %in% c("PREVENT19","AZD1222","VAT08m")
+  
 }
 
 # COR-related config
 if (exists("COR")) {
-    # making sure we are inadvertently using the wrong COR
-    if(study_name=="ENSEMBLE") {
-        if (contain(TRIAL, "EUA")) {
-            # EUA datasets
-            if (COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
-        } 
+  # making sure we are inadvertently using the wrong COR
+  if(study_name=="ENSEMBLE") {
+    if (contain(TRIAL, "EUA")) {
+      # EUA datasets
+      if (COR %in% c("D29","D29start1")) stop("For ENSEMBLE, we should not use D29 or D29start1")
     } 
+  } 
+  
+  config.cor <- config::get(config = COR)
+  stopifnot(!is.null(config.cor))
+  
+  if (startsWith(config.cor$tpeak%.%"","Delta")) { 
+    tpeak = as.integer(strsplit(sub("Delta","",config.cor$tpeak), "over")[[1]][1])    
+    do.fold.change=T    
+  } else {
+    tpeak=as.integer(paste0(config.cor$tpeak))
+  }
+  
+  tpeaklag=as.integer(paste0(config.cor$tpeaklag))
+  tinterm=as.integer(paste0(config.cor$tinterm))
+  myprint(tpeak, tpeaklag, tinterm)
+  # some config may not have all fields
+  if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
+  
+  if (do.fold.change) {
+    all.markers=paste0(config.cor$tpeak, assays)
+    names(all.markers)=all.markers
     
-    config.cor <- config::get(config = COR)
-    stopifnot(!is.null(config.cor))
+    all.markers.names.short=sub("\\(.+\\)", config.cor$tpeak, labels.assays.short)    # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 D57over29"
+    names(all.markers.names.short)=all.markers
     
-    if (startsWith(config.cor$tpeak%.%"","Delta")) { 
-        tpeak = as.integer(strsplit(sub("Delta","",config.cor$tpeak), "over")[[1]][1])    
-        do.fold.change=T    
-    } else {
-        tpeak=as.integer(paste0(config.cor$tpeak))
-    }
+    all.markers.names.long=as.matrix(labels.title)[config.cor$tpeak, assays]
+    names(all.markers.names.long)=all.markers
     
-    tpeaklag=as.integer(paste0(config.cor$tpeaklag))
-    tinterm=as.integer(paste0(config.cor$tinterm))
-    myprint(tpeak, tpeaklag, tinterm)
-    # some config may not have all fields
-    if (length(tpeak)==0 | length(tpeaklag)==0) stop("config "%.%COR%.%" misses some fields")
-
-    if (do.fold.change) {
-        all.markers=paste0(config.cor$tpeak, assays)
-        names(all.markers)=all.markers
-        
-        all.markers.names.short=sub("\\(.+\\)", config.cor$tpeak, labels.assays.short)    # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 D57over29"
-        names(all.markers.names.short)=all.markers
-        
-        all.markers.names.long=as.matrix(labels.title)[config.cor$tpeak, assays]
-        names(all.markers.names.long)=all.markers
-        
-    } else {
-        all.markers=paste0(DayPrefix, tpeak, assays)
-        if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
-        names(all.markers)=all.markers
-        
-        all.markers.names.short=c(
-            labels.assays.short,
-            if (do.fold.change.overB) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
-        )
-        names(all.markers.names.short)=all.markers
-        
-        all.markers.names.long=c(
-          as.matrix(labels.title)[DayPrefix%.%tpeak, assays],
-          if (do.fold.change.overB) as.matrix(labels.title)["Delta"%.%tpeak%.%"overB", assays]
-        )
-        names(all.markers.names.long)=all.markers
-    }
+  } else {
+    all.markers=paste0(DayPrefix, tpeak, assays)
+    if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays))
+    names(all.markers)=all.markers
     
+    all.markers.names.short=c(
+      labels.assays.short,
+      if (do.fold.change.overB) sub("\\(.+\\)", "fold change", labels.assays.short) # e.g. "Pseudovirus-nAb ID50 (IU50/ml)" => "Pseudovirus-nAb ID50 fold change"
+    )
+    names(all.markers.names.short)=all.markers
+    
+    all.markers.names.long=c(
+      as.matrix(labels.title)[DayPrefix%.%tpeak, assays],
+      if (do.fold.change.overB) as.matrix(labels.title)["Delta"%.%tpeak%.%"overB", assays]
+    )
+    names(all.markers.names.long)=all.markers
+  }
+  
 }
-    
+
 # to be deprecated
 has57 = study_name %in% c("COVE","MockCOVE")
 has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
@@ -572,16 +572,16 @@ has29 = study_name %in% c("COVE","ENSEMBLE", "MockCOVE","MockENSEMBLE")
 # read data
 
 if (startsWith(tolower(study_name), "mock")) {
-    data_name_updated <- paste0(TRIAL, "_data_processed_with_riskscore.csv")
-    # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
-    path_to_data = ifelse (endsWith(here::here(), "correlates_reporting2"), here::here("data_clean", data_name_updated), here::here("..", "data_clean", data_name_updated))
-    data_name = data_name_updated    
+  data_name_updated <- paste0(TRIAL, "_data_processed_with_riskscore.csv")
+  # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
+  path_to_data = ifelse (endsWith(here::here(), "correlates_reporting2"), here::here("data_clean", data_name_updated), here::here("..", "data_clean", data_name_updated))
+  data_name = data_name_updated    
 } else {
-    # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
-    path_to_data = data_cleaned
-    data_name = path_to_data
-    # if path is relative, needs to do some processing
-    if(endsWith(here::here(), "correlates_reporting2") & startsWith(path_to_data,"..")) path_to_data=substr(path_to_data, 4, nchar(path_to_data))
+  # the path depends on whether _common.R is sourced from Rmd or from R scripts in modules
+  path_to_data = data_cleaned
+  data_name = path_to_data
+  # if path is relative, needs to do some processing
+  if(endsWith(here::here(), "correlates_reporting2") & startsWith(path_to_data,"..")) path_to_data=substr(path_to_data, 4, nchar(path_to_data))
 }
 cat("Analysis-ready data: ", path_to_data, "\n")
 # if this is run under _reporting level, it will not load. Thus we only warn and not stop
@@ -609,13 +609,13 @@ if (TRIAL=="covail_tcell" | TRIAL=="covail_xassays") {
       "Day15cd4_FS_BA.4.5.S", "Day15cd8_FS_BA.4.5.S",
       "Day15cd4_IFNg.IL2.154_BA.4.5.S", "Day15cd4_IL21_BA.4.5.S"
     ),
-   nonnaive=c(  
+    nonnaive=c(  
       "Bcd4_FS_BA.4.5.S", "Bcd8_FS_BA.4.5.S", 
       "Day15cd4_FS_BA.4.5.S", "Day15cd8_FS_BA.4.5.S",
       "Day15cd4_IFNg.IL2.154_BA.4.5.S", "Day15cd4_IL21_BA.4.5.S", 
       "Bcd4_IFNg.IL2.154_Wuhan.N", "Bcd4_IFNg.IL2.154_BA.4.5.S", "Bcd4_FS_Wuhan.N"
-  ))
-
+    ))
+  
   # filter exploratory markers by pos rate among NN
   tmp=c("B"%.%N, "Day15"%.%N, "B"%.%S, "Day15"%.%S)
   dat.tmp = subset(dat_proc, ph1.D15 & TrtonedosemRNA==1 & !arm %in% c(16,17) & naive==0)
@@ -664,7 +664,7 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
                 "janssen_partA_VL")) {
   # make endpointDate.Bin a factor variable
   dat_proc$endpointDate.Bin = as.factor(dat_proc$endpointDate.Bin)
-
+  
   
 } else if (TRIAL %in% c("hvtn705secondRSA", "hvtn705secondNonRSA")) {
   # subset to RSA or non-RSA
@@ -694,9 +694,9 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
       dat_proc["Delta"%.%tp%.%"overB" %.% bAb_markers] <- tmp[DayPrefix%.%tp %.% bAb_markers] - tmp["B" %.% bAb_markers]
     }   
     dat_proc["Delta"%.%timepoints[2]%.%"over"%.%timepoints[1] %.% bAb_markers] <- tmp[DayPrefix%.% timepoints[2]%.% bAb_markers] - tmp[DayPrefix%.%timepoints[1] %.% bAb_markers]
-  
+    
   }
-
+  
 }
 
 
@@ -706,226 +706,229 @@ if(TRIAL %in% c("janssen_pooled_partA", "janssen_na_partA", "janssen_la_partA", 
 # For correlates reports
 
 if (exists("COR")) {       
+  
+  # subset according to baseline seronegative status
+  if (!is.null(config$Bserostatus)) {
+    dat_proc=subset(dat_proc, Bserostatus==config$Bserostatus)
+  }
+  
+  # for Novavax trial only, subset to US for the correlates modules
+  # this is redundant in a way because only US participants have non-NA risk scores, but good to add
+  if (study_name=="PREVENT19") dat_proc=subset(dat_proc, Country==0)
+  
+  # formula
+  if (TRIAL %in% c("janssen_partA_VL")) {
+    # defined in cor_coxph_janssen_partA_VL.R
+    # form.0 is different for cox model and risk estimate
+    # for risk estimate, it uses competing risk 
     
-    # subset according to baseline seronegative status
-    if (!is.null(config$Bserostatus)) {
-        dat_proc=subset(dat_proc, Bserostatus==config$Bserostatus)
+  } else {
+    form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
+    
+    # covariates may come from config or config.cor, the latter, if exists, overwrites the former
+    if(!is.null(config.cor$covariates)) {
+      config$covariates = config.cor$covariates
     }
     
-    # for Novavax trial only, subset to US for the correlates modules
-    # this is redundant in a way because only US participants have non-NA risk scores, but good to add
-    if (study_name=="PREVENT19") dat_proc=subset(dat_proc, Country==0)
+    form.0 = update (form.s, as.formula(config$covariates))
+    print(form.0)
     
-    # formula
-    if (TRIAL %in% c("janssen_partA_VL")) {
-      # defined in cor_coxph_janssen_partA_VL.R
-      # form.0 is different for cox model and risk estimate
-      # for risk estimate, it uses competing risk 
-
+    # multivariate_assays_2 may come from config or config.cor, the latter, if exists, overwrites the former
+    if(!is.null(config.cor$multivariate_assays_2)) {
+      config$multivariate_assays_2 = config.cor$multivariate_assays_2
+    }
+    if( is.null(config.cor$multivariate_assays_2) & !is.null(config$multivariate_assays_2)) {
+      config.cor$multivariate_assays_2 = config$multivariate_assays_2
+    }
+  }
+  
+  ###########################################################
+  # single time point COR config such as D29
+  if (is.null(config.cor$tinterm)) {    
+    
+    dat_proc$ph1=dat_proc[[config.cor$ph1]]
+    dat_proc$ph2=dat_proc[[config.cor$ph2]]
+    dat_proc$Wstratum=dat_proc[[config.cor$WtStratum]]
+    dat_proc$wt=dat_proc[[config.cor$wt]]
+    dat_proc$EventIndPrimary =dat_proc[[config.cor$EventIndPrimary]]
+    if (!is.null(config.cor$EventTimePrimary)) dat_proc$EventTimePrimary=dat_proc[[config.cor$EventTimePrimary]]
+    if (!is.null(config.cor$tpsStratum)) dat_proc$tps.stratum=dat_proc[[config.cor$tpsStratum]]
+    if (!is.null(config.cor$Earlyendpoint)) dat_proc$Earlyendpoint=dat_proc[[config.cor$Earlyendpoint]]
+    
+    # subset to require risk_score
+    # check to make sure that risk score is not missing in ph1
+    if(!is.null(dat_proc$risk_score) & contain(config$covariates, "risk_score")) {
+      if (!TRIAL %in% c("janssen_pooled_EUA","janssen_na_EUA","janssen_na_partA")) { 
+        # check this for backward compatibility
+        stopifnot(nrow(subset(dat_proc, ph1 & is.na(risk_score)))==0)
+      }
+      dat_proc=subset(dat_proc, !is.na(risk_score))
+    }        
+    
+    # data integrity checks
+    if (!is.null(dat_proc$ph1)) {
+      # missing values in variables that should have no missing values
+      variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
+      ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat_proc[dat_proc$ph1==1, a])))
+      if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
+      
+      # ph1 should not have NA in Wstratum
+      ans=with(subset(dat_proc,ph1==1), all(!is.na(Wstratum)))
+      if(!ans) stop("Some Wstratum in ph1 are NA")
     } else {
-      form.s = Surv(EventTimePrimary, EventIndPrimary) ~ 1
-      
-      # covariates may come from config or config.cor, the latter, if exists, overwrites the former
-      if(!is.null(config.cor$covariates)) {
-        config$covariates = config.cor$covariates
-      }
-      
-      form.0 = update (form.s, as.formula(config$covariates))
-      print(form.0)
-      
-      # multivariate_assays_2 may come from config or config.cor, the latter, if exists, overwrites the former
-      if(!is.null(config.cor$multivariate_assays_2)) {
-        config$multivariate_assays_2 = config.cor$multivariate_assays_2
-      }
-      if( is.null(config.cor$multivariate_assays_2) & !is.null(config$multivariate_assays_2)) {
-        config.cor$multivariate_assays_2 = config$multivariate_assays_2
-      }
+      # may not be defined if COR is not provided in command line and used the default value
     }
     
-    ###########################################################
-    # single time point COR config such as D29
-    if (is.null(config.cor$tinterm)) {    
     
-        dat_proc$ph1=dat_proc[[config.cor$ph1]]
-        dat_proc$ph2=dat_proc[[config.cor$ph2]]
-        dat_proc$Wstratum=dat_proc[[config.cor$WtStratum]]
-        dat_proc$wt=dat_proc[[config.cor$wt]]
-        dat_proc$EventIndPrimary =dat_proc[[config.cor$EventIndPrimary]]
-        if (!is.null(config.cor$EventTimePrimary)) dat_proc$EventTimePrimary=dat_proc[[config.cor$EventTimePrimary]]
-        if (!is.null(config.cor$tpsStratum)) dat_proc$tps.stratum=dat_proc[[config.cor$tpsStratum]]
-        if (!is.null(config.cor$Earlyendpoint)) dat_proc$Earlyendpoint=dat_proc[[config.cor$Earlyendpoint]]
-        
-        # subset to require risk_score
-        # check to make sure that risk score is not missing in ph1
-        if(!is.null(dat_proc$risk_score) & contain(config$covariates, "risk_score")) {
-            if (!TRIAL %in% c("janssen_pooled_EUA","janssen_na_EUA","janssen_na_partA")) { 
-                # check this for backward compatibility
-                stopifnot(nrow(subset(dat_proc, ph1 & is.na(risk_score)))==0)
-            }
-            dat_proc=subset(dat_proc, !is.na(risk_score))
-        }        
-    
-        # data integrity checks
-        if (!is.null(dat_proc$ph1)) {
-            # missing values in variables that should have no missing values
-            variables_with_no_missing <- paste0(c("ph2", "EventIndPrimary", "EventTimePrimary"))
-            ans=sapply(variables_with_no_missing, function(a) all(!is.na(dat_proc[dat_proc$ph1==1, a])))
-            if(!all(ans)) stop(paste0("Unexpected missingness in: ", paste(variables_with_no_missing[!ans], collapse = ", ")))   
-            
-            # ph1 should not have NA in Wstratum
-            ans=with(subset(dat_proc,ph1==1), all(!is.na(Wstratum)))
-            if(!ans) stop("Some Wstratum in ph1 are NA")
+    # compute tfinal.tpeak if it is not defined in the config
+    if (is.null(config.cor$tfinal.tpeak)) {
+      
+      if (TRIAL == "moderna_boost") {
+        tfinal.tpeak = 92 # as computed in reporting3 repo
+      } else if (TRIAL == "moderna_real") {
+        if (COR == "D57a") {
+          tfinal.tpeak = 92 # for comparing with stage 2 
         } else {
-            # may not be defined if COR is not provided in command line and used the default value
+          # default rule for followup time is the last case in ph2 in vaccine arm
+          tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
+        }
+        
+      } else if (TRIAL == "janssen_na_EUA") {
+        tfinal.tpeak=53
+      } else if (TRIAL == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
+        tfinal.tpeak=48 
+      } else if (TRIAL == "janssen_sa_EUA") {
+        tfinal.tpeak=40            
+      } else if (TRIAL == "janssen_pooled_EUA") {
+        tfinal.tpeak=54
+        
+      } else if (startsWith(TRIAL, "janssen_") & endsWith(TRIAL, "partA")) {
+        # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+        tfinal.tpeak=min(
+          with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
+          with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+        )
+        # for moderate, we choose to use the same tfinal.tpeak as the overall COVID
+        if (COR=="D29ModerateIncludeNotMolecConfirmed") {
+          tfinal.tpeak=min(
+            with(subset(dat_proc, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
+            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
+          )
+        }
+        
+      } else if (TRIAL %in% c("janssen_partA_VL")) {
+        # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
+        tfinal.tpeak = NULL 
+        # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
+        tfinal.tpeak.ls=list(
+          US=list(
+            # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==0), max(EventTimePrimary)),
+            #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+            
+            Ancestral.Lineage=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==0 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                                  with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1))
+          ),
+          
+          LatAm=list(
+            # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==1), max(EventTimePrimary)),
+            #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+            
+            Ancestral.Lineage = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
+                                    with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+            
+            Gamma = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Gamma"), max(EventTimePrimary)),
+                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+            
+            Lambda =min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Lambda"), max(EventTimePrimary)),
+                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
+            
+            Mu    = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Mu"), max(EventTimePrimary)),
+                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+            
+            Zeta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Zeta"), max(EventTimePrimary)),
+                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
+          ),
+          
+          RSA=list(
+            # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==2), max(EventTimePrimary)),
+            #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1)),
+            
+            Beta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==2 & seq1.variant=="Beta"), max(EventTimePrimary)),
+                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1))
+          )
+        )
+        
+      } else if (TRIAL %in% c("profiscov", "profiscov_lvmn")) {
+        if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43 else stop("no tfinal.tpeak")
+        
+      } else if (study_name=="HVTN705") {
+        tfinal.tpeak=550
+        
+      } else if (study_name=="IARCHPV") {
+        tfinal.tpeak=NULL
+        
+      } else if (study_name=="ILIAD_IB202P" | study_name=="ILIAD_IB201P") {
+        tfinal.tpeak=NULL
+        
+      } else if (study_name=="COVAIL") {
+        if (contain(COR, "181")) {
+          tfinal.tpeak=188
+        } else if (contain(COR, "91")) {
+          tfinal.tpeak=91
+        } else {
+          stop("COVAIL, wrong COR")
         }
         
         
-        # compute tfinal.tpeak if it is not defined in the config
-        if (is.null(config.cor$tfinal.tpeak)) {
-          
-          if (TRIAL == "moderna_boost") {
-            tfinal.tpeak = 92 # as computed in reporting3 repo
-          } else if (TRIAL == "moderna_real") {
-            if (COR == "D57a") {
-              tfinal.tpeak = 92 # for comparing with stage 2 
-            } else {
-              # default rule for followup time is the last case in ph2 in vaccine arm
-              tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-            }
-            
-          } else if (TRIAL == "janssen_na_EUA") {
-            tfinal.tpeak=53
-          } else if (TRIAL == "janssen_la_EUA") { # from day 48 to 58, risk jumps from .008 to .027
-            tfinal.tpeak=48 
-          } else if (TRIAL == "janssen_sa_EUA") {
-            tfinal.tpeak=40            
-          } else if (TRIAL == "janssen_pooled_EUA") {
-            tfinal.tpeak=54
-            
-          } else if (startsWith(TRIAL, "janssen_") & endsWith(TRIAL, "partA")) {
-            # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
-            tfinal.tpeak=min(
-              with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1), max(EventTimePrimary)),
-              with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
-            )
-            # for moderate, we choose to use the same tfinal.tpeak as the overall COVID
-            if (COR=="D29ModerateIncludeNotMolecConfirmed") {
-              tfinal.tpeak=min(
-                with(subset(dat_proc, Trt==1 & ph2 & ModerateEventIndPrimaryIncludeNotMolecConfirmedD29==1), max(EventTimePrimary)),
-                with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1),    sort(EventTimePrimary, decreasing=T)[15]-1)
-              )
-            }
-            
-          } else if (TRIAL %in% c("janssen_partA_VL")) {
-            # variant-specific tfinal.tpeak. set it to NULL so that it is not inadverdently used
-            tfinal.tpeak = NULL 
-            # smaller of the two: 1) last case in ph2 in vaccine, 2) last time to have 15 at risk in subcohort vaccine arm
-            tfinal.tpeak.ls=list(
-              US=list(
-                # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==0), max(EventTimePrimary)),
-                #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1)),
-                
-                Ancestral.Lineage=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==0 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
-                                      with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==0),    sort(EventTimePrimary, decreasing=T)[15]-1))
-              ),
-              
-              LatAm=list(
-                # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==1), max(EventTimePrimary)),
-                #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
-                
-                Ancestral.Lineage = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Ancestral.Lineage"), max(EventTimePrimary)),
-                                        with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
-                
-                Gamma = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Gamma"), max(EventTimePrimary)),
-                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
-                
-                Lambda =min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Lambda"), max(EventTimePrimary)),
-                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)), 
-                
-                Mu    = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Mu"), max(EventTimePrimary)),
-                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1)),
-                
-                Zeta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==1 & seq1.variant=="Zeta"), max(EventTimePrimary)),
-                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==1),    sort(EventTimePrimary, decreasing=T)[15]-1))
-              ),
-              
-              RSA=list(
-                # All=min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimaryIncludeNotMolecConfirmedD29==1 & Region==2), max(EventTimePrimary)),
-                #         with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1)),
-                
-                Beta  = min(with(subset(dat_proc, Trt==1 & ph2 & EventIndPrimary==1 & Region==2 & seq1.variant=="Beta"), max(EventTimePrimary)),
-                            with(subset(dat_proc, Trt==1 & ph2 & SubcohortInd==1 & Region==2),    sort(EventTimePrimary, decreasing=T)[15]-1))
-              )
-            )
-            
-          } else if (TRIAL %in% c("profiscov", "profiscov_lvmn")) {
-            if (COR=="D91") tfinal.tpeak=66 else if(COR=="D43") tfinal.tpeak= 91+66-43 else stop("no tfinal.tpeak")
-            
-          } else if (study_name=="HVTN705") {
-            tfinal.tpeak=550
-            
-          } else if (study_name=="IARCHPV") {
-            tfinal.tpeak=NULL
-            
-          } else if (study_name=="COVAIL") {
-            if (contain(COR, "181")) {
-              tfinal.tpeak=188
-            } else if (contain(COR, "91")) {
-              tfinal.tpeak=91
-            } else {
-              stop("COVAIL, wrong COR")
-            }
-            
-            
-          } else if (TRIAL %in% c("prevent19", "azd1222_stage2", "nextgen_mock")) {
-            # default rule for followup time is the last case in ph2 in vaccine arm
-            tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
-            
-          } else {
-            stop("unknown study name 11")
-          }
-          
-          myprint(tfinal.tpeak)
-          
-        } else {
-          
-          tfinal.tpeak=config.cor$tfinal.tpeak
+      } else if (TRIAL %in% c("prevent19", "azd1222_stage2", "nextgen_mock")) {
+        # default rule for followup time is the last case in ph2 in vaccine arm
+        tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
         
-        }
-
-
-        # compute overall VE
-        # except for 
-        #   janssen_partA_VL because for variants analysis, there is not just one tfinal.tpeak
-        #   prevent19_stage2, azd1222_stage2 because CoR only
-        if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", "prevent19_stage2", "azd1222_stage2")) {
-          prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==1 & ph1), tfinal.tpeak)
-          prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==0 & ph1), tfinal.tpeak)   
-          overall.ve = c(1 - prev.vacc/prev.plac) 
-          myprint(prev.plac, prev.vacc, overall.ve)
-        } 
-
-#        # get VE in the first month or two of followup
-#        dat.tmp=dat_proc
-#        t.tmp=30
-#        # censor at t.tmp 
-#        dat.tmp$EventIndPrimary =ifelse(dat.tmp$EventTimePrimary<=t.tmp, dat.tmp$EventIndPrimary, 0)
-#        dat.tmp$EventTimePrimary=ifelse(dat.tmp$EventTimePrimary<=t.tmp, dat.tmp$EventTimePrimary, t.tmp)
-#        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==1 & ph1), t.tmp)
-#        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==0 & ph1), t.tmp)
-#        overall.ve = c(1 - prev.vacc/prev.plac)    
-#        myprint(prev.plac, prev.vacc, overall.ve)        
-        
+      } else {
+        stop("unknown study name 11")
+      }
+      
+      myprint(tfinal.tpeak)
+      
     } else {
-        # subset to require risk_score
-        # note that it is assumed there no risk_score is missing for anyone in the analysis population. 
-        # in the case of single time point COR, we do a check for that after definining ph1, 
-        # which is why we have to do subset separately here again
-        if(!is.null(dat_proc$risk_score)) dat_proc=subset(dat_proc, !is.na(risk_score))
-        
+      
+      tfinal.tpeak=config.cor$tfinal.tpeak
+      
     }
     
     
+    # compute overall VE
+    # except for 
+    #   janssen_partA_VL because for variants analysis, there is not just one tfinal.tpeak
+    #   prevent19_stage2, azd1222_stage2 because CoR only
+    if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", "prevent19_stage2", "azd1222_stage2", "iliad_ib202p", "iliad_ib201p")) {
+      prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==1 & ph1), tfinal.tpeak)
+      prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==0 & ph1), tfinal.tpeak)   
+      overall.ve = c(1 - prev.vacc/prev.plac) 
+      myprint(prev.plac, prev.vacc, overall.ve)
+    } 
+    
+    #        # get VE in the first month or two of followup
+    #        dat.tmp=dat_proc
+    #        t.tmp=30
+    #        # censor at t.tmp 
+    #        dat.tmp$EventIndPrimary =ifelse(dat.tmp$EventTimePrimary<=t.tmp, dat.tmp$EventIndPrimary, 0)
+    #        dat.tmp$EventTimePrimary=ifelse(dat.tmp$EventTimePrimary<=t.tmp, dat.tmp$EventTimePrimary, t.tmp)
+    #        prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==1 & ph1), t.tmp)
+    #        prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat.tmp, Trt==0 & ph1), t.tmp)
+    #        overall.ve = c(1 - prev.vacc/prev.plac)    
+    #        myprint(prev.plac, prev.vacc, overall.ve)        
+    
+  } else {
+    # subset to require risk_score
+    # note that it is assumed there no risk_score is missing for anyone in the analysis population. 
+    # in the case of single time point COR, we do a check for that after definining ph1, 
+    # which is why we have to do subset separately here again
+    if(!is.null(dat_proc$risk_score)) dat_proc=subset(dat_proc, !is.na(risk_score))
+    
+  }
+  
+  
 }
 
 ## wt can be computed from ph1, ph2 and Wstratum. See config for redundancy note
@@ -935,10 +938,14 @@ if (exists("COR")) {
 #dat_proc$wt = ifelse(with(dat_proc, ph1), dat_proc$wt, NA) # the step above assigns weights for some subjects outside ph1. the next step makes them NA
 
 
-# converts discrete markers to factors from strings
-# and set cut points attribute
+
+################################################################################
+# converts discrete markers to factors from strings, set cut points attribute
+
 # this has to be done after the previous block b/c attribute is lost after subsetting
 
+
+# define the markers to work on
 all.markers1 = NULL
 if (TRIAL %in% c("covail", "covail_sanofi")) {
   assays1 = c("pseudoneutid50_D614G", "pseudoneutid50_Delta", "pseudoneutid50_Beta", "pseudoneutid50_BA.1", "pseudoneutid50_BA.4.BA.5", "pseudoneutid50_MDW")
@@ -961,7 +968,7 @@ if (TRIAL %in% c("covail", "covail_sanofi")) {
               "bindSpike_B.1.351", "bindSpike_DeltaMDW")
   all.markers1 = c("Day29"%.%assays1)
   
-} else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302")) {
+} else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302", "iliad_ib202p")) {
   all.markers1 = c("Day"%.%timepoints%.%assays)
   
 } else if (TRIAL=="nextgen_mock") {
@@ -979,7 +986,7 @@ if (!is.null(all.markers1)) {
     tmpname = substr(tmpname, 2, nchar(tmpname)-1)
     tmpname = as.numeric(strsplit(tmpname, ",")[[1]])
     cp = setdiff(tmpname,c(Inf, -Inf)) # if there are two categories, remove the second cut point, which is Inf
-  
+    
     if (len(table(dat_proc[[a%.%"cat"]])) != len(cp)+1) {
       # get cut points from the first group
       tmpname = names(table(dat_proc[[a%.%"cat"]]))[1]
@@ -1028,22 +1035,22 @@ if (!is.null(all.markers1)) {
 
 if(config$is_ows_trial & !TRIAL %in% c("janssen_partA_VL")) {
   
-    # maxed over Spike, RBD, N, restricting to Day 29 or 57
-    if("bindSpike" %in% assays & "bindRBD" %in% assays) {
-        if(has29) MaxbAbDay29 = max(dat_proc[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-        if(has29) MaxbAbDelta29overB = max(dat_proc[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-        if(has57) MaxbAbDay57 = max(dat_proc[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-        if(has57) MaxbAbDelta57overB = max(dat_proc[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
-    }
-        
-    # maxed over ID50 and ID80, restricting to Day 29 or 57
-    if("pseudoneutid50" %in% assays & "pseudoneutid80" %in% assays) {
-        if(has29) MaxID50ID80Day29 = max(dat_proc[,paste0("Day29", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)
-        if(has29) MaxID50ID80Delta29overB = max(dat_proc[,paste0("Delta29overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
-        if(has57) MaxID50ID80Day57 = max(dat_proc[,paste0("Day57", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)        
-        if(has57) MaxID50ID80Delta57overB = max(dat_proc[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
-    }
-    
+  # maxed over Spike, RBD, N, restricting to Day 29 or 57
+  if("bindSpike" %in% assays & "bindRBD" %in% assays) {
+    if(has29) MaxbAbDay29 = max(dat_proc[,paste0("Day29", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    if(has29) MaxbAbDelta29overB = max(dat_proc[,paste0("Delta29overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    if(has57) MaxbAbDay57 = max(dat_proc[,paste0("Day57", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+    if(has57) MaxbAbDelta57overB = max(dat_proc[,paste0("Delta57overB", c("bindSpike", "bindRBD", "bindN"))], na.rm=T)
+  }
+  
+  # maxed over ID50 and ID80, restricting to Day 29 or 57
+  if("pseudoneutid50" %in% assays & "pseudoneutid80" %in% assays) {
+    if(has29) MaxID50ID80Day29 = max(dat_proc[,paste0("Day29", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)
+    if(has29) MaxID50ID80Delta29overB = max(dat_proc[,paste0("Delta29overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
+    if(has57) MaxID50ID80Day57 = max(dat_proc[,paste0("Day57", c("pseudoneutid50", "pseudoneutid80"))], na.rm=T)        
+    if(has57) MaxID50ID80Delta57overB = max(dat_proc[,paste0("Delta57overB", c("pseudoneutid50", "pseudoneutid80"))], na.rm=TRUE)
+  }
+  
 }     
 
 
@@ -1059,7 +1066,7 @@ if(config$is_ows_trial & !TRIAL %in% c("janssen_partA_VL")) {
 #    }
 #])))
 
-    
+
 
 
 ###############################################################################
@@ -1133,26 +1140,26 @@ labels.ethnicity <- c(
 
 # baseline stratum labeling
 if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
-    Bstratum.labels <- c(
-      "Age >= 65",
-      "Age < 65, At risk",
-      "Age < 65, Not at risk"
-    )
-    
+  Bstratum.labels <- c(
+    "Age >= 65",
+    "Age < 65, At risk",
+    "Age < 65, Not at risk"
+  )
+  
 } else if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
-    Bstratum.labels <- c(
-      "Age < 60, Not at risk",
-      "Age < 60, At risk",
-      "Age >= 60, Not at risk",
-      "Age >= 60, At risk"
-    )
-    
+  Bstratum.labels <- c(
+    "Age < 60, Not at risk",
+    "Age < 60, At risk",
+    "Age >= 60, Not at risk",
+    "Age >= 60, At risk"
+  )
+  
 } else if (study_name %in% c("PREVENT19","AZD1222")) {
-    Bstratum.labels <- c(
-      "Age >= 65",
-      "Age < 65"
-    )
-
+  Bstratum.labels <- c(
+    "Age >= 65",
+    "Age < 65"
+  )
+  
 } else if (TRIAL %in% c("nvx_uk302")) {
   Bstratum.labels <- c(
     "Age >= 65",
@@ -1160,24 +1167,25 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
   )
   
 } else if (study_name %in% c("VAT08")) {
-    Bstratum.labels <- c(
-      "Age >= 60",
-      "Age < 60"
-    )
-
-} else if (study_name=="HVTN705") {
-    # do nothing
-
+  Bstratum.labels <- c(
+    "Age >= 60",
+    "Age < 60"
+  )
+  
 } else if (study_name %in% c("PROFISCOV")) {
-    Bstratum.labels <- c("All")
-
+  Bstratum.labels <- c("All")
+  
 } else if (study_name == 'IARCHPV') {
   Bstratum.labels <- c(
     "Age > 14",
     "Age <= 14"
   )
   
-} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", "nextgen_mock")) {
+} else if (study_name == 'HVTN705') {
+  # do nothing
+  
+} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", 
+                        "nextgen_mock", "iliad_ib202p", "iliad_ib201p")) {
   # do nothing
   
 } else stop("unknown study_name 2")
@@ -1187,58 +1195,58 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
 # baseline stratum labeling
 if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
   demo.stratum.labels <- c(
-      "Age >= 65, URM",
-      "Age < 65, At risk, URM",
-      "Age < 65, Not at risk, URM",
-      "Age >= 65, White non-Hisp",
-      "Age < 65, At risk, White non-Hisp",
-      "Age < 65, Not at risk, White non-Hisp"
-    )
-    
+    "Age >= 65, URM",
+    "Age < 65, At risk, URM",
+    "Age < 65, Not at risk, URM",
+    "Age >= 65, White non-Hisp",
+    "Age < 65, At risk, White non-Hisp",
+    "Age < 65, Not at risk, White non-Hisp"
+  )
+  
 } else if (study_name=="ENSEMBLE" | study_name=="MockENSEMBLE") {
-    demo.stratum.labels <- c(
-      "US URM, Age 18-59, Not at risk",
-      "US URM, Age 18-59, At risk",
-      "US URM, Age >= 60, Not at risk",
-      "US URM, Age >= 60, At risk",
-      "US White non-Hisp, Age 18-59, Not at risk",
-      "US White non-Hisp, Age 18-59, At risk",
-      "US White non-Hisp, Age >= 60, Not at risk",
-      "US White non-Hisp, Age >= 60, At risk",
-      "Latin America, Age 18-59, Not at risk",
-      "Latin America, Age 18-59, At risk",
-      "Latin America, Age >= 60, Not at risk",
-      "Latin America, Age >= 60, At risk",
-      "South Africa, Age 18-59, Not at risk",
-      "South Africa, Age 18-59, At risk",
-      "South Africa, Age >= 60, Not at risk",
-      "South Africa, Age >= 60, At risk"
-    )
-    
+  demo.stratum.labels <- c(
+    "US URM, Age 18-59, Not at risk",
+    "US URM, Age 18-59, At risk",
+    "US URM, Age >= 60, Not at risk",
+    "US URM, Age >= 60, At risk",
+    "US White non-Hisp, Age 18-59, Not at risk",
+    "US White non-Hisp, Age 18-59, At risk",
+    "US White non-Hisp, Age >= 60, Not at risk",
+    "US White non-Hisp, Age >= 60, At risk",
+    "Latin America, Age 18-59, Not at risk",
+    "Latin America, Age 18-59, At risk",
+    "Latin America, Age >= 60, Not at risk",
+    "Latin America, Age >= 60, At risk",
+    "South Africa, Age 18-59, Not at risk",
+    "South Africa, Age 18-59, At risk",
+    "South Africa, Age >= 60, Not at risk",
+    "South Africa, Age >= 60, At risk"
+  )
+  
 } else if (study_name=="PREVENT19") {
-    demo.stratum.labels <- c(
-      "US White non-Hisp, Age 18-64, Not at risk",
-      "US White non-Hisp, Age 18-64, At risk",
-      "US White non-Hisp, Age >= 65, Not at risk",
-      "US White non-Hisp, Age >= 65, At risk",
-      "US URM, Age 18-64, Not at risk",
-      "US URM, Age 18-64, At risk",
-      "US URM, Age >= 65, Not at risk",
-      "US URM, Age >= 65, At risk",
-      "Mexico, Age 18-64",
-      "Mexico, Age >= 65"
-    )
-
+  demo.stratum.labels <- c(
+    "US White non-Hisp, Age 18-64, Not at risk",
+    "US White non-Hisp, Age 18-64, At risk",
+    "US White non-Hisp, Age >= 65, Not at risk",
+    "US White non-Hisp, Age >= 65, At risk",
+    "US URM, Age 18-64, Not at risk",
+    "US URM, Age 18-64, At risk",
+    "US URM, Age >= 65, Not at risk",
+    "US URM, Age >= 65, At risk",
+    "Mexico, Age 18-64",
+    "Mexico, Age >= 65"
+  )
+  
 } else if (study_name=="AZD1222") {
-    demo.stratum.labels <- c(
-      "US White non-Hisp, Age 18-64",
-      "US White non-Hisp, Age >= 65",
-      "US URM, Age 18-64",
-      "US URM, Age >= 65",
-      "Non-US, Age 18-64",
-      "Non-US, Age >= 65"
-    )
-
+  demo.stratum.labels <- c(
+    "US White non-Hisp, Age 18-64",
+    "US White non-Hisp, Age >= 65",
+    "US URM, Age 18-64",
+    "US URM, Age >= 65",
+    "Non-US, Age 18-64",
+    "Non-US, Age >= 65"
+  )
+  
 } else if (study_name=="VAT08") {
   #    Stage 1, Not HND, Not senior
   #    Stage 1, Not HND, senior
@@ -1247,21 +1255,14 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
   #    Stage 2, Not senior
   #    Stage 2, senior
   
-    demo.stratum.labels <- c(
-      "Stage 1 Not HND, Age 18-59",
-      "Stage 1 Not HND, Age >= 60",
-      "Stage 1 HND, Age 18-59",
-      "Stage 1 HND, Age >= 60",
-      "Stage 2, Age 18-59",
-      "Stage 2, Age >= 60"
-    )
-
-} else if (study_name=="HVTN705") {
-  # do nothing
-  
-} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays")) {
-  # do nothing
-  
+  demo.stratum.labels <- c(
+    "Stage 1 Not HND, Age 18-59",
+    "Stage 1 Not HND, Age >= 60",
+    "Stage 1 HND, Age 18-59",
+    "Stage 1 HND, Age >= 60",
+    "Stage 2, Age 18-59",
+    "Stage 2, Age >= 60"
+  )
 } else if (TRIAL == "nvx_uk302") {
   demo.stratum.labels <- c(
     "England Other, Age >= 65",
@@ -1273,8 +1274,8 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
   )
   
 } else if (study_name=="PROFISCOV") {
-    demo.stratum.labels <- c("All")
-
+  demo.stratum.labels <- c("All")
+  
 } else if (study_name == 'IARCHPV') {
   demo.stratum.labels <- c(
     "Age > 14",
@@ -1288,107 +1289,119 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age >= 65"
   )
   
+  
+} else if (study_name=="HVTN705") {
+  # do nothing
+  
+} else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", 
+                        "iliad_ib202p", "iliad_ib201p")) {
+  # do nothing
+  
 } else stop("unknown study_name 3")
 
-{
-labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
-regions.ENSEMBLE=0:2
-names(regions.ENSEMBLE)=labels.regions.ENSEMBLE
 
-labels.countries.ENSEMBLE=c("0"="United States", "1"="Argentina", "2"="Brazil", "3"="Chile", "4"="Columbia", "5"="Mexico", "6"="Peru", "7"="South Africa")
-countries.ENSEMBLE=0:7
-names(countries.ENSEMBLE)=labels.countries.ENSEMBLE
+
+{
+  labels.regions.ENSEMBLE =c("0"="Northern America", "1"="Latin America", "2"="Southern Africa")
+  regions.ENSEMBLE=0:2
+  names(regions.ENSEMBLE)=labels.regions.ENSEMBLE
+  
+  labels.countries.ENSEMBLE=c("0"="United States", "1"="Argentina", "2"="Brazil", "3"="Chile", "4"="Columbia", "5"="Mexico", "6"="Peru", "7"="South Africa")
+  countries.ENSEMBLE=0:7
+  names(countries.ENSEMBLE)=labels.countries.ENSEMBLE
 }
 
 ###############################################################################
 # theme options
 ###############################################################################
 {
-# fixed knitr chunk options
-knitr::opts_chunk$set(
-  comment = "#>",
-  collapse = TRUE,
-  out.width = "80%",
-  out.extra = "",
-  fig.pos = "H",
-  fig.show = "hold",
-  fig.align = "center",
-  fig.width = 6,
-  fig.asp = 0.618,
-  fig.retina = 0.8,
-  dpi = 600,
-  echo = FALSE,
-  message = FALSE,
-  warning = FALSE
-)
-
-# global options
-options(
-  digits = 6,
-  #scipen = 999,
-  dplyr.print_min = 6,
-  dplyr.print_max = 6,
-  crayon.enabled = FALSE,
-  bookdown.clean_book = TRUE,
-  knitr.kable.NA = "NA",
-  repos = structure(c(CRAN = "https://cran.rstudio.com/"))
-)
-
-# no complaints from installation warnings
-Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
-
-# overwrite options by output type
-if (knitr:::is_html_output()) {
-  #options(width = 80)
-
-  # automatically create a bib database for R packages
-  knitr::write_bib(c(
-    .packages(), "bookdown", "knitr", "rmarkdown"
-  ), "packages.bib")
-}
-if (knitr:::is_latex_output()) {
-  #knitr::opts_chunk$set(width = 67)
-  #options(width = 67)
-  options(cli.unicode = TRUE)
-
-  # automatically create a bib database for R packages
-  knitr::write_bib(c(
-    .packages(), "bookdown", "knitr", "rmarkdown"
-  ), "packages.bib")
-}
-
-# create and set global ggplot theme
-# borrowed from https://github.com/tidymodels/TMwR/blob/master/_common.R
-theme_transparent <- function(...) {
-  # use black-white theme as base
-  ret <- ggplot2::theme_bw(...)
-
-  # modify with transparencies
-  trans_rect <- ggplot2::element_rect(fill = "transparent", colour = NA)
-  ret$panel.background  <- trans_rect
-  ret$plot.background   <- trans_rect
-  ret$legend.background <- trans_rect
-  ret$legend.key        <- trans_rect
-
-  # always have legend below
-  ret$legend.position <- "bottom"
-  return(ret)
-}
-
-library(ggplot2)
-theme_set(theme_transparent())
-theme_update(
-  text = element_text(size = 25),
-  axis.text.x = element_text(colour = "black", size = 30),
-  axis.text.y = element_text(colour = "black", size = 30)
-)
-
-# custom ggsave function with updated defaults
-ggsave_custom <- function(filename = default_name(plot),
-                          height= 15, width = 21, ...) {
-  ggsave(filename = filename, height = height, width = width, ...)
-}
+  # fixed knitr chunk options
+  knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    out.width = "80%",
+    out.extra = "",
+    fig.pos = "H",
+    fig.show = "hold",
+    fig.align = "center",
+    fig.width = 6,
+    fig.asp = 0.618,
+    fig.retina = 0.8,
+    dpi = 600,
+    echo = FALSE,
+    message = FALSE,
+    warning = FALSE
+  )
+  
+  # global options
+  options(
+    digits = 6,
+    #scipen = 999,
+    dplyr.print_min = 6,
+    dplyr.print_max = 6,
+    crayon.enabled = FALSE,
+    bookdown.clean_book = TRUE,
+    knitr.kable.NA = "NA",
+    repos = structure(c(CRAN = "https://cran.rstudio.com/"))
+  )
+  
+  # no complaints from installation warnings
+  Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
+  
+  # overwrite options by output type
+  if (knitr:::is_html_output()) {
+    #options(width = 80)
+    
+    # automatically create a bib database for R packages
+    knitr::write_bib(c(
+      .packages(), "bookdown", "knitr", "rmarkdown"
+    ), "packages.bib")
+  }
+  if (knitr:::is_latex_output()) {
+    #knitr::opts_chunk$set(width = 67)
+    #options(width = 67)
+    options(cli.unicode = TRUE)
+    
+    # automatically create a bib database for R packages
+    knitr::write_bib(c(
+      .packages(), "bookdown", "knitr", "rmarkdown"
+    ), "packages.bib")
+  }
+  
+  # create and set global ggplot theme
+  # borrowed from https://github.com/tidymodels/TMwR/blob/master/_common.R
+  theme_transparent <- function(...) {
+    # use black-white theme as base
+    ret <- ggplot2::theme_bw(...)
+    
+    # modify with transparencies
+    trans_rect <- ggplot2::element_rect(fill = "transparent", colour = NA)
+    ret$panel.background  <- trans_rect
+    ret$plot.background   <- trans_rect
+    ret$legend.background <- trans_rect
+    ret$legend.key        <- trans_rect
+    
+    # always have legend below
+    ret$legend.position <- "bottom"
+    return(ret)
+  }
+  
+  library(ggplot2)
+  theme_set(theme_transparent())
+  theme_update(
+    text = element_text(size = 25),
+    axis.text.x = element_text(colour = "black", size = 30),
+    axis.text.y = element_text(colour = "black", size = 30)
+  )
+  
+  # custom ggsave function with updated defaults
+  ggsave_custom <- function(filename = default_name(plot),
+                            height= 15, width = 21, ...) {
+    ggsave(filename = filename, height = height, width = width, ...)
+  }
 }
 
 
 cat("\n\n\n")
+
+
