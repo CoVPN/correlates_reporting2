@@ -76,16 +76,17 @@ read.csv(here(Sys.getenv('file_path'), "learner-screens.csv"), row.names = 1, he
 ```{r cvsl-args, warning=FALSE, echo=FALSE}
 caption <- "Arguments supplied to CV.Superlearner."
 
-# cvsl_args <- read.csv(here::here("cor_surrogates", "output", Sys.getenv("TRIAL"), "cvsl_args.csv"),
-#          row.names = 1, header = TRUE)
-
 cvsl_args <- read.csv(here(Sys.getenv('file_path'), "cvsl_args.csv"),
-                      row.names = 1, header = TRUE)
+                      row.names = 1, header = TRUE) 
+# %>%
+#   mutate(Argument = if_else(Argument == "Cases/Total Subjects in vaccine group (%)", "Cases/Total Subjects in phase 2 (%)", Argument)) 
 
-cases_vaccine <- cvsl_args %>% filter(Argument == "Cases/Total Subjects in vaccine group (%)")
+cases_phase1 <- cvsl_args %>% filter(Argument == "Cases/Total Subjects in phase 1 (%)")
+cases_phase2 <- cvsl_args %>% filter(Argument == "Cases/Total Subjects in phase 2 (%)")
 
 cvsl_args %>%
-  filter(Argument != "Cases/Total Subjects in vaccine group (%)") %>%
+  filter(!Argument %in% c("Cases/Total Subjects in phase 1 (%)",
+                          "Cases/Total Subjects in phase 2 (%)")) %>%
   kable(
     booktabs = TRUE,
     linesep = "",
@@ -93,11 +94,14 @@ cvsl_args %>%
   ) %>%
   kable_styling(latex_options = c("hold_position"),
                 font_size = 9) %>%
-  row_spec(0,bold=TRUE) %>%
-  #column_spec(1:2, width = "5cm") %>%
-  # collapse_rows(columns = 1, valign = "top", latex_hline = "major") %>%
-  footnote(paste0(cases_vaccine$Argument, " = ", cases_vaccine$Value),
-           threeparttable = TRUE)
+  row_spec(0, bold=TRUE) %>%
+  footnote(
+    general = c(
+      paste0(cases_phase1$Argument, " = ", cases_phase1$Value),
+      paste0(cases_phase2$Argument, " = ", cases_phase2$Value)
+    ),
+    threeparttable = TRUE
+  )
 
 ```
 
@@ -449,7 +453,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("forest_vac
 knitr::include_graphics(here::here(Sys.getenv('file_path'), "figs", paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[1], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[1], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[1], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")}
 knitr::include_graphics(here::here(Sys.getenv('file_path'), "figs", paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[1], ".png")))
 ```
 
@@ -463,7 +467,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("forest_vac
 knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[2], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[2], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[2], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")}
 knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[2], ".png")))
 ```
 
@@ -475,7 +479,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("forest_vac
 knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[3], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[3], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[3], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")}
 knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[3], ".png")))
 ```
 
@@ -487,7 +491,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("forest_vac
 knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[4], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[4], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[4], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")}
 knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[4], ".png")))
 ```
 
@@ -499,7 +503,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("forest_vac
 knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[5], ".png")))
 ```
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[5], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
+```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[5], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")}
 knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[5], ".png")))
 ```
 
@@ -514,7 +518,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_"
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[6], ".png"))) -->
 <!-- ``` -->
 
-<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[6], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")} -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[6], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")} -->
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[6], ".png"))) -->
 <!-- ``` -->
 
@@ -526,7 +530,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_"
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[7], ".png"))) -->
 <!-- ``` -->
 
-<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[7], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")} -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[7], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")} -->
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[7], ".png"))) -->
 <!-- ``` -->
 
@@ -538,7 +542,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_"
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[8], ".png"))) -->
 <!-- ``` -->
 
-<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[8], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")} -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[8], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")} -->
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[8], ".png"))) -->
 <!-- ``` -->
 
@@ -550,7 +554,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_"
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[9], ".png"))) -->
 <!-- ``` -->
 
-<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[9], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")} -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[9], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")} -->
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[9], ".png"))) -->
 <!-- ``` -->
 
@@ -562,7 +566,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_"
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[10], ".png"))) -->
 <!-- ``` -->
 
-<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[10], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")} -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[10], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")} -->
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[10], ".png"))) -->
 <!-- ``` -->
 
@@ -574,7 +578,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_"
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[11], ".png"))) -->
 <!-- ``` -->
 
-<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[11], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")} -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[11], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")} -->
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[11], ".png"))) -->
 <!-- ``` -->
 
@@ -587,7 +591,7 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_"
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[12], ".png"))) -->
 <!-- ``` -->
 
-<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[12], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")} -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[12], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")} -->
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[12], ".png"))) -->
 <!-- ``` -->
 
@@ -599,28 +603,30 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_"
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[13], ".png"))) -->
 <!-- ``` -->
 
-<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[13], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")} -->
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[13], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")} -->
 <!-- knitr::include_graphics(here("cor_surrogates", "figs", Sys.getenv("TRIAL"), paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[13], ".png"))) -->
 <!-- ``` -->
 
-```{r get-reference-varset-index, echo=FALSE, include=FALSE}
-
-ref_varset_index = which(DiscreteSLperf_allvarsets$varset == "1_baselineRiskFactors")
-
-```
 
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[ref_varset_index], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting COVID-19 cases.")}
-knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("forest_vacc_cvaucs_", levels(DiscreteSLperf_allvarsets$varset)[ref_varset_index], ".png")))
-```
+<!-- ```{r get-reference-varset-index, echo=FALSE, include=FALSE} -->
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[ref_varset_index], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")}
-knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[ref_varset_index], ".png")))
-```
+<!-- ref_varset_index = which(DiscreteSLperf_allvarsets$varset == "1_baselineRiskFactors") -->
 
-```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[ref_varset_index], "'': Weighted prediction probability plots of top two individual learners along with Super Learner and discrete-SL.")}
-knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[ref_varset_index], ".png")))
-```
+<!-- ``` -->
+
+
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[ref_varset_index], "'': Weighted CV-AUC (95\\% CI) of algorithms for predicting COVID-19 cases.")} -->
+<!-- knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("forest_vacc_cvaucs_", levels(DiscreteSLperf_allvarsets$varset)[ref_varset_index], ".png"))) -->
+<!-- ``` -->
+
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[ref_varset_index], "'': Weighted CV-AUC ROC curves of top two individual learners along with Super Learner and discrete-SL.")} -->
+<!-- knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("ROCcurve_", levels(DiscreteSLperf_allvarsets$varset)[ref_varset_index], ".png"))) -->
+<!-- ``` -->
+
+<!-- ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.cap=paste0("Variable set ``", levels(DiscreteSLperf_allvarsets$varsetStr)[ref_varset_index], "'': Weighted prediction probability plots with median (IQR) for top two individual learners, Super Learner and discrete-SL.")} -->
+<!-- knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_", levels(DiscreteSLperf_allvarsets$varset)[ref_varset_index], ".png"))) -->
+<!-- ``` -->
 
 
 
@@ -630,22 +636,44 @@ knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("predProb_"
 ```{r allvarsets-allFolds-discreteSLs, warning=FALSE, echo=FALSE, message=FALSE}
 caption <- "Predictors and their coefficients in the Discrete SL learner (top-performing learner) selected for each of the 5 folds across top 5 variable sets and the reference variable set. Results shown are for the first random seed (out of 10 random seeds)."
 
-tab <- read.csv(here(Sys.getenv('file_path'), "all_varsets_all_folds_discreteSLmodels.csv"),
+if(basename(file_path) != "nonnaive_1dosemRNA_allcases_briskscore"){
+  tab <- read.csv(here(Sys.getenv('file_path'), "all_varsets_all_folds_discreteSLmodels.csv"),
          row.names = 1,
          header = TRUE) %>%
   select(-"Predictors.Features") %>%
   select(varset, fold, Learner, everything()) %>%
+  mutate(order = match(varset, DiscreteSLperf_allvarsets$varset)) %>%
+  arrange(order, fold, -abs(Coefficient), -abs(Gain)) %>%
   mutate(Coefficient = format(round(Coefficient, 3), nsmall = 3),
          Odds.Ratio = format(round(Odds.Ratio, 3), nsmall = 3),
          #Gain = format(round(Gain, 3), nsmall = 3),
          #Cover = format(round(Cover, 3), nsmall = 3),
          #Frequency = format(round(Frequency, 3), nsmall = 3)
          ) %>%
-  mutate(order = match(varset, DiscreteSLperf_allvarsets$varset)) %>%
-  arrange(order) %>%
   select(-order) %>%
   rename(`Variable Set` = varset,
          Fold = fold)
+} else {
+  tab <- read.csv(here(Sys.getenv('file_path'), "all_varsets_all_folds_discreteSLmodels.csv"),
+         row.names = 1,
+         header = TRUE) %>%
+  #select(-"Predictors.Features") %>%
+  rename(`Predictors/Features` = `Predictors.Features`) %>%
+  select(varset, fold, Learner, everything()) %>%
+  mutate(order = match(varset, DiscreteSLperf_allvarsets$varset)) %>%
+  arrange(order, fold, -abs(Coefficient), -abs(Gain)) %>%
+  mutate(Coefficient = format(round(Coefficient, 3), nsmall = 3),
+         Odds.Ratio = format(round(Odds.Ratio, 3), nsmall = 3),
+         #Gain = format(round(Gain, 3), nsmall = 3),
+         #Cover = format(round(Cover, 3), nsmall = 3),
+         #Frequency = format(round(Frequency, 3), nsmall = 3)
+         ) %>%
+  select(-order) %>%
+  rename(`Variable Set` = varset,
+         Fold = fold)
+}
+
+
 
 tab %>%
   kable(

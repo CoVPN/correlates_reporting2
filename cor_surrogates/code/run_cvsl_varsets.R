@@ -64,14 +64,20 @@ methodVar = "method.CC_nloglik"
 interval_scaleVar = "logit"
 ipc_scaleVar <- "identity"
 ipc_est_typeVar = "ipw"
-cvsl_args <- data.frame(matrix(ncol = 2, nrow = 10)) %>%
+
+ncases_ph1 <- sum(dat.ph1 %>% select(matches(endpoint)))
+n_ph1 <- nrow(dat.ph1)
+
+cvsl_args <- data.frame(matrix(ncol = 2, nrow = 11)) %>%
   rename(Argument = X1,
          Value = X2) %>%
-  mutate(Argument = as.character(c("Cases/Total Subjects in vaccine group (%)", "family",
-                                   "method", "CI scale", "IPW correction scale", "V_outer", "cvControl (outer CV control)",
+  mutate(Argument = as.character(c("Cases/Total Subjects in phase 1 (%)", 
+                                   "Cases/Total Subjects in phase 2 (%)", 
+                                   "family", "method", "CI scale", "IPW correction scale", "V_outer", "cvControl (outer CV control)",
                                    "V_inner", "innerCvControl", "Weighting")),
-         Value = as.character(c(paste0(nv, "/", length(Y), " (", round(nv*100/length(Y), 2), "%)"), familyVar,
-                                methodVar, interval_scaleVar, ipc_scaleVar, V_outer, cvControl_quote,
+         Value = as.character(c(paste0(ncases_ph1, "/", nrow(dat.ph1), " (", round(ncases_ph1*100/nrow(dat.ph1), 2), "%)"),
+                                paste0(nv, "/", length(Y), " (", round(nv*100/length(Y), 2), "%)"), 
+                                familyVar, methodVar, interval_scaleVar, ipc_scaleVar, V_outer, cvControl_quote,
                                 V_inner, innerCvControl_quote, ipc_est_typeVar)))
 
 if(V_inner == length(Y)){
@@ -89,7 +95,7 @@ cvsl_args %>% add_row(Argument = "vimp package version",
 # ensure reproducibility
 set.seed(20210216)
 # if non-naive and 1 dose mRNA arm then varset 26 does not work with the above seed. So use set.seed(20250616) !!
-set.seed(9654)
+set.seed(23622)
 seeds <- round(runif(10, 1000, 10000)) # average over 10 random starts
 
 # disable parallelization in openBLAS and openMP

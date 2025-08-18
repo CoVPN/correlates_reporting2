@@ -22,7 +22,6 @@ if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/
 source(here::here("..", "_common.R"))
 #-----------------------------------------------
 
-
 conflicted::conflict_prefer("filter", "dplyr")
 conflicted::conflict_prefer("summarise", "dplyr")
 
@@ -110,43 +109,75 @@ source(here::here("code", "cor_surrogates_setup.R"))
 varsets <- read.csv(here(file_path, "varset_names.csv"), stringsAsFactors = FALSE) 
 
 # # Run all sbatch jobs through R!
-# # system(paste0("export TRIAL=", Sys.getenv("TRIAL")))
+# system(paste0("export TRIAL=", Sys.getenv("TRIAL")))
 # for(varset_number in 1:nrow(varsets)){
 #   system(paste("sbatch code/submit_cluster_job.sh", varset_number))
 # }
-# 
 
-for(varset_number in job_ids <- c(3, 19, 28, 37, 41, 51, 61, 70, 78, 91, 105)){
-  system(paste("sbatch code/submit_cluster_job.sh", varset_number))
+
+# for(varset_number in c(34, 36, 40, 83, 91, 94, 98)){
+#   system(paste("sbatch code/submit_cluster_job.sh", varset_number))
+# }
+
+##########################################################
+# CHECK IF ALL JOBS ARE COMPLETED SUCCESSFULLY based off expected job ids every 2 mins!
+# Set your working directory to where the output files are stored
+# file_path = "/home/bborate/forked_correlates_directory/correlates_reporting2/cor_surrogates/output/covail_xassays/nonnaive_1dosemRNA_allcases_briskscore"
+
+expected_ids <- 1:nrow(varsets)
+check_interval <- 5  # seconds (i.e., 1 minute)
+
+repeat {
+  # List all .rds files
+  rds_files <- list.files(file_path, pattern = "\\.rds$", full.names = TRUE)
+  
+  # Extract job IDs from filenames using regex
+  actual_ids <- as.numeric(gsub(".*?_([0-9]+)_.*\\.rds", "\\1", rds_files))
+  actual_ids <- actual_ids[!is.na(actual_ids)]  # remove unmatched entries
+  
+  # Find which jobs are still missing
+  missing_ids <- setdiff(expected_ids, actual_ids)
+  
+  if (length(missing_ids) == 0) {
+    message("ALL jobs finished successfully.")
+    
+    # Source your next script
+    source(here::here("code", "createRDAfiles_fromSLobjects.R"))
+    source(here::here("code", "tables_figures.R"))
+    
+    break  # Exit the loop
+  } else {
+    message(paste("Waiting... MISSING job IDs:", paste(missing_ids, collapse = ", ")))
+    
+    # Sleep for 3 minutes before re-checking
+    Sys.sleep(check_interval)
+  }
 }
+#########################################################
+# RUN ONLY THE JOBS THAT RAN UNSUCCESSFULLY !
 
-
+# for(varset_number in job_ids <- c(19, 28, 70, 78, 91)){
+#   system(paste("sbatch code/submit_cluster_job.sh", varset_number))
+# }
 # For non-naive, 1dosemRNA, missing jobs are:  1   3   4  13  19  20  21  26  28  31  33  35  37  39  40  41  42  43  45  51  60  61  65  70  73  78  79  81  83  85  88  90  91  95  96  98 100 102 103 105 106 107 109
 # For non-naive, 1dose, missing jobs are:  1  27  61  
 
-
-
-# job_ids <- c()
-# 
-# for (varset_number in 1:nrow(varsets)) {
-#   job_output <- system(paste("sbatch code/submit_cluster_job.sh", varset_number), intern = TRUE)
-#   job_id <- sub("Submitted batch job ", "", job_output)
-#   job_ids <- c(job_ids, job_id)
-# }
-
-source(here::here("code", "createRDAfiles_fromSLobjects.R"))
-source(here::here("code", "tables_figures.R"))
+# source(here::here("code", "createRDAfiles_fromSLobjects.R"))
+# source(here::here("code", "tables_figures.R"))
+#########################################################
+# KNIT THE PDF REPORT !
 # Run the following in Rstudio
 # Make sure the path is correct
-file_path = "/home/bborate/forked_correlates_directory/correlates_reporting2/cor_surrogates/output/covail_xassays/nonnaive_1dosemRNA_allcases_briskscore"
-
+file_path = "/home/bborate/forked_correlates_directory/correlates_reporting2/cor_surrogates/output/covail_xassays/nonnaive_1dose_allcases_briskscore"
 Sys.setenv(file_path = file_path)
+Sys.setenv(TRIAL = "covail_xassays")
+
 rmarkdown::render("report.Rmd", 
                   output_format = "pdf_document",
                   paste0(basename(file_path), ".pdf"))
 # Move the file
 file.rename(from = paste0(basename(file_path), ".pdf"), 
-            to = paste0(here("cor_surrogates", "covail_xassays_multivariable_SuperLearner_reports", "new"), "/", basename(file_path), ".pdf")) 
+            to = paste0(here("cor_surrogates", "covail_xassays_multivariable_SuperLearner_reports"), "/", basename(file_path), ".pdf")) 
 
 
 # # Run all sbatch jobs through R!

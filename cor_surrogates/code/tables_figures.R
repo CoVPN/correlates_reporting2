@@ -615,16 +615,30 @@ top5_plus_baseline <- cvaucs_vacc %>%
 # }
 
 # Forest plots for individual vaccine models
-for(i in 1:6) {
-  variableSet = top5_plus_baseline$varset[i]
-  png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
-  top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet),
-                                  PLOT.MARGIN = unit(c(3.9,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
-                                  NAMES.PLOT.MARGIN = unit(c(2.01,-0.15,1.0,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
-                                  y_at = 31) # Add y-coordinate at which the header for names needs to be
-  grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
-  dev.off()
+if(basename(file_path) != "nonnaive_1dosemRNA_allcases_briskscore"){
+  for(i in 1:6) {
+    variableSet = top5_plus_baseline$varset[i]
+    png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
+    top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet),
+                                    PLOT.MARGIN = unit(c(3.9,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
+                                    NAMES.PLOT.MARGIN = unit(c(2.01,-0.15,1.0,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
+                                    y_at = 31) # Add y-coordinate at which the header for names needs to be
+    grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
+    dev.off()
+  }
+} else {
+  for(i in 1:6) {
+    variableSet = top5_plus_baseline$varset[i]
+    png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
+    top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet),
+                                    PLOT.MARGIN = unit(c(2.2,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
+                                    NAMES.PLOT.MARGIN = unit(c(0.01,-0.15,1.2,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
+                                    y_at = 21) # Add y-coordinate at which the header for names needs to be
+    grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
+    dev.off()
+  }
 }
+
 
 
 

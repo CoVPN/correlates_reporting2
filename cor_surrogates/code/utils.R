@@ -883,6 +883,25 @@ plot_roc_curves <- function(predict, cvaucDAT, weights) {
 }
 
 
+
+
+# Function to compute median and IQR and return formatted label
+# Used for predicted probability plots
+median_iqr_label <- function(y) {
+  q1 <- quantile(y, 0.25, na.rm = TRUE)
+  q3 <- quantile(y, 0.75, na.rm = TRUE)
+  med <- median(y, na.rm = TRUE)
+  ymax <- max(y, na.rm = TRUE)
+  label <- sprintf("%.3f (%.3f - %.3f)", med, q1, q3)
+  y_pos <- 0.75 * ymax + 0.25 * med  # display closer to max
+  return(data.frame(y = y_pos, label = label))
+}
+
+
+
+
+
+
 # Plot predicted probability plots for SL, discrete.SL and topRanking learner-screen combinations
 # @param pred dataframe returned by get_cv_predictions function
 # @param weights the inverse probability weights
@@ -908,6 +927,27 @@ plot_predicted_probabilities <- function(pred, weights = rep(1, length(pred$pred
     cases = "Post Day 22 to Day 181 Cases"
     disease_name = "COVID-19"
   }
+  
+  # pred %>%
+  #   mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>%
+  #   ggplot(aes(x = Ychar, y = pred, color = Ychar)) +
+  #   geom_jitter(width = 0.06, size = 3, shape = 21, fill = "white") +
+  #   geom_violin(alpha = 0.05, color = "black", lwd=1.0) +
+  #   geom_boxplot(alpha = 0.05, width = 0.15, color = "black", outlier.size = NA, outlier.shape = NA, lwd=1.0) +
+  #   theme_bw() +
+  #   #scale_color_manual(values = c("#56B4E9", "#E69F00")) +
+  #   scale_color_manual(values = c("#00468B", "#8B0000")) +
+  #   facet_wrap(vars(learnerScreen), ncol = 1, scales = "free") +
+  #   labs(y = paste0("CV estimated predicted probability of ", disease_name, " disease"), x = "") +
+  #   theme(
+  #     legend.position = "none",
+  #     strip.text.x = element_text(size = 25),
+  #     axis.text = element_text(size = 23),
+  #     axis.ticks.length = unit(.35, "cm"),
+  #     axis.title.y = element_text(size = 30)
+  #   )
+  
+  
   pred %>%
     mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>%
     ggplot(aes(x = Ychar, y = pred, color = Ychar)) +
@@ -925,7 +965,16 @@ plot_predicted_probabilities <- function(pred, weights = rep(1, length(pred$pred
       axis.text = element_text(size = 23),
       axis.ticks.length = unit(.35, "cm"),
       axis.title.y = element_text(size = 30)
-    )
+    ) +
+    stat_summary(
+      fun.data = median_iqr_label,
+      geom = "text",
+      aes(x = as.numeric(factor(Ychar)) + 0.15,  # nudge x position slightly right
+          label = after_stat(label)),
+      vjust = 0.5,
+      hjust = 0,
+      size = 6
+    ) 
 }
 
 

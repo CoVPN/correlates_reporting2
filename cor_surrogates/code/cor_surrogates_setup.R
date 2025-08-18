@@ -1592,15 +1592,15 @@ if(job_id == 1){
 # all possible covariates for the Super Learner (baseline risk factors + all markers)
 X_covars2adjust_ph2_init <- dat.ph2 %>% select(all_of(c(briskfactors, markers)))
 
-# DELETE THIS CODE WHEN YOUYI UPDATES THE "covail_xassays" TRIAL DATASET
-if(TRIAL == "covail_xassays"){
-  
-  X_covars2adjust_ph2_init = X_covars2adjust_ph2_init %>%
-    mutate(
-      Delta15overBfrnt50_BA.1 = if_else(is.na(Delta15overBfrnt50_BA.1), Day15frnt50_BA.1 - Bfrnt50_BA.1, Delta15overBfrnt50_BA.1),     
-      Delta15overBfrnt80_BA.1 = if_else(is.na(Delta15overBfrnt80_BA.1), Day15frnt80_BA.1 - Bfrnt80_BA.1, Delta15overBfrnt80_BA.1)      
-    )
-}
+# # DELETE THIS CODE WHEN YOUYI UPDATES THE "covail_xassays" TRIAL DATASET
+# if(TRIAL == "covail_xassays"){
+#   
+#   X_covars2adjust_ph2_init = X_covars2adjust_ph2_init %>%
+#     mutate(
+#       Delta15overBfrnt50_BA.1 = if_else(is.na(Delta15overBfrnt50_BA.1), Day15frnt50_BA.1 - Bfrnt50_BA.1, Delta15overBfrnt50_BA.1),     
+#       Delta15overBfrnt80_BA.1 = if_else(is.na(Delta15overBfrnt80_BA.1), Day15frnt80_BA.1 - Bfrnt80_BA.1, Delta15overBfrnt80_BA.1)      
+#     )
+# }
 
 X_covars2adjust_ph2 <- X_covars2adjust_ph2_init
 

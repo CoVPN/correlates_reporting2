@@ -5,8 +5,8 @@ if(TRIAL == "covail_tcell"){
   non_naive = FALSE
   #non_naive = TRUE
   
-  # trt.arms.for.analysis <- c(1:2, 4:12)
-  trt.arms.for.analysis <- c(1:2, 4:15)
+  trt.arms.for.analysis <- c(1:2, 4:12)
+  # trt.arms.for.analysis <- c(1:2, 4:15)
   
   # baseline risk factors
   bRiskFactors_includes_insert.stage.info = TRUE
@@ -124,10 +124,10 @@ if(TRIAL == "covail_tcell"){
   
 } else if (TRIAL == "covail_xassays"){
   
-  non_naive = FALSE
-  # trt_arms = "1dosemRNA"
-  trt_arms = "1dose"
+  non_naive = TRUE
   bRiskFactors_includes_insert.stage.info = FALSE
+  trt_arms = "1dosemRNA"
+  # trt_arms = "1dose"
   
   # Setting up file path
   if(isFALSE(non_naive)){ exposureStatus = "naive" } else {exposureStatus = "nonnaive"}
@@ -199,7 +199,7 @@ if(TRIAL == "covail_tcell"){
 
 
   # Drop out all categorical markers
-  individualMarkers <- individualMarkers[!grepl("cat$", individualMarkers)]
+  individualMarkers <- individualMarkers[!grepl("cat$|Delta", individualMarkers)]
   
   # markers of interest
   markerVars <- individualMarkers
