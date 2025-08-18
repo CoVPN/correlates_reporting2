@@ -7,11 +7,12 @@ source(here::here("..", "_common.R"))
 
 {
 library(kyotil) # p.adj.perm, getFormattedSummary
-library(survey)
-library(parallel)
 library(Hmisc) # wtd.quantile, cut2
 library(xtable) # this is a dependency of kyotil
-
+library(sandwich)
+library(lmtest)
+  
+  
 source(here::here("code", "params.R"))
 time.start=Sys.time()
 myprint(study_name)
@@ -74,31 +75,16 @@ begin=Sys.time()
 fits=list()
 fits.scaled=list()
 for (i in 1:2) { # 1: not scaled, 2: scaled
-    for (a in all.markers) {
-        fit = tps(update (form.0,  as.formula('~. + '%.%ifelse(i==2,"scale("%.%a%.%")", a))), 
-                  dat.ph2, nn0 = nn0, nn1 = nn1, 
-                  group = dat.ph2$tps.stratum) 
-            # method = "WL"# to be more robust
-        
-        ## getFormattedSummary() has this logic, so no necessary
-        # res = summary(fit)$coef
-        # robust = T # better for small samples
-        # idx = ifelse(robust, "Emp ", "Mod ")
-        # out = cbind(res[, c("Value", idx %.% "p")],
-        #             `lower bound` = res[, "Value"] - 1.96 * res[, idx %.% "SE"],
-        #             `upper bound` = res[, "Value"] + 1.96 * res[, idx %.% "SE"])
-        # 
-        # out[, c(1, 3, 4)] = exp(out[, c(1, 3, 4)])
-        # colnames(out) = c("OR", "p.value", "(lower", "upper)")
-        # fit$coefficients = out
-        
-        if (i==1) fits[[a]]=fit else fits.scaled[[a]]=fit
-    }
-}
-# if(TRIAL=='id27hpv' & COR=='M18') {
-#   assertthat::assert_that(all(abs(fits$M18bind_mdw$coef-c(-4.68354733703185,-0.102079236701852,-0.0989783451284477))<1e-6), msg = "failed cor_poisson unit testing: "%.%concatList(fits$M18bind_mdw$coef))    
-# }
+  for (a in all.markers) {
+    f=update (form.0,  as.formula('~. + '%.%ifelse(i==2,"scale("%.%a%.%")", a)))
     
+    fit <- glm(f, family = poisson(link = "log"), data = dat_proc)
+    
+    # coeftest(fit, vcov. = sandwich)    # Robust (Huber-White) standard errors
+      
+    if (i==1) fits[[a]]=fit else fits.scaled[[a]]=fit
+  }
+}
 
 natrisk=nrow(dat.ph1)
 nevents=sum(dat.ph1$yy==1)
@@ -119,26 +105,6 @@ pvals.cont = sapply(fits, function(x) {
 
 
 
-###################################################################################################
-## interaction model single.dose*titer
-
-fits=list()
-fits.scaled=list()
-i=2
-# 33 fails
-for (a in setdiff(all.markers,c("M18bind_HPV33"))) {
-    fit = tps(update (form.0,  as.formula('~. + single.dose*'%.%ifelse(i==2,"scale("%.%a%.%")", a))), 
-              dat.ph2, nn0 = nn0, nn1 = nn1, 
-              group = dat.ph2$tps.stratum) 
-    if (i==1) fits[[a]]=fit else fits.scaled[[a]]=fit
-}
-tab=getFormattedSummary(fits.scaled, robust=T, type=6)
-rownames(tab)[4]='scale(marker)'
-rownames(tab)[5]='itxn'
-colnames(tab)=sub("pseudoneutid50","ID50",colnames(tab)) # shorten if it is nAb variables
-mytex(t(tab), file.name=save.results.to%.%"CoR_itxn_poisson_pretty_scaled_"%.%study_name, align="r", silent=F, save2input.only=F)
-
-
 
 
 ###################################################################################################
@@ -148,25 +114,12 @@ marker.levels = sapply(all.markers, function(a) length(table(dat.ph1[[a%.%"cat"]
 
 fits.tri=list()
 for (a in all.markers) {
-    if(verbose) myprint(a)
-    f= update(form.0, as.formula(paste0("~.+", a, "cat")))
-    
-    fit = tps(f, dat.ph2, nn0 = nn0, nn1 = nn1, 
-              group = dat.ph2$tps.stratum) 
-    # method = "WL"# to be more robust
-    
-    # res = summary(fit)$coef
-    # robust = FALSE # better for small samples
-    # idx = ifelse(robust, "Emp ", "Mod ")
-    # out = cbind(res[, c("Value", idx %.% "p")], 
-    #             `lower bound` = res[, "Value"] - 1.96 * res[, idx %.% "SE"], 
-    #             `upper bound` = res[, "Value"] + 1.96 * res[, idx %.% "SE"])
-    # 
-    # out[, c(1, 3, 4)] = exp(out[, c(1, 3, 4)])
-    # colnames(out) = c("OR", "p.value", "(lower", "upper)")
-    # fit$coefficients = out
-    
-    fits.tri[[a]]=fit
+  if(verbose) myprint(a)
+  f= update(form.0, as.formula(paste0("~.+", a, "cat")))
+  
+  fit <- glm(f, family = poisson(link = "log"), data = dat_proc)
+  
+  fits.tri[[a]]=fit
 }
 
 fits.tri.coef.ls= lapply(fits.tri, function (fit) getFixedEf(fit, robust=T))
@@ -231,7 +184,7 @@ rownames(tab.1)=all.markers.names.short
 tab.1
 mytex(tab.1, file.name="CoR_univariable_poisson_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
-         \\multicolumn{1}{l}{", study_name, "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{OR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
+         \\multicolumn{1}{l}{", study_name, "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{RR per 10-fold incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
          \\hline\n 
     "),
@@ -244,7 +197,6 @@ tab.cont=tab.1
 
 tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p))
 rownames(tab.1.nop12)=all.markers.names.short
-rv$tab.1=tab.1.nop12
 
 # scaled markers
 tab.1.scaled=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est.scaled), t(ci.scaled), t(p), p.2, p.1)
@@ -252,7 +204,7 @@ rownames(tab.1.scaled)=all.markers.names.short
 tab.1.scaled
 mytex(tab.1.scaled, file.name="CoR_univariable_poisson_pretty_scaled_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
-         \\multicolumn{1}{l}{", (study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{OR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
+         \\multicolumn{1}{l}{", (study_name), "} & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{2}{c}{RR per SD incr.}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{q-value}   & \\multicolumn{1}{c}{FWER} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{***} & \\multicolumn{1}{c}{} \\\\ 
          \\hline\n 
     "),
@@ -347,7 +299,7 @@ if (COR=='M18sus') {
 # use longtable because this table could be long, e.g. in hvtn705second
 mytex(tab[1:(nrow(tab)),], file.name="CoR_univariable_poisson_cat_pretty_"%.%study_name, align="c", include.colnames = F, save2input.only=T, input.foldername=save.results.to,
       col.headers=paste0("\\hline\n 
-         \\multicolumn{1}{l}{", (study_name), "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{Odds Ratio}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
+         \\multicolumn{1}{l}{", (study_name), "} & \\multicolumn{1}{c}{Tertile}   & \\multicolumn{1}{c}{No. cases /}   & \\multicolumn{1}{c}{Attack}   & \\multicolumn{2}{c}{RR}                     & \\multicolumn{1}{c}{P-value}   & \\multicolumn{1}{c}{Overall P-}      & \\multicolumn{1}{c}{Overall q-}   & \\multicolumn{1}{c}{Overall} \\\\ 
          \\multicolumn{1}{l}{Immunologic Marker}            & \\multicolumn{1}{c}{}          & \\multicolumn{1}{c}{No. at-risk**} & \\multicolumn{1}{c}{rate}   & \\multicolumn{1}{c}{Pt. Est.} & \\multicolumn{1}{c}{95\\% CI} & \\multicolumn{1}{c}{(2-sided)} & \\multicolumn{1}{c}{value***} & \\multicolumn{1}{c}{value $\\dagger$} & \\multicolumn{1}{c}{FWER} \\\\ 
          \\hline\n 
       "),        
@@ -365,10 +317,9 @@ tab.nop12=cbind(
     est, ci, p, overall.p.0
 )
 rownames(tab.nop12)=c(rbind(all.markers.names.short, "", ""))
-rv$tab.2=tab.nop12
 
 
 
 
 print(date())
-print("cor_coxph run time: "%.%format(Sys.time()-time.start, digits=1))
+print("cor_poisson run time: "%.%format(Sys.time()-time.start, digits=1))

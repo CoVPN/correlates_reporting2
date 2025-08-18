@@ -12,9 +12,7 @@ clean:
 ## cor_poisson     : create tables and figures
 cor_poisson:
 ifeq ($(TRIAL),$(filter $(TRIAL), iliad_ib202p))
-	Rscript code/cor_poisson.R C0iliad_ib202p
-else ifeq ($(TRIAL),$(filter $(TRIAL), iliad_ib201p))
-	Rscript code/cor_poisson.R C0iliad_ib201p
+	Rscript code/cor_poisson_iliad_ib202p.R C0iliad_ib202p
 endif
 
 
