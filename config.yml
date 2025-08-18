@@ -1773,7 +1773,7 @@ D31toM6_nextgen_mock_PBMC:
 # Note that for data processing, covail is the only TRIAL label. But for reporting2, there are multiple variants.
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250818.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250819.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
@@ -2115,3 +2115,4 @@ C0iliad_ib202p:
   tpeaklag: 0
   txt.endpoint: Pertussis
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed colonization endpoint.
+
