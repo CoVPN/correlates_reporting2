@@ -1,0 +1,681 @@
+---
+title: "Threshold Analysis on HIV trials"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+
+```{r, include = F, warning = F, message = F}
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F)
+
+# devtools::install_github("jpspeng/npthreshold")
+
+library(npthreshold)
+library(SuperLearner)
+library(dplyr)
+library(ggplot2)
+library(sl3)
+library(DT)
+library(knitr)
+library(msm)
+library(data.table)
+```
+
+```{r, cache=T}
+df_hvtn702 <- read.csv("data/controlledVEdata702.csv")
+df_hvtn705 <- read.csv("data/HVTN705_secondcasecontrolprocesseddata_v12.csv")
+df_hvtn505 <- read.csv("data/controlledVEdata505_lab.csv")
+df_rv144 <- read.csv("data/controlledVEdataRV144.csv")
+```
+
+```{r, cache=T}
+# data processing 
+df_hvtn705 <- df_hvtn705 %>% 
+  mutate(RSA = factor(RSA)) %>% 
+  filter(!is.na(Ttilde.D210))
+
+df_hvtn702 <- df_hvtn702 %>% 
+  mutate(AGELE25 = factor(AGELE25))
+
+df_rv144 <- df_rv144 %>% 
+  mutate(trt = ifelse(trt == "VACCINE", 1, 0))
+
+```
+
+
+# Overview 
+
+* Threshold analysis run on four HIV vaccine trials: HVTN705, HVTN702, HVTN505, and RV144, as well as HVTN 705 + RV144 combined. 
+* Analyses run on vaccine participants only. (Marker variable values were missing or 0 for 
+most placebo participants in each study.)
+* Thresholds were selected over a grid of increments of 0.1, from the lowest marker value
+to the highest value of the marker such that there are at least 3 endpoints with a 
+marker at least that value 
+* Reference timepoint was chosen as the timepoint of the latest endpoint
+* For VE graphs, placebo risk was determined by using all data from the placebo arm, 
+regardless of whether the marker was sampled. Note: For HVTN705, there are 210 placebo participants missing their event/censoring time variable. These are excluded when
+calculating the placebo risk. 
+* Vaccine efficacy confidence intervals cutoffs between -1 and 1. 
+
+```{r}
+# df_hvtn705 %>%
+#   filter(Delta.D210 == 1 & !is.na(Day210IgGgp70.B.CaseA.V1.V250delta)) %>%
+#   arrange(desc(Ttilde.D210)) %>%
+#   slice(1) %>%
+#   pull(Ttilde.D210)
+# 
+# df_hvtn702 %>%
+#   filter(HIV6.5_24 == 1 & !is.na(IgG_gp70_B.CaseA_V1V2)) %>%
+#   arrange(desc(HIV6.5_24FU)) %>%
+#   slice(1) %>%
+#   pull(HIV6.5_24FU)
+# 
+# df_hvtn505 %>%
+#   filter(HIVwk28preunbl == 1 & !is.na(IgG_gp70_B.CaseA_V1V2)) %>%
+#   arrange(desc(HIVwk28preunblfu)) %>%
+#   slice(1) %>%
+#   pull(HIVwk28preunblfu)
+# 
+# df_rv144 %>%
+#   filter(HIVwk26 == 1 & !is.na(IgG_gp70_B.CaseA_V1V2)) %>%
+#   arrange(desc(HIVwk26fu)) %>%
+#   slice(1) %>%
+#   pull(HIVwk26fu)
+# 
+# df_rv144 %>%
+#   filter(HIVm42 == 1 & !is.na(IgG_gp70_B.CaseA_V1V2)) %>%
+#   arrange(desc(HIVm42fu)) %>%
+#   slice(1) %>%
+#   pull(HIVm42fu)
+
+```
+
+```{r, cache=T}
+# function to select quantiles
+select_quants <- function(df, event_var, marker_var){
+  
+  max_thresh <- df %>% 
+    filter(.data[[event_var]] == 1) %>% 
+    arrange(desc(.data[[marker_var]])) %>% 
+    slice(3) %>% 
+    pull(.data[[marker_var]]) 
+  
+  quants <- seq(min(df[,marker_var], na.rm = T), max_thresh, 0.1)
+  
+  quants
+}
+
+```
+
+```{r, cache=T}
+# runs analysis and prints out three tabs: Vaccine, Placebo, and VE 
+print_analysis_helper <- function(df, 
+                                  covariates, 
+                                  trt_var,
+                                  time_var, 
+                                  event_var, 
+                                  marker_var,
+                                  weight_var, 
+                                  tf, 
+                                  learner.treatment = Lrnr_glm$new(),
+                                  learner.event_type = Lrnr_glm$new(),
+                                  learner.failure_time = Lrnr_glm$new(),
+                                  learner.censoring_time = Lrnr_glm$new(),
+                                  filter = NULL, 
+                                  readable_name = NA, 
+                                  ylim_cutoffs  = c(-1, 1, 0.2)){
+  
+  # filter for vaccine 
+  df_vaccine <- df %>% 
+    filter(!!sym(trt_var) == 1 & !is.na(!!sym(marker_var)))
+  
+    # why are people mising their failure time variable 
+    res_placebo_overall <- thresholdSurv(data = df %>% filter(!!sym(trt_var) == 0 & 
+                                                                !is.na(!!sym(time_var))), 
+                                         covariates = covariates,
+                                         failure_time = time_var, 
+                                         tf = tf, 
+                                         event_type = event_var, 
+                                         marker = trt_var,
+                                         learner.treatment = learner.treatment, 
+                                         learner.event_type = learner.event_type,
+                                         learner.failure_time = learner.failure_time, 
+                                         learner.censoring_time = learner.censoring_time, 
+                                         verbose = F)
+
+    res_vaccine_overall <- thresholdSurv(data = df %>% filter(!!sym(trt_var) == 1 & 
+                                                                !is.na(!!sym(time_var))), 
+                                         covariates = covariates,
+                                         failure_time = time_var, 
+                                         tf = tf, 
+                                         event_type = event_var, 
+                                         marker = trt_var,
+                                         learner.treatment = learner.treatment, 
+                                         learner.event_type = learner.event_type,
+                                         learner.failure_time = learner.failure_time, 
+                                         learner.censoring_time = learner.censoring_time, 
+                                         verbose = F)
+    
+    risk_placebo <- res_placebo_overall$estimate
+    se_placebo <- res_placebo_overall$se
+    risk_vaccine <- res_vaccine_overall$estimate
+    se_vaccine <- res_vaccine_overall$se
+
+  annotate_text <- sprintf("Placebo risk: %s", round(risk_placebo, 3))
+  # run analysis on vaccine 
+  quants_vaccine <- select_quants(df_vaccine, event_var, marker_var)
+  res_vaccine <- thresholdSurv(data = df_vaccine , 
+                               covariates = covariates,
+                               failure_time = time_var, 
+                               tf = tf, 
+                               event_type = event_var, 
+                               marker = marker_var,
+                               weights = weight_var,
+                               threshold_list = quants_vaccine, 
+                               learner.treatment = learner.treatment, 
+                               learner.event_type = learner.event_type,
+                               learner.failure_time = learner.failure_time, 
+                               learner.censoring_time = learner.censoring_time, 
+                               verbose = F, 
+                               placebo_risk = risk_placebo,
+                               placebo_se = se_placebo, 
+                               modify_left_point =  T,
+                               left_estimate = risk_vaccine, 
+                               left_se = se_vaccine)
+  
+  # monotone results 
+  cat("\n\n#### Monotone \n \n")
+  graphthresh(data.frame(res_vaccine), 
+              type = "monotone",
+              ylabel = sprintf("Probability of HIV diagnosis by %s days", tf),
+              xlabel = sprintf("%s Thresholds", readable_name),
+              cutoffs = c(0,1),
+              plot_density = T,
+              plot_endpoints = T, 
+              data = df_vaccine,
+              weights = weight_var,
+              marker = marker_var,
+              annotate = annotate_text,
+              event = event_var,
+              time_var = time_var,
+              tf = tf, 
+              exp10 = T) %>% 
+    print()
+  
+  data.frame(res_vaccine) %>%
+      rename(Thresholdlog10 = threshold, 
+             Estimate = estimate_monotone, 
+             SE = se, 
+             `Lower CI` = ci_lo_monotone, 
+             `Upper CI` = ci_hi_monotone) %>% 
+      mutate(Threshold = 10^Thresholdlog10) %>% 
+      rename(`Threshold (log10)` = Thresholdlog10) %>% 
+      select(`Threshold (log10)`, rcdf, Threshold, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))) %>% kable() %>% print()
+  
+  # not monotone results 
+  cat("\n\n#### Not Monotone \n \n")
+    graphthresh(data.frame(res_vaccine), 
+              type = "raw",
+              ylabel = sprintf("Probability of HIV diagnosis by %s days", tf),
+              xlabel = sprintf("%s Thresholds", readable_name),
+              cutoffs = c(0,1),
+              plot_density = T,
+              plot_endpoints = T, 
+              data = df_vaccine,
+              weights = weight_var,
+              marker = marker_var,
+              annotate = annotate_text,
+              event = event_var,
+              time_var = time_var,
+              tf = tf, 
+              exp10 = T) %>% 
+    print()
+    
+    data.frame(res_vaccine) %>%
+      rename(Thresholdlog10 = threshold, 
+             Estimate = estimate, 
+             SE = se, 
+             `Lower CI` = ci_lo, 
+             `Upper CI` = ci_hi) %>% 
+      mutate(Threshold = 10^Thresholdlog10) %>% 
+      rename(`Threshold (log10)` = Thresholdlog10) %>% 
+      select(`Threshold (log10)`, Threshold, rcdf, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))) %>% kable() %>% print()
+
+  cat("\n\n#### Vaccine efficacy (monotone) \n \n")
+    graphthresh(data.frame(res_vaccine), 
+              type = "ve",
+              ylabel = "Vaccine efficacy",
+              xlabel = sprintf("%s Thresholds", readable_name),
+              cutoffs = ylim_cutoffs[1:2],
+              plot_density = T,
+              plot_endpoints = T, 
+              data = df_vaccine,
+              weights = weight_var,
+              marker = marker_var,
+              annotate = "",
+              event = event_var,
+              time_var = time_var,
+              tf = tf, 
+              exp10 = T, 
+              ylim = ylim_cutoffs,
+              xlim = c(0, 4.5)) %>% 
+    print()
+    
+  data.frame(res_vaccine) %>%
+      rename(Thresholdlog10 = threshold, 
+             Estimate = ve_monotone, 
+             SE = ve_se, 
+             `Lower CI` = ve_monotone_ci_lo, 
+             `Upper CI` = ve_monotone_ci_hi) %>% 
+      mutate(Threshold = 10^Thresholdlog10) %>% 
+      rename(`Threshold (log10)` = Thresholdlog10) %>% 
+      select(`Threshold (log10)`, rcdf, Threshold, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))) %>% kable() %>% print()
+
+}
+```
+
+# HVTN 705
+
+* **Adjustment covariates**: Age, RSA, BMI, Riskscore
+* **Event time variable**: Ttilde.D210
+* **Event type variable**: Delta.D210
+* **Weight variable**: wt.D210
+* **Reference timepoint**: 552 days 
+* **Filter**: !is.na(Ttilde.D210)
+* **All learners**: GLM 
+
+```{r, results = "asis", cache=T, fig.align='center'}
+covariates <- c("Riskscore", "RSA", "Age", "BMI")
+time_var <- "Ttilde.D210"
+tf <- 552 
+event_var <- "Delta.D210"
+trt_var <- "Trt"
+named_markers <- c(
+  "Day210IgGgp70.B.CaseA.V1.V250delta" = "IgG V1V2 B.CaseA-gp70",
+  "Day210IgGAE.A244.V1V2.Tags_293F50delta" = "IgG V1V2 AE.A244-Tags",
+  "Day210IgGC.1086C.V1.V2.Tags50delta" = "IgG V1V2 C.1086-Tags",
+  "Day210IgGgp70_Ce1086.B2.V1V250delta" = "IgG V1V2 C.1086-gp70",
+  "Day210IgG3gp70.B.CaseA.V1.V240delta" = "IgG3 V1V2 B.CaseA-gp70",
+  "Day210IgG3AE.A244.V1V2.Tags_293F40delta" = "IgG3 V1V2 AE.A244-Tags",
+  "Day210IgG3C.1086C.V1.V2.Tags40delta" = "IgG3 V1V2 C.1086-Tags",
+  "Day210IgG3gp70.Ce1086.B2.V1V240delta" = "IgG3 V1V2 C.1086-gp70"
+)
+
+ylim_cutoffs_list <- list(
+  "IgG V1V2 B.CaseA-gp70" = c(-1, 1, 0.2), 
+  "IgG V1V2 AE.A244-Tags" = c(-1, 1, 0.2), 
+  "IgG V1V2 C.1086-Tags" = c(-1, 1, 0.2), 
+  "IgG V1V2 C.1086-gp70" = c(-1, 1, 0.2), 
+  "IgG3 V1V2 B.CaseA-gp70" = c(-1.4, 1, 0.2), 
+  "IgG3 V1V2 AE.A244-Tags" = c(-1.2, 1, 0.2), 
+  "IgG3 V1V2 C.1086-Tags" = c(-1.2, 1, 0.2), 
+  "IgG3 V1V2 C.1086-gp70" = c(-1.2, 1, 0.2)
+)
+
+weight_var <- "wt.D210"
+
+for (marker_var in names(named_markers)){
+  readable_name <- named_markers[[marker_var]]
+  ylim_cutoffs <- ylim_cutoffs_list[[readable_name]]
+  cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  print_analysis_helper(df_hvtn705, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf, 
+                        readable_name = readable_name, 
+                        ylim_cutoffs = ylim_cutoffs)
+}
+```
+
+
+# HVTN 702 
+
+* **Adjustment covariates**: AGELE25, RSCORCAT
+* **Event time variable**: HIV6.5_24FU
+* **Event type variable**: HIV6.5_24
+* **Weight variable**: SAMPWT
+* **Reference timepoint**: 552 days 
+* **All learners**: GLM 
+
+```{r, results = "asis", cache=T, fig.align='center'}
+covariates <- c("AGELE25", "RSCORCAT")
+time_var <- "HIV6.5_24FU"
+tf <- 514 
+event_var <- "HIV6.5_24"
+trt_var <- "TRTN"
+named_markers <- c(
+  "IgG_gp70_B.CaseA_V1V2" = "IgG V1V2 B.CaseA-gp70",
+  "IgG_AE.A244_V1V2_Tags_293F" = "IgG V1V2 AE.A244-Tags",
+  "IgG_C.1086C_V1V2_Tags" = "IgG V1V2 C.1086-Tags",
+  "IgG_gp70_C.1806C_V1V2_293F" = "IgG V1V2 C.1086-gp70",
+  "IgG3_gp70_B.CaseA_V1V2" = "IgG3 V1V2 B.CaseA-gp70",
+  "IgG3_AE.A244_V1V2_Tags_293F" = "IgG3 V1V2 AE.A244-Tags",
+  "IgG3_C.1086C_V1V2_Tags" = "IgG3 V1V2 C.1086-Tags",
+  "IgG3_gp70_C.1086C_V1V2_293F" = "IgG3 V1V2 C.1086-gp70"
+)
+
+weight_var <- "SAMPWT"
+
+for (marker_var in names(named_markers)){
+
+  readable_name <- named_markers[[marker_var]]
+  ylim_cutoffs <- ylim_cutoffs_list[[readable_name]]
+  cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  print_analysis_helper(df_hvtn702, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf, 
+                        readable_name = readable_name, 
+                        ylim_cutoffs = ylim_cutoffs)
+}
+```
+
+# HVTN 505 
+
+* **Adjustment covariates**: age, racecc, BMI, bhvrisk
+* **Event time variable**: HIVwk28preunblfu
+* **Event type variable**: HIVwk28preunbl
+* **Weight variable**: weight
+* **Reference timepoint**: 514 days 
+* **All learners**: GLM 
+
+```{r, results = "asis", cache=T, fig.align='center'}
+covariates <- c("age", "racecc", "BMI", "bhvrisk")
+time_var <- "HIVwk28preunblfu"
+tf <- 514 
+event_var <- "HIVwk28preunbl"
+trt_var <- "trt"
+named_markers <- c(
+  "IgG_gp70_B.CaseA_V1V2" = "IgG V1V2 B.CaseA-gp70",
+  "IgG_AE.A244_V1V2_Tags_293F" = "IgG V1V2 AE.A244-Tags",
+  "IgG_C.1086C_V1V2_Tags" = "IgG V1V2 C.1086-Tags",
+  "IgG_gp70_C.1086C_V1V2_293F" = "IgG V1V2 C.1086-gp70",
+  "IgG3_gp70_B.CaseA_V1V2" = "IgG3 V1V2 B.CaseA-gp70",
+  "IgG3_AE.A244_V1V2_Tags_293F" = "IgG3 V1V2 AE.A244-Tags",
+  "IgG3_C.1086C_V1V2_Tags" = "IgG3 V1V2 C.1086-Tags",
+  "IgG3_gp70_C.1086C_V1V2_293F" = "IgG3 V1V2 C.1086-gp70"
+)
+weight_var <- "sample_weight"
+
+for (marker_var in names(named_markers)){
+  readable_name <- named_markers[[marker_var]]
+  ylim_cutoffs <- ylim_cutoffs_list[[readable_name]]
+  cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  print_analysis_helper(df_hvtn505, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf, 
+                        readable_name = readable_name, 
+                        ylim_cutoffs = ylim_cutoffs)
+}
+```
+
+
+# RV144 (24 month)
+
+* **Adjustment covariates**: dem_sex, BRA_risk
+* **Event time variable**: HIVwk26fu
+* **Event type variable**: HIVwk26
+* **Weight variable**: sample_weight
+* **Reference timepoint**: 459 days 
+* **All learners**: GLM 
+
+```{r, results = "asis", cache=T, fig.align='center'}
+covariates <- c("dem_sex", "BRA_risk")
+time_var <- "HIVwk26fu"
+tf <- 459 
+event_var <- "HIVwk26"
+trt_var <- "trt"
+named_markers <- c(
+  "IgG_gp70_B.CaseA_V1V2" = "IgG V1V2 B.CaseA-gp70",
+  "IgG_AE.A244_V1V2_Tags_293F" = "IgG V1V2 AE.A244-Tags",
+  "IgG_C.1086C_V1V2_Tags" = "IgG V1V2 C.1086-Tags",
+  "IgG_gp70_C.1086C_V1V2_293F" = "IgG V1V2 C.1086-gp70",
+  "IgG3_gp70_B.CaseA_V1V2" = "IgG3 V1V2 B.CaseA-gp70",
+  "IgG3_AE.A244_V1V2_Tags_293F" = "IgG3 V1V2 AE.A244-Tags",
+  "IgG3_C.1086C_V1V2_Tags" = "IgG3 V1V2 C.1086-Tags",
+  "IgG3_gp70_C.1086C_V1V2_293F" = "IgG3 V1V2 C.1086-gp70",
+  
+  # New markers added
+  "IgG_V1V2_CaseA2_elisa" = "IgG_V1V2_CaseA2_elisa",
+  "IgG_gp70.V1V2CaseA2" = "IgG_gp70.V1V2CaseA2",
+  "IgG_A244D11K169" = "IgG_A244D11K169",
+  "IgG_gp70ClAEV1V2" = "IgG_gp70ClAEV1V2",
+  "IgG_gp70V1V2A" = "IgG_gp70V1V2A",
+  "IgG_gp70V1V2AP" = "IgG_gp70V1V2AP",
+  "IgG_gp70V1V2C" = "IgG_gp70V1V2C",
+  "IgG_gp70BCaseA2V1V2169K" = "IgG_gp70BCaseA2V1V2169K",
+  "IgG_gp70BCaseA2V1V2mut3" = "IgG_gp70BCaseA2V1V2mut3",
+  "IgG3_A244D11K169" = "IgG3_A244D11K169",
+  "IgG3_gp70ClAEV1V2" = "IgG3_gp70ClAEV1V2",
+  "IgG3_gp70V1V2A" = "IgG3_gp70V1V2A",
+  "IgG3_gp70V1V2AP" = "IgG3_gp70V1V2AP",
+  "IgG3_gp70V1V2C" = "IgG3_gp70V1V2C",
+  "IgG3_gp70.V1V2CaseA2" = "IgG3_gp70.V1V2CaseA2",
+  "IgG3_gp70BCaseA2V1V2169K" = "IgG3_gp70BCaseA2V1V2169K",
+  "IgG3_gp70BCaseA2V1V2mut3" = "IgG3_gp70BCaseA2V1V2mut3",
+  
+  # new markers add 3/19 
+  "IgG_PE_A9004SS_V1_V2_Tags" = "IgG_PE_A9004SS_V1_V2_Tags",
+  "IgG_PE_AQ23_V1_V2_Tags" = "IgG_PE_AQ23_V1_V2_Tags",
+  "IgG_PE_BioRV144_V2_AE" = "IgG_PE_BioRV144_V2_AE",
+  "IgG_PE_BioRV144_V2_B" = "IgG_PE_BioRV144_V2_B",
+  "IgG_PE_BioRV144_V2_C" = "IgG_PE_BioRV144_V2_C"
+)
+
+weight_var <- "sample_weight"
+
+
+for (marker_var in names(named_markers)){
+  readable_name <- named_markers[[marker_var]]
+  
+  if (readable_name %in% names(ylim_cutoffs_list)){
+    ylim_cutoffs <- ylim_cutoffs_list[[readable_name]]
+  }
+  else{
+    ylim_cutoffs <- c(-1, 1, 0.2)
+  }
+  cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  print_analysis_helper(df_rv144, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf, 
+                        readable_name = readable_name, 
+                        ylim_cutoffs = ylim_cutoffs)
+}
+```
+
+# RV144 (42 month)
+
+* **Adjustment covariates**: dem_sex, BRA_risk
+* **Event time variable**: HIVwk42fu
+* **Event type variable**: HIVwk42
+* **Weight variable**: sample_weight
+* **Reference timepoint**: 1014 days 
+* **All learners**: GLM 
+
+```{r, results = "asis", cache=T, fig.align='center'}
+covariates <- c("dem_sex", "BRA_risk")
+time_var <- "HIVm42fu"
+tf <- 1014 
+event_var <- "HIVm42"
+trt_var <- "trt"
+named_markers <- c(
+  "IgG_gp70_B.CaseA_V1V2" = "IgG V1V2 B.CaseA-gp70",
+  "IgG_AE.A244_V1V2_Tags_293F" = "IgG V1V2 AE.A244-Tags",
+  "IgG_C.1086C_V1V2_Tags" = "IgG V1V2 C.1086-Tags",
+  "IgG_gp70_C.1086C_V1V2_293F" = "IgG V1V2 C.1086-gp70",
+  "IgG3_gp70_B.CaseA_V1V2" = "IgG3 V1V2 B.CaseA-gp70",
+  "IgG3_AE.A244_V1V2_Tags_293F" = "IgG3 V1V2 AE.A244-Tags",
+  "IgG3_C.1086C_V1V2_Tags" = "IgG3 V1V2 C.1086-Tags",
+  "IgG3_gp70_C.1086C_V1V2_293F" = "IgG3 V1V2 C.1086-gp70",
+  
+  # New markers added
+  "IgG_V1V2_CaseA2_elisa" = "IgG_V1V2_CaseA2_elisa",
+  "IgG_gp70.V1V2CaseA2" = "IgG_gp70.V1V2CaseA2",
+  "IgG_A244D11K169" = "IgG_A244D11K169",
+  "IgG_gp70ClAEV1V2" = "IgG_gp70ClAEV1V2",
+  "IgG_gp70V1V2A" = "IgG_gp70V1V2A",
+  "IgG_gp70V1V2AP" = "IgG_gp70V1V2AP",
+  "IgG_gp70V1V2C" = "IgG_gp70V1V2C",
+  "IgG_gp70BCaseA2V1V2169K" = "IgG_gp70BCaseA2V1V2169K",
+  "IgG_gp70BCaseA2V1V2mut3" = "IgG_gp70BCaseA2V1V2mut3",
+  "IgG3_A244D11K169" = "IgG3_A244D11K169",
+  "IgG3_gp70ClAEV1V2" = "IgG3_gp70ClAEV1V2",
+  "IgG3_gp70V1V2A" = "IgG3_gp70V1V2A",
+  "IgG3_gp70V1V2AP" = "IgG3_gp70V1V2AP",
+  "IgG3_gp70V1V2C" = "IgG3_gp70V1V2C",
+  "IgG3_gp70.V1V2CaseA2" = "IgG3_gp70.V1V2CaseA2",
+  "IgG3_gp70BCaseA2V1V2169K" = "IgG3_gp70BCaseA2V1V2169K",
+  "IgG3_gp70BCaseA2V1V2mut3" = "IgG3_gp70BCaseA2V1V2mut3"
+)
+
+ylim_cutoffs_list <- list(
+  "IgG V1V2 B.CaseA-gp70" = c(-0.2, 1, 0.2), 
+  "IgG V1V2 AE.A244-Tags" = c(-0.2, 1, 0.2), 
+  "IgG V1V2 C.1086-Tags" = c(-0.2, 1, 0.2), 
+  "IgG V1V2 C.1086-gp70" = c(-0.2, 1, 0.2), 
+  "IgG3 V1V2 B.CaseA-gp70" = c(-0.4, 1, 0.2), 
+  "IgG3 V1V2 AE.A244-Tags" = c(-0.4, 1, 0.2), 
+  "IgG3 V1V2 C.1086-Tags" = c(-0.4, 1, 0.2), 
+  "IgG3 V1V2 C.1086-gp70" = c(-0.4, 1, 0.2)
+)
+
+weight_var <- "sample_weight_m42"
+
+
+for (marker_var in names(named_markers)){
+  readable_name <- named_markers[[marker_var]]
+  if (readable_name %in% names(ylim_cutoffs_list)){
+    ylim_cutoffs <- ylim_cutoffs_list[[readable_name]]
+  }
+  else{
+    ylim_cutoffs <- c(-1, 1, 0.2)
+  }
+  cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  print_analysis_helper(df_rv144, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf,
+                        readable_name = readable_name, 
+                        ylim_cutoffs = ylim_cutoffs)
+}
+```
+
+
+# Combined HVTN 705 + RV144 analyses (24 month)
+
+* **Adjustment covariates**: Region (RV144, South Africa, Outside South Africa), 
+age above or below 26
+* **Event time variable**: HIVwk26fu (RV144) and Ttilde.D210 (HVTN 705)
+* **Event type variable**: HIVwk26 (RV144) and Delta.D210 (HVTN 705)
+* **Weight variable**: sample_weight (RV144) and wt.D210 (HVTN 705)
+* **Reference timepoint**: 459 days (earliest between RV144 and HVTN 705)
+* **Filter for HVTN 705**: !is.na(Ttilde.D210)
+* **All learners**: GLM 
+
+```{r}
+# process HVTN 705 dataframe to look like RV 144 dataframe
+df_hvtn705_new <- df_hvtn705 %>%
+  filter(!is.na(Ttilde.D210)) %>% 
+  rename(pub_id = Subjectid, 
+         trt = Trt,
+         HIVwk26fu = Ttilde.D210, 
+         HIVwk26 = Delta.D210,
+         sample_weight = wt.D210,
+         IgG_gp70_B.CaseA_V1V2 = Day210IgGgp70.B.CaseA.V1.V250delta, 
+         IgG_AE.A244_V1V2_Tags_293F = Day210IgGAE.A244.V1V2.Tags_293F50delta,
+         IgG_C.1086C_V1V2_Tags = Day210IgGC.1086C.V1.V2.Tags50delta,
+         IgG_gp70_C.1086C_V1V2_293F = Day210IgGgp70_Ce1086.B2.V1V250delta,
+         IgG3_gp70_B.CaseA_V1V2 = Day210IgG3gp70.B.CaseA.V1.V240delta,
+         IgG3_AE.A244_V1V2_Tags_293F = Day210IgG3AE.A244.V1V2.Tags_293F40delta,
+         IgG3_C.1086C_V1V2_Tags = Day210IgG3C.1086C.V1.V2.Tags40delta, 
+         IgG3_gp70_C.1086C_V1V2_293F = Day210IgG3gp70.Ce1086.B2.V1V240delta) %>% 
+  mutate(study_region = ifelse(RSA == "1", "HVTN705_SA", "HVTN705_Not_SA"),
+         age_ge_26 = ifelse(Age >= 26, ">=26", "<26")) %>% 
+  select(pub_id, trt, study_region, age_ge_26, HIVwk26fu, HIVwk26, sample_weight, IgG_gp70_B.CaseA_V1V2,
+         IgG_AE.A244_V1V2_Tags_293F, IgG_C.1086C_V1V2_Tags, IgG_gp70_C.1086C_V1V2_293F, 
+         IgG3_gp70_B.CaseA_V1V2, IgG3_AE.A244_V1V2_Tags_293F, IgG3_C.1086C_V1V2_Tags,
+         IgG3_gp70_C.1086C_V1V2_293F)
+
+df_combined <- df_rv144 %>% 
+  mutate(study_region = "RV144", 
+         age_ge_26 = ifelse(agecat == "Age >=26", ">=26", "<26")) %>% 
+  select(pub_id, trt, study_region, age_ge_26, HIVwk26fu, HIVwk26, sample_weight, IgG_gp70_B.CaseA_V1V2,
+         IgG_AE.A244_V1V2_Tags_293F, IgG_C.1086C_V1V2_Tags, IgG_gp70_C.1086C_V1V2_293F, 
+         IgG3_gp70_B.CaseA_V1V2, IgG3_AE.A244_V1V2_Tags_293F, IgG3_C.1086C_V1V2_Tags,
+         IgG3_gp70_C.1086C_V1V2_293F) %>% 
+  rbind(df_hvtn705_new)
+```
+
+```{r, results = "asis", cache=T, fig.align='center'}
+covariates <- c("age_ge_26", "study_region")
+time_var <- "HIVwk26fu"
+tf <- 459 
+event_var <- "HIVwk26"
+trt_var <- "trt"
+named_markers <- c(
+  "IgG_gp70_B.CaseA_V1V2" = "IgG V1V2 B.CaseA-gp70",
+  "IgG_AE.A244_V1V2_Tags_293F" = "IgG V1V2 AE.A244-Tags",
+  "IgG_C.1086C_V1V2_Tags" = "IgG V1V2 C.1086-Tags",
+  "IgG_gp70_C.1086C_V1V2_293F" = "IgG V1V2 C.1086-gp70",
+  "IgG3_gp70_B.CaseA_V1V2" = "IgG3 V1V2 B.CaseA-gp70",
+  "IgG3_AE.A244_V1V2_Tags_293F" = "IgG3 V1V2 AE.A244-Tags",
+  "IgG3_C.1086C_V1V2_Tags" = "IgG3 V1V2 C.1086-Tags",
+  "IgG3_gp70_C.1086C_V1V2_293F" = "IgG3 V1V2 C.1086-gp70"
+)
+
+weight_var <- "sample_weight"
+
+
+for (marker_var in names(named_markers)){
+  readable_name <- named_markers[[marker_var]]
+  cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  print_analysis_helper(df_combined, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf, 
+                        readable_name = readable_name)
+}
+```
+
