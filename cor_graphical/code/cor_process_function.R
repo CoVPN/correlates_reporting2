@@ -55,7 +55,7 @@ getResponder <- function(data,
       }
       
       # if (!is.na(pos.cutoffs[j])
-      if ((grepl("bind|ACE2", j) & !study_name %in% c("VAT08", "NextGen_Mock")) | COR == "D29VLvariant" | grepl("stage2", COR)) {
+      if ((grepl("bind|ACE2", j) & !study_name %in% c("VAT08", "NextGen_Mock")) | COR == "D29VLvariant" | grepl("stage2", COR) | study_name == "ILIAD_IB202P") {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
         if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
       } else if (study_name == "NextGen_Mock") {

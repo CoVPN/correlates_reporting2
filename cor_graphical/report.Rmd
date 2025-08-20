@@ -187,7 +187,7 @@ if (study_name == "NextGen_Mock") {
                           gsub("Serum neutralization to |Serum neutralization ", "nAb ID50 ", 
                               gsub("Spike D614", "Spike Index", labels.assays[a]))),
               ifelse(grepl("bind", a), " concentrations", ""))
-          }
+          } else {aLabel = labels.assays[a]}
           
           specimen_type <- paste0("based on ", ifelse(grepl("sera", a), "sera", ifelse(grepl("nasal", a), "nasal fluid", ifelse(grepl("saliva", a), "saliva", "PBMC"))))
           cohort_name <- paste0("(ccIAS-", ifelse(grepl("sera", a), "sera", ifelse(grepl("nasal", a), "nasal fluid", ifelse(grepl("saliva", a), "saliva", "PBMC"))), "). ")
