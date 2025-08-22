@@ -163,6 +163,9 @@ if (study_name == "NextGen_Mock") {
                     )
       
       # SET 1
+cat("\\Large \\textbf{Violin plots by case status}\n\n")
+cat("\\clearpage", sep = '\n')
+      
       for (a in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == "NextGen_Mock") {c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("IgA", assays)])
         } else {c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")}){
              
@@ -249,6 +252,9 @@ if (study_name == "NextGen_Mock") {
       if (attr(config,"config") == "nvx_uk302") next # break the loop for nvx_uk302
 
       # SET 2
+cat("\\Large \\textbf{Longitudinal plots}\n\n")
+cat("\\clearpage", sep = '\n')
+      
       assay_grp_list = if(attr(config,"config")=="vat08_combined"){
         c(paste0(assays[!assays=="bindSpike_mdw"][1:2], collapse="_"),
                           paste0(assays[!assays=="bindSpike_mdw"][3:4], collapse="_"), 
@@ -304,6 +310,9 @@ if (study_name == "NextGen_Mock") {
       if (attr(config,"config") == "nextgen_mock") next # break the loop for nextgen_mock
       
       # SET 3
+cat("\\Large \\textbf{Correlation plots across assays}\n\n")
+cat("\\clearpage", sep = '\n')
+      
       if (COR=="D57azd1222_stage2_delta_bAb") {
         # adhoc figure
         res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3_az_adhoc.Rmd')), quiet = TRUE)
@@ -371,6 +380,9 @@ if (study_name == "NextGen_Mock") {
       if (attr(config,"config") == "prevent19nvx") next # break the loop for prevent19nvx
       
       # SET 4
+cat("\\Large \\textbf{Correlation plots across timepoints}\n\n")
+cat("\\clearpage", sep = '\n')
+
       for (a in assays){
           
           if ((grepl("nab", COR_postfix) & !grepl("pseudoneutid50", a)) | (grepl("bab", COR_postfix) & !grepl("bindSpike", a)) ) next # for AZ stage 2

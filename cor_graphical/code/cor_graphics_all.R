@@ -130,8 +130,8 @@ for (panel in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == 
                                            levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
                                            labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2))),
             
-            facet.x.var = if (study_name == "NextGen_Mock") {vars(Trt_nnaive)} else {vars(assay_label_short)}, 
-            facet.y.var = if (study_name == "NextGen_Mock") {vars(assay_label_short)} else {vars(Trt_nnaive)},
+            facet.x.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(Trt_nnaive)} else {vars(assay_label_short)}, 
+            facet.y.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(assay_label_short)} else {vars(Trt_nnaive)},
             assays = set1_assays,
             times = set1_times_sub,
             ylim = if (attr(config,"config") == "iliad_ib202p") {c(-1.6, 3.8)} else if (attr(config,"config") == "nvx_uk302") {c(1, 6)} else if (attr(config,"config") == "prevent19nvx") {c(0,6.6)} else if (study_name == "VAT08" & tm_subset != "fold") {c(0, 4.2)} else if (study_name == "NextGen_Mock" & tm_subset != "fold") {c(1, 6.5)} else if (study_name %in% c("VAT08") & tm_subset == "fold") {c(-3, 4.2)} else if (study_name %in% c("NextGen_Mock") & tm_subset == "fold") {c(-1.1, 3.6)} else {c(0, 5.5)}, 
@@ -159,7 +159,7 @@ for (panel in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == 
         for (i in 1:length(set1_times_sub)){
             
             file_name <- paste0(panel, "_by_case_non_case_at_", set1_times_sub[i], ".pdf")
-            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = ifelse(study_name %in% c("NextGen_Mock", "ILIAD_IB202P"), 20, 30), height = ifelse(study_name == "NextGen_Mock", 16, 22))
+            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = ifelse(study_name %in% c("NextGen_Mock", "ILIAD_IB202P"), 20, 30), height = ifelse(study_name %in% c("NextGen_Mock", "ILIAD_IB202P"), 16, 22))
         }
         
         # adhoc output for prevent19_stage2
@@ -633,8 +633,8 @@ for (i in 1:length(set2.1_assays)) {
                                                labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2))),
                 x.var = "time_cohort",
                 x.lb = if (study_name == "NextGen_Mock") {time_cohort.lb.short} else {time_cohort.lb},
-                facet.x.var = if (study_name == "NextGen_Mock") {vars(Trt_nnaive)} else {vars(assay_label_short)}, 
-                facet.y.var = if (study_name == "NextGen_Mock") {vars(assay_label_short)} else {vars(Trt_nnaive)},
+                facet.x.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(Trt_nnaive)} else {vars(assay_label_short)}, 
+                facet.y.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(assay_label_short)} else {vars(Trt_nnaive)},
                 
                 assays = if(attr(config,"config") %in% c("azd1222_stage2", "nextgen_mock")){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]},
                 panel.text.size = ifelse(study_name=="VAT08" & length(cases_lb)==3, 4, ifelse(study_name=="VAT08" & length(cases_lb)==1, 4, 5.8)),
