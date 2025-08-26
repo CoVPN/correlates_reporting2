@@ -18,6 +18,16 @@ if (study_name=="IARCHPV") {
     bstatus.labels <-  c("Naive", "Non-naive")
     bstatus.labels.2 <- c("naive", "non-naive")
     
+  } else if (study_name == "NextGen_Mock") {
+    trt.labels <- c("(B) Comparator Vaccine", "(A) Investigational Vaccine")
+    bstatus.labels <-  c("Naive", "Non-naive")
+    bstatus.labels.2 <- c("", "")
+    
+  } else if (study_name == "ILIAD_IB202P") {
+    trt.labels <- c("PBO", "BPZE1")
+    bstatus.labels <- 0
+    bstatus.labels.2 <- ""
+    
   } else {
     trt.labels <- c("Placebo", "Vaccine")
     bstatus.labels <- c("Baseline Neg", "Baseline Pos")
@@ -35,7 +45,10 @@ if(attr(config,"config")=="janssen_pooled_partA") {
 } else if (attr(config,"config")=="azd1222_stage2") {
   times_ = c("Day57","Day90","Day180","Day360")
   labels.time = c("Day 57","Day 90", "Day 180", "Day 360"); names(labels.time) = times_
-}else {times_ = times}
+} else if (attr(config,"config")=="nextgen_mock") {
+  times_ = c("B", "Day31", "Delta31overB", "Day91", "Day181", "Day366")
+  labels.time = c("D01","D31", "D31 fold-rise over D01", "D91", "D181", "D366"); names(labels.time) = times_
+} else {times_ = times}
 
 
 
