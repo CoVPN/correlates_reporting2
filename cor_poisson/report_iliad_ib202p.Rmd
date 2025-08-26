@@ -1,22 +1,24 @@
 ```{r, echo=FALSE, results='asis'}
 
-CORs = c("C0iliad_ib202p")
+COR = c("C0iliad_ib202p")
 
-for (COR in CORs) {
-  assays1 = assays
+assays1 = assays
 
-  tpeak=28
-  config.cor <- config::get(config = COR)
-  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
-  
+tpeak=28
+config.cor <- config::get(config = COR)
+for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
 
-  special.note = ""
-  pathCoRoutput <- paste0("cor_poisson/output/", attr(config,"config"), "/", COR)
+
+special.note = ""
+pathCoRoutput <- paste0("cor_poisson/output/", attr(config,"config"), "/", COR)
+
+all.markers=paste0(DayPrefix, tpeak, assays1)
+if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays1))
+names(all.markers)=all.markers
+
+cat("# Univariate CoR: Poisson Regression Models")
   
-  all.markers=paste0(DayPrefix, tpeak, assays1)
-  if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays1))
-  names(all.markers)=all.markers
-  
+for (fname.suffix in c("BPZE1", "PBO")) {
   res = knitr::knit_child(c(here::here('cor_poisson', 'report_by_COR.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 
