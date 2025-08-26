@@ -149,8 +149,8 @@ dat2=read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_2025
 dat3=dat2[,colnames(dat2)%in%colnames(dat1)]
 identical(dat1, dat3)
 
-# covail_data_processed_20250726.csv is also the same but frnt markers have changed (3 new imputations)
-dat2=read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20250728.csv")
+# later file is also the same but frnt markers have changed (3 new imputations)
+dat2=read.csv("~/correlates_processing/data_clean/csv/covail_data_processed_20250818.csv")
 dat3=dat2[,colnames(dat2)%in%colnames(dat1)]
 identical(dat1[,!contain(colnames(dat1), "frnt")], dat3[,!contain(colnames(dat3), "frnt")])
 

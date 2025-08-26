@@ -1,13 +1,5 @@
-```{r, echo=FALSE, results='asis'}
-fname.suffix = study_name
-```
 
-
-# `r COR` Univariate CoR: Poisson Regression Models
-
-The main regression model is the poisson regression model fit with osDesign unless specified otherwise. One model per row.
-
-## Odds ratios
+## `r fname.suffix`
 
 \setlength{\tabcolsep}{.5ex}
   \input{`r pathCoRoutput`/CoR_univariable_poisson_pretty_`r fname.suffix`}
@@ -36,10 +28,10 @@ $\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over th
 
 \clearpage
 \scriptsize
-\input{`r paste0(pathCoRoutput, "/CoR_univariable_poisson_cat_pretty_", study_name)`}
+\input{`r paste0(pathCoRoutput, "/CoR_univariable_poisson_cat_pretty_", fname.suffix)`}
 \normalsize
 \vspace{-15pt}
-$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, "_", study_name, "}"), sep=",")`
+$\ast$Baseline covariates adjusted for: `r covariates_adjusted`. Cutpoints (on the log10 scale): `r concatList(paste0("\\input{", pathCoRoutput, "/cutpoints_", all.markers, ".txt}"), sep=",")`
 
 $\ast\ast$`r txt.coxph.note2`
 
@@ -54,7 +46,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 \begin{table}[H]
 \caption{Number of cases and non-cases in ph2 or not}
 \begin{center}
-  \input{`r pathCoRoutput`/tab1}\\
+  \input{`r pathCoRoutput`/tab1_`r fname.suffix`}\\
 \end{center}
 \end{table}
 
