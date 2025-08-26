@@ -30,6 +30,11 @@ for (COR in c("D15to91covail_tcell", "D15to181covail_tcell")) {
       fname.suffix.0 <- trt.label <- "Sanofi_NNaive"
     }
     
+    if (trt <= 4) {
+      primary = primary.ls$naive; secondary = secondary.ls$naive; exploratory = exploratory.ls$naive
+    } else {
+      primary = primary.ls$nonnaive; secondary = secondary.ls$nonnaive; exploratory = exploratory.ls$nonnaive
+    }
     cat(paste0("## ", trt.label, " \n\n"))
     pathCoRoutput <- paste0("cor_coxph/output/", attr(config,"config"), "/", COR)
     
