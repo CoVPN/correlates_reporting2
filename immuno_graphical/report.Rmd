@@ -70,7 +70,7 @@ if (study_name == "NextGen_Mock") {
     assay_immuno = assay_immuno[!grepl("nasal|saliva|bindN_IgA", assay_immuno)]
     assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
     nextgen_output_flag = 1 # sera_only_ics, as default with assay_metadata filtered to sera only assays, 
-                            # options: 3 (whole_report)  1 (BARDA_TLF)
+                            # options: 3 (whole_report)  1 (BARDA_TLF) 2 (sera only + ics)
 }
 ```
 
@@ -546,18 +546,18 @@ if (attr(config,"config")=="janssen_partA_VL"){
 if(study_name %in% c("VAT08", "NextGen_Mock") | attr(config,"config")=="janssen_partA_VL"){
     
     for (asy in if(study_name == "NextGen_Mock") {
-    c(if (nextgen_output_flag >= 1) "bind.*sera", 
-      if (nextgen_output_flag == 3) c("bind.*nasal", "bind.*saliva"), 
-      if (nextgen_output_flag >= 1) "pseudo.*sera", 
-      if (nextgen_output_flag == 3) c("pseudo.*nasal", "pseudo.*saliva"), 
-      if (nextgen_output_flag >= 1) "ics")
+    c(if (nextgen_output_flag >= 1) "bind_sera", 
+      if (nextgen_output_flag == 3) c("bind_nasal", "bind_saliva"), 
+      if (nextgen_output_flag >= 1) "pseudo_sera", 
+      if (nextgen_output_flag == 3) c("pseudo_nasal", "pseudo_saliva"), 
+      if (nextgen_output_flag >= 1) "T4",
+      if (nextgen_output_flag >= 2) "T8")
     } else {c("bind", "pseudo")}){
         #if (study_name == "NextGen_Mock" & tp %in% c("Day whole", "Day initial") & asy == "ics") next # do not have these plots
         
         for (tp in #if(study_name=="VAT08") {c("Day", "Delta")} else {
              c(if(attr(config,"config") != "nextgen_mock") "Day", 
-               if(attr(config,"config") == "nextgen_mock" & nextgen_output_flag >= 2) "Day initial", # "Day91", "Day366" Track A
-               if(attr(config,"config") == "nextgen_mock") "Day whole" # "B", "Day31", "Day181" whole
+               if(attr(config,"config") == "nextgen_mock") c(if (nextgen_output_flag >= 2) "Day initial", if (nextgen_output_flag >= 1) "Day whole")
                #, if (attr(config,"config")!="janssen_partA_VL") "Delta"
              )#}
         ) {
@@ -738,10 +738,14 @@ for (assay_grp in if (study_name == "NextGen_Mock") {
                                      "bindSpike_IgA_saliva_LB.1$",
        
                                      "pseudoneutid50_saliva_KP.2$|pseudoneutid50_saliva_XBB.1.5$"),
-     
-     "T4_IFNg_OR_IL2_N_BA.4.5$|T4_IFNg_OR_IL2_Spike_BA.4.5$",
-     
-     "T8_IFNg_OR_IL2_N_BA.4.5$|T8_IFNg_OR_IL2_Spike_BA.4.5$")))
+       
+       if (nextgen_output_flag >= 2) "T4_IFNg_OR_IL2_N_Index$",
+       
+       "T4_IFNg_OR_IL2_Spike_KP.2$|T4_IFNg_OR_IL2_Spike_Index.D614$",
+       
+       if (nextgen_output_flag >= 2) "T8_IFNg_OR_IL2_N_Index$",
+       
+       "T8_IFNg_OR_IL2_Spike_KP.2$|T8_IFNg_OR_IL2_Spike_Index.D614$")))
 } else {c("bAb","bAb_mdw","nAb","nAb_mdw")}){
     details = ""
     details_lb = ""

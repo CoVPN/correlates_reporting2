@@ -15,12 +15,14 @@
 #' @param facet.x.var horizontal facet variable 
 #' @param facet.y.var vertical facet variable 
 #' @param pointby a variable name by which different color and shape of point will be drawn, e.g, "cohort_col", "cohort_col2"
+#' @param colorby a variable name by which different color will be drawn, default "cohort_event", e.g, "Trt"
 #' @param chtcols color panel for points
 #' @param chtpchs shape panel for points
-#' @param lgdbreaks breaks for point legend
-#' @param lgdlabels labels for point legend
+## @param lgdbreaks breaks for point legend
+## @param lgdlabels labels for point legend
 #' @param scale.x.discrete.lb label for x axis categories
 #' @param guide_legend_ncol number of cols for legend
+#' @param y.axis.lb y-axis label, if empty, it has default value pooled from the assay_metadata
 #' @return A ggplot object list for violin + box plot without lines
 f_case_non_case_by_time_assay <- 
     function(dat,
@@ -34,15 +36,17 @@ f_case_non_case_by_time_assay <-
              facet.x.var = vars(assay_label_short),
              facet.y.var, # = vars(Trt_nnaive),
              pointby = "cohort_col",
+             colorby = "cohort_event",
              scale.x.discrete.lb = c("Omicron Cases", "Non-Cases"),
-             lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
-             lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+             #lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+             #lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
              chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
              chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders")),
-             guide_legend_ncol = 1
+             guide_legend_ncol = 1,
+             y.axis.lb = ""
              ) {
         
-    plot_theme <- theme_bw(base_size = 25) +
+    plot_theme <- theme_bw(base_size = 32) +
         theme(plot.title = element_text(hjust = 0.5),
               axis.text.x = element_text(size = axis.x.text.size),
               axis.text.y = element_text(size = 25),
@@ -73,18 +77,18 @@ f_case_non_case_by_time_assay <-
             ggplot(data = d, aes(x = cohort_event, y = value)) +
                 #facet_rep_wrap(Trt_nnaive ~ assay_label_short, repeat.tick.labels = TRUE) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
-                geom_violin(aes(color = cohort_event), scale = "width", na.rm = TRUE, show.legend = FALSE) +
-                geom_boxplot(aes(color = cohort_event), width = 0.25, lwd = 1.5, alpha = 0.15, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
-                scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                geom_violin(aes(color = .data[[colorby]]), scale = "width", na.rm = TRUE, show.legend = FALSE) +
+                geom_boxplot(aes(color = .data[[colorby]]), width = 0.25, lwd = 1.5, alpha = 0.15, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
+                scale_color_manual(name = "", values = chtcols[names(chtcols)!="Non-Responders"], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
-                geom_jitter(aes(color = .data[[pointby]], shape = .data[[pointby]]), width = 0.3, height = 0, size = 1.1, show.legend = TRUE) +
-                scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
-                scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                geom_jitter(aes(color = .data[[colorby]], shape = .data[[pointby]]), width = 0.3, height = 0, size = 2.1, show.legend = TRUE) +
+                scale_color_manual(name = "", values = chtcols, breaks = names(chtcols), labels = names(chtcols), drop=FALSE) +
+                scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
-                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.97), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.97), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
                 geom_text(aes(label = ifelse(N_RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE, na.rm = TRUE) + 
@@ -94,7 +98,7 @@ f_case_non_case_by_time_assay <-
                 
                 #scale_x_discrete(labels = scale.x.discrete.lb, drop=FALSE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scales::math_format(10^.x)) +
-                labs(x = "Cohort", y = unique(d$panel), title = paste(unique(d$panel), "distributions by case/non-case", if (unique(d$time)!="") "at", unique(d$time)), color = "Category", shape = "Category") +
+                labs(x = "Cohort", y = ifelse(y.axis.lb!="", y.axis.lb, unique(d$panel)), title = paste(unique(d$panel), "distributions by case/non-case", if (unique(d$time)!="") paste0("at ", gsub("ay ", "", unique(d$time)))), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = guide_legend_ncol), shape = guide_legend(ncol = guide_legend_ncol))
         })
@@ -197,7 +201,7 @@ f_case_non_case_by_time_assay_adhoc <-
                     scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
-                    geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                     geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                     
                     geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
@@ -274,7 +278,7 @@ f_case_non_case_by_time_assay_wrap <-
                     scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
-                    geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                     geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
                     
                     geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
@@ -306,12 +310,14 @@ f_case_non_case_by_time_assay_wrap <-
 #' @param facet.y.var vertical facet variable
 #' @param split.var group split variable in string, e.g., "panel", "assay_variant"
 #' @param pointby a variable name by which different color and shape of point will be drawn, e.g, "cohort_col", "cohort_col2"
-#' @param lgdbreaks breaks for point legend 
-#' @param lgdlabels labels for point legend 
+#' @param colorby a variable name by which different color will be drawn, default "cohort_event", e.g, "Trt"
+# @param lgdbreaks breaks for point legend 
+# @param lgdlabels labels for point legend 
 #' @param chtcols color panel for points
 #' @param chtpchs shape panel for points
 #' @param strip.text.y.size strip label size for y-axis, e.g., assay label, default is 25
-#' @param axis.text.x.size x-axis label size, default is 9.5, e.g., cases, non-cases 
+#' @param axis.text.x.size x-axis label size, default is 9.5, e.g., cases, non-cases
+#' @param y.axis.lb y-axis label, if empty, it has default value pooled from the assay_metadata 
 #' @return A ggplot object list for longitudinal violin + box plot with lines
 f_longitude_by_assay <- function(
     dat,
@@ -325,16 +331,18 @@ f_longitude_by_assay <- function(
     facet.y.var, #= vars(Trt_nnaive),
     split.var = "panel",
     pointby = "cohort_col",
-    lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
-    lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+    colorby = "cohort_event",
+    #lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+    #lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
     chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     strip.text.y.size = 25,
-    axis.text.x.size = 9.5
+    axis.text.x.size = 9.5,
+    y.axis.lb = ""
     ) {
     
     plot_theme <- theme_bw() +
-        theme(plot.title = element_text(hjust = 0.5),
+        theme(plot.title = element_text(hjust = 0.5, size = 32),
               axis.text.x = element_text(size = axis.text.x.size),
               axis.text.y = element_text(size = 18),
               axis.title = element_text(size = 24, face="bold"),
@@ -359,7 +367,7 @@ f_longitude_by_assay <- function(
         ungroup() %>%
         group_split(.[[split.var]]) %>% # e.g., "panel" variable from assay_metadata
         purrr::map(function(d){
-            ggplot(data = d, aes(x = .data[[x.var]], y = .data[["value"]], color = "cohort_event")) +
+            ggplot(data = d, aes(x = .data[[x.var]], y = .data[["value"]], color = .data[[colorby]])) +
                 facet_grid(rows = facet.y.var, col = facet.x.var) +
                 
                 geom_violin(scale = "width", na.rm = TRUE, show.legend = FALSE) +
@@ -367,14 +375,14 @@ f_longitude_by_assay <- function(
                 geom_boxplot(width = 0.25, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                scale_color_manual(name = "", values = chtcols[1:length(chtcols)-1], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                scale_color_manual(name = "", values = chtcols[names(chtcols)!="Non-Responders"], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
-                geom_point(aes(color = .data[[pointby]], shape = .data[[pointby]]), size = 3, alpha = 0.6, show.legend = TRUE) +
-                scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
-                scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                geom_point(aes(color = .data[[colorby]], shape = .data[[pointby]]), size = 3, alpha = 0.6, show.legend = TRUE) +
+                scale_color_manual(name = "", values = chtcols, breaks = names(chtcols), labels = names(chtcols), drop=FALSE) +
+                scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 
-                geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"Rate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"\nRate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes(x = .data[[x.var]], label = .data[["N_RespRate"]], y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
@@ -385,7 +393,7 @@ f_longitude_by_assay <- function(
                 
                 scale_x_discrete(labels = x.lb, drop=TRUE) +
                 scale_y_continuous(limits = ylim, breaks = ybreaks, labels = scales::math_format(10^.x)) +
-                labs(x = "Cohort", y = unique(d[[split.var]]), title = paste(unique(d[[split.var]]), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
+                labs(x = "Cohort", y = ifelse(y.axis.lb!="", y.axis.lb, unique(d[[split.var]])), title = paste(unique(d[[split.var]]), "longitudinal plots across timepoints"), color = "Category", shape = "Category") +
                 plot_theme +
                 guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
         })
@@ -477,7 +485,7 @@ f_longitude_by_assay_adhoc <- function(
                 scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, drop=FALSE) +
                 scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, drop=FALSE) +
                 
-                geom_text(aes(label = ifelse(RespRate!="","Rate",""), x = 0.1, y = rate.y), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                geom_text(aes(label = ifelse(RespRate!="","\nRate",""), x = 0.1, y = rate.y), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes_string(x = x.var, label = "RespRate", y = "rate.y"), color = "black", size = panel.text.size, check_overlap = TRUE) +
                 
                 geom_hline(aes(yintercept = ifelse(RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
@@ -1039,7 +1047,7 @@ f_case_non_case_by_time_assay_wrap_adhoc <-
                     scale_fill_manual(name = "Region", values = c("Africa" = "#33A02C", "AsiaPac" = "#E31A1C", "LatAm" = "#1F78B4")) +
                     # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                     # Whisker: Q3 + 1.5 IQR
-                    geom_text(aes(label = ifelse(N_RespRate!="","Rate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
+                    geom_text(aes(label = ifelse(N_RespRate!="","\nRate",""), x = 0.4, y = ylim[2]*0.9), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                     geom_text(aes(x = cohort_event, label = N_RespRate, y = ylim[2]*0.9), color = "black", size = panel.text.size, check_overlap = TRUE) +
                     
                     geom_hline(aes(yintercept = ifelse(N_RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
