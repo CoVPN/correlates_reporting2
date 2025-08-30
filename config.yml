@@ -1773,7 +1773,7 @@ D31toM6_nextgen_mock_PBMC:
 # Note that for data processing, covail is the only TRIAL label. But for reporting2, there are multiple variants.
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250819.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250818.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
@@ -2077,7 +2077,7 @@ D15to181covail_xassays:
 # ILIAD    
 
 iliad_ib202p: &iliad_ib202p
-  data_cleaned: /trials/iliad/ib_202p/analysis/correlates/adata/iliad_ib202p_data_processed_20250730.csv
+  data_cleaned: /trials/iliad/ib_202p/analysis/correlates/adata/iliad_ib202p_data_processed_20250829.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [28]
@@ -2085,13 +2085,13 @@ iliad_ib202p: &iliad_ib202p
   time_labels: [Day 1, Day 28, D28 fold-rise over D1]
   study_name: ILIAD_IB202P
   assay_metadata: assay_metadata/iliad_ib202p_assay_metadata.csv
-  covariates: ~.+ Sex
+  covariates: ~.+ 1
   low_efficacy: no
   num_boot_replicates: 1000
   num_perm_replicates: 5000
 
 iliad_ib201p: &iliad_ib201p
-  data_cleaned: /trials/iliad/ib_201p/analysis/correlates/adata/iliad_ib201p_data_processed_20250730.csv
+  data_cleaned: /trials/iliad/ib_201p/analysis/correlates/adata/iliad_ib201p_data_processed_20250821.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [28]
@@ -2116,3 +2116,13 @@ C0iliad_ib202p:
   txt.endpoint: Pertussis
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed colonization endpoint.
 
+C0iliad_C14only_ib202p:
+  ph1: ph1.C0
+  ph2: ph2.C0
+  wt: wt.C0
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndC14
+  tpeak: 28
+  tpeaklag: 0
+  txt.endpoint: Pertussis
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed colonization endpoint.

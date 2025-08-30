@@ -46,6 +46,13 @@ for (a in names(marker.cutpoints)) {
         file=paste0(save.results.to, "cutpoints_", a,".txt"))
 }
 
+all.markers = c("Day"%.%timepoints%.%assays, "B"%.%assays, "Delta28overB"%.%assays)
+all.markers.names.short=c(
+  "D28 "%.%labels.assays.short,
+  "B "%.%labels.assays.short,
+  "Fold-rise "%.% sub("\\(.+\\)", "", labels.assays.short) 
+)
+
 show.q=F
 
 begin=Sys.time()
