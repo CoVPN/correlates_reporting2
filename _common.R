@@ -974,7 +974,7 @@ if (TRIAL %in% c("covail", "covail_sanofi")) {
   all.markers1 = c("Day"%.%timepoints%.%assays)
   
 } else if (TRIAL %in% c("iliad_ib202p")) {
-  all.markers1 = c("Day"%.%timepoints%.%assays, "Delta28overB"%.%assays)
+  all.markers1 = c("Day"%.%timepoints%.%assays, "B"%.%assays, "Delta28overB"%.%assays)
   
 } else if (TRIAL=="nextgen_mock") {
   all.markers1 = c("B"%.%assays, "Day31"%.%assays, "Delta31overB"%.%assays)

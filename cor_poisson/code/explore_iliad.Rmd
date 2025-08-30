@@ -1,0 +1,65 @@
+---
+title: "IB-201P and IB-202P Exploratory Plots (I)"
+output: 
+  pdf_document:
+    includes:
+      in_header: preamble.tex
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+
+library(copcor)
+library(survey)
+library(kyotil)
+library(glue)
+library(Hmisc)
+library(knitr)
+library(GGally)
+
+library(geepack)
+source("code/gee_bias_correction.R")
+
+
+dat_mapped_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/correlates_processing/config.yml")$mapped_data)
+dat_proc_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
+
+dat_mapped_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_processing/config.yml")$mapped_data)
+dat_proc_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
+
+assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/iliad_ib202p_assay_metadata.csv'))
+assays = assay_metadata$assay
+panels = unique(assay_metadata$panel)
+antigens = c("WCE", setdiff(unique(assay_metadata$antigen), c("WCE", NA)))
+```
+
+## Selecting covariates
+```{r , echo=F}
+
+fit1 = glm(EventIndC9_11_14 ~ Sex, subset(dat_proc_202, Trt=="BPZE1"), family=poisson(link = "log"))
+fit2 = glm(EventIndC9_11_14 ~ Age, subset(dat_proc_202, Trt=="BPZE1"), family=poisson(link = "log"))
+tab=getFormattedSummary(list(Sex=fit1, Age=fit2), robust=T, exp=T)[2,,drop=F]
+rownames(tab)[1]=""
+kable(tab, align="c")
+```
+
+```{r geepack, echo=F}
+
+
+dat_proc_202$Ptid = as.factor(dat_proc_202$Ptid) # need to make it a factor to use as id
+
+fit.gee <- geeglm(
+  EventIndC9_11_14 ~ Day28WCE_Norm_Nasal_IgA,
+  data  = subset(dat_proc_202, Trt == "BPZE1"),
+  id    = Ptid,
+  family= poisson(link = "log"),
+  corstr= "independence"       
+)
+
+summary(fit.gee)   # robust (sandwich) SEs by default
+
+ssase (fit.gee)
+
+```
+
