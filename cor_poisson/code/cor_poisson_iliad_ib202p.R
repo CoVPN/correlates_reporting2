@@ -105,11 +105,11 @@ for (trt in trts) {
   # make pretty table
   {
   rows=length(coef(fits[[1]]))
-  est=getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=1)
-  ci= getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=7)
-  p=  getFormattedSummary(fits, exp=T, robust=T, rows=rows, type=10)
-  est.scaled=getFormattedSummary(fits.scaled, exp=T, robust=T, rows=rows, type=1)
-  ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=T, rows=rows, type=7)
+  est=getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=1)
+  ci= getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=7)
+  p=  getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=10)
+  est.scaled=getFormattedSummary(fits.scaled, exp=T, robust=F, rows=rows, type=1)
+  ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=F, rows=rows, type=7)
   }
   
   pvals.cont = sapply(fits, function(x) {
@@ -137,7 +137,7 @@ for (trt in trts) {
     fits.tri[[a]]=fit
   }
   
-  fits.tri.coef.ls= lapply(fits.tri, function (fit) getFixedEf(fit, robust=T))
+  fits.tri.coef.ls= lapply(fits.tri, function (fit) getFixedEf(fit, robust=F))
   
   
   # get generalized Wald p values
@@ -146,7 +146,7 @@ for (trt in trts) {
       rows=length(fit$coef) - (marker.levels[a]-2):0
       
       if (length(fit)==1) NA else {
-          stat=coef(fit)[rows] %*% solve(vcov(fit,robust=T)[rows,rows]) %*% coef(fit)[rows]
+          stat=coef(fit)[rows] %*% solve(vcov(fit,robust=F)[rows,rows]) %*% coef(fit)[rows]
           pchisq(stat, length(rows), lower.tail = FALSE)
       }
   })
@@ -262,19 +262,19 @@ for (trt in trts) {
   get.est=function(a) {
     fit=fits.tri[[a]]
     rows=length(fit$coef) - (marker.levels[a]-2):0
-    out = getFormattedSummary(list(fit), exp=T, robust=T, rows=rows, type=1)
+    out = getFormattedSummary(list(fit), exp=T, robust=F, rows=rows, type=1)
     if (length(out)==1) c(NA,out) else out
   }
   get.ci =function(a) {
     fit=fits.tri[[a]]
     rows=length(fit$coef) - (marker.levels[a]-2):0
-    out = getFormattedSummary(list(fit), exp=T, robust=T, rows=rows, type=7)
+    out = getFormattedSummary(list(fit), exp=T, robust=F, rows=rows, type=7)
     if (length(out)==1) c(NA,out) else out
   }
   get.p  =function(a) {
     fit=fits.tri[[a]]
     rows=length(fit$coef) - (marker.levels[a]-2):0
-    out = getFormattedSummary(list(fit), exp=T, robust=T, rows=rows, type=10)
+    out = getFormattedSummary(list(fit), exp=T, robust=F, rows=rows, type=10)
     if (length(out)==1) c(NA,out) else out
   }
   get.est(all.markers[1]); get.ci (all.markers[1]); get.p  (all.markers[1])
