@@ -2077,7 +2077,7 @@ D15to181covail_xassays:
 # ILIAD    
 
 iliad_ib202p: &iliad_ib202p
-  data_cleaned: /trials/iliad/ib_202p/analysis/correlates/adata/iliad_ib202p_data_processed_20250829.csv
+  data_cleaned: /trials/iliad/ib_202p/analysis/correlates/adata/iliad_ib202p_data_processed_20250831.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [28]
@@ -2117,9 +2117,9 @@ C0iliad_ib202p:
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed colonization endpoint.
 
 C0iliad_C14only_ib202p:
-  ph1: ph1.C0
-  ph2: ph2.C0
-  wt: wt.C0
+  ph1: ph1.C0_C14only
+  ph2: ph2.C0_C14only
+  wt: wt.C0_C14only
   WtStratum: Wstratum
   EventIndPrimary: EventIndC14
   tpeak: 28

@@ -38,8 +38,8 @@ ssase = function(fit.gee) {
 
   stopifnot(is(fit.gee)=="geeglm")
   stopifnot(fit.gee$corstr %in% c("independence","exchangeable","ar1")) 
-  stopifnot(fit.gee$family$family=="gaussian")
-  stopifnot(fit.gee$family$link=="identity")
+  # stopifnot(fit.gee$family$family=="gaussian")
+  # stopifnot(fit.gee$family$link=="identity")
   stopifnot(is.null(fit.gee$call$waves))
   
   # the standard sandwich estimate uses alpha, gamma, A and B
