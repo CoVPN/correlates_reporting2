@@ -2077,7 +2077,7 @@ D15to181covail_xassays:
 # ILIAD    
 
 iliad_ib202p: &iliad_ib202p
-  data_cleaned: /trials/iliad/ib_202p/analysis/correlates/adata/iliad_ib202p_data_processed_20250831.csv
+  data_cleaned: /trials/iliad/ib_202p/analysis/correlates/adata/iliad_ib202p_data_processed_20250903.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [28]
