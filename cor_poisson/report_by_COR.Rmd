@@ -2,30 +2,37 @@
 ## `r fname.suffix`
 
 \setlength{\tabcolsep}{.5ex}
+\scriptsize
   \input{`r pathCoRoutput`/CoR_univariable_poisson_pretty_`r fname.suffix`}
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
 
-$\ast$`r txt.coxph.note2`
+$\ast\ast$`r txt.coxph.note2`
 
+`r if (!show.q) '<!--'`
 $\ast\ast\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers
-<!-- using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates). -->
+`r if (!show.q) '-->'`
 
 `r special.note`
 
 
 \clearpage
 \setlength{\tabcolsep}{.5ex}
+\scriptsize
   \input{`r pathCoRoutput`/CoR_univariable_poisson_pretty_scaled_`r fname.suffix`}
 $\ast$Baseline covariates adjusted for: `r covariates_adjusted`.
 
-$\ast$$\ast$`r txt.coxph.note2`
+$\ast\ast$`r txt.coxph.note2`
 
+
+`r if (!show.q) '<!--'`
 $\ast$$\ast$$\ast$q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers
-<!-- using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates). -->
+`r if (!show.q) '-->'`
 
 `r special.note`
 
 
+
+`r if (TRIAL %in% c("iliad_ib202p")) '<!--'`
 \clearpage
 \scriptsize
 \input{`r paste0(pathCoRoutput, "/CoR_univariable_poisson_cat_pretty_", fname.suffix)`}
@@ -38,7 +45,8 @@ $\ast\ast$`r txt.coxph.note2`
 $\ast\ast$$\ast$Generalized Wald-test p-value of the null hypothesis that the hazard rate is constant across the Lower, Middle, and Upper tertile groups.
 
 $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of p-values both for quantitative markers and categorical markers
-<!-- using the Westfall and Young permutation method (\protect\input{`r pathCoRoutput`/permutation_replicates_`r fname.suffix`} replicates). -->
+
+`r if (TRIAL %in% c("iliad_ib202p")) '-->'`
 
 
 

@@ -1,5 +1,7 @@
 ```{r, echo=FALSE, results='asis'}
 
+show.q=F
+
 for (COR in c("C0iliad_ib202p", "C0iliad_C14only_ib202p")) {
 
   assays1 = assays
@@ -16,11 +18,13 @@ for (COR in c("C0iliad_ib202p", "C0iliad_C14only_ib202p")) {
   names(all.markers)=all.markers
   
   if (COR=="C0iliad_ib202p") {
-    cat("# Univariate CoR: Poisson Regression Models")
+    cat("# Univariate CoR: Poisson Regression Models \n")
   } else {
-    cat("# Univariate CoR for the C14 only endpoint: Poisson Regression Models")
+    cat("# Univariate CoR for the C14 only endpoint: Poisson Regression Models \n")
   }
     
+  cat("\\clearpage \n")
+  
   for (fname.suffix in c("BPZE1", "PBO")) {
     res = knitr::knit_child(c(here::here('cor_poisson', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')

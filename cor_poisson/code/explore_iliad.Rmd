@@ -46,16 +46,62 @@ rownames(tab)[1]=""
 kable(tab, align="c")
 ```
 
-```{r geepack, echo=F}
+```{r Delta28overBFHA_Norm_Nasal_IgA, echo=F}
 
-fit.gee <- geeglm(EventIndC9_11_14 ~ Day28WCE_Norm_Nasal_IgA, data  = subset(dat_proc_202, Trt == "BPZE1"), family= poisson(link = "log"),
+fit.gee <- geeglm(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, data  = subset(dat_proc_202, Trt == "PBO"), family= poisson(link = "log"),
   id = Ptid, corstr= "independence")
 
 summary(fit.gee)   # robust (sandwich) SEs by default
 
 ssase (fit.gee)
 
+getFormattedSummary(list(fit.gee), robust=F, type=12)
+getFormattedSummary(list(fit.gee), robust=T, type=12)
+getFormattedSummary(list(fit.gee), robust="MD", type=12)
+getFormattedSummary(list(fit.gee), robust="MBN", type=12)
+
+myboxplot(Delta28overBFHA_Norm_Nasal_IgA~EventIndC9_11_14, subset(dat_proc_202, Trt == "PBO"), test="w")
+
+t.test(Delta28overBFHA_Norm_Nasal_IgA~EventIndC9_11_14, subset(dat_proc_202, Trt == "PBO"))
+
 ```
+
+```{r}
+fit.gee <- geeglm(EventIndC9_11_14 ~ Day28FHA_Norm_Nasal_IgA, data  = subset(dat_proc_202, Trt == "BPZE1"), family= poisson(link = "log"),
+  id = Ptid, corstr= "independence")
+
+summary(fit.gee)   # robust (sandwich) SEs by default
+
+ssase (fit.gee)
+
+getFormattedSummary(list(fit.gee), robust=T, type=12)
+getFormattedSummary(list(fit.gee), robust="MD", type=12)
+getFormattedSummary(list(fit.gee), robust="MBN", type=12)
+
+myboxplot(Day28FHA_Norm_Nasal_IgA~EventIndC9_11_14, subset(dat_proc_202, Trt == "BPZE1"), test="w")
+
+t.test(Day28FHA_Norm_Nasal_IgA~EventIndC9_11_14, subset(dat_proc_202, Trt == "BPZE1"))
+
+```
+
+```{r}
+fit.gee <- geeglm(EventIndC9_11_14 ~ Delta28overBFIM_Norm_Nasal_IgA, data  = subset(dat_proc_202, Trt == "PBO"), family= poisson(link = "log"),
+  id = Ptid, corstr= "independence")
+
+summary(fit.gee)   # robust (sandwich) SEs by default
+
+ssase (fit.gee)
+
+getFormattedSummary(list(fit.gee), robust=T, type=12)
+getFormattedSummary(list(fit.gee), robust="MD", type=12)
+getFormattedSummary(list(fit.gee), robust="MBN", type=12)
+
+myboxplot(Delta28overBFIM_Norm_Nasal_IgA~EventIndC9_11_14, subset(dat_proc_202, Trt == "PBO"), test="w")
+
+t.test(Delta28overBFIM_Norm_Nasal_IgA~EventIndC9_11_14, subset(dat_proc_202, Trt == "PBO"))
+
+```
+
 
 ```{r spot check wilcox robust binomial}
 dat= subset(dat_proc_202, Trt=="PBO")

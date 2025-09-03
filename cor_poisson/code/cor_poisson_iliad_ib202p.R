@@ -11,6 +11,7 @@ library(Hmisc) # wtd.quantile, cut2
 library(xtable) # this is a dependency of kyotil
 library(sandwich)
 library(lmtest)
+library(geepack)
   
   
 source(here::here("code", "params.R"))
@@ -46,18 +47,22 @@ for (a in names(marker.cutpoints)) {
         file=paste0(save.results.to, "cutpoints_", a,".txt"))
 }
 
-all.markers = c("Day"%.%timepoints%.%assays, "B"%.%assays, "Delta28overB"%.%assays)
+all.markers = c("Day"%.%timepoints%.%assays, "B"%.%assays, "Delta28overB"%.%assays); names(all.markers)=all.markers
 all.markers.names.short=c(
   "D28 "%.%labels.assays.short,
   "B "%.%labels.assays.short,
   "Fold-rise "%.% sub("\\(.+\\)", "", labels.assays.short) 
 )
 
+robust = lapply(all.markers, function (a) ifelse(endsWith (a, "_SBA"), FALSE, "MBN") )
+
+
 show.q=F
 
 begin=Sys.time()
 }
 
+dat_proc$Ptid = as.factor(dat_proc$Ptid) # need to make it a factor to use as id
 
 trts=1:0
 for (trt in trts) {
@@ -84,17 +89,21 @@ for (trt in trts) {
   # get RR on continuous markers
   ################################################################################
   
-  
   fits=list()
   fits.scaled=list()
   for (i in 1:2) { # 1: not scaled, 2: scaled
     for (a in all.markers) {
+      # myprint(trt, a)
+      
       f=update (form.0,  as.formula('~. + '%.%ifelse(i==2,"scale("%.%a%.%")", a)))
       
-      fit <- glm(f, family = poisson(link = "log"), data = dat.ph1)
+      if (robust[[a]]==FALSE) {
+        # there are NA's, cannot fit gee
+        fit <- glm(f, family = poisson(link = "log"), data = dat.ph1)
+      } else {
+        fit <- geeglm(f, family = poisson(link = "log"), data = dat.ph1, id = Ptid, corstr= "independence")
+      }
       
-      # coeftest(fit, vcov. = sandwich)    # Robust (Huber-White) standard errors
-        
       if (i==1) fits[[a]]=fit else fits.scaled[[a]]=fit
     }
   }
@@ -102,14 +111,15 @@ for (trt in trts) {
   natrisk=nrow(dat.ph1)
   nevents=sum(dat.ph1$yy==1)
   
+  
   # make pretty table
   {
   rows=length(coef(fits[[1]]))
-  est=getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=1)
-  ci= getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=7)
-  p=  getFormattedSummary(fits, exp=T, robust=F, rows=rows, type=10)
-  est.scaled=getFormattedSummary(fits.scaled, exp=T, robust=F, rows=rows, type=1)
-  ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=F, rows=rows, type=7)
+  est=getFormattedSummary(fits, exp=T, robust=robust, rows=rows, type=1)
+  ci= getFormattedSummary(fits, exp=T, robust=robust, rows=rows, type=7)
+  p=  getFormattedSummary(fits, exp=T, robust=robust, rows=rows, type=10)
+  est.scaled=getFormattedSummary(fits.scaled, exp=T, robust=robust, rows=rows, type=1)
+  ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=robust, rows=rows, type=7)
   }
   
   pvals.cont = sapply(fits, function(x) {
@@ -121,7 +131,8 @@ for (trt in trts) {
   
   
   
-  
+  if(F) {
+    
   ###################################################################################################
   if(verbose) print("regression for trichotomized markers")
   
@@ -132,12 +143,17 @@ for (trt in trts) {
     if(verbose) myprint(a)
     f= update(form.0, as.formula(paste0("~.+", a, "cat")))
     
-    fit <- glm(f, family = poisson(link = "log"), data = dat.ph1)
+    if (robust[[a]]==FALSE) {
+      # there are NA's, cannot fit gee
+      fit <- glm(f, family = poisson(link = "log"), data = dat.ph1)
+    } else {
+      fit <- geeglm(f, family = poisson(link = "log"), data = dat.ph1, id = Ptid, corstr= "independence")
+    }
     
     fits.tri[[a]]=fit
   }
   
-  fits.tri.coef.ls= lapply(fits.tri, function (fit) getFixedEf(fit, robust=F))
+  fits.tri.coef.ls= lapply(fits.tri, function (fit) getFixedEf(fit, robust=robust))
   
   
   # get generalized Wald p values
@@ -146,7 +162,7 @@ for (trt in trts) {
       rows=length(fit$coef) - (marker.levels[a]-2):0
       
       if (length(fit)==1) NA else {
-          stat=coef(fit)[rows] %*% solve(vcov(fit,robust=F)[rows,rows]) %*% coef(fit)[rows]
+          stat=coef(fit)[rows] %*% solve(vcov(fit,robust=robust)[rows,rows]) %*% coef(fit)[rows]
           pchisq(stat, length(rows), lower.tail = FALSE)
       }
   })
@@ -185,13 +201,13 @@ for (trt in trts) {
   # since we take ID80 out earlier, we may need to add it back for the table and we do it with the help of p.unadj.1
   pvals.adj = cbind(p.unadj=p.unadj.1, pvals.adj[match(names(p.unadj.1), rownames(pvals.adj)),2:3, drop=F])
   
+  p.1=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FWER"], 3, remove.leading0=F); p.1=sub("0.000","<0.001",p.1)
+  p.2=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FDR" ], 3, remove.leading0=F); p.2=sub("0.000","<0.001",p.2)
   
+  }
   
   ###################################################################################################
   # make continuous markers table
-  
-  p.1=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FWER"], 3, remove.leading0=F); p.1=sub("0.000","<0.001",p.1)
-  p.2=formatDouble(pvals.adj["cont."%.%names(pvals.cont),"p.FDR" ], 3, remove.leading0=F); p.2=sub("0.000","<0.001",p.2)
   
   
   tab.1=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p), if(show.q) p.2, if(show.q) p.1)
@@ -220,7 +236,7 @@ for (trt in trts) {
         longtable=T, 
         label=paste0("tab:CoR_univariable_poisson_pretty"), 
         caption.placement = "top", 
-        caption=paste0("Inference for ", DayPrefix, tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " pooled over treatment arms: Odds ratios per 10-fold increment in the marker*"))
+        caption=paste0("Inference for antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, ": Relative risks per 10-fold increment in the marker*"))
   tab.cont=tab.1
   
   tab.1.nop12=cbind(paste0(nevents, "/", format(natrisk, big.mark=",")), t(est), t(ci), t(p))
@@ -250,31 +266,31 @@ for (trt in trts) {
         longtable=T, 
         label=paste0("tab:CoR_univariable_poisson_pretty_scaled"), 
         caption.placement = "top", 
-        caption=paste0("Inference for ", DayPrefix, tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " pooled over treatment groups: Odds ratios per SD increment in the marker*"))
+        caption=paste0("Inference for antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, ": Relative risks per SD increment in the marker*"))
   tab.cont.scaled=tab.1.scaled
   
   
   
+  if(F) {
   ###################################################################################################
   # make trichotomized markers table
-  
   
   get.est=function(a) {
     fit=fits.tri[[a]]
     rows=length(fit$coef) - (marker.levels[a]-2):0
-    out = getFormattedSummary(list(fit), exp=T, robust=F, rows=rows, type=1)
+    out = getFormattedSummary(list(fit), exp=T, robust=robust, rows=rows, type=1)
     if (length(out)==1) c(NA,out) else out
   }
   get.ci =function(a) {
     fit=fits.tri[[a]]
     rows=length(fit$coef) - (marker.levels[a]-2):0
-    out = getFormattedSummary(list(fit), exp=T, robust=F, rows=rows, type=7)
+    out = getFormattedSummary(list(fit), exp=T, robust=robust, rows=rows, type=7)
     if (length(out)==1) c(NA,out) else out
   }
   get.p  =function(a) {
     fit=fits.tri[[a]]
     rows=length(fit$coef) - (marker.levels[a]-2):0
-    out = getFormattedSummary(list(fit), exp=T, robust=F, rows=rows, type=10)
+    out = getFormattedSummary(list(fit), exp=T, robust=robust, rows=rows, type=10)
     if (length(out)==1) c(NA,out) else out
   }
   get.est(all.markers[1]); get.ci (all.markers[1]); get.p  (all.markers[1])
@@ -335,7 +351,7 @@ for (trt in trts) {
         longtable=T, 
         label=paste0("tab:CoR_univariable_poisson_cat_pretty_", study_name), 
         caption.placement = "top", 
-        caption=paste0("Inference for ", DayPrefix, tpeak, " antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*"))
+        caption=paste0("Inference for antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, " in the vaccine group: Hazard ratios for Middle vs. Upper tertile vs. Lower tertile*"))
   
   
   tab.nop12=cbind(
@@ -346,6 +362,7 @@ for (trt in trts) {
   )
   rownames(tab.nop12)=c(rbind(all.markers.names.short, "", ""))
   
+  }
   
 }
 
