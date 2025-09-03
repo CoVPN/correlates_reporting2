@@ -2114,9 +2114,9 @@ C0iliad_ib202p:
   tpeak: 28
   tpeaklag: 0
   txt.endpoint: Pertussis
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed colonization endpoint.
+  txt.coxph.note2: No. at-risk = size of cohort; no. cases = number of this cohort with an observed colonization endpoint.
 
-C0iliad_C14only_ib202p:
+C0iliad_ib202p_C14only:
   ph1: ph1.C0_C14only
   ph2: ph2.C0_C14only
   wt: wt.C0_C14only
@@ -2125,4 +2125,27 @@ C0iliad_C14only_ib202p:
   tpeak: 28
   tpeaklag: 0
   txt.endpoint: Pertussis
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed colonization endpoint.
+  txt.coxph.note2: No. at-risk = size of cohort; no. cases = number of this cohort with an observed colonization endpoint.
+
+C0iliad_ib202p_PPAI:
+  ph1: ph1.C0_PPAI
+  ph2: ph2.C0_PPAI
+  wt: wt.C0_PPAI
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndC9_11_14
+  tpeak: 28
+  tpeaklag: 0
+  txt.endpoint: Pertussis
+  txt.coxph.note2: No. at-risk = size of cohort; no. cases = number of this cohort with an observed colonization endpoint.
+
+C0iliad_ib202p_PPAI_C14only:
+  ph1: ph1.C0_PPAI_C14only
+  ph2: ph2.C0_PPAI_C14only
+  wt: wt.C0_PPAI_C14only
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndC14
+  tpeak: 28
+  tpeaklag: 0
+  txt.endpoint: Pertussis
+  txt.coxph.note2: No. at-risk = size of cohort; no. cases = number of this cohort with an observed colonization endpoint.
+          
