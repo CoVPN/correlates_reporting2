@@ -24,7 +24,7 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
 	Rscript code/cor_graphics_all.R D31toM12_nextgen_mock_sera
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), iliad_ib202p))
-	Rscript code/cor_data_preprocess.R C0iliad_ib202p # Yiwen's
+	Rscript code/cor_data_preprocess.R C0iliad_ib202p # Yiwen's #C0iliad_ib202p_C14only C0iliad_ib202p_PPAI C0iliad_ib202p_PPAI_C14only
 	Rscript code/cor_graphics_all.R C0iliad_ib202p
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
