@@ -1181,7 +1181,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
   
   # setup pdf file
   for (ab in if(study_name == "NextGen_Mock") {
-    c("bind.*sera", "bind.*nasal", "bind.*saliva", "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", "ics")
+    c("bind.*sera", "bind.*nasal", "bind.*saliva", "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", "T4", "T8")
     } else {c("bind", "pseudo")}) {
     
     for (tm in c(if(attr(config,"config") != "nextgen_mock") "Day", 
@@ -1224,7 +1224,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               
               assays_ = if (ab %in% c("bind", "bind.*sera", "bind.*nasal", "bind.*saliva",
                                       "pseudo", "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva")) {assays[grepl(ab, assays) & !grepl("mdw", assays)]
-              } else if (ab=="ics") {assays[grepl("T4|T8", assays) & !grepl("mdw", assays)]
+              } else if (ab %in% c("T4","T8")) {assays[grepl(ab, assays) & !grepl("mdw", assays)]
               } else {assays}
               
               if (length(assays_)==0) next
@@ -1289,7 +1289,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                   ) %>%
                 mutate(time = NULL, Bserostatus=NULL, Trt=NULL) %>%
                 select(if (grepl("bind", ab)) {matches(ab)
-                } else if (ab=="ics") {matches("T4|T8")
+                } else if (ab %in% c("T4","T8")) {matches(ab)
                 } else if (ab=="pseudo" && reg==1) {matches("pseudoneutid50$|pseudoneutid50_Zeta|pseudoneutid50_Mu|pseudoneutid50_Gamma|pseudoneutid50_Lambda")
                 } else if (ab=="pseudo" && reg==2) {matches("pseudoneutid50$|pseudoneutid50_Delta|pseudoneutid50_Beta")
                 } else {contains("pseudoneutid50")})
@@ -1304,7 +1304,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tm)), "_", ifelse(reg!="all", reg_lb, ""), gsub("\\.\\*", "_", ab), "_", tolower(bstatus.labels.2[bsero + 1]), "_", "trt_comparison", #trt.labels.2[trt + 1], 
                                 ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
                                        ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
-              pdf(filename, width = ifelse(study_name == "NextGen_Mock", 15, 5.5), height = 6.5)
+              try(pdf(filename, width = ifelse(study_name == "NextGen_Mock", 15, 5.5), height = 6.5, onefile = TRUE), silent = FALSE)
+              cat("Saving to:", filename, "\n")
               par(mfrow=#if (study_name=="VAT08") {c(2,2)} else {
                     c(1, 2) #c(1,1)#}
                   , mar=c(0.1,0.1,1,0.1))
@@ -1313,8 +1314,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               
               spider_range = if(attr(config,"config")=="janssen_partA_VL") {10^seq(1, 1.2, (1.2-1)/4) # hard code for the range here
                 #seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
-              } else if (study_name == "NextGen_Mock" & ab != "ics") {10^seq(2, 6, 1)#seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
-              } else if (study_name == "NextGen_Mock" & ab == "ics") {10^seq(-2, 2, 1)#10^seq(floor(log10(find_min)), ceiling(log10(find_max)), by = 1)
+              } else if (study_name == "NextGen_Mock" & !ab %in% c("T4","T8")) {10^seq(2, 6, 1)#seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
+              } else if (study_name == "NextGen_Mock" & ab %in% c("T4","T8")) {10^seq(-2, 2, 1)#10^seq(floor(log10(find_min)), ceiling(log10(find_max)), by = 1)
               }
               
               color = c(if(study_name=="VAT08") "#0AB7C9", "#FF6F1B", "#FF5EBF", "dodgerblue", "chartreuse3", "#009E73")[1:length(times_spider)]
@@ -1324,7 +1325,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                 dat.plot = dat.plot,
                 color = color,
                 legend_lb = legend_lb,
-                title = paste0(ifelse(trt==0, "(B) ", "(A) "), "Geometric Means ", ifelse(grepl("bind", ab), "of bAb Markers, ", ifelse(grepl("pseudo", ab), "of nAb Markers, ", ifelse(grepl("ics", ab), "of CD4+ and CD8+ Markers, ", ""))), 
+                title = paste0(ifelse(trt==0, "(B) ", "(A) "), "Geometric Means ", ifelse(grepl("bind", ab), "of bAb Markers, ", ifelse(grepl("pseudo", ab), "of nAb Markers, ", ifelse(grepl("T4|T8", ab), paste0("of CD", gsub("T", "", ab), "+ Markers, "), ""))), 
                                if (study_name == "NextGen_Mock") {""} else {paste0(bstatus.labels.2[bsero + 1], " ")}, trt.labels[trt + 1],
                                ifelse(reg!="all", paste0(", ", reg_lb_long), "")),
                 spider_range = spider_range
@@ -1354,7 +1355,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                            pfcol = scales::alpha(p$color, 0.2),
                            #custom the grid
                            cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, 
-                           caxislabels=if (study_name == "NextGen_Mock" & ab == "ics") {paste0(p$spider_range, "%")} else {paste0("10^", round(log10(p$spider_range), 2))}, 
+                           caxislabels=if (study_name == "NextGen_Mock" & ab %in% c("T4","T8")) {paste0(p$spider_range, "%")} else {paste0("10^", round(log10(p$spider_range), 2))}, 
                            #label size
                            vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12 | max(nchar(assays_)) > 25, 0.45, 1)),
                            #title
@@ -1365,7 +1366,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                 legend("bottomleft", legend=p$legend_lb, lty=5, pch=c(15), col=p$color, bty="n", ncol=3, cex=0.7, inset=c(0.01, 0))
               }
               
-            dev.off()
+              dev.off()
             } # end of plot_list
           } # end of trt_pair
         } # end of bsero

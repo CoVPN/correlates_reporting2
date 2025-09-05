@@ -240,6 +240,13 @@
       "Repository": "CRAN",
       "Hash": "457a2a08a76cc33cb5510c94d2006e02"
     },
+    "WeightedROC": {
+      "Package": "WeightedROC",
+      "Version": "2020.1.31",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9d18af3673c091772f7e097cdf8ccf59"
+    },
     "abind": {
       "Package": "abind",
       "Version": "1.4-5",
@@ -274,6 +281,18 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "50c838a310445e954bc13f26f26a6ecf"
+    },
+    "aucm": {
+      "Package": "aucm",
+      "Version": "2022.4-6",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "youyifong",
+      "RemoteRepo": "aucm",
+      "RemoteRef": "main",
+      "RemoteSha": "59a02747d1aabfb65aceb67d1153a36604e02645",
+      "Hash": "d9e506d9e9b36c9f03a33ea52ef16484"
     },
     "backports": {
       "Package": "backports",
@@ -518,8 +537,8 @@
       "RemoteUsername": "CoVPN",
       "RemoteRepo": "copcor",
       "RemoteRef": "main",
-      "RemoteSha": "ec7f6433c3e74bd46b463535bfb3b35b3346ce90",
-      "Hash": "398836f51e736368b963b580ff13e968"
+      "RemoteSha": "ac62c98989d743fce5456883b6462e4ec096ce7c",
+      "Hash": "508ee741b10f5f89c0e92a7bf9ce0da3"
     },
     "corrplot": {
       "Package": "corrplot",
@@ -785,6 +804,20 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "3ff819acc26930ea8d4ebc743ca63618"
+    },
+    "gee": {
+      "Package": "gee",
+      "Version": "4.13-29",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6633962fa53cc9ff2c1aec45612ff9fc"
+    },
+    "geepack": {
+      "Package": "geepack",
+      "Version": "1.3.12",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "52e17b9435f558bd15c764d1182371d6"
     },
     "generics": {
       "Package": "generics",
@@ -1126,8 +1159,8 @@
       "RemoteUsername": "youyifong",
       "RemoteRepo": "kyotil",
       "RemoteRef": "master",
-      "RemoteSha": "684eed5c1470bbafe4bdca5de895a8c36117f789",
-      "Hash": "95febccb7ef8e6410303dbf715ef8e07"
+      "RemoteSha": "47609d73a0eae0c94fc976aae7b456cf82a7a254",
+      "Hash": "54d10612dbaeb7424eb0044d4dea024d"
     },
     "labeling": {
       "Package": "labeling",
@@ -1226,6 +1259,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "e055d75b424a33fdc8904e5f81263789"
+    },
+    "lmtest": {
+      "Package": "lmtest",
+      "Version": "0.9-40",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c6fafa6cccb1e1dfe7f7d122efd6e6a7"
     },
     "lspline": {
       "Package": "lspline",
@@ -1660,13 +1700,6 @@
       "Repository": "CRAN",
       "Hash": "1cba04a4e9414bdefc9dcaa99649a8dc"
     },
-    "quadprog": {
-      "Package": "quadprog",
-      "Version": "1.5-8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "5f919ae5e7f83a6f91dcf2288943370d"
-    },
     "quantreg": {
       "Package": "quantreg",
       "Version": "5.85",
@@ -1924,6 +1957,13 @@
       "RemoteSha": "4b988689d8de4c4bfe3b891590df45d932efa0e8",
       "RemoteHost": "api.github.com",
       "Hash": "e0e6986c08b5c54201bfab8e29765581"
+    },
+    "saws": {
+      "Package": "saws",
+      "Version": "0.9-7.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "ac3964ef095a6c774dab309a2a829f4c"
     },
     "scales": {
       "Package": "scales",
