@@ -495,10 +495,13 @@ if (!is.null(config$assay_metadata)) {
   rownames(labels.title)[seq_along(assays)] <- assays
   labels.title <- as.data.frame(t(labels.title))
   
-  
+
+  # fold change only  
   do.fold.change=F
-  do.fold.change.overB=F #TRIAL %in% c("vat08_combined")
   
+  # fold change in addition to peak
+  do.fold.change.overB=F #TRIAL %in% c("vat08_combined")
+  if (TRIAL %in% "iliad_ib202p") do.fold.change.overB=T
   
   # if this flag is true, then the N IgG binding antibody is reported 
   # in the immuno report (but is not analyzed in the cor or cop reports).
@@ -968,8 +971,12 @@ if (TRIAL %in% c("covail", "covail_sanofi")) {
               "bindSpike_B.1.351", "bindSpike_DeltaMDW")
   all.markers1 = c("Day29"%.%assays1)
   
-} else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302", "iliad_ib202p")) {
+
+} else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302")) {
   all.markers1 = c("Day"%.%timepoints%.%assays)
+  
+} else if (TRIAL %in% c("iliad_ib202p")) {
+  all.markers1 = c("Day"%.%timepoints%.%assays, "B"%.%assays, "Delta28overB"%.%assays)
   
 } else if (TRIAL=="nextgen_mock") {
   all.markers1 = c("B"%.%assays, "Day31"%.%assays, "Delta31overB"%.%assays)
