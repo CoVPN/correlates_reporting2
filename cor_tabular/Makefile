@@ -63,6 +63,11 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), nvx_uk302))
 	Rscript code/make_table_all.R D35nvx_uk302
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19nvx))
 	Rscript code/make_table_all.R D35prevent19nvx
+else ifeq ($(TRIAL),$(filter $(TRIAL), iliad_ib202p))
+	Rscript code/make_table_all_iliad_ib202p.R C0iliad_ib202p
+	Rscript code/make_table_all_iliad_ib202p.R C0iliad_ib202p_C14only
+	Rscript code/make_table_all_iliad_ib202p.R C0iliad_ib202p_PPAI
+	Rscript code/make_table_all_iliad_ib202p.R C0iliad_ib202p_PPAI_C14only
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 	Rscript code/make_table_all_sanofi.R D22vat08_combined_M6_st1.nAb.batch0and1
 	Rscript code/make_table_all_sanofi.R D43vat08_combined_M6_st1.nAb.batch0and1
