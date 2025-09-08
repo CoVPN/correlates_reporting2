@@ -473,13 +473,13 @@ if (run_prod) {
                   "SL.ranger.no") #, "SL.ranger.yes"  
   } else if (Sys.getenv("TRIAL") %in% c("covail_tcell", "covail_xassays")){
     methods1 <- c("SL.mean", 
-                  "SL.glm"  
-                  #"SL.bayesglm", 
-                  #"SL.glmnet.0", "SL.glmnet.0.33", "SL.glmnet.0.67", "SL.glmnet.1", 
+                  "SL.glm",  
+                  "SL.bayesglm", 
+                  "SL.glmnet.0", "SL.glmnet.0.33", "SL.glmnet.0.67", "SL.glmnet.1", 
                   #"SL.xgboost.2.no", 
-                  #"SL.xgboost.4.no", 
+                  "SL.xgboost.4.no", 
                   #"SL.xgboost.2.yes", "SL.xgboost.4.yes",
-                  #"SL.ranger.no", "SL.ranger.yes"
+                  "SL.ranger.no", "SL.ranger.yes"
                   ) 
   }
 
@@ -492,11 +492,11 @@ if (run_prod) {
     methods2 <- c("SL.glm", "SL.bayesglm", "SL.glm.interaction", "SL.gam",
                   "SL.ksvm.rbfdot", "SL.ksvm.polydot", "SL.polymars") 
   } else if(Sys.getenv("TRIAL") %in% c("covail_tcell", "covail_xassays")){
-    methods2 <- c("SL.glm" 
-                  #"SL.bayesglm", 
-                  #"SL.glm.interaction", "SL.gam",
+    methods2 <- c("SL.glm", 
+                  "SL.bayesglm", 
+                  "SL.glm.interaction", "SL.gam",
                   #"SL.ksvm.rbfdot", "SL.ksvm.polydot", # never included as model fitting code breaks
-                  #"SL.nnet.2", "SL.nnet.5"
+                  "SL.nnet.2", "SL.nnet.5"
                   #"SL.polymars" # never included as model fitting code breaks
                   ) 
   }
@@ -512,7 +512,7 @@ if (run_prod) {
 
 screens1 <- "screen_all"
 screens2 <- c(
-  #"screen_glmnet",
+  "screen_glmnet",
   "screen_univariate_logistic_pval",
   "screen_highcor_random"
 )

@@ -108,14 +108,14 @@ source(here::here("code", "cor_surrogates_setup.R"))
 # Get varset_names.csv 
 varsets <- read.csv(here(file_path, "varset_names.csv"), stringsAsFactors = FALSE) 
 
-# # Run all sbatch jobs through R!
-# system(paste0("export TRIAL=", Sys.getenv("TRIAL")))
-# for(varset_number in 1:nrow(varsets)){
-#   system(paste("sbatch code/submit_cluster_job.sh", varset_number))
-# }
+# Run all sbatch jobs through R!
+system(paste0("export TRIAL=", Sys.getenv("TRIAL")))
+for(varset_number in 1:nrow(varsets)){
+  system(paste("sbatch code/submit_cluster_job.sh", varset_number))
+}
 
-
-# for(varset_number in c(34, 36, 40, 83, 91, 94, 98)){
+# 
+# for(varset_number in c(27, 35, 38, 104)){
 #   system(paste("sbatch code/submit_cluster_job.sh", varset_number))
 # }
 
@@ -125,7 +125,7 @@ varsets <- read.csv(here(file_path, "varset_names.csv"), stringsAsFactors = FALS
 # file_path = "/home/bborate/forked_correlates_directory/correlates_reporting2/cor_surrogates/output/covail_xassays/nonnaive_1dosemRNA_allcases_briskscore"
 
 expected_ids <- 1:nrow(varsets)
-check_interval <- 5  # seconds (i.e., 1 minute)
+check_interval <- 60  # seconds (i.e., 1 minute)
 
 repeat {
   # List all .rds files
@@ -168,7 +168,7 @@ repeat {
 # KNIT THE PDF REPORT !
 # Run the following in Rstudio
 # Make sure the path is correct
-file_path = "/home/bborate/forked_correlates_directory/correlates_reporting2/cor_surrogates/output/covail_xassays/nonnaive_1dose_allcases_briskscore"
+file_path = "/home/bborate/forked_correlates_directory/correlates_reporting2/cor_surrogates/output/covail_xassays/naive_1dosemRNA_allcases_bRiskFactors.insert.stage"
 Sys.setenv(file_path = file_path)
 Sys.setenv(TRIAL = "covail_xassays")
 

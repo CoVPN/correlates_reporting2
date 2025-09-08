@@ -16,7 +16,7 @@ source(here::here("..", "_common.R"))
 # This file contains all of the study-specific code:
 #   setting up variable sets of interest;
 #   setting up the weight vector (if needed);
-# After running this file, all objects have standard names and can be passed to
+# After running this file, all objects have standard names and can be passed to  
 # the appropriate downstream file.
 
 # load required libraries
@@ -1039,16 +1039,18 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == FALSE
                  markers[markers %in% secondary.ls$naive])
   pse_markers = c(markers[markers %in% primary.ls$naive],  
                   markers[markers %in% secondary.ls$naive],
-                  markers[markers %in% exploratory$naive])
+                  markers[markers %in% exploratory.ls$naive])
   
   ########################################################
   
   # Baseline factors + D1 nAb titers set  
-  varset_nab_BA.1_D1 = str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15")
+  #varset_nab_BA.1_D1 = str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15")
+  varset_nab_D1 = str_detect(markers, "pseudoneut|frnt") & !str_detect(markers, "Day15|Delta15|MDW|PC1")
   # Baseline factors + D15 nAb titers set 
-  varset_nab_BA.1_D15 = str_detect(markers, "BA\\.1") & str_detect(markers, "Day15")
+  # varset_nab_BA.1_D15 = str_detect(markers, "BA\\.1") & str_detect(markers, "Day15")
+  varset_nab_D15 = str_detect(markers, "pseudoneut|frnt") & str_detect(markers, "Day15") & !str_detect(markers, "Delta15|MDW|PC1")
   # Baseline factors + D1 and D15 nAb titers set 
-  varset_nab_BA.1_D1nD15 = str_detect(markers, "BA\\.1")
+  varset_nab_D1nD15 = varset_nab_D1 | varset_nab_D15
   # No T cell variables measured against Nucleocapsid (N) antigen for naive cohort
   # Baseline factors + D1 CD4 T cell set  
   varset_cd4_D1 = (markers %in% pse_markers) & !str_detect(markers, "cd8|Day15")
@@ -1085,11 +1087,11 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == FALSE
     # 1. None (No markers; only baseline risk variables), phase 2 data; This is Variable Set 3 in SAP!
     varset_baselineRiskFactors = rep(FALSE, length(markers)),
     # 2 Baseline factors + D1 nAb titers set  
-    varset_nab_BA.1_D1 = varset_nab_BA.1_D1,
+    varset_nab_D1 = varset_nab_D1,
     # 3 Baseline factors + D15 nAb titers set 
-    varset_nab_BA.1_D15 = varset_nab_BA.1_D15,
+    varset_nab_D15 = varset_nab_D15,
     # 4 Baseline factors + D1 and D15 nAb titers set 
-    varset_nab_BA.1_D1nD15 = varset_nab_BA.1_D1nD15, 
+    varset_nab_D1nD15 = varset_nab_D1nD15, 
     # No T cell variables measured against Nucleocapsid (N) antigen for naive cohort
     # 5 Baseline factors + D1 CD4 T cell set  
     varset_cd4_D1 = varset_cd4_D1,
@@ -1122,45 +1124,45 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == FALSE
     # 19 Baseline factors + D1 and D15 combination markers set  
     varset_combin_D1nD15 = varset_combin_D1nD15,
     # 20 Baseline factors + D1 nAb titers set + D1 CD4 T cell set  
-    varset_nab_BA.1_D1_cd4_D1 = varset_nab_BA.1_D1 | varset_cd4_D1,
+    varset_nab_D1_cd4_D1 = varset_nab_D1 | varset_cd4_D1,
     # 21 Baseline factors + D1 nAb titers set + D1 CD8 T cell set  
-    varset_nab_BA.1_D1_cd8_D1 = varset_nab_BA.1_D1 | varset_cd8_D1,
+    varset_nab_D1_cd8_D1 = varset_nab_D1 | varset_cd8_D1,
     # 22 Baseline factors + D1 nAb titers set + D1 Fc-spike set  
-    varset_nab_BA.1_D1_FCspike_D1 = varset_nab_BA.1_D1 | varset_FCspike_D1,
+    varset_nab_D1_FCspike_D1 = varset_nab_D1 | varset_FCspike_D1,
     # 23 Baseline factors + D1 nAb titers set + D1 bAb-spike set  
-    varset_nab_BA.1_D1_bAbspike_D1 = varset_nab_BA.1_D1 | varset_bAbspike_D1,
+    varset_nab_D1_bAbspike_D1 = varset_nab_D1 | varset_bAbspike_D1,
     # 24 Baseline factors + D1 nAb titers set + D1 combination markers set  
-    varset_nab_BA.1_D1_combin_D1 = varset_nab_BA.1_D1 | varset_combin_D1,
+    varset_nab_D1_combin_D1 = varset_nab_D1 | varset_combin_D1,
     # 25 Baseline factors + D1 nAb titers set + D15 CD4 T cell set  
-    varset_nab_BA.1_D1_cd4_D15 = varset_nab_BA.1_D1 | varset_cd4_D15,
+    varset_nab_D1_cd4_D15 = varset_nab_D1 | varset_cd4_D15,
     # 26 Baseline factors + D1 nAb titers set + D15 CD8 T cell set  
-    varset_nab_BA.1_D1_cd8_D15 = varset_nab_BA.1_D1 | varset_cd8_D15,
+    varset_nab_D1_cd8_D15 = varset_nab_D1 | varset_cd8_D15,
     # 27 Baseline factors + D1 nAb titers set + D15 Fc-spike set
-    varset_nab_BA.1_D1_FCspike_D15 = varset_nab_BA.1_D1 | varset_FCspike_D15,
+    varset_nab_D1_FCspike_D15 = varset_nab_D1 | varset_FCspike_D15,
     # 28 Baseline factors + D1 nAb titers set + D15 bAb-spike set  
-    varset_nab_BA.1_D1_bAbspike_D15 = varset_nab_BA.1_D1 | varset_bAbspike_D15,
+    varset_nab_D1_bAbspike_D15 = varset_nab_D1 | varset_bAbspike_D15,
     # 29 Baseline factors + D1 nAb titers set + D15 combination markers set  
-    varset_nab_BA.1_D1_combin_D15 = varset_nab_BA.1_D1 | varset_combin_D15,
+    varset_nab_D1_combin_D15 = varset_nab_D1 | varset_combin_D15,
     # 30 Baseline factors + D15 nAb titers set + D1 CD4 T cell set 
-    varset_nab_BA.1_D15_cd4_D1 = varset_nab_BA.1_D15 | varset_cd4_D1,
+    varset_nab_D15_cd4_D1 = varset_nab_D15 | varset_cd4_D1,
     # 31 Baseline factors + D15 nAb titers set + D1 CD8 T cell set  
-    varset_nab_BA.1_D15_cd8_D1 = varset_nab_BA.1_D15 | varset_cd8_D1,
+    varset_nab_D15_cd8_D1 = varset_nab_D15 | varset_cd8_D1,
     # 32 Baseline factors + D15 nAb titers set + D1 Fc-spike set  
-    varset_nab_BA.1_D15_FCspike_D1 = varset_nab_BA.1_D15 | varset_FCspike_D1,
+    varset_nab_D15_FCspike_D1 = varset_nab_D15 | varset_FCspike_D1,
     # 33 Baseline factors + D15 nAb titers set + D1 bAb-spike set 
-    varset_nab_BA.1_D15_bAbspike_D1 = varset_nab_BA.1_D15 | varset_bAbspike_D1,
+    varset_nab_D15_bAbspike_D1 = varset_nab_D15 | varset_bAbspike_D1,
     # 34 Baseline factors + D15 nAb titers set + D1 combination markers set  
-    varset_nab_BA.1_D15_combin_D1 = varset_nab_BA.1_D15 | varset_combin_D1,
+    varset_nab_D15_combin_D1 = varset_nab_D15 | varset_combin_D1,
     # 35 Baseline factors + D15 nAb titers set + D15 CD4 T cell set  
-    varset_nab_BA.1_D15_cd4_D15 = varset_nab_BA.1_D15 | varset_cd4_D15,
+    varset_nab_D15_cd4_D15 = varset_nab_D15 | varset_cd4_D15,
     # 36 Baseline factors + D15 nAb titers set + D15 CD8 T cell set  
-    varset_nab_BA.1_D15_cd8_D15 = varset_nab_BA.1_D15 | varset_cd8_D15,
+    varset_nab_D15_cd8_D15 = varset_nab_D15 | varset_cd8_D15,
     # 37 Baseline factors + D15 nAb titers set + D15 Fc-spike set  
-    varset_nab_BA.1_D15_FCspike_D15 = varset_nab_BA.1_D15 | varset_FCspike_D15,
+    varset_nab_D15_FCspike_D15 = varset_nab_D15 | varset_FCspike_D15,
     # 38 Baseline factors + D15 nAb titers set + D15 bAb-spike set 
-    varset_nab_BA.1_D15_bAbspike_D15 = varset_nab_BA.1_D15 | varset_bAbspike_D15,
+    varset_nab_D15_bAbspike_D15 = varset_nab_D15 | varset_bAbspike_D15,
     # 39 Baseline factors + D15 nAb titers set + D15 combination markers set  
-    varset_nab_BA.1_D15_combin_D15 = varset_nab_BA.1_D15 | varset_combin_D15,
+    varset_nab_D15_combin_D15 = varset_nab_D15 | varset_combin_D15,
     # 40 Baseline factors + D1 CD4 T cell set + D1 CD8 T cell set 
     varset_cd4_D1_cd8_D1 = varset_cd4_D1 | varset_cd8_D1,
     # 41 Baseline factors + D1 CD4 T cell set + D1 Fc-spike set 
@@ -1242,11 +1244,11 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == FALSE
     # 79 Baseline factors + D15 bAb-spike set + D15 combination markers set  
     varset_bAbspike_D15_combin_D15 = varset_bAbspike_D15 | varset_combin_D15,
     # 80 Baseline factors + All eight immunoassay sets at D1 
-    varset_all_D1 = varset_nab_BA.1_D1 | varset_cd4_D1 | varset_cd8_D1 | varset_FCspike_D1 | varset_bAbspike_D1 | varset_combin_D1,
+    varset_all_D1 = varset_nab_D1 | varset_cd4_D1 | varset_cd8_D1 | varset_FCspike_D1 | varset_bAbspike_D1 | varset_combin_D1,
     # 81 Baseline factors + All six immunoassay sets at D15 (always excluding D15 anti-N markers)  
-    varset_all_D15 = varset_nab_BA.1_D15 | varset_cd4_D15 | varset_cd8_D15 | varset_FCspike_D15 | varset_bAbspike_D15 | varset_combin_D15,
+    varset_all_D15 = varset_nab_D15 | varset_cd4_D15 | varset_cd8_D15 | varset_FCspike_D15 | varset_bAbspike_D15 | varset_combin_D15,
     # 82 Baseline factors + All six immunoassay sets at both D1 and at D15 (always excluding D15 anti-N markers)
-    varset_all_D1nD15 = varset_nab_BA.1_D1nD15 | varset_cd4_D1nD15 | varset_cd8_D1nD15 | varset_FCspike_D1nD15 | varset_bAbspike_D1nD15 | varset_combin_D1nD15
+    varset_all_D1nD15 = varset_nab_D1nD15 | varset_cd4_D1nD15 | varset_cd8_D1nD15 | varset_FCspike_D1nD15 | varset_bAbspike_D1nD15 | varset_combin_D1nD15
   )
   
   varset_names = names(varsets) %>%
@@ -1264,21 +1266,23 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == FALSE
 if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == TRUE) {
   
   ########################################################
-  ps_markers = c(markers[markers %in% primary.ls$naive],  
-                 markers[markers %in% secondary.ls$naive])
-  pse_markers = c(markers[markers %in% primary.ls$naive],  
-                  markers[markers %in% secondary.ls$naive],
-                  markers[markers %in% exploratory$naive])
+  ps_markers = c(markers[markers %in% primary.ls$nonnaive],  
+                 markers[markers %in% secondary.ls$nonnaive])
+  pse_markers = c(markers[markers %in% primary.ls$nonnaive],  
+                  markers[markers %in% secondary.ls$nonnaive],
+                  markers[markers %in% exploratory.ls$nonnaive])
   
   ########################################################
   
   # Baseline factors + D1 nAb titers set  
-  varset_nab_BA.1_D1 = str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15")
+  #varset_nab_BA.1_D1 = str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15")
+  varset_nab_D1 = str_detect(markers, "pseudoneut|frnt") & !str_detect(markers, "Day15|Delta15|MDW|PC1")
   # Baseline factors + D15 nAb titers set 
-  varset_nab_BA.1_D15 = str_detect(markers, "BA\\.1") & str_detect(markers, "Day15")
+  # varset_nab_BA.1_D15 = str_detect(markers, "BA\\.1") & str_detect(markers, "Day15")
+  varset_nab_D15 = str_detect(markers, "pseudoneut|frnt") & str_detect(markers, "Day15") & !str_detect(markers, "Delta15|MDW|PC1")
   # Baseline factors + D1 and D15 nAb titers set 
-  varset_nab_BA.1_D1nD15 = str_detect(markers, "BA\\.1")
-  # No T cell variables measured against Nucleocapsid (N) antigen for naive cohort
+  varset_nab_D1nD15 = varset_nab_D1 | varset_nab_D15
+  # No T cell variables measured against Nucleocapsid (N) antigen for nnaive cohort
   # Baseline factors + D1 CD4 T cell set  
   varset_cd4_D1 = (markers %in% pse_markers) & !str_detect(markers, "cd8|Day15")
   # Baseline factors + D15 CD4 T cell set  
@@ -1318,12 +1322,12 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == TRUE)
     # 1. None (No markers; only baseline risk variables), phase 2 data; This is Variable Set 3 in SAP!
     varset_baselineRiskFactors = rep(FALSE, length(markers)),
     # 2 Baseline factors + D1 nAb titers set  
-    varset_nab_BA.1_D1 = varset_nab_BA.1_D1,
+    varset_nab_D1 = varset_nab_D1,
     # 3 Baseline factors + D15 nAb titers set 
-    varset_nab_BA.1_D15 = varset_nab_BA.1_D15,
+    varset_nab_D15 = varset_nab_D15,
     # 4 Baseline factors + D1 and D15 nAb titers set 
-    varset_nab_BA.1_D1nD15 = varset_nab_BA.1_D1nD15, 
-    # No T cell variables measured against Nucleocapsid (N) antigen for naive cohort
+    varset_nab_D1nD15 = varset_nab_D1nD15, 
+    # No T cell variables measured against Nucleocapsid (N) antigen for nnaive cohort
     # 5 Baseline factors + D1 CD4 T cell set  
     varset_cd4_D1 = varset_cd4_D1,
     # 6 Baseline factors + D15 CD4 T cell set  
@@ -1359,53 +1363,53 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == TRUE)
     # 21 Baseline factors + D1 and D15 combination markers set  
     varset_combin_D1nD15 = varset_combin_D1nD15,
     # 22 Baseline factors + D1 nAb titers set + D1 CD4 T cell set  
-    varset_nab_BA.1_D1_cd4_D1 = varset_nab_BA.1_D1 | varset_cd4_D1,
+    varset_nab_D1_cd4_D1 = varset_nab_D1 | varset_cd4_D1,
     # 23 Baseline factors + D1 nAb titers set + D1 CD8 T cell set  
-    varset_nab_BA.1_D1_cd8_D1 = varset_nab_BA.1_D1 | varset_cd8_D1,
+    varset_nab_D1_cd8_D1 = varset_nab_D1 | varset_cd8_D1,
     # 24 Baseline factors + D1 nAb titers set + D1 Fc-spike set  
-    varset_nab_BA.1_D1_FCspike_D1 = varset_nab_BA.1_D1 | varset_FCspike_D1,
+    varset_nab_D1_FCspike_D1 = varset_nab_D1 | varset_FCspike_D1,
     # 25 Baseline factors + D1 nAb titers set + D1 bAb-spike set  
-    varset_nab_BA.1_D1_bAbspike_D1 = varset_nab_BA.1_D1 | varset_bAbspike_D1,
+    varset_nab_D1_bAbspike_D1 = varset_nab_D1 | varset_bAbspike_D1,
     # 26 Baseline factors + D1 nAb titers set + D1 Fc-N set  
-    varset_nab_BA.1_D1_FCN_D1 = varset_nab_BA.1_D1 | varset_FCN_D1,
+    varset_nab_D1_FCN_D1 = varset_nab_D1 | varset_FCN_D1,
     # 27 Baseline factors + D1 nAb titers set + D1 bAb-N set  
-    varset_nab_BA.1_D1_bAbN_D1 = varset_nab_BA.1_D1 | varset_bAbN_D1,
+    varset_nab_D1_bAbN_D1 = varset_nab_D1 | varset_bAbN_D1,
     # 28 Baseline factors + D1 nAb titers set + D1 combination markers set  
-    varset_nab_BA.1_D1_combin_D1 = varset_nab_BA.1_D1 | varset_combin_D1,
+    varset_nab_D1_combin_D1 = varset_nab_D1 | varset_combin_D1,
     # 29 Baseline factors + D1 nAb titers set + D15 CD4 T cell set  
-    varset_nab_BA.1_D1_cd4_D15 = varset_nab_BA.1_D1 | varset_cd4_D15,
+    varset_nab_D1_cd4_D15 = varset_nab_D1 | varset_cd4_D15,
     # 30 Baseline factors + D1 nAb titers set + D15 CD8 T cell set  
-    varset_nab_BA.1_D1_cd8_D15 = varset_nab_BA.1_D1 | varset_cd8_D15,
+    varset_nab_D1_cd8_D15 = varset_nab_D1 | varset_cd8_D15,
     # 31 Baseline factors + D1 nAb titers set + D15 Fc-spike set
-    varset_nab_BA.1_D1_FCspike_D15 = varset_nab_BA.1_D1 | varset_FCspike_D15,
+    varset_nab_D1_FCspike_D15 = varset_nab_D1 | varset_FCspike_D15,
     # 32 Baseline factors + D1 nAb titers set + D15 bAb-spike set  
-    varset_nab_BA.1_D1_bAbspike_D15 = varset_nab_BA.1_D1 | varset_bAbspike_D15,
+    varset_nab_D1_bAbspike_D15 = varset_nab_D1 | varset_bAbspike_D15,
     # 33 Baseline factors + D1 nAb titers set + D15 combination markers set  
-    varset_nab_BA.1_D1_combin_D15 = varset_nab_BA.1_D1 | varset_combin_D15,
+    varset_nab_D1_combin_D15 = varset_nab_D1 | varset_combin_D15,
     # 34 Baseline factors + D15 nAb titers set + D1 CD4 T cell set 
-    varset_nab_BA.1_D15_cd4_D1 = varset_nab_BA.1_D15 | varset_cd4_D1,
+    varset_nab_D15_cd4_D1 = varset_nab_D15 | varset_cd4_D1,
     # 35 Baseline factors + D15 nAb titers set + D1 CD8 T cell set  
-    varset_nab_BA.1_D15_cd8_D1 = varset_nab_BA.1_D15 | varset_cd8_D1,
+    varset_nab_D15_cd8_D1 = varset_nab_D15 | varset_cd8_D1,
     # 36 Baseline factors + D15 nAb titers set + D1 Fc-spike set  
-    varset_nab_BA.1_D15_FCspike_D1 = varset_nab_BA.1_D15 | varset_FCspike_D1,
+    varset_nab_D15_FCspike_D1 = varset_nab_D15 | varset_FCspike_D1,
     # 37 Baseline factors + D15 nAb titers set + D1 bAb-spike set 
-    varset_nab_BA.1_D15_bAbspike_D1 = varset_nab_BA.1_D15 | varset_bAbspike_D1,
+    varset_nab_D15_bAbspike_D1 = varset_nab_D15 | varset_bAbspike_D1,
     # 38 Baseline factors + D15 nAb titers set + D1 Fc-N set  
-    varset_nab_BA.1_D15_FCN_D1 = varset_nab_BA.1_D15 | varset_FCN_D1,
+    varset_nab_D15_FCN_D1 = varset_nab_D15 | varset_FCN_D1,
     # 39 Baseline factors + D15 nAb titers set + D1 bAb-N set 
-    varset_nab_BA.1_D15_bAbN_D1 = varset_nab_BA.1_D15 | varset_bAbN_D1,
+    varset_nab_D15_bAbN_D1 = varset_nab_D15 | varset_bAbN_D1,
     # 40 Baseline factors + D15 nAb titers set + D1 combination markers set  
-    varset_nab_BA.1_D15_combin_D1 = varset_nab_BA.1_D15 | varset_combin_D1,
+    varset_nab_D15_combin_D1 = varset_nab_D15 | varset_combin_D1,
     # 41 Baseline factors + D15 nAb titers set + D15 CD4 T cell set  
-    varset_nab_BA.1_D15_cd4_D15 = varset_nab_BA.1_D15 | varset_cd4_D15,
+    varset_nab_D15_cd4_D15 = varset_nab_D15 | varset_cd4_D15,
     # 42 Baseline factors + D15 nAb titers set + D15 CD8 T cell set  
-    varset_nab_BA.1_D15_cd8_D15 = varset_nab_BA.1_D15 | varset_cd8_D15,
+    varset_nab_D15_cd8_D15 = varset_nab_D15 | varset_cd8_D15,
     # 43 Baseline factors + D15 nAb titers set + D15 Fc-spike set  
-    varset_nab_BA.1_D15_FCspike_D15 = varset_nab_BA.1_D15 | varset_FCspike_D15,
+    varset_nab_D15_FCspike_D15 = varset_nab_D15 | varset_FCspike_D15,
     # 44 Baseline factors + D15 nAb titers set + D15 bAb-spike set 
-    varset_nab_BA.1_D15_bAbspike_D15 = varset_nab_BA.1_D15 | varset_bAbspike_D15,
+    varset_nab_D15_bAbspike_D15 = varset_nab_D15 | varset_bAbspike_D15,
     # 45 Baseline factors + D15 nAb titers set + D15 combination markers set  
-    varset_nab_BA.1_D15_combin_D15 = varset_nab_BA.1_D15 | varset_combin_D15,
+    varset_nab_D15_combin_D15 = varset_nab_D15 | varset_combin_D15,
     # 46 Baseline factors + D1 CD4 T cell set + D1 CD8 T cell set 
     varset_cd4_D1_cd8_D1 = varset_cd4_D1 | varset_cd8_D1,
     # 47 Baseline factors + D1 CD4 T cell set + D1 Fc-spike set 
@@ -1529,11 +1533,11 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == TRUE)
     # 106 Baseline factors + D1 bAb-N set + D15 combination markers set
     varset_bAbN_D1_combin_D15 = varset_bAbN_D1 | varset_combin_D15,
     # 107 Baseline factors + All eight immunoassay sets at D1 
-    varset_all_D1 = varset_nab_BA.1_D1 | varset_cd4_D1 | varset_cd8_D1 | varset_FCspike_D1 | varset_bAbspike_D1 | varset_FCN_D1 | varset_bAbN_D1 | varset_combin_D1,
+    varset_all_D1 = varset_nab_D1 | varset_cd4_D1 | varset_cd8_D1 | varset_FCspike_D1 | varset_bAbspike_D1 | varset_FCN_D1 | varset_bAbN_D1 | varset_combin_D1,
     # 108 Baseline factors + All six immunoassay sets at D15 (always excluding D15 anti-N markers)  
-    varset_all_D15 = varset_nab_BA.1_D15 | varset_cd4_D15 | varset_cd8_D15 | varset_FCspike_D15 | varset_bAbspike_D15 | varset_combin_D15,
+    varset_all_D15 = varset_nab_D15 | varset_cd4_D15 | varset_cd8_D15 | varset_FCspike_D15 | varset_bAbspike_D15 | varset_combin_D15,
     # 109 Baseline factors + All six immunoassay sets at both D1 and at D15 (always excluding D15 anti-N markers)
-    varset_all_D1nD15 = varset_nab_BA.1_D1nD15 | varset_cd4_D1nD15 | varset_cd8_D1nD15 | varset_FCspike_D1nD15 | varset_bAbspike_D1nD15 | varset_FCN_D1 | varset_bAbN_D1 |varset_combin_D1nD15
+    varset_all_D1nD15 = varset_nab_D1nD15 | varset_cd4_D1nD15 | varset_cd8_D1nD15 | varset_FCspike_D1nD15 | varset_bAbspike_D1nD15 | varset_FCN_D1 | varset_bAbN_D1 |varset_combin_D1nD15
   )
   
   varset_names = names(varsets) %>%

@@ -13,7 +13,13 @@ if(TRIAL == "covail_tcell"){
   
   dat_proc_updated <- dat_proc %>% 
     mutate(Delta15overBpseudoneutid50_BA.1_2fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(2)), 1, 0),
-           Delta15overBpseudoneutid50_BA.1_4fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(4)), 1, 0)) %>%
+           Delta15overBpseudoneutid50_BA.1_4fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(4)), 1, 0),
+           # LOD of both FRNT50 and FRNT80 is 20; all values below the LOD are assigned value LOD/2 = 10
+           Bfrnt50_BA.1 = if_else(Bfrnt50_BA.1 < log10(20), log10(10), Bfrnt50_BA.1),
+           Bfrnt80_BA.1 = if_else(Bfrnt80_BA.1 < log10(20), log10(10), Bfrnt80_BA.1),
+           Day15frnt50_BA.1 = if_else(Day15frnt50_BA.1 < log10(20), log10(10), Day15frnt50_BA.1),
+           Day15frnt80_BA.1 = if_else(Day15frnt80_BA.1 < log10(20), log10(10), Day15frnt80_BA.1)
+           ) %>%
     mutate(Trt = 1,   # defined to sync with code below!
            stage = case_when(stage == 1 ~ "Moderna",
                              stage == 2 ~ "Pfizer.1",
@@ -124,8 +130,8 @@ if(TRIAL == "covail_tcell"){
   
 } else if (TRIAL == "covail_xassays"){
   
-  non_naive = TRUE
-  bRiskFactors_includes_insert.stage.info = FALSE
+  non_naive = FALSE
+  bRiskFactors_includes_insert.stage.info = TRUE
   trt_arms = "1dosemRNA"
   # trt_arms = "1dose"
   
@@ -154,7 +160,13 @@ if(TRIAL == "covail_tcell"){
   
   dat_proc_updated <- dat_proc %>% 
     mutate(Delta15overBpseudoneutid50_BA.1_2fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(2)), 1, 0),
-           Delta15overBpseudoneutid50_BA.1_4fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(4)), 1, 0)) %>%
+           Delta15overBpseudoneutid50_BA.1_4fold = ifelse(Day15pseudoneutid50_BA.1 > (Bpseudoneutid50_BA.1 + log10(4)), 1, 0),
+           # # LOD of both FRNT50 and FRNT80 is 20; all values below the LOD are assigned value LOD/2 = 10
+           Bfrnt50_BA.1 = if_else(Bfrnt50_BA.1 < log10(20), log10(10), Bfrnt50_BA.1),
+           Bfrnt80_BA.1 = if_else(Bfrnt80_BA.1 < log10(20), log10(10), Bfrnt80_BA.1),
+           Day15frnt50_BA.1 = if_else(Day15frnt50_BA.1 < log10(20), log10(10), Day15frnt50_BA.1),
+           Day15frnt80_BA.1 = if_else(Day15frnt80_BA.1 < log10(20), log10(10), Day15frnt80_BA.1)
+           ) %>%
     mutate(Trt = 1,   # defined to sync with code below!
            stage = case_when(stage == 1 ~ "Moderna",
                              stage == 2 ~ "Pfizer.1",
@@ -176,28 +188,84 @@ if(TRIAL == "covail_tcell"){
   
   cols <- colnames(dat_proc_updated) # This helps in parsing marker columns
   
-  individualMarkers <- c(cols[grepl("pseudoneutid50", cols) & grepl("BA.1", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta29", cols)],
-                         cols[grepl("frnt50", cols) & grepl("BA.1", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta29", cols)],
-                         cols[grepl("frnt80", cols) & grepl("BA.1", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta29", cols)],
-                         # primary
-                         cols[grepl("IFNg.IL2_BA.4.5.S", cols)  & !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181|vacresp|resp", cols)], #3612 3613 3616 3617    using  match(primary.ls$naive, colnames(dat_proc_updated))
-                         # secondary
-                         c(cols[grepl("FS_BA.4.5.S", cols) &  !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181", cols)],     
-                           cols[grepl("Day15cd4_IFNg.IL2.154_BA.4.5.S", cols) & !grepl("Day15cd4_IFNg.IL2.154_BA.4.5.S1|Day15cd4_IFNg.IL2.154_BA.4.5.S2|resp", cols)]),
-                         # exploratory
-                         cols[Reduce(`|`, lapply(exploratory$naive, grepl, x = cols)) & 
-                                !grepl("\\.S1|\\.S2", cols) & 
-                                !grepl("resp", cols)],
-                         # Fc receptor and complement variables 
-                         cols[grepl("G2AH|G2AH|GR2B|G3AV|G3AF|GR3B|FCAR|FCR7|FCR6|C1Q", cols) & grepl("BA1S|WA1N", cols) & !grepl("_One|_Two|Day91|Day181", cols)],
-                         # IgG and IgA and IgM binding antibody variables
-                         cols[grepl("TIGG|IGG1|IGG2|IGG3|IGG4|IGA1|IGA2|IGM", cols) & grepl("BA1S|WA1N", cols) & !grepl("_One|_Two|Day91|Day181", cols)],
-                         # Combination markers variable set 
-                         cols[grepl("PC1", cols) & !grepl("Day29|Day91|Day181|NLPC1", cols)],
-                         cols[grepl("MDW", cols) & !grepl("Day29|Day91|Day181|Delta29", cols)])
+  if(isFALSE(non_naive)){
+    
+    individualMarkers <- c(
+      # nAb titers
+      # cols[grepl("pseudoneutid50", cols) & grepl("BA.1", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      # cols[grepl("frnt50", cols) & grepl("BA.1", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      # cols[grepl("frnt80", cols) & grepl("BA.1", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      # Including all strains for Nab titers
+      cols[grepl("pseudoneutid50", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat|unimputed", cols)],
+      cols[grepl("frnt50", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      cols[grepl("frnt80", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      # primary
+      cols[grepl("IFNg.IL2_BA.4.5.S", cols)  & !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181|vacresp|resp|Delta|cat", cols)], 
+      # secondary
+      c(cols[grepl("FS_BA.4.5.S", cols) & !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181|Delta|cat", cols)],     
+        cols[grepl("cd4_IFNg.IL2.154_BA.4.5.S", cols) & !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181|resp|Delta|cat", cols)],
+        cols[grepl("Day15cd4_IL21_BA.4.5.S", cols) & !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181|resp|Delta|cat", cols)]),
+      # exploratory
+      cols[Reduce(`|`, lapply(exploratory.ls$naive, grepl, x = cols)) & 
+             !grepl("\\.S1|\\.S2", cols) & 
+             !grepl("resp|Delta|cat", cols)],
+      # Fc receptor and complement variables 
+      cols[grepl("G2AH|G2AR|GR2B|G3AV|G3AF|GR3B|FCAR|FCR7|FCR6|C1Q", cols) & 
+             grepl("BA1S|WA1N", cols) & 
+             !grepl("_One|_Two|Day91|Day181|Delta|cat", cols) &
+             !(grepl("Day15", cols) & grepl("WA1N", cols))],
+      # IgG and IgA and IgM binding antibody variables
+      cols[grepl("TIGG|IGG1|IGG2|IGG3|IGG4|IGA1|IGA2|IGM", cols) & 
+             grepl("BA1S|WA1N", cols) & 
+             !grepl("_One|_Two|Day91|Day181|Delta|cat", cols) &
+             !(grepl("Day15", cols) & grepl("WA1N", cols))],
+      # Combination markers variable set 
+      cols[grepl("PC1", cols) & !grepl("Day29|Day91|Day181|NLPC1", cols)],
+      cols[grepl("MDW", cols) & !grepl("Day29|Day91|Day181|Delta|cat", cols)])
+    
+  } else {
+    
+    individualMarkers <- c(
+      # nAb titers
+      # cols[grepl("pseudoneutid50", cols) & grepl("BA.1", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      # cols[grepl("frnt50", cols) & grepl("BA.1", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      # cols[grepl("frnt80", cols) & grepl("BA.1", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      # Including all strains for Nab titers
+      cols[grepl("pseudoneutid50", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat|unimputed", cols)],
+      cols[grepl("frnt50", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      cols[grepl("frnt80", cols) & !grepl("Day29|Day85|Day91|Day147|Day181|Delta|cat", cols)],
+      # primary
+      c(cols[grepl("IFNg.IL2_BA.4.5.S", cols) &
+             !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181|vacresp|resp|Delta|cat", cols)],
+        cols[grepl("IFNg.IL2_Wuhan.N", cols) &
+               !grepl("BA.4.5.S1|BA.4.5.S2|Day15|Day91|Day181|vacresp|resp|Delta|cat", cols)]), 
+      # secondary
+      c(cols[grepl("FS_BA.4.5.S", cols) & !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181|Delta|cat", cols)],     
+        cols[grepl("cd4_IFNg.IL2.154_BA.4.5.S", cols) & !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181|resp|Delta|cat", cols)],
+        cols[grepl("Day15cd4_IL21_BA.4.5.S", cols) & !grepl("BA.4.5.S1|BA.4.5.S2|Day91|Day181|resp|Delta|cat", cols)],
+        cols[grepl("FS_Wuhan.N|Bcd4_IFNg.IL2.154_Wuhan.N", cols) &
+               !grepl("BA.4.5.S1|BA.4.5.S2|Day15|Day91|Day181|vacresp|resp|Delta|cat|PFS|Bcd8_FS_Wuhan.N", cols)]),
+      # exploratory
+      cols[Reduce(`|`, lapply(exploratory.ls$nonnaive, grepl, x = cols)) & 
+             !grepl("\\.S1|\\.S2", cols) & 
+             !grepl("resp|Delta|cat", cols)],
+      # Fc receptor and complement variables 
+      cols[grepl("G2AH|G2AR|GR2B|G3AV|G3AF|GR3B|FCAR|FCR7|FCR6|C1Q", cols) & 
+             grepl("BA1S|WA1N", cols) & 
+             !grepl("_One|_Two|Day91|Day181|Delta|cat", cols) &
+             !(grepl("Day15", cols) & grepl("WA1N", cols))],
+      # IgG and IgA and IgM binding antibody variables
+      cols[grepl("TIGG|IGG1|IGG2|IGG3|IGG4|IGA1|IGA2|IGM", cols) & 
+             grepl("BA1S|WA1N", cols) & 
+             !grepl("_One|_Two|Day91|Day181|Delta|cat", cols) &
+             !(grepl("Day15", cols) & grepl("WA1N", cols))],
+      # Combination markers variable set 
+      cols[grepl("PC1", cols) & !grepl("Day29|Day91|Day181|NLPC1", cols)],
+      cols[grepl("MDW", cols) & !grepl("Day29|Day91|Day181|Delta|cat", cols)])
+    
+  }
   
-
-
+  
   # Drop out all categorical markers
   individualMarkers <- individualMarkers[!grepl("cat$|Delta", individualMarkers)]
   
