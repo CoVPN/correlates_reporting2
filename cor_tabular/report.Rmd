@@ -14,21 +14,37 @@ config <- config::get(config = Sys.getenv("TRIAL"))
 
 here::i_am("cor_tabular/report.Rmd")
 dats <- list.files(here::here( "cor_tabular", "output", attr(config,"config")))
+if(any(grepl("Figure", dats))) {
+  dats <- grep("Figure", dats, value=T)
+}
 ```
 \captionsetup[table]{}
+
+
 ```{r tabs, results="asis", echo=FALSE, message=FALSE, warning=FALSE}
 opts <- options(knitr.kable.NA = "")
 numi <- 1
 for (d in dats){
 base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
-  d_lab <- sprintf("(%s)", substr(d, 7, nchar(d)-6)) # name always starts with "Tables" and ends with ".Rdata"
+  # d_lab <- sprintf("(%s)", substr(d, 7, nchar(d)-6)) # name always starts with "Tables"/"Figure" and ends with ".Rdata"
+  cat(sprintf("\n\n## %s", substr(d, 7, nchar(d)-6)))
+  
+  if(any(grepl("Figure", d))){
+     for (i in 1:length(tlf)) {
+       
+       fig <- get(names(tlf)[i]) 
+       }
+    
+  } else {
+  
+  
   for (i in 1:length(tlf)) {
     
   subnum <- 0
   
   tlf_labels <- tlf[[i]]
   title_i <- tlf_labels[["table_header"]]
-  title_i <- ifelse(substr(title_i, 1, 11)=="Demographic", title_i, paste(tlf_labels[["table_header"]], d_lab))
+  # title_i <- ifelse(substr(title_i, 1, 11)=="Demographic", title_i, paste(tlf_labels[["table_header"]], d_lab))
   title_i <- gsub("_", "\\\\_",title_i)
 
   if (names(tlf)[i] == "tab_strtm1") {
@@ -146,6 +162,7 @@ base::load(here::here("cor_tabular", "output", attr(config,"config"), d))
     }
   numi <- numi + 1
   }
+}
   cat("\n\n\\end{landscape}")
   cat("\n\n\\captionsetup[table]{labelformat=default}")
   cat("\n\n\\newgeometry{margin=1in}")
