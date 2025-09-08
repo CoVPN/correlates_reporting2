@@ -590,7 +590,7 @@ for (i in 1:length(set2.1_assays)) {
             
             if (attr(config,"config") %in% c("nvx_uk302","prevent19nvx")) next # no need for nvx_uk302, prevent19nvx
             
-            if (i%%2==0 & !attr(config,"config") %in% c("azd1222_stage2", "nextgen_mock")) next     # skip even i for all studies but AZ stage 2 and nextgen
+            if (i%%2==0 & !attr(config,"config") %in% c("azd1222_stage2", "nextgen_mock", "iliad_ib202p")) next     # skip even i for all studies but AZ stage 2, nextgen and iliad
             
             # modify ptid for VAT08 
             if (study_name == "VAT08"){
@@ -622,24 +622,29 @@ for (i in 1:length(set2.1_assays)) {
                     
                 } else {dat.longer.cor.subset.plot1_ = dat.longer.cor.subset.plot1}
             
+            f_2_dat <- dat.longer.cor.subset.plot1_ %>%
+                filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
+                mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
+                                            levels = time_cohort.lb,
+                                            labels = if (study_name == "NextGen_Mock") {time_cohort.lb.short} else {time_cohort.lb}),
+                       Trt_nnaive = factor(paste(Trt, Bserostatus), 
+                                           levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
+                                           labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2)))
+            f_2_assay <- if(attr(config,"config") %in% c("azd1222_stage2", "nextgen_mock", "iliad_ib202p")){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]}
+            
+            f_2_ylim <- if (any(grepl("bind", set2.1_assays[c(i,i+1)]))) {c(2, 7)} else if (study_name == "ILIAD_IB202P") {c(floor(min(subset(f_2_dat, assay %in% f_2_assay)$value)), ceiling(max(subset(f_2_dat, assay %in% f_2_assay)$value)))} else {c(1, 6.5)}
+            f_2_ybreak <- if (any(grepl("bind", set2.1_assays[c(i,i+1)]))) {c(2,3,4,5,6)} else if (study_name == "ILIAD_IB202P") {seq(f_2_ylim[1], f_2_ylim[2], 1)} else {c(1,2,3,4,5,6)}
+            
             f_2 <- f_longitude_by_assay(
-                dat = dat.longer.cor.subset.plot1_ %>%
-                    filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
-                    mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
-                                                levels = time_cohort.lb,
-                                                labels = if (study_name == "NextGen_Mock") {time_cohort.lb.short} else {time_cohort.lb}),
-                           Trt_nnaive = factor(paste(Trt, Bserostatus), 
-                                               levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
-                                               labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2))),
+                dat = f_2_dat,
                 x.var = "time_cohort",
                 x.lb = if (study_name == "NextGen_Mock") {time_cohort.lb.short} else {time_cohort.lb},
                 facet.x.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(Trt_nnaive)} else {vars(assay_label_short)}, 
                 facet.y.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(assay_label_short)} else {vars(Trt_nnaive)},
-                
-                assays = if(attr(config,"config") %in% c("azd1222_stage2", "nextgen_mock")){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]},
+                assays = f_2_assay,
                 panel.text.size = ifelse(study_name=="VAT08" & length(cases_lb)==3, 4, ifelse(study_name=="VAT08" & length(cases_lb)==1, 4, 5.8)),
-                ylim = if (any(grepl("bind", set2.1_assays[c(i,i+1)]))) {c(2, 7)} else if (study_name == "ILIAD_IB202P") {c(-1.6, 3.6)} else {c(1, 6.5)}, 
-                ybreaks = if (any(grepl("bind", set2.1_assays[c(i,i+1)]))) {c(2,3,4,5,6)} else if (study_name == "ILIAD_IB202P") {c(-1, 0, 1, 2, 3)} else {c(1,2,3,4,5,6)},
+                ylim = f_2_ylim, 
+                ybreaks = f_2_ybreak,
                 axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2" | (study_name=="VAT08" & length(cases_lb)==3) | tm == "Day initial", 8.4, ifelse(tm == "Day whole", 10.5, 9.5)),
                 colorby = ifelse(study_name == "NextGen_Mock", "Trt", "cohort_event"),
                 pointby = ifelse(study_name == "NextGen_Mock", "responder", "cohort_col"),
@@ -651,7 +656,7 @@ for (i in 1:length(set2.1_assays)) {
                 )
                 
             
-            file_name <- paste0(paste0(if(attr(config,"config") %in% c("azd1222_stage2", "nextgen_mock")){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]}, 
+            file_name <- paste0(paste0(if(attr(config,"config") %in% c("azd1222_stage2", "nextgen_mock", "iliad_ib202p")){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]}, 
                                        collapse="_"), 
                                 "_longitudinal_by_case_non_case", 
                                 ifelse(study_name == "NextGen_Mock" & case_type == "proximal", "_proximal", 
