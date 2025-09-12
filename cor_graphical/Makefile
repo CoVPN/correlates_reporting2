@@ -1,5 +1,5 @@
 ## all            : clear current results and make figures
-all: clean figs
+all: clean figs report
 
 ## figs           : clean data and make figures
 figs: 
@@ -153,6 +153,7 @@ clean:
 
 ## report        : create a standalone report
 report:
+	bash _build_chapter.sh
 
 # type 'make help' to show all make commands
 help: Makefile

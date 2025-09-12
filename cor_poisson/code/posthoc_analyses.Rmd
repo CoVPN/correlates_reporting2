@@ -1,0 +1,597 @@
+---
+title: "IB-202P Posthoc Analyses"
+author: Fred Hutch Team
+output: 
+  pdf_document:
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+options(kableExtra.latex.table_environment="table")
+knitr::opts_chunk$set(error = TRUE, message = TRUE, warning = TRUE) # for debug
+knitr::opts_knit$set (progress = TRUE, verbose = TRUE) # for debug
+
+library(copcor)
+library(survey)
+library(kyotil)
+library(glue)
+library(Hmisc)
+library(knitr)
+library(GGally)
+library(saws)
+library(kableExtra)
+library(Barnard)
+
+library(geepack)
+source("~/correlates_reporting2/cor_poisson/code/gee_bias_correction.R")
+
+dat_mapped_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/correlates_processing/config.yml")$mapped_data)
+dat_proc_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
+dat_proc_202$Ptid = as.factor(dat_proc_202$Ptid) # need to make it a factor to use as id
+dat_proc_202$Trt = factor(dat_proc_202$Trt, levels = c("PBO","BPZE1")) 
+
+dat_mapped_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_processing/config.yml")$mapped_data)
+dat_proc_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
+
+assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/iliad_ib202p_assay_metadata.csv'))
+assays = assay_metadata$assay
+panels = unique(assay_metadata$panel)
+antigens = c("WCE", setdiff(unique(assay_metadata$antigen), c("WCE", NA)))
+```
+
+```{r pc1, fig.height=7.5, fig.width=8}
+par(mfrow=c(2,2))
+
+# add PC1 for each panel
+wt.Day28.mat = NULL
+for (p in panels[1:4]) {
+  # assays within panel p
+  aa = glue("{antigens}_{p}")
+  
+  wt.B = princomp(dat_proc_202[, "B"%.%aa])$loadings[,1] 
+  wt.Day28 = princomp(dat_proc_202[, "Day28"%.%aa])$loadings[,1] 
+  
+  corplot(wt.B, wt.Day28, asp=1, main=p, xlab="Baseline PC1 loading", ylab="Day 28 PC1 loading")
+  
+  # wt = (wt.B + wt.Day28)/2
+  wt = wt.Day28
+  
+  for (t in c("B", "Day28", "Delta28overB")) {
+    dat_proc_202[, glue("{t}{p}_PC1")] = as.matrix(dat_proc_202[, t%.%aa]) %*% wt
+  }
+  
+  wt.Day28.mat = cbind(wt.Day28.mat, wt.Day28)
+}
+
+colnames(wt.Day28.mat)=panels[1:4]
+rownames(wt.Day28.mat)=antigens
+kable(wt.Day28.mat, digit=2)
+
+```
+
+```{r DiProPerm}
+# cannot run on cosrv b/c of the package conflicts for the version of R
+# run it on https://rstudio44.scharp.org/
+
+
+```
+
+
+
+```{r ve}
+
+dat=subset(dat_proc_202, PPAI==1)
+
+tab=mytable(dat$EventIndC9_11_14, dat$Trt)
+# fisher.test(tab)
+barnard.test(tab[1,1], tab[1,2], tab[2,1], tab[2,2])
+
+tab=mytable(dat$EventIndC14, dat$Trt)
+# fisher.test(tab)
+barnard.test(tab[1,1], tab[1,2], tab[2,1], tab[2,2])
+
+
+dat=subset(dat_proc_202)
+
+tab=mytable(dat$EventIndC9_11_14, dat$Trt)
+# fisher.test(tab)
+barnard.test(tab[1,1], tab[1,2], tab[2,1], tab[2,2])
+
+tab=mytable(dat$EventIndC14, dat$Trt)
+# fisher.test(tab)
+barnard.test(tab[1,1], tab[1,2], tab[2,1], tab[2,2])
+```
+
+```{r covariates selection with glm, echo=F}
+
+fit1 = glm(EventIndC9_11_14 ~ Sex, subset(dat_proc_202, Trt=="BPZE1"), family=poisson(link = "log"))
+fit2 = glm(EventIndC9_11_14 ~ Age, subset(dat_proc_202, Trt=="BPZE1"), family=poisson(link = "log"))
+tab=getFormattedSummary(list(Sex=fit1, Age=fit2), robust=T, exp=T)[2,,drop=F]
+rownames(tab)[1]=""
+kable(tab, align="c")
+```
+
+```{r covariates selection with two sample comparison}
+
+# for Age
+
+fcov = function(v) {
+  pvals = c(
+    wilcox.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+    wilcox.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "PBO"))$p.value,
+    wilcox.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+    wilcox.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
+
+    t.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+    t.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "PBO"))$p.value,
+    t.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+    t.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value
+  ); pvals
+
+  tab = matrix(format.pval(pvals, digit=3), nr=2)
+  rownames(tab) = c("BPZE1", "PBO")
+  colnames(tab) = c("PP, Wilcox", "PPAI, Wilcox", "PP, t", "PPAI, t")
+  tab
+}
+
+kable(fcov("Age"))
+
+
+par(mfrow=c(1,3))#, mgp = c(2, 1, 0))  # move label 1 line higher to make room for p value
+ylim=c(20,50)
+myboxplot(Age~EventIndC9_11_14, subset(dat_proc_202, Trt == "BPZE1"), ylim=ylim, main="BPZE1", xlab="case status", test="t")
+myboxplot(Age~EventIndC9_11_14, subset(dat_proc_202, Trt == "PBO"), ylim=ylim, main="PBO", xlab="case status", test="t")
+myboxplot(Age~Trt, dat_proc_202, ylim=ylim, main="All", xlab="Trt", test="t")
+
+
+# for Sex
+
+with (subset(dat_proc_202, Trt == "BPZE1"), fisher.test(table(Sex, EventIndC9_11_14)))$p.val
+with (subset(dat_proc_202, Trt == "PBO"),   fisher.test(table(Sex, EventIndC9_11_14)))$p.val
+with (dat_proc_202, fisher.test(table(Sex, Trt)))$p.val
+
+
+# age and markers
+
+par(mfrow=c(1,2)); reduce_margin()
+
+plot(BFHA_Serum_IgG~Age, dat_proc_202, main="")
+abline(lm(BFHA_Serum_IgG~Age, dat_proc_202))
+getFormattedSummary(list(lm(BFHA_Serum_IgG~Age, dat_proc_202)), robust=F) 
+
+plot(BFHA_Norm_Nasal_IgA~Age, dat_proc_202, main="")
+abline(lm(BFHA_Norm_Nasal_IgA~Age, dat_proc_202))
+getFormattedSummary(list(lm(BFHA_Norm_Nasal_IgA~Age, dat_proc_202)), robust=F) 
+
+
+```
+
+```{r}
+# make a table of p values for different comparison
+run.tests = function(assay, test, PPAI.only=T, endpoint="EventIndC9_11_14", do.fold.change=F) {
+  if (test=="w") {
+    pvals = c(
+      wilcox.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+      wilcox.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+      wilcox.test(as.formula(glue("Delta28overB{assay}~{endpoint}")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+      wilcox.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, Trt == "PBO"))$p.value,
+      wilcox.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "PBO"))$p.value,
+      wilcox.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "PBO"))$p.value,
+      wilcox.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+      wilcox.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+      wilcox.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+      wilcox.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
+      wilcox.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
+      wilcox.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value
+    ); 
+    tab = matrix(format.pval(pvals, digit=3), nr=3)
+  
+  } else if (test=="t") {
+    pvals = c(
+      t.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+      t.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+      t.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+      t.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, Trt == "PBO"))$p.value,
+      t.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "PBO"))$p.value,
+      t.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "PBO"))$p.value,
+      t.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+      t.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+      t.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+      t.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
+      t.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
+      t.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value
+    ); 
+    tab = matrix(format.pval(pvals, digit=3), nr=3)
+  
+  } else if (test=="MBN" | test=="MD" | test=="Poisson") {
+    if (test=="Poisson") robust=F else robust=test
+    
+    pvals = c(
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ Day28{assay}")), data  = subset(dat_proc_202, Trt == "BPZE1"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ B{assay}")),     data  = subset(dat_proc_202, Trt == "BPZE1"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ Delta28overB{assay}")),     data  = subset(dat_proc_202, Trt == "BPZE1"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ Day28{assay}")), data  = subset(dat_proc_202, Trt == "PBO"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ B{assay}")),     data  = subset(dat_proc_202, Trt == "PBO"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ Delta28overB{assay}")),     data  = subset(dat_proc_202, Trt == "PBO"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ Day28{assay}")), data  = subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ B{assay}")),     data  = subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ Delta28overB{assay}")),     data  = subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ Day28{assay}")), data  = subset(dat_proc_202, PPAI ==1 & Trt == "PBO"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ B{assay}")),     data  = subset(dat_proc_202, PPAI ==1 & Trt == "PBO"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1],
+      getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ Delta28overB{assay}")),     data  = subset(dat_proc_202, PPAI ==1 & Trt == "PBO"), family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1]
+    ); 
+    # no need to format p values, already string
+    tab = matrix(pvals, nr=3)
+    
+  } else stop (glue("wrong test: {test}"))
+  
+  rownames(tab) = c("Day28", "B", "D28/B")
+  colnames(tab) = c("BPZE1", "PBO", "BPZE1", "PBO")
+  
+  if (PPAI.only) tab = tab[,3:4]
+  
+  if (!do.fold.change) tab = tab[1:2,]
+    
+  tab
+}
+
+# compare tests
+
+tab = run.tests(assay="FHA_Norm_Nasal_IgA", test="w", PPAI.only=F, do.fold.change=T)
+kable(tab, align="c") %>% add_header_above(c("Wilcox"=1, "PP" = 2, "PPAI" = 2)) %>% column_spec(1:4, extra_css = "padding-left:20px; padding-right:20px;")
+
+tab = run.tests(assay="FHA_Norm_Nasal_IgA", test="t", PPAI.only=F, do.fold.change=T)
+kable(tab, align="c") %>% add_header_above(c("t test"=1, "PP" = 2, "PPAI" = 2)) %>% column_spec(1:4, extra_css = "padding-left:20px; padding-right:20px;")
+
+tab = run.tests(assay="FHA_Norm_Nasal_IgA", test="MBN", PPAI.only=F, do.fold.change=T)
+kable(tab, align="c") %>% add_header_above(c("Poisson MBN"=1, "PP" = 2, "PPAI" = 2)) %>% column_spec(1:4, extra_css = "padding-left:20px; padding-right:20px;")
+
+tab = run.tests(assay="FHA_Norm_Nasal_IgA", test="MD", PPAI.only=F, do.fold.change=T)
+kable(tab, align="c") %>% add_header_above(c("Poisson MD"=1, "PP" = 2, "PPAI" = 2)) %>% column_spec(1:4, extra_css = "padding-left:20px; padding-right:20px;")
+
+tab = run.tests(assay="FHA_Norm_Nasal_IgA", test="Poisson", PPAI.only=F, do.fold.change=T)
+kable(tab, align="c") %>% add_header_above(c("Poisson"=1, "PP" = 2, "PPAI" = 2)) %>% column_spec(1:4, extra_css = "padding-left:20px; padding-right:20px;")
+
+
+# make p val table for a single assay 
+
+make.p.tab = function(a, test="MBN") {
+  tab = run.tests(assay=a, test=test, PPAI.only=T, do.fold.change=T)
+  tab = matrix(tab[c(2,1,3),], nr=1); colnames(tab) = c("BPZE1, B", "BPZE1, 28", "BPZE1, 28/B", "PBO, B", "PBO, 28", "PBO, 28/B")
+  rownames(tab)=a
+  kable(tab, align="c", col.names = NULL)  %>%  add_header_above(c("Poisson pval"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;")
+}
+
+make.p.tab ("FHA_Norm_Nasal_IgA", test="w")
+make.p.tab ("FHA_Norm_Nasal_IgA", test="t")
+make.p.tab ("FHA_Norm_Nasal_IgA")
+make.p.tab ("FHA_Serum_IgG")
+make.p.tab ("PT_Serum_IgA")
+make.p.tab ("WCE_Norm_Nasal_IgA")
+
+```
+
+```{r assay by antigen table function}
+assay_antigen_table = function(dat, endpoint, timepoint, robust="MBN", adj.age=F) {
+
+  pvals = sapply(assays[1:20], function(assay) {
+    getFormattedSummary(list(geeglm(as.formula(glue("{endpoint} ~ {timepoint}{assay}{ifelse(adj.age,'+Age','')}")), data  = dat, family= poisson(link = "log"), id = Ptid, corstr= "independence")), robust=robust, type=10)[2,1]
+  })
+    
+  # no need to format p values, already string
+  tab = matrix(pvals, nr=5)
+    
+  rownames(tab) = antigens
+  colnames(tab) = panels[1:4]
+  colnames(tab)[2] = "Norm_sIgA" # make it shorter
+  tab
+}
+```
+
+```{r assay by antigen table BPZE1}
+
+# BPZE1, Day 28, no age
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="Day28"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1" & PPAI==1), endpoint="EventIndC14", timepoint="Day28"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI alt"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1"), endpoint="EventIndC9_11_14", timepoint="Day28"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1"), endpoint="EventIndC14", timepoint="Day28"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP alt"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+
+# BPZE1, Day 28, adj age
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="Day28", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1" & PPAI==1), endpoint="EventIndC14", timepoint="Day28", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI alt"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1"), endpoint="EventIndC9_11_14", timepoint="Day28", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1"), endpoint="EventIndC14", timepoint="Day28", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP alt"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+
+# BPZE1, baseline
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="B"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1" & PPAI==1), endpoint="EventIndC14", timepoint="B"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI alt"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1"), endpoint="EventIndC9_11_14", timepoint="B"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1"), endpoint="EventIndC14", timepoint="B"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP alt"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+
+# BPZE1, fold change
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="Delta28overB"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1" & PPAI==1), endpoint="EventIndC14", timepoint="Delta28overB"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI alt"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1"), endpoint="EventIndC9_11_14", timepoint="Delta28overB"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "BPZE1"), endpoint="EventIndC14", timepoint="Delta28overB"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP alt"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+```
+
+```{r assay by antigen table PBO}
+
+# PBO, Day 28, no age
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="Day28"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO"), endpoint="EventIndC9_11_14", timepoint="Day28"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+# adj age
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="Day28", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO"), endpoint="EventIndC9_11_14", timepoint="Day28", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+
+# PBO, baseline
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="B"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO"), endpoint="EventIndC9_11_14", timepoint="B"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+# adj age
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="B", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO"), endpoint="EventIndC9_11_14", timepoint="B", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+
+
+# PBO, fold rise, no age
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="Delta28overB"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO"), endpoint="EventIndC9_11_14", timepoint="Delta28overB"))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+# adj age
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO" & PPAI==1), endpoint="EventIndC9_11_14", timepoint="Delta28overB", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+tab = t(assay_antigen_table(dat=subset(dat_proc_202, Trt == "PBO"), endpoint="EventIndC9_11_14", timepoint="Delta28overB", adj.age=T))
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PP prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+```
+
+```{r spot check p vals}
+f1 = function(dat, a, endpoint="EventIndC9_11_14") {
+  fit.gee <- geeglm(as.formula(glue("{endpoint} ~ {a}")), data  = dat, family= poisson(link = "log"),
+    id = Ptid, corstr= "independence")
+  # summary(fit.gee)   # robust (sandwich) SEs by default
+  # ssase (fit.gee)
+  # fit.glm <- glm(EventIndC9_11_14 ~ Day28FHA_Serum_IgG, data  = dat, family= poisson(link = "log"))
+
+  print(list(
+    getFormattedSummary(list(fit.gee), robust=T, type=12),
+    getFormattedSummary(list(fit.gee), robust="MD", type=12),
+    getFormattedSummary(list(fit.gee), robust="MBN", type=12)))
+  
+  myboxplot(as.formula(glue("{a}~{endpoint}")), dat, test="w")
+  
+  print(t.test(as.formula(glue("{a}~{endpoint}")), dat))
+  
+  # print(anova(lm(as.formula(glue("{a}~{endpoint}")), dat)))
+}
+
+dat.ppai = subset(dat_proc_202, Trt == "BPZE1" & PPAI==1)
+f1(dat.ppai, a="Day28FHA_Serum_IgG")
+f1(dat.ppai, a="Day28WCE_Serum_IgA")
+f1(dat.ppai, a="Day28WCE_Nasal_IgA")
+f1(dat.ppai, a="Day28WCE_Norm_Nasal_IgA")
+f1(dat.ppai, a="BFHA_Norm_Nasal_IgA")
+
+dat.pp = subset(dat_proc_202, Trt == "BPZE1")
+f1(dat.pp, a="Day28FHA_Serum_IgG")
+f1(dat.pp, a="Day28WCE_Serum_IgA")
+f1(dat.pp, a="BFHA_Norm_Nasal_IgA")
+
+f1(subset(dat_proc_202, Trt == "PBO" & PPAI==1), a="Day28FHA_Norm_Nasal_IgA")
+f1(subset(dat_proc_202, Trt == "PBO" & PPAI==1), a="BFHA_Norm_Nasal_IgA")
+
+```
+
+```{r exploratory spot check wilcox robust binomial}
+dat= subset(dat_proc_202, Trt=="PBO")
+
+myboxplot(Delta28overBFHA_Norm_Nasal_IgA~EventIndC9_11_14, dat, test="w")
+
+fit = glm(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"))
+getFormattedSummary(list(fit), robust=T)
+getFormattedSummary(list(fit), robust=F)
+
+fit = glm(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=binomial(link = "logit"))
+getFormattedSummary(list(fit), robust=T)
+getFormattedSummary(list(fit), robust=F)
+
+
+myboxplot(BFHA_Norm_Nasal_IgA~EventIndC9_11_14, dat, test="w")
+
+fit = glm(EventIndC9_11_14 ~ BFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"))
+getFormattedSummary(list(fit), robust=T, type=2)
+getFormattedSummary(list(fit), robust=F, type=2)
+
+fit = geeglm(EventIndC9_11_14 ~ BFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")
+ssase (fit)
+getFormattedSummary(list(fit), robust=T, type=2)
+
+
+fit = glm(EventIndC9_11_14 ~ BFHA_Norm_Nasal_IgA, dat, family=binomial(link = "logit"))
+getFormattedSummary(list(fit), robust=T)
+getFormattedSummary(list(fit), robust=F)
+
+# getFormattedSummary(list(mgee(EventIndC9_11_14 ~ BFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")), robust=T, finite="dm", type=2)
+# 
+# getFormattedSummary(list(mgee(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")), robust="d5", type=2)
+# 
+# getFormattedSummary(list(mgee(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")), robust="d4", type=2)
+# 
+# getFormattedSummary(list(mgee(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")), robust="d3", type=2)
+# 
+# getFormattedSummary(list(mgee(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")), robust="d2", type=2)
+# 
+# getFormattedSummary(list(mgee(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")), robust=T, type=2)
+# 
+# getFormattedSummary(list(mgee(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")), robust=F, type=2)
+# 
+# getFormattedSummary(list(glm(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"))), robust=T, type=2)
+
+
+fit.mgee = mgee(EventIndC9_11_14 ~ BFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")
+
+saws(fit.mgee,method="dm")$se
+saws(fit.mgee,method=c("d1"),bound=.75)$se
+saws(fit.mgee,method=c("d2"),bound=.75)$se
+saws(fit.mgee,method=c("d3"),bound=.75)$se
+saws(fit.mgee,method=c("d4"),bound=.75)$se
+saws(fit.mgee,method=c("d5"),bound=.75)$se
+
+
+fit.mgee = mgee(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=poisson(link = "log"), id = Ptid, corstr= "independence")
+# saws(fit.mgee,method="dm")$se # model-based
+saws(fit.mgee,method=c("d1"),bound=.75)$se
+saws(fit.mgee,method=c("d2"),bound=.75)$se
+saws(fit.mgee,method=c("d3"),bound=.75)$se
+saws(fit.mgee,method=c("d4"),bound=.75)$se
+saws(fit.mgee,method=c("d5"),bound=.75)$se
+
+
+fit.mgee = mgee(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=gaussian, id = Ptid, corstr= "independence")
+# saws(fit.mgee,method="dm")$se # model-based
+saws(fit.mgee,method=c("d1"),bound=.75)$se
+saws(fit.mgee,method=c("d2"),bound=.75)$se
+saws(fit.mgee,method=c("d3"),bound=.75)$se
+saws(fit.mgee,method=c("d4"),bound=.75)$se
+saws(fit.mgee,method=c("d5"),bound=.75)$se
+
+fit =    geeglm(EventIndC9_11_14 ~ Delta28overBFHA_Norm_Nasal_IgA, dat, family=gaussian, id = Ptid, corstr= "independence")
+mysapply(ssase (fit), function (v) sqrt(diag(v)))
+
+
+```
+
+```{r pc1 poission}
+pc1_reg = function(endpoint, PPAI.only, corner.text, trt) {
+  tab = mysapply (c("B","Day28","Delta28overB"), function (t) {
+    fits = lapply(panels[1:4], function(p) geeglm(as.formula(glue("{endpoint} ~ {t}{p}_PC1")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)), family= poisson(link = "log"), id = Ptid, corstr= "independence"))
+    getFormattedSummary(fits, robust="MBN", exp=T, type=9)[2,,drop=F]
+  })
+  
+  colnames(tab)=panels[1:4]
+  kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+}
+
+pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, corner.text="PPAI prim", trt="BPZE1")
+pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=F, corner.text="PP prim", trt="BPZE1")
+pc1_reg (endpoint="EventIndC14", PPAI.only=F, corner.text="PP alt", trt="BPZE1")
+pc1_reg (endpoint="EventIndC14", PPAI.only=T, corner.text="PPAI alt", trt="BPZE1")
+
+pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, corner.text="PPAI", trt="PBO")
+pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=F, corner.text="PP", trt="PBO")
+
+```
+
+```{r prentice criterion}
+
+prentice.f = function(endpoint, PPAI.only, corner.text, timepoint="Day28") {
+  fits = lapply (panels[1:4], function (p) {
+    geeglm(as.formula(glue("{endpoint} ~ Trt + {timepoint}{p}_PC1")), data  = subset(dat_proc_202, PPAI %in% c(1, if(!PPAI.only) 0)), family= poisson(link = "log"), id = Ptid, corstr= "independence")
+  })
+  
+  tab = getFormattedSummary(fits, robust="MBN", exp=T, type=9) [-1,]
+  colnames(tab)=panels[1:4]
+  kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+}
+
+prentice.f(PPAI.only=T, endpoint="EventIndC9_11_14", corner.text="PPAI prim")
+prentice.f(PPAI.only=T, endpoint="EventIndC14", corner.text="PPAI alt")
+prentice.f(PPAI.only=F, endpoint="EventIndC9_11_14", corner.text="PP prim")
+prentice.f(PPAI.only=F, endpoint="EventIndC14", corner.text="PP alt")
+
+prentice.f(PPAI.only=T, endpoint="EventIndC9_11_14", corner.text="PPAI prim", timepoint="B")
+
+tab = getFormattedSummary(list(
+  geeglm(EventIndC9_11_14 ~ Trt, data  = subset(dat_proc_202, PPAI==1), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
+  geeglm(EventIndC14 ~ Trt,      data  = subset(dat_proc_202, PPAI==1), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
+  geeglm(EventIndC9_11_14 ~ Trt, data  = subset(dat_proc_202), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
+  geeglm(EventIndC14 ~ Trt,      data  = subset(dat_proc_202), family= poisson(link = "log"), id = Ptid, corstr= "independence")
+), robust="MBN", exp=T, type=9)[-1,,drop=F]
+colnames(tab)=c("PPAI prim", "PPAI alt", "PP prim", "PP alt")
+tab=t(tab)
+kable(tab, align="c") %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") 
+
+```
+
+```{r pc1 scatterplot, fig.height=7.5, fig.width=8}
+
+par(mfrow=c(2,2)); reduce_margin()
+
+dat = subset(dat_proc_202, PPAI==1)
+
+plot(Day28Norm_Nasal_IgA_PC1 ~ BNorm_Nasal_IgA_PC1, dat, main="PPAI prim", col= ifelse(dat$EventIndC9_11_14==1, 2, 4), pch= ifelse(dat$Trt=="PBO", 1, 2), asp=1)
+mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZE1 non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
+
+plot(Day28Norm_Nasal_IgA_PC1 ~ BNorm_Nasal_IgA_PC1, dat, main="PPAI alt", col= ifelse(dat$EventIndC14==1, 2, 4), pch= ifelse(dat$Trt=="PBO", 1, 2), asp=1)
+mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZE1 non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
+
+dat = subset(dat_proc_202)
+
+plot(Day28Norm_Nasal_IgA_PC1 ~ BNorm_Nasal_IgA_PC1, dat, main="PP prim", col= ifelse(dat$EventIndC9_11_14==1, 2, 4), pch= ifelse(dat$Trt=="PBO", 1, 2), asp=1)
+mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZE1 non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
+
+plot(Day28Norm_Nasal_IgA_PC1 ~ BNorm_Nasal_IgA_PC1, dat, main="PP alt", col= ifelse(dat$EventIndC14==1, 2, 4), pch= ifelse(dat$Trt=="PBO", 1, 2), asp=1)
+mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZE1 non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
+
+```
+
+```{r boxplot pc1, fig.height=6.5, fig.width=12}
+par(mfrow=c(1,2))
+dat = subset(dat_proc_202, PPAI==1)
+ylim=range(dat$BNorm_Nasal_IgA_PC1, dat$Day28Norm_Nasal_IgA_PC1)
+myboxplot(BNorm_Nasal_IgA_PC1~EventIndC9_11_14 + Trt, dat, main="PPAI prim", col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim)
+myboxplot(Day28Norm_Nasal_IgA_PC1~EventIndC9_11_14 + Trt, dat, main="PPAI prim", col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim)
+
+```
