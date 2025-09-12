@@ -1,5 +1,6 @@
 ---
-title: "IB-201P and IB-202P Exploratory Plots (I)"
+title: "IB-201P and IB-202P Comparative Immunogenicity Study"
+author: Fred Hutch Team
 output: 
   pdf_document:
     includes:
@@ -17,9 +18,12 @@ library(glue)
 library(Hmisc)
 library(knitr)
 library(GGally)
+library(Barnard)
 
 dat_mapped_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/correlates_processing/config.yml")$mapped_data)
 dat_proc_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
+dat_proc_202$Ptid = as.factor(dat_proc_202$Ptid) # need to make it a factor to use as id
+dat_proc_202$Trt = factor(dat_proc_202$Trt, levels = c("PBO","BPZE1")) 
 
 dat_mapped_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_processing/config.yml")$mapped_data)
 dat_proc_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
@@ -92,128 +96,96 @@ summary(dat_proc_201[,glue("Delta28overB{assays[-(len(assays))]}")])
 ```
 
 
+
+
+# Immune response and age
+
+```{r scatterplot_age, fig.width=12, fig.height=5.5}
+
+plot.marker.age = function(a, ylim) {
+  
+  xlim=range(dat_proc_201$Age, dat_proc_202$Age, na.rm=T)
+  
+  fits=list()
+  
+  # shrink_margin()
+  plot(as.formula(glue("{a}~Age")), dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO",], ylim=ylim, main="", xlim=xlim)
+  fit=lm(as.formula(glue("{a}~Age")), dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO",])
+  abline(fit)
+  fits[["BPZE1_PBO"]]=fit
+  
+  points(as.formula(glue("{a}~Age")), dat_proc_202[dat_proc_202$Trt=="BPZE1",], col="purple", xlim=xlim)
+  fit=lm(as.formula(glue("{a}~Age")), dat_proc_202[dat_proc_202$Trt=="BPZE1",])
+  abline(fit, col="purple")
+  fits[["BPZE1"]]=fit
+  
+  mylegend(legend=c("BPZE1_PBO (201)", "BPZE1 (202)"), x=3, col=c("black", "purple"), lty=1)
+  
+  print(a)
+  print(getFormattedSummary(fits, robust=F))
+}
+
+plot.marker.age.both=function(assay) {
+  par(mfrow=c(1,2)); reduce_margin()
+  ylim=range(dat_proc_201[["Day28"%.%assay]], dat_proc_201[["B"%.%assay]], na.rm=T)
+  plot.marker.age(a="Day28"%.%assay, ylim)
+  plot.marker.age(a="B"%.%assay, ylim)
+}
+  
+plot.marker.age.both("FHA_Norm_Nasal_IgA")
+plot.marker.age.both("WCE_Norm_Nasal_IgA")
+
+```
+
+
+\clearpage
+
 # Boxplots by treatment groups 
 
 Day28 WCE and FHA sIgA is slightly higher in the BPZE1_PBO arm of IB-201p than in the BPZE1 arm of IB-202p (P value 0.073 and 0.079, respectively). A similar but less pronounced trend is also seen when we compare all arms between the two trials at baseline (P value 0.176 and 0.275, respectively). PRN is significantly higher in 201 BPZE1_PBO than in 202 BPZE1 (P value 0.01 at Day 28 and <0.001 at baseline).
 This is likely due to screening criteria differences per Stephanie. 
 
-```{r WCE_boxplots}
-ylim=range(c(dat_proc_201$BWCE_Nasal_IgA, dat_proc_202$Day28WCE_Nasal_IgA), na.rm=T)
-
-par(mfrow=c(1,6)); par(mar = c(4, 3, 2, 1), mgp = c(2, 0.5, 0))
-
-myboxplot(Day28WCE_Nasal_IgA~Trt, dat_proc_201, ylim=ylim, xlab="", main="IB-201p", cex.axis=0.4)
-myboxplot(Day28WCE_Nasal_IgA~Trt,   dat_proc_202, ylim=ylim, xlab="", main="IB-202p", cex.axis=0.6, test="w", simplified = T)
-
-myboxplot(BWCE_Nasal_IgA~Trt, dat_proc_201, ylim=ylim, xlab="", main="IB-201p", cex.axis=0.4)
-myboxplot(BWCE_Nasal_IgA~Trt,   dat_proc_202, ylim=ylim, xlab="", main="IB-202p", cex.axis=0.6, test="w", simplified = T)
-
-myboxplot(list(
-  dat_proc_201$Day28WCE_Nasal_IgA[dat_proc_201$Trt=='BPZE1_PBO'], 
-  dat_proc_202$Day28WCE_Nasal_IgA[dat_proc_202$Trt=='BPZE1']), 
-  ylim=ylim, xlab="", ylab="Day28WCE_Nasal_IgA", main="", cex.axis=0.6, test="w", names=c("201","202"), simplified = T)
-
-myboxplot(list(
-  dat_proc_201$BWCE_Nasal_IgA, 
-  dat_proc_202$BWCE_Nasal_IgA), 
-  ylim=ylim, xlab="", ylab="BWCE_Nasal_IgA", main="", cex.axis=0.6, test="w", names=c("201","202"), simplified = T)
-
-```
 
 
-```{r PRN_boxplots}
-ylim=range(c(dat_proc_201$BPRN_Nasal_IgA, dat_proc_201$Day28PRN_Nasal_IgA), na.rm=T)
+```{r boxplots}
 
-par(mfrow=c(1,6)); par(mar = c(4, 3, 2, 1), mgp = c(2, 0.5, 0))
+make.boxplots = function(a) {
+  ylim=range(c(dat_proc_201[["B"%.%a]], dat_proc_201[["Day28"%.%a]]), na.rm=T)
+  
+  par(mfrow=c(1,6)); par(mar = c(4, 3, 2, 1), mgp = c(2, 0.5, 0))
+  
+  # day 28
+  myboxplot(as.formula(glue("Day28{a}~Trt")), dat_proc_201, ylim=ylim, xlab="", main="IB-201p", cex.axis=0.4)
+  myboxplot(as.formula(glue("Day28{a}~Trt")), dat_proc_202, ylim=ylim, xlab="", main="IB-202p", cex.axis=0.6, test="w", simplified = T)
+  myboxplot(list(
+    dat_proc_201[["Day28"%.%a]][dat_proc_201$Trt=='BPZE1_PBO'], 
+    dat_proc_202[["Day28"%.%a]][dat_proc_202$Trt=='BPZE1']), ylim=ylim, xlab="", ylab="Day28FHA_Norm_Nasal_IgA", main="BPZE1 Arms", cex.axis=0.6, test="w", names=c("201","202"), simplified = T)
+  
+  # baseline
+  myboxplot(as.formula(glue("B{a}~Trt")), dat_proc_201, ylim=ylim, xlab="", main="IB-201p", cex.axis=0.4)
+  myboxplot(as.formula(glue("B{a}~Trt")), dat_proc_202, ylim=ylim, xlab="", main="IB-202p", cex.axis=0.6, test="w", simplified = T)
+  myboxplot(list(
+    dat_proc_201[["B"%.%a]], 
+    dat_proc_202[["B"%.%a]]), ylim=ylim, xlab="", ylab="BFHA_Norm_Nasal_IgA", main="All", cex.axis=0.6, test="w", names=c("201","202"), simplified = T)
+}
 
-myboxplot(Day28PRN_Nasal_IgA~Trt, dat_proc_201, ylim=ylim, xlab="", main="IB-201p", cex.axis=0.4)
-myboxplot(Day28PRN_Nasal_IgA~Trt,   dat_proc_202, ylim=ylim, xlab="", main="IB-202p", cex.axis=0.6, test="w", simplified = T)
+make.boxplots(a="FHA_Norm_Nasal_IgA")
+make.boxplots(a="WCE_Norm_Nasal_IgA")
+make.boxplots(a="PRN_Norm_Nasal_IgA")
 
-myboxplot(BPRN_Nasal_IgA~Trt, dat_proc_201, ylim=ylim, xlab="", main="IB-201p", cex.axis=0.4)
-myboxplot(BPRN_Nasal_IgA~Trt,   dat_proc_202, ylim=ylim, xlab="", main="IB-202p", cex.axis=0.6, test="w", simplified = T)
-
-myboxplot(list(
-  dat_proc_201$Day28PRN_Nasal_IgA[dat_proc_201$Trt=='BPZE1_PBO'], 
-  dat_proc_202$Day28PRN_Nasal_IgA[dat_proc_202$Trt=='BPZE1']), 
-  ylim=ylim, xlab="", ylab="Day28PRN_Nasal_IgA", main="", cex.axis=0.6, test="w", names=c("201","202"), simplified = T)
-
-myboxplot(list(
-  dat_proc_201$BPRN_Nasal_IgA, 
-  dat_proc_202$BPRN_Nasal_IgA), 
-  ylim=ylim, xlab="", ylab="BPRN_Nasal_IgA", main="", cex.axis=0.6, test="w", names=c("201","202"), simplified = T)
-
-```
-
-
-```{r FHA_boxplots}
-ylim=range(c(dat_proc_201$BFHA_Nasal_IgA, dat_proc_201$Day28FHA_Nasal_IgA), na.rm=T)
-
-par(mfrow=c(1,6)); par(mar = c(4, 3, 2, 1), mgp = c(2, 0.5, 0))
-
-myboxplot(Day28FHA_Nasal_IgA~Trt, dat_proc_201, ylim=ylim, xlab="", main="IB-201p", cex.axis=0.4)
-myboxplot(Day28FHA_Nasal_IgA~Trt,   dat_proc_202, ylim=ylim, xlab="", main="IB-202p", cex.axis=0.6, test="w", simplified = T)
-
-myboxplot(BFHA_Nasal_IgA~Trt, dat_proc_201, ylim=ylim, xlab="", main="IB-201p", cex.axis=0.4)
-myboxplot(BFHA_Nasal_IgA~Trt,   dat_proc_202, ylim=ylim, xlab="", main="IB-202p", cex.axis=0.6, test="w", simplified = T)
-
-myboxplot(list(
-  dat_proc_201$Day28FHA_Nasal_IgA[dat_proc_201$Trt=='BPZE1_PBO'], 
-  dat_proc_202$Day28FHA_Nasal_IgA[dat_proc_202$Trt=='BPZE1']), 
-  ylim=ylim, xlab="", ylab="Day28FHA_Nasal_IgA", main="", cex.axis=0.6, test="w", names=c("201","202"), simplified = T)
-
-myboxplot(list(
-  dat_proc_201$BFHA_Nasal_IgA, 
-  dat_proc_202$BFHA_Nasal_IgA), 
-  ylim=ylim, xlab="", ylab="BFHA_Nasal_IgA", main="", cex.axis=0.6, test="w", names=c("201","202"), simplified = T)
+a="FHA_Norm_Nasal_IgA"
+median(dat_proc_201[["Day28"%.%a]][dat_proc_201$Trt=='BPZE1_PBO'], na.rm=T)
+median(dat_proc_202[["Day28"%.%a]][dat_proc_202$Trt=='BPZE1'])
+mean(dat_proc_201[["Day28"%.%a]][dat_proc_201$Trt=='BPZE1_PBO'], na.rm=T)
+mean(dat_proc_202[["Day28"%.%a]][dat_proc_202$Trt=='BPZE1'])
 
 ```
 
 \clearpage
-
-# Day 28 immune response and age
-
-```{r scatterplot_age, fig.cap="Day 28 FHA sIgA does not depend on age."}
-fits=list()
-
-par(mfrow=c(1,2))
-# shrink_margin()
-plot(Day28FHA_Nasal_IgA~Age, dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO",], ylim=ylim, main="BPZE1_PBO")
-fit=lm(Day28FHA_Nasal_IgA~Age, dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO",])
-abline(fit)
-fits[["BPZE1_PBO"]]=fit
-
-plot(Day28FHA_Nasal_IgA~Age, dat_proc_202[dat_proc_202$Trt=="BPZE1",], ylim=ylim, main="BPZE1")
-fit=lm(Day28FHA_Nasal_IgA~Age, dat_proc_202[dat_proc_202$Trt=="BPZE1",])
-abline(fit)
-fits[["BPZE1"]]=fit
-
-```
-
-\FloatBarrier
-
-
-```{r}
-getFormattedSummary(fits, robust=T)[-1,,drop=F]
-```
-
-
-\bigskip
-
-
-\clearpage
-
-# Pairs plots of Day 28 markers with the same assay type and different antigens in all arms
-
-Some observations:
-
-- While some sIgA values are at LLOQ/2, none are observed in the normalized sIgA, likely due to the effect of dividing by the total concentration in the normalization process.
-- sIgA and normalized sIgA correlations in 201 are generally higher than those in 202, with the most pronounced difference observed for PRN. For instance, the Day 28 PRN–PT correlation coefficient is 0.748 in 201 compared to 0.484 in 202. This difference likely reflects the stronger immune response to PRN in 201 relative to 202. However PRN-PT correlations in serum IgA are similar between 201 and 202, 0.544 and 0.556, respectively.
-- The pairwise correlations among serum IgA markers are generally lower than those among sIgA.
-- The pairwise correlations among serum IgG markers are even lower than those among serum IgA. This is even more true in 202, where the highest correlation among serum IgG markers is 0.322 bewteen PRN and PT, other than a 0.678 between FHA and PT. In 202, there is moderate correlation among WCE, FHA, and PT, but not others. 
 
 ```{r, echo=F}
-make_pairs=function(p, subset=F) {
-  if (subset) {
+make_pairs=function(p, vaccine.only=F) {
+  if (vaccine.only) {
     tmp1 = dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO", glue("Day28{antigens}_{p}")]
     tmp2 = dat_proc_202[dat_proc_202$Trt=="BPZE1",     glue("Day28{antigens}_{p}")]
   } else {
@@ -248,49 +220,64 @@ make_pairs=function(p, subset=F) {
     p1
   })))
 }
+
+
+make_pairs_in_one=function(p, vaccine.only=F) {
+  if (vaccine.only) {
+    tmp1 = dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO", glue("Day28{antigens}_{p}")]
+    tmp2 = dat_proc_202[dat_proc_202$Trt=="BPZE1",     glue("Day28{antigens}_{p}")]
+  } else {
+    tmp1 = dat_proc_201[,glue("Day28{antigens}_{p}")]
+    tmp2 = dat_proc_202[,glue("Day28{antigens}_{p}")]
+  }
+  
+  tmp1 = tmp1[complete.cases(tmp1),]
+  tmp2 = tmp2[complete.cases(tmp2),]
+  
+  r = range (tmp1, tmp2, na.rm=T)
+  min_val = r[1]
+  max_val = r[2]
+  
+  custom_continuous <- function(data, mapping, ...) {
+    ggplot(data = data, mapping = mapping) +
+      geom_point() +
+      xlim(min_val, max_val) + ylim(min_val, max_val)  # adjust these limits as needed
+  }
+
+  tmp=rbind(tmp1, tmp2)
+  tmp$col = factor(c(rep("201",nrow(tmp1)), rep("202", nrow(tmp2))))
+  
+  capture.output(p2 <- suppressWarnings(suppressMessages({  
+    ggpairs(tmp,
+      progress = FALSE,    # <--- stops the progress printing
+      aes(color = col), 
+      lower = list(continuous = custom_continuous)) + 
+    theme(
+      strip.text = element_text(size = 7)) +
+      scale_color_manual(values = c("black", "cyan"))
+  })))
+  p2
+}
+
+```
+
+# Correlation between antigens by panel
+
+
+
+\clearpage
+```{r fig.show='hold', fig.width=7.7, fig.height=7, out.width='49%', echo=F,  results='asis'}
+
+make_pairs_in_one (panels[1], vaccine.only=T)
+make_pairs_in_one (panels[2], vaccine.only=T)
+make_pairs_in_one (panels[3], vaccine.only=T)
+make_pairs_in_one (panels[4], vaccine.only=T)
+
 ```
 
 \clearpage
-```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap="Nasal IgA (top) and normalized nasal IgA (bottom). Left: IB-201P; right: IB-202P.",  results='asis'}
-a <- make_pairs (panels[1])
-a <- make_pairs (panels[2])
-```
 
-\clearpage
-```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap="Serum IgA (top) and serum IgG (bottom). Left: IB-201P; right: IB-202P."}
-a <- make_pairs (panels[3])
-a <- make_pairs (panels[4])
-```
-
-\clearpage
-
-# Pairs plots of Day 28 markers with the same assay type and different antigens in BPZE1_PBO/BPZE1 arms
-
-Some observations:
-
-\clearpage
-
-```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap="Nasal IgA (top) and normalized nasal IgA (bottom). Left: BPZE1 PBO, IB-201P; right: IB-202P, BPZE1.",  results='asis'}
-
-a <- make_pairs (panels[1], subset=T)
-
-a <- make_pairs (panels[2], subset=T)
-
-```
-
-\clearpage
-
-```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap="Serum IgA (top) and serum IgG (bottom). Left: BPZE1 PBO, IB-201P; right: IB-202P, BPZE1."}
-
-a <- make_pairs (panels[3], subset=T)
-
-a <- make_pairs (panels[4], subset=T)
-
-```
-
-\clearpage
-
-# Pairs plots of Day 28 markers with the same antigen and different assay types in BPZE1_PBO/BPZE1 arms
+# Correlation between assay types by antigen
 
 Some observations:
 
@@ -327,24 +314,47 @@ make_pairs2=function(a) {
   print(p2)
   
 }
+
+make_pairs2_in_one=function(a) {
+  tmp1 = dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO",glue("Day28{a}_{panels[2:4]}")]
+  tmp1 = tmp1[complete.cases(tmp1),]
+  
+  tmp2 = dat_proc_202[dat_proc_202$Trt=="BPZE1",glue("Day28{a}_{panels[2:4]}")]
+  tmp2 = tmp2[complete.cases(tmp2),]
+  
+  r = range(tmp1, tmp2, na.rm=T)
+  min_val = r[1]
+  max_val = r[2]
+  
+  custom_continuous <- function(data, mapping, ...) {
+    ggplot(data = data, mapping = mapping) +
+      geom_point() +
+      xlim(min_val, max_val) + ylim(min_val, max_val)  # adjust these limits as needed
+  }
+  
+  tmp=rbind(tmp1, tmp2)
+  tmp$col = factor(c(rep("201",nrow(tmp1)), rep("202", nrow(tmp2))))
+  
+  capture.output(p2 <- suppressWarnings(suppressMessages({  
+    ggpairs(tmp,
+      progress = FALSE,    # <--- stops the progress printing
+      aes(color = col), 
+      lower = list(continuous = custom_continuous)) + 
+    theme(
+      strip.text = element_text(size = 7)) +
+      scale_color_manual(values = c("black", "cyan"))
+  })))
+  p2
+}
+
 ```
 
-```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap=glue("{antigens[1]} (top) and {antigens[2]} (bottom). Left: IB-201P; right: IB-202P."),  results='asis'}
-make_pairs2 (antigens[1])
-make_pairs2 (antigens[2])
-```
-
-\clearpage
-
-```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap=glue("{antigens[1+2]} (top) and {antigens[2+2]} (bottom). Left: IB-201P; right: IB-202P."),  results='asis'}
-make_pairs2 (antigens[3])
-make_pairs2 (antigens[4])
-```
-
-\clearpage
-
-```{r fig.show='hold', fig.width=7, fig.height=7, out.width='49%', echo=F, fig.cap=glue("{antigens[5]}. Left: IB-201P; right: IB-202P."),  results='asis'}
-make_pairs2 (antigens[5])
+```{r fig.show='hold', fig.width=7.7, fig.height=7, echo=F,  results='asis'}
+make_pairs2_in_one (antigens[1])
+make_pairs2_in_one (antigens[2])
+make_pairs2_in_one (antigens[3])
+make_pairs2_in_one (antigens[4])
+make_pairs2_in_one (antigens[5])
 ```
 
 

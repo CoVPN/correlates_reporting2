@@ -1,0 +1,91 @@
+---
+title: "IB-202P DiproPerm Testing"
+author: Fred Hutch Team
+output: 
+  pdf_document:
+  number_sections: true
+---
+  
+```{r setup, include=FALSE}
+# remotes::install_github("elbamos/clusteringdatasets")
+# remotes::install_github("jiadongm/diproperm")
+# remotes::install_github("youyifong/kyotil")
+
+knitr::opts_chunk$set(echo = F)
+options(kableExtra.latex.table_environment="table")
+# knitr::opts_chunk$set(error = TRUE, message = TRUE, warning = TRUE) # for debug
+# knitr::opts_knit$set (progress = TRUE, verbose = TRUE) # for debug
+
+library(glue)
+library(diproperm)
+library(config)
+library(knitr)
+library(kableExtra)
+library(kyotil)
+
+```
+
+
+```{r overall test}
+
+file = config::get(config = "iliad_ib202p", file="~/correlates_reporting2/config.yml")$data_cleaned
+dat_proc_202=read.csv(file)
+dat_proc_202$Ptid = as.factor(dat_proc_202$Ptid) # need to make it a factor to use as id
+dat_proc_202$Trt = factor(dat_proc_202$Trt, levels = c("PBO","BPZE1")) 
+
+panels=c("Nasal_IgA",      "Norm_Nasal_IgA", "Serum_IgA",      "Serum_IgG")
+antigens=c("WCE", "FHA", "FIM", "PRN", "PT")
+
+assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/iliad_ib202p_assay_metadata.csv'))
+assays = assay_metadata$assay[1:20]
+
+
+set.seed(1) # this does not actually do the job of make diproperm results reproducible
+
+dat = subset(dat_proc_202, Trt == "BPZE1" & PPAI==1)
+m <- matrix(unlist(dat[c(glue("B{assays}"), glue("Day28{assays}"))]), nr=nrow(dat))
+out=DiProPerm (X=m, y=ifelse(dat$EventIndC9_11_14==1,1,-1), B=10000, classifier="md", univ.stat="md", cores=10) # classifier choice: md is extrememly fast; dwd is very slow
+print(out$pvalue)
+
+dat = subset(dat_proc_202, Trt == "PBO" & PPAI==1)
+m <- matrix(unlist(dat[c(glue("B{assays}"), glue("Day28{assays}"))]), nr=nrow(dat))
+out=DiProPerm (X=m, y=ifelse(dat$EventIndC9_11_14==1,1,-1), B=10000, classifier="md", univ.stat="md", cores=10) # classifier choice: md is extrememly fast; dwd is very slow
+print(out$pvalue)
+
+```
+
+
+
+```{r test by assay type}
+file = config::get(config = "iliad_ib202p", file="~/correlates_reporting2/config.yml")$data_cleaned
+dat_proc_202=read.csv(file)
+dat_proc_202$Ptid = as.factor(dat_proc_202$Ptid) # need to make it a factor to use as id
+dat_proc_202$Trt = factor(dat_proc_202$Trt, levels = c("PBO","BPZE1")) 
+
+panels=c("Nasal_IgA",      "Norm_Nasal_IgA", "Serum_IgA",      "Serum_IgG")
+antigens=c("WCE", "FHA", "FIM", "PRN", "PT")
+
+set.seed(1) # this does not actually do the job of make diproperm results reproducible
+
+dat = subset(dat_proc_202, Trt == "BPZE1" & PPAI==1)
+tab = mysapply(c("B", "Day28", "Delta28overB"), function (t) {
+  sapply(panels, function(p) {
+    m <- matrix(unlist(dat[,glue("{t}{antigens}_{p}")]), nc=5)
+    out=DiProPerm (X=m, y=ifelse(dat$EventIndC9_11_14==1,1,-1), B=10000, classifier="md", univ.stat="md", cores=10) # classifier choice: md is extrememly fast; dwd is very slow
+    out$pvalue
+  })
+})
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+
+dat = subset(dat_proc_202, Trt == "PBO" & PPAI==1)
+tab = mysapply(c("B", "Day28", "Delta28overB"), function (t) {
+  sapply(panels, function(p) {
+    m <- matrix(unlist(dat[,glue("{t}{antigens}_{p}")]), nc=5)
+    out=DiProPerm (X=m, y=ifelse(dat$EventIndC9_11_14==1,1,-1), B=10000, classifier="md", univ.stat="md", cores=10) # classifier choice: md is extrememly fast; dwd is very slow
+    out$pvalue
+  })
+})
+kable(tab, align="c", col.names=NULL)%>%  add_header_above(c("PPAI prim"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;")
+
+```
