@@ -6,18 +6,49 @@
 
 \## Usage
 
+#!/bin/bash
 
+for (( i =1; i<=3; i++)); do
+    for ((j=1; j<=3; j++)); do
+        for ((k=0;k<=3;k++)); do
+            sbatch  --wrap="R --no-save --no-restore < getinitial.R --args $i $j $k" --output=outScale.txt
+        done
+    done
+done
 
-1\. Run `getinitial.R` to generate initial values.  
+for (( i =1; i<=3; i++)); do
+    for ((j=1; j<=3; j++)); do
+        for ((k=0;k<=3;k++)); do
+            sbatch  --wrap="R --no-save --no-restore < estimated3_Scale_LRT2.R --args $i $j $k" --output=outScale.txt
+        done
+    done
+done
 
-2\. Run `Estimated3\_LRT2.R` to obtain point estimates.  
+for (( i =1; i<=3; i++)); do
+    for ((j=1; j<=3; j++)); do
+        for ((k=0;k<=3;k++)); do
+            for ((l=1;l<=500;l++));do
+                sbatch  --wrap="R --no-save --no-restore < estimated3_Scale_boot_LRT2.R --args $i $j $k $l" --output=outScale.txt
+            done
+        done
+    done
+done
 
-3\. Run `Estimated3boot\_LRT2.R` to obtain bootstrap estimates.  
+for (( i =1; i<=3; i++)); do
+    for ((j=1; j<=3; j++)); do
+        for ((k=0;k<=3;k++)); do
+            sbatch  --wrap="R --no-save --no-restore < ComputeSimVE_Scale.R --args $i $j $k" --output=outScale.txt
+        done
+    done
+done
 
-4\. Use `ComputeSimVE\_Scale.R` to compute vaccine efficacy from the results.  
-
-5\. Finally, run `PlotFig5Revision.R` to visualize the VE curves.
-
+for (( i =1; i<=3; i++)); do
+    for ((j=1; j<=3; j++)); do
+        for ((k=0;k<=3;k++)); do
+            sbatch  --wrap="R --no-save --no-restore < PlotFig5Revision.R --args $i $j $k" --output=outScale.txt
+        done
+    done
+done
 
 
 
