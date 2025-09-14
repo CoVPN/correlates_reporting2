@@ -31,9 +31,8 @@ excludeOutlierC<-function(x,coef){
  return(x.out)
 }
 
-setwd("~/COVPN_P3003")
 
-source(file="~/Pepe/RA/Functions/FunctionCall.R")
+source(file="FunctionCall.R")
 library(lme4)
 
 #setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/COVPN_P3003")
@@ -42,6 +41,10 @@ library(lme4)
 
 vv.endi<-"EventIndPrimaryIncludeNotMolecConfirmedD29_NoRegionCens" 
 vv.endt<-"EventTimePrimaryIncludeNotMolecConfirmedD29_NoRegionCens"
+
+library(config)
+config.reporting <- config::get(config = "janssen_pooled_partA", file="../config.yml") 
+dat<-read.csv(config.reporting$data_cleaned,na.strings=c("n/a","NA","N/A","","."))
 
 dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
 
@@ -612,5 +615,9 @@ make_dat_tveff = function(dat, slope = -0.0043) {
      
      }
     
+
+outdir <- "output/"
+if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
+    
 save(slope, fit1.v,fit2.v,fit3.v,fit12.v,fit13.v,fit23.v,fit123.v,fit1.vp,fit2.vp,fit3.vp,fit12.vp,fit13.vp,fit23.vp,
-fit123.vp,file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+fit123.vp,file=paste(output, "ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
