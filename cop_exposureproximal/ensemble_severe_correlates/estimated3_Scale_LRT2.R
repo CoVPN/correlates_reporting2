@@ -2,6 +2,9 @@
 ind.event<-as.integer(commandArgs(trailingOnly=T)[1])
 ind.marker<-as.integer(commandArgs(trailingOnly=T)[2])
 ind.region<-as.integer(commandArgs(trailingOnly=T)[3])
+
+# ind.event=1; ind.marker=1; ind.region=1
+
 library(WeMix)
 library(knitr)
 library(readr)
@@ -30,9 +33,9 @@ excludeOutlierC<-function(x,coef){
  return(x.out)
 }
 
-setwd("~/COVPN_P3003")
+# setwd("~/COVPN_P3003")
 
-source(file="~/Pepe/RA/Functions/FunctionCall.R")
+source(file="../FunctionCall.R")
 library(lme4)
 
 #setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/COVPN_P3003")
@@ -42,7 +45,10 @@ library(lme4)
 vv.endi<-"EventIndPrimaryIncludeNotMolecConfirmedD29_NoRegionCens" 
 vv.endt<-"EventTimePrimaryIncludeNotMolecConfirmedD29_NoRegionCens"
 
-dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
+# library(config)# don't call this because then merge becomes ambiguous
+config.reporting <- config::get(config = "janssen_pooled_partA", file="../config.yml") 
+dat<-read.csv(config.reporting$data_cleaned,na.strings=c("n/a","NA","N/A","","."))
+# dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
 
 vv.delta<-c("EventIndPrimaryIncludeNotMolecConfirmedD29","SevereEventIndPrimaryIncludeNotMolecConfirmedD29",
  "ModerateEventIndPrimaryIncludeNotMolecConfirmedD29")
@@ -423,13 +429,13 @@ weights=weight
   
 ######
 
-load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+load(file=paste("output/ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
 
   
   low=-10;up=10
   
   if (ind.region==3){
-  source(file="~/TND/code/May2021/MethodFund_forEnsemble3TieFull.R")
+  source(file="MethodFund_forEnsemble3TieFull.R")
 #  B1E=-.8;B2E=-.8;B3E=0
 #  parm1=B1E;parm2=B2E;parm3=B3E
  
@@ -464,7 +470,7 @@ load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,
 ##  
 #  fit23<-optim(c(B00,B2E,B3E,B4E,B5E,B6E),nloglik.M1.b.Cal.23)
 } else {
- source(file="~/TND/code/May2021/MethodFund_forEnsemble3STieFull.R")
+ source(file="MethodFund_forEnsemble3STieFull.R")
 #  B1E=-.8;B2E=-.8;B3E=0
 #  parm1=B1E;parm2=B2E;parm3=B3E
  
@@ -502,4 +508,4 @@ load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,
  save(X0.min,
  #fit1,fit2,fit3,fit12,fit13,fit23,
  fit2,
-file=paste("~/TND/Ensemble/Result/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+file=paste("output/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))

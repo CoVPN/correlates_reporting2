@@ -32,7 +32,7 @@ excludeOutlierC<-function(x,coef){
 }
 
 
-source(file="FunctionCall.R")
+source(file="../FunctionCall.R")
 library(lme4)
 
 #setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/COVPN_P3003")

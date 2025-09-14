@@ -1,7 +1,7 @@
 
-setwd("~/COVPN_P3003")
+# setwd("~/COVPN_P3003")
 
-source(file="~/Pepe/RA/Functions/FunctionCall.R")
+source(file="../FunctionCall.R")
 library(lme4)
 
 #setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/COVPN_P3003")
@@ -50,7 +50,7 @@ for (ind.region in 0:3){
 SS<-sort(unique(data[,vv.D29[ind.marker]]))
 
 
-load(file=paste("~/TND/Ensemble/Result/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+load(file=paste("output/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
 
 calVE.2<-function(beta0,beta2,x) {
  return(1-exp(beta0+beta2*x))
@@ -62,7 +62,7 @@ VE.SS<-calVE.2(fit2$par[1],fit2$par[2],SS-X0.min)
 out.VE.b<-NULL
 for (iter in 1:500){
 
-ff=try.error(load(file=paste("~/TND/Ensemble/Result/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,"_iter",iter,".Rdata",sep='')))
+ff=try.error(load(file=paste("output/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,"_iter",iter,".Rdata",sep='')))
 if (!inherits(ff,'try-error')){
  VE.SS.b<-calVE.2(fit2.b$par[1],fit2.b$par[2],SS-X0.min)
  out.VE.b<-rbind(out.VE.b,VE.SS.b)
@@ -71,9 +71,9 @@ if (!inherits(ff,'try-error')){
  print(c(ind.event,ind.marker,ind.region,iter))
  }
 }
-load(file=paste("~/TND/Ensemble/ResultVE/XEQ_Scale_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+load(file=paste("output/XEQ_Scale_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
 SS.max=q[3]
-save(SS,VE.SS,out.VE.b,SS.max,file=paste("~/TND/Ensemble/ResultVE/outVE_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+save(SS,VE.SS,out.VE.b,SS.max,file=paste("output/outVE_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
 rm(fit2,SS,VE.SS,SS.max)
 }
 }

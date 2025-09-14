@@ -33,22 +33,24 @@ excludeOutlierC<-function(x,coef){
  return(x.out)
 }
 
-setwd("~/COVPN_P3003")
+# setwd("~/COVPN_P3003")
 
-source(file="~/Pepe/RA/Functions/FunctionCall.R")
+source(file="../FunctionCall.R")
 library(lme4)
 
 #setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/COVPN_P3003")
 #source(file="../Pepe/RA/Functions/FunctionCall.R")
 
 
-ff=try.error(load(file=paste("~/TND/Ensemble/Result/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,"_iter",iter,".Rdata",sep='')))
+ff=try.error(load(file=paste("output/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,"_iter",iter,".Rdata",sep='')))
 if (inherits(ff,'try-error')){
 
 vv.endi<-"EventIndPrimaryIncludeNotMolecConfirmedD29_NoRegionCens" 
 vv.endt<-"EventTimePrimaryIncludeNotMolecConfirmedD29_NoRegionCens"
 
-dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
+config.reporting <- config::get(config = "janssen_pooled_partA", file="../config.yml") 
+dat<-read.csv(config.reporting$data_cleaned,na.strings=c("n/a","NA","N/A","","."))
+# dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
 
 vv.delta<-c("EventIndPrimaryIncludeNotMolecConfirmedD29","SevereEventIndPrimaryIncludeNotMolecConfirmedD29",
  "ModerateEventIndPrimaryIncludeNotMolecConfirmedD29")
@@ -526,6 +528,6 @@ load(file=paste("~/TND/Ensemble/Result/outd3_Scale_LRT2_event",ind.event,"_marke
  save(X0.min,
  #fit1,fit2,fit3,fit12,fit13,fit23,
  fit2.b,
-file=paste("~/TND/Ensemble/Result/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,"_iter",iter,".Rdata",sep=''))
+file=paste("output/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,"_iter",iter,".Rdata",sep=''))
 
 }
