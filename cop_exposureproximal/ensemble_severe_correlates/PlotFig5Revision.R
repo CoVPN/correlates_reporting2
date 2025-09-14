@@ -1,5 +1,5 @@
-setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/TND/Ensemble")
-source(file="../../Pepe/RA/Functions/FunctionCall.R")
+# setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/TND/Ensemble")
+source(file="../FunctionCall.R")
 
 
 transf=function(y) -log(1-y) 
@@ -42,7 +42,7 @@ for (ind.marker in c(3,1)){
 #SS.max<-SS.maxx[ind.marker]
 
 
-load(file=paste("ResultVE/outVE_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+load(file=paste("output/outVE_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
 
 
 SS.min<-min(SS)

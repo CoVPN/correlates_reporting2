@@ -2,6 +2,9 @@
 ind.event<-as.integer(commandArgs(trailingOnly=T)[1])
 ind.marker<-as.integer(commandArgs(trailingOnly=T)[2])
 ind.region<-as.integer(commandArgs(trailingOnly=T)[3])
+
+iter<-as.integer(commandArgs(trailingOnly=T)[4])
+
 library(WeMix)
 library(knitr)
 library(readr)
@@ -35,11 +38,16 @@ excludeOutlierC<-function(x,coef){
 source(file="../FunctionCall.R")
 library(lme4)
 
+#setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/COVPN_P3003")
+#source(file="../Pepe/RA/Functions/FunctionCall.R")
+
+
+ff=try.error(load(file=paste("output/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,"_iter",iter,".Rdata",sep='')))
+if (inherits(ff,'try-error')){
 
 vv.endi<-"EventIndPrimaryIncludeNotMolecConfirmedD29_NoRegionCens" 
 vv.endt<-"EventTimePrimaryIncludeNotMolecConfirmedD29_NoRegionCens"
 
-library(config)
 config.reporting <- config::get(config = "janssen_pooled_partA", file="../config.yml") 
 dat<-read.csv(config.reporting$data_cleaned,na.strings=c("n/a","NA","N/A","","."))
 # dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
@@ -139,6 +147,28 @@ data$Sex<-ifelse(data$Sex==2,0.5,data$Sex)
 
 
 data$weight<-ifelse(data$Trt==1,data$wt.D29,1)
+
+#########
+
+
+set.seed(iter)
+
+stratsizes = 
+    data %>% 
+    group_by(tps.stratum) %>% 
+    summarise(n = n(),
+              #events = sum(EventIndPrimaryD57),
+              .groups = "drop") 
+    
+stratinds = vector(mode = "list", length = nrow(stratsizes))
+for(s in seq_along(stratinds)) {
+    stratinds[[s]] = which(data$tps.stratum == stratsizes$tps.stratum[s])
+}
+data.boot = data[unlist(sapply(stratinds, function(x) sample(x, replace = T))),]
+
+### bootstrap
+data<-data.boot
+
 
 data$ID<-1:nrow(data)
 
@@ -244,12 +274,18 @@ datlong.2<-datlong[datlong$id%in%qq.id,]
 #sigma.e<-getME(fit,name=c("sigma"))
 
 
+fac0=length(unique(datlong[datlong$event==0,]$id))/length(unique(datlong.2[datlong.2$event==0,]$id))
+fac1=length(unique(datlong[datlong$event==1,]$id))/length(unique(datlong.2[datlong.2$event==1,]$id))
+
+datlong.2$weightScale<-ifelse(datlong.2$event==0,datlong.2$weight*fac0,datlong.2$weight*fac1)
 
 ### here account for sampling weight
 
 dd<-datlong.2[datlong.2$Z==1,]
 dd$W1<-1
-fit<-mix(X~time + Age+Sex + (1|id), data=dd,weights=c('W1','weight'),cWeights=TRUE)
+#fit<-mix(X~time + Age+Sex + (1|id), data=dd,weights=c('W1','weight'),cWeights=TRUE)
+fit<-mix(X~time + Age+Sex + (1|id), data=dd,weights=c('W1','weightScale'),cWeights=TRUE)
+
 #coef.fix<-fit$coef
 #coef.rd<-unlist(fit$varVC[2])
 #coef.rd<-matrix(coef.rd,byrow=2,nrow=2)
@@ -306,15 +342,6 @@ weight=data$weight
 ID<-data$ID
 #incoh<-corr_dat$Trt==1 & !is.na(corr_dat$Day57pseudoneutid50)
 incoh<-data$Trt==1 & data$ph2.D29 & !is.na(data[,vv.D29[ind.marker]])
-
-
-
-
-
-
-
-
-
 
 
 
@@ -399,6 +426,11 @@ weight.v=weight[oo.v]
 SE.uv<-sort(unique(SE.v[delta.v==1]))
 
   
+
+
+
+
+
 ### use those with XE(0)
 ### 
 
@@ -416,8 +448,9 @@ weights=weight
   
 ######
 
-load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
 
+#load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+load(file=paste("~/TND/Ensemble/Result/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
   
   low=-10;up=10
   
@@ -431,31 +464,31 @@ load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,
 #  fit123<-optim(c(B1E,B2E,B3E),nloglik.M1.a.Cal)
   
   ### fit a cox model with coefficient with x(0) only 
-#   B00=fit1.vp$coef[1]; B1E=fit1.vp$coef[2];parm2=0;parm3=0; B4E=fit1.vp$coef[3];B5E=fit1.vp$coef[4];B6E=fit1.vp$coef[5]
+ #  B00=fit1$par[1]; B1E=fit1$par[2];parm2=0;parm3=0; B4E=fit1$par[3];B5E=fit1$par[4];B6E=fit1$par[5]
 #
 # 
-# fit1<-optim(c(B00,B1E,B4E,B5E,B6E),nloglik.M1.b.Cal.1)
+# fit1.b<-optim(c(B00,B1E,B4E,B5E,B6E),nloglik.M1.b.Cal.1)
 #  
 #  ### etc
-  B00=fit2.vp$coef[1];parm1=0;B2E=fit2.vp$coef[2];parm3=0; B4E=fit2.vp$coef[3];B5E=fit2.vp$coef[4];B6E=fit2.vp$coef[5]
+  B00=fit2$par[1];parm1=0;B2E=fit2$par[2];parm3=0; B4E=fit2$par[3];B5E=fit2$par[4];B6E=fit2$par[5]
 #
-  fit2<-optim(c(B00,B2E,B4E,B5E,B6E),nloglik.M1.b.Cal.2)
+  fit2.b<-optim(c(B00,B2E,B4E,B5E,B6E),nloglik.M1.b.Cal.2)
 #  
-#  B00=fit3.vp$coef[1];parm1=0;parm2=0;B3E=fit3.vp$coef[2]; B4E=fit3.vp$coef[3];B5E=fit3.vp$coef[4];B6E=fit3.vp$coef[5]
+#  B00=fit3$par[1];parm1=0;parm2=0;B3E=fit3$par[2]; B4E=fit3$par[3];B5E=fit3$par[4];B6E=fit3$par[5]
 ##
-#  fit3<-optim(c(B00,B3E,B4E,B5E,B6E),nloglik.M1.b.Cal.3)
+#  fit3.b<-optim(c(B00,B3E,B4E,B5E,B6E),nloglik.M1.b.Cal.3)
 ##  
-#  B00=fit12.vp$coef[1]; B1E=fit12.vp$coef[2];B2E=fit12.vp$coef[3];parm3=0;B4E=fit12.vp$coef[4];B5E=fit12.vp$coef[5];B6E=fit12.vp$coef[6]
+#  B00=fit12$par[1];B1E=fit12$par[2];B2E=fit12$par[3];parm3=0;B4E=fit12$par[4];B5E=fit12$par[5];B6E=fit12$par[6]
 ##  
-#  fit12<-optim(c(B00,B1E,B2E,B4E,B5E,B6E),nloglik.M1.b.Cal.12)
+#  fit12.b<-optim(c(B00,B1E,B2E,B4E,B5E,B6E),nloglik.M1.b.Cal.12)
 ##  
-#  B00=fit13.vp$coef[1]; B1E=fit13.vp$coef[2];parm2=0; B3E=fit13.vp$coef[3];B4E=fit13.vp$coef[4];B5E=fit13.vp$coef[5];B6E=fit13.vp$coef[6]
+#  B00=fit13$par[1];B1E=fit13$par[2];parm2=0; B3E=fit13$par[3];B4E=fit13$par[4];B5E=fit13$par[5];B6E=fit13$par[6]
 ##  
-#  fit13<-optim(c(B00,B1E,B3E,B4E,B5E,B6E),nloglik.M1.b.Cal.13)
+#  fit13.b<-optim(c(B00,B1E,B3E,B4E,B5E,B6E),nloglik.M1.b.Cal.13)
 ##  
-#  B00=fit23.vp$coef[1];parm1=0; B2E=fit23.vp$coef[2];B3E=fit23.vp$coef[3];B4E=fit23.vp$coef[4];B5E=fit23.vp$coef[5];B6E=fit23.vp$coef[6]
+#  B00=fit23$par[1]; parm1=0; B2E=fit23$par[2];B3E=fit23$par[3];B4E=fit23$par[4];B5E=fit23$par[5];B6E=fit23$par[6]
 ##  
-#  fit23<-optim(c(B00,B2E,B3E,B4E,B5E,B6E),nloglik.M1.b.Cal.23)
+#  fit23.b<-optim(c(B00,B2E,B3E,B4E,B5E,B6E),nloglik.M1.b.Cal.23)
 } else {
  source(file="~/TND/code/May2021/MethodFund_forEnsemble3STieFull.R")
 #  B1E=-.8;B2E=-.8;B3E=0
@@ -463,40 +496,38 @@ load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,
  
   
   ### fit a cox model with coefficients with x(0),x(T), and T
-
-#  B00=fit1.vp$coef[1]; B1E=fit1.vp$coef[2];parm2=0;parm3=0; B4E=fit1.vp$coef[3];
+#  fit123<-optim(c(B1E,B2E,B3E),nloglik.M1.a.Cal)
+  
+   ### fit a cox model with coefficient with x(0) only 
+#   B00=fit1$par[1]; B1E=fit1$par[2];parm2=0;parm3=0; B4E=fit1$par[3];
 
  
- #fit1<-optim(c(B00,B1E,B4E),nloglik.M1.b.Cal.1)
+# fit1.b<-optim(c(B00,B1E,B4E),nloglik.M1.b.Cal.1)
 #  
 #  ### etc
-  B00=fit2.vp$coef[1];parm1=0;B2E=fit2.vp$coef[2];parm3=0; B4E=fit2.vp$coef[3];
+  B00=fit2$par[1];parm1=0;B2E=fit2$par[2];parm3=0; B4E=fit2$par[3];
+#
+  fit2.b<-optim(c(B00,B2E,B4E),nloglik.M1.b.Cal.2)
 #  
-  fit2<-optim(c(B00,B2E,B4E),nloglik.M1.b.Cal.2)
-#  
-#  B00=fit3.vp$coef[1];parm1=0;parm2=0;B3E=fit3.vp$coef[2]; B4E=fit3.vp$coef[3];
+#  B00=fit3$par[1];parm1=0;parm2=0;B3E=fit3$par[2]; B4E=fit3$par[3];
 ##
-#  fit3<-optim(c(B00,B3E,B4E),nloglik.M1.b.Cal.3)
+#  fit3.b<-optim(c(B00,B3E,B4E),nloglik.M1.b.Cal.3)
 ##  
-#  B00=fit12.vp$coef[1]; B1E=fit12.vp$coef[2];B2E=fit12.vp$coef[3];parm3=0;B4E=fit12.vp$coef[4];
+#  B00=fit12$par[1];B1E=fit12$par[2];B2E=fit12$par[3];parm3=0;B4E=fit12$par[4]
 ##  
-#  fit12<-optim(c(B00,B1E,B2E,B4E),nloglik.M1.b.Cal.12)
+#  fit12.b<-optim(c(B00,B1E,B2E,B4E),nloglik.M1.b.Cal.12)
 ##  
-#  B00=fit13.vp$coef[1]; B1E=fit13.vp$coef[2];parm2=0; B3E=fit13.vp$coef[3];B4E=fit13.vp$coef[4];
+#  B00=fit13$par[1];B1E=fit13$par[2];parm2=0; B3E=fit13$par[3];B4E=fit13$par[4]
+##
+#  fit13.b<-optim(c(B00,B1E,B3E,B4E),nloglik.M1.b.Cal.13)
 ##  
-#  fit13<-optim(c(B00,B1E,B3E,B4E),nloglik.M1.b.Cal.13)
+#  B00=fit23$par[1]; parm1=0; B2E=fit23$par[2];B3E=fit23$par[3];B4E=fit23$par[4]
 ##  
-#  B00=fit23.vp$coef[1];parm1=0; B2E=fit23.vp$coef[2];B3E=fit23.vp$coef[3];B4E=fit23.vp$coef[4];
-##  
-#  fit23<-optim(c(B00,B2E,B3E,B4E),nloglik.M1.b.Cal.23)
-###  
+#  fit23.b<-optim(c(B00,B2E,B3E,B4E),nloglik.M1.b.Cal.23)
+}
+ save(X0.min,
+ #fit1,fit2,fit3,fit12,fit13,fit23,
+ fit2.b,
+file=paste("output/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,"_iter",iter,".Rdata",sep=''))
 
 }
-  
-outdir <- "output/"
-if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
-  
-save(X0.min,
- #fit1,fit2,fit3,fit12,fit13,fit23,
- fit2,
-file=paste(outdir, "outd3_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))

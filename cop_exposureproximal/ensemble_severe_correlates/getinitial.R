@@ -32,7 +32,7 @@ excludeOutlierC<-function(x,coef){
 }
 
 
-source(file="FunctionCall.R")
+source(file="../FunctionCall.R")
 library(lme4)
 
 #setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/COVPN_P3003")
@@ -46,7 +46,7 @@ library(config)
 config.reporting <- config::get(config = "janssen_pooled_partA", file="../config.yml") 
 dat<-read.csv(config.reporting$data_cleaned,na.strings=c("n/a","NA","N/A","","."))
 
-dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
+# dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
 
 vv.delta<-c("EventIndPrimaryIncludeNotMolecConfirmedD29","SevereEventIndPrimaryIncludeNotMolecConfirmedD29",
  "ModerateEventIndPrimaryIncludeNotMolecConfirmedD29")
@@ -620,4 +620,4 @@ outdir <- "output/"
 if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
     
 save(slope, fit1.v,fit2.v,fit3.v,fit12.v,fit13.v,fit23.v,fit123.v,fit1.vp,fit2.vp,fit3.vp,fit12.vp,fit13.vp,fit23.vp,
-fit123.vp,file=paste(output, "ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+fit123.vp,file=paste(outdir, "ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))

@@ -2,6 +2,9 @@
 ind.event<-as.integer(commandArgs(trailingOnly=T)[1])
 ind.marker<-as.integer(commandArgs(trailingOnly=T)[2])
 ind.region<-as.integer(commandArgs(trailingOnly=T)[3])
+
+# ind.event=1; ind.marker=1; ind.region=1
+
 library(WeMix)
 library(knitr)
 library(readr)
@@ -35,11 +38,14 @@ excludeOutlierC<-function(x,coef){
 source(file="../FunctionCall.R")
 library(lme4)
 
+#setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/COVPN_P3003")
+#source(file="../Pepe/RA/Functions/FunctionCall.R")
+
 
 vv.endi<-"EventIndPrimaryIncludeNotMolecConfirmedD29_NoRegionCens" 
 vv.endt<-"EventTimePrimaryIncludeNotMolecConfirmedD29_NoRegionCens"
 
-library(config)
+# library(config)# don't call this because then merge becomes ambiguous
 config.reporting <- config::get(config = "janssen_pooled_partA", file="../config.yml") 
 dat<-read.csv(config.reporting$data_cleaned,na.strings=c("n/a","NA","N/A","","."))
 # dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
@@ -243,13 +249,20 @@ datlong.2<-datlong[datlong$id%in%qq.id,]
 #coef.rd<-matrix(coef.rd,byrow=T,nrow=2)
 #sigma.e<-getME(fit,name=c("sigma"))
 
+fac0=length(unique(datlong[datlong$event==0,]$id))/length(unique(datlong.2[datlong.2$event==0,]$id))
+fac1=length(unique(datlong[datlong$event==1,]$id))/length(unique(datlong.2[datlong.2$event==1,]$id))
+
+datlong.2$weightScale<-ifelse(datlong.2$event==0,datlong.2$weight*fac0,datlong.2$weight*fac1)
+#
 
 
 ### here account for sampling weight
 
 dd<-datlong.2[datlong.2$Z==1,]
 dd$W1<-1
-fit<-mix(X~time + Age+Sex + (1|id), data=dd,weights=c('W1','weight'),cWeights=TRUE)
+#fit<-mix(X~time + Age+Sex + (1|id), data=dd,weights=c('W1','weight'),cWeights=TRUE)
+fit<-mix(X~time + Age+Sex + (1|id), data=dd,weights=c('W1','weightScale'),cWeights=TRUE)
+
 #coef.fix<-fit$coef
 #coef.rd<-unlist(fit$varVC[2])
 #coef.rd<-matrix(coef.rd,byrow=2,nrow=2)
@@ -416,13 +429,13 @@ weights=weight
   
 ######
 
-load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+load(file=paste("output/ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
 
   
   low=-10;up=10
   
   if (ind.region==3){
-  source(file="~/TND/code/May2021/MethodFund_forEnsemble3TieFull.R")
+  source(file="MethodFund_forEnsemble3TieFull.R")
 #  B1E=-.8;B2E=-.8;B3E=0
 #  parm1=B1E;parm2=B2E;parm3=B3E
  
@@ -457,7 +470,7 @@ load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,
 ##  
 #  fit23<-optim(c(B00,B2E,B3E,B4E,B5E,B6E),nloglik.M1.b.Cal.23)
 } else {
- source(file="~/TND/code/May2021/MethodFund_forEnsemble3STieFull.R")
+ source(file="MethodFund_forEnsemble3STieFull.R")
 #  B1E=-.8;B2E=-.8;B3E=0
 #  parm1=B1E;parm2=B2E;parm3=B3E
  
@@ -492,11 +505,7 @@ load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,
 ###  
 
 }
-  
-outdir <- "output/"
-if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
-  
-save(X0.min,
+ save(X0.min,
  #fit1,fit2,fit3,fit12,fit13,fit23,
  fit2,
-file=paste(outdir, "outd3_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+file=paste("output/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
