@@ -52,16 +52,14 @@ The dataset corresponding to janssen_pooled_partA can be found in the config.yml
 
 
 
-## Collaboration Guide
+## Collaboration Guide for Investigators Contributing Modules
 
-* Getting started: see our [contribution
-   guidelines](https://github.com/CoVPN/correlates_reporting2/blob/master/CONTRIBUTING.md).
-* [Code style guide](https://style.tidyverse.org/), with some modifications;
-  this will largely be enforcd with [`styler`](https://styler.r-lib.org/).
-* Project organization: _mostly_ independent subdirectories, each incorporating
-  [`here`](https://here.r-lib.org/) for path resolution.
-* Package version control and virtual environments using
+* Portability: A Portable module is self-contained in the sense that external file/directory dependencies are mininmal. For example, if the code reads a data file, the location of the data file is either in a config file (through the R config package and config.yml) or in a single place in an R script in the whole module. One should be able to download the code to a new location and change the data file location and run it. Consider using [`here`](https://here.r-lib.org/) to help achieve protability.
+
+* R system and package version control using
   [`renv`](https://rstudio.github.io/renv/).
+
+
 
 
 ---
