@@ -52,14 +52,15 @@ The dataset corresponding to janssen_pooled_partA can be found in the config.yml
 
 
 
-## Collaboration Guide for Investigators Contributing Modules
+## Reproducibility Guide for Investigators Contributing Modules
 
-* Portability: A Portable module is self-contained in the sense that external file/directory dependencies are mininmal. For example, if the code reads a data file, the location of the data file is either in a config file (through the R config package and config.yml) or in a single place in an R script in the whole module. One should be able to download the code to a new location and change the data file location and run it. Consider using [`here`](https://here.r-lib.org/) to help achieve protability.
+* Portability: One should be able to move the code to a new location and run it. Consider using [`here`](https://here.r-lib.org/) to help achieve protability.
 
-* R system and package version control using
-  [`renv`](https://rstudio.github.io/renv/).
+* The location of the analysis data file should be in a single place in the whole module, most typically in a config.yml file (used through the R config package).
 
+* The versions of R and packages used should be managed with [`renv`](https://rstudio.github.io/renv/).
 
+* Either a Makefile or a bash script should be included so that the analyses and report generation can be run with a single command. 
 
 
 ---
