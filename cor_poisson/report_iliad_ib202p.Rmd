@@ -2,7 +2,7 @@
 
 show.q=F
 
-for (COR in c("C0iliad_ib202p", "C0iliad_C14only_ib202p")) {
+for (COR in c("C0iliad_ib202p", "C0iliad_ib202p_C14only", "C0iliad_ib202p_PPAI", "C0iliad_ib202p_PPAI_C14only")) {
 
   assays1 = assays
   
@@ -19,8 +19,12 @@ for (COR in c("C0iliad_ib202p", "C0iliad_C14only_ib202p")) {
   
   if (COR=="C0iliad_ib202p") {
     cat("# Univariate CoR: Poisson Regression Models \n")
-  } else {
+  } else if (COR=="C0iliad_ib202p_C14only") {
     cat("# Univariate CoR for the C14 only endpoint: Poisson Regression Models \n")
+  } else if (COR=="C0iliad_ib202p_PPAI") {
+    cat("# Univariate CoR for the PPAI cohort: Poisson Regression Models \n")
+  } else if (COR=="C0iliad_ib202p_PPAI_C14only") {
+    cat("# Univariate CoR for the PPAI cohort and the C14 only endpoint: Poisson Regression Models \n")
   }
     
   cat("\\clearpage \n")
