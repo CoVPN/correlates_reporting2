@@ -6,6 +6,7 @@ To generate covpn_correlates_cor_graphical_iliad_ib202p.pdf for COR = C0iliad_ib
 ```{bash}
 export TRIAL=iliad_ib202p
 cd cor_graphical
+make
 make report
 ```
 
@@ -13,6 +14,7 @@ To generate covpn_correlates_cor_graphical_iliad_ib202p.pdf for COR = C0iliad_ib
 ```{bash}
 export TRIAL=iliad_ib202p
 cd cor_graphical
+make
 make report
 ```
 
@@ -20,6 +22,7 @@ To generate covpn_correlates_cor_graphical_iliad_ib202p.pdf for COR = C0iliad_ib
 ```{bash}
 export TRIAL=iliad_ib202p
 cd cor_graphical
+make
 make report
 ```
 
@@ -27,5 +30,6 @@ To generate covpn_correlates_cor_graphical_iliad_ib202p.pdf for COR = C0iliad_ib
 ```{bash}
 export TRIAL=iliad_ib202p
 cd cor_graphical
+make
 make report
 ```
