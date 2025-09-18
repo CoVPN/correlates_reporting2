@@ -8,8 +8,8 @@ output:
   
 ```{r setup, include=FALSE}
 # remotes::install_github("elbamos/clusteringdatasets")
-# remotes::install_github("jiadongm/diproperm")
 # remotes::install_github("youyifong/kyotil")
+# renv::install("youyifong/diproperm")
 
 knitr::opts_chunk$set(echo = F)
 options(kableExtra.latex.table_environment="table")
@@ -39,8 +39,6 @@ antigens=c("WCE", "FHA", "FIM", "PRN", "PT")
 assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/iliad_ib202p_assay_metadata.csv'))
 assays = assay_metadata$assay[1:20]
 
-
-set.seed(1) # this does not actually do the job of make diproperm results reproducible
 
 dat = subset(dat_proc_202, Trt == "BPZE1" & PPAI==1)
 m <- matrix(unlist(dat[c(glue("B{assays}"), glue("Day28{assays}"))]), nr=nrow(dat))
