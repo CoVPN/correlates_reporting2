@@ -24,8 +24,8 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
 	Rscript code/cor_graphics_all.R D31toM12_nextgen_mock_sera
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), iliad_ib202p))
-	Rscript code/cor_data_preprocess.R C0iliad_ib202p # Yiwen's #C0iliad_ib202p_C14only C0iliad_ib202p_PPAI C0iliad_ib202p_PPAI_C14only
-	Rscript code/cor_graphics_all.R C0iliad_ib202p
+	Rscript code/cor_data_preprocess.R C0iliad_ib202p_PPAI_C14only # Yiwen's #change report line 91 as well: C0iliad_ib202p C0iliad_ib202p_C14only C0iliad_ib202p_PPAI C0iliad_ib202p_PPAI_C14only
+	Rscript code/cor_graphics_all.R C0iliad_ib202p_PPAI_C14only # Yiwen's #change report line 91 as well: C0iliad_ib202p C0iliad_ib202p_C14only C0iliad_ib202p_PPAI C0iliad_ib202p_PPAI_C14only
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
 	Rscript code/cor_data_preprocess.R D35prevent19_stage2_delta # Yiwen's

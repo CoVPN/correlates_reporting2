@@ -88,7 +88,7 @@ if (study_name == "NextGen_Mock") {
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
   if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage2")
   if (study_name=="NextGen_Mock") COR_postfix_list <- c("D31toM12_nextgen_mock_sera")
-  if (study_name=="ILIAD_IB202P") COR_postfix_list <- c("C0iliad_ib202p")
+  if (study_name=="ILIAD_IB202P") COR_postfix_list <- c("C0iliad_ib202p_PPAI_C14only")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
