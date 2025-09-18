@@ -13,5 +13,4 @@ cd cor_poisson
 Rscript -e "rmarkdown::render('code/comparative_immunogenicity.Rmd')"
 Rscript -e "rmarkdown::render('code/diproperm_run.Rmd')"
 Rscript -e "rmarkdown::render('code/posthoc_analyses.Rmd')"
-
 ```
