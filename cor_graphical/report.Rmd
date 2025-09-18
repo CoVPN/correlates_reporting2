@@ -4,7 +4,7 @@ output:
   html_document: default
 ---
 #  Graphical Descriptions of Antibody Marker Data {#ab-grapical}
-
+\clearpage
 ```{r, echo=FALSE, message=FALSE}
 message("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ running cor_graphical report ~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 ```
@@ -17,31 +17,50 @@ library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
 
 
-if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302", "COVAIL")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
+if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302", "COVAIL", "NextGen_Mock", "ILIAD_IB202P")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
 
 # called in report_violin etc
-bsero <- ifelse(study_name=="IARCHPV", "", "BaselineNeg")
+bsero <- ifelse(study_name %in% c("IARCHPV", "ILIAD_IB202P"), "", "BaselineNeg")
 bseroLabel <- ifelse(bsero=="BaselinePos", "baseline positive", 
                      ifelse(bsero=="BaselineNeg", "baseline negative", ""))
 
 # temporary setting due to unknown reason for assays including bAb for id27hpvnAb
 if (attr(config,"config")=="id27hpvnAb") {assays = assays[!grepl("bind", assays)]}
-if (attr(config,"config") %in% c("prevent19_stage2","prevent19nvx")) {
-  times = c("Day35")
-  time_labels = c("Day 35")
-}
-if (attr(config,"config")=="azd1222_stage2") {
-  times = c("Day57","Day90","Day180","Day360")
-  time_labels = c("Day 57", "Day 90","Day 180","Day 360")
-}
 
-tps_no_delta_over_tinterm <-  times[!times %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
+if(attr(config,"config")=="janssen_pooled_partA") {
+  times_ = c("B","Day29","Day71","Mon6")
+  labels.time = c("Day 1","Day 29", "Day 71", "Month 6"); names(labels.time) = times_
+} else if (attr(config,"config")=="prevent19_stage2") {
+  times_ = c("Day35","C1","BD1","DD1")
+  labels.time = c("Day 35", "Crossover Day 1", "Booster Day 1", "Disease Day 1"); names(labels.time) = times_
+} else if (attr(config,"config")=="azd1222_stage2") {
+  times_ = c("Day57","Day90","Day180","Day360")
+  labels.time = c("Day 57","Day 90", "Day 180", "Day 360"); names(labels.time) = times_
+} else if (attr(config,"config")=="nextgen_mock") {
+  times_ = c("B", "Day31", "Delta31overB", "Day91", "Day181", "Day366")
+  labels.time = c("D01","D31", "D31 fold-rise over D01", "D91", "D181", "D366"); names(labels.time) = times_
+} else if (attr(config,"config") %in% c("prevent19_stage2","prevent19nvx")) {
+  times_ = c("Day35")
+  labels.time = c("Day 35")
+} else if (attr(config,"config")=="azd1222_stage2") {
+  times_ = c("Day57","Day90","Day180","Day360")
+  labels.time = c("Day 57", "Day 90","Day 180","Day 360")
+} else {times_ = times 
+} 
+
+tps_no_delta_over_tinterm <-  times_[!times_ %in% c(paste0("Delta",timepoints[length(timepoints)],"over",timepoints[1]))] #c("B", "Day29", "Delta29overB", "Day57", "Delta57overB")
 tps_no_delta_over_tinterm_lb <- if(attr(config,"config")=="vat08_combined") {c("Day 1_n","Day 1_nn", "Day 22_n", "Day 22_nn", "Day 43_n", "Day 43_nn", "D22 fold-rise over D1_n", "D22 fold-rise over D1_nn", "D43 fold-rise over D1_n", "D43 fold-rise over D1_nn")
-  } else {time_labels[! grepl(paste0("over D",timepoints[1]),  time_labels)]}
-tps_no_fold_change <- times[!grepl("Delta", times)]
-tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
+  } else {labels.time[! grepl(paste0("over D",timepoints[1]),  labels.time)]}
+tps_no_fold_change <- times_[!grepl("Delta", times_)]
+tps_no_B_and_fold_change <- times_[!grepl("Delta", times_) & times_!="B"]
+
+if (study_name == "NextGen_Mock") {
+    assays = assays[!grepl("nasal|saliva|T4|T8", assays)]
+    assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|T4|T8", assay))
+    nextgen_output_flag = 1 # options: 3 (whole_report)  1 (BARDA_TLF)
+} else (nextgen_output_flag = 999)
 
 #if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name), '.Rmd')))) {
   
@@ -68,6 +87,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
   if (attr(config,"config") == "nvx_uk302") COR_postfix_list <- c("D35nvx_uk302")
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
   if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage2")
+  if (study_name=="NextGen_Mock") COR_postfix_list <- c("D31toM12_nextgen_mock_sera")
+  if (study_name=="ILIAD_IB202P") COR_postfix_list <- c("C0iliad_ib202p")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
     
@@ -120,7 +141,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       }
     }
     
-  } else if (study_name == "VAT08" | attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","nvx_uk302","prevent19nvx")){
+  } else if (study_name == "VAT08" | attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","nvx_uk302","prevent19nvx", "nextgen_mock", "iliad_ib202p")){
     
     for (COR_postfix in COR_postfix_list){
         
@@ -142,17 +163,38 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                     )
       
       # SET 1
-      for (a in c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")){
+cat("\\Large \\textbf{Violin plots by case status}\n\n")
+cat("\\clearpage", sep = '\n')
+      
+      for (a in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == "NextGen_Mock") {c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("IgA", assays)])
+        } else {c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")}){
              
         if ((grepl("nab", COR_postfix) & !grepl("pseudoneutid50", a)) | (grepl("bab", COR_postfix) & !grepl("bindSpike", a))) next # for AZ stage 2
         if (a == "pseudoneutid50" & attr(config,"config") %in% c("nvx_uk302","prevent19nvx")) next # no id50 for nvx_uk302, prevent19nvx
     
-        for (tp in tps_no_delta_over_tinterm_lb){
+        for (tp in if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {tps_no_delta_over_tinterm_lb[1:3]} else {tps_no_delta_over_tinterm_lb}){
           
           if(attr(config,"config")=="azd1222_stage2" & tp=="Day 360") next # do not have this for azd1222_stage2
           
           tpLabel = gsub("_n", " naive", gsub("_nn", " non naive", tolower(tp)))
+          if (study_name == "NextGen_Mock") {
+            tpLabel = case_when(tp == "Day 1" ~ "D01",
+                                tp == "Day 31" ~ "D31",
+                                tp == "D31 fold-rise over D1" ~ "fold-change (D31/D01)",
+                                TRUE ~ tpLabel)
+          }
           aLabel = gsub("_sub_stage2", " subset", a)
+          if (study_name == "NextGen_Mock") {
+            aLabel = paste0(
+              gsub("Serum Binding IgG Antibody to ", "bAb-IgG ", 
+                          gsub("Serum neutralization to |Serum neutralization ", "nAb ID50 ", 
+                              gsub("Spike D614", "Spike Index", labels.assays[a]))),
+              ifelse(grepl("bind", a), " concentrations", ""))
+          } else {aLabel = labels.assays[a]}
+          
+          specimen_type <- paste0("based on ", ifelse(grepl("sera", a), "sera", ifelse(grepl("nasal", a), "nasal fluid", ifelse(grepl("saliva", a), "saliva", "PBMC"))))
+          cohort_name <- paste0("(ccIAS-", ifelse(grepl("sera", a), "sera", ifelse(grepl("nasal", a), "nasal fluid", ifelse(grepl("saliva", a), "saliva", "PBMC"))), "). ")
+                    
           res = knitr::knit_child(c(here::here('cor_graphical', 'report_set1.Rmd')), quiet = TRUE)
           cat(res, sep = '\n')
           cat("\\clearpage", sep = '\n')
@@ -208,8 +250,11 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       }
       
       if (attr(config,"config") == "nvx_uk302") next # break the loop for nvx_uk302
-      
+
       # SET 2
+cat("\\Large \\textbf{Longitudinal plots}\n\n")
+cat("\\clearpage", sep = '\n')
+      
       assay_grp_list = if(attr(config,"config")=="vat08_combined"){
         c(paste0(assays[!assays=="bindSpike_mdw"][1:2], collapse="_"),
                           paste0(assays[!assays=="bindSpike_mdw"][3:4], collapse="_"), 
@@ -219,28 +264,55 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
                           paste0(assays[!assays=="bindSpike_mdw"][9:10], collapse="_"),
                           paste0(assays[!assays=="bindSpike_mdw"][11:12], collapse="_"),
                           paste0(assays[!assays=="bindSpike_mdw"][13:14], collapse="_")
-        )} else if (attr(config,"config")=="prevent19_stage2"){
+        )} else if (attr(config,"config") == "iliad_ib202p") {
+          c(paste0(assays[1:2], collapse="_"), paste0(assays[3:4], collapse="_"),
+            paste0(assays[5:6], collapse="_"), paste0(assays[7:8], collapse="_"),
+            paste0(assays[9:10], collapse="_"), paste0(assays[11:12], collapse="_"),
+            paste0(assays[13:14], collapse="_"), paste0(assays[15:16], collapse="_"),
+            paste0(assays[17:18], collapse="_"), paste0(assays[19:20], collapse="_"),
+            paste0(assays[21:22], collapse="_")
+            )
+        } else if (attr(config,"config")=="prevent19_stage2"){
           c("pseudoneutid50_D614G_pseudoneutid50_Delta","bindSpike_D614_bindSpike_Delta1")
         } else if (grepl("bab", COR_postfix)){ # for azd1222_stage2
           assays[grepl("bindSpike", assays)]
         } else if (grepl("nab", COR_postfix)){ # for azd1222_stage2
           assays[grepl("pseudoneutid50", assays)]
+        } else if (study_name == "NextGen_Mock") {
+          c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("mdw", assays)])
         } else {assays}
       
       for (version in c("", if (COR_postfix_list == "D22D43omi_stage2") "_v2")){
         for (assay_grp in assay_grp_list){
+          for (tm in c(if(attr(config, "config") == "nextgen_mock" & nextgen_output_flag == 3) "Day initial", "Day whole")){
+            for (case_type in c("default", if (attr(config, "config") == "nextgen_mock" & nextgen_output_flag == 3) c("proximal", "distal"))){
             
-            if (attr(config,"config") == "prevent19nvx") next # no need for prevent19nvx
-          
-            res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
-            cat(res, sep = '\n')
-            cat("\\clearpage", sep = '\n')
+              if (attr(config,"config") == "prevent19nvx") next # no need for prevent19nvx
+    
+              aLabel = paste0(
+                  gsub("Serum Binding IgG Antibody to ", "bAb-IgG ", 
+                              gsub("Serum neutralization to |Serum neutralization ", "nAb ID50 ", 
+                                  gsub("Spike D614", "Spike Index", labels.assays[assay_grp]))),
+                  ifelse(grepl("bind", assay_grp), " concentrations", ""))
+              
+              specimen_type <- paste0("based on ", ifelse(grepl("sera", assay_grp), "sera", ifelse(grepl("nasal", assay_grp), "nasal fluid", ifelse(grepl("saliva", assay_grp), "saliva", "PBMC"))))
+              cohort_name <- paste0("(ccIAS-", ifelse(grepl("sera", assay_grp), "sera", ifelse(grepl("nasal", assay_grp), "nasal fluid", ifelse(grepl("saliva", assay_grp), "saliva", "PBMC"))), "). ")
+            
+              res = knitr::knit_child(c(here::here('cor_graphical', 'report_set2.Rmd')), quiet = TRUE)
+              cat(res, sep = '\n')
+              cat("\\clearpage", sep = '\n')
+            }
+          }
             
         }
       }
       
+      if (attr(config,"config") == "nextgen_mock") next # break the loop for nextgen_mock
       
       # SET 3
+cat("\\Large \\textbf{Correlation plots across assays}\n\n")
+cat("\\clearpage", sep = '\n')
+      
       if (COR=="D57azd1222_stage2_delta_bAb") {
         # adhoc figure
         res = knitr::knit_child(c(here::here('cor_graphical', 'report_set3_az_adhoc.Rmd')), quiet = TRUE)
@@ -250,8 +322,9 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       
       for (bsero in c("non_naive")){
         if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","prevent19nvx")) next # prevent19_stage2, azd1222_stage2, prevent19nvx don't have non_naive
+        if (attr(config,"config") == "iliad_ib202p") bsero = ""
         
-          for (trt in c("vac_pla")){
+          for (trt in if (attr(config,"config") == "iliad_ib202p") {c("vac", "pla")} else c("vac_pla")){
               
               for (tp in if(attr(config,"config")=="vat08_combined") {tps_no_delta_over_tinterm} else {tps_no_fold_change}){
                 
@@ -271,6 +344,8 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       }
       
       for (bsero in c("naive")){
+        
+        if (attr(config,"config") == "iliad_ib202p") next
           
           for (trt in c("vac")){
               
@@ -305,6 +380,9 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
       if (attr(config,"config") == "prevent19nvx") next # break the loop for prevent19nvx
       
       # SET 4
+cat("\\Large \\textbf{Correlation plots across timepoints}\n\n")
+cat("\\clearpage", sep = '\n')
+
       for (a in assays){
           
           if ((grepl("nab", COR_postfix) & !grepl("pseudoneutid50", a)) | (grepl("bab", COR_postfix) & !grepl("bindSpike", a)) ) next # for AZ stage 2
@@ -371,7 +449,7 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
     }
     }
 
-## Set 3: Correlation plots across markers at a given time point #############
+  ## Set 3: Correlation plots across markers at a given time point #############
   for (time in set2_times) {
     for (strain in c("6_markers")){
       for (group in set1_group_2){
@@ -382,13 +460,13 @@ tps_no_B_and_fold_change <- times[!grepl("Delta", times) & times!="B"]
     }
     }
 
-## Set 4: Correlation plots for a given marker across time points #############
-for (assay in assays) {
-  for (group in set1_group_2){
-      res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub4.Rmd')), quiet = TRUE)
-      cat(res, sep = '\n')
-      cat("\\clearpage", sep = '\n')
-  }
+  ## Set 4: Correlation plots for a given marker across time points #############
+  for (assay in assays) {
+    for (group in set1_group_2){
+        res = knitr::knit_child(c(here::here('cor_graphical', 'report_sub4.Rmd')), quiet = TRUE)
+        cat(res, sep = '\n')
+        cat("\\clearpage", sep = '\n')
+    }
   }
 
 } else { # for all other studies but config: janssen_partA_VL and COR: D29variant
