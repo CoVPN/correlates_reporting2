@@ -1,9 +1,3 @@
-#!/bin/bash
-rm(list=ls())
-
-#-----------------
-#  library
-#-----------------
 library(pheatmap)
 library(RColorBrewer)
 library(stringr)
@@ -13,27 +7,15 @@ library(tidyr)
 # for gather/spread
 # library(pdf_bookmark)
 
-source("Rfunc/figure_correlation.R")
-source("Rfunc/figure_clustering.R")
+source("code/Rfunc/figure_correlation.R")
+source("code/Rfunc/figure_clustering.R")
 
-#-----------------
-#  paths
-#-----------------
-# path for processing code
-dir <- "C:/Users/yjin2/OneDrive - Fred Hutch Cancer Center/Research/iliad/"
+config.reporting <- config::get(config = "iliad_ib202p", file="../config.yml") 
+dat_202_<-read.csv(config.reporting$data_cleaned,na.strings=c("n/a","NA","N/A","","."))
 
-# path for data (on T:/ drive)
-dir_read <- "T:/iliad/"
+config.reporting <- config::get(config = "iliad_ib201p", file="../config.yml") 
+dat_201_<-read.csv(config.reporting$data_cleaned,na.strings=c("n/a","NA","N/A","","."))
 
-
-
-#-----------------
-#  raw data (201 & 202)
-#-----------------
-# read processed data (after imputation) --- 14040 obs. * 565 cols
-# dat_201_ <- read.csv(file = paste0(dir_read, "ib_201p/analysis/correlates/adata/iliad_ib201p_data_processed_20250730.csv"))
-dat_201_ <- read.csv(file = paste0(dir_read, "ib_201p/analysis/correlates/adata/iliad_ib201p_data_processed_20250821.csv"))
-dat_202_ <- read.csv(file = paste0(dir_read, "ib_202p/analysis/correlates/adata/iliad_ib202p_data_processed_20250730.csv"))
 
 # Trial 201: filter features and markers of interests (339 * 46)
 dat_201 <- dat_201_ %>% 
@@ -66,8 +48,8 @@ dat_202 <- dat_202_ %>%
          BFHA_Nasal_IgA: Day28WCE_Serum_IgG)
 
 
-
-
+# output
+dir="output/"
 
 ################################
 #

@@ -1596,6 +1596,13 @@
       "Repository": "CRAN",
       "Hash": "b304ff5955f37b48bd30518faf582929"
     },
+    "pheatmap": {
+      "Package": "pheatmap",
+      "Version": "1.0.13",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "30e5b56762942d319561e5ebaab69c74"
+    },
     "pillar": {
       "Package": "pillar",
       "Version": "1.9.0",

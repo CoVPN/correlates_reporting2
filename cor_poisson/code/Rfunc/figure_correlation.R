@@ -8,6 +8,8 @@
 #' @return A heatmap of correlation.
 #' 
 
+library(pheatmap)
+
 cor_pheatmap <- function(
     dat_plot, 
     main, 
