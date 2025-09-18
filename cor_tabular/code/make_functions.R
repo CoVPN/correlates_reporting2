@@ -50,8 +50,9 @@ getResponder <- function(data,
         }
         
       }
-      
-      if((grepl("bind|ACE", j) | COR == "D29VLvariant" | grepl("stage2", COR)) & attr(config,"config")!="vat08_combined"){
+
+      if((grepl("bind|ACE", j) | COR == "D29VLvariant" | grepl("stage2", COR) | grepl("frnt", COR)) & 
+         attr(config,"config")!="vat08_combined"){
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(cutoff))
       } else {
       data[, paste0(post, "Resp")] <- as.numeric(
