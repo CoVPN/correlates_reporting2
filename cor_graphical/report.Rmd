@@ -60,7 +60,7 @@ if (study_name == "NextGen_Mock") {
     assays = assays[!grepl("nasal|saliva|T4|T8", assays)]
     assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|T4|T8", assay))
     nextgen_output_flag = 1 # options: 3 (whole_report)  1 (BARDA_TLF)
-} else (nextgen_output_flag = 999)
+} else {nextgen_output_flag = 999}
 
 #if(file.exists(here::here('cor_graphical', paste0('report_', tolower(study_name), '.Rmd')))) {
   
@@ -163,7 +163,7 @@ if (study_name == "NextGen_Mock") {
                     )
       
       # SET 1
-cat("\\Large \\textbf{Violin plots by case status}\n\n")
+cat("## Violin plots by case status\n\n")
 cat("\\clearpage", sep = '\n')
       
       for (a in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == "NextGen_Mock") {c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("IgA", assays)])
@@ -252,7 +252,7 @@ cat("\\clearpage", sep = '\n')
       if (attr(config,"config") == "nvx_uk302") next # break the loop for nvx_uk302
 
       # SET 2
-cat("\\Large \\textbf{Longitudinal plots}\n\n")
+cat("## Longitudinal plots\n\n")
 cat("\\clearpage", sep = '\n')
       
       assay_grp_list = if(attr(config,"config")=="vat08_combined"){
@@ -264,15 +264,7 @@ cat("\\clearpage", sep = '\n')
                           paste0(assays[!assays=="bindSpike_mdw"][9:10], collapse="_"),
                           paste0(assays[!assays=="bindSpike_mdw"][11:12], collapse="_"),
                           paste0(assays[!assays=="bindSpike_mdw"][13:14], collapse="_")
-        )} else if (attr(config,"config") == "iliad_ib202p") {
-          c(paste0(assays[1:2], collapse="_"), paste0(assays[3:4], collapse="_"),
-            paste0(assays[5:6], collapse="_"), paste0(assays[7:8], collapse="_"),
-            paste0(assays[9:10], collapse="_"), paste0(assays[11:12], collapse="_"),
-            paste0(assays[13:14], collapse="_"), paste0(assays[15:16], collapse="_"),
-            paste0(assays[17:18], collapse="_"), paste0(assays[19:20], collapse="_"),
-            paste0(assays[21:22], collapse="_")
-            )
-        } else if (attr(config,"config")=="prevent19_stage2"){
+        )} else if (attr(config,"config")=="prevent19_stage2"){
           c("pseudoneutid50_D614G_pseudoneutid50_Delta","bindSpike_D614_bindSpike_Delta1")
         } else if (grepl("bab", COR_postfix)){ # for azd1222_stage2
           assays[grepl("bindSpike", assays)]
@@ -310,7 +302,7 @@ cat("\\clearpage", sep = '\n')
       if (attr(config,"config") == "nextgen_mock") next # break the loop for nextgen_mock
       
       # SET 3
-cat("\\Large \\textbf{Correlation plots across assays}\n\n")
+cat("## Correlation plots across assays\n\n")
 cat("\\clearpage", sep = '\n')
       
       if (COR=="D57azd1222_stage2_delta_bAb") {
@@ -380,7 +372,7 @@ cat("\\clearpage", sep = '\n')
       if (attr(config,"config") == "prevent19nvx") next # break the loop for prevent19nvx
       
       # SET 4
-cat("\\Large \\textbf{Correlation plots across timepoints}\n\n")
+cat("## Correlation plots across timepoints\n\n")
 cat("\\clearpage", sep = '\n')
 
       for (a in assays){
