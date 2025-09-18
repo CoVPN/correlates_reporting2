@@ -8,7 +8,7 @@
 #Sys.setenv(TRIAL = "nvx_uk302") # D35nvx_uk302
 #Sys.setenv(TRIAL = "prevent19nvx") # D35prevent19nvx
 #Sys.setenv(TRIAL = "nextgen_mock") # D31toM12_nextgen_mock_sera (ph2.AB.trackA/ph2.sera.D31_7, wt.AB.D31_7/wt.sera.D31_7)
-#Sys.setenv(TRIAL = "iliad_ib202p") # C0iliad_ib202p
+#Sys.setenv(TRIAL = "iliad_ib202p") # C0iliad_ib202p C0iliad_ib202p_C14only C0iliad_ib202p_PPAI C0iliad_ib202p_PPAI_C14only
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -231,6 +231,8 @@ if (study_name=="IARCHPV"){
       )
     
   } else if (study_name=="ILIAD_IB202P") {
+    
+    if (grepl("PPAI", COR)) {dat <- dat %>% filter(PPAI == 1)}
     
     dat <- dat %>%
       mutate(cohort_event = factor(
@@ -605,7 +607,7 @@ dat.longer.cor.subset <- dat.longer.cor.subset %>%
 
 # only keep fold change over B for do.fold.change.overB=1: e.g. vat08
 if (do.fold.change.overB==1 | study_name %in% c("VAT08")){
-  dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm), time))
+  dat.longer.cor.subset <- dat.longer.cor.subset %>% filter(!grepl(paste0("over D", tinterm, "$"), time))
 } else if (grepl("stage2", COR) | study_name %in% c("NextGen_Mock", "ILIAD_IB202P")){ # keep all timepoints in times_ for stage 2 studies, such as prevent19 stage2
   dat.longer.cor.subset <- dat.longer.cor.subset
 } else ( # exclude delta timepoints
