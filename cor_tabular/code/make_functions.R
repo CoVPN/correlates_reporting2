@@ -50,8 +50,9 @@ getResponder <- function(data,
         }
         
       }
-      
-      if((grepl("bind|ACE", j) | COR == "D29VLvariant" | grepl("stage2", COR)) & attr(config,"config")!="vat08_combined"){
+
+      if((grepl("bind|ACE", j) | COR == "D29VLvariant" | grepl("stage2", COR) | grepl("frnt", COR)) & 
+         attr(config,"config")!="vat08_combined"){
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(cutoff))
       } else {
       data[, paste0(post, "Resp")] <- as.numeric(
@@ -91,7 +92,7 @@ get_rr <- function(dat, v, subs, sub.by, strata, weights, subset){
   for (i in v){
     design.ij <- subset(design.full, eval(parse(text=sprintf("!is.na(%s)",i))))
     for (j in subs){
-      # cat(i,"--",j,"\n")
+      cat(i,"--",j,"\n")
       ret <- svyby(as.formula(sprintf("~%s", i)),
                    by=as.formula(sprintf("~%s", paste(c(j, sub.by), collapse="+"))),
                    design=design.ij,
@@ -127,7 +128,7 @@ get_rr <- function(dat, v, subs, sub.by, strata, weights, subset){
 #' @param weights used in twophase()
 #' @param subset used in twophase()
 #' 
-get_gm <- function(dat, v, subs, sub.by, strata, weights, subset){
+get_gm <- function(dat, v, subs, sub.by, strata, weights, subset, digits=2){
   rgm <- NULL
   dat_twophase <- dat %>% 
     group_by_at(strata) %>% 
@@ -144,7 +145,7 @@ get_gm <- function(dat, v, subs, sub.by, strata, weights, subset){
   for (i in v){
     design.ij <- subset(design.full, eval(parse(text=sprintf("!is.na(%s)", i))))
     for (j in subs){
-      # cat(i,"--",j,"\n")
+      cat(i,"--",j,"\n")
       ret <- svyby(as.formula(sprintf("~%s", i)),
                    by=as.formula(sprintf("~%s", paste(c(j, sub.by), collapse="+"))),
                    design=design.ij,
@@ -159,7 +160,7 @@ get_gm <- function(dat, v, subs, sub.by, strata, weights, subset){
         inner_join(ret, retn, by = gsub("`", "", c(j, sub.by))) %>% 
           rename(mag=!!as.name(i), Group=!!as.name(j)) %>% 
           mutate(subgroup=!!j, mag_cat=!!i,
-                 `GMT/GMC`= sprintf("%.2f\n(%.2f, %.2f)", 10^mag, 10^ci_l, 10^ci_u)),
+                 `GMT/GMC`= sprintf(sprintf("%%.%sf\n(%%.%sf, %%.%sf)", digits, digits, digits), 10^mag, 10^ci_l, 10^ci_u)),
         rgm)
       
     }
@@ -177,7 +178,7 @@ get_gm <- function(dat, v, subs, sub.by, strata, weights, subset){
 #' @param strata used in twophase()
 #' @param weights used in twophase()
 #' @param subset used in twophase()
-get_rgmt <- function(dat, v, groups, comp_lev, sub.by, strata, weights, subset){
+get_rgmt <- function(dat, v, groups, comp_lev, sub.by, strata, weights, subset, digits=2){
   rgmt <- NULL
   for (j in groups){
     comp_i <- comp_lev[comp_lev %in% dat[, gsub("`","",j)]]
@@ -193,14 +194,14 @@ get_rgmt <- function(dat, v, groups, comp_lev, sub.by, strata, weights, subset){
     }
     contrasts(dat[, gsub("`","",j)]) <- contr.treatment(2, base = 2)
     for (i in v){
-      # cat(i,"--",j, comp_vs, "\n")
+      cat(i,"--",j, comp_vs, "\n")
       n.ij <- subset(dat, dat[, subset] & !is.na(dat[, gsub("`","",j)]) & !is.na(dat[, i])) %>% 
         group_by_at(gsub("`", "", sub.by), .drop=F) %>% 
         summarise(n.j=n_distinct(!!as.name(gsub("`","",j)))) %>% 
         filter(n.j==2) %>% 
         unite("all.sub.by", 1:length(sub.by), remove=F)
       
-      if (nrow(n.j)!=0){
+      if (nrow(n.ij)!=0){
         dat.ij <- dat %>% 
           group_by_at(strata) %>% 
           mutate(ph1cnt=n(), ph2cnt=sum(!!as.name(subset), na.rm = T)) %>% 
@@ -228,7 +229,7 @@ get_rgmt <- function(dat, v, groups, comp_lev, sub.by, strata, weights, subset){
             mutate(subgroup=gsub("`","",!!j), 
                    mag_cat=!!i, 
                    comp=!!comp_vs,  
-                   `Ratios of GMT/GMC` = sprintf("%.2f\n(%.2f, %.2f)", 
+                   `Ratios of GMT/GMC` = sprintf(sprintf("%%.%sf\n(%%.%sf, %%.%sf)", digits, digits, digits), 
                                                  10^Estimate, 10^ci_l.Estimate, 10^ci_u.Estimate)),
           rgmt)
       } else {

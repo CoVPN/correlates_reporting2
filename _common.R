@@ -495,6 +495,7 @@ if (!is.null(config$assay_metadata)) {
   rownames(labels.title)[seq_along(assays)] <- assays
   labels.title <- as.data.frame(t(labels.title))
   
+
   # fold change only  
   do.fold.change=F
   
@@ -970,6 +971,7 @@ if (TRIAL %in% c("covail", "covail_sanofi")) {
               "bindSpike_B.1.351", "bindSpike_DeltaMDW")
   all.markers1 = c("Day29"%.%assays1)
   
+
 } else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302")) {
   all.markers1 = c("Day"%.%timepoints%.%assays)
   
