@@ -34,6 +34,7 @@ tlf <-
     ),
   
     tab_strtm1 = NULL,
+	
     tab_case = list(
       table_header = "Antibody levels in the per-protocol cohort",
       table_footer =c(),
@@ -45,7 +46,7 @@ tlf <-
                         "Comparison" = 2),
       # header_above2 = c(" "=2,
       #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
-      font_size=9,
+      font_size=7,
       col1="1cm"),
     
     tab_case_naive = list(
@@ -59,7 +60,7 @@ tlf <-
                         "Comparison" = 2),
       # header_above2 = c(" "=2,
       #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
-      font_size=9,
+      font_size=7,
       col1="1cm"),
     
     tab_case_nnaive = list(
@@ -73,7 +74,7 @@ tlf <-
                         "Comparison" = 2),
       # header_above2 = c(" "=2,
       #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
-      font_size=9,
+      font_size=7,
       col1="1cm"),
     
     tab_case_nevercase = list(
@@ -87,7 +88,7 @@ tlf <-
                         "Comparison" = 2),
       # header_above2 = c(" "=2,
       #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
-      font_size=9,
+      font_size=7,
       col1="1cm"),
     
     tab_case_naive_nevercase = list(
@@ -101,7 +102,7 @@ tlf <-
                         "Comparison" = 2),
       # header_above2 = c(" "=2,
       #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
-      font_size=9,
+      font_size=7,
       col1="1cm"),
     
     tab_case_nnaive_nevercase = list(
@@ -115,7 +116,7 @@ tlf <-
                         "Comparison" = 2),
       # header_above2 = c(" "=2,
       #                   "Baseline SARS-CoV-2 Negative Vaccine Recipients" = 8),
-      font_size=9,
+      font_size=7,
       col1="1cm"),
     
     tab_gmtr = list(
@@ -127,6 +128,7 @@ tlf <-
       deselect = c("Arms"),
       col_name = c("Visit", "Marker", "N", "GMT/GMC", "N", "GMT/GMC", "GMTR/GMCR"),
       header_above1 = c(" "=2, "Cases" = 2, "Non-Cases/Control" = 2),
+	  font_size=7,
       col1="5cm"),
     
     
@@ -138,6 +140,7 @@ tlf <-
       deselect = c("Arms"),
       col_name = c("Visit", "Marker", "N", "GMT/GMC", "N", "GMT/GMC", "GMTR/GMCR"),
       header_above1 = c(" "=2, "Naive Cases" = 2, "Naive Non-Cases/Control" = 2),
+	  font_size=7,
       col1="5cm"),
     
     tab_gmtr_nnaive = list(
@@ -148,6 +151,7 @@ tlf <-
       deselect = c("Arms"),
       col_name = c("Visit", "Marker", "N", "GMT/GMC", "N", "GMT/GMC", "GMTR/GMCR"),
       header_above1 = c(" "=2, "Non-Naive Cases" = 2, "Non-Naive Non-Cases/Control" = 2),
+	  font_size=7,
       col1="5cm")
 
   )
@@ -172,6 +176,12 @@ labels.time <- c(B="Day 1",
                  Delta29overB="D29 fold-rise over D1",
                  Day91="Day 91", 
                  Delta91overB="D91 fold-rise over D1")
+
+if(grepl("tcell", COR)) {
+  assays <- assays[substr(assays, 1, 2)=="cd"]
+  } else {
+  assays <- assays[substr(assays, 1, 2)!="cd"]
+  }
 
 labels.assays.short <- labels.assays.short.tabular[assays]
 
@@ -198,7 +208,9 @@ labels.assays <- expand.grid(
 
 resp.lb <- expand.grid(
   time = visits, marker = assays,
-  ind = c("Resp", "FR2", "FR4", "2lloq", "4lloq", "2llod", "4llod"), stringsAsFactors = F
+  # ind = c("Resp", "FR2", "FR4", "2lloq", "4lloq", "2llod", "4llod"), 
+  ind = "Resp", 
+  stringsAsFactors = F
 ) %>%
   mutate(Ind = case_when(
     # ind == "FR2" ~ "% 2-Fold Rise",
@@ -278,9 +290,14 @@ ds_s <- dat %>%
 # Post baseline visits
 pos.cutoffs <- assay_metadata$pos.cutoff
 names(pos.cutoffs) <- assay_metadata$assay
+
 ds <- getResponder(ds_s, times=c("B","Day15", "Day29", "Day91"), 
                    assays=assays, pos.cutoffs = pos.cutoffs)
 
+if(grepl("tcell", COR)){
+  ds <- ds %>% select(!contains("Resp", ignore.case = F))
+  names(ds) <- gsub("_resp", "Resp", names(ds))
+} 
 
 
 subgrp <- c(
@@ -335,7 +352,7 @@ tab_dm_ph1 <- lapply(1:Trtn, function(x){
   Trti <- paste0("Trt",x)
   
   ds_long_ttl_ph1 <- ds %>%
-    dplyr::filter(ph1.D15==1) %>%
+    dplyr::filter(!!as.name(paste0("ph1.D15", ".tcell"[grepl("tcell", COR)]))==1) %>%
     dplyr::filter(!!as.name(Trti)!="") %>%
     bind_rows(mutate(., Naive:="Total")) %>% 
     mutate_all(as.character) %>% 
@@ -426,13 +443,13 @@ print("Done with table 1")
 # Per-protocol is defined by ph1.D15
 ds <- ds %>%
   mutate(
-    Case = case_when(ph1.D15==1 &
+    Case = case_when(!!as.name(paste0("ph1.D15", ".tcell"[grepl("tcell", COR)]))==1 &
                             !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
-                     ph1.D15==1 &
+                     !!as.name(paste0("ph1.D15", ".tcell"[grepl("tcell", COR)]))==1 &
                             !!as.name(config.cor$EventIndPrimary)==0 ~ "Non-Cases"), 
-    CaseNevercase = case_when(ph1.D15==1 &
+    CaseNevercase = case_when(!!as.name(paste0("ph1.D15", ".tcell"[grepl("tcell", COR)]))==1 &
                                 !!as.name(config.cor$EventIndPrimary)==1 ~ "Cases",
-                              ph1.D15==1 & COVIDIndD22toD181==0 ~ "Never-Cases")
+                              !!as.name(paste0("ph1.D15", ".tcell"[grepl("tcell", COR)]))==1 & COVIDIndD22toD181==0 ~ "Never-Cases")
     )
 
 
@@ -445,22 +462,24 @@ ds <- ds %>%
   resp.v <- grep("Resp", names(ds), value = T)
   mag.v <- intersect(assays_col, names(ds))
   
-  ds.l.resp <- filter(ds, ph1.D15==1) %>% 
+  ds.l.resp <- filter(ds, !!as.name(paste0("ph1.D15", ".tcell"[grepl("tcell", COR)]))==1) %>% 
     pivot_longer(cols=all_of(resp.v), names_to = "resp_cat", values_to = "resp_value") %>% 
     mutate(assay=gsub("Resp", "", resp_cat))
   
-  ds.l.mag <- filter(ds, ph1.D15==1) %>% 
-    select_at(c("Ptid", mag.v)) %>% 
+  ds.l.mag <- filter(ds, !!as.name(paste0("ph1.D15", ".tcell"[grepl("tcell", COR)]))==1) %>% 
+    # select_at(c("Ptid", mag.v)) %>% 
     pivot_longer(cols=all_of(mag.v), names_to = "mag_cat", values_to = "mag_value") %>% 
     mutate(assay=mag_cat)
   
-  ds.l <- full_join(ds.l.mag, ds.l.resp)
+  # ds.l <- full_join(ds.l.mag, ds.l.resp)
     
 
-tab_assay <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Non-Cases", "Cases")){
+tab_assay <- lapply(1:Trtn, function(x, comp.i=c("Non-Cases", "Cases")){
   Trti <- paste0("Trt",x)
-  ds.i <- dat %>% dplyr::filter(!!as.name(Trti)!="")
-  rpcnt_case <- ds.i %>% 
+  n_GM <- ifelse(grepl("tcell", COR), 3, 1) 
+  
+  rpcnt_case <- ds.l.resp %>% 
+    dplyr::filter(!!as.name(Trti)!="") %>% 
     group_by(!!as.name(Trti), resp_cat, Case) %>% 
     summarise(N=sum(!is.na(resp_value)), Pos=sum(resp_value, na.rm = T), .groups="drop") %>% 
     rowwise() %>% 
@@ -468,13 +487,16 @@ tab_assay <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Non-Cases", "Cases")
            rslt=sprintf("%s/%s = %.1f%%\n(%.1f%%, %.1f%%)", Pos, N, response*100, ci_l*100, ci_u*100)) %>% 
     inner_join(distinct(labels_all, resp_cat, Visit, Marker, Ind), by = "resp_cat") %>% 
     filter(N!=0)
-  
-  rgm_case <- ds.i %>% 
+
+  rgm_case <- ds.l.mag %>% 
+    dplyr::filter(!!as.name(Trti)!="") %>% 
     group_by(!!as.name(Trti), mag_cat, Case) %>% 
     summarise(N=sum(!is.na(mag_value)), lgmt=mean(mag_value, na.rm=T), lsd=sd(mag_value, na.rm=T), .groups="drop") %>% 
     rowwise() %>% 
-    mutate(gmt=10^lgmt, ci_l=10^(lgmt+qt(.025, N-1)*lsd/sqrt(N)), ci_u=10^(lgmt+qt(.975, N-1)*lsd/sqrt(N)), 
-           `GMT/GMC`=sprintf("%.1f\n(%.1f, %.1f)", gmt, ci_l, ci_u)) %>% 
+    mutate(gmt=ifelse(grepl("FS", mag_cat), lgmt, 10^lgmt), 
+           ci_l=ifelse(grepl("FS", mag_cat), lgmt+qt(.025, N-1)*lsd/sqrt(N), 10^(lgmt+qt(.025, N-1)*lsd/sqrt(N))), 
+           ci_u=ifelse(grepl("FS", mag_cat), lgmt+qt(.975, N-1)*lsd/sqrt(N), 10^(lgmt+qt(.975, N-1)*lsd/sqrt(N))), 
+           `GMT/GMC`=sprintf(sprintf("%%.%sf\n(%%.%sf, %%.%sf)", n_GM, n_GM, n_GM), gmt, ci_l, ci_u)) %>% 
     inner_join(distinct(labels_all, mag_cat, Visit, Marker), by = "mag_cat") 
     # filter(N!=0)
   
@@ -482,16 +504,20 @@ tab_assay <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Non-Cases", "Cases")
     filter(N==0) %>% 
     select(!!as.name(Trti), mag_cat)
   
-  rgmt_case <- ds.i %>% 
+  rgmt_case <- ds.l.mag %>%
+    dplyr::filter(!!as.name(Trti)!="") %>% 
     anti_join(rgmt_excl) %>% 
     mutate(Case=relevel(factor(Case), ref="Cases")) %>%
     filter(!is.na(mag_value)) %>% 
     group_by(!!as.name(Trti), mag_cat) %>% 
     summarise(N=sum(!is.na(mag_value)), 
               est=glm(mag_value~Case)$coefficients[2], 
-              ci_l=confint(glm(mag_value~Case))[2,1], 
-              ci_u=confint(glm(mag_value~Case))[2,2], .groups="drop") %>% 
-    mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Non-Cases vs Cases") %>% 
+              ci_l=unique(ifelse(class(try(confint(glm(mag_value~Case))))=="try-error", NA, confint(glm(mag_value~Case))[2,1])),
+              ci_u=unique(ifelse(class(try(confint(glm(mag_value~Case))))=="try-error", NA, confint(glm(mag_value~Case))[2,2])),.groups="drop") %>% 
+    mutate(comp="Non-Cases vs Cases", 
+	`Ratios of GMT/GMC`=ifelse(grepl("FS", mag_cat),
+	sprintf("%.2f\n(%.2f, %.2f)", est, ci_l, ci_u),
+	sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u))) %>% 
     inner_join(distinct(labels_all, mag_cat, Visit, Marker))
 
   
@@ -565,10 +591,12 @@ tab_gmtr <- tab_assay %>%
   bind_rows()
 
 
-tab_assay_status <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Non-Cases", "Cases")){
+tab_assay_status <- lapply(1:Trtn, function(x, comp.i=c("Non-Cases", "Cases")){
   Trti <- paste0("Trt",x)
-  ds.i <- dat %>% dplyr::filter(!!as.name(Trti)!="")
-  rpcnt_case <- ds.i %>% 
+  n_GM <- ifelse(grepl("tcell", COR), 3, 1) 
+  
+  rpcnt_case <- ds.l.resp %>% 
+    dplyr::filter(!!as.name(Trti)!="") %>% 
     group_by(!!as.name(Trti), resp_cat, Naive, Case) %>% 
     summarise(N=sum(!is.na(resp_value)), Pos=sum(resp_value, na.rm = T), .groups="drop") %>% 
     rowwise() %>% 
@@ -577,13 +605,16 @@ tab_assay_status <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Non-Cases", "
     inner_join(distinct(labels_all, resp_cat, Visit, Marker, Ind), by = "resp_cat") %>% 
     filter(N!=0)
   
-  rgm_case <- ds.i %>% 
+  rgm_case <- ds.l.mag %>%
+    dplyr::filter(!!as.name(Trti)!="") %>% 
     mutate(Case=factor(Case), Naive=factor(Naive)) %>% 
     group_by(!!as.name(Trti), mag_cat, Naive, Case, .drop = F) %>% 
     summarise(N=sum(!is.na(mag_value)), lgmt=mean(mag_value, na.rm=T), lsd=sd(mag_value, na.rm=T), .groups="drop") %>% 
     rowwise() %>% 
-    mutate(gmt=10^lgmt, ci_l=10^(lgmt+qt(.025, N-1)*lsd/sqrt(N)), ci_u=10^(lgmt+qt(.975, N-1)*lsd/sqrt(N)), 
-           `GMT/GMC`=sprintf("%.1f\n(%.1f, %.1f)", gmt, ci_l, ci_u)) %>% 
+    mutate(gmt=ifelse(grepl("FS", mag_cat), lgmt, 10^lgmt), 
+           ci_l=ifelse(grepl("FS", mag_cat), lgmt+qt(.025, N-1)*lsd/sqrt(N), 10^(lgmt+qt(.025, N-1)*lsd/sqrt(N))), 
+           ci_u=ifelse(grepl("FS", mag_cat), lgmt+qt(.975, N-1)*lsd/sqrt(N), 10^(lgmt+qt(.975, N-1)*lsd/sqrt(N))), 
+           `GMT/GMC`=sprintf(sprintf("%%.%sf\n(%%.%sf, %%.%sf)", n_GM, n_GM, n_GM), gmt, ci_l, ci_u)) %>% 
     inner_join(distinct(labels_all, mag_cat, Visit, Marker), by = "mag_cat") #%>% 
     # filter(N!=0)
   
@@ -591,7 +622,8 @@ tab_assay_status <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Non-Cases", "
     filter(N==0) %>% 
     select(!!as.name(Trti), mag_cat, Naive)
   
-  rgmt_case <- ds.i %>% 
+  rgmt_case <- ds.l.mag %>% 
+    dplyr::filter(!!as.name(Trti)!="") %>% 
     anti_join(rgmt_excl) %>% 
     mutate(Case=relevel(factor(Case), ref="Cases")) %>%
     filter(!is.na(mag_value)) %>% 
@@ -599,9 +631,13 @@ tab_assay_status <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Non-Cases", "
     group_by(!!as.name(Trti), Naive, mag_cat) %>% 
     summarise(N=sum(!is.na(mag_value)), 
               est=glm(mag_value~Case)$coefficients[2], 
-              ci_l=confint(glm(mag_value~Case))[2,1], 
-              ci_u=confint(glm(mag_value~Case))[2,2], .groups="drop") %>% 
-    mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Non-Cases vs Cases") %>% 
+              ci_l=unique(ifelse(class(try(confint(glm(mag_value~Case))))=="try-error", NA, confint(glm(mag_value~Case))[2,1])),
+              ci_u=unique(ifelse(class(try(confint(glm(mag_value~Case))))=="try-error", NA, confint(glm(mag_value~Case))[2,2])),
+              .groups="drop") %>% 
+    mutate(comp="Non-Cases vs Cases",
+		`Ratios of GMT/GMC`=ifelse(grepl("FS", mag_cat),
+		sprintf("%.2f\n(%.2f, %.2f)", est, ci_l, ci_u),
+		sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u))) %>% 
     inner_join(distinct(labels_all, mag_cat, Visit, Marker))
   
   
@@ -696,10 +732,12 @@ tab_gmtr_nnaive <- tab_assay_status %>%
 
 # if (config.cor$EventIndPrimary!="COVIDIndD22toD181"){
  
-  tab_assay_nevercase <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Never-Cases", "Cases")){
+  tab_assay_nevercase <- lapply(1:Trtn, function(x, comp.i=c("Never-Cases", "Cases")){
     Trti <- paste0("Trt",x)
-    ds.i <- dat %>% dplyr::filter(!!as.name(Trti)!="")
-    rpcnt_case <- ds.i %>% 
+    n_GM <- ifelse(grepl("tcell", COR), 3, 1) 
+    
+    rpcnt_case <- ds.l.resp  %>% 
+      dplyr::filter(!!as.name(Trti)!="") %>% 
       group_by(!!as.name(Trti), resp_cat, CaseNevercase) %>% 
       summarise(N=sum(!is.na(resp_value)), Pos=sum(resp_value, na.rm = T), .groups="drop") %>% 
       rowwise() %>% 
@@ -708,12 +746,15 @@ tab_gmtr_nnaive <- tab_assay_status %>%
       inner_join(distinct(labels_all, resp_cat, Visit, Marker, Ind), by = "resp_cat") %>% 
       filter(N!=0)
     
-    rgm_case <- ds.i %>% 
+    rgm_case <- ds.l.mag %>%
+      dplyr::filter(!!as.name(Trti)!="") %>% 
       group_by(!!as.name(Trti), mag_cat, CaseNevercase) %>% 
       summarise(N=sum(!is.na(mag_value)), lgmt=mean(mag_value, na.rm=T), lsd=sd(mag_value, na.rm=T), .groups="drop") %>% 
       rowwise() %>% 
-      mutate(gmt=10^lgmt, ci_l=10^(lgmt+qt(.025, N-1)*lsd/sqrt(N)), ci_u=10^(lgmt+qt(.975, N-1)*lsd/sqrt(N)), 
-             `GMT/GMC`=sprintf("%.1f\n(%.1f, %.1f)", gmt, ci_l, ci_u)) %>% 
+      mutate(gmt=ifelse(grepl("FS", mag_cat), lgmt, 10^lgmt), 
+             ci_l=ifelse(grepl("FS", mag_cat), lgmt+qt(.025, N-1)*lsd/sqrt(N), 10^(lgmt+qt(.025, N-1)*lsd/sqrt(N))), 
+             ci_u=ifelse(grepl("FS", mag_cat), lgmt+qt(.975, N-1)*lsd/sqrt(N), 10^(lgmt+qt(.975, N-1)*lsd/sqrt(N))), 
+             `GMT/GMC`=sprintf(sprintf("%%.%sf\n(%%.%sf, %%.%sf)", n_GM, n_GM, n_GM), gmt, ci_l, ci_u)) %>% 
       inner_join(distinct(labels_all, mag_cat, Visit, Marker), by = "mag_cat") 
     # filter(N!=0)
     
@@ -721,16 +762,21 @@ tab_gmtr_nnaive <- tab_assay_status %>%
       filter(N==0) %>% 
       select(!!as.name(Trti), mag_cat)
     
-    rgmt_case <- ds.i %>% 
+    rgmt_case <- ds.l.mag %>% 
+      dplyr::filter(!!as.name(Trti)!="") %>% 
       anti_join(rgmt_excl) %>% 
       mutate(CaseNevercase=relevel(factor(CaseNevercase), ref="Cases")) %>%
       filter(!is.na(mag_value)) %>% 
       group_by(!!as.name(Trti), mag_cat) %>% 
       summarise(N=sum(!is.na(mag_value)), 
                 est=glm(mag_value~CaseNevercase)$coefficients[2], 
-                ci_l=confint(glm(mag_value~CaseNevercase))[2,1], 
-                ci_u=confint(glm(mag_value~CaseNevercase))[2,2], .groups="drop") %>% 
-      mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Never-Cases vs Cases") %>% 
+                ci_l=unique(ifelse(class(try(confint(glm(mag_value~CaseNevercase))))=="try-error", NA, confint(glm(mag_value~CaseNevercase))[2,1])),
+                ci_u=unique(ifelse(class(try(confint(glm(mag_value~CaseNevercase))))=="try-error", NA, confint(glm(mag_value~CaseNevercase))[2,2])),
+                .groups="drop") %>% 
+      mutate(comp="Never-Cases vs Cases",
+  		`Ratios of GMT/GMC`=ifelse(grepl("FS", mag_cat),
+		sprintf("%.2f\n(%.2f, %.2f)", est, ci_l, ci_u),
+		sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u))) %>% 
       inner_join(distinct(labels_all, mag_cat, Visit, Marker))
     
     
@@ -798,10 +844,12 @@ tab_gmtr_nnaive <- tab_assay_status %>%
     map("tab_case") %>% 
     bind_rows()
   
-tab_assay_status_nevercase <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Never-Cases", "Cases")){
+tab_assay_status_nevercase <- lapply(1:Trtn, function(x, comp.i=c("Never-Cases", "Cases")){
   Trti <- paste0("Trt",x)
-  ds.i <- dat %>% dplyr::filter(!!as.name(Trti)!="")
-  rpcnt_case <- ds.i %>% 
+  n_GM <- ifelse(grepl("tcell", COR), 3, 1) 
+  
+  rpcnt_case <- ds.l.resp %>% 
+    dplyr::filter(!!as.name(Trti)!="") %>% 
     group_by(!!as.name(Trti), resp_cat, Naive, CaseNevercase) %>% 
     summarise(N=sum(!is.na(resp_value)), Pos=sum(resp_value, na.rm = T), .groups="drop") %>% 
     rowwise() %>% 
@@ -810,13 +858,16 @@ tab_assay_status_nevercase <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Nev
     inner_join(distinct(labels_all, resp_cat, Visit, Marker, Ind), by = "resp_cat") %>% 
     filter(N!=0)
   
-  rgm_case <- ds.i %>% 
+  rgm_case <- ds.l.mag %>% 
+    dplyr::filter(!!as.name(Trti)!="") %>% 
     mutate(CaseNevercase=factor(CaseNevercase), Naive=factor(Naive)) %>% 
     group_by(!!as.name(Trti), mag_cat, Naive, CaseNevercase, .drop = F) %>% 
     summarise(N=sum(!is.na(mag_value)), lgmt=mean(mag_value, na.rm=T), lsd=sd(mag_value, na.rm=T), .groups="drop") %>% 
     rowwise() %>% 
-    mutate(gmt=10^lgmt, ci_l=10^(lgmt+qt(.025, N-1)*lsd/sqrt(N)), ci_u=10^(lgmt+qt(.975, N-1)*lsd/sqrt(N)), 
-           `GMT/GMC`=sprintf("%.1f\n(%.1f, %.1f)", gmt, ci_l, ci_u)) %>% 
+    mutate(gmt=ifelse(grepl("FS", mag_cat), lgmt, 10^lgmt), 
+           ci_l=ifelse(grepl("FS", mag_cat), lgmt+qt(.025, N-1)*lsd/sqrt(N), 10^(lgmt+qt(.025, N-1)*lsd/sqrt(N))), 
+           ci_u=ifelse(grepl("FS", mag_cat), lgmt+qt(.975, N-1)*lsd/sqrt(N), 10^(lgmt+qt(.975, N-1)*lsd/sqrt(N))), 
+           `GMT/GMC`=sprintf(sprintf("%%.%sf\n(%%.%sf, %%.%sf)", n_GM, n_GM, n_GM), gmt, ci_l, ci_u)) %>%  
     inner_join(distinct(labels_all, mag_cat, Visit, Marker), by = "mag_cat") #%>% 
   # filter(N!=0)
   
@@ -824,7 +875,8 @@ tab_assay_status_nevercase <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Nev
     filter(N==0) %>% 
     select(!!as.name(Trti), mag_cat, Naive)
   
-  rgmt_case <- ds.i %>% 
+  rgmt_case <- ds.l.mag %>%
+    dplyr::filter(!!as.name(Trti)!="") %>% 
     anti_join(rgmt_excl) %>% 
     mutate(CaseNevercase=relevel(factor(CaseNevercase), ref="Cases")) %>%
     filter(!is.na(mag_value)) %>% 
@@ -832,9 +884,12 @@ tab_assay_status_nevercase <- lapply(1:Trtn, function(x, dat=ds.l, comp.i=c("Nev
     group_by(!!as.name(Trti), Naive, mag_cat) %>% 
     summarise(N=sum(!is.na(mag_value)), 
               est=glm(mag_value~CaseNevercase)$coefficients[2], 
-              ci_l=confint(glm(mag_value~CaseNevercase))[2,1], 
-              ci_u=confint(glm(mag_value~CaseNevercase))[2,2], .groups="drop") %>% 
-    mutate(`Ratios of GMT/GMC`=sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u), comp="Never-Cases vs Cases") %>% 
+              ci_l=unique(ifelse(class(try(confint(glm(mag_value~CaseNevercase))))=="try-error", NA, confint(glm(mag_value~CaseNevercase))[2,1])), 
+              ci_u=unique(ifelse(class(try(confint(glm(mag_value~CaseNevercase))))=="try-error", NA, confint(glm(mag_value~CaseNevercase))[2,2])), .groups="drop") %>% 
+    mutate(comp="Never-Cases vs Cases",
+		`Ratios of GMT/GMC`=ifelse(grepl("FS", mag_cat),
+		sprintf("%.2f\n(%.2f, %.2f)", est, ci_l, ci_u),
+		sprintf("%.2f\n(%.2f, %.2f)", 10^est, 10^ci_l, 10^ci_u))) %>% 
     inner_join(distinct(labels_all, mag_cat, Visit, Marker))
   
   
