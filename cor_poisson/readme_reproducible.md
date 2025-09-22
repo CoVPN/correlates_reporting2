@@ -17,16 +17,6 @@ Rscript -e "rmarkdown::render('code/diproperm_run.Rmd')"
 Rscript -e "rmarkdown::render('code/posthoc_analyses.Rmd')"
 ```
 
-
-To render the R markdown files, run the following commands in a bash shell:
-```{bash}
-cd cor_poisson
-Rscript -e "rmarkdown::render('code/comparative_immunogenicity.Rmd')"
-Rscript -e "rmarkdown::render('code/diproperm_run.Rmd')"
-Rscript -e "rmarkdown::render('code/posthoc_analyses.Rmd')"
-```
-
-
 To run Yutong's code, run the following commands in a bash shell:
 ```{bash}
 cd cor_poisson
