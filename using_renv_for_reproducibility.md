@@ -2,7 +2,7 @@
 
 renv can be used at one of three levels: repo-level, module-level, and project level. For example, cor_threshold is a module-level directory and under that, sanofi_stage2 is a project-level directory. 
 
-## Setting up renv at the project-level
+## Setting up renv at the project-level for a new project
 
 This is the most reproducible way of using renv because each project/manuscript has its own renv.lock.
 
@@ -19,9 +19,8 @@ renv/
 ```
 - README.md  This file should have a section titled Reproducibility, which details how to reproduce the reports.
 
-If in a slurm env, load an appropriate R module and a CMmake module. The latter is needed to install some packages, e.g., nloptr, lme4.
-
-Open a new R console in the project folder in a terminal and run the following commands. Note that we use renv 0.13.2, which uses renv/activate.R, instead of newer versions because of some errors with the newer versions.
+Open a new R console in the project folder in a terminal and run the following commands. Note that we use renv 0.13.2, which uses renv/activate.R, instead of newer versions because of some errors with the newer versions. (If in a slurm env, load an appropriate R module and a CMmake module. The latter is needed to install some packages, e.g., nloptr, lme4.
+)
 ```{r}
 install.packages(
   "https://cran.r-project.org/src/contrib/Archive/renv/renv_0.13.2.tar.gz",
@@ -53,13 +52,15 @@ Now if you start a new R console in the project folder, you should see a message
 
 For an example of a project using project-level renv, check out cor_threshold/sanofi_stage2 (https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md).
 
-## Using renv at the module-level
+## Setting up renv at the module-level for a new module
 
 This is not currently done. There seems to be little advantages of using renv at the module level.
 
-## Using renv at the repo-level
+## Setting up renv at the repo-level
 
-Several modules share the same renv.lock at the repo level, e.g., cor_graphical, cor_tabular, and cor_coxph.
+This has already been done for the repo. For an example of using the repo-level renv, check out cor_coxph (https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md).
+
+
 
 
 ## General tips for using renv
