@@ -1,7 +1,7 @@
 #Sys.setenv(TRIAL = "janssen_pooled_real")
 ##################################################
 # obligatory to append to the top of each script #
-renv::activate(project = here::here("..")) #
+# renv::activate(project = here::here("..")) #
 if (.Platform$OS.type == "windows") .libPaths(c(paste0(Sys.getenv ("R_HOME"), "/library"), .libPaths()))
 source(here::here("..", "_common.R")) #
 ##################################################
@@ -42,17 +42,19 @@ randomsubcohort <- case_when(study_name=="COVE" ~ "This table summarizes the
 tlf <-
   list(
     tab_dm_neg = list(
-      table_header = "Demographic and Clinical Characteristics at Baseline in 
-      the Baseline SARS-CoV-2 Negative Per-Protocol Cohort",
-      table_footer = randomsubcohort,
+      table_header = "Demographics of Per-protocol RIS participants with serum, 
+      nasal fluid, and saliva antibody data for the Investigational and Comparator Vaccine arms in 
+      the Baseline SARS-CoV-2 Negative Cohort",
+      # table_footer = randomsubcohort,
       deselect = "subgroup",
       pack_row = "subgroup",
       col1="7cm"
     ),
     
     tab_dm_pos = list(
-      table_header = "Demographic and Clinical Characteristics at Baseline in 
-      the Baseline SARS-CoV-2 Positive Per-Protocol Cohort",
+      table_header = "Demographics of Per-protocol RIS participants with serum, 
+      nasal fluid, and saliva antibody data for the Investigational and Comparator Vaccine arms in 
+      the Baseline SARS-CoV-2 Positive Cohort",
       table_footer = randomsubcohort,
       deselect = "subgroup",
       pack_row = "subgroup",
@@ -230,9 +232,10 @@ tlf <-
       col1="1cm")  )
 
 # Depends on the Incoming data
-if(include_bindN & !"bindN" %in% assays & study_name!="PROFISCOV"){
-  assays <- sort(c("bindN", assays))
-}
+# if(include_bindN & !"bindN" %in% assays & study_name!="PROFISCOV"){
+  # assays <- sort(c("bindN", assays))
+  assays <- assay_metadata$assay
+# }
 
 labels.age <- case_when(study_name %in% c("ENSEMBLE", "MockENSEMBLE") ~ c("Age 18 - 59", "Age $\\geq$ 60"), 
                         TRUE~ c("Age $<$ 65", "Age $\\geq$ 65"))

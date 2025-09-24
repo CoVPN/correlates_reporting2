@@ -215,13 +215,12 @@ CORs2 = c(
 
 for (i in 1:len(CORs2)) { 
   if (!is.null(config$multivariate_assays_2) | !is.null(config::get(config = CORs2[i])$multivariate_assays_2)) {
-    cat ("## ", CORs[i], "\n\n")
+    cat ("## ", CORs2[i], "\n\n")
+    tfinal.tpeak=get.tfinal.tpeak(CORs2[i])
     
     for (j in 1:2) {
-      fname.suffix <- c(
-        "InvVacc_",
-        "CtlVacc_"
-      )[j] %.% "pseudoneutid50_sera"
+      trt = c("InvVacc", "CtlVacc")[j]
+      fname.suffix <- trt %.% "_pseudoneutid50_sera"
   
       res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_multivariate_assays_2.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')

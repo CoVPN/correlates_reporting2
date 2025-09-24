@@ -141,46 +141,77 @@ if (attr(config,"config")=="vat08_combined" & dat.longer.immuno.subset.plot1_$Tr
     
     bab_stg1 <- dat_proc %>% filter(Trialstage == 1, ph2.immuno.bAb, Trt==1, Bserostatus == 0) %>% mutate(wtD22=Day22bindSpike*wt.immuno.bAb, wtD43=Day43bindSpike*wt.immuno.bAb)
     
-    
-    for (asy in set2_assays){
-        f_2 <-
-            f_longitude_by_assay(
-            dat = rgm_stage1_bAb_vac %>% 
-                bind_rows(rgm_stage1_nAb_vac) %>%
-                bind_rows(rgm_stage2_bAb_vac) %>%
-                bind_rows(rgm_stage2_nAb_vac) %>%
-                filter(!grepl("Delta", mag_cat), Group=="Vaccine") %>%
-                mutate(value = mag, 
-                       lower_CI=ci_l,
-                       upper_CI=ci_u,
-                       Ptid = Trialstage,
-                       RespRate = "",
-                       time = gsub(paste0(assays, collapse="|"), "", mag_cat),
-                       time = factor(time, levels = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387")),
-                       assay = gsub(paste0("^", times_, collapse="|"), "", mag_cat),
-                       nnaive = "Non-naive",
-                       lb = "",
-                       lbval = 9,
-                       lb2 = "",
-                       lbval2 = 9) %>% 
-              arrange(Trialstage, assay, time),
-            x.var = "time",
-            x.lb = c("D1","D22","D43","D78","D134","D202","D292","D387"),
-            assays = asy,
-            ylim = if (grepl("bindSpike", asy)) {c(2,6)} else if (grepl("pseudoneutid50", asy)) {c(1,5)},
-            ybreaks = if (grepl("bindSpike", asy)) {2:6} else if (grepl("pseudoneutid50", asy)) {1:5},
-            times = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387"),
-            strip.text.x.size = 14,
-            panel.text.size = 6,
-            axis.text.x.size = 14,
-            facet.y.var = vars(nnaive), 
-            facet.x.var = vars(Trialstage),
-            y.axis.lb = paste0("Geometric Mean of\n", gsub(" \\(AU/ml\\)", "", labels.assays.short[asy]))
-  
-        )
-        
-        file_name <- paste0("/", asy, "_longitudinal_gmr_nonnaive_stage1stage2.pdf")
-        ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
-    }
 }
 
+    
+  for (i in c("bAb", "nAb")){
+    for (j in 1:2){
+    ylim <- if(i=="bAb"){c(2,6)}else{c(1,5)}
+    assys <- if(i=="bAb"){c("bindSpike", "bindSpike_beta", "bindSpike_omicron")
+    }else{
+        c("pseudoneutid50", "pseudoneutid50_B.1.351", "pseudoneutid50_BA.1")}
+    asy <- ifelse(i=="bAb", "Binding Antibody", "Psv Neutralization Antibody")
+    y.lb.scale <- "log"
+    
+    dat_plot <- get(sprintf("rgm_stage%s_%s_vac", j,i)) %>% 
+                    rowwise() %>%
+                    mutate(value = mag,
+                           lower_CI=ci_l,
+                           upper_CI=ci_u,
+                           Ptid = Trialstage,
+                           RespRate = "",
+                           time = gsub(paste0(assays, collapse="|"), "", mag_cat),
+                           time = factor(time, levels = c("B","Day22","Day43","Day78","Day134","Day202","Day292","Day387")),
+                           marker = gsub(time, "", mag_cat),
+                           assay = gsub(paste0("^", times_, collapse="|"), "", mag_cat),
+                           nnaive = "Non-naive",
+                           lb = "",
+                           lbval = 9,
+                           lb2 = "",
+                           lbval2 = 9) %>% 
+      filter(assay %in% assys & 
+               time %in% c("B","Day22","Day43","Day78","Day134","Day202")) %>%
+      left_join(assay_metadata, by="assay") %>%
+      mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+      mutate(assay_label_short = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label)) %>%
+      ungroup()
+    
+
+      f_2 <- dat_plot %>%    
+        mutate(assay_label=factor(assay_label, levels=c("Binding Antibody to Spike D614",
+                                                        "Binding Antibody to Spike Beta",
+                                                        "Binding Antibody to Spike BA.1", 
+                                                        "PsV Neutralization to D614G",                    
+                                                        "PsV Neutralization to Beta",                     
+                                                        "PsV Neutralization to BA.1"      ))) %>% 
+      ggplot(aes(x = time, y = value)) +
+      facet_grid(col = vars(assay_label)) +
+      geom_line(aes(group = Group, linetype=Group, color = Group)) +
+      scale_linetype_manual(values= c("Vaccine"=1, "Placebo"=2)) + 
+      geom_point(aes(color=Group), size = 3, alpha = 0.6, show.legend = TRUE) +
+      geom_text(aes(x = time, label = !!sym("RespRate"), y = ylim[2]*0.9), color = "black", size = 16, check_overlap = TRUE) +
+      geom_hline(aes(yintercept = ifelse(RespRate!="",lbval,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
+      geom_text(aes(label = ifelse(RespRate!="",lb,""), x = 0.4, y = lbval), hjust = 0, color = "black", size = 16, check_overlap = TRUE, na.rm = TRUE) + 
+      geom_errorbar(aes(ymin=lower_CI, ymax=upper_CI, linetype=Group, color=Group), width=.2) +
+      geom_hline(aes(yintercept = ifelse(RespRate!="",lbval2,-99)), linetype = "dashed", color = "gray", na.rm = TRUE) +
+      geom_text(aes(label = ifelse(RespRate!="",lb2,""), x = 0.4, y = lbval2), hjust = 0, color = "black", size = 16, check_overlap = TRUE, na.rm = TRUE) + 
+      scale_color_manual(values=c("Vaccine"="black", "Placebo"="grey55")) +
+      scale_x_discrete(labels = c("D1","D22","D43","D78","D134","D202","D292","D387"), drop=TRUE) +
+      scale_y_continuous(limits = ylim, breaks = seq(ylim[1], ylim[2]), labels = ifelse(y.lb.scale == "log", scales::math_format(10^.x))) +
+      labs(x = "Time", y = sprintf("Geometric Mean of %s", asy), 
+      title =sprintf("Geometric Mean of %s longitudinal plots across timepoints\nStage %s", asy, j), shape="Treatment Arm") +
+      theme_bw(base_size = 16) +
+      theme(
+            strip.background = element_rect(fill=NA,colour=NA),
+            strip.placement = "outside",
+            legend.position = "bottom",
+            panel.grid.major = element_blank(), 
+            panel.grid.minor = element_blank()) +
+      guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
+    
+              file_name <- sprintf("/%s_longitudinal_gmr_nonnaive_stage%s.pdf", asy, j)
+              ggsave(plot = f_2, filename = paste0(save.results.to, file_name), width = 16, height = 11)
+      
+    }
+  }  
+    

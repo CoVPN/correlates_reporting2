@@ -200,6 +200,11 @@ resp.lb <- expand.grid(
 labels_all <- full_join(labels.assays, resp.lb, by = c("time", "marker")) %>% 
   mutate(mag_cat = colname, resp_cat = paste0(colname, ind))
 
+# Hard coded for Sanofi countries
+
+labels.countries.vat08_combined <- c(`1`='Colombia',`2`='Ghana',`3`='Honduras',`4`='India',
+                                     `5`='Japan',`6`='Kenya',`7`='Nepal',`8`='United States',`9`='Mexico',
+                                     `10`='Uganda')
 
 ###################################################
 #                Clean the Data                   #
@@ -262,6 +267,7 @@ ds_s <- dat %>%
     AgeSexC = paste(AgeC, SexC),
     AgeMinorC = ifelse(is.na(MinorityC), NA, paste(AgeC, MinorityC)),
     Naive = ifelse(Bserostatus==0, "Naive", "Non-naive"),
+    CountryC = labels.countries.vat08_combined[as.character(Country)],
     All = "All participants"
     )
 
@@ -306,7 +312,8 @@ char_lev <- c(labels.age, "Mean (Range)","Mean $\\pm$ SD",
               paste(labels.age[2],"At-risk"), paste(labels.age[2], "Not at-risk"),
               paste(labels.age[2], ""), 
               # "Communities of Color", "White Non-Hispanic",
-              labels.countries.ENSEMBLE,
+              # labels.countries.ENSEMBLE,
+              labels.countries.vat08_combined,
               "Negative", "Positive", labels.BMI)
 
 ###################################################
@@ -316,7 +323,7 @@ char_lev <- c(labels.age, "Mean (Range)","Mean $\\pm$ SD",
 
 num_v1 <- c("Age") # Summaries - Mean & Range
 num_v2 <- c("BMI") # Summaries - Mean & St.d
-cat_v <- c("AgeC", "SexC", "raceC", "ethnicityC", "HighRiskC", "AgeRiskC", "MinorityC")
+cat_v <- c("AgeC", "SexC", "raceC", "ethnicityC", "HighRiskC", "AgeRiskC", "MinorityC", "CountryC")
 
 for (i in names(tlf)){
   assign(i, NULL)
@@ -330,7 +337,7 @@ tab_dm_ph1 <- lapply(paste("Stage", Stgn), function(x){
     bind_rows(mutate(., Arm:="Total")) %>% 
     mutate_all(as.character) %>% 
     pivot_longer(all_of(c(num_v1, num_v2, cat_v)), names_to="subgroup", values_to="subgroup_cat")
-  
+
   # Calculate % for categorical covariates
   dm_cat_ph1 <- inner_join(
     ds_long_ttl_ph1 %>%
@@ -391,7 +398,7 @@ tab_dm_ph1 <- lapply(paste("Stage", Stgn), function(x){
   
   cols <- names(tab_dm_ph1)
   names(tab_dm_ph1) <- str_split(cols, "\n", simplify = T)[,1]
-  
+
   return(list(tab=tab_dm_ph1, col=c(tab_dm_ph1$Stage[1], cols)))
 })
 

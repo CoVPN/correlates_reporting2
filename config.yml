@@ -173,7 +173,7 @@ janssen_trial_partA: &janssen_trial_partA # binding Ab and ID50 and ADCP
 
 janssen_pooled_partA: &janssen_pooled_partA
   <<: *janssen_trial_partA
-  data_cleaned: /trials/covpn/p3003/analysis/correlates/Part_A_Blinded_Phase_Data/adata/janssen_pooled_partA_data_processed_with_riskscore_20240226.csv
+  data_cleaned: ../../../covpn/adata/janssen_pooled_partA_data_processed_with_riskscore_20240226.csv
   assays: [bindSpike, bindRBD, pseudoneutid50, pseudoneutid50uncensored, ADCP]
   assay_labels: [Binding Antibody to Spike, Binding Antibody to RBD, PsV Neutralization 50% Titer, PsV Neutralization 50% Titer 2, Phagocytic Score]
   assay_labels_short: [Anti Spike IgG (BAU/ml), Anti RBD IgG (BAU/ml), Pseudovirus-nAb ID50 (IU50/ml), Pseudovirus-nAb ID50 (IU50/ml) 2, Phagocytic Score]
@@ -1661,8 +1661,26 @@ D31toM12_nextgen_mock_sera:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
   multivariate_assays_2: [
-    ~.+ Day31pseudoneutid50_sera + Bpseudoneutid50_sera, 
-    ~.+ Day31pseudoneutid50_sera + Day31bindSpike_IgA_sera 
+    ~.+ Day31pseudoneutid50_sera + Bpseudoneutid50_sera + Bpseudoneutid50_sera * Day31pseudoneutid50_sera, 
+    ~.+ Day31pseudoneutid50_sera + Day31bindSpike_IgA_sera + Day31bindSpike_IgA_sera * Day31pseudoneutid50_sera 
+  ]
+
+D31toM6_nextgen_mock_sera:
+  ph1: ph1.D31_7
+  ph2: ph2.sera.D31_7
+  wt:  wt.sera.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD31_7toM6
+  EventTimePrimary: COVIDTimeD31toM6
+  Earlyendpoint: 
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+  multivariate_assays_2: [
+    ~.+ Day31pseudoneutid50_sera + Bpseudoneutid50_sera + Bpseudoneutid50_sera * Day31pseudoneutid50_sera, 
+    ~.+ Day31pseudoneutid50_sera + Day31bindSpike_IgA_sera + Day31bindSpike_IgA_sera * Day31pseudoneutid50_sera 
   ]
 
 D31toM12_nextgen_mock_saliva:
@@ -1709,20 +1727,6 @@ D31toM12_nextgen_mock_PBMC:
   multivariate_assays2: [
     ~.+ Day31pseudoneutid50_sera + BT8_IFNg_OR_IL2_N_Index
   ]
-
-D31toM6_nextgen_mock_sera:
-  ph1: ph1.D31_7
-  ph2: ph2.sera.D31_7
-  wt:  wt.sera.D31_7
-  WtStratum: Wstratum
-  EventIndPrimary: COVIDIndD31_7toM6
-  EventTimePrimary: COVIDTimeD31toM6
-  Earlyendpoint: 
-  tpeak: 31
-  tpeaklag: 7
-  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
 D31toM6_nextgen_mock_saliva:
   ph1: ph1.D31_7
@@ -1773,7 +1777,7 @@ D31toM6_nextgen_mock_PBMC:
 # Note that for data processing, covail is the only TRIAL label. But for reporting2, there are multiple variants.
 
 covail: &covail
-  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250728.csv
+  data_cleaned: /trials/covpn/COVAILcorrelates/analysis/correlates/adata/covail_data_processed_20250818.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [15,29,85,91,147,181]
@@ -2071,11 +2075,13 @@ D15to181covail_xassays:
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed COVID endpoint.
 
+
+
 ################################################################################
 # ILIAD    
 
 iliad_ib202p: &iliad_ib202p
-  data_cleaned: /trials/iliad/ib_202p/analysis/correlates/adata/iliad_ib202p_data_processed_20250730.csv
+  data_cleaned: /trials/iliad/ib_202p/analysis/correlates/adata/iliad_ib202p_data_processed_20250903.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [28]
@@ -2083,13 +2089,13 @@ iliad_ib202p: &iliad_ib202p
   time_labels: [Day 1, Day 28, D28 fold-rise over D1]
   study_name: ILIAD_IB202P
   assay_metadata: assay_metadata/iliad_ib202p_assay_metadata.csv
-  covariates: ~.+ Sex
+  covariates: ~.+ 1
   low_efficacy: no
   num_boot_replicates: 1000
   num_perm_replicates: 5000
 
 iliad_ib201p: &iliad_ib201p
-  data_cleaned: /trials/iliad/ib_201p/analysis/correlates/adata/iliad_ib201p_data_processed_20250730.csv
+  data_cleaned: /trials/iliad/ib_201p/analysis/correlates/adata/iliad_ib201p_data_processed_20250821.csv
   sampling_scheme: cohort
   two_marker_timepoints: no
   timepoints: [28]
@@ -2109,6 +2115,41 @@ C0iliad_ib202p:
   wt: wt.C0
   WtStratum: Wstratum
   EventIndPrimary: EventIndC9_11_14
-  tpeak: 0
+  tpeak: 28
+  tpeaklag: 0
   txt.endpoint: Pertussis
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis, i.e. baseline negative per-protocol vaccine recipients not experiencing the COVID endpoint or infected through 6 days post Day 15 visit; no. cases = number of this cohort with an observed colonization endpoint.
+  txt.coxph.note2: No. at-risk = size of cohort; no. cases = number of this cohort with an observed colonization endpoint.
+
+C0iliad_ib202p_C14only:
+  ph1: ph1.C0_C14only
+  ph2: ph2.C0_C14only
+  wt: wt.C0_C14only
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndC14
+  tpeak: 28
+  tpeaklag: 0
+  txt.endpoint: Pertussis
+  txt.coxph.note2: No. at-risk = size of cohort; no. cases = number of this cohort with an observed colonization endpoint.
+
+C0iliad_ib202p_PPAI:
+  ph1: ph1.C0_PPAI
+  ph2: ph2.C0_PPAI
+  wt: wt.C0_PPAI
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndC9_11_14
+  tpeak: 28
+  tpeaklag: 0
+  txt.endpoint: Pertussis
+  txt.coxph.note2: No. at-risk = size of cohort; no. cases = number of this cohort with an observed colonization endpoint.
+
+C0iliad_ib202p_PPAI_C14only:
+  ph1: ph1.C0_PPAI_C14only
+  ph2: ph2.C0_PPAI_C14only
+  wt: wt.C0_PPAI_C14only
+  WtStratum: Wstratum
+  EventIndPrimary: EventIndC14
+  tpeak: 28
+  tpeaklag: 0
+  txt.endpoint: Pertussis
+  txt.coxph.note2: No. at-risk = size of cohort; no. cases = number of this cohort with an observed colonization endpoint.
+          

@@ -22,7 +22,7 @@ dat <- dat_proc
 
 ds_s <- dat %>%
 ################################################################
-  dplyr::filter(ph1.immuno.D35) %>%
+  dplyr::filter(!!as.name(config.cor$ph1)==1) %>%
   mutate(
     raceC = as.character(race),
     ethnicityC = case_when(EthnicityHispanic==1 ~ "Hispanic or Latino",

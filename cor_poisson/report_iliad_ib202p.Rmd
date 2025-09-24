@@ -1,0 +1,40 @@
+```{r, echo=FALSE, results='asis'}
+
+show.q=F
+
+for (COR in c("C0iliad_ib202p", "C0iliad_ib202p_C14only", "C0iliad_ib202p_PPAI", "C0iliad_ib202p_PPAI_C14only")) {
+
+  assays1 = assays
+  
+  tpeak=28
+  config.cor <- config::get(config = COR)
+  for(opt in names(config.cor)) eval(parse(text = paste0(names(config.cor[opt])," <- config.cor[[opt]]")))
+  
+  special.note = ""
+  pathCoRoutput <- paste0("cor_poisson/output/", attr(config,"config"), "/", COR)
+  
+  all.markers=paste0(DayPrefix, tpeak, assays1)
+  if (do.fold.change.overB) all.markers=c(all.markers, paste0("Delta", tpeak, "overB", assays1))
+  names(all.markers)=all.markers
+  
+  if (COR=="C0iliad_ib202p") {
+    cat("# Univariate CoR: Poisson Regression Models \n")
+  } else if (COR=="C0iliad_ib202p_C14only") {
+    cat("# Univariate CoR for the C14 only endpoint: Poisson Regression Models \n")
+  } else if (COR=="C0iliad_ib202p_PPAI") {
+    cat("# Univariate CoR for the PPAI cohort: Poisson Regression Models \n")
+  } else if (COR=="C0iliad_ib202p_PPAI_C14only") {
+    cat("# Univariate CoR for the PPAI cohort and the C14 only endpoint: Poisson Regression Models \n")
+  }
+    
+  cat("\\clearpage \n")
+  
+  for (fname.suffix in c("BPZE1", "PBO")) {
+    res = knitr::knit_child(c(here::here('cor_poisson', 'report_by_COR.Rmd')), quiet = TRUE)
+    cat(res, sep = '\n')
+  
+  }
+
+}
+
+```

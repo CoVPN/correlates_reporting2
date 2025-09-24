@@ -1,5 +1,5 @@
 ## all            : clear current results and make figures
-all: clean figs
+all: clean figs report
 
 ## figs           : clean data and make figures
 figs: 
@@ -18,6 +18,14 @@ ifeq ($(TRIAL),$(filter $(TRIAL), moderna_mock moderna_real azd1222 azd1222_bAb)
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 	Rscript code/cor_data_preprocess.R D22D43omi # Yiwen's
 	Rscript code/cor_graphics_all.R D22D43omi
+	
+else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
+	Rscript code/cor_data_preprocess.R D31toM12_nextgen_mock_sera # Yiwen's
+	Rscript code/cor_graphics_all.R D31toM12_nextgen_mock_sera
+
+else ifeq ($(TRIAL),$(filter $(TRIAL), iliad_ib202p))
+	Rscript code/cor_data_preprocess.R C0iliad_ib202p_PPAI_C14only # Yiwen's #change report line 91 as well: C0iliad_ib202p C0iliad_ib202p_C14only C0iliad_ib202p_PPAI C0iliad_ib202p_PPAI_C14only
+	Rscript code/cor_graphics_all.R C0iliad_ib202p_PPAI_C14only # Yiwen's #change report line 91 as well: C0iliad_ib202p C0iliad_ib202p_C14only C0iliad_ib202p_PPAI C0iliad_ib202p_PPAI_C14only
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
 	Rscript code/cor_data_preprocess.R D35prevent19_stage2_delta # Yiwen's
@@ -27,14 +35,14 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
 	Rscript code/cor_graphics_all.R D35prevent19_stage2_severe
 
 else ifeq ($(TRIAL),$(filter $(TRIAL), azd1222_stage2))
-	Rscript code/cor_data_preprocess.R D57azd1222_stage2_delta_nAb # Yiwen's
-	Rscript code/cor_graphics_all.R D57azd1222_stage2_delta_nAb
+##	Rscript code/cor_data_preprocess.R D57azd1222_stage2_delta_nAb # Yiwen's
+##	Rscript code/cor_graphics_all.R D57azd1222_stage2_delta_nAb
 	
 	Rscript code/cor_data_preprocess.R D57azd1222_stage2_delta_bAb # Yiwen's
 	Rscript code/cor_graphics_all.R D57azd1222_stage2_delta_bAb
 	
-	Rscript code/cor_data_preprocess.R D57azd1222_stage2_severe_nAb # Yiwen's
-	Rscript code/cor_graphics_all.R D57azd1222_stage2_severe_nAb
+##	Rscript code/cor_data_preprocess.R D57azd1222_stage2_severe_nAb # Yiwen's
+##	Rscript code/cor_graphics_all.R D57azd1222_stage2_severe_nAb
 	
 	Rscript code/cor_data_preprocess.R D57azd1222_stage2_severe_bAb # Yiwen's
 	Rscript code/cor_graphics_all.R D57azd1222_stage2_severe_bAb
@@ -145,6 +153,7 @@ clean:
 
 ## report        : create a standalone report
 report:
+	bash _build_chapter.sh
 
 # type 'make help' to show all make commands
 help: Makefile

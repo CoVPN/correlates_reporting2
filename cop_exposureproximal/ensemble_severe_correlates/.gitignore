@@ -1,0 +1,8 @@
+output/*
+renv/*
+.html
+.pdf
+.Rhistory
+.RData
+.Rproj.user
+outScale.txt

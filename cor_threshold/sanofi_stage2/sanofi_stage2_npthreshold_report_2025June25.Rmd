@@ -246,7 +246,8 @@ add_rcdf <- function(ggthresh,
 
 ```{r read_data, cache = T}
 # read data 
-df <- read.csv("vat08_combined_data_processed_20250321.csv")
+# df <- read.csv("vat08_combined_data_processed_20250321.csv")
+df <- read.csv("/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250417.csv")
 ```
 
 ```{r pull_last_event_times}
