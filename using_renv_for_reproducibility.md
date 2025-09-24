@@ -1,6 +1,6 @@
 # Using renv for Reproducibility
 
-renv can be used at one of three levels: repo-level, module-level, and project level. The following instructions show how to use renv when starting a new project. To reproduce results for an existing project, don't follow these instructions; instead, follow the instructions in that project (e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md) or the module that contains the project (e.g, https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md). 
+renv can be used at one of three levels: repo-level, module-level, and project level. The following instructions show how to use renv when starting a new project. Don't follow these instructions if you are trying to reproduce results for an existing project. Instead, follow the instructions in the project (e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md) or the module that contains the project (e.g, https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md). 
 
 ## Setting up renv at the project-level for a new project
 
