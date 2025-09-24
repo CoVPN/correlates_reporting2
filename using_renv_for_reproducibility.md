@@ -47,4 +47,4 @@ Now open a RStudio session, change the working directory to the project folder, 
 
 
 
-For an example of making reproducible reports, check out the project folder cor_threshold/sanofi_stage2/readme_reproducibility
+For an example of making reproducible reports, check out the project folder cor_threshold/sanofi_stage2/README.md
