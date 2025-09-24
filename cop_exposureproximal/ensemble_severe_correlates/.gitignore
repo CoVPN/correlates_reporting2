@@ -5,4 +5,4 @@ renv/*
 .Rhistory
 .RData
 .Rproj.user
-
+outScale.txt
