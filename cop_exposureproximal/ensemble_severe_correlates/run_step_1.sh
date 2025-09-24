@@ -7,8 +7,6 @@ for (( i =1; i<=3; i++)); do
 
     for ((k=0;k<=3;k++)); do
 
-      #Rscript getinitial.R $i $j $k
-
       sbatch  --wrap="R --no-save --no-restore < getinitial.R --args $i $j $k" --output=outScale.txt
 
     done
