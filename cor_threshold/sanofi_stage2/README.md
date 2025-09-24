@@ -1,6 +1,8 @@
 # Sanofi Stage 2 CoP manuscript NP threshold code 
 
-## Set up note
+## Reproducibility
+
+Set up notes
 
 - Assume that we work with R 4.4.2.
 
@@ -21,7 +23,7 @@
 
 
 
-## Reproduce the report
+Reproducing the report
 
 - This project folder is the working directory.
 

@@ -1,6 +1,9 @@
-# Reproducibility 
+# Poisson Regression Modeling of Correlates of Risk
 
-## ILiAD phase 2 correlates
+
+## Reproducibility 
+
+### ILiAD phase 2 correlates
 
 To generate covpn_correlates_cor_poisson_iliad_ib202p.pdf, run the following commands in a bash shell:
 ```{bash}
