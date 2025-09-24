@@ -7,7 +7,7 @@ Enter the project folder.
 
 First, run:
 ```{bash}
-bash ./run_all.sh
+bash ./run_step_1.sh
 ```
 
 
