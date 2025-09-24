@@ -40,7 +40,7 @@ vv.endi<-"EventIndPrimaryIncludeNotMolecConfirmedD29_NoRegionCens"
 vv.endt<-"EventTimePrimaryIncludeNotMolecConfirmedD29_NoRegionCens"
 
 library(config)
-config.reporting <- config::get(config = "janssen_pooled_partA", file="../config.yml") 
+config.reporting <- config::get(config = "janssen_pooled_partA", file="../../config.yml") 
 dat<-read.csv(config.reporting$data_cleaned,na.strings=c("n/a","NA","N/A","","."))
 # dat<-read.csv("adata/janssen_pooled_partA_data_processed_with_riskscore_20240305.csv",na.strings=c("n/a","NA","N/A","","."))
 
