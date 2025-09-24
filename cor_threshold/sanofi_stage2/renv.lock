@@ -1,0 +1,1137 @@
+{
+  "R": {
+    "Version": "4.4.2",
+    "Repositories": [
+      {
+        "Name": null,
+        "URL": "http://depot.pc.scharp.org/cran/4.4.2"
+      },
+      {
+        "Name": null,
+        "URL": "https://packagemanager.posit.co/cran/latest"
+      },
+      {
+        "Name": null,
+        "URL": "https://bioconductor.org/packages/3.20/bioc"
+      }
+    ]
+  },
+  "Packages": {
+    "BBmisc": {
+      "Package": "BBmisc",
+      "Version": "1.13",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "BBmisc",
+      "RemoteRef": "BBmisc",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.13",
+      "Hash": "005fd5ee75240b66b9df92c7cb32a913"
+    },
+    "DT": {
+      "Package": "DT",
+      "Version": "0.34.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "a9d00f59f9c7e613dd4c3e0d27135a03"
+    },
+    "KernSmooth": {
+      "Package": "KernSmooth",
+      "Version": "2.23-26",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "2fb39782c07b5ad422b0448ae83f64c4"
+    },
+    "MASS": {
+      "Package": "MASS",
+      "Version": "7.3-64",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "49d2d8090b74c1179df1aff16201caf8"
+    },
+    "Matrix": {
+      "Package": "Matrix",
+      "Version": "1.7-4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "7dbe8933065523bfc227027091bf2b1f"
+    },
+    "ModelMetrics": {
+      "Package": "ModelMetrics",
+      "Version": "1.2.2.2",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "ModelMetrics",
+      "RemoteRef": "ModelMetrics",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.2.2.2",
+      "Hash": "40a55bd0b44719941d103291ac5e9d74"
+    },
+    "R.methodsS3": {
+      "Package": "R.methodsS3",
+      "Version": "1.8.2",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "R.methodsS3",
+      "RemoteRef": "R.methodsS3",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.8.2",
+      "Hash": "278c286fd6e9e75d0c2e8f731ea445c8"
+    },
+    "R.oo": {
+      "Package": "R.oo",
+      "Version": "1.27.1",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "R.oo",
+      "RemoteRef": "R.oo",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.27.1",
+      "Hash": "a94afc14a90a68dd5043ceb9c089853b"
+    },
+    "R.utils": {
+      "Package": "R.utils",
+      "Version": "2.13.0",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "R.utils",
+      "RemoteRef": "R.utils",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "2.13.0",
+      "Hash": "d32373d88da809f8974d5307481862b0"
+    },
+    "R6": {
+      "Package": "R6",
+      "Version": "2.6.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d4335fe7207f1c01ab8c41762f5840d4"
+    },
+    "RColorBrewer": {
+      "Package": "RColorBrewer",
+      "Version": "1.1-3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "45f0398006e83a5b10b72a90663d8d8c"
+    },
+    "ROCR": {
+      "Package": "ROCR",
+      "Version": "1.0-11",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "cc151930e20e16427bc3d0daec62b4a9"
+    },
+    "Rcpp": {
+      "Package": "Rcpp",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "0d3d8867aa41b0d9ad113b50c169ecb2"
+    },
+    "Rdpack": {
+      "Package": "Rdpack",
+      "Version": "2.6.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "1b2ca1972e3b00cd0bb5a98e16403028"
+    },
+    "S7": {
+      "Package": "S7",
+      "Version": "0.2.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "5deb66b3ae702137e1f4162c11861e76"
+    },
+    "SQUAREM": {
+      "Package": "SQUAREM",
+      "Version": "2021.1",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "SQUAREM",
+      "RemoteRef": "SQUAREM",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "2021.1",
+      "Hash": "0cf10dab0d023d5b46a5a14387556891"
+    },
+    "SuperLearner": {
+      "Package": "SuperLearner",
+      "Version": "2.0-29",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "6f5955ce4a4401df19354547ec179feb"
+    },
+    "abind": {
+      "Package": "abind",
+      "Version": "1.4-8",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "2288423bb0f20a457800d7fc47f6aa54"
+    },
+    "assertthat": {
+      "Package": "assertthat",
+      "Version": "0.2.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "50c838a310445e954bc13f26f26a6ecf"
+    },
+    "backports": {
+      "Package": "backports",
+      "Version": "1.5.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "e1e1b9d75c37401117b636b7ae50827a"
+    },
+    "base64enc": {
+      "Package": "base64enc",
+      "Version": "0.1-3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "543776ae6848fde2f48ff3816d0628bc"
+    },
+    "bitops": {
+      "Package": "bitops",
+      "Version": "1.0-9",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "d972ef991d58c19e6efa71b21f5e144b"
+    },
+    "bslib": {
+      "Package": "bslib",
+      "Version": "0.9.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "70a6489cc254171fb9b4a7f130f44dca"
+    },
+    "caTools": {
+      "Package": "caTools",
+      "Version": "1.18.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "ab79c733080d83b4ad8a2cc33c1ef393"
+    },
+    "cachem": {
+      "Package": "cachem",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "cd9a672193789068eb5a2aad65a0dedf"
+    },
+    "caret": {
+      "Package": "caret",
+      "Version": "7.0-1",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "caret",
+      "RemoteRef": "caret",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "7.0-1",
+      "Hash": "304c0d28bda6454aae3b14ae953e7824"
+    },
+    "checkmate": {
+      "Package": "checkmate",
+      "Version": "2.3.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "0e14e01ce07e7c88fd25de6d4260d26b"
+    },
+    "class": {
+      "Package": "class",
+      "Version": "7.3-23",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "d0cb9cc838c3b43560bd958fc4317fdc"
+    },
+    "cli": {
+      "Package": "cli",
+      "Version": "3.6.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "16850760556401a2eeb27d39bd11c9cb"
+    },
+    "clock": {
+      "Package": "clock",
+      "Version": "0.7.3",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "clock",
+      "RemoteRef": "clock",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "0.7.3",
+      "Hash": "0abf50c09a3b9ccf0d253ae6a272099e"
+    },
+    "codetools": {
+      "Package": "codetools",
+      "Version": "0.2-20",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "61e097f35917d342622f21cdc79c256e"
+    },
+    "cpp11": {
+      "Package": "cpp11",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "2720e3fd3dad08f34b19b56b3d6f073d"
+    },
+    "crayon": {
+      "Package": "crayon",
+      "Version": "1.5.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "859d96e65ef198fd43e82b9628d593ef"
+    },
+    "crosstalk": {
+      "Package": "crosstalk",
+      "Version": "1.2.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "8b008bc619e0bbebb5646b3d37efdad1"
+    },
+    "cvAUC": {
+      "Package": "cvAUC",
+      "Version": "1.1.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "07bca048cef2774d3bc39b8b7f507cff"
+    },
+    "data.table": {
+      "Package": "data.table",
+      "Version": "1.17.8",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "1d991cd6160fa7b1fdbd3689034cbd15"
+    },
+    "delayed": {
+      "Package": "delayed",
+      "Version": "0.5.0",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "delayed",
+      "RemoteRef": "delayed",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "0.5.0",
+      "Hash": "77a4897deb2a04849daf4ae6eb758eab"
+    },
+    "diagram": {
+      "Package": "diagram",
+      "Version": "1.6.5",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "diagram",
+      "RemoteRef": "diagram",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.6.5",
+      "Hash": "c7f527c59edc72c4bce63519b8d38752"
+    },
+    "digest": {
+      "Package": "digest",
+      "Version": "0.6.37",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "33698c4b3127fc9f506654607fb73676"
+    },
+    "dplyr": {
+      "Package": "dplyr",
+      "Version": "1.1.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "fedd9d00c2944ff00a0e2696ccf048ec"
+    },
+    "e1071": {
+      "Package": "e1071",
+      "Version": "1.7-16",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "27a09ca40266a1066d62ef5402dd51d6"
+    },
+    "evaluate": {
+      "Package": "evaluate",
+      "Version": "1.0.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "94cf2c54237f6841cee68e3ba4ab5a14"
+    },
+    "expm": {
+      "Package": "expm",
+      "Version": "1.0-0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "a44b2810f36c1cda5d52eee6ec96cafa"
+    },
+    "farver": {
+      "Package": "farver",
+      "Version": "2.1.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "680887028577f3fa2a81e410ed0d6e42"
+    },
+    "fastmap": {
+      "Package": "fastmap",
+      "Version": "1.2.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "aa5e1cd11c2d15497494c5292d7ffcc8"
+    },
+    "fontawesome": {
+      "Package": "fontawesome",
+      "Version": "0.5.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "bd1297f9b5b1fc1372d19e2c4cd82215"
+    },
+    "foreach": {
+      "Package": "foreach",
+      "Version": "1.5.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "618609b42c9406731ead03adf5379850"
+    },
+    "fs": {
+      "Package": "fs",
+      "Version": "1.6.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "7eb1e342eee7e0a7449c49cdaa526d39"
+    },
+    "future": {
+      "Package": "future",
+      "Version": "1.67.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "887043db011e3cb2e507390950a2ea0f"
+    },
+    "future.apply": {
+      "Package": "future.apply",
+      "Version": "1.20.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "42eb18487138fa2683ff92149e4bd01a"
+    },
+    "gam": {
+      "Package": "gam",
+      "Version": "1.22-6",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "576536da660b6cb02a6bf8079a155cc0"
+    },
+    "generics": {
+      "Package": "generics",
+      "Version": "0.1.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "4b29bf698d0c7bdb9f1e4976e7ade41d"
+    },
+    "ggplot2": {
+      "Package": "ggplot2",
+      "Version": "4.0.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "3b4625a157bcbd82b937fcb3acdd2d85"
+    },
+    "globals": {
+      "Package": "globals",
+      "Version": "0.18.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "0e0c37bd3108b8835c99eaa4d83cf6f5"
+    },
+    "glue": {
+      "Package": "glue",
+      "Version": "1.8.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "5899f1eaa825580172bb56c08266f37c"
+    },
+    "gower": {
+      "Package": "gower",
+      "Version": "1.0.2",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "gower",
+      "RemoteRef": "gower",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.0.2",
+      "Hash": "7a37062c38f12229b5191cf5f593f91e"
+    },
+    "gplots": {
+      "Package": "gplots",
+      "Version": "3.2.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "d24febf39c58dcb5a6cc6a12bd66d40a"
+    },
+    "gtable": {
+      "Package": "gtable",
+      "Version": "0.3.6",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "de949855009e2d4d0e52a844e30617ae"
+    },
+    "gtools": {
+      "Package": "gtools",
+      "Version": "3.9.5",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "588d091c35389f1f4a9d533c8d709b35"
+    },
+    "hardhat": {
+      "Package": "hardhat",
+      "Version": "1.4.2",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "hardhat",
+      "RemoteRef": "hardhat",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.4.2",
+      "Hash": "3925b503926399e7f9ae563faf11da4d"
+    },
+    "highr": {
+      "Package": "highr",
+      "Version": "0.11",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "d65ba49117ca223614f71b60d85b8ab7"
+    },
+    "hms": {
+      "Package": "hms",
+      "Version": "1.1.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "b59377caa7ed00fa41808342002138f9"
+    },
+    "htmltools": {
+      "Package": "htmltools",
+      "Version": "0.5.8.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "81d371a9cc60640e74e4ab6ac46dcedc"
+    },
+    "htmlwidgets": {
+      "Package": "htmlwidgets",
+      "Version": "1.6.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "04291cc45198225444a397606810ac37"
+    },
+    "igraph": {
+      "Package": "igraph",
+      "Version": "2.1.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "337fa0da3fe0506d235cde01d751b4c3"
+    },
+    "ipred": {
+      "Package": "ipred",
+      "Version": "0.9-15",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "ipred",
+      "RemoteRef": "ipred",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "0.9-15",
+      "Hash": "3c3e02183ef7b9225213b531d0ce43f5"
+    },
+    "isoband": {
+      "Package": "isoband",
+      "Version": "0.2.7",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "0080607b4a1a7b28979aecef976d8bc2"
+    },
+    "isotone": {
+      "Package": "isotone",
+      "Version": "1.1-2",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "isotone",
+      "RemoteRef": "isotone",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.1-2",
+      "Hash": "8ca54de167aa5bac8788a15413f96f5e"
+    },
+    "iterators": {
+      "Package": "iterators",
+      "Version": "1.0.14",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "8954069286b4b2b0d023d1b288dce978"
+    },
+    "jquerylib": {
+      "Package": "jquerylib",
+      "Version": "0.1.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "5aab57a3bd297eee1c1d862735972182"
+    },
+    "jsonlite": {
+      "Package": "jsonlite",
+      "Version": "2.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b0776f526d36d8bd4a3344a88fe165c4"
+    },
+    "knitr": {
+      "Package": "knitr",
+      "Version": "1.50",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5a07d8ec459d7b80bd4acca5f4a6e062"
+    },
+    "labeling": {
+      "Package": "labeling",
+      "Version": "0.4.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "b64ec208ac5bc1852b285f665d6368b3"
+    },
+    "later": {
+      "Package": "later",
+      "Version": "1.4.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "a729883bff94b606cd4f0445aeed95b5"
+    },
+    "lattice": {
+      "Package": "lattice",
+      "Version": "0.22-7",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "934f30aea6442867f57a610034ab06d3"
+    },
+    "lava": {
+      "Package": "lava",
+      "Version": "1.8.1",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "lava",
+      "RemoteRef": "lava",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.8.1",
+      "Hash": "b74911f7265f9c908027dab63801a754"
+    },
+    "lifecycle": {
+      "Package": "lifecycle",
+      "Version": "1.0.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "b8552d117e1b808b09a832f589b79035"
+    },
+    "listenv": {
+      "Package": "listenv",
+      "Version": "0.9.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "e2fca3e12e4db979dccc6e519b10a7ee"
+    },
+    "lubridate": {
+      "Package": "lubridate",
+      "Version": "1.9.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "be38bc740fc51783a78edb5a157e4104"
+    },
+    "magrittr": {
+      "Package": "magrittr",
+      "Version": "2.0.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "8b3b213aa0c54a0dec254288ccb545d1"
+    },
+    "memoise": {
+      "Package": "memoise",
+      "Version": "2.0.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "e2817ccf4a065c5d9d7f2cfbe7c1d78c"
+    },
+    "mime": {
+      "Package": "mime",
+      "Version": "0.13",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0ec19f34c72fab674d8f2b4b1c6410e1"
+    },
+    "msm": {
+      "Package": "msm",
+      "Version": "1.8.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "8d75f0669b1fb93885d39b9281672c5e"
+    },
+    "mvtnorm": {
+      "Package": "mvtnorm",
+      "Version": "1.3-3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "c7241e6be9d6df551a2e539a50f5c875"
+    },
+    "nlme": {
+      "Package": "nlme",
+      "Version": "3.1-166",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "ccbb8846be320b627e6aa2b4616a2ded"
+    },
+    "nnet": {
+      "Package": "nnet",
+      "Version": "7.3-20",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "c955edf99ff24a32e96bd0a22645af60"
+    },
+    "nnls": {
+      "Package": "nnls",
+      "Version": "1.6",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "914abffec652cfbef37662c4fd88e092"
+    },
+    "npthreshold": {
+      "Package": "npthreshold",
+      "Version": "0.1.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "jpspeng",
+      "RemoteRepo": "npthreshold",
+      "RemoteRef": "main",
+      "RemoteSha": "0236572fe54ce98bb4b62284d206d798df814d72",
+      "Hash": "bd467c888433f0bd841e1e2a057c30e7"
+    },
+    "numDeriv": {
+      "Package": "numDeriv",
+      "Version": "2016.8-1.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "df58958f293b166e4ab885ebcad90e02"
+    },
+    "origami": {
+      "Package": "origami",
+      "Version": "1.0.7",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "91fa37c3646e53f9a1195f85acd76222"
+    },
+    "pROC": {
+      "Package": "pROC",
+      "Version": "1.18.5",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "82d32ebd548c6a4e7de73bab96411b3b"
+    },
+    "parallelly": {
+      "Package": "parallelly",
+      "Version": "1.45.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "1e127bc944e0c1ec7c0297d685917dfe"
+    },
+    "pillar": {
+      "Package": "pillar",
+      "Version": "1.11.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "1395e64f2689ffd503657778e810cee2"
+    },
+    "pkgconfig": {
+      "Package": "pkgconfig",
+      "Version": "2.0.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "01f28d4278f15c76cddbea05899c5d6f"
+    },
+    "plyr": {
+      "Package": "plyr",
+      "Version": "1.8.9",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "6b8177fd19982f0020743fadbfdbd933"
+    },
+    "prettyunits": {
+      "Package": "prettyunits",
+      "Version": "1.2.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "6b01fc98b1e86c4f705ce9dcfd2f57c7"
+    },
+    "prodlim": {
+      "Package": "prodlim",
+      "Version": "2025.04.28",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "prodlim",
+      "RemoteRef": "prodlim",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "2025.04.28",
+      "Hash": "bf01a200549d13051f51ab15010aac52"
+    },
+    "progress": {
+      "Package": "progress",
+      "Version": "1.2.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "f4625e061cb2865f111b47ff163a5ca6"
+    },
+    "progressr": {
+      "Package": "progressr",
+      "Version": "0.16.0",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "progressr",
+      "RemoteRef": "progressr",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "0.16.0",
+      "Hash": "a1c4def81b4a098b2e288558f719cbad"
+    },
+    "promises": {
+      "Package": "promises",
+      "Version": "1.3.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "70157a4a73963da5779f9c67f4d31fd1"
+    },
+    "proxy": {
+      "Package": "proxy",
+      "Version": "0.4-27",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "e0ef355c12942cf7a6b91a6cfaea8b3e"
+    },
+    "purrr": {
+      "Package": "purrr",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "9240cfb47489133f809918a0d3cc60cb"
+    },
+    "rappdirs": {
+      "Package": "rappdirs",
+      "Version": "0.3.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "5e3c5dc0b071b21fa128676560dbe94d"
+    },
+    "rbibutils": {
+      "Package": "rbibutils",
+      "Version": "2.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "dfc034a172fd88fc66b1a703894c4185"
+    },
+    "recipes": {
+      "Package": "recipes",
+      "Version": "1.3.1",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "recipes",
+      "RemoteRef": "recipes",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.3.1",
+      "Hash": "fa64dfb9b76177ecc7e2a52213c2669b"
+    },
+    "renv": {
+      "Package": "renv",
+      "Version": "0.13.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "079cb1f03ff972b30401ed05623cbe92"
+    },
+    "reshape2": {
+      "Package": "reshape2",
+      "Version": "1.4.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "bb5996d0bd962d214a11140d77589917"
+    },
+    "rlang": {
+      "Package": "rlang",
+      "Version": "1.1.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "892124978869b74935dc3934c42bfe5a"
+    },
+    "rmarkdown": {
+      "Package": "rmarkdown",
+      "Version": "2.29",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "df99277f63d01c34e95e3d2f06a79736"
+    },
+    "rpart": {
+      "Package": "rpart",
+      "Version": "4.1.24",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "ad31b457482eda7a12e51c5d8e7b0be4"
+    },
+    "rstackdeque": {
+      "Package": "rstackdeque",
+      "Version": "1.1.1",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "rstackdeque",
+      "RemoteRef": "rstackdeque",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "1.1.1",
+      "Hash": "4996eb884c46d3a89328ce7dad8349b0"
+    },
+    "sass": {
+      "Package": "sass",
+      "Version": "0.4.10",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "3fb78d066fb92299b1d13f6a7c9a90a8"
+    },
+    "scales": {
+      "Package": "scales",
+      "Version": "1.4.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "c5bba8f0d1df8c4b9538a40570798d9b"
+    },
+    "shape": {
+      "Package": "shape",
+      "Version": "1.4.6.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "5c47e84dc0a3ca761ae1d307889e796d"
+    },
+    "sl3": {
+      "Package": "sl3",
+      "Version": "1.4.5",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "tlverse",
+      "RemoteRepo": "sl3",
+      "RemoteRef": "master",
+      "RemoteSha": "0e8f2365bcbe54010b8120c04a7a2dcfc8119227",
+      "Remotes": "github::nhejazi/haldensify",
+      "Hash": "d9dd94999d3465b1c1ba677596bed88d"
+    },
+    "sparsevctrs": {
+      "Package": "sparsevctrs",
+      "Version": "0.3.4",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "sparsevctrs",
+      "RemoteRef": "sparsevctrs",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "0.3.4",
+      "Hash": "9e3c5b84f78db47fc6eb6195e20b4d9a"
+    },
+    "stringi": {
+      "Package": "stringi",
+      "Version": "1.8.7",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "2b56088e23bdd58f89aebf43a0913457"
+    },
+    "stringr": {
+      "Package": "stringr",
+      "Version": "1.5.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "8f28c568a22dde52d2c8b11958776ac2"
+    },
+    "survival": {
+      "Package": "survival",
+      "Version": "3.8-3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "fe42836742a4f065b3f3f5de81fccab9"
+    },
+    "tibble": {
+      "Package": "tibble",
+      "Version": "3.3.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "784b27d0801c3829de602105757b2cd7"
+    },
+    "tidyr": {
+      "Package": "tidyr",
+      "Version": "1.3.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "915fb7ce036c22a6a33b5a8adb712eb1"
+    },
+    "tidyselect": {
+      "Package": "tidyselect",
+      "Version": "1.2.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "829f27b9c4919c16b593794a6344d6c0"
+    },
+    "timeDate": {
+      "Package": "timeDate",
+      "Version": "4041.110",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "c5e48e8ac24d4472ddb122bcdeb011ad"
+    },
+    "timechange": {
+      "Package": "timechange",
+      "Version": "0.3.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "c5f3c201b931cd6474d17d8700ccb1c8"
+    },
+    "tinytex": {
+      "Package": "tinytex",
+      "Version": "0.57",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "02d65e0c0415bf36a7ddc0d2ba50a840"
+    },
+    "tmle3": {
+      "Package": "tmle3",
+      "Version": "0.2.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "tlverse",
+      "RemoteRepo": "tmle3",
+      "RemoteRef": "master",
+      "RemoteSha": "ed72f8a20e64c914ab25ffe015d865f7a9963d27",
+      "Remotes": "github::tlverse/sl3",
+      "Hash": "a865affe79d1a0f0d9eb6131f111a1a4"
+    },
+    "tzdb": {
+      "Package": "tzdb",
+      "Version": "0.5.0",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "tzdb",
+      "RemoteRef": "tzdb",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "0.5.0",
+      "Hash": "09e3961e87b7bafa4a9340bbb34aeda8"
+    },
+    "utf8": {
+      "Package": "utf8",
+      "Version": "1.2.6",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "d526d558be176e9ceb68c3d1e83479b7"
+    },
+    "uuid": {
+      "Package": "uuid",
+      "Version": "1.2-1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "34e965e62a41fcafb1ca60e9b142085b"
+    },
+    "vctrs": {
+      "Package": "vctrs",
+      "Version": "0.6.5",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "c03fa420630029418f7e6da3667aac4a"
+    },
+    "viridisLite": {
+      "Package": "viridisLite",
+      "Version": "0.4.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "c826c7c4241b6fc89ff55aaea3fa7491"
+    },
+    "visNetwork": {
+      "Package": "visNetwork",
+      "Version": "2.1.4",
+      "Source": "CRAN",
+      "Repository": "RSPM",
+      "RemoteType": "standard",
+      "RemotePkgRef": "visNetwork",
+      "RemoteRef": "visNetwork",
+      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemoteReposName": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
+      "RemotePkgPlatform": "source",
+      "RemoteSha": "2.1.4",
+      "Hash": "5925096277c19e4ea9209e175a61d3d3"
+    },
+    "withr": {
+      "Package": "withr",
+      "Version": "3.0.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "cc2d62c76458d425210d1eb1478b30b4"
+    },
+    "xfun": {
+      "Package": "xfun",
+      "Version": "0.53",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "1befe97a0d56060b3964e3986d408df9"
+    },
+    "yaml": {
+      "Package": "yaml",
+      "Version": "2.3.10",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "51dab85c6c98e50a18d7551e9d49f76c"
+    }
+  }
+}
