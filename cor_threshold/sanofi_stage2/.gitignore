@@ -1,3 +1,7 @@
 .html
 .pdf
-.rds
+.Rhistory
+.RData
+.Rproj.user
+renv/
+*_cache
