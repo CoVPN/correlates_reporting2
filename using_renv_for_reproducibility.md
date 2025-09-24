@@ -47,4 +47,4 @@ Now open a RStudio session, change the working directory to the project folder, 
 
 
 
-For an example of making reproducible reports, check out the project folder cor_threshold/sanofi_stage2/README.md
+For an example of making reproducible reports, check out the project folder cor_threshold/sanofi_stage2 (https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md).
