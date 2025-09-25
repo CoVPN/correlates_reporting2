@@ -10,8 +10,8 @@ To start, make sure there are two files in the project folder:
 
 - .gitignore  This file tells git which files/folders to ignore. It should contain the following lines:
 ```
-.html
-.pdf
+*.html
+*.pdf
 .Rhistory
 .RData
 .Rproj.user
