@@ -55,11 +55,11 @@ For an example of a project using project-level renv, check out cor_threshold/sa
 
 ## Setting up renv at the module-level for a new module
 
-This is not currently done. There seems to be little advantages of using renv at the module level.
+Currently, no module uses a module-level renv.lock. 
 
 ## Setting up renv at the repo-level
 
-This has already been done for the repo. For an example of using the repo-level renv, check out cor_coxph (https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md).
+Repo-level has already been set up, and is shared by several modules. For an example of using the repo-level renv, check out cor_coxph (https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md).
 
 
 
