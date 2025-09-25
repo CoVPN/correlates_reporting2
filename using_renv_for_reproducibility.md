@@ -16,6 +16,7 @@ To start, make sure there are two files in the project folder:
 .RData
 .Rproj.user
 renv/
+output/
 ```
 - README.md  This file should have a section titled Reproducibility, which details how to reproduce the reports.
 
