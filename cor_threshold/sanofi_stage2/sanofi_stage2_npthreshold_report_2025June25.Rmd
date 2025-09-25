@@ -19,6 +19,11 @@ library(sl3)
 library(DT)
 library(knitr)
 library(msm)
+
+# make sure output folder exists
+dir.create("output", showWarnings = FALSE)
+
+
 ```
 
 ```{r old_graphthresh}
@@ -834,7 +839,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
     
     # write.csv(res$raw_table, 
-    #           file = sprintf("raw_res_only_standardized/Stage %s %s vaccine raw results.csv", stage, marker), 
+    #           file = sprintf("output/Stage %s %s vaccine raw results.csv", stage, marker), 
     #           row.names = F)
     # 
     
@@ -877,7 +882,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
     
     # write.csv(res$raw_table, 
-    #           file = sprintf("raw_res_only_standardized/Stage %s %s placebo raw results.csv", stage, marker), 
+    #           file = sprintf("output/Stage %s %s placebo raw results.csv", stage, marker), 
     #           row.names = F)
 
     cat("\n\n#### Monotone \n")
@@ -909,7 +914,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
     
     # write.csv(res$raw_table, 
-    #           file = sprintf("raw_res_only_standardized/Stage %s %s vaccine change raw results.csv", stage, marker), 
+    #           file = sprintf("output/Stage %s %s vaccine change raw results.csv", stage, marker), 
     #           row.names = F)
     
     cat("\n\n#### Unscaled (monotone) \n")
@@ -1005,9 +1010,9 @@ for (stage in c(2)){
     res$graph %>% print()
 
     res$table %>% kable() %>% print()
-
+    
     write.csv(res$raw_table,
-              file = sprintf("raw_res_only_standardized/Stage %s %s vaccine raw results.csv", stage, marker),
+              file = sprintf("output/Stage %s %s vaccine raw results.csv", stage, marker),
               row.names = F)
 
     cat("\n\n#### Unscaled (monotone) \n")
@@ -1046,7 +1051,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
 
     write.csv(res$raw_table,
-              file = sprintf("raw_res_only_standardized/Stage %s %s placebo raw results.csv", stage, marker),
+              file = sprintf("output/Stage %s %s placebo raw results.csv", stage, marker),
               row.names = F)
 
     cat("\n\n#### Monotone \n")
@@ -1079,7 +1084,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
 
     # write.csv(res$raw_table,
-    #           file = sprintf("raw_res_only_standardized/Stage %s %s vaccine change raw results.csv", stage, marker),
+    #           file = sprintf("output/Stage %s %s vaccine change raw results.csv", stage, marker),
     #           row.names = F)
 
     cat("\n\n#### Unscaled (monotone) \n")
