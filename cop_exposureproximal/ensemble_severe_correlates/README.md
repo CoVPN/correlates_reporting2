@@ -23,10 +23,14 @@ This project uses a project-level renv.lock. Setup:
   ```{R}
   renv::restore()
   ```
-- Open the repo config.yml in an editor, look for iliad_ib202p, and modify the line below to point to the local copy of analysis-ready data file.
+- Look for read.csv in all R scripts and modify the code to point to the local copy of analysis-ready data file. For example, if the project is located inside the repo, use the following lines of code to read from the data file on the SCHARP file system.
+  ```{R}
+  config.reporting <- config::get(config = "janssen_pooled_partA", file="../../config.yml") 
+  dat<-read.csv(config.reporting$data_cleaned)
+  ```
 
 
-The following shell commands are to be run at the project level.
+To reproduce VE2_Scale_LRT2_event.pdf, run the following shell commands at the project level. The first four steps use sbatch to run jobs on a high performance cluster. 
 
 - Run the following and wait till all the jobs finish (squeue). Estimated time minutes.
     ```{bash}
