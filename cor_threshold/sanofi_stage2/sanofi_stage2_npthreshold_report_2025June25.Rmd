@@ -19,9 +19,14 @@ library(sl3)
 library(DT)
 library(knitr)
 library(msm)
+
+# make sure output folder exists
+dir.create("output", showWarnings = FALSE)
+
+
 ```
 
-```{r}
+```{r old_graphthresh}
 # old version of npthreshold code, used for this report 
 graphthresh <- function(res,
                         monotone = F,
@@ -38,8 +43,6 @@ graphthresh <- function(res,
   res_graph <- res %>% 
     mutate(ci_lo = ifelse(ci_lo < 0, 0, ci_lo), 
            ci_lo_monotone = ifelse(ci_lo_monotone < 0, 0, ci_lo_monotone)
-#           ci_hi = ifelse(ci_hi > 0.1, 0.1, ci_hi)
-#           ci_hi_monotone = ifelse(ci_hi_monotone > 0.1, 0.1, ci_hi_monotone)
            )
   
   res_graph <- data.frame(res_graph)
@@ -84,7 +87,7 @@ graphthresh <- function(res,
     theme(plot.title = element_text(hjust = 0.5)) 
   
   if (!is.null(ylim)){
-    plt <- plt + scale_y_continuous(n.breaks = 10, limits = ylim)
+    plt <- plt + scale_y_continuous(n.breaks = 10, limits = c(ylim[1], ylim[2]))
   }
   else{
     plt <- plt + scale_y_continuous(n.breaks = 10)
@@ -220,7 +223,6 @@ add_rcdf <- function(ggthresh,
         labels = label_parsed(custom_labels(breaks))
       ) 
 
-    # plt <- plt + scale_x_log10(limits = c(min(data[,marker]), max(data[,marker]))) 
   }
   else{
     # Find the minimum value from the data
@@ -247,13 +249,13 @@ add_rcdf <- function(ggthresh,
 
 ```
 
-```{r, cache = T}
+```{r read_data, cache = T}
 # read data 
 # df <- read.csv("vat08_combined_data_processed_20250321.csv")
 df <- read.csv("/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Data/adata/vat08_combined_data_processed_20250417.csv")
 ```
 
-```{r}
+```{r pull_last_event_times}
 # find last timepoint of event 
 
 # # stage 1, spike
@@ -328,14 +330,14 @@ df <- read.csv("/trials/covpn/p3005/analysis/correlates/Part_A_Blinded_Phase_Dat
 #   pull(EventTimeOmicronD43M5hotdeck10)
 ```
 
-```{r}
+```{r process_data}
 # process data 
 df <- df %>% 
   mutate(Sex = factor(Sex), 
          Region3 = factor(Region3))
 ```
 
-```{r}
+```{r spike_marker_list}
 spike_marker_list <- list(
   Day43bindSpike = list(
     readable = "IgG Spike Index Concentration (AU/ml)", 
@@ -385,7 +387,7 @@ spike_marker_list <- list(
 )
 ```
 
-```{r}
+```{r neut_marker_list}
 neut_marker_list <- list(
   Day43pseudoneutid50 = list(
     readable = "nAb ID50 reference titer (AU/ml)", 
@@ -420,7 +422,7 @@ neut_marker_list <- list(
 )
 ```
 
-```{r}
+```{r helper_list}
 stage_dict <- list(
   Stage1 = list(
     spike_filter = "Trialstage==1 & Bserostatus==1 & ph2.D43.bAb", 
@@ -446,7 +448,7 @@ stage_dict <- list(
 )
 ```
 
-```{r}
+```{r delta_method_func}
 calc_delta_method <- function(row, placebo_incidence, placebo_se) {
   # Extract values from the row
   estimate_monotone <- row['estimate_monotone']
@@ -464,7 +466,7 @@ calc_delta_method <- function(row, placebo_incidence, placebo_se) {
 
 ```
 
-```{r}
+```{r rcdf_func}
 RCDF <- function(a, data, weights, marker) {
   w <- data[[weights]]
   x <- data[[marker]]
@@ -475,7 +477,7 @@ RCDF <- function(a, data, weights, marker) {
 ```
 
 
-```{r}
+```{r analysis_helper}
 run_analysis_helper <- function(data,
                                 time_var, 
                                 event_var, 
@@ -719,7 +721,7 @@ assuming monotonicity.
 - CIs for risk in graphs are bounded between 0 and 1. CIs for VE in graphs are bounded
 above by 1. 
 
-```{r results = "asis", fig.align='center', cache = T}
+```{r run_analysis, results = "asis", fig.align='center', cache = T}
 for (stage in c(2)){
   
   cat(sprintf("\n\n# Stage %s \n", stage))
@@ -837,7 +839,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
     
     # write.csv(res$raw_table, 
-    #           file = sprintf("raw_res_only_standardized/Stage %s %s vaccine raw results.csv", stage, marker), 
+    #           file = sprintf("output/Stage %s %s vaccine raw results.csv", stage, marker), 
     #           row.names = F)
     # 
     
@@ -880,7 +882,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
     
     # write.csv(res$raw_table, 
-    #           file = sprintf("raw_res_only_standardized/Stage %s %s placebo raw results.csv", stage, marker), 
+    #           file = sprintf("output/Stage %s %s placebo raw results.csv", stage, marker), 
     #           row.names = F)
 
     cat("\n\n#### Monotone \n")
@@ -912,7 +914,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
     
     # write.csv(res$raw_table, 
-    #           file = sprintf("raw_res_only_standardized/Stage %s %s vaccine change raw results.csv", stage, marker), 
+    #           file = sprintf("output/Stage %s %s vaccine change raw results.csv", stage, marker), 
     #           row.names = F)
     
     cat("\n\n#### Unscaled (monotone) \n")
@@ -1008,9 +1010,9 @@ for (stage in c(2)){
     res$graph %>% print()
 
     res$table %>% kable() %>% print()
-
+    
     write.csv(res$raw_table,
-              file = sprintf("raw_res_only_standardized/Stage %s %s vaccine raw results.csv", stage, marker),
+              file = sprintf("output/Stage %s %s vaccine raw results.csv", stage, marker),
               row.names = F)
 
     cat("\n\n#### Unscaled (monotone) \n")
@@ -1049,7 +1051,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
 
     write.csv(res$raw_table,
-              file = sprintf("raw_res_only_standardized/Stage %s %s placebo raw results.csv", stage, marker),
+              file = sprintf("output/Stage %s %s placebo raw results.csv", stage, marker),
               row.names = F)
 
     cat("\n\n#### Monotone \n")
@@ -1082,7 +1084,7 @@ for (stage in c(2)){
     res$table %>% kable() %>% print()
 
     # write.csv(res$raw_table,
-    #           file = sprintf("raw_res_only_standardized/Stage %s %s vaccine change raw results.csv", stage, marker),
+    #           file = sprintf("output/Stage %s %s vaccine change raw results.csv", stage, marker),
     #           row.names = F)
 
     cat("\n\n#### Unscaled (monotone) \n")

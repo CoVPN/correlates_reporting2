@@ -2,45 +2,42 @@
 
 ## Reproducibility
 
-Set up notes
-
-- Assume that we work with R 4.4.2.
-
-- Assume that we have followed the steps in using_renv_for_reproducibility.Rmd at the root level. 
-
-- The first time we use renv, run the following command to install the required package versions:
+This project uses a project-level renv.lock. Setup:
+- Download the repository, e.g. download and unzip a release from https://github.com/CoVPN/correlates_reporting2/releases
+- Assume that we have R 4.4.2 installed.
+- Assume that we have renv 0.13.2 installed. If not, open R console at the project level (the folder containing this readme file), and run the following commands. Note that we use renv 0.13.2, which uses renv/activate.R, instead of newer versions because of some errors with the newer versions. (If in a slurm env, load an appropriate R module and a CMmake module. The latter is needed to install some packages, e.g., nloptr, lme4.
+)
   ```{r}
+  install.packages(
+    "https://cran.r-project.org/src/contrib/Archive/renv/renv_0.13.2.tar.gz",
+    repos = NULL,
+    type = "source"
+  )
+  
+  packageVersion("renv")  # should show ‘0.13.2’
+  ```
+- Run the following R command at the project level to install package dependencies:
+  ```{R}
   renv::restore()
   ```
-
-- Admin note: to put content in renv.lock, we install package dependencies using the following commands:
+- Modify the line below in sanofi_stage2_npthreshold_report_2025June25.Rmd to point to the local copy of analysis-ready data file.
+  ```{r}
+  df <- read.csv("vat08_combined_data_processed_20250321.csv")
+  ```
+- Note for admin only: to put content in renv.lock, we install package dependencies using the following commands:
   ```{r}
   renv::install("isotone")
   renv::install("tlverse/tmle3")
   renv::install("jpspeng/npthreshold")
   renv::snapshot()
   ```
-
-
-
-Reproducing the report
-
-- This project folder is the working directory.
-
-- Change the directory of the data file in this line in sanofi_stage2_npthreshold_report_2025June25.Rmd: 
-  ```{r}
-  df <- read.csv("vat08_combined_data_processed_20250321.csv")
-  ```
-  It is better to replace this line with the following if working on the SCHARP file system:
-  ```{r}
-  config.reporting <- config::get(config = "vat08_combined", file="../../config.yml") 
-  dat<-read.csv(config.reporting$data_cleaned)
-  ```
   
-- To render the R markdown files, run the following commands in a bash shell:
-  ```{bash}
-  Rscript -e "rmarkdown::render('sanofi_stage2_npthreshold_report_2025June25.Rmd')"
-  ```
+The following shell commands are to be run at the project level.
+
+To render the report html, run the following commands in a bash shell:
+```{bash}
+Rscript -e "rmarkdown::render('sanofi_stage2_npthreshold_report_2025June25.Rmd')"
+```
 
 
 For any questions, please email jpspeng@uw.edu. 
