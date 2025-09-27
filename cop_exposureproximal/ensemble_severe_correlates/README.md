@@ -5,7 +5,7 @@
 
 This project uses a project-level renv.lock. Setup:
 
-- Download the repository, e.g. download and unzip a release from https://github.com/CoVPN/correlates_reporting2/releases
+- Download and unzip the files from https://github.com/CoVPN/correlates_reporting2/releases/tag/2.2.7
 
 - Assume that we have R 4.4.2 installed.
 
