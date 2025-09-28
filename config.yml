@@ -1639,7 +1639,7 @@ nextgen_mock: &nextgen_mock
   timepoints: [31]
   times: [B, Day31, Delta31overB]
   time_labels: [Day 01, Day 31, D31 fold-rise over D01]
-  study_name: NextGen_Mock
+  study_name: VaxArt_Mock
   assay_metadata: assay_metadata/nextgen_mock_assay_metadata.csv
   covariates: ~.+ factor(demo.stratum)
   low_efficacy: no
