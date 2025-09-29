@@ -45,6 +45,10 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail))
 	Rscript code/make_table_all_covail.R D15to91
 	Rscript code/make_table_all_covail.R D92to181
 	Rscript code/make_table_all_covail.R D15to181
+else ifeq ($(TRIAL),$(filter $(TRIAL), covail_tcell))
+	Rscript code/make_table_all_covail_tcell.R D15to91covail_tcell
+	Rscript code/make_table_all_covail_tcell.R D92to181covail_tcell
+	Rscript code/make_table_all_covail_tcell.R D15to181covail_tcell
 else ifeq ($(TRIAL),$(filter $(TRIAL), janssen_partA_VL))
 	Rscript code/make_table_all_VL.R D29VLvariant
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
@@ -59,6 +63,15 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), nvx_uk302))
 	Rscript code/make_table_all.R D35nvx_uk302
 else ifeq ($(TRIAL),$(filter $(TRIAL), prevent19nvx))
 	Rscript code/make_table_all.R D35prevent19nvx
+else ifeq ($(TRIAL),$(filter $(TRIAL), iliad_ib202p))
+	Rscript code/make_table_all_iliad_ib202p.R C0iliad_ib202p
+	Rscript code/make_table_all_iliad_ib202p.R C0iliad_ib202p_C14only
+	Rscript code/make_table_all_iliad_ib202p.R C0iliad_ib202p_PPAI
+	Rscript code/make_table_all_iliad_ib202p.R C0iliad_ib202p_PPAI_C14only
+else ifeq ($(TRIAL),$(filter $(TRIAL), covail_frnt))
+	Rscript code/make_table_all_covail_frnt.R D15to91covail_frnt
+	Rscript code/make_table_all_covail_frnt.R D92to181covail_frnt
+	Rscript code/make_table_all_covail_frnt.R D15to181covail_frnt
 else ifeq ($(TRIAL),$(filter $(TRIAL), vat08_combined))
 	Rscript code/make_table_all_sanofi.R D22vat08_combined_M6_st1.nAb.batch0and1
 	Rscript code/make_table_all_sanofi.R D43vat08_combined_M6_st1.nAb.batch0and1

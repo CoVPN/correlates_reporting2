@@ -23,6 +23,13 @@
       "Repository": "CRAN",
       "Hash": "e4c04affc2cac20c8fec18385cd14691"
     },
+    "Barnard": {
+      "Package": "Barnard",
+      "Version": "1.8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "dd299ecbc34e11b75e2105d25bbc03d9"
+    },
     "DBI": {
       "Package": "DBI",
       "Version": "1.1.1",
@@ -36,6 +43,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "56b33b77f4cffd78ff96b8e5a69eabb0"
+    },
+    "DWDLargeR": {
+      "Package": "DWDLargeR",
+      "Version": "0.2-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "dd424342e4e729098179dc35dfe4bca8"
     },
     "FSDAM": {
       "Package": "FSDAM",
@@ -88,10 +102,10 @@
     },
     "Matrix": {
       "Package": "Matrix",
-      "Version": "1.3-4",
+      "Version": "1.5-4.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4ed05e9c9726267e4a5872e09c04587c"
+      "Hash": "38082d362d317745fb932e13956dccbb"
     },
     "MatrixModels": {
       "Package": "MatrixModels",
@@ -240,6 +254,20 @@
       "Repository": "CRAN",
       "Hash": "457a2a08a76cc33cb5510c94d2006e02"
     },
+    "WeMix": {
+      "Package": "WeMix",
+      "Version": "4.0.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8b96b86178d3b3fef8a5ecdb64de8853"
+    },
+    "WeightedROC": {
+      "Package": "WeightedROC",
+      "Version": "2020.1.31",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9d18af3673c091772f7e097cdf8ccf59"
+    },
     "abind": {
       "Package": "abind",
       "Version": "1.4-5",
@@ -274,6 +302,18 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "50c838a310445e954bc13f26f26a6ecf"
+    },
+    "aucm": {
+      "Package": "aucm",
+      "Version": "2022.4-6",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "youyifong",
+      "RemoteRepo": "aucm",
+      "RemoteRef": "main",
+      "RemoteSha": "59a02747d1aabfb65aceb67d1153a36604e02645",
+      "Hash": "d9e506d9e9b36c9f03a33ea52ef16484"
     },
     "backports": {
       "Package": "backports",
@@ -518,8 +558,8 @@
       "RemoteUsername": "CoVPN",
       "RemoteRepo": "copcor",
       "RemoteRef": "main",
-      "RemoteSha": "ec7f6433c3e74bd46b463535bfb3b35b3346ce90",
-      "Hash": "398836f51e736368b963b580ff13e968"
+      "RemoteSha": "ac62c98989d743fce5456883b6462e4ec096ce7c",
+      "Hash": "508ee741b10f5f89c0e92a7bf9ce0da3"
     },
     "corrplot": {
       "Package": "corrplot",
@@ -652,6 +692,19 @@
       "Repository": "CRAN",
       "Hash": "49b5c6e230bfec487b8917d5a0c77cca"
     },
+    "diproperm": {
+      "Package": "diproperm",
+      "Version": "0.3.0",
+      "Source": "GitHub",
+      "Repository": "CRAN",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "youyifong",
+      "RemoteRepo": "diproperm",
+      "RemoteRef": "main",
+      "RemoteSha": "913015c5f603eff36df064327afbdb1a3051314c",
+      "Hash": "ccfe210b0512d3024170dda3a9560c2c"
+    },
     "doMC": {
       "Package": "doMC",
       "Version": "1.3.7",
@@ -659,6 +712,13 @@
       "Repository": "CRAN",
       "OS_type": "unix",
       "Hash": "a51780731e2ec5eee714097df69ea204"
+    },
+    "doRNG": {
+      "Package": "doRNG",
+      "Version": "1.8.6.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "46be2fc2c00109dafabaf5534577f025"
     },
     "dplyr": {
       "Package": "dplyr",
@@ -694,6 +754,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "ec8ca05cffcc70569eaaad8469d2a3a7"
+    },
+    "extraDistr": {
+      "Package": "extraDistr",
+      "Version": "1.10.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "49235792aad38657fffef40802f614c5"
     },
     "fansi": {
       "Package": "fansi",
@@ -785,6 +852,20 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "3ff819acc26930ea8d4ebc743ca63618"
+    },
+    "gee": {
+      "Package": "gee",
+      "Version": "4.13-29",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6633962fa53cc9ff2c1aec45612ff9fc"
+    },
+    "geepack": {
+      "Package": "geepack",
+      "Version": "1.3.12",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "52e17b9435f558bd15c764d1182371d6"
     },
     "generics": {
       "Package": "generics",
@@ -1126,8 +1207,8 @@
       "RemoteUsername": "youyifong",
       "RemoteRepo": "kyotil",
       "RemoteRef": "master",
-      "RemoteSha": "684eed5c1470bbafe4bdca5de895a8c36117f789",
-      "Hash": "95febccb7ef8e6410303dbf715ef8e07"
+      "RemoteSha": "4ea09ce9b60966d968dd6185cc0a36703a7af065",
+      "Hash": "4408442ac492eaf8e3842cabc44a0355"
     },
     "labeling": {
       "Package": "labeling",
@@ -1199,6 +1280,13 @@
       "Repository": "CRAN",
       "Hash": "d3082a7beac4a1aeb96100ff06265d7e"
     },
+    "lemon": {
+      "Package": "lemon",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6db47c8dd07022e73e8fe24eb31ca96d"
+    },
     "lifecycle": {
       "Package": "lifecycle",
       "Version": "1.0.4",
@@ -1226,6 +1314,20 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "e055d75b424a33fdc8904e5f81263789"
+    },
+    "lmtest": {
+      "Package": "lmtest",
+      "Version": "0.9-40",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c6fafa6cccb1e1dfe7f7d122efd6e6a7"
+    },
+    "lpSolve": {
+      "Package": "lpSolve",
+      "Version": "5.6.23",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c4e64e374c4ab1e6ffda55073fd04c59"
     },
     "lspline": {
       "Package": "lspline",
@@ -1494,6 +1596,13 @@
       "Repository": "CRAN",
       "Hash": "b304ff5955f37b48bd30518faf582929"
     },
+    "pheatmap": {
+      "Package": "pheatmap",
+      "Version": "1.0.13",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "30e5b56762942d319561e5ebaab69c74"
+    },
     "pillar": {
       "Package": "pillar",
       "Version": "1.9.0",
@@ -1659,13 +1768,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "1cba04a4e9414bdefc9dcaa99649a8dc"
-    },
-    "quadprog": {
-      "Package": "quadprog",
-      "Version": "1.5-8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "5f919ae5e7f83a6f91dcf2288943370d"
     },
     "quantreg": {
       "Package": "quantreg",
@@ -1843,6 +1945,13 @@
       "Repository": "CRAN",
       "Hash": "4f792e2f7c0f666584cc33336caae36c"
     },
+    "rngtools": {
+      "Package": "rngtools",
+      "Version": "1.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "367a915f939520767660671efa0e32bd"
+    },
     "rootSolve": {
       "Package": "rootSolve",
       "Version": "1.8.2.3",
@@ -1906,6 +2015,13 @@
       "Repository": "CRAN",
       "Hash": "74b905b0076e1de6e27f540c95ba68d5"
     },
+    "sampling": {
+      "Package": "sampling",
+      "Version": "2.11",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d956ab9eef6b3438cfbffa7664d14292"
+    },
     "sandwich": {
       "Package": "sandwich",
       "Version": "3.0-0",
@@ -1924,6 +2040,13 @@
       "RemoteSha": "4b988689d8de4c4bfe3b891590df45d932efa0e8",
       "RemoteHost": "api.github.com",
       "Hash": "e0e6986c08b5c54201bfab8e29765581"
+    },
+    "saws": {
+      "Package": "saws",
+      "Version": "0.9-7.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "ac3964ef095a6c774dab309a2a829f4c"
     },
     "scales": {
       "Package": "scales",

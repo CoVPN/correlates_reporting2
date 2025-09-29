@@ -7,7 +7,10 @@ tables_output:
 ifeq ($(TRIAL),$(filter $(TRIAL), prevent19_stage2))
 	Rscript code/make_table_all_stg2.R D35prevent19_stage2_delta 
 	Rscript code/make_table_all_stg2.R D35prevent19_stage2_severe 
-else code/make_table_all.R clean_data
+else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
+	Rscript code/make_table_all_nextGen.R D31toM12_nextgen_mock 
+	Rscript code/make_table_all_nextGen.R D31toM12_nextgen_mock_tcell
+else ifeq code/make_table_all.R clean_data
 	Rscript code/make_table_all.R
 endif
 
