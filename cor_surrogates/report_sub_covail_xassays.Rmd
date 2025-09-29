@@ -28,6 +28,7 @@ conflicted::conflict_prefer("filter", "dplyr")
 conflict_prefer("summarise", "dplyr")
 #load(here("output/", Sys.getenv("TRIAL"), "/objects_for_running_SL.rda"))
 load(here(Sys.getenv('file_path'), "objects_for_running_SL.rda"))
+load(here(file_path, "markers_to_plot_by_cases_ctrls.rda"))
 
 # if(endpoint=="EventIndPrimaryD57")
 #   day = "Day 57"
@@ -222,7 +223,7 @@ DiscreteSLperf_allvarsets %>%
 \clearpage
 ```{r, echo=FALSE, out.width="99%", out.height="120%", fig.height=50, fig.cap="Forest plot showing Discrete Super Learner performance (weighted CV-AUC with 95\\% CI) across the 50 top-performing variable sets."}
 
-knitr::include_graphics(here(Sys.getenv('file_path'), "figs", "forest_vacc_cvaucs_allDiscrete SLs.png"))
+knitr::include_graphics(here(Sys.getenv('file_path'), "figs", "forest_vacc_cvaucs_allDiscreteSLs.png"))
 
 ```
 
@@ -662,7 +663,7 @@ if(!basename(file_path) %in% c("nonnaive_1dose_allcases_briskscore", "nonnaive_1
   rename(`Predictors/Features` = `Predictors.Features`) %>%
   select(varset, fold, Learner, everything()) %>%
   mutate(order = match(varset, DiscreteSLperf_allvarsets$varset)) %>%
-  arrange(order, fold, -abs(Coefficient), -abs(Gain)) %>%
+  arrange(order, fold, -abs(Coefficient), -abs(Importance)) %>%
   mutate(Coefficient = format(round(Coefficient, 3), nsmall = 3),
          Odds.Ratio = format(round(Odds.Ratio, 3), nsmall = 3),
          #Gain = format(round(Gain, 3), nsmall = 3),
@@ -680,8 +681,9 @@ if(!basename(file_path) %in% c("nonnaive_1dose_allcases_briskscore", "nonnaive_1
   rename(`Predictors/Features` = `Predictors.Features`) %>%
   select(varset, fold, Learner, everything()) %>%
   mutate(order = match(varset, DiscreteSLperf_allvarsets$varset)) %>%
-  arrange(order, fold, -abs(Coefficient), -abs(Gain)) %>%
-  mutate(Coefficient = format(round(Coefficient, 3), nsmall = 3),
+  arrange(order, fold, -abs(Importance), -abs(Coefficient), -abs(Gain)) %>%
+  mutate(Importance = format(round(Importance, 3), nsmall = 3),
+         Coefficient = format(round(Coefficient, 3), nsmall = 3),
          Odds.Ratio = format(round(Odds.Ratio, 3), nsmall = 3),
          #Gain = format(round(Gain, 3), nsmall = 3),
          #Cover = format(round(Cover, 3), nsmall = 3),
@@ -713,3 +715,248 @@ tab %>%
 
 \end{landscape}
 
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 1
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 2
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 3
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 4
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 5
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 6
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 7
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 8
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 9
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+
+```{r, echo=FALSE, out.width="90%", out.height="110%", fig.cap=paste0("Varset", varset_name_tex, " Marker ", marker_name_tex, ": Distribution by cases and controls.")}
+i <- 10
+varset_name <- predictors_all$varset[i]
+marker_name <- predictors_all$predictors[i]
+
+matched_file <- get_filename(paste0(varset_name, "_", marker_name))
+
+# Escape underscores and other LaTeX special characters in the marker name
+marker_name_tex = stringr::str_replace_all(marker_name, "_", "\\\\_")
+varset_name_tex = stringr::str_replace_all(varset_name, "_", "\\\\_")
+
+if (file.exists(matched_file)) {
+  knitr::include_graphics(matched_file)
+} else {
+  warning("File not found: ", matched_file)
+}
+
+```
+
+
+
+
+
+\clearpage
+\begin{landscape}
+
+```{r top-pairwise-corr-allvarsets-allFolds-discreteSLs, warning=FALSE, echo=FALSE, message=FALSE}
+caption <- "Top 5 pairwise Spearman correlations between important predictors contributing to discrete SL selected for each variable set and fold. This is just a check to ensure that there are no predictors in a model with Spearman correlation greater or equal to 0.9."
+
+read.csv(here(Sys.getenv('file_path'), "top5_pairwise_cors_for_top5varsets_each_fold.csv"),
+         row.names = 1,
+         header = TRUE) %>%
+  kable(
+    booktabs = TRUE,
+    longtable = TRUE,
+    linesep = "",
+    caption = caption
+  ) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"),
+                font_size = 5)
+
+```
+
+\end{landscape}

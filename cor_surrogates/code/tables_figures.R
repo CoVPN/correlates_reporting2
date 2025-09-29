@@ -15,15 +15,17 @@ source(here::here("..", "_common.R"))
 #-----------------------------------------------
 ## ----load-all-SLobjects, message=FALSE, error=FALSE, warning=FALSE----------------------------------------------------------------------------------------------------
 
-library("conflicted")
-library("tidyr")
-library("purrr")
-library("dplyr")
-library("cowplot")
-library("ggplot2")
-library("vimp")
-library("kyotil")
-library("cvAUC")
+library(tidyverse)
+library(glue)
+library(conflicted)
+library(tidyr)
+library(purrr)
+library(dplyr)
+library(cowplot)
+library(ggplot2)
+library(vimp)
+library(kyotil)
+library(cvAUC)
 library(gridExtra)
 library(forcats)
 library(cowplot)
@@ -32,6 +34,7 @@ library(here)
 conflict_prefer("filter", "dplyr")
 conflict_prefer("summarise", "dplyr")
 conflict_prefer("load", "base")
+conflict_prefer("slice", "dplyr")
 source(here("code", "utils.R"))
 method <- "method.CC_nloglik" # since SuperLearner relies on this to be in GlobalEnv
 ggplot2::theme_set(theme_cowplot())
@@ -78,6 +81,24 @@ if (study_name == "COVAIL") {
 }
 
 ph2_vacc_ptids <- readRDS(file = here(file_path, "ph2_vacc_ptids.rds"))
+
+
+top5_plus_baseline <- cvaucs_vacc %>%
+  filter(!is.na(varsetNo), Learner == "Discrete SL") %>%
+  arrange(desc(AUC)) %>%
+  slice_head(n = 5) %>%
+  bind_rows(
+    cvaucs_vacc %>%
+      filter(varset == "1_baselineRiskFactors", Learner == "Discrete SL")
+  ) 
+
+if(basename(file_path) == "nonnaive_1dosemRNA_allcases_briskscore"){
+  top5_plus_baseline = top5_plus_baseline %>%
+    bind_rows(
+      cvaucs_vacc %>%
+        filter(varset == "3_nab_D15", Learner == "Discrete SL")
+    )
+}
 
 # Select the random seed from which to display results
 if(study_name %in% c("COVE", "MockCOVE", "HVTN705")){
@@ -552,7 +573,8 @@ tab %>% write.csv(here(file_path, "varsets.csv"))
 options(bitmapType = "cairo")
 # All Superlearners
 learner.choice = "SL"
-png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1100, height=1100)
+#learner.choice.removeSpace = gsub(" ", "", learner.choice)
+png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_all", gsub(" ", "", learner.choice), "s.png")), width=1100, height=1100)
 top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), 
                                               varsets_to_display = 50,
                                               learner.choice,
@@ -564,7 +586,8 @@ dev.off()
 
 # All discrete.SLs
 learner.choice = "Discrete SL"
-png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_all", learner.choice, "s.png")), width=1100, height=1100)
+#learner.choice.removeSpace = gsub(" ", "", learner.choice)
+png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_all", gsub(" ", "", learner.choice), "s.png")), width=1100, height=1100)
 top_learner <- make_forest_plot_SL_allVarSets(cvaucs_vacc %>% filter(!is.na(varsetNo)), 
                                               varsets_to_display = 50,
                                               learner.choice,
@@ -590,19 +613,8 @@ cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
 cvaucs_vacc %>% filter(!is.na(varsetNo)) %>%
   arrange(-AUC) %>% filter(Learner == "Discrete SL")
 
-
-top5_plus_baseline <- cvaucs_vacc %>%
-  filter(!is.na(varsetNo), Learner == "Discrete SL") %>%
-  arrange(desc(AUC)) %>%
-  slice_head(n = 5) %>%
-  bind_rows(
-    cvaucs_vacc %>%
-      filter(varset == "1_baselineRiskFactors", Learner == "Discrete SL") 
-  ) 
-
-
-
 # # Forest plots for individual vaccine models
+# options(bitmapType = "cairo")
 # for(i in 1:(cvaucs_vacc %>% filter(!is.na(varsetNo)) %>% distinct(varset) %>% nrow())) {
 #   variableSet = unique(cvaucs_vacc$varset)[i]
 #   png(file = here("figs", Sys.getenv("TRIAL"), paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
@@ -615,28 +627,16 @@ top5_plus_baseline <- cvaucs_vacc %>%
 # }
 
 # Forest plots for individual vaccine models
-if(basename(file_path) != "nonnaive_1dosemRNA_allcases_briskscore"){
-  for(i in 1:6) {
+options(bitmapType = "cairo")
+for(i in 1:6) {
     variableSet = top5_plus_baseline$varset[i]
     png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
     top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet),
-                                    PLOT.MARGIN = unit(c(3.9,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
-                                    NAMES.PLOT.MARGIN = unit(c(2.01,-0.15,1.0,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
-                                    y_at = 31) # Add y-coordinate at which the header for names needs to be
+                                    PLOT.MARGIN = unit(c(2.8,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
+                                    NAMES.PLOT.MARGIN = unit(c(0.91,-0.15,1,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
+                                    y_at = 32) # Add y-coordinate at which the header for names needs to be
     grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
     dev.off()
-  }
-} else {
-  for(i in 1:6) {
-    variableSet = top5_plus_baseline$varset[i]
-    png(file = here(file_path, "figs", paste0("forest_vacc_cvaucs_", variableSet, ".png")), width=1000, height=1100)
-    top_learner <- make_forest_plot(cvaucs_vacc %>% filter(varset==variableSet),
-                                    PLOT.MARGIN = unit(c(2.2,-0.15,1,-0.15),"cm"), # Adjusts trbl for forest plot
-                                    NAMES.PLOT.MARGIN = unit(c(0.01,-0.15,1.2,-0.15),"cm"), # Adjusts trbl for learner-screen names plot
-                                    y_at = 21) # Add y-coordinate at which the header for names needs to be
-    grid.arrange(top_learner$top_learner_nms_plot, top_learner$top_learner_plot, ncol=2)
-    dev.off()
-  }
 }
 
 
@@ -1000,15 +1000,19 @@ for(i in 1:6) {
 # }
 
 
-
-
 # For all variable sets, get predictors and coefficients for the DiscreteSL selected in each of the 5 outer folds from the 1st random seed!
 if(!study_name %in% c("HVTN705")){
   
-  for(i in 1:6) {
+  for(i in 1:nrow(top5_plus_baseline)) {
     print(i)
     variableSet = top5_plus_baseline$varset[i]
     print(variableSet)
+    
+  # If needed to 
+  # for(i in 1:length(only_varsets)) {
+  #     print(i)
+  #     variableSet = only_varsets[i]
+  #     print(variableSet)
     
     # Get cvsl fit and extract cv predictions
     if(Sys.getenv("TRIAL") == "moderna_real"){
@@ -1091,7 +1095,10 @@ if(!study_name %in% c("HVTN705")){
       # For SL.nnet
       if(cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.nnet.2_screen_univariate_logistic_pval",
                                                      "SL.nnet.2_screen_glmnet", 
-                                                     "SL.nnet.2_screen_highcor_random")) {
+                                                     "SL.nnet.2_screen_highcor_random",
+                                                     "SL.nnet.5_screen_univariate_logistic_pval",
+                                                     "SL.nnet.5_screen_glmnet", 
+                                                     "SL.nnet.5_screen_highcor_random")) {
         
         model <- flevr::extract_importance_polymars(polymars.obj$fit, feature_names = cvfits[[rseed]]$AllSL[[j]]$varNames[cvfits[[rseed]]$AllSL[[j]]$whichScreen[grepl(gsub("^[^_]*_", "", cvfits[[rseed]]$whichDiscreteSL[[j]]), rownames(cvfits[[rseed]]$AllSL[[j]]$whichScreen)),]]) %>%
           filter(!is.na(importance)) %>%
@@ -1103,7 +1110,8 @@ if(!study_name %in% c("HVTN705")){
             fold = j)
       }
       
-      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_all", "SL.glmnet.0.33_screen_all", "SL.glmnet.0.67_screen_all", "SL.glmnet.1_screen_all")) {
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.glmnet.0_screen_highcor_random", "SL.glmnet.0.33_screen_highcor_random", 
+                                                      "SL.glmnet.0.67_screen_highcor_random", "SL.glmnet.1_screen_highcor_random")) {
         
         # model <- coef(cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object, s = "lambda.min") %>%
         #   as.matrix() %>%
@@ -1129,17 +1137,19 @@ if(!study_name %in% c("HVTN705")){
                  fold = j)
       }
       
-      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.xgboost.2.no_screen_all",
-                                                      "SL.xgboost.4.no_screen_all",
-                                                      "SL.xgboost.2.yes_screen_all",
-                                                      "SL.xgboost.4.yes_screen_all")) {
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.xgboost.2.no_screen_highcor_random",
+                                                      "SL.xgboost.4.no_screen_highcor_random",
+                                                      "SL.xgboost.2.yes_screen_highcor_random",
+                                                      "SL.xgboost.4.yes_screen_highcor_randoml")) {
         model <- xgboost::xgb.importance(model = cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object) %>%
           as.data.frame() %>%
           mutate(Learner = cvfits[[rseed]]$whichDiscreteSL[[j]], 
                  fold = j)
       }
       
-      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.ranger.yes_screen_all", "SL.ranger.no_screen_all")) {
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.ranger.yes_screen_highcor_random", "SL.ranger.no_screen_highcor_random",
+                                                      "SL.ranger.yes_screen_glmnet", "SL.ranger.no_screen_glmnet",
+                                                      "SL.ranger.yes_screen_univariate_logistic_pval", "SL.ranger.no_screen_univariate_logistic_pval")) {
         model <- cvfits[[rseed]]$AllSL[[j]][["fitLibrary"]][[cvfits[[rseed]]$whichDiscreteSL[[j]]]]$object$variable.importance %>%
           as.data.frame() %>%
           rename(Importance = ".") %>%
@@ -1148,7 +1158,7 @@ if(!study_name %in% c("HVTN705")){
                  fold = j)
       }
       
-      if (cvfits[[rseed]]$whichDiscreteSL[[j]] == "SL.mean_screen_all"){
+      if (cvfits[[rseed]]$whichDiscreteSL[[j]] %in% c("SL.mean_screen_all", "SL.mean_All")){
         model <- data.frame(Learner="SL.mean_screen_all", 
                             fold = j) 
       }
@@ -1177,7 +1187,7 @@ if(!study_name %in% c("HVTN705")){
 
 if("Feature" %in% colnames(all_varsets_models)){
   all_varsets_models %>% 
-    mutate(`Predictors/Features` = ifelse(is.na(Predictors), Feature, Predictors)) %>%
+    mutate(`Predictors/Features` = ifelse(is.na(Predictors), Feature, Predictors)) %>%  
     select(-c(Predictors, Feature)) %>%
     select(varset, fold, Learner, `Predictors/Features`, everything()) %>%
     write.csv(here(file_path, "all_varsets_all_folds_discreteSLmodels.csv"))
@@ -1187,6 +1197,254 @@ if("Feature" %in% colnames(all_varsets_models)){
     select(varset, fold, Learner, `Predictors/Features`, everything()) %>%
     write.csv(here(file_path, "all_varsets_all_folds_discreteSLmodels.csv"))
 }
+
+
+
+###########################################################
+# For each of the top 5 varsets, and for each of the 5 folds, get the top pairwise Spearman correlations between the predictors, excluding the Intercept and briskFactors
+
+# Create all pairwise correlations within the predictors of each discrete SL model (for each fold)
+all_varsets_models = read.csv(here(file_path, "all_varsets_all_folds_discreteSLmodels.csv"))
+
+# Function to clean the predictors 
+clean_predictors <- function(predictors) {
+  predictors %>%
+    str_replace_all("^s\\(([^,]+),.*\\)$", "\\1") %>%   # unwrap s(...) terms
+    str_replace_all("^\\((Intercept)\\)$", "Intercept") %>%  # fix intercept if wrapped
+    str_replace_all("^Intercept$", "Intercept") # just in case
+}
+
+# Parameters
+top_n <- 5  # how many top correlations to display
+
+# Prepare a result list to store output rows
+results_list <- list()
+
+# Get unique combinations of varset, fold, Learner
+unique_models <- all_varsets_models %>%
+  select(varset, fold, Learner) %>%
+  distinct()
+
+for(i in seq_len(nrow(unique_models))) {
+  this_varset <- unique_models$varset[i]
+  this_fold <- unique_models$fold[i]
+  this_learner <- unique_models$Learner[i]
+  
+  # Get predictors for this model
+  preds_raw <- all_varsets_models %>%
+    filter(varset == this_varset, fold == this_fold, Learner == this_learner) %>%
+    pull(Predictors.Features)
+  
+  # Clean predictors using function
+  preds_clean <- clean_predictors(preds_raw)
+  
+  # Remove duplicates
+  preds_clean <- unique(preds_clean)
+  
+  # Filter out Intercept and briskfactors
+  preds_filtered <- setdiff(preds_clean, c("Intercept", briskfactors))
+  
+  # Check if at least two predictors remain
+  if(length(preds_filtered) < 2) {
+    message(glue("Skipping {this_learner} varset {this_varset} fold {this_fold} - less than 2 predictors after filtering"))
+    next
+  }
+  
+  # Get X_markers_varset dataframe for the varset
+  job_id = as.numeric(str_extract(this_varset, "^[0-9]+"))
+  cat("\n Running", varset_names[job_id], " variable set \n")
+  cat("\n Running", this_fold, " fold \n")
+  cat("\n Running", this_learner, " learner \n")
+  source(here::here("code", "cor_surrogates_setup.R"))
+  
+  # select the markers corresponding to the job id (and variable set)
+  markers_start <- length(briskfactors) + 1
+  if (job_id == 1){
+    X_markers_varset <- X_covars2adjust_ph2[1:length(briskfactors)] %>%
+      select_if(function(x) any(!is.na(x))) # Drop column if it has 0 variance, and returned all NAN's from scale function.
+  } else{
+    X_markers_varset <- bind_cols(X_covars2adjust_ph2[1:length(briskfactors)],
+                                  X_covars2adjust_ph2[markers_start:length(X_covars2adjust_ph2)][varset_matrix[job_id, ]]) %>%
+      select_if(function(x) any(!is.na(x))) # Drop column if it has 0 variance, and returned all NAN's from scale function.
+  }
+  
+  data_sub <- X_markers_varset %>% select(all_of(preds_filtered))
+  
+  # Check columns exist and have data
+  if(ncol(data_sub) < 2) {
+    message(glue("Skipping {this_learner} varset {this_varset} fold {this_fold} - data subset < 2 columns"))
+    next
+  }
+  
+  # Compute Spearman correlation matrix
+  cor_mat <- cor(data_sub, method = "spearman", use = "pairwise.complete.obs")
+  
+  # Get upper triangle without diagonal
+  cor_df <- as.data.frame(as.table(cor_mat))
+  colnames(cor_df) <- c("Predictor1", "Predictor2", "Correlation")
+  cor_df <- cor_df[as.numeric(factor(cor_df$Predictor1)) < as.numeric(factor(cor_df$Predictor2)), ]
+  
+  # Sort by descending absolute correlation
+  cor_df <- cor_df %>% arrange(-abs(Correlation))  
+  
+  # Take top_n rows
+  cor_df_top <- head(cor_df, top_n)
+  
+  if(nrow(cor_df_top) == 0) {
+    message(glue("No correlations found for {this_learner} varset {this_varset} fold {this_fold}"))
+    next
+  }
+  
+  # Add identifying columns
+  cor_df_top = cor_df_top %>% 
+    mutate(varset = this_varset,
+           fold = this_fold, 
+           Learner = this_learner) %>%
+    select(varset, fold, Learner, everything())
+  
+  # Store result
+  results_list = results_list %>%
+    append(list(cor_df_top))
+}
+
+# Combine all results
+top_correlations <- bind_rows(results_list)
+
+# Reorder columns
+top_correlations <- top_correlations %>%
+  select(varset, fold, Learner, Predictor1, Predictor2, Correlation) 
+
+top_correlations %>%
+  write.csv(here(file_path, "top5_pairwise_cors_for_top5varsets_each_fold.csv"))
+
+
+###########################################################
+# For the best-performing varset, plot the distribution of top 5 most-important predictors by cases and controls for top two variable sets
+all_varsets_models = read.csv(here(file_path, "all_varsets_all_folds_discreteSLmodels.csv"))
+
+# Parameters
+top_predictors <- 5  # how many top predictors to use for plotting distributions
+
+# Function to extract main predictor
+extract_main_predictor <- function(x) {
+  # If string matches s(...), extract inside first arg before comma
+  has_s <- str_detect(x, "^s\\(")
+  extracted <- ifelse(
+    has_s,
+    str_extract(x, "(?<=s\\()[^,]+"),
+    x
+  )
+  # Also handle "(Intercept)" special case if needed
+  extracted <- ifelse(extracted == "(Intercept)", "Intercept", extracted)
+  return(extracted)
+}
+
+# Get unique combinations of varset, fold, Learner
+unique_models <- all_varsets_models %>%
+  select(varset, fold, Learner) %>%
+  distinct() %>%
+  slice(4,7,11)  # Get the first fold of top two variable sets, and plot distributions of top 5 markers for each!
+
+predictors_varset = list()
+
+for (i in 1:nrow(unique_models)){
+  
+  this_varset <- unique_models$varset[i]
+  this_fold <- unique_models$fold[i]
+  this_learner <- unique_models$Learner[i]
+  
+  if(this_learner == "SL.mean_screen_all")
+    next
+  
+  # Sort model_results by importance or by Coefficient or by Gain
+  model_results <- all_varsets_models %>%
+    filter(varset == this_varset, fold == this_fold, Learner == this_learner) %>%
+    # Create a new column that picks the non-NA value among Importance, Coefficient, Gain
+    mutate(#non_na_value = coalesce(Importance, Coefficient, Gain),
+      non_na_value = coalesce(Importance, Coefficient)) %>%
+    # Sort descending by absolute value of that column
+    arrange(desc(abs(non_na_value))) %>%
+    filter(!str_detect(`Predictors.Features`, "Intercept"),
+           !str_detect(`Predictors.Features`, "risk")) %>%
+    mutate(Predictors = extract_main_predictor(`Predictors.Features`))
+  
+  # Get predictors for this model
+  preds_raw <- model_results %>%
+    pull(Predictors)
+  
+  # Clean predictors using function
+  preds_clean <- clean_predictors(preds_raw)
+  
+  # Remove duplicates
+  preds_clean <- unique(preds_clean)
+  
+  # Filter out Intercept and briskfactors
+  preds_filtered <- setdiff(preds_clean, c("Intercept", briskfactors))
+  
+  # Keep only top_predictors
+  preds_filtered = head(preds_filtered, top_predictors)
+  
+  # Check if at least two predictors remain
+  if(length(preds_filtered) < 2) {
+    message(glue("Skipping {this_learner} varset {this_varset} fold {this_fold} - less than 2 predictors after filtering"))
+    next
+  }
+  
+  # Get X_markers_varset dataframe for the varset
+  job_id = as.numeric(str_extract(this_varset, "^[0-9]+"))
+  cat("\n Running", varset_names[job_id], " variable set \n")
+  cat("\n Running", this_fold, " fold \n")
+  cat("\n Running", this_learner, " learner \n")
+  source(here::here("code", "cor_surrogates_setup.R"))
+  
+  # select the markers corresponding to the job id (and variable set)
+  markers_start <- length(briskfactors) + 1
+  if (job_id == 1){
+    X_markers_varset <- X_covars2adjust_ph2[1:length(briskfactors)] %>%
+      select_if(function(x) any(!is.na(x))) # Drop column if it has 0 variance, and returned all NAN's from scale function.
+  } else{
+    X_markers_varset <- bind_cols(X_covars2adjust_ph2[1:length(briskfactors)],
+                                  X_covars2adjust_ph2[markers_start:length(X_covars2adjust_ph2)][varset_matrix[job_id, ]]) %>%
+      select_if(function(x) any(!is.na(x))) # Drop column if it has 0 variance, and returned all NAN's from scale function.
+  }
+  
+  data_sub <- X_markers_varset %>% select(all_of(preds_filtered)) 
+  
+  if(study_name == "COVAIL" & COR == "D15to91covail_xassays"){
+    cases = "Post Day 22 to Day 91 Cases"
+    disease_name = "COVID-19"
+  }
+  if(study_name == "COVAIL" & COR == "D15to181covail_xassays"){
+    cases = "Post Day 22 to Day 181 Cases"
+    disease_name = "COVID-19"
+  }
+  
+  for (j in seq_along(preds_filtered)) {
+    marker <- preds_filtered[j]
+    
+    plot_marker_distribution(
+      marker_name = marker,
+      Y = Y,
+      X_markers_varset = data_sub,
+      file_path = file_path,
+      disease_name = disease_name,
+      cases = cases,
+      model_results = model_results,
+      varset = varset_names[job_id],
+      counter = j  # <- Pass the counter
+    )
+  }
+  
+  predictors_varset[[i]] = data.frame(varset = varset_names[job_id], predictors = preds_filtered)
+  
+}
+
+
+#save(preds_filtered, file =  here(file_path, "objects_for_plotting_markers_by_cases_ctrls.rda"))
+
+predictors_all <- `rownames<-`(do.call(rbind, predictors_varset), NULL)
+save(predictors_all, file =  here(file_path, "markers_to_plot_by_cases_ctrls.rda"))
+
 
 # # Variable importance forest plots ---------------------------------------------
 # # save off all variable importance estimates as a table

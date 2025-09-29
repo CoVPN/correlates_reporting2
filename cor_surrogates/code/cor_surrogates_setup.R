@@ -1045,7 +1045,7 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == FALSE
   
   # Baseline factors + D1 nAb titers set  
   #varset_nab_BA.1_D1 = str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15")
-  varset_nab_D1 = str_detect(markers, "pseudoneut|frnt") & !str_detect(markers, "Day15|Delta15|MDW|PC1")
+  varset_nab_D1 = str_detect(markers, "pseudoneut|frnt") & !str_detect(markers, "Day15|Delta15|MDW|PC1|Bpseudoneutid50Duke_BA.2.12.1")
   # Baseline factors + D15 nAb titers set 
   # varset_nab_BA.1_D15 = str_detect(markers, "BA\\.1") & str_detect(markers, "Day15")
   varset_nab_D15 = str_detect(markers, "pseudoneut|frnt") & str_detect(markers, "Day15") & !str_detect(markers, "Delta15|MDW|PC1")
@@ -1276,7 +1276,7 @@ if (study_name %in% c("COVAIL") & TRIAL == "covail_xassays" & non_naive == TRUE)
   
   # Baseline factors + D1 nAb titers set  
   #varset_nab_BA.1_D1 = str_detect(markers, "BA\\.1") & !str_detect(markers, "Day15|Delta15")
-  varset_nab_D1 = str_detect(markers, "pseudoneut|frnt") & !str_detect(markers, "Day15|Delta15|MDW|PC1")
+  varset_nab_D1 = str_detect(markers, "pseudoneut|frnt") & !str_detect(markers, "Day15|Delta15|MDW|PC1|Bpseudoneutid50Duke_BA.2.12.1")
   # Baseline factors + D15 nAb titers set 
   # varset_nab_BA.1_D15 = str_detect(markers, "BA\\.1") & str_detect(markers, "Day15")
   varset_nab_D15 = str_detect(markers, "pseudoneut|frnt") & str_detect(markers, "Day15") & !str_detect(markers, "Delta15|MDW|PC1")

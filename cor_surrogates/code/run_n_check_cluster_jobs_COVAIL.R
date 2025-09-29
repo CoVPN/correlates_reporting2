@@ -10,8 +10,8 @@
 # COR = "D15to181covail_tcell"
 
 Sys.setenv(TRIAL = "covail_xassays")
-# COR = "D15to91covail_xassays"
-COR = "D15to181covail_xassays"
+COR = "D15to91covail_xassays"
+# COR = "D15to181covail_xassays"
 #-----------------------------------------------
 # obligatory to append to the top of each script
 renv::activate(project = here::here(".."))
@@ -114,8 +114,13 @@ for(varset_number in 1:nrow(varsets)){
   system(paste("sbatch code/submit_cluster_job.sh", varset_number))
 }
 
-# 
-# for(varset_number in c(27, 35, 38, 104)){
+
+# for(varset_number in c( 4, 7, 10, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 
+#                         31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 
+#                         41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 
+#                         51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 
+#                         61, 62, 63, 64, 65, 66, 67, 
+#                         71, 75, 77, 79, 80, 81, 82)){
 #   system(paste("sbatch code/submit_cluster_job.sh", varset_number))
 # }
 
@@ -140,7 +145,9 @@ repeat {
   
   if (length(missing_ids) == 0) {
     message("ALL jobs finished successfully.")
-    
+    Sys.sleep(check_interval)
+    Sys.sleep(check_interval)
+    Sys.sleep(check_interval)
     # Source your next script
     source(here::here("code", "createRDAfiles_fromSLobjects.R"))
     source(here::here("code", "tables_figures.R"))
@@ -168,7 +175,10 @@ repeat {
 # KNIT THE PDF REPORT !
 # Run the following in Rstudio
 # Make sure the path is correct
-file_path = "/home/bborate/forked_correlates_directory/correlates_reporting2/cor_surrogates/output/covail_xassays/naive_1dosemRNA_allcases_bRiskFactors.insert.stage"
+file_path = "/home/bborate/forked_correlates_directory/correlates_reporting2/cor_surrogates/output/covail_xassays/naive_1dosemRNA_proximal_bRiskFactors"
+# file_path = "/home/bborate/forked_correlates_directory/correlates_reporting2/cor_surrogates/output/covail_xassays/nonnaive_1dosemRNA_allcases_briskscore"
+  
+# Load get_filename() in utils.R
 Sys.setenv(file_path = file_path)
 Sys.setenv(TRIAL = "covail_xassays")
 

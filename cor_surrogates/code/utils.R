@@ -1262,3 +1262,108 @@ make_forest_plot <- function(avgs,
 
   return(list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot))
 }
+
+
+
+
+
+get_filename = function(varset_marker_name){
+  
+  # Create pattern to match files that include the marker name and the suffix
+  pattern_to_match <- paste0(varset_marker_name, "_by_case_ctrls.png")
+  
+  # knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("forest_vacc_cvaucs_", levels(DiscreteSLperf_allvarsets$varset)[1], ".png")))
+  
+  # Search for the matching file in the figs folder
+  matched_file <- list.files(
+    path = here(Sys.getenv("file_path"), "figs"),
+    pattern = pattern_to_match,
+    full.names = TRUE
+  )
+  
+  return(matched_file)
+}
+
+
+
+
+
+
+
+
+# Function to plot the distribution of a marker by cases and noncases. 
+plot_marker_distribution <- function(marker_name, Y, X_markers_varset, file_path, disease_name, cases, model_results, varset, counter) {
+  # Lookup coefficient and odds ratio for this marker
+  model_info <- model_results %>% filter(Predictors == marker_name)
+  
+  # File name to save: 
+  file_name = paste0(counter, "_", varset, "_", marker_name, "_by_case_ctrls.png")
+  
+  if (nrow(model_info) == 0) {
+    message("No model results found for marker: ", marker_name)
+    coef_text <- "No model data"
+  } else if (all(!is.na(model_info$Coefficient))){
+    coef_val <- round(model_info$Coefficient, 3)
+    or_val <- round(model_info$Odds.Ratio, 3)
+    coef_text <- paste0("Coef: ", coef_val, ", OR: ", or_val)
+    str_to_display = paste0(marker_name, ": Coefficient = ", coef_val, ", Odds Ratio = ", or_val)
+  } else if (all(!is.na(model_info$Importance))){
+    imp_val <- round(model_info$Importance, 3)
+    imp_text <- paste0("Var Importance: ", imp_val)
+    str_to_display = paste0(marker_name, ": Var Importance = ", imp_val)
+  } else if (all(!is.na(model_info$Gain))){
+    gain_val <- round(model_info$Gain, 3)
+    gain_text <- paste0("Gain: ", gain_val)
+    str_to_display = paste0(marker_name, ": Gain = ", gain_val)
+  }
+  
+  # Open PNG device
+  options(bitmapType = "cairo")
+  png(
+    file = here(file_path, "figs", file_name),
+    width = 1000, height = 1000
+  )
+  
+  # Generate plot
+  p <- X_markers_varset %>%
+    bind_cols(tibble(Y = Y)) %>%
+    mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>%
+    ggplot(aes(x = Ychar, y = .data[[marker_name]], color = Ychar)) +
+    geom_jitter(width = 0.06, size = 3, shape = 21, fill = "white") +
+    geom_violin(alpha = 0.05, color = "black", lwd = 1.0) +
+    geom_boxplot(alpha = 0.05, width = 0.15, color = "black", outlier.size = NA, outlier.shape = NA, lwd = 1.0) +
+    theme_bw() +
+    scale_color_manual(values = c("#00468B", "#8B0000")) +
+    labs(
+      title = paste(varset, "\n", str_to_display), #str_to_display,
+      y = paste0("Distribution of marker"),
+      x = ""
+    ) +
+    theme(
+      plot.title = element_text(size = 20, face = "bold", hjust = 0),  # Bigger, bold, centered
+      legend.position = "none",
+      strip.text.x = element_text(size = 25),
+      axis.text = element_text(size = 23),
+      axis.ticks.length = unit(.35, "cm"),
+      axis.title.y = element_text(size = 30)
+    ) +
+    stat_summary(
+      fun.data = median_iqr_label,
+      geom = "text",
+      aes(
+        x = as.numeric(factor(Ychar)) + 0.15,
+        label = after_stat(label)
+      ),
+      vjust = 0.5,
+      hjust = 0,
+      size = 6
+    )
+  
+  print(p)
+  dev.off()
+}
+
+
+
+
+

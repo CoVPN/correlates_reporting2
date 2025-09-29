@@ -140,6 +140,7 @@ readin_SLobjects_fromFolder <- function(data_path, file_pattern, endpoint, trt){
   list.files(data_path, pattern = file_pattern) %>%
     tibble(file = .) %>%
     mutate(listdat = lapply(paste0(data_path, "/", file), readRDS)) %>%
+    # filter(map_int(listdat, length) == 10) %>%
     #mutate(data = map(listdat, convert_SLobject_to_Slresult_dataframe)) %>%
     mutate(data = map(listdat, convert_SLobject_to_Slresult_dataframe_UPDATE_cvauc_for_DiscreteSL)) %>%
     select(file, data) %>%

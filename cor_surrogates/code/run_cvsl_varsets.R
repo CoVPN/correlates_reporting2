@@ -7,8 +7,8 @@
 # COR = "D15to181covail_xassays"
 
 Sys.setenv(TRIAL = "covail_xassays")
-# COR = "D15to91covail_xassays"
-COR = "D15to181covail_xassays"
+COR = "D15to91covail_xassays"
+# COR = "D15to181covail_xassays"
 
 #-----------------------------------------------
 # obligatory to append to the top of each script
@@ -102,7 +102,7 @@ cvsl_args %>% add_row(Argument = "vimp package version",
 # ensure reproducibility
 set.seed(20210216)
 # if non-naive and 1 dose mRNA arm then varset 26 does not work with the above seed. So use set.seed(20250616) !!
-set.seed(6767)
+set.seed(2618)
 seeds <- round(runif(10, 1000, 10000)) # average over 10 random starts
 
 # disable parallelization in openBLAS and openMP
@@ -113,26 +113,57 @@ blas_set_num_threads(1L)
 omp_set_num_threads(1L)
 stopifnot(omp_get_max_threads() == 1L)
 
+# sl_lib <- list(c("SL.glm", "screen_all"))
+
+
 # run the Super Learners
-fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
-                           Y = Y,
-                           X_mat = X_markers_varset,
-                           family = familyVar,
-                           obsWeights = weights,
-                           all_weights = all_ipw_weights_treatment,
-                           ipc_est_type = ipc_est_typeVar,
-                           sl_lib = sl_lib,
-                           method = methodVar,
-                           cvControl = cvControlVar,
-                           innerCvControl = innerCvControlVar,
-                           Z = Z_treatmentDAT,
-                           C = C,
-                           z_lib = "SL.glm",
-                           scale = interval_scaleVar, # scale on which intervals are computed (helps with intervals lying outside (0, 1))
-                           ipc_scale = ipc_scaleVar, # scale on which IPW correction is applied
-                           vimp = FALSE,
-                           mc.cores = num_cores
-)
+# fits <- parallel::mclapply(seeds, FUN = run_cv_sl_once,
+#                            Y = Y,
+#                            X_mat = X_markers_varset,
+#                            family = familyVar,
+#                            obsWeights = weights,
+#                            all_weights = all_ipw_weights_treatment,
+#                            ipc_est_type = ipc_est_typeVar,
+#                            sl_lib = sl_lib,
+#                            method = methodVar,
+#                            cvControl = cvControlVar,
+#                            innerCvControl = innerCvControlVar,
+#                            Z = Z_treatmentDAT,
+#                            C = C,
+#                            z_lib = "SL.glm",
+#                            scale = interval_scaleVar, # scale on which intervals are computed (helps with intervals lying outside (0, 1))
+#                            ipc_scale = ipc_scaleVar, # scale on which IPW correction is applied
+#                            vimp = FALSE,
+#                            mc.cores = num_cores
+# )
+
+
+fits <- parallel::mclapply(seeds, FUN = function(s) {
+  tryCatch({
+    run_cv_sl_once(
+      Y = Y,
+      X_mat = X_markers_varset,
+      family = familyVar,
+      obsWeights = weights,
+      all_weights = all_ipw_weights_treatment,
+      ipc_est_type = ipc_est_typeVar,
+      sl_lib = sl_lib,
+      method = methodVar,
+      cvControl = cvControlVar,
+      innerCvControl = innerCvControlVar,
+      Z = Z_treatmentDAT,
+      C = C,
+      z_lib = "SL.glm",
+      scale = interval_scaleVar,
+      ipc_scale = ipc_scaleVar,
+      vimp = FALSE
+    )
+  }, error = function(e) {
+    message(sprintf("Seed %s failed: %s", s, e$message))
+    return(NULL)
+  })
+}, mc.cores = num_cores)
+
 
 
 # compile all CV-AUCs and CV-SL fits
