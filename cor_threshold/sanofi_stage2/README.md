@@ -30,7 +30,7 @@ This project uses a project-level renv.lock. Setup:
   df <- read.csv("vat08_combined_data_processed_20250321.csv")
   ```
 
-- Note for admin only: see https://github.com/CoVPN/correlates_reporting2/blob/master/using_renv_for_reproducibility.md for more info about setting up renv for a new project. 
+- Note for admin only: see https://github.com/CoVPN/correlates_reporting2/blob/master/coding_for_reproducibility.md for more info about setting up renv for a new project. 
   
 The following shell commands are to be run at the project level.
 
