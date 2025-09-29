@@ -1,8 +1,24 @@
-# Using renv for Reproducibility
+# Coding for Reproducibility
+
+
+1.	Portability -  avoid using absolute paths because they will break if someone else downloads the code and tries to run it. For example,
+    -	If the code writes results, either intermediate computational results or final output to files, save the files to a folder named output. In addition, always call dir.create("output", showWarnings = FALSE) in the script to create the folder (it is okay if the folder already exists).
+    -	If the code reads a utility functions file, make sure the file is part of the code base, either at the project level or at the module level.
+2.	Use the package renv to manage R system and package versions. See the section below for details.
+3.	Consider having a Makefile or a bash script to run analyses and generate reports. If there are just one or a few Rmd files to be rendered, then there is no need, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md. On the other hand, if slurm is used and later steps have to wait for earlier steps to finish, it may take multiple steps, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cop_exposureproximal/ensemble_severe_correlates/README.md
+4.	Expect every project-level or module-level readme to have a Reproducibility section. 
+Project-level example:
+https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md
+Module-level example:
+https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md
+
+
+
+## Using renv for Reproducibility
 
 renv can be used at one of three levels: repo-level, module-level, and project level. The following instructions show how to use renv when starting a new project. Don't follow these instructions if you are trying to reproduce results for an existing project. Instead, follow the instructions in the project (e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md) or the module that contains the project (e.g, https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md). 
 
-## Setting up renv at the project-level for a new project
+### Setting up renv at the project-level for a new project
 
 This is the most reproducible way of using renv because each project/manuscript has its own renv.lock.
 
@@ -52,18 +68,18 @@ Now if you start a new R console in the project folder, you should see a message
 
 For an example of a project using project-level renv, check out cor_threshold/sanofi_stage2 (https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md).
 
-## Setting up renv at the module-level for a new module
+### Setting up renv at the module-level for a new module
 
 This is not currently done. There seems to be little advantages of using renv at the module level.
 
-## Setting up renv at the repo-level
+### Setting up renv at the repo-level
 
 This has already been done for the repo. For an example of using the repo-level renv, check out cor_coxph (https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md).
 
 
 
 
-## General tips for using renv
+### General tips for using renv
 
 Use renv::install and not remotes or DevTools to install or update pacakges from CRAN, github, or a url, e.g.,
 - renv::install("github_id/package_name")
