@@ -266,8 +266,8 @@ run_cv_sl_once <- function(seed = 1, Y = NULL, X_mat = NULL,
     SL.library = sl_lib,
     control = list(saveFitLibrary = TRUE),
     method = method, cvControl = cvControl,
-    innerCvControl = innerCvControl
-    #, verbose = FALSE
+    innerCvControl = innerCvControl,
+    verbose = FALSE
   )
 
   aucs <- get_all_aucs(sl_fit = fit, scale = scale, ipc_scale = ipc_scale, weights = all_weights,
@@ -497,11 +497,11 @@ get.nonlinearPCA.scores <- function(dat){
 # @param pred_vars the vector of column names of predictor variables
 # @return a data frame upon removal of any binary predictor variables with fewer than 10 ptids that have a 0 or 1 for that variable (COVE analysis)
 # @return a data frame upon removal of any binary predictor variables with number of cases in the variable = 1 or 0 subgroup is <= 3 (ENSEMBLE analysis)
-drop_predVars_with_fewer_0s_or_1s <- function(dat, pred_vars) {
+drop_predVars_with_fewer_0s_or_1s <- function(dat, pred_vars, filepathname) {
   
   if(study_name == "COVE"){
     # delete the file drop_predVars_with_fewer_0s_or_1s.csv
-    unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))
+    unlink(here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"))
     # Remove binary risk variables with fewer than 10 ptids that have a 0 or 1 for that variable
     for (i in 1:length(pred_vars)) {
       if ((dat %>% select(starts_with(pred_vars[i])) %>% unique() %>% dim())[1] == 2) {
@@ -510,38 +510,38 @@ drop_predVars_with_fewer_0s_or_1s <- function(dat, pred_vars) {
           print(paste0(pred_vars[i], " dropped from risk score analysis as it had fewer than 10 1's or 0's."))
           # Also print to file
           paste0(pred_vars[i], " dropped from risk score analysis as it had fewer than 10 1's or 0's.") %>%
-            write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+            write.table(file = here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
         }
       }
     }
   }
   
-  if(study_name == "COVE" & !file.exists(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))){
+  if(study_name == "COVE" & !file.exists(here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"))){
     paste0("No binary input variable had fewer than 10 ptids with a 0 or 1 for that variable.") %>%
-      write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+      write.table(file = here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
   }
   
   if(study_name != "COVE"){
     # delete the file drop_predVars_with_fewer_0s_or_1s.csv
-    unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))
+    unlink(here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"))
     # Remove a variable if the number of cases in the variable = 1 subgroup is <= 3 or the number of cases in the variable = 0 subgroup is <= 3
     for (i in 1:length(pred_vars)) {
       print(paste0(i, " ", pred_vars[i]))
-      if (is_var_binary(dat %>% select(starts_with(pred_vars[i])) %>% pull)) {
+      if (is_var_binary(dat %>% select(pred_vars[i]) %>% pull)) {
         if (dat %>% filter(get(pred_vars[i]) == 1) %>% pull(endpoint) %>% sum() <= 3 | dat %>% filter(get(pred_vars[i]) == 0) %>% pull(endpoint) %>% sum() <= 3){
-          dat <- dat %>% select(-starts_with(pred_vars[i]))
+          dat <- dat %>% select(-pred_vars[i])
           print(paste0(pred_vars[i], " dropped from risk score analysis as the number of cases in the variable = 1 or 0 subgroup is <= 3."))
           # Also print to file
           paste0(pred_vars[i], " dropped from risk score analysis as the number of cases in the variable = 1 or 0 subgroup is <= 3.") %>%
-            write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+            write.table(file = here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
         }
       }
     }
   }
   
-  if(study_name != "COVE" & !file.exists(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"))){
+  if(study_name != "COVE" & !file.exists(here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"))){
     paste0("No binary input variable had number of cases in the variable = 1 or 0 subgroup <= 3") %>%
-      write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+      write.table(file = here(filepathname, "drop_predVars_with_fewer_0s_or_1s.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
   }
   
   return(dat)
@@ -611,9 +611,9 @@ is_var_binary <- function(var) {
 # @param X dataframe containing all predictor variables
 # @param predVars the vector of column names of predictor variables
 # @return a data frame upon removal of any binary predictor variables that have more than 5% values missing
-drop_predVars_with_high_total_missing_values <- function(X, predVars) {
+drop_predVars_with_high_total_missing_values <- function(X, predVars, filepathname) {
   # delete the file drop_predVars_with_high_total_missing_values.csv
-  unlink(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"))
+  unlink(here(filepathname, "drop_predVars_with_high_total_missing_values.csv"))
   covars_highNAvalues <- vector()
   for (i in 1:length(predVars)) {
     total_NAs <- sum(is.na(X %>% pull(predVars[i])))
@@ -623,14 +623,14 @@ drop_predVars_with_high_total_missing_values <- function(X, predVars) {
       print(paste0("WARNING: ", predVars[i], " variable has more than 5% values missing! This variable will be dropped from SuperLearner analysis."))
       # Also print to file
       paste0(predVars[i], " variable has more than 5% values missing and was dropped from risk score analysis.") %>%
-        write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+        write.table(file = here(filepathname, "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
       covars_highNAvalues <- predVars[i]
     }
   }
   
-  if(!file.exists(here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"))){
+  if(!file.exists(here(filepathname, "drop_predVars_with_high_total_missing_values.csv"))){
     paste0("No variables had more than 5% values missing.") %>%
-      write.table(file = here("output", Sys.getenv("TRIAL"), "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
+      write.table(file = here(filepathname, "drop_predVars_with_high_total_missing_values.csv"), sep=",", append = TRUE, row.names = F, col.names = F)
   }
   
   if(length(covars_highNAvalues) == 0)
@@ -883,6 +883,25 @@ plot_roc_curves <- function(predict, cvaucDAT, weights) {
 }
 
 
+
+
+# Function to compute median and IQR and return formatted label
+# Used for predicted probability plots
+median_iqr_label <- function(y) {
+  q1 <- quantile(y, 0.25, na.rm = TRUE)
+  q3 <- quantile(y, 0.75, na.rm = TRUE)
+  med <- median(y, na.rm = TRUE)
+  ymax <- max(y, na.rm = TRUE)
+  label <- sprintf("%.3f (%.3f - %.3f)", med, q1, q3)
+  y_pos <- 0.75 * ymax + 0.25 * med  # display closer to max
+  return(data.frame(y = y_pos, label = label))
+}
+
+
+
+
+
+
 # Plot predicted probability plots for SL, discrete.SL and topRanking learner-screen combinations
 # @param pred dataframe returned by get_cv_predictions function
 # @param weights the inverse probability weights
@@ -900,10 +919,35 @@ plot_predicted_probabilities <- function(pred, weights = rep(1, length(pred$pred
     cases = "Post Day 210 Cases"
     disease_name = "HIV"
   }
-  if(study_name == "COVAIL"){
+  if(study_name == "COVAIL" & COR == "D15to91covail_xassays"){
     cases = "Post Day 22 to Day 91 Cases"
     disease_name = "COVID-19"
   }
+  if(study_name == "COVAIL" & COR == "D15to181covail_xassays"){
+    cases = "Post Day 22 to Day 181 Cases"
+    disease_name = "COVID-19"
+  }
+  
+  # pred %>%
+  #   mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>%
+  #   ggplot(aes(x = Ychar, y = pred, color = Ychar)) +
+  #   geom_jitter(width = 0.06, size = 3, shape = 21, fill = "white") +
+  #   geom_violin(alpha = 0.05, color = "black", lwd=1.0) +
+  #   geom_boxplot(alpha = 0.05, width = 0.15, color = "black", outlier.size = NA, outlier.shape = NA, lwd=1.0) +
+  #   theme_bw() +
+  #   #scale_color_manual(values = c("#56B4E9", "#E69F00")) +
+  #   scale_color_manual(values = c("#00468B", "#8B0000")) +
+  #   facet_wrap(vars(learnerScreen), ncol = 1, scales = "free") +
+  #   labs(y = paste0("CV estimated predicted probability of ", disease_name, " disease"), x = "") +
+  #   theme(
+  #     legend.position = "none",
+  #     strip.text.x = element_text(size = 25),
+  #     axis.text = element_text(size = 23),
+  #     axis.ticks.length = unit(.35, "cm"),
+  #     axis.title.y = element_text(size = 30)
+  #   )
+  
+  
   pred %>%
     mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>%
     ggplot(aes(x = Ychar, y = pred, color = Ychar)) +
@@ -921,7 +965,16 @@ plot_predicted_probabilities <- function(pred, weights = rep(1, length(pred$pred
       axis.text = element_text(size = 23),
       axis.ticks.length = unit(.35, "cm"),
       axis.title.y = element_text(size = 30)
-    )
+    ) +
+    stat_summary(
+      fun.data = median_iqr_label,
+      geom = "text",
+      aes(x = as.numeric(factor(Ychar)) + 0.15,  # nudge x position slightly right
+          label = after_stat(label)),
+      vjust = 0.5,
+      hjust = 0,
+      size = 6
+    ) 
 }
 
 
@@ -985,6 +1038,7 @@ make_forest_plot_demo <- function(avgs) {
 # @param cvaucs_vacc dataframe containing Variable Sets, Screen, Learner, AUC estimates and CIs as columns
 # @return list of 2 ggplot objects: one containing forest plot and the other containing labels (Variable Sets and CV-AUCs)
 make_forest_plot_SL_allVarSets <- function(dat, 
+                                           varsets_to_display = Inf,
                                            learner.choice = "SL",
                                            learner.plot.margin = unit(c(2.25,0.2,0.8,-0.15),"cm"),
                                            names.plot.margin = unit(c(0.1,-0.15,0.65,-0.15),"cm"),
@@ -996,6 +1050,12 @@ make_forest_plot_SL_allVarSets <- function(dat,
     arrange(varsetNo) %>%
     mutate(varset = fct_reorder(varset, AUC, .desc = F)) %>%
     arrange(-AUC)
+  
+  if(varsets_to_display != Inf){ # reduce varsets to display: top 30 or top 50 etc...
+    
+    allSLs = allSLs %>% head(varsets_to_display)
+    
+  }
 
   lowestXTick <- floor(min(allSLs$ci_ll)*10)/10
   highestXTick <- ceiling(max(allSLs$ci_ul)*10)/10
@@ -1202,3 +1262,108 @@ make_forest_plot <- function(avgs,
 
   return(list(top_learner_plot = top_learner_plot, top_learner_nms_plot = top_learner_nms_plot))
 }
+
+
+
+
+
+get_filename = function(varset_marker_name){
+  
+  # Create pattern to match files that include the marker name and the suffix
+  pattern_to_match <- paste0(varset_marker_name, "_by_case_ctrls.png")
+  
+  # knitr::include_graphics(here(Sys.getenv('file_path'), "figs", paste0("forest_vacc_cvaucs_", levels(DiscreteSLperf_allvarsets$varset)[1], ".png")))
+  
+  # Search for the matching file in the figs folder
+  matched_file <- list.files(
+    path = here(Sys.getenv("file_path"), "figs"),
+    pattern = pattern_to_match,
+    full.names = TRUE
+  )
+  
+  return(matched_file)
+}
+
+
+
+
+
+
+
+
+# Function to plot the distribution of a marker by cases and noncases. 
+plot_marker_distribution <- function(marker_name, Y, X_markers_varset, file_path, disease_name, cases, model_results, varset, counter) {
+  # Lookup coefficient and odds ratio for this marker
+  model_info <- model_results %>% filter(Predictors == marker_name)
+  
+  # File name to save: 
+  file_name = paste0(counter, "_", varset, "_", marker_name, "_by_case_ctrls.png")
+  
+  if (nrow(model_info) == 0) {
+    message("No model results found for marker: ", marker_name)
+    coef_text <- "No model data"
+  } else if (all(!is.na(model_info$Coefficient))){
+    coef_val <- round(model_info$Coefficient, 3)
+    or_val <- round(model_info$Odds.Ratio, 3)
+    coef_text <- paste0("Coef: ", coef_val, ", OR: ", or_val)
+    str_to_display = paste0(marker_name, ": Coefficient = ", coef_val, ", Odds Ratio = ", or_val)
+  } else if (all(!is.na(model_info$Importance))){
+    imp_val <- round(model_info$Importance, 3)
+    imp_text <- paste0("Var Importance: ", imp_val)
+    str_to_display = paste0(marker_name, ": Var Importance = ", imp_val)
+  } else if (all(!is.na(model_info$Gain))){
+    gain_val <- round(model_info$Gain, 3)
+    gain_text <- paste0("Gain: ", gain_val)
+    str_to_display = paste0(marker_name, ": Gain = ", gain_val)
+  }
+  
+  # Open PNG device
+  options(bitmapType = "cairo")
+  png(
+    file = here(file_path, "figs", file_name),
+    width = 1000, height = 1000
+  )
+  
+  # Generate plot
+  p <- X_markers_varset %>%
+    bind_cols(tibble(Y = Y)) %>%
+    mutate(Ychar = ifelse(Y == 0, "Non-Cases", cases)) %>%
+    ggplot(aes(x = Ychar, y = .data[[marker_name]], color = Ychar)) +
+    geom_jitter(width = 0.06, size = 3, shape = 21, fill = "white") +
+    geom_violin(alpha = 0.05, color = "black", lwd = 1.0) +
+    geom_boxplot(alpha = 0.05, width = 0.15, color = "black", outlier.size = NA, outlier.shape = NA, lwd = 1.0) +
+    theme_bw() +
+    scale_color_manual(values = c("#00468B", "#8B0000")) +
+    labs(
+      title = paste(varset, "\n", str_to_display), #str_to_display,
+      y = paste0("Distribution of marker"),
+      x = ""
+    ) +
+    theme(
+      plot.title = element_text(size = 20, face = "bold", hjust = 0),  # Bigger, bold, centered
+      legend.position = "none",
+      strip.text.x = element_text(size = 25),
+      axis.text = element_text(size = 23),
+      axis.ticks.length = unit(.35, "cm"),
+      axis.title.y = element_text(size = 30)
+    ) +
+    stat_summary(
+      fun.data = median_iqr_label,
+      geom = "text",
+      aes(
+        x = as.numeric(factor(Ychar)) + 0.15,
+        label = after_stat(label)
+      ),
+      vjust = 0.5,
+      hjust = 0,
+      size = 6
+    )
+  
+  print(p)
+  dev.off()
+}
+
+
+
+
+
