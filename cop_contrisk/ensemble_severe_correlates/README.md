@@ -1,4 +1,4 @@
-# Sanofi Stage 2 CoP manuscript NP threshold code 
+# Sanofi Stage 2 CoP manuscript controlled risk curves 
 
 ## Reproducibility
 
