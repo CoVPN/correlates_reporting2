@@ -2,7 +2,11 @@
 
 
 1.	Portability. Avoid using absolute paths because they will break if someone else downloads the code and tries to run it. For example,
-    -	If the code writes results, either intermediate computational results or final output to files, save the files to a folder named output. In addition, always call dir.create("output", showWarnings = FALSE) in the script to create the folder (it is okay if the folder already exists).
+    -	If the code writes results, either intermediate computational results or final output to files, save the files to a folder named output. In addition, always call
+    ```
+    dir.create("output", showWarnings = FALSE)
+    ```
+    in R scripts to create the folder (nothing happens if the folder already exists).
     -	If the code reads a utility functions file, make sure the file is part of the code base, either at the project level or at the module level.
 2.	Use the package renv to manage R system and package versions. See the section below for details.
 3.	Running reports. There are several options:
