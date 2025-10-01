@@ -13,7 +13,7 @@
     -	If there are only a few Rmd files to be rendered, an Rscript call is sufficient. This often happens at the project level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md. 
     -	Use a Makefile or a bash script to run analyses and generate reports. This often happens at the module level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/Makefile
     -	If high performance cluster/slurm is used and there are dependencies between steps, multiple scripts may be needed, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cop_exposureproximal/ensemble_severe_correlates/README.md
-4Expect every project-level or module-level readme to have a Reproducibility section. 
+4.	Expect every project-level or module-level readme to have a Reproducibility section. 
     -	Project-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md
     -	Module-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md
 
