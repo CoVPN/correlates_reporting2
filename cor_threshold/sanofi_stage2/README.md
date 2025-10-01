@@ -8,8 +8,9 @@ This project uses a project-level renv.lock. Setup:
 
 - Assume that we have R 4.4.2 installed.
 
-- Assume that we have renv 0.13.2 installed. If not, open R console at the project level (the folder containing this readme file), and run the following commands. Note that we use renv 0.13.2, which uses renv/activate.R, instead of newer versions because of some errors with the newer versions. (If in a slurm env, load an appropriate R module and a CMmake module. The latter is needed to install some packages, e.g., nloptr, lme4.
-)
+- Additional modules may be needed, e.g. CMake, which is needed to install nloptr, lme4 etc.
+
+- Assume that we have renv 0.13.2 installed. If not, open R console at the project level (the folder containing this readme file), and run the following commands. 
   ```{r}
   install.packages(
     "https://cran.r-project.org/src/contrib/Archive/renv/renv_0.13.2.tar.gz",
