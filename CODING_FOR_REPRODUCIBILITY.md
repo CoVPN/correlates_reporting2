@@ -2,11 +2,11 @@
 
 
 1.	Portability. Avoid using absolute paths because they will break if someone else downloads the code and tries to run it. For example,
-    -	If the code writes results to subdirectories, make sure the subdirectories exist by adding the following command in R scripts:
+    -	If the code writes results to subdirectories, make sure the subdirectories exist by including a command like the following in R scripts:
     ```
     dir.create("output", showWarnings = FALSE, recursive=TRUE)
     ```
-    This creates a folder called output in the current directory (nothing happens if the folder already exists). The recursive option is needed if the path is more than one level deep.
+    The command creates a folder named 'output' in the current directory (nothing happens if the folder already exists). The recursive option is needed if the path is more than one level deep.
     -	If the code reads a utility functions file, make sure the file is part of the code base, either at the project level or at the module level.
 2.	Use the package renv to manage R system and package versions. See the section below for details.
 3.	Running reports. There are several options:
