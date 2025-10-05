@@ -2,14 +2,18 @@
 
 
 1.	Portability. Avoid using absolute paths because they will break if someone else downloads the code and tries to run it. For example,
-    -	If the code writes results, either intermediate computational results or final output to files, save the files to a folder named output. In addition, always call dir.create("output", showWarnings = FALSE) in the script to create the folder (it is okay if the folder already exists).
+    -	If the code writes results to subdirectories, make sure the subdirectories exist by including a command like the following in R scripts:
+    ```
+    dir.create("output", showWarnings = FALSE, recursive=TRUE)
+    ```
+    The command creates a folder named 'output' in the current directory (nothing happens if the folder already exists). The recursive option is needed if the path is more than one level deep.
     -	If the code reads a utility functions file, make sure the file is part of the code base, either at the project level or at the module level.
 2.	Use the package renv to manage R system and package versions. See the section below for details.
 3.	Running reports. There are several options:
     -	If there are only a few Rmd files to be rendered, an Rscript call is sufficient. This often happens at the project level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md. 
     -	Use a Makefile or a bash script to run analyses and generate reports. This often happens at the module level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/Makefile
     -	If high performance cluster/slurm is used and there are dependencies between steps, multiple scripts may be needed, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cop_exposureproximal/ensemble_severe_correlates/README.md
-4Expect every project-level or module-level readme to have a Reproducibility section. 
+4.	Expect every project-level or module-level readme to have a Reproducibility section. 
     -	Project-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md
     -	Module-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md
 
