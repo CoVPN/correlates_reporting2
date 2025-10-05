@@ -1,5 +1,8 @@
 ```{r, echo=FALSE, results='asis'}
 
+show.sample.size <- has.scaled <- show.tertile.curves <- T
+show.forestplots <- show.ve.curves <- F
+
 if (endsWith(TRIAL,"EUA") | endsWith(TRIAL,"partA")) {
 
   # start1 is ENSEMBLE specific
