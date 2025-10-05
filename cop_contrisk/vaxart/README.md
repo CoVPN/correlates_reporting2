@@ -8,17 +8,17 @@ This project uses a project-level renv.lock. Setup:
 
 - Assume that we have R 4.4.2 loaded.
 
-
-- Assume that we have renv 0.13.2 installed. If not, open R console at the project level (the folder containing this readme file), and run the following commands. Note that we use renv 0.13.2, which uses renv/activate.R, instead of newer versions because of some errors with the newer versions. (If in a slurm env, load an appropriate R module and a CMmake module. The latter is needed to install some packages, e.g., nloptr, lme4.
+- Assume that we have renv 1.1.5 installed. If not, open R console at the project level (the folder containing this readme file) and run the following command.
 )
   ```{r}
+  # if the following does not work, try install.packages("renv")
   install.packages(
-    "https://cran.r-project.org/src/contrib/Archive/renv/renv_0.13.2.tar.gz",
+    "https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz",
     repos = NULL,
     type = "source"
   )
   
-  packageVersion("renv")  # should show ‘0.13.2’
+  packageVersion("renv")  
   ```
 
 - Run the following R command at the project level to install package dependencies:
@@ -32,4 +32,4 @@ Rscript -e "rmarkdown::render('controlled_risk_vaxart.Rmd', output_file='control
 ```
 
 
-For any questions, please email jpspeng@uw.edu. 
+For any questions, please email bzhang3@fredhutch.org. 
