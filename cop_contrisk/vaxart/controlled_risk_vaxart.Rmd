@@ -1,0 +1,376 @@
+---
+title: "covpn_correlates_controlled_risk_nextgen"
+author: "CoVPN 3008"
+date: "2025-10-01"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(vaccine)
+library(ggplot2)
+library(patchwork)
+library(Hmisc)
+
+dir.create("Plot", showWarnings = FALSE, recursive=TRUE)
+
+```
+
+```{r echo=FALSE}
+# Helper function
+
+truncate_ce <- function(ests, low, high){
+  ind_exclude = which(ests$cr$s < low | ests$cr$s > high)
+  
+  if(length(ind_exclude) == 0)
+    return(ests)
+  
+  else {
+    ests$cr$s = ests$cr$s[-ind_exclude]
+    ests$cr$est = ests$cr$est[-ind_exclude]
+    ests$cr$se = ests$cr$se[-ind_exclude]
+    ests$cr$ci_lower = ests$cr$ci_lower[-ind_exclude]
+    ests$cr$ci_upper = ests$cr$ci_upper[-ind_exclude]
+    return(ests)
+  }
+}
+
+# Conduct a basic CoR analysis
+CoR_D1 <- function(dt, density,
+                   trt_name, 
+                   comp_name,
+                   time, event, 
+                   marker_name, adj_vars, t0,
+                   title_name, xlab_name,
+                   dir_name, x_range,
+                   x_break, method = 'Cox',
+                   save_pdf = TRUE){
+  
+  # 2.5% and 97.% quantiles of marker
+  low = wtd.quantile(density$s, weights = density$w, probs = c(0.025))
+  high = wtd.quantile(density$s, weights = density$w, probs = c(0.975))
+  
+  # Investigational vaccine: trt_name = 1
+  dat1 <- load_data(
+    time = time,
+    event = event,
+    vacc = trt_name,
+    marker = marker_name,
+    covariates = adj_vars,
+    weights = "wt",
+    ph2 = "casecontrol",
+    data = dt)
+  
+  # calculate overall incidence by t0 in the investigational vaccine arm
+  inc1 = est_overall(dat1, t_0 = t0)[1, 'est']
+  
+  if (method == 'Cox')
+    ests1 <- est_ce(dat = dat1, type="Cox", t_0 = t0, return_p_value = TRUE)
+  else 
+    ests1 <- est_ce(dat = dat1, type="NP", t_0 = t0, return_p_value = TRUE)
+
+  Cox1 = truncate_ce(ests1, low, high)
+  
+  # Comparator arm: comp_name = 1
+  dat0 <- load_data(
+    time = time,
+    event = event,
+    vacc = comp_name,
+    marker = marker_name,
+    covariates = adj_vars,
+    weights = "wt",
+    ph2 = "casecontrol",
+    data = dt)
+  
+  # calculate overall incidence by t0 in the comparator vaccine arm
+  inc0 = est_overall(dat0, t_0 = t0)[1, 'est']
+  
+  if (method == 'Cox')
+    ests0 <- est_ce(dat = dat0, type="Cox", t_0 = t0, return_p_value = TRUE)
+  else
+    ests0 <- est_ce(dat = dat0, type="NP", t_0 = t0, return_p_value = TRUE)
+
+  Cox0 = truncate_ce(ests0, low, high)
+  
+  p = plot_ce(Cox1, Cox0,
+              zoom_y = c(0, 0.1),
+              zoom_x = x_range) +
+    geom_hline(yintercept = inc1, linewidth = 1.5, color = 'gray',
+               linetype = 'dotted', alpha = 0.5) +
+    geom_hline(yintercept = inc0, linewidth = 1.5, color = 'gray',
+               linetype = 'dotted', alpha = 0.5) +
+    geom_density(aes(x = x, y = after_stat(density/max(density)*0.05), weight = w), 
+                 data = data.frame(x = density$s, w = density$w),  
+                 inherit.aes = F, bounds = c(min(density$s, na.rm = TRUE), 
+                                             max(density$s, na.rm = TRUE)),
+                 fill = "forestgreen", alpha = 0.3, color = NA) +
+    scale_x_continuous(breaks = x_break) +
+    scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
+    scale_color_manual(values = c('Cox0' = 'green', 'Cox1' = 'blue'),
+                       labels = c('Comparator Vaccine', 'Investigational Vaccine')) +
+    scale_fill_manual(values = c('Cox0' = 'green', 'Cox1' = 'blue'),
+                       labels = c('Comparator Vaccine', 'Investigational Vaccine')) +
+    xlab(xlab_name) + 
+    ylab(paste0('Covariate-adjusted risk \n', t0, ' days post D31')) +
+    labs(title = title_name) +
+    theme_bw(base_size = 16) + 
+    theme(legend.position = c(0.75, 0.9),
+          legend.byrow = TRUE,
+          legend.background = element_blank(), 
+          legend.box.background = element_blank())
+  
+  if (save_pdf)
+    ggsave(dir_name, plot = p, width = 12, height = 8)
+  
+  return(list(plot = p,
+              Cox_CoR_Investigate = ests1,
+              Cox_CoR_Comparator = ests0))
+}
+```
+
+# Month-6 Controlled risk curves for nAb-ID50 XBB.1.5
+
+## Cox-based estimates
+
+
+```{r echo=FALSE, warning=FALSE}
+# read dataset
+
+config.reporting <- config::get(config = "nextgen_mock", file="../../config.yml")
+dt<-read.csv(config.reporting$data_cleaned)
+
+
+# t0 and t1 may be updated depending on the SAP
+t0 = 180
+t1 = 330
+
+# Variables to be adjusted
+adj_vars = c('HighRiskInd', 'demo.stratum')
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.cap = "For nAb-ID50 XBB.1.5, controlled risk of COVID-19 from 7 to 180 days post D31 by D01 marker level based on sera from Investigational Vaccine arm (blue lines) and Comparator Vaccine arm participants (green lines). Controlled risk was estimated using a marginalized Cox proportional hazards model with covariate adjustment (implementation in the R package vaccine) and restricted to the middle 95% quantiles of the available marker data. Dotted lines and shading indicate pointwise 95% CIs. The upper and lower horizontal gray lines are the overall cumulative incidence of COVID-19 from 7 to 180 days post D31 in Investigational and Comparator vaccine recipients, respectively. The background kernel density plots are estimates of the distribution of the antibody marker in per-protocol participants for the Investigational and Comparator Vaccine arms. Analyses adjust for the randomization strata and baseline risk score (ccIAS-sera). ID50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."}
+# casecontrol is set to the phase-2 indicator
+# For the serum markers, this phase-2 indicator is ph2.sera.D31_7
+# wt is set to the weight associated with the marker
+# For the serum markers, this wt is wt.sera.D31_7
+
+dt_cor = dt %>%
+  filter(ph1.D31_7 == 1) %>%
+  mutate(casecontrol = ph2.sera.D31_7,
+         wt = wt.sera.D31_7,
+         comp = 1- Trt) 
+
+dt_cor_ph2 = dt_cor %>%
+  filter(ph2.sera.D31_7 == 1)
+
+var_name = 'Bpseudoneutid50_sera_XBB.1.5'
+mk_name = 'D01 serum nAb-ID50 XBB.1.5'
+    
+x_range = c(0.5, 5.5)
+x_break = c(1, 2, 3, 4, 5)
+
+den = list(s = pull(dt_cor_ph2, var_name), 
+           w = pull(dt_cor_ph2, wt))
+
+res = CoR_D1(dt_cor, den,
+             trt_name = 'Trt',
+             comp_name = 'comp',
+             time = 'COVIDTimeD31toM12', 
+             event = 'COVIDIndD31_7toM12', 
+             marker_name = var_name, 
+             adj_vars = adj_vars, 
+             t0 = t0,
+             title_name = '',
+             xlab_name = mk_name,
+             dir_name = paste0('./Plot/', var_name, '_Cox.pdf'), 
+             x_range = x_range,
+             x_break = x_break,
+             method = 'Cox',
+             save_pdf = TRUE)
+print(res$plot)
+
+```
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.cap = "For nAb-ID50 XBB.1.5, controlled risk of COVID-19 from 7 to 180 days post D31 by D31 marker level based on sera from Investigational Vaccine arm (blue lines) and Comparator Vaccine arm participants (green lines). Controlled risk was estimated using a marginalized Cox proportional hazards model with covariate adjustment (implementation in the R package vaccine) and restricted to the middle 95% quantiles of the available marker data. Dotted lines and shading indicate pointwise 95% CIs. The upper and lower horizontal gray lines are the overall cumulative incidence of COVID-19 from 7 to 180 days post D31 in Investigational and Comparator vaccine recipients, respectively. The background kernel density plots are estimates of the distribution of the antibody marker in per-protocol participants for the Investigational and Comparator Vaccine arms. Analyses adjust for the randomization strata and baseline risk score (ccIAS-sera). ID50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."}
+var_name = 'Day31pseudoneutid50_sera_XBB.1.5'
+mk_name = 'D31 serum nAb-ID50 XBB.1.5'
+    
+x_range = c(0.5, 5.5)
+x_break = c(1, 2, 3, 4, 5)
+
+den = list(s = pull(dt_cor_ph2, var_name), 
+           w = pull(dt_cor_ph2, wt))
+
+res = CoR_D1(dt_cor, den,
+             trt_name = 'Trt',
+             comp_name = 'comp',
+             time = 'COVIDTimeD31toM12', 
+             event = 'COVIDIndD31_7toM12', 
+             marker_name = var_name, 
+             adj_vars = adj_vars, 
+             t0 = t0,
+             title_name = '',
+             xlab_name = mk_name,
+             dir_name = paste0('./Plot/', var_name, '_Cox.pdf'), 
+             x_range = x_range,
+             x_break = x_break,
+             method = 'Cox',
+             save_pdf = TRUE)
+print(res$plot)
+```
+
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.cap = "For nAb-ID50 XBB.1.5, controlled risk of COVID-19 from 7 to 180 days post D31 by fold-change (D31/D01) in marker level based on sera from Investigational Vaccine arm (blue lines) and Comparator Vaccine arm participants (green lines). Controlled risk was estimated using a marginalized Cox proportional hazards model with covariate adjustment (implementation in the R package vaccine) and restricted to the middle 95% quantiles of the available marker data. Dotted lines and shading indicate pointwise 95% CIs. The upper and lower horizontal gray lines are the overall cumulative incidence of COVID-19 from 7 to 180 days post D31 in Investigational and Comparator vaccine recipients, respectively. The background kernel density plots are estimates of the distribution of the antibody marker in per-protocol participants for the Investigational and Comparator Vaccine arms. Analyses adjust for the randomization strata and baseline risk score (ccIAS-sera). ID50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."}
+# casecontrol is set to the phase-2 indicator
+# For the serum markers, this phase-2 indicator is ph2.sera.D31_7
+# wt is set to the weight associated with the marker
+# For the serum markers, this wt is wt.sera.D31_7
+
+dt_cor = dt %>%
+  filter(ph1.D31_7 == 1) %>%
+  mutate(casecontrol = ph2.sera.D31_7,
+         wt = wt.sera.D31_7,
+         comp = 1- Trt) 
+
+var_name = 'Delta31overBpseudoneutid50_sera_XBB.1.5'
+mk_name = 'Fold-change (D31/D01) in serum nAb-ID50 XBB.1.5'
+    
+x_range = c(-2, 3)
+x_break = c(-1, 0, 1, 2, 3)
+
+den = list(s = pull(dt_cor_ph2, var_name), 
+           w = pull(dt_cor_ph2, wt))
+
+res = CoR_D1(dt_cor, den,
+             trt_name = 'Trt',
+             comp_name = 'comp',
+             time = 'COVIDTimeD31toM12', 
+             event = 'COVIDIndD31_7toM12', 
+             marker_name = var_name, 
+             adj_vars = adj_vars, 
+             t0 = t0,
+             title_name = '',
+             xlab_name = mk_name,
+             dir_name = paste0('./Plot/', var_name, '_Cox.pdf'), 
+             x_range = x_range,
+             x_break = x_break,
+             method = 'Cox',
+             save_pdf = TRUE)
+print(res$plot)
+
+```
+
+
+## Nonparametric methods
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.cap = "For nAb-ID50 XBB.1.5, controlled risk of COVID-19 from 7 to 180 days post D31 by D01 marker level based on sera from Investigational Vaccine arm (blue lines) and Comparator Vaccine arm participants (green lines). Controlled risk was estimated using a monotone-constrained nonparametric method with covariate adjustment (default implementation in the R package vaccine) and restricted to the middle 95% quantiles of the available marker data. Dotted lines and shading indicate pointwise 95% CIs. The upper and lower horizontal gray lines are the overall cumulative incidence of COVID-19 from 7 to 180 days post D31 in Investigational and Comparator vaccine recipients, respectively. The background kernel density plots are estimates of the distribution of the antibody marker in per-protocol participants for the Investigational and Comparator Vaccine arms. Analyses adjust for the randomization strata and baseline risk score (ccIAS-sera). ID50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."}
+# casecontrol is set to the phase-2 indicator
+# For the serum markers, this phase-2 indicator is ph2.sera.D31_7
+# wt is set to the weight associated with the marker
+# For the serum markers, this wt is wt.sera.D31_7
+
+var_name = 'Bpseudoneutid50_sera_XBB.1.5'
+mk_name = 'D01 serum nAb-ID50 XBB.1.5'
+    
+x_range = c(0.5, 5.5)
+x_break = c(1, 2, 3, 4, 5)
+
+den = list(s = pull(dt_cor_ph2, var_name), 
+           w = pull(dt_cor_ph2, wt))
+
+res = CoR_D1(dt_cor, den,
+             trt_name = 'Trt',
+             comp_name = 'comp',
+             time = 'COVIDTimeD31toM12', 
+             event = 'COVIDIndD31_7toM12', 
+             marker_name = var_name, 
+             adj_vars = adj_vars, 
+             t0 = t0,
+             title_name = '',
+             xlab_name = mk_name,
+             dir_name = paste0('./Plot/', var_name, '_NP.pdf'), 
+             x_range = x_range,
+             x_break = x_break,
+             method = 'NP',
+             save_pdf = TRUE)
+
+print(res$plot)
+
+```
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.cap = "For nAb-ID50 XBB.1.5, controlled risk of COVID-19 from 7 to 180 days post D31 by D31 marker level based on sera from Investigational Vaccine arm (blue lines) and Comparator Vaccine arm participants (green lines). Controlled risk was estimated using a monotone-constrained nonparametric method with covariate adjustment (default implementation in the R package vaccine) and restricted to the middle 95% quantiles of the available marker data. Dotted lines and shading indicate pointwise 95% CIs. The upper and lower horizontal gray lines are the overall cumulative incidence of COVID-19 from 7 to 180 days post D31 in Investigational and Comparator vaccine recipients, respectively. The background kernel density plots are estimates of the distribution of the antibody marker in per-protocol participants for the Investigational and Comparator Vaccine arms. Analyses adjust for the randomization strata and baseline risk score (ccIAS-sera). ID50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."}
+# casecontrol is set to the phase-2 indicator
+# For the serum markers, this phase-2 indicator is ph2.sera.D31_7
+# wt is set to the weight associated with the marker
+# For the serum markers, this wt is wt.sera.D31_7
+
+var_name = 'Day31pseudoneutid50_sera_XBB.1.5'
+mk_name = 'D31 serum nAb-ID50 XBB.1.5'
+    
+x_range = c(0.5, 5.5)
+x_break = c(1, 2, 3, 4, 5)
+
+den = list(s = pull(dt_cor_ph2, var_name), 
+           w = pull(dt_cor_ph2, wt))
+
+res = CoR_D1(dt_cor, den,
+             trt_name = 'Trt',
+             comp_name = 'comp',
+             time = 'COVIDTimeD31toM12', 
+             event = 'COVIDIndD31_7toM12', 
+             marker_name = var_name, 
+             adj_vars = adj_vars, 
+             t0 = t0,
+             title_name = '',
+             xlab_name = mk_name,
+             dir_name = paste0('./Plot/', var_name, '_NP.pdf'), 
+             x_range = x_range,
+             x_break = x_break,
+             method = 'NP',
+             save_pdf = TRUE)
+
+print(res$plot)
+
+```
+
+
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.cap = "For nAb-ID50 XBB.1.5, controlled risk of COVID-19 from 7 to 180 days post D31 by fold-change (D31/D01) in marker level based on sera from Investigational Vaccine arm (blue lines) and Comparator Vaccine arm participants (green lines). Controlled risk was estimated using a monotone-constrained nonparametric method with covariate adjustment (default implementation in the R package vaccine) and restricted to the middle 95% quantiles of the available marker data. Dotted lines and shading indicate pointwise 95% CIs. The upper and lower horizontal gray lines are the overall cumulative incidence of COVID-19 from 7 to 180 days post D31 in Investigational and Comparator vaccine recipients, respectively. The background kernel density plots are estimates of the distribution of the antibody marker in per-protocol participants for the Investigational and Comparator Vaccine arms. Analyses adjust for the randomization strata and baseline risk score (ccIAS-sera). ID50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody."}
+# casecontrol is set to the phase-2 indicator
+# For the serum markers, this phase-2 indicator is ph2.sera.D31_7
+# wt is set to the weight associated with the marker
+# For the serum markers, this wt is wt.sera.D31_7
+
+var_name = 'Delta31overBpseudoneutid50_sera_XBB.1.5'
+mk_name = 'Fold-change (D31/D01) in serum nAb-ID50 XBB.1.5'
+    
+x_range = c(-2, 3)
+x_break = c(-1, 0, 1, 2, 3)
+
+den = list(s = pull(dt_cor_ph2, var_name), 
+           w = pull(dt_cor_ph2, wt))
+
+res = CoR_D1(dt_cor, den,
+             trt_name = 'Trt',
+             comp_name = 'comp',
+             time = 'COVIDTimeD31toM12', 
+             event = 'COVIDIndD31_7toM12', 
+             marker_name = var_name, 
+             adj_vars = adj_vars, 
+             t0 = t0,
+             title_name = '',
+             xlab_name = mk_name,
+             dir_name = paste0('./Plot/', var_name, '_NP.pdf'), 
+             x_range = x_range,
+             x_break = x_break,
+             method = 'NP',
+             save_pdf = TRUE)
+print(res$plot)
+
+```
+
