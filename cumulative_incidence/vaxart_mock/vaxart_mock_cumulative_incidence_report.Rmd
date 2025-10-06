@@ -1,7 +1,7 @@
 ---
 title: "BARDA VaxArt Mock Data Cumulative Incidence"
-author: "COVAIL Biostatistics Team"
-date: "2025-09-29"
+author: "Fred Hutch Biostatistics Team"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output: pdf_document
 ---
 
