@@ -1,0 +1,141 @@
+---
+title: "BARDA VaxArt Mock Data Cumulative Incidence"
+author: "COVAIL Biostatistics Team"
+date: "2025-09-29"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(CFsurvival) 
+library(dplyr)
+library(tidyverse)
+```
+
+# Cohort
+
+Read the mock dataset. The mock dataset contains 10K records, one for each ptid.
+
+The time-to-event endpoints are (COVIDIndD31_7toM12, COVIDTimeD31toM12) and 
+(COVIDIndD31_7toM6, COVIDTimeD31toM6).
+
+Cumulative incidence analysis will adjust for HighRiskInd and demo.stratum.
+
+The analysis will restrict to ph1.D31_7 == 1.
+
+```{r echo=FALSE, warning=FALSE}
+# read dataset
+config.reporting <- config::get(config = "nextgen_mock", file="../../config.yml")
+dt<-read.csv(config.reporting$data_cleaned)
+#dt = read.csv('nextgen_mock_data_processed_20250716.csv')
+
+dt_cumulative_incidence = dt %>%
+  filter(ph1.D31_7 == 1) %>%
+  select(Ptid, COVIDIndD31_7toM6, COVIDTimeD31toM6, 
+         COVIDIndD31_7toM12, COVIDTimeD31toM12, 
+         HighRiskInd, demo.stratum,
+         Trt)
+
+# t0 may be updated depending on the SAP
+t0 = 350
+dt_W_sub = dt_cumulative_incidence %>%
+    select(HighRiskInd, demo.stratum)
+```
+
+
+## Covariate-adjusted cumulative incidence curves
+
+```{r CI, echo=FALSE, warning=FALSE, message=FALSE, fig.cap = "Covariate-adjusted cumulative incidence of COVID-19 curves through 350 days post D31 visit including COVID-19 endpoints starting 7 days post D31 for the (A) Investigational Vaccine arm and the (B) Comparator Vaccine arm. Solid lines are point estimates, dashed lines are 95% pointwise confidence intervals. Analyses adjust for the randomization strata and baseline risk score (PPI Set)."}
+fit <- CFsurvival(time = dt_cumulative_incidence$COVIDTimeD31toM12, 
+                    event = dt_cumulative_incidence$COVIDIndD31_7toM12, 
+                    treat = dt_cumulative_incidence$Trt, 
+                    confounders = dt_W_sub, 
+                    contrasts = NULL,
+                    verbose = FALSE, 
+                    fit.times = seq(0, t0, by = 1), 
+                    fit.treat = c(0,1),
+                  # Machine learning tools used to estimate nuisance parameters
+                  # may be updated depending on the SAP
+                    nuisance.options = list(prop.SL.library = c("SL.mean"),
+                                            event.SL.library = c("survSL.km", "survSL.coxph"),
+                                            cens.SL.library = c("survSL.km", "survSL.coxph"),
+                                            cross.fit = TRUE, V = 5, save.nuis.fits = TRUE), 
+                    conf.band = TRUE, conf.level = .95)
+
+
+# Prepare for plotting
+plot_df = fit$surv.df
+plot_df$trt = ifelse(plot_df$trt == 1, 'Investigational Vaccine', 
+           'Comparator Vaccine')
+  
+# Plot covariate-adjusted cumulative incidence in 
+# the investigational vaccine (Trt = 1) and the comparator arm (Trt = 0)
+plot_cumu_inc = ggplot(plot_df) +
+    geom_step(aes(time, 1-surv, color=as.factor(trt), group=trt), linewidth = 1.5) +
+    geom_step(aes(time, 1-ptwise.lower, color=as.factor(trt), group=trt), 
+              linewidth = 1.2, linetype=2) +
+    geom_step(aes(time, 1-ptwise.upper, color=as.factor(trt), group=trt), 
+              linewidth = 1.2, linetype=2) +
+    scale_color_manual("Vaccine", values = c('purple', 'gold')) +
+    xlab("Number of days post D31 visit") +
+    ylab("Covariate-adjusted \ncumulative incidence") +
+    coord_cartesian(xlim=c(0, t0), ylim=c(0, 0.05)) +
+    scale_y_continuous(labels = function(x) paste0(x*100, "%")) +
+    scale_x_continuous(breaks = seq(0, t0, 50)) +
+    theme_bw(base_size = 22) +
+   theme(legend.position = 'top') +
+    guides(color=guide_legend(nrow=2,byrow=TRUE))
+
+print(plot_cumu_inc)
+
+#ggsave('./Plot/Figure1.pdf', 
+#       plot = plot_cumu_inc, width = 12, height = 8)
+```
+
+
+## Covariate-adjusted cumulative incidence ratio CIR(t)
+
+```{r CIR, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Covariate-adjusted COVID-19 cumulative incidence ratio (Investigational / Comparator Vaccine arm) through 350 days post D31 visit including COVID-19 endpoints starting 7 days post D31. Solid lines are point estimates, dashed lines are 95% pointwise confidence intervals. The vaccination-proximal cases (occurring between 7 to 181 days post D31) and vaccination-distal cases (between 182 and 350 days post D31) are divided by the red vertical dashed lines. Analyses adjust for the randomization strata and baseline risk score (PPI Set)."}
+fit <- CFsurvival(time = dt_cumulative_incidence$COVIDTimeD31toM12, 
+                    event = dt_cumulative_incidence$COVIDIndD31_7toM12, 
+                    treat = dt_cumulative_incidence$Trt, 
+                    confounders = dt_W_sub, 
+                    contrasts = c("risk.ratio"), 
+                    verbose = FALSE, 
+                    fit.times = seq(0, t0, by = 1), 
+                    fit.treat = c(0,1), 
+                  # Machine learning tools used to estimate nuisance parameters
+                  # may be updated depending on the SAP
+                    nuisance.options = list(prop.SL.library = c("SL.mean"),
+                                            event.SL.library = c("survSL.km", "survSL.coxph"),
+                                            cens.SL.library = c("survSL.km", "survSL.coxph"),
+                                            cross.fit = TRUE, V = 5, save.nuis.fits = TRUE), 
+                    conf.band = TRUE, conf.level = .95)
+  
+plot_df = fit$risk.ratio.df
+
+# Plot covariate-adjusted cumulative incidence ratio: investigational vaccine
+# over the comparator vaccine
+plot_CIR = ggplot(plot_df) +
+     geom_line(aes(time, log.risk.ratio), linewidth = 1.3) +
+  geom_line(aes(time, ptwise.lower.log), 
+            linewidth = 1.2, linetype = 2, color = 'gray') +
+  geom_line(aes(time, ptwise.upper.log), 
+            linewidth = 1.2, linetype = 2, color = 'gray') +
+  geom_vline(xintercept = 181, linetype = 3, color = 'dark red', alpha = 0.5, size = 1.5)+
+  scale_color_manual("Vaccine", values = c('purple', 'gold')) +
+  xlab("Number of days post D31 visit") +
+  ylab("Covariate-adjusted \ncumulative incidence ratio") +
+  theme_bw(base_size = 22) +
+  coord_cartesian(xlim=c(0, t0), ylim=c(-1.5, 1.5)) +
+     scale_y_continuous(breaks = c(log(0.25), log(0.5), log(1), log(2), log(4)), 
+                        labels = function(x) exp(x)) +
+      scale_x_continuous(breaks = seq(0, t0, 50))
+
+print(plot_CIR)
+
+#ggsave('./Plot/Figure2.pdf', 
+#       plot = plot_CIR, width = 12, height = 8)
+```
+
