@@ -1,7 +1,7 @@
 ---
-title: "covpn_correlates_controlled_risk_nextgen"
-author: "CoVPN 3008"
-date: "2025-10-01"
+title: "BARDA VaxArt Mock Data Controlled Risk Curves"
+author: "Fred Hutch Biostatistics Team"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output: pdf_document
 ---
 
