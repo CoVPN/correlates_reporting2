@@ -137,8 +137,8 @@ CoR_D1 <- function(dt, density,
 ```{r echo=FALSE, warning=FALSE}
 # read dataset
 
-config.reporting <- config::get(config = "nextgen_mock", file="../../config.yml")
-dt<-read.csv(config.reporting$data_cleaned)
+    config.reporting <- config::get(config = "nextgen_mock", file="../../config.yml")
+    dt<-read.csv(config.reporting$data_cleaned)
 
 
 # t0 and t1 may be updated depending on the SAP

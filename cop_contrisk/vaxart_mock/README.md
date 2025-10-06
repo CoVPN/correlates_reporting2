@@ -1,4 +1,4 @@
-# VaxArt controlled risk curves 
+# VaxArt Mock controlled risk curves 
 
 ## Reproducibility
 
@@ -11,7 +11,7 @@ This project uses a project-level renv.lock. Setup:
 - Assume that we have renv 1.1.5 installed. If not, open R console at the project level (the folder containing this readme file) and run the following command.
 )
   ```{r}
-  # if the following does not work, try install.packages("renv")
+  # if the following does not work, it is because 1.1.5 is the current release. Then try install.packages("renv")
   install.packages(
     "https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz",
     repos = NULL,
@@ -28,7 +28,7 @@ This project uses a project-level renv.lock. Setup:
 
 To render the report html, run the following commands in a bash shell:
 ```{bash}
-Rscript -e "rmarkdown::render('controlled_risk_vaxart.Rmd', output_file='controlled_risk_vaxart_$(date +%Y%m%d).pdf')"
+Rscript -e "rmarkdown::render('controlled_risk_vaxart_mock.Rmd', output_file='controlled_risk_vaxart_mock_$(date +%Y%m%d).pdf')"
 ```
 
 
