@@ -147,16 +147,16 @@ if (!is.null(config$assay_metadata)) {
     } else if (COR == "D57azd1222_stage2_delta_bAb" | COR == "D57azd1222_stage2_severe_bAb") {
       assay_metadata = subset(assay_metadata, panel=='bindSpike')
       
-    } else if (endsWith(COR, "nextgen_mock_sera")) {
+    } else if (endsWith(COR, "VaxArt_Mock_sera")) {
       assay_metadata = subset(assay_metadata, endsWith(panel, "_sera"))
       
-    } else if (endsWith(COR, "nextgen_mock_saliva")) {
+    } else if (endsWith(COR, "VaxArt_Mock_saliva")) {
       assay_metadata = subset(assay_metadata, endsWith(panel, "_saliva"))
       
-    } else if (endsWith(COR, "nextgen_mock_nasal")) {
+    } else if (endsWith(COR, "VaxArt_Mock_nasal")) {
       assay_metadata = subset(assay_metadata, endsWith(panel, "_nasal"))
       
-    } else if (endsWith(COR, "nextgen_mock_tcell")) {
+    } else if (endsWith(COR, "VaxArt_Mock_tcell")) {
       assay_metadata = subset(assay_metadata, panel %in% c("tcell") )
       
     }
@@ -883,7 +883,7 @@ if (exists("COR")) {
         }
         
         
-      } else if (TRIAL %in% c("prevent19", "azd1222_stage2", "nextgen_mock")) {
+      } else if (TRIAL %in% c("prevent19", "azd1222_stage2", "VaxArt_Mock")) {
         # default rule for followup time is the last case in ph2 in vaccine arm
         tfinal.tpeak=with(subset(dat_proc, Trt==1 & ph2), max(EventTimePrimary[EventIndPrimary==1]))
         
@@ -1289,7 +1289,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
     "Age <= 14"
   )
   
-} else if (study_name == 'NextGen_Mock') {
+} else if (study_name == 'VaxArt_Mock') {
   demo.stratum.labels <- c(
     "Age < 65, At risk",
     "Age < 65, Not at risk",
