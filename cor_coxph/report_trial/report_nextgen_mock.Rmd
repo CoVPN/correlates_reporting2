@@ -77,7 +77,7 @@ for (marker_set in marker_sets) {
 ```
 
 
-# Cox model tables for continuous markers
+# Cox model tables for continuous markers (two arms side-by-side)
 
 ```{r cox cont, echo=FALSE, results='asis'}
 
@@ -232,7 +232,7 @@ for (i in 1:len(CORs2)) {
 
 
 
-# Cox model tables for trichotomized markers
+# Cox model tables for both continuous and trichotomized markers (one arm at a time)
 
 ```{r, echo=FALSE, results='asis'}
 
@@ -256,6 +256,11 @@ for (i in seq_along(labels)) {
     #   paste0("Delta31overB", assays1)
     # )
     # names(all.markers)=all.markers # for listing cutpoints in report_by_COR.Rmd and for listing assays in report_by_COR_tertilecurves.Rmd
+
+    show.sample.size <- has.scaled <- show.q <- T
+    show.tertile.curves <- show.forestplots <- has.alt <- show.risk.curves <- show.ve.curves <- plot.geq <- F
+    level=2 #  title indent
+    res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE); cat(res, sep = '\n')
 
     show.sample.size <- has.scaled <- T
     show.tertile.curves <- show.forestplots <- has.alt <- show.risk.curves <- show.ve.curves <- plot.geq <- show.q <- F

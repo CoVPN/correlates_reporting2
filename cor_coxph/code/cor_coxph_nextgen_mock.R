@@ -169,7 +169,7 @@ for (trt in trts) {
       markers.names.short = all.markers.names.short,
   
       dat.plac = dat.0,
-      show.q = F,
+      show.q = T,
       
       forestplot.markers=NULL, 
       for.title="",
