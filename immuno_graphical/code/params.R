@@ -3,7 +3,7 @@
 # renv::activate(project = here::here(".."))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
-if (study_name == "NextGen_Mock") {
+if (study_name == "VaxArt_Mock") {
   assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
   labels.assays.short = labels.assays.short[assays]
   assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
@@ -20,14 +20,14 @@ config <- config::get(config = Sys.getenv("TRIAL"))
 # Define age cutoff based on trial
 age.cutoff <- ifelse(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "VAT08"), 60, 65)
 
-if (study_name == "NextGen_Mock") {
+if (study_name == "VaxArt_Mock") {
   trt.labels <- c("Comparator Vaccine", "Investigational Vaccine")
   trt.labels.2 <- c("comparator_vaccine", "investigational_vaccine")
 } else {
   trt.labels <- c("Placebo", "Vaccine")
   trt.labels.2 <- c("placebo", "vaccine")
 }
-if (!study_name %in% c("VAT08", "NextGen_Mock")){
+if (!study_name %in% c("VAT08", "VaxArt_Mock")){
   bstatus.labels <- c("Baseline Neg", "Baseline Pos")
   bstatus.labels.2 <- c("BaselineNeg", "BaselinePos")
   bstatus.labels.3 <- c("baseline negative", "baseline positive")
@@ -53,7 +53,7 @@ if(attr(config,"config")=="janssen_pooled_partA") {
   times_ = c(times, "Day78", "Day134", "Day202", "Day292", "Day387") 
   labels.time = c(time_labels, "Day 78", "Day 134", "Day 202", "Day 292", "Day 387"); names(labels.time) = times_
   timepoints_= c(timepoints, 78, 134, 202, 292, 387)
-} else if (attr(config,"config")=="nextgen_mock") {
+} else if (attr(config,"config")=="VaxArt_Mock") {
   times_ = c("B", "Day31", "Delta31overB", "Day91", "Delta91overB", "Day181", "Delta181overB", "Day366", "Delta366overB")
   labels.time = c("Day 01","Day 31", "D31 fold-rise over D01", "Day 91", "D91 fold-rise over D01", 
                   "Day 181",  "D181 fold-rise over D01", "Day 366",  "D366 fold-rise over D01"); names(labels.time) = times_
