@@ -4,7 +4,7 @@ renv::activate(project = here::here(".."))
 Sys.setenv(DESCRIPTIVE = 1)
 source(here::here("..", "_common.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff}
-if (study_name == "NextGen_Mock") {
+if (study_name == "VaxArt_Mock") {
   assays = assays[!grepl("nasal|IgG_nasal|saliva|bindN_IgA", assays)]
   assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
 } # will remove later

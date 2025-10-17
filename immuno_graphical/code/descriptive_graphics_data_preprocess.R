@@ -13,10 +13,14 @@ source(here::here("..", "_common.R"))
 source(here::here("code", "params.R")) # load parameters
 source(here::here("code", "process_violin_pair_functions.R"))
 if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; names(pos.cutoffs) <- assays}
-if (study_name == "NextGen_Mock") {
+if (study_name == "VaxArt_Mock") {
   assays = assays[!grepl("nasal|saliva|bindN_IgA", assays)]
   assay_immuno = assay_immuno[!grepl("nasal|saliva|bindN_IgA", assay_immuno)]
   assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|bindN_IgA", assay))
+  
+  # for serum
+  dat_proc$wt.immuno = dat_proc$wt.sera.immuno
+  dat_proc$ph2.immuno = dat_proc$ph2.sera.immuno
 } # will remove later
 #-----------------------------------------------
 
@@ -440,7 +444,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
                        assays = assays[!grepl("T4|T8|mdw", assays)], pos.cutoffs = pos.cutoffs)
   
   # add ICS response call for NextGen
-  if (study_name == "NextGen_Mock") {
+  if (study_name == "VaxArt_Mock") {
     colnames(resp) <- gsub("_resp", "Resp", colnames(resp))
   }
   
@@ -508,7 +512,7 @@ if (attr(config,"config") %in% c("janssen_partA_VL","janssen_pooled_partA","vat0
     saveRDS(dat.longer.immuno.subset.plot1.2, file = here::here("data_clean", "longer_immuno_data_plot1.2.rds"))
   }
   
-  if (study_name == "NextGen_Mock") {
+  if (study_name == "VaxArt_Mock") {
     dat.longer.immuno.subset.plot1.3 <- get_desc_by_group(dat.longer.immuno.subset %>% filter(!is.na(value)) %>% mutate(Trt = "Pooled Arm"), groupby_vars1)
     saveRDS(dat.longer.immuno.subset.plot1.3, file = here::here("data_clean", "longer_immuno_data_plot1.3.rds"))
   }
