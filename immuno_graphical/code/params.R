@@ -53,7 +53,7 @@ if(attr(config,"config")=="janssen_pooled_partA") {
   times_ = c(times, "Day78", "Day134", "Day202", "Day292", "Day387") 
   labels.time = c(time_labels, "Day 78", "Day 134", "Day 202", "Day 292", "Day 387"); names(labels.time) = times_
   timepoints_= c(timepoints, 78, 134, 202, 292, 387)
-} else if (attr(config,"config")=="VaxArt_Mock") {
+} else if (study_name == "VaxArt_Mock") {
   times_ = c("B", "Day31", "Delta31overB", "Day91", "Delta91overB", "Day181", "Delta181overB", "Day366", "Delta366overB")
   labels.time = c("Day 01","Day 31", "D31 fold-rise over D01", "Day 91", "D91 fold-rise over D01", 
                   "Day 181",  "D181 fold-rise over D01", "Day 366",  "D366 fold-rise over D01"); names(labels.time) = times_
