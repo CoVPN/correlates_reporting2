@@ -198,7 +198,7 @@ important.columns <- c("Ptid", "Trt", "MinorityInd", "HighRiskInd", "Age", "Sex"
                                                      "wt.AB.immuno"), 
   "race","EthnicityHispanic","EthnicityNotreported", 
   "EthnicityUnknown", "WhiteNonHispanic", if (study_name !="COVE" & study_name!="MockCOVE") "HIVinfection", 
-  if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV" & !grepl("NextGen", study_name)) "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
+  if (study_name !="COVE" & study_name !="MockCOVE" & study_name !="PROFISCOV" & !grepl("VaxArt_Mock", study_name)) "Country", if(attr(config,"config")=="janssen_partA_VL") "Region")
 
 ## arrange the dataset in the long form, expand by assay types
 ## dat.long.subject_level is the subject level covariates;
