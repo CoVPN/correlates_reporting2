@@ -29,12 +29,12 @@ make
 To render the R markdown files, run the following commands in a bash shell:
 ```{bash}
 cd cor_poisson
-Rscript -e "rmarkdown::render('code/comparative_immunogenicity.Rmd')"
-Rscript -e "rmarkdown::render('code/diproperm_run.Rmd')"
-Rscript -e "rmarkdown::render('code/posthoc_analyses.Rmd')"
+Rscript -e "rmarkdown::render('code/comparative_immunogenicity.Rmd', output_file='../comparative_immunogenicity_$(date +%Y%m%d).pdf')"
+Rscript -e "rmarkdown::render('code/diproperm_run.Rmd',              output_file='../diproperm_run_$(date +%Y%m%d).pdf')"
+Rscript -e "rmarkdown::render('code/posthoc_analyses.Rmd',           output_file='../posthoc_analyses_$(date +%Y%m%d).pdf')"
 ```
 
-To run Yutong's code to generated the heatmap pdf files, run the following commands in a bash shell:
+To run Yutong's code to generate the heatmap pdf files, run the following commands in a bash shell:
 ```{bash}
 cd cor_poisson
 Rscript code/Plotting_Main_YutongJin.R
