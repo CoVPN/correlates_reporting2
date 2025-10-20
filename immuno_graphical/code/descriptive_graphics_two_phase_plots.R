@@ -771,7 +771,9 @@ if (study_name %in% c("VaxArt_Mock")){
           panel_titles = c(paste0("(A) ", trt.labels[2]), paste0("(B) ", trt.labels[1])),
           legend_size = 8,
           legend = setNames(trt.labels, trt.labels), 
-          axis_size = 5, 
+          panel_title_size = 9,
+          axis_title_size = ifelse(grepl("pseudo", Ab), 10,  7), 
+          axis_size = 6, 
           overall_title = labels.assays.short[Ab],
           label_format = ifelse(grepl("T4|T8", Ab), "percent", "log10"),
           legend_nrow = 1,
@@ -866,8 +868,8 @@ for (bstatus in 1:2) {
         #legend = setNames(trt.labels, trt.labels),
         axis_titles_y = labels.axis[tp, assay_sub] %>% unlist(),
         label_format = ifelse(all(grepl("T4|T8", assay_sub)==1), "percent", "log10"),
-        panel_titles = labels.title2[tp, assay_sub] %>% unlist(),
-        panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "VaxArt_Mock", 6, 10)),
+        panel_titles = gsub("Serum Binding |Antibody to |\\\n", "", labels.title2[tp, assay_sub] %>% unlist()),
+        panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "VaxArt_Mock", 7.5, 10)),
         height = ifelse(study_name %in% c("VAT08"), 11, 
                         ifelse(attr(config,"config")=="prevent19_stage2", 10, 
                                ifelse(study_name == "VaxArt_Mock" & grepl("Ig", pn), 10.5,
@@ -1344,9 +1346,11 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                 colnames(p$dat.plot) <- assay_metadata$assay_label[match( colnames(dat.plot) , assay_metadata$assay)]
                 
                 colnames(p$dat.plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike |Binding Antibody to |Binding Antibody |T cells expressing", "", 
-                                           gsub("Binding IgG Antibody", "bAb IgG", 
+                                             gsub("Binding IgG Antibody", "bAb IgG", 
                                                 gsub("Binding IgA Antibody", "bAb IgA", 
-                                                     gsub("neutralization to", "nAb", colnames(p$dat.plot)))))
+                                                     gsub("Serum Binding IgG Antibody to", "Serum Binding IgG Antibody to\n",
+                                                          gsub("Serum Binding IgA Antibody to", "Serum Binding IgA Antibody to\n", 
+                                                     gsub("neutralization to", "nAb", colnames(p$dat.plot)))))))
                 
                 radarchart(p$dat.plot, 
                            axistype=1, 
@@ -1357,11 +1361,11 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                            cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, 
                            caxislabels=if (study_name == "VaxArt_Mock" & ab %in% c("T4","T8")) {paste0(p$spider_range, "%")} else {paste0("10^", round(log10(p$spider_range), 2))}, 
                            #label size
-                           vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12 | max(nchar(assays_)) > 25, 0.45, 1)),
+                           vlcex = ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12, 0.7, 0.85)),
                            #title
                            title=p$title,
                            #title size
-                           cex.main=0.7)
+                           cex.main=0.9)
                 
                 legend("bottomleft", legend=p$legend_lb, lty=5, pch=c(15), col=p$color, bty="n", ncol=3, cex=0.7, inset=c(0.01, 0))
               }
