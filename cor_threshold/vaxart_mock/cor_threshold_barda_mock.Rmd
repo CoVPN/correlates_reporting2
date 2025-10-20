@@ -27,12 +27,13 @@ library(gridExtra)
 
 ```{r}
 # read data 
-df_barda <- read.csv("COVID_NextGen_mock_mapped_20250904.csv")
+df_barda <- read.csv("nextgen_mock_data_processed_20250716.csv") 
 
 # read metadata 
 assay_metadata <- read.csv('../../assay_metadata/nextgen_mock_assay_metadata.csv')
 
 ```
+
 
 
 ```{r}
@@ -109,7 +110,6 @@ weight_var <- "weight"
 ph1_var <- "ph1.AB.D31_7"
 ph2_var <- "ph2.AB.D31_7"
 ```
-
 
 
 ```{r}
