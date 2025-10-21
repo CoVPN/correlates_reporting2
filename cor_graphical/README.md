@@ -46,3 +46,12 @@ export TRIAL=iliad_ib202p
 cd cor_graphical
 make
 ```
+
+### VaxArt correlates
+
+- To generate covpn_correlates_cor_graphical_nextgen_mock.pdf, run the following commands in a bash shell:
+```{bash}
+export TRIAL=nextgen_mock
+cd cor_graphical
+make
+```

@@ -48,3 +48,17 @@ follow the steps below:
     to `immuno_graphical` and simply type `make`.
 The plots will be saved in `figs/` and `figs/demographics/`. Check if the plots
 match your expectation.
+
+## Reproducibility 
+
+This module uses the repo-level renv.lock.
+
+### VaxArt correlates
+
+- To generate covpn_correlates_immuno_graphical_nextgen_mock.pdf, run the following commands in a bash shell:
+```{bash}
+export TRIAL=nextgen_mock
+cd immuno_graphical
+make
+cd ../ and then bash ./_build_chapter.sh immuno_graphical
+```
