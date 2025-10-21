@@ -55,10 +55,10 @@ getResponder <- function(data,
       }
       
       # if (!is.na(pos.cutoffs[j])
-      if ((grepl("bind|ACE2", j) & !study_name %in% c("VAT08", "NextGen_Mock")) | COR == "D29VLvariant" | grepl("stage2", COR) | study_name == "ILIAD_IB202P") {
+      if ((grepl("bind|ACE2", j) & !study_name %in% c("VAT08", "VaxArt_Mock")) | COR == "D29VLvariant" | grepl("stage2", COR) | study_name == "ILIAD_IB202P") {
         data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
         if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
-      } else if (study_name == "NextGen_Mock") {
+      } else if (study_name == "VaxArt_Mock") {
         
         # 1 if baseline < lloq, post-baseline >= 4 * lloq
         # if lloq <= Baseline < uloq, post-baseline >= 4 * baseline
@@ -99,7 +99,7 @@ get_resp_by_group <- function(dat=dat, group=group){
     
     dat[which(dat$time=="Day 43" & grepl("bind", dat$assay)), "wt"]=dat[which(dat$time=="Day 43" & grepl("bind", dat$assay)), "wt.D43.bAb"]
     dat[which(dat$time=="Day 43" & grepl("pseudoneutid", dat$assay)), "wt"]=dat[which(dat$time=="Day 43" & grepl("pseudoneutid", dat$assay)), "wt.D43.nAb"]
-  } else if (study_name == "NextGen_Mock") {
+  } else if (study_name == "VaxArt_Mock") {
     dat$wt = dat[, "ph2.AB.trackA"]  # ccIAS, # initial, 5 timepoints, on Track A ccIAS-PBMC
     dat$wt2 = dat[, config.cor$wt] # final, 3 timepoints, on whole ccIAS-PBMC
     
@@ -117,12 +117,12 @@ get_resp_by_group <- function(dat=dat, group=group){
   dat_resp_by_group <-
     dat %>% filter(complete==1) %>%
     group_by_at(group) %>%
-    mutate(counts = ifelse(study_name == "NextGen_Mock", sum(!is.na(response) & as.numeric(Track == "A")), n()),
+    mutate(counts = ifelse(study_name == "VaxArt_Mock", sum(!is.na(response) & as.numeric(Track == "A")), n()),
            #counts_severe = sum(severe, na.rm=T),
            # comment out on 4/7/2023 because only ENSEMBLE partA primary manuscript needs to be looped through "sev" 
-           num = ifelse(study_name == "NextGen_Mock", sum(response * wt * as.numeric(Track == "A"), na.rm=T), sum(response * wt, na.rm=T)), 
+           num = ifelse(study_name == "VaxArt_Mock", sum(response * wt * as.numeric(Track == "A"), na.rm=T), sum(response * wt, na.rm=T)), 
            #num_severe = sum(response * wt & severe==1, na.rm=T),
-           denom = ifelse(study_name == "NextGen_Mock", sum(wt * as.numeric(Track == "A"), na.rm=T), sum(wt, na.rm=T)),
+           denom = ifelse(study_name == "VaxArt_Mock", sum(wt * as.numeric(Track == "A"), na.rm=T), sum(wt, na.rm=T)),
            #denom_severe = sum(wt & severe==1, na.rm=T),
            # test N_RespRate = paste0(counts, "\n", sum(response, na.rm=T), ",", round(sum(response, na.rm=T)/counts*100, 1), ",", LLoD),
            N_RespRate = ifelse(!grepl("Delta|fold", time) && !is.na(pos.cutoffs), paste0(counts, "\n",round(num/denom*100, 1),"%"), ""),
@@ -134,11 +134,11 @@ get_resp_by_group <- function(dat=dat, group=group){
            max= max(value)) %>%
     mutate(N_RespRate = ifelse(grepl("mdw", assay), "", N_RespRate))
   
-  if (study_name == "NextGen_Mock") {
+  if (study_name == "VaxArt_Mock") {
     dat$wt2 <- dat[[config.cor$wt]]
   }
   
-  if (study_name == "NextGen_Mock") {
+  if (study_name == "VaxArt_Mock") {
     dat_resp_by_group2 <-
       dat %>% filter(complete == 1 & grepl("bind|pseudo", assay)) %>%
       filter(.data[[config.cor$ph2]] == 1) %>% # condition for the whole RIS for bAb/nAb and RIS-PBMC for ICS
