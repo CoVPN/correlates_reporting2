@@ -779,10 +779,10 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.13.2",
+      "Version": "1.1.5",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "079cb1f03ff972b30401ed05623cbe92"
+      "Hash": "770fcbc2c4616e8fbcb187cccd46a6b1"
     },
     "reshape2": {
       "Package": "reshape2",
