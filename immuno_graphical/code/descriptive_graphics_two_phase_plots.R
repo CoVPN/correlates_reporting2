@@ -817,7 +817,7 @@ for (bstatus in 1:2) {
                                                               "IgG_nasal", "IgA_nasal", "pseudoneutid50_nasal", 
                                                               "IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva", 
                                                               "T4_T8")}) {
-      if (study_name == "VaxArt_Mock" & any(grepl(pn, assays)) == FALSE & pn != "T4_T8") next
+      if (study_name == "VaxArt_Mock" & any(grepl(gsub("T4_T8", "T4|T8", pn), assays)) == FALSE) next
       
       # subset for prevent19_stage2
       if(attr(config,"config")=="prevent19_stage2") {
@@ -830,6 +830,7 @@ for (bstatus in 1:2) {
       
       if (pn == "") {subdat_box1 = subdat_box1_
       } else {subdat_box1 = subdat_box1_ %>% filter(grepl(gsub("T4_T8", "T4|T8", pn), assay)) %>% mutate(assay = droplevels(assay))}
+      if (nrow(subdat_box1) == 0) next
       
       # reorder per Peter's request
       if (study_name == "VaxArt_Mock" & grepl("IgG", pn)) {
@@ -840,7 +841,8 @@ for (bstatus in 1:2) {
       if (study_name == "VaxArt_Mock" & tp == "B") {subdat_box1$Trt = "Pooled Arm"}
       
       assay_sub = levels(subdat_box1$assay)
-        
+      if (length(assay_sub) == 0) next
+      
       covid_corr_boxplot_facets(
         plot_dat = subset(subdat_box1,
           Bserostatus == bstatus.labels[bstatus]
@@ -863,13 +865,13 @@ for (bstatus in 1:2) {
         POS.CUTOFFS = log10(pos.cutoffs[assay_sub]),
         LLOX = log10(lloxs[assay_sub]),
         ULOQ = log10(uloqs[assay_sub]),
-        arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "VaxArt_Mock" & grepl("Ig", pn), 4, 2)),
+        arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "VaxArt_Mock" & grepl("Ig", pn), 4, ifelse(study_name == "VaxArt_Mock" & grepl("T4|T8", pn), 3, 2))),
         arrange_nrow = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "VaxArt_Mock" & grepl("Ig", pn), 3, ifelse(study_name == "VaxArt_Mock" & grepl("bindN", pn), 1, 2))),
         #legend = setNames(trt.labels, trt.labels),
         axis_titles_y = labels.axis[tp, assay_sub] %>% unlist(),
         label_format = ifelse(all(grepl("T4|T8", assay_sub)==1), "percent", "log10"),
         panel_titles = gsub("Serum Binding |Antibody to |\\\n", "", labels.title2[tp, assay_sub] %>% unlist()),
-        panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "VaxArt_Mock", 7.5, 10)),
+        panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "VaxArt_Mock" & !grepl("T4|T8", pn), 7.5, ifelse(study_name == "VaxArt_Mock" & grepl("T4|T8", pn), 6, 10))),
         height = ifelse(study_name %in% c("VAT08"), 11, 
                         ifelse(attr(config,"config")=="prevent19_stage2", 10, 
                                ifelse(study_name == "VaxArt_Mock" & grepl("Ig", pn), 10.5,
