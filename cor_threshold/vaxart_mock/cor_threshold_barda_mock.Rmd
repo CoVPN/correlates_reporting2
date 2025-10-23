@@ -27,7 +27,8 @@ library(gridExtra)
 
 ```{r}
 # read data 
-df_barda <- read.csv("nextgen_mock_data_processed_20250716.csv") 
+ANALYSIS_READY_DATA_FILE_NAME="/trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20251021.csv"
+df_barda <- read.csv(ANALYSIS_READY_DATA_FILE_NAME) 
 
 # read metadata 
 assay_metadata <- read.csv('../../assay_metadata/nextgen_mock_assay_metadata.csv')
@@ -348,4 +349,12 @@ res_day1$graph_vaccine_ir +
 
 Figure 28. For nAb-ID50 XBB.1.5, covariate-adjusted cumulative-incidence ratio of COVID-19 from 7 to {t0} days post D31 across subgroups defined by thresholded marker level of Investigational Vaccine arm participants based on sera vs. overall cumulative risk of the Comparator Vaccine arm (stochastic-thresholded relative risk CoP analysis). The cumulative incidence ratio is the covariate-adjusted thresholded cumulative incidence in Investigational Vaccine arm participants divided by the overall covariate-adjusted cumulative incidence in the Comparator Vaccine arm. Dots represent point estimates at given threshold values, with a grid of thresholds created by segmenting the marker values at COVID-19 endpoints into increments of 0.1. This grid spans from the minimum marker value to the highest value for which there are at least 3 COVID-19 endpoints with a marker value at or above that value. The solid black lines linearly interpolate the grid points. The grey shaded area indicates pointwise 95% CIs. The estimates and CIs were adjusted using the assumption that the true threshold-response cumulative incidence ratio is non-decreasing. The upper boundary of the green shaded area is the estimate of the reverse cumulative distribution function (CDF) of the marker in Investigational Vaccine arm participants. Analyses adjust for the randomization strata and baseline risk score via targeted maximum likelihood estimation  ID50, 50% inhibitory serum dilution neutralizing antibody titer (ccIAS-sera). nAb, neutralizing antibody. LLOQ, lower limit of quantitation.
 
+
+
+# Appendix
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results='asis'}
+commit_hash <- system("git rev-parse HEAD", intern = TRUE)
+git_url <- sub("\\.git$", paste0("/commits/", commit_hash), system("git remote get-url origin", intern = TRUE))
+cat("This report was built with ", sprintf("**[code](%s)**", git_url), " and ", sprintf("**[data](%s)**", ANALYSIS_READY_DATA_FILE_NAME), ".", sep="")
+```
 
