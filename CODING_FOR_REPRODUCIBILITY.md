@@ -16,8 +16,15 @@
 4.	Expect every project-level or module-level readme to have a Reproducibility section. 
     -	Project-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md
     -	Module-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md
-
-
+5.  At the end of the Rmd, add the following to show the code commit and file name (replace ANALYSIS_READY_DATA_FILE_NAME with your file name):
+    ````
+    # Appendix
+    ```{r, echo = FALSE, message = FALSE, warning = FALSE, results='asis'}
+    commit_hash <- system("git rev-parse HEAD", intern = TRUE)
+    git_url <- sub("\\.git$", paste0("/commits/", commit_hash), system("git remote get-url origin", intern = TRUE))
+    cat("This report was built with ", sprintf("**[code](%s)**", git_url), " and ", sprintf("**[data](%s)**", ANALYSIS_READY_DATA_FILE_NAME), ".", sep="")
+    ```    
+    ````
 
 ## Using renv for Reproducibility
 
