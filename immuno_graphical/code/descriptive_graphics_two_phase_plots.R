@@ -817,7 +817,7 @@ for (bstatus in 1:2) {
                                                               "IgG_nasal", "IgA_nasal", "pseudoneutid50_nasal", 
                                                               "IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva", 
                                                               "T4_T8")}) {
-      if (study_name == "VaxArt_Mock" & any(grepl(pn, assays)) == FALSE) next
+      if (study_name == "VaxArt_Mock" & any(grepl(pn, assays)) == FALSE & pn != "T4_T8") next
       
       # subset for prevent19_stage2
       if(attr(config,"config")=="prevent19_stage2") {
@@ -1306,6 +1306,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tm)), "_", ifelse(reg!="all", reg_lb, ""), gsub("\\.\\*", "_", ab), "_", tolower(bstatus.labels.2[bsero + 1]), "_", "trt_comparison", #trt.labels.2[trt + 1], 
                                 ifelse(study_name == "VaxArt_Mock" & tm == "Day whole", "_final", 
                                        ifelse(study_name == "VaxArt_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
+              # Always close any open devices from earlier errors before starting a new one
+              if (!is.null(dev.list())) dev.off()
               try(pdf(filename, width = ifelse(study_name == "VaxArt_Mock", 15, 5.5), height = 6.5, onefile = TRUE), silent = FALSE)
               cat("Saving to:", filename, "\n")
               par(mfrow=#if (study_name=="VAT08") {c(2,2)} else {
@@ -1361,13 +1363,22 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                            cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, 
                            caxislabels=if (study_name == "VaxArt_Mock" & ab %in% c("T4","T8")) {paste0(p$spider_range, "%")} else {paste0("10^", round(log10(p$spider_range), 2))}, 
                            #label size
-                           vlcex = ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12, 0.7, 0.85)),
+                           vlcex = ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12, 0.7, ifelse(ab %in% c("T4","T8"), 0.7, 0.85))),
                            #title
                            title=p$title,
                            #title size
                            cex.main=0.9)
                 
-                legend("bottomleft", legend=p$legend_lb, lty=5, pch=c(15), col=p$color, bty="n", ncol=3, cex=0.7, inset=c(0.01, 0))
+                #legend("bottomleft", legend=p$legend_lb, lty=5, pch=c(15), col=p$color, bty="n", ncol=3, cex=0.7, inset=c(0.01, 0.06))
+                
+                legend(x = ifelse(grepl("bind", ab), 0.45, 0.1), y = ifelse(ab %in% c("T4","T8") | grepl("pseudo", ab),  -0.75, -1.15),   # tweak these numbers!
+                       legend = p$legend_lb,
+                       lty = 5,
+                       pch = 15,
+                       col = p$color,
+                       bty = "n",
+                       ncol = 3,
+                       cex = 0.7)
               }
               
               dev.off()
@@ -1376,11 +1387,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
         } # end of bsero
     } # end of tm
   } # end of ab
-  
 }  
-
-
-
 
 if (F){
   radarchart(dat.plot, 
