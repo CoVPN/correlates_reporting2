@@ -7,15 +7,15 @@
     ```
     dir.create("output", showWarnings = FALSE, recursive=TRUE)
     ```    
-3.	Use the package **renv** to manage R system and package versions. See the section below for details.
-4.	**Running** reports. There are several options:
+2.	Use the package **renv** to manage R system and package versions. See the section below for details.
+3.	**Running** reports. There are several options:
     -	If there are only a few Rmd files to be rendered, an Rscript call is sufficient. This often happens at the project level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md. 
     -	Use a Makefile or a bash script to run analyses and generate reports. This often happens at the module level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/Makefile
     -	If high performance cluster/slurm is used and there are dependencies between steps, multiple scripts may be needed, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cop_exposureproximal/ensemble_severe_correlates/README.md
-5.	Every project- or module-level README.md should have a **Reproducibility section**. 
+4.	Every project- or module-level README.md should have a **Reproducibility section**. 
     -	Project-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md
     -	Module-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md
-6.  Including an **appendix** at the end of the report Rmd to show the code commit and file name (ANALYSIS_READY_DATA_FILE_NAME should be replaced with your file name):
+5.  Including an **appendix** at the end of the report Rmd to show the code commit and file name (ANALYSIS_READY_DATA_FILE_NAME should be replaced with your file name):
     ````
     # Appendix
     ```{r, echo = FALSE, message = FALSE, warning = FALSE, results='asis'}
@@ -24,7 +24,7 @@
     cat("This report was built with ", sprintf("**[code](%s)**", git_url), " and ", sprintf("**[data](%s)**", ANALYSIS_READY_DATA_FILE_NAME), ".", sep="")
     ```    
     ````
-7.  Include a **date string** in the report file name to show the date on which report was produced (e.g., filename ending ‘20251023’ for October 23, 2025).  This can be done via, e.g.
+6.  Include a **date string** in the report file name to show the date on which report was produced (e.g., filename ending ‘20251023’ for October 23, 2025).  This can be done via, e.g.
     ```
     Rscript -e "rmarkdown::render('cor_threshold_barda_mock.Rmd', output_file='cor_threshold_barda_mock_$(date +%Y%m%d).pdf')"
     ```
