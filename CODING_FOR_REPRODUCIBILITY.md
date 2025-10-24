@@ -1,22 +1,21 @@
 # Coding for Reproducibility
 
-
-1.	Portability. Avoid using absolute paths because they will break if someone else downloads the code and tries to run it. For example,
-    -	If the code writes results to subdirectories, make sure the subdirectories exist by including a command like the following in R scripts:
+1.	**Portability**. 
+    -   Avoid using absolute paths because they will break if someone else downloads the code and tries to run it. 
+    -	If the code sources a utility functions file, make sure that file is part of the code base, either at the project level or at the module level.
+  	-	If the code writes results to subdirectories, make sure the subdirectories exist through code. For example, the following command creates a folder named 'output' in the current directory (nothing happens if the folder already exists). The recursive option is needed if the path is more than one level deep.
     ```
     dir.create("output", showWarnings = FALSE, recursive=TRUE)
-    ```
-    The command creates a folder named 'output' in the current directory (nothing happens if the folder already exists). The recursive option is needed if the path is more than one level deep.
-    -	If the code reads a utility functions file, make sure the file is part of the code base, either at the project level or at the module level.
-2.	Use the package renv to manage R system and package versions. See the section below for details.
-3.	Running reports. There are several options:
+    ```    
+3.	Use the package **renv** to manage R system and package versions. See the section below for details.
+4.	**Running** reports. There are several options:
     -	If there are only a few Rmd files to be rendered, an Rscript call is sufficient. This often happens at the project level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md. 
     -	Use a Makefile or a bash script to run analyses and generate reports. This often happens at the module level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/Makefile
     -	If high performance cluster/slurm is used and there are dependencies between steps, multiple scripts may be needed, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cop_exposureproximal/ensemble_severe_correlates/README.md
-4.	Expect every project-level or module-level readme to have a Reproducibility section. 
+5.	Every project- or module-level README.md should have a **Reproducibility section**. 
     -	Project-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md
     -	Module-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md
-5.  At the end of the Rmd, add the following to show the code commit and file name (replace ANALYSIS_READY_DATA_FILE_NAME with your file name):
+6.  Including an **appendix** at the end of the report Rmd to show the code commit and file name (ANALYSIS_READY_DATA_FILE_NAME should be replaced with your file name):
     ````
     # Appendix
     ```{r, echo = FALSE, message = FALSE, warning = FALSE, results='asis'}
@@ -25,6 +24,10 @@
     cat("This report was built with ", sprintf("**[code](%s)**", git_url), " and ", sprintf("**[data](%s)**", ANALYSIS_READY_DATA_FILE_NAME), ".", sep="")
     ```    
     ````
+7.  Include a **date string** in the report file name to show the date on which report was produced (e.g., filename ending ‘20251023’ for October 23, 2025).  This can be done via, e.g.
+    ```
+    Rscript -e "rmarkdown::render('cor_threshold_barda_mock.Rmd', output_file='cor_threshold_barda_mock_$(date +%Y%m%d).pdf')"
+    ```
 
 ## Using renv for Reproducibility
 
