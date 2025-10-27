@@ -50,17 +50,21 @@ renv/
 ```
 - README.md  This file should have a section titled Reproducibility, which details how to reproduce the reports.
 
-Open a new R console in the project folder in a terminal and run the following commands. Note that we use renv 0.13.2, which uses renv/activate.R, instead of newer versions because of some errors with the newer versions. (If in a slurm env, load an appropriate R module and a CMmake module. The latter is needed to install some packages, e.g., nloptr, lme4.
-)
+Open a new R console in the project folder in a terminal and run the following commands. Note that we use renv 1.1.5 (or 0.13.2 in earlier code)
 ```{r}
+# if the following does not work, it is because 1.1.5 is the current release. Then try install.packages("renv")
 install.packages(
-  "https://cran.r-project.org/src/contrib/Archive/renv/renv_0.13.2.tar.gz",
+  "https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz",
   repos = NULL,
   type = "source"
 )
 
-packageVersion("renv")  # should show ‘0.13.2’
+packageVersion("renv")
+```
 
+Run the following R command at the project level to initialize:
+
+```{r}
 renv::init()
 ```
 
