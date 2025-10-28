@@ -17,7 +17,7 @@ library(latex2exp)
 here::i_am("cor_graphical/report.Rmd")
 
 
-if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302", "COVAIL", "NextGen_Mock", "ILIAD_IB202P")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
+if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302", "COVAIL", "VaxArt_Mock", "ILIAD_IB202P")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
 
@@ -38,7 +38,7 @@ if(attr(config,"config")=="janssen_pooled_partA") {
 } else if (attr(config,"config")=="azd1222_stage2") {
   times_ = c("Day57","Day90","Day180","Day360")
   labels.time = c("Day 57","Day 90", "Day 180", "Day 360"); names(labels.time) = times_
-} else if (attr(config,"config")=="nextgen_mock") {
+} else if (attr(config,"config")=="VaxArt_Mock") {
   times_ = c("B", "Day31", "Delta31overB", "Day91", "Day181", "Day366")
   labels.time = c("D01","D31", "D31 fold-rise over D01", "D91", "D181", "D366"); names(labels.time) = times_
 } else if (attr(config,"config") %in% c("prevent19_stage2","prevent19nvx")) {
@@ -56,7 +56,7 @@ tps_no_delta_over_tinterm_lb <- if(attr(config,"config")=="vat08_combined") {c("
 tps_no_fold_change <- times_[!grepl("Delta", times_)]
 tps_no_B_and_fold_change <- times_[!grepl("Delta", times_) & times_!="B"]
 
-if (study_name == "NextGen_Mock") {
+if (study_name == "VaxArt_Mock") {
     assays = assays[!grepl("nasal|saliva|T4|T8", assays)]
     assay_metadata = assay_metadata %>% filter(!grepl("nasal|saliva|T4|T8", assay))
     nextgen_output_flag = 1 # options: 3 (whole_report)  1 (BARDA_TLF)
@@ -87,7 +87,7 @@ if (study_name == "NextGen_Mock") {
   if (attr(config,"config") == "nvx_uk302") COR_postfix_list <- c("D35nvx_uk302")
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
   if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage2")
-  if (study_name=="NextGen_Mock") COR_postfix_list <- c("D31toM12_nextgen_mock_sera")
+  if (study_name=="VaxArt_Mock") COR_postfix_list <- c("D31toM12_VaxArt_Mock_sera")
   if (study_name=="ILIAD_IB202P") COR_postfix_list <- c("C0iliad_ib202p_PPAI_C14only")
 
   if (COR_postfix_list == "adhoc"){ # only for config: janssen_partA_VL and COR: D29VLvariant
@@ -141,7 +141,7 @@ if (study_name == "NextGen_Mock") {
       }
     }
     
-  } else if (study_name == "VAT08" | attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","nvx_uk302","prevent19nvx", "nextgen_mock", "iliad_ib202p")){
+  } else if (study_name == "VAT08" | attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2","nvx_uk302","prevent19nvx", "VaxArt_Mock", "iliad_ib202p")){
     
     for (COR_postfix in COR_postfix_list){
         
@@ -166,25 +166,25 @@ if (study_name == "NextGen_Mock") {
 cat("## Violin plots by case status\n\n")
 cat("\\clearpage", sep = '\n')
       
-      for (a in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == "NextGen_Mock") {c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("IgA", assays)])
+      for (a in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == "VaxArt_Mock") {c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("IgA", assays)])
         } else {c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")}){
              
         if ((grepl("nab", COR_postfix) & !grepl("pseudoneutid50", a)) | (grepl("bab", COR_postfix) & !grepl("bindSpike", a))) next # for AZ stage 2
         if (a == "pseudoneutid50" & attr(config,"config") %in% c("nvx_uk302","prevent19nvx")) next # no id50 for nvx_uk302, prevent19nvx
     
-        for (tp in if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {tps_no_delta_over_tinterm_lb[1:3]} else {tps_no_delta_over_tinterm_lb}){
+        for (tp in if (study_name %in% c("VaxArt_Mock", "ILIAD_IB202P")) {tps_no_delta_over_tinterm_lb[1:3]} else {tps_no_delta_over_tinterm_lb}){
           
           if(attr(config,"config")=="azd1222_stage2" & tp=="Day 360") next # do not have this for azd1222_stage2
           
           tpLabel = gsub("_n", " naive", gsub("_nn", " non naive", tolower(tp)))
-          if (study_name == "NextGen_Mock") {
+          if (study_name == "VaxArt_Mock") {
             tpLabel = case_when(tp == "Day 1" ~ "D01",
                                 tp == "Day 31" ~ "D31",
                                 tp == "D31 fold-rise over D1" ~ "fold-change (D31/D01)",
                                 TRUE ~ tpLabel)
           }
           aLabel = gsub("_sub_stage2", " subset", a)
-          if (study_name == "NextGen_Mock") {
+          if (study_name == "VaxArt_Mock") {
             aLabel = paste0(
               gsub("Serum Binding IgG Antibody to ", "bAb-IgG ", 
                           gsub("Serum neutralization to |Serum neutralization ", "nAb ID50 ", 
@@ -270,14 +270,14 @@ cat("\\clearpage", sep = '\n')
           assays[grepl("bindSpike", assays)]
         } else if (grepl("nab", COR_postfix)){ # for azd1222_stage2
           assays[grepl("pseudoneutid50", assays)]
-        } else if (study_name == "NextGen_Mock") {
+        } else if (study_name == "VaxArt_Mock") {
           c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("mdw", assays)])
         } else {assays}
       
       for (version in c("", if (COR_postfix_list == "D22D43omi_stage2") "_v2")){
         for (assay_grp in assay_grp_list){
-          for (tm in c(if(attr(config, "config") == "nextgen_mock" & nextgen_output_flag == 3) "Day initial", "Day whole")){
-            for (case_type in c("default", if (attr(config, "config") == "nextgen_mock" & nextgen_output_flag == 3) c("proximal", "distal"))){
+          for (tm in c(if(attr(config, "config") == "VaxArt_Mock" & nextgen_output_flag == 3) "Day initial", "Day whole")){
+            for (case_type in c("default", if (attr(config, "config") == "VaxArt_Mock" & nextgen_output_flag == 3) c("proximal", "distal"))){
             
               if (attr(config,"config") == "prevent19nvx") next # no need for prevent19nvx
     
@@ -299,7 +299,7 @@ cat("\\clearpage", sep = '\n')
         }
       }
       
-      if (attr(config,"config") == "nextgen_mock") next # break the loop for nextgen_mock
+      if (attr(config,"config") == "VaxArt_Mock") next # break the loop for VaxArt_Mock
       
       # SET 3
 cat("## Correlation plots across assays\n\n")

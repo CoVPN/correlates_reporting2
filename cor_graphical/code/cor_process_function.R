@@ -86,7 +86,7 @@ getResponder <- function(data,
 # a function to define response rate by group
 get_resp_by_group <- function(dat=dat, group=group){
   
-  if(length(timepoints)==1) {
+  if(length(timepoints_)==1) {
     dat[which(dat$time=="Day 1"), "wt"] = 1
     dat[which(dat$time!="Day 1"), "wt"] = dat[which(dat$time!="Day 1"), config.cor$wt] # wt.D29 or wt.D29start1
     # special case for Janssen_partA_VL, ancestral assays use the wt.D29 instead of wt.D29variant
@@ -108,8 +108,8 @@ get_resp_by_group <- function(dat=dat, group=group){
     
   } else {
     dat[which(dat$time=="Day 1"), "wt"] = 1 # for intercurrent cases, we don't need to adjust for the weight because all of them are from the same stratum
-    dat[which(dat$time==paste0("Day ",timepoints[1])), "wt"] = dat[which(dat$time==paste0("Day ",timepoints[1])), paste0("wt.D",timepoints[1])]
-    dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)])), "wt"] = dat[which(dat$time==paste0("Day ",timepoints[length(timepoints)])), paste0("wt.D",timepoints[length(timepoints)])]
+    dat[which(dat$time==paste0("Day ",timepoints_[1])), "wt"] = dat[which(dat$time==paste0("Day ",timepoints_[1])), paste0("wt.D",timepoints_[1])]
+    dat[which(dat$time==paste0("Day ",timepoints_[length(timepoints_)])), "wt"] = dat[which(dat$time==paste0("Day ",timepoints_[length(timepoints_)])), paste0("wt.D",timepoints_[length(timepoints_)])]
   }
   
   complete <- complete.cases(dat[, group])

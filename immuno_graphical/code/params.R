@@ -42,9 +42,10 @@ live_assays <- assays[grepl("liveneut", assays)]
 
 times = c("B", paste0("Day", config$timepoints), paste0("Delta", config$timepoints, "overB"))
 if(attr(config,"config")=="janssen_pooled_partA") {
-  times_ = c("B","Day29","Delta29overB","Day71"); timepoints_=c(29,71)
+  times_ = c("B","Day29","Delta29overB","Day71"); 
   labels.time = c("Day 1", "Day 29","D29 fold-rise over D1", "Day 71"); names(labels.time) = times_
-  timepoints_= timepoints
+  timepoints_= c(29, 71)
+  #timepoints_= timepoints
 } else if (attr(config,"config")=="prevent19_stage2") {
   times_ = c("Day35", "C1", "BD1") 
   labels.time = c("Day 35", "Crossover Day 1", "Booster Day 1"); names(labels.time) = times_

@@ -699,7 +699,7 @@ dat.longer.cor.subset.plot1 <- get_resp_by_group(dat.longer.cor.subset_, groupby
 #         lbval = ifelse(grepl("Day|M", time), lbval, NA),
 #         lb2 = ifelse(grepl("Day|M", time), lb2, ""),
 #         lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
-write.csv(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.csv"), row.names=F)
+#write.csv(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.csv"), row.names=F)
 saveRDS(dat.longer.cor.subset.plot1, file = here("data_clean", "longer_cor_data_plot1.rds"))
 
 # make subsample
@@ -717,7 +717,7 @@ if (study_name=="VAT08") {
   #         lbval = ifelse(grepl("Day|M", time), lbval, NA),
   #         lb2 = ifelse(grepl("Day|M", time), lb2, ""),
   #         lbval2 = ifelse(grepl("Day|M", time), lbval2, NA)) # set fold-rise resp to ""
-  write.csv(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.csv"), row.names=F)
+  #write.csv(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.csv"), row.names=F)
   saveRDS(dat.longer.cor.subset.plot1.adhoc, file = here("data_clean", "longer_cor_data_plot1_adhoc.rds"))
   
   # group by S_pos and pool the vaccine and placebo
