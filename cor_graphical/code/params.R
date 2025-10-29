@@ -50,7 +50,7 @@ if(attr(config,"config")=="janssen_pooled_partA") {
   timepoints_= c(timepoints, 90, 180, 360)
 } else if (attr(config,"config")=="nextgen_mock") {
   times_ = c("B", "Day31", "Delta31overB", "Day91", "Day181", "Day366")
-  labels.time = c("D01","D31", "D31 fold-rise over D01", "D91", "D181", "D366"); names(labels.time) = times_
+  labels.time = c("Day 01","Day 31", "D31 fold-rise over D01", "Day 91", "Day 181", "Day 366"); names(labels.time) = times_
   timepoints_= c(timepoints, 91, 181, 366)
 } else {times_ = times; timepoints_ = timepoints}
 

@@ -361,7 +361,8 @@ f_longitude_by_assay <- function(
     p2 <- dat %>%
         filter(assay %in% assays) %>%
         left_join(assay_metadata, by="assay") %>%
-        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", "")),
+               assay_label_short2 = gsub(" \\(.*", "", assay_label_short)) %>%
         mutate(cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event))
         ) %>%
         ungroup() %>%
