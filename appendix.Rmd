@@ -1,10 +1,6 @@
 # Appendix
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
-# quiet <- capture.output({
-#   renv::activate(project = here::here())
-#   #source(here::here("_common.R"))
-# })
 library(here)
 library(digest)
 
@@ -13,7 +9,8 @@ hash_algorithm <- "sha256"
 
 
 # get hash of commit at HEAD
-commit_hash <- system("git rev-parse HEAD", intern = TRUE)    
+commit_hash <- system("git rev-parse HEAD", intern = TRUE)   
+ 
 # get hash of input processed data file based on chosen hashing algorithm
 processed_file_digest <- digest(file = path_to_data, algo = hash_algorithm)
     

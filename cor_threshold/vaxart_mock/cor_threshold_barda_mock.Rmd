@@ -1,0 +1,360 @@
+---
+title: "Thresholded correlates analysis: VaxArt mock data"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+---
+
+```{r echo = FALSE, warning = F, message = F, cache = F}
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F, cache = T)
+
+set.seed(10) 
+
+library(npthreshold)
+library(SuperLearner)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(sl3)
+library(DT)
+library(knitr)
+library(msm)
+library(data.table)
+library(gridExtra)
+```
+
+```{r}
+# read data 
+ANALYSIS_READY_DATA_FILE_NAME="/trials/barda/NextGen_mock/analysis/correlates/adata/nextgen_mock_data_processed_20251021.csv"
+df_barda <- read.csv(ANALYSIS_READY_DATA_FILE_NAME) 
+
+# read metadata 
+assay_metadata <- read.csv('../../assay_metadata/nextgen_mock_assay_metadata.csv')
+
+```
+
+
+
+```{r}
+# helper functions to select grid
+select_grid <- function(df, event_var, marker_var, num_endpoints = 3){
+  
+  max_thresh <- df %>% 
+    filter(.data[[event_var]] == 1) %>% 
+    arrange(desc(.data[[marker_var]])) %>% 
+    slice(num_endpoints) %>% 
+    pull(.data[[marker_var]]) 
+  
+  my_grid <- c(seq(min(df[,marker_var], na.rm = T), max_thresh, 0.1), max_thresh)
+  quants <- round(my_grid)
+  
+  my_grid
+}
+
+# helper function to add weight variable to dataframe 
+add_weights <- function(df, hiv_event_var, ph2_var){
+  
+  num_controls <- df %>% 
+    filter(!!sym(hiv_event_var) == 0) %>% 
+    nrow()
+  
+  num_cases <- df %>% 
+    filter(!!sym(hiv_event_var) == 1) %>% 
+    nrow()
+  
+  num_sampled_controls <- df %>% 
+    filter(!!sym(hiv_event_var) == 0 & !!sym(ph2_var) == 1) %>% 
+    nrow()
+  
+  num_sampled_cases <- df %>% 
+    filter(!!sym(hiv_event_var) == 1 & !!sym(ph2_var) == 1) %>% 
+    nrow()
+  
+  weight_case <- num_cases / num_sampled_cases
+  weight_control <- num_controls / num_sampled_controls
+  
+  df %>% 
+    mutate(weight = ifelse(!!sym(ph2_var) == 0, NA, 
+                           ifelse(!!sym(hiv_event_var) == 1, weight_case, weight_control)))
+}
+
+```
+
+# Summary
+
+This is a mock analysis of the BARDA (COVID_NextGen_mock_mapped_20250904.csv) dataset 
+using the non-parametric threshold method. 
+
+* **Covariates**: Baseline risk score (`Bstratum`)
+* **Time variable**: Time to COVID disease endpoint after Day 31 or censoring time  (`COVIDTimeD31toM12`)
+* **Event variable**: Indicator of COVID disease endpoint after Day 31 (`COVIDIndD31_7toM12`)
+* **Marker variable**: Day 1 nAb-ID50 XBB.1.5 marker value (`Bpseudoneutid50_sera_XBB.1.5`) and 
+Day 31 nAb-ID50 XBB.1.5 marker value (`Day31pseudoneutid50_sera_XBB.1.5`)
+* **Phase 1 sampling filter**: `ph1.AB.D31_7 == 1`
+* **Phase 2 sampling filter**: `ph2.AB.D31_7 == 1`
+* **IPS weight**: Created weight variable using by using inverse probability of sampling 
+* **Timeframe**: 181 days 
+* Grid of thresholds created by segmenting the marker values at COVID-19 endpoints 
+into increments of 0.1. This grid spans from the minimum marker value to the 
+highest value for which there are at least 3 COVID-19 endpoints with a marker 
+value at or above that value
+
+```{r}
+tf <- 181
+
+covariates <- c("Bstratum")
+time_var <- "COVIDTimeD31toM12"
+event_var <- "COVIDIndD31_7toM12"
+weight_var <- "weight"
+ph1_var <- "ph1.AB.D31_7"
+ph2_var <- "ph2.AB.D31_7"
+```
+
+
+```{r}
+run_analysis <- function(covariates, 
+                         time_var, 
+                         event_var, 
+                         marker_var, 
+                         ph1_var, 
+                         ph2_var, 
+                         tf, 
+                         xlabel, 
+                         xlim, 
+                         ylim){
+  
+  # create analysis dataframe 
+  df_analysis <- df_barda %>% 
+    filter(!!sym(ph1_var) == 1)
+  
+  df_analysis <- add_weights(df_analysis, event_var, ph2_var)
+  
+  df_analysis <- df_analysis %>% 
+    filter(!!sym(ph2_var) == 1)
+
+  # run threshold analysis for comparison arm only 
+  df_analysis_comparison <- df_analysis %>% filter(Trt == 0)
+  
+  # run overall comparison analysis to obtain comparison incidence 
+  
+  grid_comparison <- select_grid(df_analysis_comparison, event_var, marker_var, 
+                                 num_endpoints =  3)
+  
+  res_comparison_overall <- thresholdSurv(data = df_analysis_comparison, 
+                                          covariates = covariates,
+                                       failure_time = time_var, 
+                                       tf = tf, 
+                                       event_type = event_var, 
+                                       marker = "Trt",
+                                       weights = "weight",
+                                       learner.treatment = Lrnr_glm$new(), 
+                                       learner.event_type = Lrnr_glm$new(), 
+                                       learner.failure_time = Lrnr_glm$new(), 
+                                       learner.censoring_time = Lrnr_glm$new(),
+                                       verbose = F)
+  
+  incidence_comparison <- res_comparison_overall$estimate
+  se_comparison <- res_comparison_overall$se
+  
+  # run threshold analysis for comparison only 
+  threshold_res_comparison <- thresholdSurv(data = df_analysis_comparison, 
+                                         covariates = covariates,
+                                         failure_time = time_var, 
+                                         tf = tf, 
+                                         event_type = event_var, 
+                                         marker = marker_var,
+                                         weights = "weight",
+                                         threshold_list = grid_comparison, 
+                                         learner.treatment = Lrnr_glm$new(), 
+                                         learner.event_type = Lrnr_glm$new(), 
+                                         learner.failure_time = Lrnr_glm$new(), 
+                                         learner.censoring_time = Lrnr_glm$new(),
+                                         verbose = F)
+  
+  graph_comparison <- graphthresh(data.frame(threshold_res_comparison), 
+                              type = "monotone",
+                              ylabel = sprintf("Cumulative incidence\nby %s days", tf),
+                              xlabel = xlabel,
+                              plot_density = T,
+                              plot_endpoints = T, 
+                              data = df_analysis_comparison,
+                              weights = weight_var,
+                              marker = marker_var,
+                              event = event_var,
+                              time_var = time_var,
+                              tf = tf, 
+                              cutoffs = c(0,1),
+                              ylim = ylim,
+                              xlim = xlim,
+                              exp10 = T) 
+
+  
+  # run threshold analysis for vaccine only 
+  df_analysis_vaccine <- df_analysis %>% filter(Trt == 1)
+  
+  grid_vaccine <- select_grid(df_analysis_vaccine, event_var, marker_var, num_endpoints =  3)
+  
+  threshold_res_vaccine <- thresholdSurv(data = df_analysis_vaccine , 
+                                         covariates = covariates,
+                                         failure_time = time_var, 
+                                         tf = tf, 
+                                         event_type = event_var, 
+                                         marker = marker_var,
+                                         weights = weight_var,
+                                         threshold_list = grid_vaccine, 
+                                         learner.treatment = Lrnr_glm$new(), 
+                                         learner.event_type = Lrnr_glm$new(), 
+                                         learner.failure_time = Lrnr_glm$new(), 
+                                         learner.censoring_time = Lrnr_glm$new(),
+                                         placebo_risk = incidence_comparison,
+                                         placebo_se = se_comparison, 
+                                         verbose = F)
+  
+    graph_vaccine <- graphthresh(data.frame(threshold_res_vaccine), 
+                                type = "monotone",
+                                ylabel = sprintf("Cumulative incidence\nby %s days", tf),
+                                xlabel = xlabel,
+                                plot_density = T,
+                                plot_endpoints = T, 
+                                data = df_analysis_comparison,
+                                weights = weight_var,
+                                marker = marker_var,
+                                event = event_var,
+                                time_var = time_var,
+                                tf = tf, 
+                                xlim = xlim, 
+                                ylim = ylim,
+                                cutoffs = c(0,1),
+                                exp10 = T) 
+    
+    # process incidence grpah 
+    threshold_res_vaccine_ir <- threshold_res_vaccine %>% 
+      mutate(ve_monotone = 1 - ve_monotone, 
+             ci_lo = 1 - ve_monotone_ci_hi, 
+             ci_hi = 1 - ve_monotone_ci_lo, 
+             ve_monotone_ci_hi = ci_hi, 
+             ve_monotone_ci_lo = ci_lo) %>% 
+      
+      mutate(ve_monotone_ci_lo = pmax(ve_monotone_ci_lo, 0))
+    
+    graph_vaccine_ir <- graphthresh(data.frame(threshold_res_vaccine_ir), 
+                type = "ve",
+                ylabel = sprintf("Cumulative incidence ratio at %s days\n(Investigational Vaccine/Comparator Vaccine)", tf),
+                xlabel = xlabel,
+                plot_density = T,
+                plot_endpoints = T, 
+                data = df_analysis_vaccine,
+                weights = weight_var,
+                marker = marker_var,
+                event = event_var,
+                time_var = time_var,
+                tf = tf, 
+                exp10 = F) 
+    
+    list(
+      graph_comparison = graph_comparison, 
+      graph_vaccine = graph_vaccine, 
+      graph_vaccine_ir = graph_vaccine_ir, 
+      threshold_res_comparison = threshold_res_comparison, 
+      threshold_res_vaccine = threshold_res_vaccine
+    )
+
+}
+```
+
+```{r}
+lloq <- (assay_metadata %>% filter(assay == "pseudoneutid50_sera_XBB.1.5"))$lloq
+```
+
+
+```{r}
+res_day1 <- run_analysis(covariates = covariates, 
+                            time_var = time_var, 
+                            event_var = event_var, 
+                            marker_var = "Bpseudoneutid50_sera_XBB.1.5",
+                            ph1_var = ph1_var, 
+                            ph2_var = ph2_var, 
+                            tf = tf, 
+                            xlabel = "D01 nAb-ID50 XBB.1.5 thresholds", 
+                            xlim = c(1.2, 3.0, 0.6),
+                            ylim = c(0,0.05, 0.01))
+
+
+res_day31 <- run_analysis(covariates = covariates, 
+                            time_var = time_var, 
+                            event_var = event_var, 
+                            marker_var = "Day31pseudoneutid50_sera_XBB.1.5",
+                            ph1_var = ph1_var, 
+                            ph2_var = ph2_var, 
+                            tf = tf, 
+                            xlabel = "D31 nAb-ID50 XBB.1.5 thresholds", 
+                            xlim = c(1.2, 3.0, 0.6),
+                            ylim = c(0, 0.05, 0.01))
+
+
+```
+
+# Figure 27 
+
+```{r}
+breaks <- c(0.7, 1, 1.5, 2, 2.5, 3)
+
+grid.arrange(res_day1$graph_vaccine +
+               ggtitle("Investigational Vaccine") + 
+               scale_x_continuous(
+                 limits = c(0.7, 3.0),
+                 breaks = breaks,
+                 labels = c("LLOQ/2", parse(text = paste0("10^", breaks[2:length(breaks)]))
+                 )), 
+                 
+             res_day1$graph_comparison + 
+               ggtitle("Comparator Vaccine") + 
+               scale_x_continuous(
+                 limits = c(0.7, 3.0),
+                 breaks = breaks,
+                 labels = c("LLOQ/2", parse(text = paste0("10^", breaks[2:length(breaks)]))
+                 )), 
+             
+             res_day31$graph_vaccine + 
+               scale_x_continuous(
+                 limits = c(0.7, 3.0),
+                 breaks = breaks,
+                 labels = c("LLOQ/2", parse(text = paste0("10^", breaks[2:length(breaks)]))
+                 )),
+             
+             res_day31$graph_comparison + 
+               scale_x_continuous(
+                 limits = c(0.7, 3.0),
+                 breaks = breaks,
+                 labels = c("LLOQ/2", parse(text = paste0("10^", breaks[2:length(breaks)]))
+                 )))
+```
+
+Figure 27. For nAb-ID50 XBB.1.5 based on sera, covariate-adjusted cumulative incidence of COVID-19 from 7 to {t0} days post D31 across subgroups defined by thresholded marker level (A, B) at D01 for the  Investigational and Comparator Vaccine arms and (C, D) at D31 for the Investigational and Comparator Vaccine arms. Dots represent point estimates at given threshold values, with a grid of thresholds created by segmenting the marker values at COVID-19 endpoints into increments of 0.1. This grid spans from the minimum marker value to the highest value for which there are at least 3 COVID-19 endpoints with a marker value at or above that value. The solid black lines linearly interpolate the grid points. The grey shaded area indicates pointwise 95% CIs. The estimates and CIs were adjusted using the assumption that the true threshold-response cumulative incidence ratio is non-decreasing. The green curve is the estimate of the reverse cumulative distribution function (CDF) of the marker. Analyses adjust for the randomization strata and baseline risk score via targeted maximum likelihood estimation (default implementation in the R package vaccine) (ccIAS-sera). ID50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody. LLOQ, lower limit of quantitation.
+
+
+# Figure 28 
+
+```{r}
+res_day1$graph_vaccine_ir + 
+  ggtitle("Cumulative Incidence Ratio (investigational vaccine thresholding)") + 
+  scale_x_continuous(
+    limits = c(0.7, 3.0),
+    breaks = breaks,
+    labels = c("LLOQ/2", parse(text = paste0("10^", breaks[2:length(breaks)]))
+               ))
+```
+
+Figure 28. For nAb-ID50 XBB.1.5, covariate-adjusted cumulative-incidence ratio of COVID-19 from 7 to {t0} days post D31 across subgroups defined by thresholded marker level of Investigational Vaccine arm participants based on sera vs. overall cumulative risk of the Comparator Vaccine arm (stochastic-thresholded relative risk CoP analysis). The cumulative incidence ratio is the covariate-adjusted thresholded cumulative incidence in Investigational Vaccine arm participants divided by the overall covariate-adjusted cumulative incidence in the Comparator Vaccine arm. Dots represent point estimates at given threshold values, with a grid of thresholds created by segmenting the marker values at COVID-19 endpoints into increments of 0.1. This grid spans from the minimum marker value to the highest value for which there are at least 3 COVID-19 endpoints with a marker value at or above that value. The solid black lines linearly interpolate the grid points. The grey shaded area indicates pointwise 95% CIs. The estimates and CIs were adjusted using the assumption that the true threshold-response cumulative incidence ratio is non-decreasing. The upper boundary of the green shaded area is the estimate of the reverse cumulative distribution function (CDF) of the marker in Investigational Vaccine arm participants. Analyses adjust for the randomization strata and baseline risk score via targeted maximum likelihood estimation  ID50, 50% inhibitory serum dilution neutralizing antibody titer (ccIAS-sera). nAb, neutralizing antibody. LLOQ, lower limit of quantitation.
+
+
+
+# Appendix
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results='asis'}
+commit_hash <- system("git rev-parse HEAD", intern = TRUE)
+git_url <- sub("\\.git$", paste0("/commits/", commit_hash), system("git remote get-url origin", intern = TRUE))
+cat("This report was built with ", sprintf("**[code](%s)**", git_url), " and ", sprintf("**[data](%s)**", ANALYSIS_READY_DATA_FILE_NAME), ".", sep="")
+```
+

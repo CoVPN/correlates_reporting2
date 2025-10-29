@@ -1,23 +1,33 @@
 # Coding for Reproducibility
 
-
-1.	Portability. Avoid using absolute paths because they will break if someone else downloads the code and tries to run it. For example,
-    -	If the code writes results to subdirectories, make sure the subdirectories exist by including a command like the following in R scripts:
+1.	**Portability**. 
+    -   Avoid using absolute paths because they will break if someone else downloads the code and tries to run it. 
+    -	If the code sources a utility functions file, make sure that file is part of the code base, either at the project level or at the module level.
+  	-	If the code writes results to subdirectories, make sure the subdirectories exist through code. For example, the following command creates a folder named 'output' in the current directory (nothing happens if the folder already exists). The recursive option is needed if the path is more than one level deep.
     ```
     dir.create("output", showWarnings = FALSE, recursive=TRUE)
-    ```
-    The command creates a folder named 'output' in the current directory (nothing happens if the folder already exists). The recursive option is needed if the path is more than one level deep.
-    -	If the code reads a utility functions file, make sure the file is part of the code base, either at the project level or at the module level.
-2.	Use the package renv to manage R system and package versions. See the section below for details.
-3.	Running reports. There are several options:
+    ```    
+2.	Use the package **renv** to manage R system and package versions. See the section below for details.
+3.	**Running** reports. There are several options:
     -	If there are only a few Rmd files to be rendered, an Rscript call is sufficient. This often happens at the project level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md. 
     -	Use a Makefile or a bash script to run analyses and generate reports. This often happens at the module level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/Makefile
     -	If high performance cluster/slurm is used and there are dependencies between steps, multiple scripts may be needed, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cop_exposureproximal/ensemble_severe_correlates/README.md
-4.	Expect every project-level or module-level readme to have a Reproducibility section. 
+4.	Every project- or module-level README.md should have a **Reproducibility section**. 
     -	Project-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md
     -	Module-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md
-
-
+5.  Including an **appendix** at the end of the report Rmd to show the code commit and file name (ANALYSIS_READY_DATA_FILE_NAME should be replaced with your file name):
+    ````
+    # Appendix
+    ```{r, echo = FALSE, message = FALSE, warning = FALSE, results='asis'}
+    commit_hash <- system("git rev-parse HEAD", intern = TRUE)
+    git_url <- sub("\\.git$", paste0("/commits/", commit_hash), system("git remote get-url origin", intern = TRUE))
+    cat("This report was built with ", sprintf("**[code](%s)**", git_url), " and ", sprintf("**[data](%s)**", ANALYSIS_READY_DATA_FILE_NAME), ".", sep="")
+    ```    
+    ````
+6.  Include a **date string** in the report file name to show the date on which report was produced (e.g., filename ending ‘20251023’ for October 23, 2025).  This can be done via, e.g.
+    ```
+    Rscript -e "rmarkdown::render('cor_threshold_barda_mock.Rmd', output_file='cor_threshold_barda_mock_$(date +%Y%m%d).pdf')"
+    ```
 
 ## Using renv for Reproducibility
 
@@ -40,17 +50,21 @@ renv/
 ```
 - README.md  This file should have a section titled Reproducibility, which details how to reproduce the reports.
 
-Open a new R console in the project folder in a terminal and run the following commands. Note that we use renv 0.13.2, which uses renv/activate.R, instead of newer versions because of some errors with the newer versions. (If in a slurm env, load an appropriate R module and a CMmake module. The latter is needed to install some packages, e.g., nloptr, lme4.
-)
+Open a new R console in the project folder in a terminal and run the following commands. Note that we use renv 1.1.5 (or 0.13.2 in earlier code)
 ```{r}
+# if the following does not work, it is because 1.1.5 is the current release. Then try install.packages("renv")
 install.packages(
-  "https://cran.r-project.org/src/contrib/Archive/renv/renv_0.13.2.tar.gz",
+  "https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz",
   repos = NULL,
   type = "source"
 )
 
-packageVersion("renv")  # should show ‘0.13.2’
+packageVersion("renv")
+```
 
+Run the following R command at the project level to initialize:
+
+```{r}
 renv::init()
 ```
 
