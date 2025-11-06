@@ -2152,3 +2152,36 @@ C0iliad_ib202p_PPAI_C14only:
   tpeaklag: 0
   txt.endpoint: Pertussis
   txt.coxph.note2: No. at-risk = size of cohort; no. cases = number of this cohort with an observed colonization endpoint.
+
+
+################################################################################
+# COV2008 T cell
+
+cov2008tcell: &cov2008tcell
+  data_cleaned: /trials/covpn/p3003/cov2008/correlates/adata/cov2008tcell_data_processed_20251021.csv
+  sampling_scheme: case_cohort
+  two_marker_timepoints: no
+  timepoints: [15]
+  times: [B, Day15, Delta15overB]
+  time_labels: [Day 01, Day 15, D15 fold-rise over D01]
+  study_name: COV2008
+  assay_metadata: assay_metadata/cov2008tcell_assay_metadata.csv
+  covariates: ~.+ factor(demo.stratum)
+  low_efficacy: no
+  num_boot_replicates: 100
+  num_perm_replicates: 100
+
+
+D15toM12_cov2008_sera:
+  ph1: ph1.D15_7
+  ph2: ph2.D15_7
+  wt:  wt.D15_7
+  WtStratum: Wstratum
+  EventIndPrimary:  ModtoSevEventIndD15_7to188
+  EventTimePrimary: ModtoSevEventTimeD15_7to188
+  Earlyendpoint: 
+  tpeak: 15
+  tpeaklag: 7
+  tfinal.tpeak: 164 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
