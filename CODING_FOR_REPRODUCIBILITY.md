@@ -21,7 +21,7 @@
     ```{r, echo = FALSE, message = FALSE, warning = FALSE, results='asis'}
     commit_hash <- system("git rev-parse HEAD", intern = TRUE)
     git_url <- sub("\\.git$", paste0("/commits/", commit_hash), system("git remote get-url origin", intern = TRUE))
-    cat("This report was built with ", sprintf("**[code](%s)**", git_url), " and ", sprintf("**[data](%s)**", ANALYSIS_READY_DATA_FILE_NAME), ".", sep="")
+    cat("This report was built with code from [", sprintf("**[this commit](%s)**", git_url), "] and data from [", sprintf("**[this file](%s)**", ANALYSIS_READY_DATA_FILE_NAME), "].", sep="")
     ```    
     ````
 6.  Include a **date string** in the report file name to show the date on which report was produced (e.g., filename ending ‘20251023’ for October 23, 2025).  This can be done via, e.g.
