@@ -1,0 +1,54 @@
+---
+title: "COV2008"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(copcor)
+library(survey)
+library(kyotil)
+library(glue)
+library(Hmisc)
+library(knitr)
+
+TRIAL="cov2008tcell"
+
+config.processing <- config::get(config = TRIAL, file="/home/yfong/correlates_processing/config.yml")
+dat_mapped=read.csv(config.processing$mapped_data)
+
+# config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml") 
+# 
+# dat_proc=read.csv(config.reporting$data_cleaned)
+# 
+# assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/{TRIAL}_assay_metadata.csv'))
+# assays=assay_metadata$assay
+# abmarkers=assays[startsWith(assays,"bind") | startsWith(assays,"pseudo")]
+
+```
+
+```{r figuring out sampling strata}
+
+mytable(dat_mapped$PPEFL)
+mytable(dat_mapped$Bserostatus) # baseline covid status
+mytable(dat_mapped$Trt)
+mytable(dat_mapped$Sex, dat_mapped$PPEFL)
+mytable(dat_mapped$Age>65, dat_mapped$PPEFL)
+mytable(!is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.))
+mytable(dat_mapped$Trt)
+
+mytable(dat_mapped$ModtoSevEventIndPrimaryD1, dat_mapped$PPEFL)
+
+mytable(!is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.), dat_mapped$PPEFL)
+
+dat=subset(dat_mapped, !is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.) & PPEFL=='Y')
+
+mytable(dat$Sex, dat$Trt, dat$ModtoSevEventIndPrimaryD1==1)
+mytable(dat$Age>65, dat$Trt, dat$ModtoSevEventIndPrimaryD1==1)
+
+mytable(dat$Trt, dat$ModtoSevEventIndPrimaryD1==1)
+mytable(dat$Trt, dat$ModtoSevEventIndPrimaryD15==1)
+mytable(dat$Trt, dat$AnyinfectionD1==1)
+
+```

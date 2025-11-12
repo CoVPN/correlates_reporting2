@@ -2177,8 +2177,8 @@ D15toM12_cov2008_sera:
   ph2: ph2.D15_7
   wt:  wt.D15_7
   WtStratum: Wstratum
-  EventIndPrimary:  ModtoSevEventIndD15_7to188
-  EventTimePrimary: ModtoSevEventTimeD15_7to188
+  EventIndPrimary:  ModtoSevEventIndD15_7toEOS
+  EventTimePrimary: ModtoSevEventTimeD15_7toEOS
   Earlyendpoint: 
   tpeak: 15
   tpeaklag: 7
