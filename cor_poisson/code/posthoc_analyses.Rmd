@@ -37,38 +37,11 @@ dat_proc_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/cor
 assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/iliad_ib202p_assay_metadata.csv'))
 assays = assay_metadata$assay
 panels = unique(assay_metadata$panel)
+panels = panels[c(2,1,3:5)]
 antigens = c("WCE", setdiff(unique(assay_metadata$antigen), c("WCE", NA)))
+panel_names=c("N-sIgA", "sIgA", "Serum IgA", "Serum IgG", "SBA")
 ```
 
-```{r pc1, fig.height=7.5, fig.width=8}
-par(mfrow=c(2,2))
-
-# add PC1 for each panel
-wt.Day28.mat = NULL
-for (p in panels[1:4]) {
-  # assays within panel p
-  aa = glue("{antigens}_{p}")
-  
-  wt.B = princomp(dat_proc_202[, "B"%.%aa])$loadings[,1] 
-  wt.Day28 = princomp(dat_proc_202[, "Day28"%.%aa])$loadings[,1] 
-  
-  corplot(wt.B, wt.Day28, asp=1, main=p, xlab="Baseline PC1 loading", ylab="Day 28 PC1 loading")
-  
-  # wt = (wt.B + wt.Day28)/2
-  wt = wt.Day28
-  
-  for (t in c("B", "Day28", "Delta28overB")) {
-    dat_proc_202[, glue("{t}{p}_PC1")] = as.matrix(dat_proc_202[, t%.%aa]) %*% wt
-  }
-  
-  wt.Day28.mat = cbind(wt.Day28.mat, wt.Day28)
-}
-
-colnames(wt.Day28.mat)=panels[1:4]
-rownames(wt.Day28.mat)=antigens
-kable(wt.Day28.mat, digit=2)
-
-```
 
 ```{r DiProPerm}
 # cannot run on cosrv b/c of the package conflicts for the version of R
@@ -76,7 +49,6 @@ kable(wt.Day28.mat, digit=2)
 
 
 ```
-
 
 
 ```{r ve}
@@ -102,6 +74,9 @@ tab=mytable(dat$EventIndC14, dat$Trt)
 # fisher.test(tab)
 barnard.test(tab[1,1], tab[1,2], tab[2,1], tab[2,2])
 ```
+
+\newpage
+## Covariates selection
 
 ```{r covariates selection with glm, echo=F}
 
@@ -167,7 +142,10 @@ getFormattedSummary(list(lm(BFHA_Norm_Nasal_IgA~Age, dat_proc_202)), robust=F)
 
 ```
 
-```{r}
+\newpage
+## Some tables
+
+```{r p values table}
 # make a table of p values for different comparison
 run.tests = function(assay, test, PPAI.only=T, endpoint="EventIndC9_11_14", do.fold.change=F) {
   if (test=="w") {
@@ -258,9 +236,13 @@ kable(tab, align="c") %>% add_header_above(c("Poisson"=1, "PP" = 2, "PPAI" = 2))
 
 make.p.tab = function(a, test="MBN") {
   tab = run.tests(assay=a, test=test, PPAI.only=T, do.fold.change=T)
-  tab = matrix(tab[c(2,1,3),], nr=1); colnames(tab) = c("BPZE1, B", "BPZE1, 28", "BPZE1, 28/B", "PBO, B", "PBO, 28", "PBO, 28/B")
+  tab = matrix(tab[c(2,1,3),], nr=1); colnames(tab) = kyotil::escape_latex(c("BPZE1, B", "BPZE1, 28", "BPZE1, 28-B", "PBO, B", "PBO, 28", "PBO, 28-B"))
   rownames(tab)=a
-  kable(tab, align="c", col.names = NULL)  %>%  add_header_above(c("Poisson pval"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;")
+  kable(tab)
+  # the following generates an error when rendered with Rscript
+  # kable(tab, align="c", col.names = NULL)  %>%  
+  #   add_header_above(c("Poisson pval"=1, setNames(rep(1,ncol(tab)), colnames(tab)))) %>%
+  #   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;")
 }
 
 make.p.tab ("FHA_Norm_Nasal_IgA", test="w")
@@ -513,26 +495,8 @@ mysapply(ssase (fit), function (v) sqrt(diag(v)))
 
 ```
 
-```{r pc1 poission}
-pc1_reg = function(endpoint, PPAI.only, corner.text, trt) {
-  tab = mysapply (c("B","Day28","Delta28overB"), function (t) {
-    fits = lapply(panels[1:4], function(p) geeglm(as.formula(glue("{endpoint} ~ {t}{p}_PC1")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)), family= poisson(link = "log"), id = Ptid, corstr= "independence"))
-    getFormattedSummary(fits, robust="MBN", exp=T, type=9)[2,,drop=F]
-  })
-  
-  colnames(tab)=panels[1:4]
-  kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
-}
-
-pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, corner.text="PPAI prim", trt="BPZE1")
-pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=F, corner.text="PP prim", trt="BPZE1")
-pc1_reg (endpoint="EventIndC14", PPAI.only=F, corner.text="PP alt", trt="BPZE1")
-pc1_reg (endpoint="EventIndC14", PPAI.only=T, corner.text="PPAI alt", trt="BPZE1")
-
-pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, corner.text="PPAI", trt="PBO")
-pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=F, corner.text="PP", trt="PBO")
-
-```
+\newpage
+## Prentice criterion
 
 ```{r prentice criterion}
 
@@ -565,6 +529,78 @@ kable(tab, align="c") %>% column_spec(1:ncol(tab), extra_css = "padding-left:20p
 
 ```
 
+
+\newpage
+## Poission regression for PC1
+
+```{r make pc1, fig.height=7.5, fig.width=8}
+par(mfrow=c(2,2))
+
+# add PC1 for each panel
+wt.Day28.mat = NULL
+for (p in panels[1:4]) {
+  # assays within panel p
+  aa = glue("{antigens}_{p}")
+  
+  wt.B = princomp(dat_proc_202[, "B"%.%aa])$loadings[,1] 
+  wt.Day28 = princomp(dat_proc_202[, "Day28"%.%aa])$loadings[,1] 
+  
+  corplot(wt.B, wt.Day28, asp=1, main=p, xlab="Baseline PC1 loading", ylab="Day 28 PC1 loading")
+  
+  # wt = (wt.B + wt.Day28)/2
+  wt = wt.Day28
+  
+  for (t in c("B", "Day28", "Delta28overB")) {
+    dat_proc_202[, glue("{t}{p}_PC1")] = as.matrix(dat_proc_202[, t%.%aa]) %*% wt
+  }
+  
+  wt.Day28.mat = cbind(wt.Day28.mat, wt.Day28)
+}
+
+colnames(wt.Day28.mat)=panels[1:4]
+rownames(wt.Day28.mat)=antigens
+kable(wt.Day28.mat, digit=2)
+
+```
+
+```{r pc1 poission}
+pc1_reg = function(endpoint, PPAI.only, corner.text, trt) {
+  tab = mysapply (c("B","Day28","Delta28overB"), function (t) {
+    fits = lapply(panels[1:4], function(p) geeglm(as.formula(glue("{endpoint} ~ {t}{p}_PC1")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)), family= poisson(link = "log"), id = Ptid, corstr= "independence"))
+    getFormattedSummary(fits, robust="MBN", exp=T, type=6, sig.level=0.1)[2,,drop=F]
+  })
+  
+  colnames(tab)=panels[1:4]
+  
+  tab=t(tab)
+  colnames(tab)=c("Baseline", "Day 28", "Foldrise")
+  rownames(tab)=panel_names[1:4]
+  
+  tab
+}
+
+tab1=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, corner.text="PPAI prim", trt="BPZE1")
+tab2=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, corner.text="PPAI",      trt="PBO")
+tab=cbind(tab2, tab1)
+kable(tab, align="c") %>% 
+  column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;") %>% 
+  add_header_above(c(" "=1, "Placebo"=3, "Vaccine"=3))
+
+tab=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=F, corner.text="PP prim", trt="BPZE1")
+kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+
+tab=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=F, corner.text="PP",      trt="PBO")
+kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+
+tab=pc1_reg (endpoint="EventIndC14", PPAI.only=T, corner.text="PPAI alt", trt="BPZE1")
+kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+
+tab=pc1_reg (endpoint="EventIndC14", PPAI.only=F, corner.text="PP alt",   trt="BPZE1")
+kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+
+
+```
+
 ```{r pc1 scatterplot, fig.height=7.5, fig.width=8}
 
 par(mfrow=c(2,2)); reduce_margin()
@@ -587,11 +623,45 @@ mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZ
 
 ```
 
-```{r boxplot pc1, fig.height=6.5, fig.width=12}
-par(mfrow=c(1,2))
-dat = subset(dat_proc_202, PPAI==1)
-ylim=range(dat$BNorm_Nasal_IgA_PC1, dat$Day28Norm_Nasal_IgA_PC1)
-myboxplot(BNorm_Nasal_IgA_PC1~EventIndC9_11_14 + Trt, dat, main="PPAI prim", col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim)
-myboxplot(Day28Norm_Nasal_IgA_PC1~EventIndC9_11_14 + Trt, dat, main="PPAI prim", col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim)
+```{r pc1 boxplots ppai prim, fig.height=6.5, fig.width=12, fig.show='hold'}
 
+png("../output/iliad_ib202p/ppai_pc1_boxplots.png", width=9, height=15, units="in", res=300)
+
+par(mfrow=c(4,3), mar = c(5,2,4,2))
+
+dat = subset(dat_proc_202, PPAI==1)
+
+for (p in panels[1:4]){
+
+  ylim =range(dat[[glue("B{p}_PC1")]], dat[[glue("Day28{p}_PC1")]])
+  ylim1=range(dat[[glue("Delta28overB{p}_PC1")]])
+  
+  # make ylim1 and ylim have the same span
+  if (p==panels[1] | p==panels[2]) {
+    # ylim1 is bigger than or same as ylim
+    ylim=ylim1 
+  } else {
+    # ylim1 needs to be shifted
+    ylim1 = ylim + (ylim1[1] - ylim[1])
+  }
+
+  myboxplot(as.formula(glue("B{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
+            names=c("Non-cases","Cases", "Non-cases","Cases"), 
+            main=glue("Baseline {panel_names[which(p==panels)]} PC1"))
+  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  
+  myboxplot(as.formula(glue("Day28{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
+            names=c("Non-cases","Cases", "Non-cases","Cases"), 
+            main=glue("Day 28 {panel_names[which(p==panels)]} PC1"))
+  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  
+  myboxplot(as.formula(glue("Delta28overB{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim1, 
+            names=c("Non-cases","Cases", "Non-cases","Cases"), ylab="",
+            main=glue("Foldrise {panel_names[which(p==panels)]} PC1"))
+  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+
+}
+
+dev.off()
 ```
+![]("../output/iliad_ib202p/ppai_pc1_boxplots.png")
