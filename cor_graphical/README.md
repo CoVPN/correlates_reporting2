@@ -50,6 +50,15 @@ make
 ### VaxArt correlates
 
 - To generate covpn_correlates_cor_graphical_nextgen_mock.pdf, run the following commands in a bash shell:
+
+for short report, make sure line 62 of the report.Rmd shows "nextgen_output_flag = 1"
+```{bash}
+export TRIAL=nextgen_mock
+cd cor_graphical
+make
+```
+
+for full report, make sure line 62 of the report.Rmd shows "nextgen_output_flag = 3"
 ```{bash}
 export TRIAL=nextgen_mock
 cd cor_graphical
