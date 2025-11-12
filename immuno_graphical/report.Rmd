@@ -240,7 +240,8 @@ if (attr(config,"config") %in% c("vat08_combined","prevent19_stage2")){
 }
 
  for(tp in if (study_name == "VaxArt_Mock") {#c(paste0(tps_no_fold_change, "_initial"), paste0(tps_no_fold_change[c(1,2,4)], "_final"))
-   c("_initial", "_final")} else {times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]}) {
+   c(#"_initial", 
+     "_final", "_final_v2")} else {times_[!times_ %in% c("B",paste0("Delta",timepoints_[length(timepoints_)],"over",timepoints_[1]))]}) {
 
     for (trt in c("trt_both", paste0("trt_", trt.labels.2[2]), if (study_name %in% c("VAT08")) paste0("trt_", trt.labels.2[1]))){
         

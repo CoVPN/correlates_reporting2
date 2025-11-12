@@ -52,7 +52,7 @@ dat.immuno.subset.plot3 <- dat.immuno.subset.plot3 %>%
 
 ###### Set 1 plots: Ab distributions at main timepoints and delta by vaccine/placebo, naive/nnaive
 if (attr(config, "config") == "nextgen_mock") {
-    set1_times <- times_[c(2, 4, 6, 8)]
+    set1_times <- times_[c(1, 2, 4, 6, 8)]
 } else {
     set1_times <- times_[1:5]
 }

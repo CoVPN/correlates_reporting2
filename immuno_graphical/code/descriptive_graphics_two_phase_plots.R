@@ -789,6 +789,67 @@ if (study_name %in% c("VaxArt_Mock")){
       } # end of initial vs final
   } # end of bsero
   } # end of assay
+  
+  
+  
+  print("RCDF 6:")
+  
+  for (Ab in assays) {
+    
+    Ab_lb = paste0(Ab, "_")
+    
+    for (bstatus in 2) {
+      
+      subdat_rcdf6_ = subset(dat.long.twophase.sample, Bserostatus == bstatus.labels[bstatus] & assay %in% Ab)
+      
+      subdat_rcdf6 = subdat_rcdf6_ %>%
+        mutate(wt = ifelse(grepl("T4|T8", Ab), wt.AB.immuno, wt.immuno))  # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
+      
+      subdat_rcdf6_long = subdat_rcdf6 %>% 
+        pivot_longer(
+          cols = c("B", "Day31", "Day181"),
+          names_to = "time",
+          values_to = "value"
+        )
+      
+      subdat_rcdf6_long$time_labels <-
+        factor(subdat_rcdf6_long$time,
+               levels = tps_no_fold_change[c(1,2,4)],
+               labels = labels.time[tps_no_fold_change[c(1,2,4)]])
+      
+      covid_corr_rcdf_facet_adhoc(
+        plot_dat = subdat_rcdf6_long,
+        x = "value", # at each time
+        color = "Trt",
+        lty = NULL,
+        facet_by = "time_labels",
+        weight =  "wt",
+        xlab = if (grepl("T4|T8", Ab)) {"Percent of T cells expressing indicated function"
+        } else if (grepl("bind", Ab)) {"Concentration of binding antibodies (AU/ml)"
+        } else if (grepl("pseudo", Ab)) {"nAb ID50 titer (AU/ml)"},
+        xlim = c(min(assay_lim[Ab, , 1]), 
+                 max(assay_lim[Ab, , 2])),
+        xbreaks = 1,
+        panel_titles = gsub("ay ", "", c(paste0("(A) ", labels.time[1]), paste0("(B) ", labels.time[2]), paste0("(C) ", labels.time[6]))),
+        legend_size = 8,
+        legend = setNames(trt.labels, trt.labels), 
+        panel_title_size = 9,
+        axis_title_size = ifelse(grepl("pseudo", Ab), 10,  7), 
+        axis_size = 6, 
+        overall_title = labels.assays.short[Ab],
+        label_format = ifelse(grepl("T4|T8", Ab), "percent", "log10"),
+        legend_nrow = 1,
+        arrange_ncol = 3,
+        arrange_nrow = 1,
+        width = 7.5,
+        filename = paste0(
+          save.results.to, "/Marker_Rcdf_", Ab_lb,
+          "_trt_both_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, "_final_v2", ".pdf"
+        )
+      )
+    } # end of bsero
+  } # end of assay
+  
 }
 
 #-----------------------------------------------
@@ -838,7 +899,7 @@ for (bstatus in 1:2) {
                                      levels = levels(subdat_box1$assay)[c(2:11, 1)])
       }
       
-      if (study_name == "VaxArt_Mock" & tp == "B") {subdat_box1$Trt = "Pooled Arm"}
+      #if (study_name == "VaxArt_Mock" & tp == "B") {subdat_box1$Trt = "Pooled Arm"}
       
       assay_sub = levels(subdat_box1$assay)
       if (length(assay_sub) == 0) next
@@ -851,8 +912,9 @@ for (bstatus in 1:2) {
         y = tp,
         color = "Trt",
         facet_by = "assay",
-        palette = if (study_name == "VaxArt_Mock" & tp == "B") {c("#FF6F1B")
-          } else if (study_name == "VaxArt_Mock" & tp != "B") {c("#1749FF", "#378252")
+        palette = if (study_name == "VaxArt_Mock" #& tp != "B"
+                      ) {c("#1749FF", "#378252")
+          #} else if (study_name == "VaxArt_Mock" & tp == "B") {c("#FF6F1B")
           } else {c(
           "#1749FF", "#D92321",
           "#0AB7C9", "#FF6F1B",

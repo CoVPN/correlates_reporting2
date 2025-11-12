@@ -412,7 +412,7 @@ covid_corr_rcdf_facets <- function(plot_dat,
   plot_dat <- plot_dat[!is.na(plot_dat[, color]), ]
 
   rcdf_dat <- plot_dat[, unique(c(x, weight, color, facet_by))] %>%
-    split(., list(.[, color], .[, facet_by])) %>%
+    split(., list(.[[color]], .[[facet_by]])) %>%
     lapply(function(subdat) {
       subdat <- subdat[complete.cases(subdat), ]
       if (nrow(subdat) == 0) return(NULL) else {
@@ -603,7 +603,7 @@ covid_corr_rcdf <- function(plot_dat,
   ggsave(filename = filename, plot = output_plot, width = width, height = height, units = units)
 }
 
-# adhoc version for nextgen: 
+# adhoc version for nextgen, with data type reassignment, consistent y-axis range: 
 covid_corr_rcdf_facet_adhoc <- function(plot_dat,
                                         x,
                                         color,
@@ -686,6 +686,9 @@ covid_corr_rcdf_facet_adhoc <- function(plot_dat,
       }) %>% bind_rows()
   }
   
+  ymin <- min(rcdf_dat$rcdf, na.rm = TRUE)
+  ymax <- max(rcdf_dat$rcdf, na.rm = TRUE)
+  
   scale_label <- switch(label_format,
                         "log10" = scales::label_math(10^.x),
                         "percent" = function(x) {
@@ -700,7 +703,8 @@ covid_corr_rcdf_facet_adhoc <- function(plot_dat,
       subset(rcdf_dat, rcdf_dat[[facet_by]] == facet_levels[aa]),
       aes_string(x = x, y = "rcdf", color = color, lty = lty)
     ) +
-      geom_step(lwd = lwd) +
+      geom_step(lwd = lwd) + 
+      scale_y_continuous(limits = c(ymin, ymax)) +
       theme_pubr(legend = "none") +
       ylab("Reverse ECDF") +
       xlab(xlab) +
