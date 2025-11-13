@@ -6,7 +6,7 @@ output:
     number_sections: true
 ---
 
-```{r setup, include=FALSE}
+```{r data, include=FALSE}
 knitr::opts_chunk$set(echo = F)
 options(kableExtra.latex.table_environment="table")
 knitr::opts_chunk$set(error = TRUE, message = TRUE, warning = TRUE) # for debug
@@ -553,6 +553,7 @@ for (p in panels[1:4]) {
   for (t in c("B", "Day28", "Delta28overB")) {
     dat_proc_202[, glue("{t}{p}_PC1")] = as.matrix(dat_proc_202[, t%.%aa]) %*% wt
   }
+  dat_proc_202[, glue("BDay28{p}_PC1")] = (dat_proc_202[, glue("B{p}_PC1")] + dat_proc_202[, glue("Day28{p}_PC1")]) / 2
   
   wt.Day28.mat = cbind(wt.Day28.mat, wt.Day28)
 }
@@ -623,6 +624,85 @@ mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZ
 
 ```
 
+```{r pc1 foldrise in median}
+
+pc1_median = function(endpoint, PPAI.only, trt) {
+  tab = mysapply (c("B","Day28","BDay28","Delta28overB"), function (t) {
+    sapply(panels[1:4], function(p) {
+      out=aggregate(as.formula(glue("{t}{p}_PC1 ~ {endpoint}")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)), median)
+      10**(out[1,2] - out[2,2])
+    })
+  })
+  
+  tab=t(tab)
+  colnames(tab)=c("Baseline", "Day 28", "Avg B, Day 28", "Foldrise")
+  rownames(tab)=panel_names[1:4]
+  
+  tab
+}
+
+tab1=pc1_median (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
+tab2=pc1_median (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
+tab=cbind(tab2, tab1)
+kable(tab, align="c", digits=2) %>% 
+  column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
+  add_header_above(c(" "=1, "Placebo"=ncol(tab1), "Vaccine"=ncol(tab1)))
+
+```
+
+```{r pc1 auc}
+
+pc1_auc = function(endpoint, PPAI.only, trt) {
+  tab = mysapply (c("B","Day28","Delta28overB"), function (t) {
+    sapply(panels[1:4], function(p) {
+      dat.tmp = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0))
+      fastauc(dat.tmp[[glue("{t}{p}_PC1")]], dat.tmp[[endpoint]]) 
+    })
+  })
+  
+  tab=t(tab)
+  colnames(tab)=c("Baseline", "Day 28", "Foldrise")
+  rownames(tab)=panel_names[1:4]
+  
+  tab
+}
+
+tab1=pc1_auc (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
+tab2=pc1_auc (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
+tab=cbind(tab2, tab1)
+kable(tab, align="c", digits=2) %>% 
+  column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
+  add_header_above(c(" "=1, "Placebo"=3, "Vaccine"=3))
+
+```
+
+```{r pc1 wilcox}
+
+pc1_wilcox = function(endpoint, PPAI.only, trt) {
+  tab = mysapply (c("B","Day28","Delta28overB"), function (t) {
+    sapply(panels[1:4], function(p) {
+      out=wilcox.test(as.formula(glue("{t}{p}_PC1 ~ {endpoint}")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)))
+      out$p.value
+    })
+  })
+  
+  tab=t(tab)
+  colnames(tab)=c("Baseline", "Day 28", "Foldrise")
+  rownames(tab)=panel_names[1:4]
+  
+  tab
+}
+
+tab1=pc1_wilcox (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
+tab2=pc1_wilcox (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
+tab=cbind(tab2, tab1)
+kable(tab, align="c", digits=2) %>% 
+  column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
+  add_header_above(c(" "=1, "Placebo"=3, "Vaccine"=3))
+
+```
+
+
 ```{r pc1 boxplots ppai prim, fig.height=6.5, fig.width=12, fig.show='hold'}
 
 png("../output/iliad_ib202p/ppai_pc1_boxplots.png", width=9, height=15, units="in", res=300)
@@ -645,15 +725,29 @@ for (p in panels[1:4]){
     ylim1 = ylim + (ylim1[1] - ylim[1])
   }
 
+  add_sig_bar <- function(x1, x2, ylim, offset=0.05, lwd=2, cex=1.5) {
+    x1=x1+0.1
+    x2=x2-0.1
+    y=ylim[2]-diff(ylim)/20
+    segments(x1, y, x2, y, lwd=lwd)
+    segments(x1, y, x1, y - offset, lwd=lwd)
+    segments(x2, y, x2, y - offset, lwd=lwd)
+    text(mean(c(x1, x2)), y + offset, 
+         labels = "*", cex=cex)
+  }
+
   myboxplot(as.formula(glue("B{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Baseline {panel_names[which(p==panels)]} PC1"))
   axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
-  
+  if (p==panels[1] | p==panels[2]) add_sig_bar(1, 2, ylim)
+
   myboxplot(as.formula(glue("Day28{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Day 28 {panel_names[which(p==panels)]} PC1"))
   axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  if (p==panels[1]) add_sig_bar(1, 2, ylim)
+  if (p==panels[1] | p==panels[3]) add_sig_bar(3, 4, ylim)
   
   myboxplot(as.formula(glue("Delta28overB{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim1, 
             names=c("Non-cases","Cases", "Non-cases","Cases"), ylab="",

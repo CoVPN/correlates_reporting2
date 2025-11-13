@@ -1,5 +1,4 @@
 # COR="C0iliad_ib202p"
-# renv::activate(project = here::here("..")) #  in .Rprofile
 Sys.setenv(TRIAL = "iliad_ib202p")
 Sys.setenv(VERBOSE = 1)
 source(here::here("..", "_common.R")) 
@@ -12,6 +11,7 @@ library(xtable) # this is a dependency of kyotil
 library(sandwich)
 library(lmtest)
 library(geepack)
+library(grid) # for forestplot
   
   
 source(here::here("code", "params.R"))
@@ -56,8 +56,9 @@ all.markers.names.short=c(
 
 robust = lapply(all.markers, function (a) ifelse(endsWith (a, "_SBA"), FALSE, "MBN") )
 
-
 show.q=F
+
+sig.level=0.1 # significance level 
 
 begin=Sys.time()
 }
@@ -116,10 +117,10 @@ for (trt in trts) {
   {
   rows=length(coef(fits[[1]]))
   est=getFormattedSummary(fits, exp=T, robust=robust, rows=rows, type=1)
-  ci= getFormattedSummary(fits, exp=T, robust=robust, rows=rows, type=7)
+  ci= getFormattedSummary(fits, exp=T, robust=robust, rows=rows, type=7, sig.level=sig.level)
   p=  getFormattedSummary(fits, exp=T, robust=robust, rows=rows, type=10)
   est.scaled=getFormattedSummary(fits.scaled, exp=T, robust=robust, rows=rows, type=1)
-  ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=robust, rows=rows, type=7)
+  ci.scaled= getFormattedSummary(fits.scaled, exp=T, robust=robust, rows=rows, type=7, sig.level=sig.level)
   }
   
   pvals.cont = sapply(fits, function(x) {
@@ -268,6 +269,106 @@ for (trt in trts) {
         caption.placement = "top", 
         caption=paste0("Inference for antibody marker covariate-adjusted correlates of risk of ", config.cor$txt.endpoint, ": Relative risks per SD increment in the marker*"))
   tab.cont.scaled=tab.1.scaled
+  
+  
+  
+  # forest plot
+  
+  # Day 28
+  forestplot.markers = list(1:22)
+  
+  for (i in 1:2){
+    # res is a matrix with columns corresponding to fits
+    res=getFormattedSummary(if (i==1) fits else fits.scaled, exp=F, robust=robust, rows=rows, type=0, sig.level=sig.level)
+
+    res=t(res)
+    # res: est, se, lb, ub, pvalue 
+    p.val.col=which(startsWith(tolower(colnames(res)),"p"))
+    
+    for (iM in 1:length(forestplot.markers)) {
+      
+      est.ci = rbind(exp(res[forestplot.markers[[iM]], 1]), 
+                     exp(res[forestplot.markers[[iM]], 3]), 
+                     exp(res[forestplot.markers[[iM]], 4]), 
+                     res[forestplot.markers[[iM]], p.val.col]
+      )
+      colnames(est.ci)=all.markers.names.short[forestplot.markers[[iM]]]
+      
+      # inf values break theforestplot
+      est.ci[abs(est.ci)>100]=sign(est.ci[abs(est.ci)>100])*100
+      
+      # make sure point lb < ub 
+      if (any(est.ci[2,]>est.ci[3,])) {
+        print(est.ci)
+        print("some lb are greater than ub")
+      }
+      
+      # make two versions, one log and one antilog
+      
+      fig.height = 4*ncol(est.ci)/13
+      if(ncol(est.ci)<=2) {fig.height=4*fig.height
+      } else if(ncol(est.ci)<=3) {fig.height=3*fig.height
+      } else if(ncol(est.ci)<=4) {fig.height=2*fig.height
+      } else if(ncol(est.ci)<=8) {fig.height=1.5*fig.height
+      } else if(ncol(est.ci)<=12) {fig.height=1.2*fig.height
+      }
+      
+      fig.width = 11
+      if (any(sapply(all.markers.names.short, nchar)>40)) fig.width=12 # max widt
+      
+      
+      mypdf(onefile=F, width=fig.width, height=fig.height, file=paste0(save.results.to, "hr_forest_", ifelse(i==1,"","scaled_"), fname.suffix, if (iM>1) iM)) 
+      
+      my_ticks = get.forestplot.ticks(est.ci, forestplot.xlog=F) # this also controls the limit
+      attr(my_ticks, "labels") = sub("\\.0+$", "", format(my_ticks, trim = TRUE))
+      
+      if (inherits(try(theforestplot(point.estimates=est.ci[1,], lower.bounds=est.ci[2,], upper.bounds=est.ci[3,], group=colnames(est.ci), 
+                                     nEvents=rep(NA, ncol(est.ci)), # as table.labels below shows, we are not showing nevents
+                                     p.values=formatDouble(est.ci[4,], 3, remove.leading0=F), 
+                                     decimal.places=2, graphwidth=unit(120, "mm"), fontsize=1.2, 
+                                     table.labels = c("", glue("  RR ({100*(1-sig.level)}% CI)"),""), 
+                                     title="", 
+                                     xlog=F,
+                                     x.ticks = my_ticks  
+      ), silent=T), "try-error")) {
+        empty.plot()
+        # when are values are extremely small, weird things happen
+        print("skip antilog forest plot because of an error")
+      }        
+      dev.off()
+      
+      mypdf(onefile=F, width=fig.width,height=fig.height, file=paste0(save.results.to, "hr_forest_log_", ifelse(i==1,"","scaled_"), fname.suffix, if (iM>1) iM)) 
+      
+      # make sure  lb is not too close to 0, which, when log transformed, lead to errors
+      if (any(est.ci[2,]<1e-8)) {
+        # est.ci=est.ci[,est.ci[2,]<1e-10,drop=F]
+        empty.plot()
+        print("skip log scale forest plot because some lb are less than 1e-10.")
+      } else {
+        
+        my_ticks = get.forestplot.ticks(est.ci, forestplot.xlog=T) # this also controls the limit
+        # hard code this for manuscript use
+        if(i==1) my_ticks=c(0.05,0.1,0.25,0.5,1,2,4)
+        # if(i==1) my_ticks=c(0.02,0.05,0.1,0.25,0.5,1,2,4,10)
+        
+        attr(my_ticks, "labels") = sub("\\.?0+$", "", format(my_ticks, trim = TRUE))
+        
+        theforestplot(point.estimates=est.ci[1,], lower.bounds=est.ci[2,], upper.bounds=est.ci[3,], group=colnames(est.ci), 
+                      nEvents=rep(NA, ncol(est.ci)), # as table.labels below shows, we are not showing nevents, 
+                      p.values=formatDouble(est.ci[4,], 3, remove.leading0=F), 
+                      decimal.places=2, graphwidth=unit(120, "mm"), fontsize=1.2, 
+                      table.labels = c("", glue("  RR ({100*(1-sig.level)}% CI)"),""), 
+                      title="", 
+                      xlog=T,
+                      x.ticks = my_ticks
+        )
+        
+      }
+      dev.off()
+    
+    }
+    
+  }
   
   
   
