@@ -896,7 +896,9 @@ for (bstatus in 1:2) {
       # reorder per Peter's request
       if (study_name == "VaxArt_Mock" & grepl("IgG", pn)) {
         subdat_box1$assay <- factor(subdat_box1$assay,
-                                     levels = levels(subdat_box1$assay)[c(2:11, 1)])
+                                     levels = c("bindSpike_IgG_sera","bindSpike_IgG_sera_delta_AY.4","bindSpike_IgG_sera_BA.5",
+                                                "bindSpike_IgG_sera_BA.2.86","bindSpike_IgG_sera_XBB.1.5","bindSpike_IgG_sera_JN.1","bindSpike_IgG_sera_KP.2",    
+                                                "bindSpike_IgG_sera_KP.3","bindSpike_IgG_sera_LB.1","bindSpike_IgG_sera_mdw","bindN_IgG_sera"))
       }
       
       #if (study_name == "VaxArt_Mock" & tp == "B") {subdat_box1$Trt = "Pooled Arm"}

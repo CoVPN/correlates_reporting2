@@ -1034,7 +1034,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
   for (aa in 1:length(unique(plot_dat[, facet_by]))) {
     boxplot_list[[aa]] <- ggplot(
       subset(plot_dat, plot_dat[, facet_by] ==
-        unique(plot_dat[, facet_by])[aa]),
+        levels(plot_dat[, facet_by])[aa]),
       aes_string(x = x, y = y, color = color)
       )
     
@@ -1047,7 +1047,7 @@ covid_corr_boxplot_facets <- function(plot_dat,
     boxplot_list[[aa]] <- boxplot_list[[aa]] + geom_jitter(
         data = subset(
           boxplot_jitter_points,
-          boxplot_jitter_points[, facet_by] == unique(boxplot_jitter_points[, facet_by])[aa]),
+          boxplot_jitter_points[, facet_by] == levels(boxplot_jitter_points[, facet_by])[aa]),
         width = jitter_width, size = point_size, height = 0, shape = 1,
         alpha = 0.6
       ) +
