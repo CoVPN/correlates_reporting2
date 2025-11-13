@@ -30,12 +30,12 @@ getResponder <- function(data,
             bl <- paste0("B", j)
             delta <- paste0("Delta", i, "overB", j)
             
-            if ((grepl("bind", j) & !study_name %in% c("VAT08", "NextGen_Mock")) | attr(config,"config")=="janssen_partA_VL") {
+            if ((grepl("bind", j) & !study_name %in% c("VAT08", "VaxArt_Mock")) | attr(config,"config")=="janssen_partA_VL") {
                 
             data[, paste0(post, "Resp")] <- as.numeric(data[, post] > log10(pos.cutoffs[j]))
             if (bl %in% colnames(data)) {data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))}
             
-            } else if (study_name == "NextGen_Mock") {
+            } else if (study_name == "VaxArt_Mock") {
                 # 1 if baseline < lloq, post-baseline >= 4 * lloq
                 # if lloq <= Baseline < uloq, post-baseline >= 4 * baseline
                 data[, paste0(bl, "Resp")] <- as.numeric(data[, bl] > log10(pos.cutoffs[j]))
@@ -76,7 +76,7 @@ get_desc_by_group <- function(data,
         data[which(grepl("bind", data$assay)), "wt"] = data[which(grepl("bind", data$assay)), "wt.immuno.bAb"]
         data[which(grepl("pseudoneutid", data$assay)), "wt"] = data[which(grepl("pseudoneutid", data$assay)), "wt.immuno.nAb"]
         
-    } else if (study_name == "NextGen_Mock") {
+    } else if (study_name == "VaxArt_Mock") {
         data$wt = data[, "wt.AB.immuno"]  # initial, on Track A RIS/RIS-PBMC
         data$wt2 = data[, "wt.immuno"] # final, on whole RIS/RIS-PBMC
             
@@ -87,9 +87,9 @@ get_desc_by_group <- function(data,
     dat_stats <-
         data %>% filter(complete==1) %>%
         group_by_at(group) %>%
-        mutate(counts = ifelse(study_name == "NextGen_Mock", sum(!is.na(response) & as.numeric(Track == "A")), n()),
-               num = ifelse(study_name == "NextGen_Mock", sum(response * wt * as.numeric(Track == "A"), na.rm=T), sum(response * wt, na.rm=T)),
-               denom = ifelse(study_name == "NextGen_Mock", sum(wt * as.numeric(Track == "A"), na.rm=T), sum(wt, na.rm=T)),
+        mutate(counts = ifelse(study_name == "VaxArt_Mock", sum(!is.na(response) & as.numeric(Track == "A")), n()),
+               num = ifelse(study_name == "VaxArt_Mock", sum(response * wt * as.numeric(Track == "A"), na.rm=T), sum(response * wt, na.rm=T)),
+               denom = ifelse(study_name == "VaxArt_Mock", sum(wt * as.numeric(Track == "A"), na.rm=T), sum(wt, na.rm=T)),
                #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
                RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
                min = min(value, na.rm=T),
@@ -99,7 +99,7 @@ get_desc_by_group <- function(data,
                max= max(value, na.rm=T)) %>%
         mutate(RespRate = ifelse(grepl("mdw", assay), "", RespRate))
     
-    if (study_name == "NextGen_Mock") {
+    if (study_name == "VaxArt_Mock") {
         dat_stats2 <-
             data %>% filter(complete == 1 & grepl("bind|pseudo", assay)) %>%
             filter(ph2.immuno == 1) %>% # condition for the whole RIS for bAb/nAb and RIS-PBMC for ICS
@@ -198,7 +198,7 @@ f_by_time_assay <-
             filter(assay %in% assays & time %in% times) %>%
             left_join(assay_metadata, by="assay") %>%
             # adhoc code below
-            mutate(panel = ifelse(study_name == "NextGen_Mock" & grepl("IgG", assay), "Binding IgG", panel)) %>%
+            mutate(panel = ifelse(study_name == "VaxArt_Mock" & grepl("IgG", assay), "Binding IgG", panel)) %>%
             mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ifelse(grepl("T4|T8", assay), "Percent of T cells expressing indicated function", panel)))) %>%
             mutate(assay_label2 = gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike ", "", assay_label),
                    

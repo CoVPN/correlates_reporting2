@@ -32,7 +32,7 @@ if (attr(config,"config")=="vat08_combined"){
 }
 
 assay_lim <- readRDS(here("data_clean", "assay_lim.rds"))
-if (study_name %in% c("VAT08", "ENSEMBLE", "NextGen_Mock") | attr(config,"config")=="prevent19_stage2"){
+if (study_name %in% c("VAT08", "ENSEMBLE", "VaxArt_Mock") | attr(config,"config")=="prevent19_stage2"){
   source(here("code", "covid_corr_plot_functions.R"))
   source(here("code", "process_violin_pair_functions.R")) # pair plot functions in this program are overwritten by those in the second program
   # pairplots are non-stratum-adjusted, no resampling, IPS-weighted spearman correlation
@@ -151,7 +151,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                                 TRUE ~ "")
     
     for (tp in if(study_name=="VAT08") {tps_no_fold_change} else if (attr(config,"config")=="janssen_partA_VL") {paste0("Day", timepoints_)} else {tps_no_B_and_delta_over_tinterm}) { # "B", "Day29", "Day57", "Day29overB", "Day57overB"
-      if (study_name == "NextGen_Mock") next # NextGen doesn't need pairplot at single timepoint
+      if (study_name == "VaxArt_Mock") next # NextGen doesn't need pairplot at single timepoint
       
       for (trt in 0:1) {
         
@@ -275,7 +275,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
         
         times_selected <- if(study_name=="VAT08") {list(tps_no_delta_over_tinterm[c(1,4,5)])
           # "B", "Day22", "Day43", "Day22overB", "Day43overB", only show B and fold_change for Sanofi study
-          } else if (study_name == "NextGen_Mock") {list(
+          } else if (study_name == "VaxArt_Mock") {list(
               tps_no_delta_over_tinterm[c(1,2,6,3,7)]#, # "B", "Day31", "Day181", "Delta31overB", "Delta181overB"
               #tps_no_delta_over_tinterm[c()] # 
               ) 
@@ -307,24 +307,24 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                                               ifelse(attr(config,"config")=="nextgen_mock" & grepl("bind|pseudo", aa), "wt.immuno",
                                                      ifelse(attr(config,"config")=="nextgen_mock" & grepl("T4|T8", aa), "wt.AB.immuno",
                                 "wt.subcohort"))))),
-                plot_title = paste0(ifelse(study_name == "NextGen_Mock" & trt == 0, "(B) ",
-                                           ifelse(study_name == "NextGen_Mock" & trt == 1, "(A) ", "")),
+                plot_title = paste0(ifelse(study_name == "VaxArt_Mock" & trt == 0, "(B) ",
+                                           ifelse(study_name == "VaxArt_Mock" & trt == 1, "(A) ", "")),
                   labels.assays[aa], ": ",
-                  if (study_name == "NextGen_Mock") {""} else {paste0(bstatus.labels.3[bserostatus + 1], " ")},
+                  if (study_name == "VaxArt_Mock") {""} else {paste0(bstatus.labels.3[bserostatus + 1], " ")},
                   tolower(trt.labels)[trt + 1], " arm"
                 ), 
-                plot_title_size = ifelse(study_name == "NextGen_Mock", 7, 10), 
+                plot_title_size = ifelse(study_name == "VaxArt_Mock", 7, 10), 
                 column_labels = paste(gsub("ay ","", labels.time[times_selected[[tm]]]),
                                       "\n", labels.axis[, aa][1]),
                 column_label_size = ifelse(study_name=="VAT08", 4.5, 
                                            max(5.4, min(8, 8 - (str_length(labels.axis[1, aa]) - 14) * (8 - 5.4) / (34 - 14))) * 0.59
                                            ),
-                axis_label_size = ifelse(grepl("T4|T8", aa), 4.7, ifelse(study_name == "NextGen_Mock", 6, ifelse(study_name=="VAT08", 7, 9))),
+                axis_label_size = ifelse(grepl("T4|T8", aa), 4.7, ifelse(study_name == "VaxArt_Mock", 6, ifelse(study_name=="VAT08", 7, 9))),
                 label_format = ifelse(grepl("T4|T8", aa), "percent", "log10"),
                 filename = paste0(
                   save.results.to, "/pairs_", aa, "_by_times_", ifelse(tm!=1, paste0(tm, "_"), ""), 
                   bstatus.labels.2[bserostatus + 1], "_", paste0(gsub(" ", "_", tolower(trt.labels)), "_")[trt + 1], country_lb,
-                  study_name, ifelse(study_name == "NextGen_Mock", "_final", ""), ".pdf"
+                  study_name, ifelse(study_name == "VaxArt_Mock", "_final", ""), ".pdf"
                 )
               )
             }
@@ -396,21 +396,21 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
 # - We made multiple ggplot objects, each for one assay, and combine them with ggarrange()
 #-----------------------------------------------
 print("RCDF 1:")
-for (tp in if(!study_name %in% c("VAT08")) {tps_no_B_and_delta_over_tinterm} else if (study_name == "NextGen_Mock") {
+for (tp in if(!study_name %in% c("VAT08")) {tps_no_B_and_delta_over_tinterm} else if (study_name == "VaxArt_Mock") {
   tps_no_fold_change # "B", "Day31", "Day91", "Day181", "Day366"
 } else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
   
-  if (attr(config,"config") %in% c("janssen_partA_VL", "nextgen_mock")) next # NextGen_Mock and janssen_partA_VL don't need these plots
+  if (attr(config,"config") %in% c("janssen_partA_VL", "nextgen_mock")) next # VaxArt_Mock and janssen_partA_VL don't need these plots
   
   # subset for prevent19_stage2
   if(attr(config,"config")=="prevent19_stage2") {
     subdat_rcdf1 = dat.long.twophase.sample[which(dat.long.twophase.sample[, paste0("ph2.immuno.",gsub("ay","",tp))]==1), ]
   } else if (attr(config,"config")=="vat08_combined") {
     subdat_rcdf1 = dat.long.twophase.sample[which(dat.long.twophase.sample$ph2.immuno.bAb==1), ]
-  } else if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) {
+  } else if (study_name == "VaxArt_Mock" & tp %in% c("B", "Day31", "Day181")) {
     subdat_rcdf1 = dat.long.twophase.sample
     subdat_rcdf1$wt = with(subdat_rcdf1, ifelse(grepl("T4|T8", assay), wt.AB.immuno, wt.immuno)) # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
-  } else if (study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366")) {
+  } else if (study_name == "VaxArt_Mock" & tp %in% c("Day91", "Day366")) {
     subdat_rcdf1 = dat.long.twophase.sample[which(dat.long.twophase.sample$Track == "A"), ]
     subdat_rcdf1$wt = subdat_rcdf1$wt.AB.immuno
   } else {subdat_rcdf1 = dat.long.twophase.sample}
@@ -435,25 +435,25 @@ for (tp in if(!study_name %in% c("VAT08")) {tps_no_B_and_delta_over_tinterm} els
                                          ifelse(attr(config,"config")=="nextgen_mock", "wt",
                                                 "wt.subcohort"))))),
     xlim = assay_lim[rep(assay_immuno, ifelse(length(assay_immuno)==1, 2, 1)), tp, ], # call the same marker twice if only one marker exists
-    arrange_ncol = ifelse(study_name %in% c("VAT08", "NextGen_Mock"), 4, 3),
+    arrange_ncol = ifelse(study_name %in% c("VAT08", "VaxArt_Mock"), 4, 3),
     arrange_nrow = ceiling(length(assay_immuno) / 3),
-    panel_titles = paste0(ifelse(study_name == "NextGen_Mock" & trt == 0, "(B) ",
-                                 ifelse(study_name == "NextGen_Mock" & trt == 1, "(A) ", "")), 
+    panel_titles = paste0(ifelse(study_name == "VaxArt_Mock" & trt == 0, "(B) ",
+                                 ifelse(study_name == "VaxArt_Mock" & trt == 1, "(A) ", "")), 
                           labels.title2[tp, ] %>% unlist()),
     axis_titles = labels.axis[tp, ] %>% unlist(),
     xbreaks = ifelse(study_name=="VAT08", 2, 1),
-    axis_title_size = ifelse(study_name == "NextGen_Mock", 8, 10),
-    axis_size = ifelse(study_name == "NextGen_Mock", 8, 10),
-    panel_title_size = ifelse(study_name == "VAT08", 8, ifelse(study_name == "NextGen_Mock", 7, 10)),
+    axis_title_size = ifelse(study_name == "VaxArt_Mock", 8, 10),
+    axis_size = ifelse(study_name == "VaxArt_Mock", 8, 10),
+    panel_title_size = ifelse(study_name == "VAT08", 8, ifelse(study_name == "VaxArt_Mock", 7, 10)),
     height = ifelse(attr(config,"config")=="prevent19_stage2", 10, 
                     ifelse(study_name=="VAT08", 3 * ceiling(length(assay_immuno) / 4) + 0.5,
-                           ifelse(study_name=="NextGen_Mock", 3 * ceiling(length(assay_immuno) / 4) + 0.5,
+                           ifelse(study_name=="VaxArt_Mock", 3 * ceiling(length(assay_immuno) / 4) + 0.5,
                                  3 * ceiling(length(assay_immuno) / 3) + 0.5))),
     filename = paste0(
       save.results.to, "/Marker_Rcdf_", tp,
       "_trt_both_bstatus_both_", study_name, 
-      ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
-             ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
+      ifelse(study_name == "VaxArt_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
+             ifelse(study_name == "VaxArt_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
     )
   )
 }
@@ -470,8 +470,8 @@ dat.long.twophase.sample$assay_labels <-
          labels = labels.assays.short)
 
 # plot bAb, PsV and ADCP assays separately
-for (Ab in c(if (study_name != "NextGen_Mock") "bind", 
-             if (study_name != "NextGen_Mock") "pseudo", 
+for (Ab in c(if (study_name != "VaxArt_Mock") "bind", 
+             if (study_name != "VaxArt_Mock") "pseudo", 
              "bind.*IgG_sera", "bind.*IgG_nasal", "bind.*IgG_saliva", 
              "bind.*IgA_sera", "bind.*IgA_nasal", "bind.*IgA_saliva",
              "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", 
@@ -509,14 +509,14 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
   # one treatment arm and two baseline status per plot
   #-----------------------------------------------
   print("RCDF 2:")
-  for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm
-    } else if (study_name == "NextGen_Mock") {
+  for (tp in if(!study_name %in% c("VAT08", "VaxArt_Mock")) {tps_no_B_and_delta_over_tinterm
+    } else if (study_name == "VaxArt_Mock") {
       c(paste0(tps_no_fold_change, "_initial"), tps_no_fold_change[c(1,2,4)]) # "B"      "Day31"  "Day91"  "Day181" "Day366"
   } else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
       
     if (attr(config,"config") %in% c("janssen_partA_VL", "prevent19_stage2", "nextgen_mock")) next # janssen_partA_VL, prevent19_stage2 doesn't need these plots
     
-    for (trt in c(trt.labels[2], if(study_name %in% c("VAT08", "NextGen_Mock")) trt.labels[1])){
+    for (trt in c(trt.labels[2], if(study_name %in% c("VAT08", "VaxArt_Mock")) trt.labels[1])){
       
       subdat_rcdf2_ = subset(dat.long.twophase.sample, Trt == trt & assay %in% rcdf_assays)
       
@@ -524,10 +524,10 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
         subdat_rcdf2 = subdat_rcdf2_ %>% filter(ph2.immuno.bAb==1)
       } else if (attr(config,"config")=="vat08_combined" & Ab=="pseudo") {
         subdat_rcdf2 = subdat_rcdf2_ %>% filter(ph2.immuno.nAb==1)
-      } else if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) {
+      } else if (study_name == "VaxArt_Mock" & tp %in% c("B", "Day31", "Day181")) {
         subdat_rcdf2 = subdat_rcdf2_ %>%
           mutate(wt = ifelse(grepl("T4|T8", assay), wt.AB.immuno, wt.immuno))  # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
-      } else if (study_name == "NextGen_Mock" & grepl("_initial", tp)) {
+      } else if (study_name == "VaxArt_Mock" & grepl("_initial", tp)) {
         subdat_rcdf2 = subdat_rcdf2_ %>% 
           filter(Track == "A") %>%
           mutate(wt = wt.AB.immuno)
@@ -537,7 +537,7 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
         plot_dat = subdat_rcdf2,
         x = gsub("_initial", "", tp),
         color = "assay_labels",
-        lty = if (study_name == "NextGen_Mock") NULL else "Bserostatus",
+        lty = if (study_name == "VaxArt_Mock") NULL else "Bserostatus",
         weight = ifelse(attr(config,"config")=="vat08_combined" & Ab=="bind", "wt.immuno.bAb",
                         ifelse(attr(config,"config")=="vat08_combined" & Ab=="pseudo", "wt.immuno.nAb",
                                ifelse(attr(config,"config")=="nextgen_mock", "wt",
@@ -550,8 +550,8 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
         xbreaks = seq(floor(min(assay_lim[rcdf_assays, gsub("_initial", "", tp), 1])), 
                       ceiling(max(assay_lim[rcdf_assays, gsub("_initial", "", tp), 2])), 
                       ifelse(study_name=="VAT08", 3, 1)),
-        plot_title = paste0(ifelse(study_name == "NextGen_Mock" & trt == 0, "(B) ",
-                                   ifelse(study_name == "NextGen_Mock" & trt == 1, "(A) ", "")), 
+        plot_title = paste0(ifelse(study_name == "VaxArt_Mock" & trt == 0, "(B) ",
+                                   ifelse(study_name == "VaxArt_Mock" & trt == 1, "(A) ", "")), 
                             paste0(labels.time[gsub("_initial", "", tp)], " Ab Markers")),
         legend_size = ifelse(length(rcdf_assays) > 15, 5, ifelse(length(rcdf_assays) >= 4, 8, 14)), 
         axis_size = ifelse(attr(config,"config")=="nextgen_mock", 10, 16), 
@@ -561,8 +561,8 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
           save.results.to, "/Marker_Rcdf_", Ab_lb, 
           gsub("_initial", "", tp),
           "_trt_", tolower(gsub(" ", "_", trt)), "_bstatus_both_", study_name, 
-          ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
-                 ifelse(study_name == "NextGen_Mock" & grepl("_initial", tp), "_initial", "")), ".pdf"
+          ifelse(study_name == "VaxArt_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
+                 ifelse(study_name == "VaxArt_Mock" & grepl("_initial", tp), "_initial", "")), ".pdf"
         )
       )
     }
@@ -647,13 +647,13 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
   # RCDF plot 
   # two treatment arms, one baseline status per plot
   #-----------------------------------------------
-  if (study_name %in% c("VAT08"#, "NextGen_Mock"
+  if (study_name %in% c("VAT08"#, "VaxArt_Mock"
                         )){
     print("RCDF 4:")
     for (bstatus in 1:2) {
       if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next
       
-      for (tp in if (study_name == "NextGen_Mock") {
+      for (tp in if (study_name == "VaxArt_Mock") {
         c(paste0(tps_no_fold_change, "_initial"), tps_no_fold_change[c(1,2,4)]) # "B"      "Day31"  "Day91"  "Day181" "Day366"
       } else {tps_no_B_and_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day22", "Day43"
         
@@ -661,10 +661,10 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
         
         if (attr(config,"config")=="vat08_combined" & Ab=="bind") {subdat_rcdf4 = subdat_rcdf4_ %>% filter(ph2.immuno.bAb == 1)
         } else if (attr(config,"config")=="vat08_combined" & Ab=="pseudo") {subdat_rcdf4 = subdat_rcdf4_ %>% filter(ph2.immuno.nAb == 1)
-        } else if (study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181")) {
+        } else if (study_name == "VaxArt_Mock" & tp %in% c("B", "Day31", "Day181")) {
           subdat_rcdf4 = subdat_rcdf4_ %>%
             mutate(wt = ifelse(grepl("T4|T8", assay), wt.AB.immuno, wt.immuno))  # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
-        } else if (study_name == "NextGen_Mock" & grepl("_initial", tp)) {
+        } else if (study_name == "VaxArt_Mock" & grepl("_initial", tp)) {
           subdat_rcdf4 = subdat_rcdf4_ %>% 
             filter(Track == "A") %>%
             mutate(wt = wt.AB.immuno)
@@ -686,8 +686,8 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
           xbreaks = seq(floor(min(assay_lim[rcdf_assays, gsub("_initial", "", tp), 1])), 
                         ceiling(max(assay_lim[rcdf_assays, gsub("_initial", "", tp), 2])), 
                         ifelse(study_name=="VAT08", 3, 1)),
-          plot_title = paste0(ifelse(study_name == "NextGen_Mock" & trt == 0, "(B) ",
-                                     ifelse(study_name == "NextGen_Mock" & trt == 1, "(A) ", "")), 
+          plot_title = paste0(ifelse(study_name == "VaxArt_Mock" & trt == 0, "(B) ",
+                                     ifelse(study_name == "VaxArt_Mock" & trt == 1, "(A) ", "")), 
                               paste0(labels.time[gsub("_initial", "", tp)], " Ab Markers")),
           legend_size = ifelse(length(rcdf_assays) > 15, 5, ifelse(length(rcdf_assays) >= 4, 8, 14)), 
           axis_size = ifelse(attr(config,"config")=="nextgen_mock", 10, 16), 
@@ -696,8 +696,8 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
           filename = paste0(
             save.results.to, "/Marker_Rcdf_", Ab_lb, gsub("_initial", "", tp),
             "_trt_both_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, 
-            ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
-                   ifelse(study_name == "NextGen_Mock" & grepl("_initial", tp), "_initial", "")), ".pdf"
+            ifelse(study_name == "VaxArt_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
+                   ifelse(study_name == "VaxArt_Mock" & grepl("_initial", tp), "_initial", "")), ".pdf"
           )
         )
       }
@@ -710,7 +710,7 @@ for (Ab in c(if (study_name != "NextGen_Mock") "bind",
 # two treatment arms, one baseline status side by side, all timepoints per plot
 #-----------------------------------------------
 
-if (study_name %in% c("NextGen_Mock")){
+if (study_name %in% c("VaxArt_Mock")){
   print("RCDF 5:")
   
   for (Ab in assays) {
@@ -725,10 +725,10 @@ if (study_name %in% c("NextGen_Mock")){
       
         subdat_rcdf5_ = subset(dat.long.twophase.sample, Bserostatus == bstatus.labels[bstatus] & assay %in% Ab & trt == trt)
         
-        if (study_name == "NextGen_Mock" & grepl("_final", tp)) {
+        if (study_name == "VaxArt_Mock" & grepl("_final", tp)) {
           subdat_rcdf5 = subdat_rcdf5_ %>%
             mutate(wt = ifelse(grepl("T4|T8", Ab), wt.AB.immuno, wt.immuno))  # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
-        } else if (study_name == "NextGen_Mock" & grepl("_initial", tp)) {
+        } else if (study_name == "VaxArt_Mock" & grepl("_initial", tp)) {
           subdat_rcdf5 = subdat_rcdf5_ %>% 
             filter(Track == "A") %>%
             mutate(wt = wt.AB.immuno)
@@ -771,7 +771,9 @@ if (study_name %in% c("NextGen_Mock")){
           panel_titles = c(paste0("(A) ", trt.labels[2]), paste0("(B) ", trt.labels[1])),
           legend_size = 8,
           legend = setNames(trt.labels, trt.labels), 
-          axis_size = 5, 
+          panel_title_size = 9,
+          axis_title_size = ifelse(grepl("pseudo", Ab), 10,  7), 
+          axis_size = 6, 
           overall_title = labels.assays.short[Ab],
           label_format = ifelse(grepl("T4|T8", Ab), "percent", "log10"),
           legend_nrow = 1,
@@ -787,6 +789,67 @@ if (study_name %in% c("NextGen_Mock")){
       } # end of initial vs final
   } # end of bsero
   } # end of assay
+  
+  
+  
+  print("RCDF 6:")
+  
+  for (Ab in assays) {
+    
+    Ab_lb = paste0(Ab, "_")
+    
+    for (bstatus in 2) {
+      
+      subdat_rcdf6_ = subset(dat.long.twophase.sample, Bserostatus == bstatus.labels[bstatus] & assay %in% Ab)
+      
+      subdat_rcdf6 = subdat_rcdf6_ %>%
+        mutate(wt = ifelse(grepl("T4|T8", Ab), wt.AB.immuno, wt.immuno))  # ICS assay use wt.AB.immuno as weight for whole RIS/RIS-PBMC
+      
+      subdat_rcdf6_long = subdat_rcdf6 %>% 
+        pivot_longer(
+          cols = c("B", "Day31", "Day181"),
+          names_to = "time",
+          values_to = "value"
+        )
+      
+      subdat_rcdf6_long$time_labels <-
+        factor(subdat_rcdf6_long$time,
+               levels = tps_no_fold_change[c(1,2,4)],
+               labels = labels.time[tps_no_fold_change[c(1,2,4)]])
+      
+      covid_corr_rcdf_facet_adhoc(
+        plot_dat = subdat_rcdf6_long,
+        x = "value", # at each time
+        color = "Trt",
+        lty = NULL,
+        facet_by = "time_labels",
+        weight =  "wt",
+        xlab = if (grepl("T4|T8", Ab)) {"Percent of T cells expressing indicated function"
+        } else if (grepl("bind", Ab)) {"Concentration of binding antibodies (AU/ml)"
+        } else if (grepl("pseudo", Ab)) {"nAb ID50 titer (AU/ml)"},
+        xlim = c(min(assay_lim[Ab, , 1]), 
+                 max(assay_lim[Ab, , 2])),
+        xbreaks = 1,
+        panel_titles = gsub("ay ", "", c(paste0("(A) ", labels.time[1]), paste0("(B) ", labels.time[2]), paste0("(C) ", labels.time[6]))),
+        legend_size = 8,
+        legend = setNames(trt.labels, trt.labels), 
+        panel_title_size = 9,
+        axis_title_size = ifelse(grepl("pseudo", Ab), 10,  7), 
+        axis_size = 6, 
+        overall_title = labels.assays.short[Ab],
+        label_format = ifelse(grepl("T4|T8", Ab), "percent", "log10"),
+        legend_nrow = 1,
+        arrange_ncol = 3,
+        arrange_nrow = 1,
+        width = 7.5,
+        filename = paste0(
+          save.results.to, "/Marker_Rcdf_", Ab_lb,
+          "_trt_both_bstatus_", c("Neg", "Pos")[bstatus], "_", study_name, "_final_v2", ".pdf"
+        )
+      )
+    } # end of bsero
+  } # end of assay
+  
 }
 
 #-----------------------------------------------
@@ -809,13 +872,13 @@ for (bstatus in 1:2) {
   
   if (nrow(subset(dat.long.twophase.sample, Bserostatus==bstatus.labels[bstatus]))==0) next 
   
-  for (tp in if(!study_name %in% c("VAT08", "NextGen_Mock")) {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
+  for (tp in if(!study_name %in% c("VAT08", "VaxArt_Mock")) {tps_no_B_and_delta_over_tinterm} else {tps_no_fold_change}) { # "Day29", "Day57", "Day29overB", "Day57overB" for most studies; if VAT08, "Day1", "Day22", "Day43"
     
-    for (pn in if (study_name != "NextGen_Mock") {""} else {c("IgG_sera", "IgA_sera", "pseudoneutid50_sera", 
+    for (pn in if (study_name != "VaxArt_Mock") {""} else {c("IgG_sera", "IgA_sera", "pseudoneutid50_sera", 
                                                               "IgG_nasal", "IgA_nasal", "pseudoneutid50_nasal", 
                                                               "IgG_saliva", "IgA_saliva", "pseudoneutid50_saliva", 
                                                               "T4_T8")}) {
-      if (study_name == "NextGen_Mock" & any(grepl(pn, assays)) == FALSE) next
+      if (study_name == "VaxArt_Mock" & any(grepl(gsub("T4_T8", "T4|T8", pn), assays)) == FALSE) next
       
       # subset for prevent19_stage2
       if(attr(config,"config")=="prevent19_stage2") {
@@ -828,17 +891,21 @@ for (bstatus in 1:2) {
       
       if (pn == "") {subdat_box1 = subdat_box1_
       } else {subdat_box1 = subdat_box1_ %>% filter(grepl(gsub("T4_T8", "T4|T8", pn), assay)) %>% mutate(assay = droplevels(assay))}
+      if (nrow(subdat_box1) == 0) next
       
       # reorder per Peter's request
-      if (study_name == "NextGen_Mock" & grepl("IgG", pn)) {
+      if (study_name == "VaxArt_Mock" & grepl("IgG", pn)) {
         subdat_box1$assay <- factor(subdat_box1$assay,
-                                     levels = levels(subdat_box1$assay)[c(2:11, 1)])
+                                     levels = c("bindSpike_IgG_sera","bindSpike_IgG_sera_delta_AY.4","bindSpike_IgG_sera_BA.5",
+                                                "bindSpike_IgG_sera_BA.2.86","bindSpike_IgG_sera_XBB.1.5","bindSpike_IgG_sera_JN.1","bindSpike_IgG_sera_KP.2",    
+                                                "bindSpike_IgG_sera_KP.3","bindSpike_IgG_sera_LB.1","bindSpike_IgG_sera_mdw","bindN_IgG_sera"))
       }
       
-      if (study_name == "NextGen_Mock" & tp == "B") {subdat_box1$Trt = "Pooled Arm"}
+      #if (study_name == "VaxArt_Mock" & tp == "B") {subdat_box1$Trt = "Pooled Arm"}
       
       assay_sub = levels(subdat_box1$assay)
-        
+      if (length(assay_sub) == 0) next
+      
       covid_corr_boxplot_facets(
         plot_dat = subset(subdat_box1,
           Bserostatus == bstatus.labels[bstatus]
@@ -847,8 +914,9 @@ for (bstatus in 1:2) {
         y = tp,
         color = "Trt",
         facet_by = "assay",
-        palette = if (study_name == "NextGen_Mock" & tp == "B") {c("#FF6F1B")
-          } else if (study_name == "NextGen_Mock" & tp != "B") {c("#1749FF", "#378252")
+        palette = if (study_name == "VaxArt_Mock" #& tp != "B"
+                      ) {c("#1749FF", "#378252")
+          #} else if (study_name == "VaxArt_Mock" & tp == "B") {c("#FF6F1B")
           } else {c(
           "#1749FF", "#D92321",
           "#0AB7C9", "#FF6F1B",
@@ -861,25 +929,25 @@ for (bstatus in 1:2) {
         POS.CUTOFFS = log10(pos.cutoffs[assay_sub]),
         LLOX = log10(lloxs[assay_sub]),
         ULOQ = log10(uloqs[assay_sub]),
-        arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 4, 2)),
-        arrange_nrow = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 3, ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 1, 2))),
+        arrange_ncol = ifelse(study_name == "VAT08", 4, ifelse(study_name == "VaxArt_Mock" & grepl("Ig", pn), 4, ifelse(study_name == "VaxArt_Mock" & grepl("T4|T8", pn), 3, 2))),
+        arrange_nrow = ifelse(study_name %in% c("VAT08"), 4, ifelse(study_name == "VaxArt_Mock" & grepl("Ig", pn), 3, ifelse(study_name == "VaxArt_Mock" & grepl("bindN", pn), 1, 2))),
         #legend = setNames(trt.labels, trt.labels),
         axis_titles_y = labels.axis[tp, assay_sub] %>% unlist(),
         label_format = ifelse(all(grepl("T4|T8", assay_sub)==1), "percent", "log10"),
-        panel_titles = labels.title2[tp, assay_sub] %>% unlist(),
-        panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "NextGen_Mock", 6, 10)),
+        panel_titles = gsub("Serum Binding |Antibody to |\\\n", "", labels.title2[tp, assay_sub] %>% unlist()),
+        panel_title_size = ifelse(study_name=="VAT08", 8, ifelse(study_name == "VaxArt_Mock" & !grepl("T4|T8", pn), 7.5, ifelse(study_name == "VaxArt_Mock" & grepl("T4|T8", pn), 6, 10))),
         height = ifelse(study_name %in% c("VAT08"), 11, 
                         ifelse(attr(config,"config")=="prevent19_stage2", 10, 
-                               ifelse(study_name == "NextGen_Mock" & grepl("Ig", pn), 10.5,
-                                      ifelse(study_name == "NextGen_Mock" & grepl("bindN", pn), 3.5,
+                               ifelse(study_name == "VaxArt_Mock" & grepl("Ig", pn), 10.5,
+                                      ifelse(study_name == "VaxArt_Mock" & grepl("bindN", pn), 3.5,
                                              6.8)))),
-        add_violin = ifelse(study_name == "NextGen_Mock", T, F),
+        add_violin = ifelse(study_name == "VaxArt_Mock", T, F),
         filename = paste0(
           save.results.to, "/boxplots_", tp, "_x_trt_", 
-          ifelse(study_name == "NextGen_Mock", paste0(pn, "_"), ""),
+          ifelse(study_name == "VaxArt_Mock", paste0(pn, "_"), ""),
           bstatus.labels.2[bstatus], "_", study_name, 
-          ifelse(study_name == "NextGen_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
-                 ifelse(study_name == "NextGen_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
+          ifelse(study_name == "VaxArt_Mock" & tp %in% c("B", "Day31", "Day181"), "_final", 
+                 ifelse(study_name == "VaxArt_Mock" & tp %in% c("Day91", "Day366"), "_initial", "")), ".pdf"
         )
       )
     }
@@ -1013,7 +1081,7 @@ if (study_name=="VAT08" & F) {# this is only reported for VAT08
 #-----------------------------------------------
 # - Spaghetti plots of antibody marker change over time
 #-----------------------------------------------
-if (!attr(config,"config") %in% c("vat08_combined", "prevent19_stage2", "nextgen_mock")){ # no spaghetti plots for VAT08, prevent19_stage2, NextGen_Mock
+if (!attr(config,"config") %in% c("vat08_combined", "prevent19_stage2", "nextgen_mock")){ # no spaghetti plots for VAT08, prevent19_stage2, VaxArt_Mock
 
   print("Spaghetti plots:")
   ## in each baseline serostatus group, randomly select 10 placebo recipients and 20 vaccine recipients
@@ -1180,7 +1248,7 @@ print("Spider plots:")
 if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_mock")){
   
   # setup pdf file
-  for (ab in if(study_name == "NextGen_Mock") {
+  for (ab in if(study_name == "VaxArt_Mock") {
     c("bind.*sera", "bind.*nasal", "bind.*saliva", "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", "T4", "T8")
     } else {c("bind", "pseudo")}) {
     
@@ -1302,9 +1370,11 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               if (nrow(dat.plot)==2) next
               
               filename = paste0(save.results.to, "/radar_plot_weighted_geomean_", tolower(gsub(" ", "_", tm)), "_", ifelse(reg!="all", reg_lb, ""), gsub("\\.\\*", "_", ab), "_", tolower(bstatus.labels.2[bsero + 1]), "_", "trt_comparison", #trt.labels.2[trt + 1], 
-                                ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
-                                       ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
-              try(pdf(filename, width = ifelse(study_name == "NextGen_Mock", 15, 5.5), height = 6.5, onefile = TRUE), silent = FALSE)
+                                ifelse(study_name == "VaxArt_Mock" & tm == "Day whole", "_final", 
+                                       ifelse(study_name == "VaxArt_Mock" & tm == "Day initial", "_initial", "")), ".pdf")
+              # Always close any open devices from earlier errors before starting a new one
+              if (!is.null(dev.list())) dev.off()
+              try(pdf(filename, width = ifelse(study_name == "VaxArt_Mock", 15, 5.5), height = 6.5, onefile = TRUE), silent = FALSE)
               cat("Saving to:", filename, "\n")
               par(mfrow=#if (study_name=="VAT08") {c(2,2)} else {
                     c(1, 2) #c(1,1)#}
@@ -1314,8 +1384,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
               
               spider_range = if(attr(config,"config")=="janssen_partA_VL") {10^seq(1, 1.2, (1.2-1)/4) # hard code for the range here
                 #seq(1, 1.2, (1.2-1)/4)} else {seq(0, ceiling(find_max), (ceiling(find_max))/4)}
-              } else if (study_name == "NextGen_Mock" & !ab %in% c("T4","T8")) {10^seq(2, 6, 1)#seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
-              } else if (study_name == "NextGen_Mock" & ab %in% c("T4","T8")) {10^seq(-2, 2, 1)#10^seq(floor(log10(find_min)), ceiling(log10(find_max)), by = 1)
+              } else if (study_name == "VaxArt_Mock" & !ab %in% c("T4","T8")) {10^seq(2, 6, 1)#seq(min(ceiling(find_min), 10^0), ceiling(find_max), (ceiling(find_max))/4)
+              } else if (study_name == "VaxArt_Mock" & ab %in% c("T4","T8")) {10^seq(-2, 2, 1)#10^seq(floor(log10(find_min)), ceiling(log10(find_max)), by = 1)
               }
               
               color = c(if(study_name=="VAT08") "#0AB7C9", "#FF6F1B", "#FF5EBF", "dodgerblue", "chartreuse3", "#009E73")[1:length(times_spider)]
@@ -1326,7 +1396,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                 color = color,
                 legend_lb = legend_lb,
                 title = paste0(ifelse(trt==0, "(B) ", "(A) "), "Geometric Means ", ifelse(grepl("bind", ab), "of bAb Markers, ", ifelse(grepl("pseudo", ab), "of nAb Markers, ", ifelse(grepl("T4|T8", ab), paste0("of CD", gsub("T", "", ab), "+ Markers, "), ""))), 
-                               if (study_name == "NextGen_Mock") {""} else {paste0(bstatus.labels.2[bsero + 1], " ")}, trt.labels[trt + 1],
+                               if (study_name == "VaxArt_Mock") {""} else {paste0(bstatus.labels.2[bsero + 1], " ")}, trt.labels[trt + 1],
                                ifelse(reg!="all", paste0(", ", reg_lb_long), "")),
                 spider_range = spider_range
               )
@@ -1344,9 +1414,11 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                 colnames(p$dat.plot) <- assay_metadata$assay_label[match( colnames(dat.plot) , assay_metadata$assay)]
                 
                 colnames(p$dat.plot) <- gsub("PsV Neutralization to |PsV Neutralization |Binding Antibody to Spike |Binding Antibody to |Binding Antibody |T cells expressing", "", 
-                                           gsub("Binding IgG Antibody", "bAb IgG", 
+                                             gsub("Binding IgG Antibody", "bAb IgG", 
                                                 gsub("Binding IgA Antibody", "bAb IgA", 
-                                                     gsub("neutralization to", "nAb", colnames(p$dat.plot)))))
+                                                     gsub("Serum Binding IgG Antibody to", "Serum Binding IgG Antibody to\n",
+                                                          gsub("Serum Binding IgA Antibody to", "Serum Binding IgA Antibody to\n", 
+                                                     gsub("neutralization to", "nAb", colnames(p$dat.plot)))))))
                 
                 radarchart(p$dat.plot, 
                            axistype=1, 
@@ -1355,15 +1427,24 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
                            pfcol = scales::alpha(p$color, 0.2),
                            #custom the grid
                            cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, 
-                           caxislabels=if (study_name == "NextGen_Mock" & ab %in% c("T4","T8")) {paste0(p$spider_range, "%")} else {paste0("10^", round(log10(p$spider_range), 2))}, 
+                           caxislabels=if (study_name == "VaxArt_Mock" & ab %in% c("T4","T8")) {paste0(p$spider_range, "%")} else {paste0("10^", round(log10(p$spider_range), 2))}, 
                            #label size
-                           vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12 | max(nchar(assays_)) > 25, 0.45, 1)),
+                           vlcex = ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12, 0.7, ifelse(ab %in% c("T4","T8"), 0.7, 0.85))),
                            #title
                            title=p$title,
                            #title size
-                           cex.main=0.7)
+                           cex.main=0.9)
                 
-                legend("bottomleft", legend=p$legend_lb, lty=5, pch=c(15), col=p$color, bty="n", ncol=3, cex=0.7, inset=c(0.01, 0))
+                #legend("bottomleft", legend=p$legend_lb, lty=5, pch=c(15), col=p$color, bty="n", ncol=3, cex=0.7, inset=c(0.01, 0.06))
+                
+                legend(x = ifelse(grepl("bind", ab), 0.45, 0.1), y = ifelse(ab %in% c("T4","T8") | grepl("pseudo", ab),  -0.75, -1.15),   # tweak these numbers!
+                       legend = p$legend_lb,
+                       lty = 5,
+                       pch = 15,
+                       col = p$color,
+                       bty = "n",
+                       ncol = 3,
+                       cex = 0.7)
               }
               
               dev.off()
@@ -1372,11 +1453,7 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
         } # end of bsero
     } # end of tm
   } # end of ab
-  
 }  
-
-
-
 
 if (F){
   radarchart(dat.plot, 
@@ -1386,12 +1463,12 @@ if (F){
              pfcol = scales::alpha(color, 0.2),
              #custom the grid
              cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8, caxislabels=#paste0("10^", spider_range),#
-               if (study_name == "NextGen_Mock" & ab == "ics") {paste0(spider_range, "%")} else {paste0("10^", round(log10(spider_range), 2))}, 
+               if (study_name == "VaxArt_Mock" & ab == "ics") {paste0(spider_range, "%")} else {paste0("10^", round(log10(spider_range), 2))}, 
              #label size
              vlcex=ifelse(study_name=="VAT08", 0.4, ifelse(length(assays_) > 12 | max(nchar(assays_)) > 25, 0.45, 1)),
              #title
              title=paste0("Geometric Means ", ifelse(grepl("bind", ab), "of bAb Markers, ", ifelse(grepl("pseudo", ab), "of nAb Markers, ", ifelse(grepl("ics", ab), "of CD4+ and CD8+ Markers, ", ""))), 
-                          if (study_name == "NextGen_Mock") {""} else {paste0(bstatus.labels.2[bsero + 1], " ")}, trt.labels[trt + 1],
+                          if (study_name == "VaxArt_Mock") {""} else {paste0(bstatus.labels.2[bsero + 1], " ")}, trt.labels[trt + 1],
                           ifelse(reg!="all", paste0(", ", reg_lb_long), "")),
              #title size
              cex.main=0.7)

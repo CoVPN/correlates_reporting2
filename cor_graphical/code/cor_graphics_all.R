@@ -54,7 +54,7 @@ cases_lb <- if (study_name=="VAT08"){
         } else {c("C2")}
     
     } else if (attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) {paste0(config.cor$txt.endpoint, " Cases")
-    } else if (study_name == "NextGen_Mock") {c("Vaccination-Proximal Cases", "Vaccination-Distal Cases")
+    } else if (study_name == "VaxArt_Mock") {c("Vaccination-Proximal Cases", "Vaccination-Distal Cases")
     } else if (study_name == "ILIAD_IB202P") {c("Positive")
     } else {"Post-Peak Cases"}
 
@@ -80,17 +80,17 @@ if (study_name=="VAT08") {
 print(paste0("save.results.to equals ", save.results.to))
 
 ###### Set 1 plots: Ab distributions for assays of one panel, at set1_times, by case/non-case (by naive/non-naive, vaccine/placebo)
-set1_times <- if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {labels.time[1:3]} else {labels.time[!grepl(paste0("over D", tinterm), labels.time)]} # "Day 1" "Day 22" "Day 43" "D22 fold-rise over D1"  "D43 fold-rise over D1"
+set1_times <- if (study_name %in% c("VaxArt_Mock", "ILIAD_IB202P")) {labels.time[1:3]} else {labels.time[!grepl(paste0("over D", tinterm), labels.time)]} # "Day 1" "Day 22" "Day 43" "D22 fold-rise over D1"  "D43 fold-rise over D1"
 if (attr(config,"config") == "prevent19_stage2"){
     set1_times <- set1_times[!set1_times %in% c("Booster Day 1", "Disease Day 1")]
 } else if (attr(config,"config") == "azd1222_stage2") {set1_times <- set1_times[set1_times!="Day 360"]
 } else if (attr(config,"config") == "prevent19nvx") {set1_times <- set1_times[set1_times!="Day 1"]}
 
-for (panel in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == "NextGen_Mock") {assays[!grepl("IgA", assays)]} else {c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")}){
+for (panel in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == "VaxArt_Mock") {assays[!grepl("IgA|T4|T8", assays)]} else {c("pseudoneutid50", if(attr(config,"config")!="prevent19_stage2") "bindSpike", if(attr(config,"config") %in% c("prevent19_stage2","azd1222_stage2")) "bindSpike_sub_stage2")}){
     
     set1_assays <- if(panel=="bindSpike_sub_stage2") {c("bindSpike_D614","bindSpike_Delta1")
         } else if (attr(config,"config")=="prevent19nvx") {assays
-        } else if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {panel
+        } else if (study_name %in% c("VaxArt_Mock", "ILIAD_IB202P")) {panel
         } else {assays[grepl(substr(panel, 1, 4), assays)]}
     
     assay_num = length(set1_assays)
@@ -99,8 +99,8 @@ for (panel in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == 
     if (assay_num == 0) next
     if (attr(config,"config") == "vat08_combined") next # do not plot in this format for vat08
     
-    for (tm_subset in c("Day", 
-                        "^D01$", "^D31$", # just for NextGen_Mock
+    for (tm_subset in c(if (study_name != "VaxArt_Mock") "Day", 
+                        if (study_name == "VaxArt_Mock") c("Day 01", "Day 31"), # just for VaxArt_Mock
                         if(sum(grepl("fold", set1_times))>0) "fold")){
         
         set1_times_sub = set1_times[grepl(tm_subset, set1_times)]
@@ -108,16 +108,16 @@ for (panel in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == 
         # only plot day 43 and day 43 over d1 in this format for vat08
         #if (attr(config,"config") == "vat08_combined") {set1_times_sub = set1_times_sub[set1_times_sub %in% c("Day 43", "D43 fold-rise over D1")]}
         
-        if (study_name == "NextGen_Mock") {
+        if (study_name == "VaxArt_Mock") {
             dat.longer.cor.subset.plot1_ = dat.longer.cor.subset.plot1.whole
             dat.longer.cor.subset.plot1_ <- dat.longer.cor.subset.plot1_ %>%
                 mutate(cohort_event = factor(cohort_event,
                                              levels = c("Vaccination-Proximal Cases", "Vaccination-Distal Cases", "Non-Cases"), 
                                              labels = c("Vaccination-\nProximal\nCases", "Vaccination-\nDistal\nCases", "Non-Cases")),
-                       responder = case_when(response==0 & !is.na(response) & time == "D01" ~ "Negative",
-                                             response==1 & !is.na(response) & time == "D01" ~ "Positive",
-                                             response==0 & !is.na(response) & time == "D31" ~ "Non-Responders",
-                                             response==1 & !is.na(response) & time == "D31" ~ "Responders",
+                       responder = case_when(response==0 & !is.na(response) & time == "Day 01" ~ "Negative",
+                                             response==1 & !is.na(response) & time == "Day 01" ~ "Positive",
+                                             response==0 & !is.na(response) & time == "Day 31" ~ "Non-Responders",
+                                             response==1 & !is.na(response) & time == "Day 31" ~ "Responders",
                                              time == "D31 fold-rise over D01" & is.na(response) ~ "All",
                                              TRUE ~ ""))
             
@@ -130,26 +130,26 @@ for (panel in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == 
                                            levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
                                            labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2))),
             
-            facet.x.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(Trt_nnaive)} else {vars(assay_label_short)}, 
-            facet.y.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(assay_label_short)} else {vars(Trt_nnaive)},
+            facet.x.var = if (study_name %in% c("VaxArt_Mock", "ILIAD_IB202P")) {vars(Trt_nnaive)} else {vars(assay_label_short)}, 
+            facet.y.var = if (study_name %in% c("VaxArt_Mock", "ILIAD_IB202P")) {vars(assay_label_short)} else {vars(Trt_nnaive)},
             assays = set1_assays,
             times = set1_times_sub,
-            ylim = if (attr(config,"config") == "iliad_ib202p") {c(-1.6, 3.8)} else if (attr(config,"config") == "nvx_uk302") {c(1, 6)} else if (attr(config,"config") == "prevent19nvx") {c(0,6.6)} else if (study_name == "VAT08" & tm_subset != "fold") {c(0, 4.2)} else if (study_name == "NextGen_Mock" & tm_subset != "fold") {c(1, 6.5)} else if (study_name %in% c("VAT08") & tm_subset == "fold") {c(-3, 4.2)} else if (study_name %in% c("NextGen_Mock") & tm_subset == "fold") {c(-1.1, 3.6)} else {c(0, 5.5)}, 
-            ybreaks = if (attr(config,"config") == "iliad_ib202p") {c(-1, 0, 1, 2, 3)} else if (attr(config,"config") == "nvx_uk302") {c(1,2,3,4,5)} else if (attr(config,"config") == "prevent19nvx") {c(0,1,2,3,4,5,6)} else if (study_name == "VAT08" & tm_subset != "fold") {c(0, 1, 2, 3, 4)} else if (study_name == "NextGen_Mock" & tm_subset != "fold") {c(1, 2, 3, 4, 5, 6)} else if (study_name %in% c("VAT08") & tm_subset == "fold") {c(-3, -2, -1, 0, 1, 2, 3, 4)} else if (study_name %in% c("NextGen_Mock") & tm_subset == "fold") {c(-1, 0, 1, 2, 3)} else {c(0,1,2,3,4,5)},
+            ylim = if (attr(config,"config") == "iliad_ib202p") {c(-1.6, 3.8)} else if (attr(config,"config") == "nvx_uk302") {c(1, 6)} else if (attr(config,"config") == "prevent19nvx") {c(0,6.6)} else if (study_name == "VAT08" & tm_subset != "fold") {c(0, 4.2)} else if (study_name == "VaxArt_Mock" & tm_subset != "fold") {c(1, 6.5)} else if (study_name %in% c("VAT08") & tm_subset == "fold") {c(-3, 4.2)} else if (study_name %in% c("VaxArt_Mock") & tm_subset == "fold") {c(-1.1, 3.6)} else {c(0, 5.5)}, 
+            ybreaks = if (attr(config,"config") == "iliad_ib202p") {c(-1, 0, 1, 2, 3)} else if (attr(config,"config") == "nvx_uk302") {c(1,2,3,4,5)} else if (attr(config,"config") == "prevent19nvx") {c(0,1,2,3,4,5,6)} else if (study_name == "VAT08" & tm_subset != "fold") {c(0, 1, 2, 3, 4)} else if (study_name == "VaxArt_Mock" & tm_subset != "fold") {c(1, 2, 3, 4, 5, 6)} else if (study_name %in% c("VAT08") & tm_subset == "fold") {c(-3, -2, -1, 0, 1, 2, 3, 4)} else if (study_name %in% c("VaxArt_Mock") & tm_subset == "fold") {c(-1, 0, 1, 2, 3)} else {c(0,1,2,3,4,5)},
             axis.x.text.size = ifelse(assay_num > 7 & length(cases_lb)==3, 13, ifelse(assay_num > 5, 20, ifelse(assay_num > 3, 25, 30))),
             strip.x.text.size = ifelse(assay_num > 7, 10, ifelse(assay_num > 5, 18, ifelse(assay_num > 3, 25, 32))),
             panel.text.size = ifelse(assay_num > 7 && length(cases_lb)==3, 4.5, ifelse(assay_num > 5, 6, ifelse(assay_num > 3, 7, 10))),
             scale.x.discrete.lb = c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases")),
-            colorby = ifelse(study_name == "NextGen_Mock", "Trt", "cohort_event"),
-            pointby = ifelse(study_name == "NextGen_Mock", "responder", "cohort_col"),
+            colorby = ifelse(study_name == "VaxArt_Mock", "Trt", "cohort_event"),
+            pointby = ifelse(study_name == "VaxArt_Mock", "responder", "cohort_col"),
             #lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
             #lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
-            chtcols = if (study_name == "NextGen_Mock") {setNames(c("#1749FF", "#378252"), trt.labels[2:1])} else {setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))}, # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-            chtpchs = if (study_name == "NextGen_Mock" & tm_subset == "^D01$") {setNames(c(19, 2), c("Positive", "Negative"))
-                } else if (study_name == "NextGen_Mock" & tm_subset == "^D31$") {setNames(c(19, 2), c("Responders", "Non-Responders"))
-                } else if (study_name == "NextGen_Mock" & tm_subset == "fold") {setNames(19, "All")
+            chtcols = if (study_name == "VaxArt_Mock") {setNames(c("#1749FF", "#378252"), trt.labels[2:1])} else {setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))}, # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+            chtpchs = if (study_name == "VaxArt_Mock" & tm_subset == "Day 01") {setNames(c(19, 2), c("Positive", "Negative"))
+                } else if (study_name == "VaxArt_Mock" & tm_subset == "Day 31") {setNames(c(19, 2), c("Responders", "Non-Responders"))
+                } else if (study_name == "VaxArt_Mock" & tm_subset == "fold") {setNames(19, "All")
                 } else {setNames(c(rep(19, length(cases_lb) + 1), 2), c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))},
-            y.axis.lb = ifelse(study_name == "NextGen_Mock", " ", "")
+            y.axis.lb = ifelse(study_name == "VaxArt_Mock", " ", "")
             )
         
         if (!is.list(f_1)) {
@@ -159,7 +159,7 @@ for (panel in if (study_name == "ILIAD_IB202P") {assays} else if (study_name == 
         for (i in 1:length(set1_times_sub)){
             
             file_name <- paste0(panel, "_by_case_non_case_at_", set1_times_sub[i], ".pdf")
-            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = ifelse(study_name %in% c("NextGen_Mock", "ILIAD_IB202P"), 20, 30), height = ifelse(study_name %in% c("NextGen_Mock", "ILIAD_IB202P"), 16, 22))
+            ggsave(plot = f_1[[i]], filename = paste0(save.results.to, file_name), width = ifelse(study_name %in% c("VaxArt_Mock", "ILIAD_IB202P"), 20, 30), height = ifelse(study_name %in% c("VaxArt_Mock", "ILIAD_IB202P"), 16, 22))
         }
         
         # adhoc output for prevent19_stage2
@@ -541,7 +541,7 @@ if (COR=="D29VLvariant"){
         
 }
 
-set2.1_assays = assays[!grepl("mdw", assays)]
+set2.1_assays = assays[!grepl("mdw|T4|T8", assays)]
 if(attr(config,"config") == "prevent19_stage2"){set2.1_assays <- set2.1_assays[grepl("Delta$|Delta1$|D614", set2.1_assays)]}
 
 # two assays per plot
@@ -596,7 +596,7 @@ for (i in 1:length(set2.1_assays)) {
             if (study_name == "VAT08"){
                 dat.longer.cor.subset.plot1_ = dat.longer.cor.subset.plot1 %>%
                     mutate(Ptid = paste0(Ptid, cohort_event))
-                } else if (study_name == "NextGen_Mock") {
+                } else if (study_name == "VaxArt_Mock") {
                     if (tm == "Day whole") {
                         dat.longer.cor.subset.plot1_ = dat.longer.cor.subset.plot1.whole
                     } else if (tm == "Day initial") {
@@ -626,7 +626,7 @@ for (i in 1:length(set2.1_assays)) {
                 filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
                 mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
                                             levels = time_cohort.lb,
-                                            labels = if (study_name == "NextGen_Mock") {time_cohort.lb.short} else {time_cohort.lb}),
+                                            labels = if (study_name == "VaxArt_Mock") {time_cohort.lb.short} else {time_cohort.lb}),
                        Trt_nnaive = factor(paste(Trt, Bserostatus), 
                                            levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
                                            labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2)))
@@ -638,34 +638,35 @@ for (i in 1:length(set2.1_assays)) {
             f_2 <- f_longitude_by_assay(
                 dat = f_2_dat,
                 x.var = "time_cohort",
-                x.lb = if (study_name == "NextGen_Mock") {time_cohort.lb.short} else {time_cohort.lb},
-                facet.x.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(Trt_nnaive)} else {vars(assay_label_short)}, 
-                facet.y.var = if (study_name %in% c("NextGen_Mock", "ILIAD_IB202P")) {vars(assay_label_short)} else {vars(Trt_nnaive)},
+                x.lb = if (study_name == "VaxArt_Mock") {time_cohort.lb.short} else {time_cohort.lb},
+                facet.x.var = if (study_name %in% c("VaxArt_Mock", "ILIAD_IB202P")) {vars(Trt_nnaive)} else {vars(assay_label_short)}, 
+                facet.y.var = if (study_name %in% c("VaxArt_Mock", "ILIAD_IB202P")) {vars(assay_label_short)} else {vars(Trt_nnaive)},
                 assays = f_2_assay,
                 panel.text.size = ifelse(study_name=="VAT08" & length(cases_lb)==3, 4, ifelse(study_name=="VAT08" & length(cases_lb)==1, 4, 5.8)),
                 ylim = f_2_ylim, 
                 ybreaks = f_2_ybreak,
+                split.var = ifelse(study_name == "VaxArt_Mock", "assay_label_short2", "panel"), 
                 axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2" | (study_name=="VAT08" & length(cases_lb)==3) | tm == "Day initial", 8.4, ifelse(tm == "Day whole", 10.5, 9.5)),
-                colorby = ifelse(study_name == "NextGen_Mock", "Trt", "cohort_event"),
-                pointby = ifelse(study_name == "NextGen_Mock", "responder", "cohort_col"),
+                colorby = ifelse(study_name == "VaxArt_Mock", "Trt", "cohort_event"),
+                pointby = ifelse(study_name == "VaxArt_Mock", "responder", "cohort_col"),
                 #lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
                 #lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
-                chtcols = if (study_name == "NextGen_Mock") {setNames(c("#1749FF", "#378252"), trt.labels[2:1])} else {setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))}, # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-                chtpchs = if (study_name == "NextGen_Mock") {setNames(c(19, 2), c("Responders", "Non-Responders"))} else {setNames(c(rep(19, length(cases_lb) + 1), 2), c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))},
-                y.axis.lb = ifelse(study_name %in% c("NextGen_Mock", "ILIAD_IB202P"), " ", "")
+                chtcols = if (study_name == "VaxArt_Mock") {setNames(c("#1749FF", "#378252"), trt.labels[2:1])} else {setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))}, # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+                chtpchs = if (study_name == "VaxArt_Mock") {setNames(c(19, 2), c("Responders", "Non-Responders"))} else {setNames(c(rep(19, length(cases_lb) + 1), 2), c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))},
+                y.axis.lb = ifelse(study_name %in% c("VaxArt_Mock", "ILIAD_IB202P"), " ", "")
                 )
                 
             
             file_name <- paste0(paste0(if(attr(config,"config") %in% c("azd1222_stage2", "nextgen_mock", "iliad_ib202p")){set2.1_assays[i]} else {set2.1_assays[c(i,i+1)]}, 
                                        collapse="_"), 
                                 "_longitudinal_by_case_non_case", 
-                                ifelse(study_name == "NextGen_Mock" & case_type == "proximal", "_proximal", 
-                                       ifelse(study_name == "NextGen_Mock" & case_type == "distal", "_distal", "")),
-                                ifelse(study_name == "NextGen_Mock" & tm == "Day whole", "_final", 
-                                       ifelse(study_name == "NextGen_Mock" & tm == "Day initial", "_initial", "")), 
+                                ifelse(study_name == "VaxArt_Mock" & case_type == "proximal", "_proximal", 
+                                       ifelse(study_name == "VaxArt_Mock" & case_type == "distal", "_distal", "")),
+                                ifelse(study_name == "VaxArt_Mock" & tm == "Day whole", "_final", 
+                                       ifelse(study_name == "VaxArt_Mock" & tm == "Day initial", "_initial", "")), 
                                 ".pdf")
-            ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = ifelse(study_name == "NextGen_Mock" & tm == "Day whole", 19,
-                                                                                                  ifelse(study_name == "NextGen_Mock" & tm == "Day initial", 24, 16)), height = 12)
+            ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = ifelse(study_name == "VaxArt_Mock" & tm == "Day whole", 19,
+                                                                                                  ifelse(study_name == "VaxArt_Mock" & tm == "Day initial", 24, 16)), height = 12)
             
             if ("Trialstage" %in% colnames(dat.longer.cor.subset.plot1_)) {
                 if (study_name=="VAT08" & unique(dat.longer.cor.subset.plot1_$Trialstage)==2){ # adhoc request for Sanofi stage 2: only include one case group: 28-180 or 28-150 days post PD2

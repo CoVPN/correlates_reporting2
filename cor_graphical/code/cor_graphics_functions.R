@@ -66,7 +66,7 @@ f_case_non_case_by_time_assay <-
     p1 <- dat %>%
         filter(assay %in% assays & time %in% times) %>%
         left_join(assay_metadata, by="assay") %>%
-        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+        mutate(panel = ifelse(study_name == "VaxArt_Mock", gsub(" \\(AU/ml\\)", "", assay_label_short), ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", "")))) %>%
         mutate(cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event)),
                cohort_col2 = paste(cohort_event, Trt),
                time = factor(time, levels=times)
@@ -361,7 +361,8 @@ f_longitude_by_assay <- function(
     p2 <- dat %>%
         filter(assay %in% assays) %>%
         left_join(assay_metadata, by="assay") %>%
-        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", "")),
+               assay_label_short2 = gsub(" \\(.*", "", assay_label_short)) %>%
         mutate(cohort_col = ifelse(response==0 & !is.na(response), "Non-Responders", as.character(cohort_event))
         ) %>%
         ungroup() %>%
@@ -458,7 +459,7 @@ f_longitude_by_assay_adhoc <- function(
     p2 <- dat %>%
         filter(assay %in% assays & time %in% times) %>%
         left_join(assay_metadata, by="assay") %>%
-        mutate(panel = ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", ""))) %>%
+        mutate(panel = ifelse(study_name == "VaxArt_Mock", gsub(" (AU/ml)", "", assay_label_short), ifelse(grepl("pseudo", assay), "nAb ID50", ifelse(grepl("bindSpike", assay), "Binding IgG Spike", "")))) %>%
         mutate(Trt_nnaive = factor(paste(Trt, nnaive), 
                                    levels = c("Vaccine Naive", "Vaccine Non-naive", "Placebo Naive", "Placebo Non-naive"),
                                    labels = c("Vaccine\nnaive", "Vaccine\nnon-naive", "Placebo\nnaive", "Placebo\nnon-naive")),
