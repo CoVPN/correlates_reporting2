@@ -1,5 +1,5 @@
 ---
-title: "Mediation - Sanofi
+title: "Mediation - Sanofi"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -24,11 +24,11 @@ COR <- "D15to181"
 
 Sys.getenv("TRIAL") # check that setenv worked
 
-here::i_am("sanofi/code_reporting.Rmd")
+# here::i_am("sanofi/code_reporting.Rmd")
 
 renv::activate(project = here::here(".."))
 
-source("~/correlates_reporting2/cop_mediation/code/format_utils.R")
+source("../code/format_utils.R")
 
 ```
 
