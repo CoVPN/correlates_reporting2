@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 # SanofiCorrelatesControlledRiskandVEMediationandNonparametricThresholdingDataAnalysisNotes
 
+renv::activate(project = here::here(".."))
+
 library(SuperLearner)
 library(tidyverse)
 library(dplyr)
@@ -26,7 +28,6 @@ Sys.getenv("TRIAL") # check that setenv worked
 
 # here::i_am("sanofi/code_reporting.Rmd")
 
-renv::activate(project = here::here(".."))
 
 source("../code/format_utils.R")
 
