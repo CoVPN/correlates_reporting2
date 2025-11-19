@@ -64,3 +64,12 @@ export TRIAL=nextgen_mock
 cd cor_graphical
 make
 ```
+
+### Sanofi stage2 correlates
+
+- To generate covpn_correlates_cor_graphical_vat08_combined_stage2.pdf, make sure line 28 of cor_data_preprocess.R shows "Trialstage == 2", then run the following commands in a bash shell:
+```{bash}
+export TRIAL=vat08_combined
+cd cor_graphical
+make
+```
