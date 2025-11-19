@@ -25,7 +25,7 @@ if (!is.null(config$assay_metadata)) {pos.cutoffs = assay_metadata$pos.cutoff; n
 
 ## COR has a set of analysis-specific parameters defined in the config file
 config.cor <- config::get(config = COR)
-if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 2)} # need manually update "Trialstage" and line 70 in report.Rmd
+if (study_name=="VAT08") {dat_proc = dat_proc %>% filter(Trialstage == 2)} # need manually update "Trialstage"
 if (study_name=="VAT08") {dat_proc = dat_proc %>% mutate(immune_history = ifelse(prev_vac==1, "anti_S_pos_only", ifelse(prev_inf==1, "RNA_or_antiN_pos", "")))} # create a immune_history variable containing anti_S_pos_only (prev_vac) or RNA_or_antiN_pos (prev_inf)
 if (study_name=="VAT08") {
   dat_proc$ph2.D43.nAb = with(dat_proc, ifelse(Trialstage == 1, ph2.D43.st1.nAb.batch0and1, ph2.D43.nAb))

@@ -20,6 +20,10 @@ here::i_am("cor_graphical/report.Rmd")
 if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV", "VAT08", "UK302", "COVAIL", "VaxArt_Mock", "ILIAD_IB202P")) & !grepl("stage2|prevent19nvx", attr(config,"config"))) {
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
+if (study_name=="VAT08") {
+  dat.longer.cor.subset.plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds"))
+  Trialstage_val = unique(dat.longer.cor.subset.plot1$Trialstage)
+} else {Trialstage_val = 999}
 
 # called in report_violin etc
 bsero <- ifelse(study_name %in% c("IARCHPV", "ILIAD_IB202P"), "", "BaselineNeg")
@@ -86,7 +90,7 @@ if (study_name == "VaxArt_Mock") {
                                                                      )
   if (attr(config,"config") == "nvx_uk302") COR_postfix_list <- c("D35nvx_uk302")
   if (attr(config,"config") == "prevent19nvx") COR_postfix_list <- c("D35prevent19nvx")
-  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi_stage2")
+  if (study_name=="VAT08") COR_postfix_list <- c("D22D43omi")
   if (study_name=="VaxArt_Mock") COR_postfix_list <- c("D31toM12_nextgen_mock_sera")
   if (study_name=="ILIAD_IB202P") COR_postfix_list <- c("C0iliad_ib202p_PPAI_C14only")
 
@@ -149,8 +153,10 @@ if (study_name == "VaxArt_Mock") {
       COR_postfix_label = ""
       if (grepl("delta", COR_postfix)) COR_postfix_label=" (Delta Endpoint)"
       if (grepl("severe", COR_postfix)) COR_postfix_label=" (Severe Endpoint)"
-      if (COR_postfix=="D22D43omi_stage1") COR_postfix_label= paste0(" (Stage1)")
-      if (COR_postfix=="D22D43omi_stage2") COR_postfix_label= paste0(" (Stage2)")
+      if (study_name == "VAT08") {
+        if (COR_postfix=="D22D43omi" & Trialstage_val == 1) COR_postfix_label= paste0(" (Stage1)")
+        if (COR_postfix=="D22D43omi" & Trialstage_val == 2) COR_postfix_label= paste0(" (Stage2)")
+      }
       
       COR=case_when(COR_postfix=="" ~ "", 
                     COR_postfix=="delta" ~ "D35prevent19_stage2_delta", 
@@ -202,7 +208,8 @@ cat("\\clearpage", sep = '\n')
       }
       
       # adhoc for vat08 stage 2 non-naive at day 43 and day 43 over day 1, by S-pos and Prev-inf
-      if (attr(config,"config")=="vat08_combined" & COR_postfix_list == "D22D43omi_stage2"){
+      if (attr(config,"config")=="vat08_combined" & COR_postfix_list == "D22D43omi"){
+        if (Trialstage_val == 1) next # this is only for stage 2
         
         for (a in c("pseudoneutid50", "bindSpike")) {
          
@@ -218,7 +225,8 @@ cat("\\clearpage", sep = '\n')
       }
       
       # adhoc for vat08 stage 2 non-naive at day 1, by S-pos and Prev-inf
-      if (attr(config,"config")=="vat08_combined" & COR_postfix_list == "D22D43omi_stage2"){
+      if (attr(config,"config")=="vat08_combined" & COR_postfix_list == "D22D43omi"){
+        if (Trialstage_val == 1) next # this is only for stage 2
         
         for (a in c("pseudoneutid50", "bindSpike")) {
          
@@ -234,7 +242,8 @@ cat("\\clearpage", sep = '\n')
       }
       
       # adhoc for vat08 stage 2 non-naive at day 1 and day 43, for S-pos and region overlaid
-      if (attr(config,"config")=="vat08_combined" & COR_postfix_list == "D22D43omi_stage2"){
+      if (attr(config,"config")=="vat08_combined" & COR_postfix_list == "D22D43omi"){
+        if (Trialstage_val == 1) next # this is only for stage 2
         
         for (a in c("bindSpike")) {
          
@@ -274,7 +283,7 @@ cat("\\clearpage", sep = '\n')
           c(if (nextgen_output_flag == 1) assays[2], if (nextgen_output_flag == 3) assays[!grepl("mdw", assays)])
         } else {assays}
       
-      for (version in c("", if (COR_postfix_list == "D22D43omi_stage2") "_v2")){
+      for (version in c("", if (COR_postfix_list == "D22D43omi" & Trialstage_val == 2) "_v2")){
         for (assay_grp in assay_grp_list){
           for (tm in c(if(attr(config, "config") == "VaxArt_Mock" & nextgen_output_flag == 3) "Day initial", "Day whole")){
             for (case_type in c("default", if (attr(config, "config") == "VaxArt_Mock" & nextgen_output_flag == 3) c("proximal", "distal"))){
@@ -385,8 +394,9 @@ cat("\\clearpage", sep = '\n')
           
       }
       
-      # adhoc for vat08
-      if (attr(config,"config") == "vat08_combined" & COR_postfix_list == "D22D43omi_stage1"){
+      # adhoc for vat08 stage 1
+      if (attr(config,"config") == "vat08_combined" & COR_postfix_list == "D22D43omi"){
+        if (Trialstage_val == 2) next # this is only for stage 1
         
         for (sanofi_filter in c("sanofi_us_only", "sanofi_all_country")){
           
