@@ -21,9 +21,9 @@ if (!(study_name %in% c("ENSEMBLE", "MockENSEMBLE", "janssen_partA_VL", "IARCHPV
   plot_ve_curves <- readRDS(here::here("cor_graphical", "data_clean", "plot_ve_curves.rds"))
 }
 if (study_name=="VAT08") {
-  dat.longer.cor.subset.plot1 <- readRDS(here("data_clean", "longer_cor_data_plot1.rds"))
+  dat.longer.cor.subset.plot1 <- readRDS(here::here("cor_graphical", "data_clean", "longer_cor_data_plot1.rds"))
   Trialstage_val = unique(dat.longer.cor.subset.plot1$Trialstage)
-} else {Trialstage_val = 999}
+} else {Trialstage_val = 999} # not applicable to other studies
 
 # called in report_violin etc
 bsero <- ifelse(study_name %in% c("IARCHPV", "ILIAD_IB202P"), "", "BaselineNeg")
@@ -153,10 +153,8 @@ if (study_name == "VaxArt_Mock") {
       COR_postfix_label = ""
       if (grepl("delta", COR_postfix)) COR_postfix_label=" (Delta Endpoint)"
       if (grepl("severe", COR_postfix)) COR_postfix_label=" (Severe Endpoint)"
-      if (study_name == "VAT08") {
-        if (COR_postfix=="D22D43omi" & Trialstage_val == 1) COR_postfix_label= paste0(" (Stage1)")
-        if (COR_postfix=="D22D43omi" & Trialstage_val == 2) COR_postfix_label= paste0(" (Stage2)")
-      }
+      if (COR_postfix=="D22D43omi" & Trialstage_val == 1) COR_postfix_label= " (Stage1)"
+      if (COR_postfix=="D22D43omi" & Trialstage_val == 2) COR_postfix_label= " (Stage2)"
       
       COR=case_when(COR_postfix=="" ~ "", 
                     COR_postfix=="delta" ~ "D35prevent19_stage2_delta", 
