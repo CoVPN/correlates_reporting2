@@ -12,6 +12,7 @@ library(kyotil)
 library(glue)
 library(Hmisc)
 library(knitr)
+library(kableExtra)
 
 TRIAL="cov2008tcell"
 
@@ -28,6 +29,43 @@ dat_mapped=read.csv(config.processing$mapped_data)
 
 ```
 
+```{r}
+
+dat.ph1 = subset(dat_mapped, PPEFL=='Y')
+
+dat.ph2 = subset(dat.ph1, !is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.))
+
+dat.ph1$ph2 = !is.na(dat.ph1$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.)
+
+dat.ph1$ph2a = !is.na(dat.ph1$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.) & !is.na(dat.ph1$D15Terminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.)
+
+mytable(dat.ph1$ph2, dat.ph1$ph2a)
+
+tab = cbind(table(dat.ph1$Trt, dat.ph1$ModtoSevEventIndPrimaryD15==1), 
+            table(dat.ph2$Trt, dat.ph2$ModtoSevEventIndPrimaryD15==1))
+tab = tab[, c(1,3,2,4)]
+tab = cbind(tab[, 1:2], tab[,2]/tab[,1], tab[, 3:4], tab[,4]/tab[,3])
+colnames(tab) = c("Ph1", "Ph2", "Ratio", "Ph1", "Ph2", "Ratio")
+print(kable(tab, digits=3) %>%
+    column_spec(1, width = "1.1cm") %>%  
+    column_spec(2:(ncol(tab)+1), width = "2cm")%>%  # no 1+ncol b/c row.names is FALSE
+    add_header_above(c(" " = 1, "Non-cases" = 3, "Cases" = 3)) 
+)
+
+
+tab = cbind(table(dat.ph1$Trt, dat.ph1$AnyinfectionD1==1), 
+            table(dat.ph2$Trt, dat.ph2$AnyinfectionD1==1))
+tab = tab[, c(1,3,2,4)]
+tab = cbind(tab[, 1:2], tab[,2]/tab[,1], tab[, 3:4], tab[,4]/tab[,3])
+colnames(tab) = c("Ph1", "Ph2", "Ratio", "Ph1", "Ph2", "Ratio")
+print(kable(tab, digits=3) %>%
+    column_spec(1, width = "1.1cm") %>%  
+    column_spec(2:(ncol(tab)+1), width = "2cm")%>%  # no 1+ncol b/c row.names is FALSE
+    add_header_above(c(" " = 1, "Not-infected" = 3, "Infected" = 3)) 
+)
+
+```
+
 ```{r figuring out sampling strata}
 
 mytable(dat_mapped$PPEFL)
@@ -39,16 +77,26 @@ mytable(!is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.))
 mytable(dat_mapped$Trt)
 
 mytable(dat_mapped$ModtoSevEventIndPrimaryD1, dat_mapped$PPEFL)
+mytable(dat_mapped$AnyinfectionD1, dat_mapped$PPEFL)
+
+mytable(dat_mapped$Trt, dat_mapped$AnyinfectionD1==1)
+
 
 mytable(!is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.), dat_mapped$PPEFL)
 
-dat=subset(dat_mapped, !is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.) & PPEFL=='Y')
 
 mytable(dat$Sex, dat$Trt, dat$ModtoSevEventIndPrimaryD1==1)
 mytable(dat$Age>65, dat$Trt, dat$ModtoSevEventIndPrimaryD1==1)
 
+
 mytable(dat$Trt, dat$ModtoSevEventIndPrimaryD1==1)
-mytable(dat$Trt, dat$ModtoSevEventIndPrimaryD15==1)
 mytable(dat$Trt, dat$AnyinfectionD1==1)
+
+
+dat2=subset(dat_mapped, !is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.))
+mytable(dat2$Trt, dat2$ModtoSevEventIndPrimaryD1==1)
+mytable(dat2$Trt, dat2$AnyinfectionD1==1)
+
+
 
 ```
