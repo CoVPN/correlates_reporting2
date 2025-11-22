@@ -1,13 +1,10 @@
 # Poisson Regression Modeling of Correlates of Risk
 
 
-## Reproducibility 
 
+## Reproduce ILiAD phase 2 correlates results
 
-
-## ILiAD phase 2 correlates
-
-Setup:
+**Setup**
 - Download and unzip the release
 https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.6.zip
 - Run the following R command at the repo root level to install package dependencies as this project uses the repo-level renv.lock:
@@ -16,16 +13,15 @@ renv::restore()
 ```
 - Open config.yml in an editor, look for iliad_ib202p, and modify the line below to point to the local copy of analysis-ready data file.
 
-To generate correlates_cor_poisson_iliad_ib202p_{datestring}.pdf and posthoc_analyses_{datestring}.pdf, run the following commands in a bash shell:
+**Analysis**
+- This produces two pdfs: correlates_cor_poisson_iliad_ib202p_{datestring}.pdf and posthoc_analyses_{datestring}.pdf:
 ```{bash}
 export TRIAL=iliad_ib202p
 cd cor_poisson
 make 
 ```
 
-
-** Mapping between mansucript TLFs and reports **
-
+**Mapping between mansucript TLFs and reports**
 
 | Manuscript | Report                        |
 |------------|-------------------------------|
