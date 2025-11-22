@@ -493,13 +493,6 @@
       "Repository": "CRAN",
       "Hash": "ce49bfe5bc0b3ecd43a01fe1b01c2243"
     },
-    "cobs": {
-      "Package": "cobs",
-      "Version": "1.3-8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "9b09dd3e521c75149823d7ab6c0a5f15"
-    },
     "coda": {
       "Package": "coda",
       "Version": "0.19-4",
@@ -1207,8 +1200,8 @@
       "RemoteUsername": "youyifong",
       "RemoteRepo": "kyotil",
       "RemoteRef": "master",
-      "RemoteSha": "caa92abd0e360184fac513434d1ae32ec9f3026d",
-      "Hash": "a624c1bce463876831aeab6c6fa3b794"
+      "RemoteSha": "f06d21c6aefea700945817a275a6de77ae1d751f",
+      "Hash": "5ff1fd516d8c982e06121f411c4c9978"
     },
     "labeling": {
       "Package": "labeling",
@@ -1864,10 +1857,10 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.13.2",
+      "Version": "0.14.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "079cb1f03ff972b30401ed05623cbe92"
+      "Hash": "30e5eba91b67f7f4d75d31de14bbfbdc"
     },
     "repr": {
       "Package": "repr",
@@ -2075,13 +2068,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "9067f962730f58b14d8ae54ca885509f"
-    },
-    "simest": {
-      "Package": "simest",
-      "Version": "0.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "b9acc5e39b1d8eda62c4debc7b57945c"
     },
     "skimr": {
       "Package": "skimr",

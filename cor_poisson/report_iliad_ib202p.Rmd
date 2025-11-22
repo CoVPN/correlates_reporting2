@@ -28,9 +28,8 @@ for (COR in c("C0iliad_ib202p_PPAI")) {
     cat("# Univariate CoR for the PPAI cohort and the C14 only endpoint: Poisson Regression Models \n")
   }
     
-  cat("\\clearpage \n")
-  
   for (fname.suffix in c("BPZE1", "PBO")) {
+    cat("\\clearpage \n")
     res = knitr::knit_child(c(here::here('cor_poisson', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   

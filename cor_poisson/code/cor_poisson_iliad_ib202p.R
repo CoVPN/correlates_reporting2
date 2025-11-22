@@ -275,7 +275,7 @@ for (trt in trts) {
   # forest plot
   
   # Day 28
-  forestplot.markers = list(1:22)
+  forestplot.markers = list(1:22, 23:44, 45:66)
   
   for (i in 1:2){
     # res is a matrix with columns corresponding to fits

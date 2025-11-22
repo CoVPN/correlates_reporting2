@@ -32,6 +32,8 @@ assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/iliad_ib202
 assays = assay_metadata$assay
 panels = unique(assay_metadata$panel)
 antigens = c("WCE", setdiff(unique(assay_metadata$antigen), c("WCE", NA)))
+panel_names=c("N-sIgA", "sIgA", "Serum IgA", "Serum IgG", "SBA")
+
 ```
 
 # Introduction
@@ -183,6 +185,8 @@ mean(dat_proc_202[["Day28"%.%a]][dat_proc_202$Trt=='BPZE1'])
 
 \clearpage
 
+# Correlation between antigens by panel
+
 ```{r, echo=F}
 make_pairs=function(p, vaccine.only=F) {
   if (vaccine.only) {
@@ -221,7 +225,62 @@ make_pairs=function(p, vaccine.only=F) {
   })))
 }
 
+make_pairs_202=function(a, p, PPAI.only, vaccine.only=F) {
+  tmp2 = subset(dat_proc_202, PPAI %in% c(1, if(!PPAI.only) 0))
+  if (vaccine.only) tmp2 = tmp2[tmp2$Trt=="BPZE1", ]
+  
+  tmp2 = tmp2[,c("Trt", glue("Day28{a}_{p}"))]
+  tmp2 = tmp2[complete.cases(tmp2),]
+  
+  r = range (tmp2[,-1], na.rm=T); min_val = r[1]; max_val = r[2]
+  
+  custom_continuous <- function(data, mapping, ...) {
+    ggplot(data = data, mapping = mapping) +
+      geom_point(aes(color = tmp2[,1])) +
+      scale_color_brewer(palette = "Set2") +
+      xlim(min_val, max_val) + ylim(min_val, max_val)  # adjust these limits as needed
+  }
+  
+  my_density_diag <- function(data, mapping, ...) {
+    ggplot(data, mapping) +
+      geom_density() +
+      coord_cartesian(xlim = r)
+  }
+  
+  if (len(a)==1) {
+    labels = glue("{a}, {panel_names[1:4]}")
+  } else {
+    labels = glue("{a}, {panel_names[which(p==panels)]}")
+  }
+  capture.output(suppressWarnings(suppressMessages({  
+    p1 <- ggpairs(tmp2[,-1], 
+                  columnLabels = labels,
+                  diag =  list(continuous = my_density_diag),
+                  lower = list(continuous = custom_continuous), progress=F) + 
+                    theme(strip.text = element_text(size = 7))
+    p1
+  })))
+  
+}
 
+# one panel per plot
+for (p in panels[1:4]) {
+  png(glue("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pairs_{p}.png"), width=7, height=6.5, units="in", res=300)
+    make_pairs_202 (antigens, p, PPAI.only=T, vaccine.only=F)
+  dev.off()
+}
+
+# one antigen per plot
+for (a in antigens) {
+  png(glue("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pairs_{a}.png"), width=7, height=6.5, units="in", res=300)
+    make_pairs_202 (a, panels[1:4], PPAI.only=T, vaccine.only=F)
+  dev.off()
+}
+
+```
+
+\clearpage
+```{r fig.show='hold', fig.width=7.7, fig.height=7, out.width='49%', echo=F,  results='asis'}
 make_pairs_in_one=function(p, vaccine.only=F) {
   if (vaccine.only) {
     tmp1 = dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO", glue("Day28{antigens}_{p}")]
@@ -258,15 +317,6 @@ make_pairs_in_one=function(p, vaccine.only=F) {
   })))
   p2
 }
-
-```
-
-# Correlation between antigens by panel
-
-
-
-\clearpage
-```{r fig.show='hold', fig.width=7.7, fig.height=7, out.width='49%', echo=F,  results='asis'}
 
 make_pairs_in_one (panels[1], vaccine.only=T)
 make_pairs_in_one (panels[2], vaccine.only=T)
@@ -315,11 +365,11 @@ make_pairs2=function(a) {
   
 }
 
-make_pairs2_in_one=function(a) {
-  tmp1 = dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO",glue("Day28{a}_{panels[2:4]}")]
+make_pairs2_in_one=function(a, t="{t}") {
+  tmp1 = dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO",glue("{t}{a}_{panels[1:4]}")]
   tmp1 = tmp1[complete.cases(tmp1),]
   
-  tmp2 = dat_proc_202[dat_proc_202$Trt=="BPZE1",glue("Day28{a}_{panels[2:4]}")]
+  tmp2 = dat_proc_202[dat_proc_202$Trt=="BPZE1",glue("{t}{a}_{panels[1:4]}")]
   tmp2 = tmp2[complete.cases(tmp2),]
   
   r = range(tmp1, tmp2, na.rm=T)
@@ -355,6 +405,14 @@ make_pairs2_in_one (antigens[2])
 make_pairs2_in_one (antigens[3])
 make_pairs2_in_one (antigens[4])
 make_pairs2_in_one (antigens[5])
+```
+
+```{r fig.show='hold', fig.width=7.7, fig.height=7, echo=F,  results='asis'}
+make_pairs2_in_one (antigens[1], t="Delta28overB")
+make_pairs2_in_one (antigens[2], t="Delta28overB")
+make_pairs2_in_one (antigens[3], t="Delta28overB")
+make_pairs2_in_one (antigens[4], t="Delta28overB")
+make_pairs2_in_one (antigens[5], t="Delta28overB")
 ```
 
 
