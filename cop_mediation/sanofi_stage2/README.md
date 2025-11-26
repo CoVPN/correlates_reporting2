@@ -32,7 +32,7 @@ This project uses a project-level renv.lock.
 
 1. Look for read.csv in all R/Rmd scripts and modify the code to point to the local copy of analysis-ready data file if needed.
 
-2. To render the report html, run the following shell command at the project level.
+2. To generate the output xlsx files, run the following shell command at the project level.
 ```{bash}
-Rscript -e "rmarkdown::render('sanofi_stage2_mediation_report.Rmd', output_file='sanofi_stage2_mediation_report_$(date +%Y%m%d).pdf')"
+make
 ```
