@@ -311,14 +311,14 @@ f_case_non_case_by_time_assay_wrap <-
 #' @param split.var group split variable in string, e.g., "panel", "assay_variant"
 #' @param pointby a variable name by which different color and shape of point will be drawn, e.g, "cohort_col", "cohort_col2"
 #' @param colorby a variable name by which different color will be drawn, default "cohort_event", e.g, "Trt"
-#' @param lgdbreaks breaks for point legend 
-#' @param lgdlabels labels for point legend 
+# @param lgdbreaks breaks for point legend 
+# @param lgdlabels labels for point legend 
 #' @param chtcols color panel for points
 #' @param chtpchs shape panel for points
 #' @param strip.text.y.size strip label size for y-axis, e.g., assay label, default is 25
 #' @param axis.text.x.size x-axis label size, default is 9.5, e.g., cases, non-cases
 #' @param y.axis.lb y-axis label, if empty, it has default value pooled from the assay_metadata 
-#' @param plot.caption.size
+#' @param plot.title.size
 #' @return A ggplot object list for longitudinal violin + box plot with lines
 f_longitude_by_assay <- function(
     dat,
@@ -333,18 +333,18 @@ f_longitude_by_assay <- function(
     split.var = "panel",
     pointby = "cohort_col",
     colorby = "cohort_event",
-    lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
-    lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+    #lgdbreaks = c("Omicron Cases", "Non-Cases", "Non-Responders"),
+    #lgdlabels = c("Omicron Cases", "Non-Cases", "Non-Responders"),
     chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     chtpchs = setNames(c(19, 19, 2), c("Omicron Cases", "Non-Cases", "Non-Responders")),
     strip.text.y.size = 25,
     axis.text.x.size = 9.5,
     y.axis.lb = "",
-    plot.caption.size = 26
+    plot.title.size = 32
     ) {
     
     plot_theme <- theme_bw() +
-        theme(plot.title = element_text(hjust = 0.5, size = 32),
+        theme(plot.title = element_text(size = plot.title.size, hjust = 0.5),
               axis.text.x = element_text(size = axis.text.x.size),
               axis.text.y = element_text(size = 18),
               axis.title = element_text(size = 24, face="bold"),
@@ -355,7 +355,7 @@ f_longitude_by_assay <- function(
               legend.position = "bottom", 
               legend.text = element_text(size = 16, face="plain"),
               legend.key = element_blank(), # remove square outside legend key
-              plot.caption = element_text(size = plot.caption.size, hjust=0, face="plain"), 
+              plot.caption = element_text(size = 26, hjust=0, face="plain"), 
               panel.grid.major = element_blank(), 
               panel.grid.minor = element_blank(),
               plot.margin = margin(5.5, 12, 5.5, 5.5, "pt")) 
@@ -378,12 +378,13 @@ f_longitude_by_assay <- function(
                 geom_boxplot(width = 0.25, alpha = 0.3, stat = "boxplot", outlier.shape = NA, show.legend = FALSE) +
                 # The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles)
                 # Whisker: Q3 + 1.5 IQR
-                scale_color_manual(name = "", values = chtcols[names(chtcols)!="Non-Responders"], guide = "none") + # guide = "none" in scale_..._...() to suppress legend
+                scale_color_manual(name = "", values = chtcols#[names(chtcols)!="Non-Responders"]
+                                   , guide = "none") + # guide = "none" in scale_..._...() to suppress legend
                 # geoms below will use another color scale
                 new_scale_color() +
                 geom_point(aes(color = .data[[colorby]], shape = .data[[pointby]]), size = 3, alpha = 0.6, show.legend = TRUE) +
-                scale_color_manual(name = "", values = chtcols, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
-                scale_shape_manual(name = "", values = chtpchs, breaks = lgdbreaks, labels = lgdlabels, drop=FALSE) +
+                scale_color_manual(name = "", values = chtcols, breaks = if ("Non-Responders" %in% names(chtpchs)) {names(chtpchs)} else {names(chtcols)}, labels = if ("Non-Responders" %in% names(chtpchs)) {names(chtpchs)} else {names(chtcols)}, drop=FALSE) +
+                scale_shape_manual(name = "", values = chtpchs, breaks = names(chtpchs), labels = names(chtpchs), drop=FALSE) +
                 
                 geom_text(aes(label = ifelse(!N_RespRate %in% c("", " "),"\nRate",""), x = 0.4, y = ylim[2]*0.95), hjust = 0, color = "black", size = panel.text.size, check_overlap = TRUE) +
                 geom_text(aes(x = .data[[x.var]], label = .data[["N_RespRate"]], y = ylim[2]*0.95), color = "black", size = panel.text.size, check_overlap = TRUE) +

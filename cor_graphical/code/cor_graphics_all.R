@@ -637,6 +637,9 @@ for (i in 1:length(set2.1_assays)) {
             f_2_ylim <- if (any(grepl("bind", set2.1_assays[c(i,i+1)]))) {c(2, 7)} else if (study_name == "ILIAD_IB202P") {c(floor(min(subset(f_2_dat, assay %in% f_2_assay)$value)), ceiling(max(subset(f_2_dat, assay %in% f_2_assay)$value)))} else {c(1, 6.5)}
             f_2_ybreak <- if (any(grepl("bind", set2.1_assays[c(i,i+1)]))) {c(2,3,4,5,6)} else if (study_name == "ILIAD_IB202P") {seq(f_2_ylim[1], f_2_ylim[2], 1)} else {c(1,2,3,4,5,6)}
             
+            # replace cohort_event values with values in the cases_lb2
+            levels(f_2_dat$cohort_event)[levels(f_2_dat$cohort_event) %in% names(cases_lb2)] <- cases_lb2
+            
             f_2 <- f_longitude_by_assay(
                 dat = f_2_dat,
                 x.var = "time_cohort",
@@ -649,14 +652,13 @@ for (i in 1:length(set2.1_assays)) {
                 ybreaks = f_2_ybreak,
                 split.var = ifelse(study_name == "VaxArt_Mock", "assay_label_short2", "panel"), 
                 axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2" | (study_name=="VAT08" & length(cases_lb)==3) | tm == "Day initial", 8.4, ifelse(tm == "Day whole", 10.5, 9.5)),
-                colorby = ifelse(study_name == "VaxArt_Mock", "Trt", "cohort_event"),
+                colorby = ifelse(study_name == "VaxArt_Mock", "Trt", "cohort_col"),
                 pointby = ifelse(study_name == "VaxArt_Mock", "responder", "cohort_col"),
-                lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
-                lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
-                chtcols = if (study_name == "VaxArt_Mock") {setNames(c("#1749FF", "#378252"), trt.labels[2:1])} else {setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))}, # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-                chtpchs = if (study_name == "VaxArt_Mock") {setNames(c(19, 2), c("Responders", "Non-Responders"))} else {setNames(c(rep(19, length(cases_lb) + 1), 2), c(cases_lb, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))},
-                y.axis.lb = ifelse(study_name %in% c("VaxArt_Mock", "ILIAD_IB202P"), " ", ""),
-                plot.caption.size = 20
+                #lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
+                #lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
+                chtcols = if (study_name == "VaxArt_Mock") {setNames(c("#1749FF", "#378252"), trt.labels[2:1])} else {setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb2, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))}, # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+                chtpchs = if (study_name == "VaxArt_Mock") {setNames(c(19, 2), c("Responders", "Non-Responders"))} else {setNames(c(rep(19, length(cases_lb) + 1), 2), c(cases_lb2, ifelse(study_name == "ILIAD_IB202P", "Negative", "Non-Cases"), "Non-Responders"))},
+                y.axis.lb = ifelse(study_name %in% c("VaxArt_Mock", "ILIAD_IB202P"), " ", "")
                 )
                 
             
@@ -676,30 +678,35 @@ for (i in 1:length(set2.1_assays)) {
                     
                     time_cohort.lb <- c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:3], "\n", "C2"))
                     
+                    f_2_dat_2 <- dat.longer.cor.subset.plot1_ %>%
+                        filter(cohort_event %in% c("C2","Non-Cases")) %>%
+                        filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
+                        mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
+                                                    levels = time_cohort.lb,
+                                                    labels = time_cohort.lb),
+                               Trt_nnaive = factor(paste(Trt, Bserostatus), 
+                                                   levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
+                                                   labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2)))
+                    
+                    # replace cohort_event values with values in the cases_lb2
+                    levels(f_2_dat_2$cohort_event)[levels(f_2_dat_2$cohort_event) %in% names(cases_lb2)] <- cases_lb2
+                    
                     f_2 <- f_longitude_by_assay(
-                        dat = dat.longer.cor.subset.plot1_ %>%
-                            filter(cohort_event %in% c("C2","Non-Cases")) %>%
-                            filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
-                            mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
-                                                        levels = time_cohort.lb,
-                                                        labels = time_cohort.lb),
-                                   Trt_nnaive = factor(paste(Trt, Bserostatus), 
-                                                       levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
-                                                       labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2))),
+                        dat = f_2_dat_2,
                         x.var = "time_cohort",
                         x.lb = time_cohort.lb,
                         facet.y.var = vars(Trt_nnaive),
+                        colorby = "cohort_col",
                         
                         assays = set2.1_assays[c(i,i+1)],
                         panel.text.size = 4,
                         ylim = if (grepl("bind", set2.1_assays[c(i,i+1)])) {c(2, 7)} else {c(1, 6.5)}, 
                         ybreaks = if (grepl("bind", set2.1_assays[c(i,i+1)])) {c(2,3,4,5,6)} else {c(1,2,3,4,5,6)},
                         axis.text.x.size = 9.5,
-                        lgdbreaks = c("C2", "Non-Cases", "Non-Responders"),
-                        lgdlabels = c("C2"=sprintf("C2: 28-%s days PD2 cases",day), "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders"),
-                        chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("C2", "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-                        chtpchs = setNames(c(19, 19, 2), c("C2", "Non-Cases", "Non-Responders")),
-                        plot.caption.size = 20
+                        #lgdbreaks = c("C2", "Non-Cases", "Non-Responders"),
+                        #lgdlabels = c("C2"=sprintf("C2: 28-%s days PD2 cases",day), "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders"),
+                        chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("C2: 28-150 days PD2 cases", "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+                        chtpchs = setNames(c(19, 19, 2), c("C2: 28-150 days PD2 cases", "Non-Cases", "Non-Responders"))
                         )
                     
                     file_name <- paste0(paste0(set2.1_assays[c(i,i+1)], 
@@ -716,21 +723,25 @@ if (study_name=="VAT08"){
     # one assay per plot
     time_cohort.lb = c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:2], "\n", cases_lb[1]), paste0(labels.time[1:3], "\n", cases_lb[2]), paste0(labels.time[1:2], "\n", cases_lb[3]))
     
-    dat.longer.cor.subset.plot1_ = dat.longer.cor.subset.plot1 %>%
-            mutate(Ptid = paste0(Ptid, cohort_event))
+    f_2_dat_3 = dat.longer.cor.subset.plot1 %>%
+            mutate(Ptid = paste0(Ptid, cohort_event)) %>%
+        filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
+        mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
+                                    levels = time_cohort.lb,
+                                    labels = time_cohort.lb),
+               Trt_nnaive = factor(paste(Trt, Bserostatus), 
+                                   levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
+                                   labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2)))
 
+    # replace cohort_event values with values in the cases_lb2
+    levels(f_2_dat_3$cohort_event)[levels(f_2_dat_3$cohort_event) %in% names(cases_lb2)] <- cases_lb2
+    
     f_2 <- f_longitude_by_assay(
-        dat = dat.longer.cor.subset.plot1_ %>%
-            filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
-            mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
-                                        levels = time_cohort.lb,
-                                        labels = time_cohort.lb),
-                   Trt_nnaive = factor(paste(Trt, Bserostatus), 
-                                       levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
-                                       labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2))),
+        dat = f_2_dat_3,
         x.var = "time_cohort",
         x.lb = time_cohort.lb,
         facet.y.var = vars(Trt_nnaive),
+        colorby = "cohort_col",
         
         assays = "bindSpike_mdw",
         panel.text.size = ifelse(study_name=="VAT08" & length(cases_lb)==3, 2, ifelse(study_name=="VAT08" & length(cases_lb)==1, 4, 5.8)),
@@ -739,8 +750,9 @@ if (study_name=="VAT08"){
         axis.text.x.size = ifelse(attr(config,"config") == "prevent19_stage2" | (study_name=="VAT08" & length(cases_lb)==3), 8.4, 9.5),
         #lgdbreaks = c(cases_lb, "Non-Cases", "Non-Responders"),
         #lgdlabels = if (study_name=="VAT08") {c(cases_lb2, "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders")} else {c(cases_lb, "Non-Cases", "Non-Responders")},
-        chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb, "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-        chtpchs = setNames(c(rep(19, length(cases_lb) + 1), 2), c(cases_lb, "Non-Cases", "Non-Responders"))
+        chtcols = setNames(c(if(length(cases_lb)==3) "#1749FF", "#FF6F1B", if(length(cases_lb)==3) "#D92321", "#0AB7C9", "#8F8F8F"), c(cases_lb2, "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+        chtpchs = setNames(c(rep(19, length(cases_lb) + 1), 2), c(cases_lb2, "Non-Cases", "Non-Responders")),
+        plot.title.size = 20
         )
     
     file_name <- "bindSpike_mdw_longitudinal_by_case_non_case.pdf"
@@ -752,22 +764,26 @@ if (study_name=="VAT08"){
         # one assay per plot
         time_cohort.lb = c(paste0(labels.time[1:3], "\n", "Non-Cases"), paste0(labels.time[1:3], "\n", "C2"))
         
-        dat.longer.cor.subset.plot1_ = dat.longer.cor.subset.plot1 %>%
-            mutate(Ptid = paste0(Ptid, cohort_event))
+        f_2_dat_4 = dat.longer.cor.subset.plot1 %>%
+            mutate(Ptid = paste0(Ptid, cohort_event)) %>%
+            filter(cohort_event %in% c("C2","Non-Cases")) %>%
+            filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
+            mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
+                                        levels = time_cohort.lb,
+                                        labels = time_cohort.lb),
+                   Trt_nnaive = factor(paste(Trt, Bserostatus), 
+                                       levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
+                                       labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2)))
+        
+        # replace cohort_event values with values in the cases_lb2
+        levels(f_2_dat_4$cohort_event)[levels(f_2_dat_4$cohort_event) %in% names(cases_lb2)] <- cases_lb2
         
         f_2 <- f_longitude_by_assay(
-            dat = dat.longer.cor.subset.plot1_ %>%
-                filter(cohort_event %in% c("C2","Non-Cases")) %>%
-                filter(paste0(time, "\n", cohort_event) %in% time_cohort.lb) %>%
-                mutate(time_cohort = factor(paste0(time, "\n", cohort_event), 
-                                            levels = time_cohort.lb,
-                                            labels = time_cohort.lb),
-                       Trt_nnaive = factor(paste(Trt, Bserostatus), 
-                                           levels = paste(rep(trt.labels[2:1], each=2), bstatus.labels),
-                                           labels = paste0(rep(trt.labels[2:1], each=2), "\n", bstatus.labels.2))),
+            dat = f_2_dat_4,
             x.var = "time_cohort",
             x.lb = time_cohort.lb,
             facet.y.var = vars(Trt_nnaive),
+            colorby = "cohort_col",
             
             assays = "bindSpike_mdw",
             panel.text.size = 4,
@@ -776,8 +792,10 @@ if (study_name=="VAT08"){
             axis.text.x.size = 9.5,
             #lgdbreaks = c("C2", "Non-Cases", "Non-Responders"),
             #lgdlabels = c("C2"=sprintf("C2: 28-%s days PD2 cases",day), "Non-Cases"="Non-Cases", "Non-Responders"="Non-Responders"),
-            chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("C2", "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
-            chtpchs = setNames(c(19, 19, 2), c("C2", "Non-Cases", "Non-Responders")))
+            chtcols = setNames(c("#FF6F1B", "#0AB7C9", "#8F8F8F"), c("C2: 28-150 days PD2 cases", "Non-Cases", "Non-Responders")), # BLUE, ORANGE, RED, LIGHT BLUE, GRAY
+            chtpchs = setNames(c(19, 19, 2), c("C2: 28-150 days PD2 cases", "Non-Cases", "Non-Responders")),
+            plot.title.size = 20
+            )
         
         file_name <- "bindSpike_mdw_longitudinal_by_case_non_case_v2.pdf"
         ggsave(plot = f_2[[1]], filename = paste0(save.results.to, file_name), width = 8, height = 9.5)
