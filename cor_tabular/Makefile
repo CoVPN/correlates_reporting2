@@ -1,5 +1,5 @@
 ## all              : tables_output
-all: tables_output
+all: tables_output report
 
 ## tables_output    : make summary tables and save data to output/
 tables_output: 
@@ -94,6 +94,7 @@ style:
 
 ## report        : create a standalone report
 report:
+	bash _build_chapter.sh
 
 ## type 'make help' to show all make commands
 help: Makefile
