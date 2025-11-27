@@ -338,7 +338,8 @@ for (iSt in stages) {
     
     dat.vacc,
     for.title=paste0("Stage ",iSt," NN, Placebo"),
-    plac.actually=T
+    trt.label = "Placebo",
+    cmp.label = "Vaccine"
   )
   }
   
