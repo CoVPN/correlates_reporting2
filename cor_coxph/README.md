@@ -61,9 +61,9 @@ make
 ### Sanofi Stage 2 correlates manuscript
 ```{bash}
 # a) obtaining the code
-wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/sanofi_stage2_R4.0.zip
-unzip sanofi_stage2_R4.0.zip
-cd correlates_reporting2-sanofi_stage2_R4.0
+wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/sanofi_stage2_correlates_R40.zip
+unzip sanofi_stage2_correlates_R40.zip
+cd correlates_reporting2-sanofi_stage2_correlates_R40
 
 # b) restore R package dependencies
 R
