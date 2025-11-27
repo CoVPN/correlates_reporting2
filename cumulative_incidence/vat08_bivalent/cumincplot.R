@@ -1,3 +1,5 @@
+dir.create("output", showWarnings = FALSE, recursive=TRUE)
+
 rm(list=ls(all=TRUE))
 here::i_am("README.txt")
 repoDir <- here::here()
@@ -5,7 +7,7 @@ datDir <- file.path(repoDir,"data")
 outputDir <- file.path(repoDir, "output")
 library(tidyverse)
 library(tidycmprsk)
-datPP <- read.csv(file.path(datDir, "vat08_combined_data_processed_20250321.csv")) 
+datPP <- read.csv(config::get(config = "vat08_combined", file="../../correlates_reporting2/config.yml")$data_cleaned) 
 datPP_D22 <- dplyr::select(datPP, all_of(c("Trt", "Bserostatus", "Trialstage", 
                                            "EventTimeOmicronD22M12hotdeck10", 
                                            "EventIndOmicronD22M12hotdeck10", "prev_inf", 
