@@ -8,14 +8,27 @@
     dir.create("output", showWarnings = FALSE, recursive=TRUE)
     ```    
 2.	Use the package **renv** to manage R system and package versions. See the section below for details.
-3.	**Running** reports. There are several options:
-    -	If there are only a few Rmd files to be rendered, an Rscript call is sufficient. This often happens at the project level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md. 
-    -	Use a Makefile or a bash script to run analyses and generate reports. This often happens at the module level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/Makefile
-    -	If high performance cluster/slurm is used and there are dependencies between steps, multiple scripts may be needed, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cop_exposureproximal/ensemble_severe_correlates/README.md
-4.	Every project- or module-level README.md should have a **Reproducibility section**. 
-    -	Project-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md
-    -	Module-level example: https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md
-5.  Including an **appendix** at the end of the report Rmd to show the code commit and file name (ANALYSIS_READY_DATA_FILE_NAME should be replaced with your file name):
+3.	Every project- or module-level README.md should have a **Reproducibility section**, which ideally should include 4-part bash commands such as:
+    ```{bash}
+    # a) obtaining the code
+    wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/sanofi_stage2_R4.0.zip
+    unzip sanofi_stage2_R4.0.zip
+    cd correlates_reporting2-sanofi_stage2_R4.0
+    
+    # b) restore R package dependencies
+    R
+        Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+        renv::restore()
+    
+    # c) edit config.yml so that the data_cleaned field uder vat08_combined points to a local copy of vat08_combined_data_processed_20250417.csv
+    
+    # d) generate report pdf
+    export TRIAL=vat08_combined
+    export stage=2    
+    cd cor_coxph
+    make 
+    ```
+4.  Including an **appendix** at the end of the report Rmd to show the code commit and file name (ANALYSIS_READY_DATA_FILE_NAME should be replaced with your file name):
     ````
     # Appendix
     ```{r, echo = FALSE, message = FALSE, warning = FALSE, results='asis'}
@@ -24,33 +37,23 @@
     cat("This report was built with code from [", sprintf("**[this commit](%s)**", git_url), "] and data from [", sprintf("**[this file](%s)**", ANALYSIS_READY_DATA_FILE_NAME), "].", sep="")
     ```    
     ````
-6.  Include a **date string** in the report file name to show the date on which report was produced (e.g., filename ending ‘20251023’ for October 23, 2025).  This can be done via, e.g.
+5.  Include a **date string** in the report file name to show the date on which report was produced (e.g., filename ending ‘20251023’ for October 23, 2025).  This can be done via, e.g.
     ```
     Rscript -e "rmarkdown::render('cor_threshold_barda_mock.Rmd', output_file='cor_threshold_barda_mock_$(date +%Y%m%d).pdf')"
     ```
+6.	**Running** reports. There are several options:
+    -	If there are only a few Rmd files to be rendered, an Rscript call is sufficient. This often happens at the project level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md. 
+    -	Use a Makefile or a bash script to run analyses and generate reports. This often happens at the module level, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/Makefile
+    -	If high performance cluster/slurm is used and there are dependencies between steps, multiple scripts may be needed, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cop_exposureproximal/ensemble_severe_correlates/README.md
 
-## Using renv for Reproducibility
 
-renv can be used at one of three levels: repo-level, module-level, and project level. The following instructions show how to use renv when starting a new project. Don't follow these instructions if you are trying to reproduce results for an existing project. Instead, follow the instructions in the project (e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md) or the module that contains the project (e.g, https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md). 
+## Setting up renv
 
+renv can be used at one of three levels: repo-level, module-level, and project level. 
 
 ### Setting up renv at the project-level for a new project
 
-This is the most reproducible way of using renv because each project/manuscript has its own renv.lock.
-
-To start, make sure there are two files in the project folder:
-- .gitignore  This file tells git which files/folders to ignore. It should contain the following lines:
-```
-.html
-.pdf
-.Rhistory
-.RData
-.Rproj.user
-renv/
-```
-- README.md  This file should have a section titled Reproducibility, which details how to reproduce the reports.
-
-Open a new R console in the project folder in a terminal and run the following commands. Note that we use renv 1.1.5 (or 0.13.2 in earlier code)
+Open a new R console in the project folder in a terminal and run the following commands. The exact version of renv is not critical.
 ```{r}
 # if the following does not work, it is because 1.1.5 is the current release. Then try install.packages("renv")
 install.packages(
@@ -85,7 +88,6 @@ q()
 
 Now if you start a new R console in the project folder, you should see a message from renv, indicating that the renv environment is activated.
 
-For an example of a project using project-level renv, check out cor_threshold/sanofi_stage2 (https://github.com/CoVPN/correlates_reporting2/blob/master/cor_threshold/sanofi_stage2/README.md).
 
 ### Setting up renv at the module-level for a new module
 
@@ -113,4 +115,5 @@ Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxx")
 ```
 
 If something inexplicable goes wrong, check the $HOME directory to see if there are .Rprofile and renv/. If yes, delete them and try again. 
+
 
