@@ -635,7 +635,7 @@ if (TRIAL=="covail_tcell" | TRIAL=="covail_xassays") {
   exploratory.ls$nonnaive = setdiff(exploratory_all, c(primary.ls$nonnaive, secondary.ls$nonnaive))
   exploratory.ls$nonnaive = exploratory.ls$nonnaive[! (endsWith(exploratory.ls$nonnaive, "_Wuhan.N") & startsWith(exploratory.ls$nonnaive, "Day15"))] # remove all Day 15 N
   
-} else if (TRIAL=="cov2008") {
+} else if (TRIAL=="cov2008_tcell") {
   primary  = c("BCD4_Any_BA.1_IFNg_OR_IL2", "Day15CD4_Any_BA.1_IFNg_OR_IL2", "BCD8_Any_BA.1_IFNg_OR_IL2", "Day15CD8_Any_BA.1_IFNg_OR_IL2")
   secondary= c(
                "BCentral_Memory_CD4_Any_BA.1_IFNg_OR_IL2", "Day15Central_Memory_CD4_Any_BA.1_IFNg_OR_IL2", "BCentral_Memory_CD8_Any_BA.1_IFNg_OR_IL2", "Day15Central_Memory_CD8_Any_BA.1_IFNg_OR_IL2",
@@ -891,7 +891,7 @@ if (exists("COR")) {
         }
         
         
-      } else if (TRIAL %in% c("cov2008")) {
+      } else if (TRIAL %in% c("cov2008_tcell")) {
         tfinal.tpeak=with(subset(dat_proc, ph2==1), max(EventTimePrimary[EventIndPrimary==1]))
         
         
@@ -916,7 +916,7 @@ if (exists("COR")) {
     # except for 
     #   janssen_partA_VL because for variants analysis, there is not just one tfinal.tpeak
     #   prevent19_stage2, azd1222_stage2 because CoR only
-    if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", "prevent19_stage2", "azd1222_stage2", "iliad_ib202p", "iliad_ib201p", "cov2008")) {
+    if (!TRIAL %in% c("janssen_partA_VL", "vat08_combined", "id27hpv", "id27hpvnAb", "covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", "prevent19_stage2", "azd1222_stage2", "iliad_ib202p", "iliad_ib201p", "cov2008_tcell")) {
       prev.vacc = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==1 & ph1), tfinal.tpeak)
       prev.plac = get.marginalized.risk.no.marker(form.0, subset(dat_proc, Trt==0 & ph1), tfinal.tpeak)   
       overall.ve = c(1 - prev.vacc/prev.plac) 
@@ -986,7 +986,7 @@ if (TRIAL %in% c("covail", "covail_sanofi")) {
 } else if (TRIAL %in% c("prevent19_stage2", "azd1222_stage2", "nvx_uk302")) {
   all.markers1 = c("Day"%.%timepoints%.%assays)
   
-} else if (TRIAL %in% c("iliad_ib202p", "nextgen_mock", "cov2008")) {
+} else if (TRIAL %in% c("iliad_ib202p", "nextgen_mock", "cov2008_tcell")) {
   all.markers1 = c("B"%.%assays, "Day"%.%timepoints%.%assays, "Delta"%.%timepoints%.%"overB"%.%assays)
   
 }
@@ -1200,7 +1200,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
   # do nothing
   
 } else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", 
-                        "nextgen_mock", "iliad_ib202p", "iliad_ib201p", "cov2008")) {
+                        "nextgen_mock", "iliad_ib202p", "iliad_ib201p", "cov2008_tcell")) {
   # do nothing
   
 } else stop("unknown study_name 2")
@@ -1309,7 +1309,7 @@ if (study_name %in% c("COVE", "MockCOVE", "COVEBoost")) {
   # do nothing
   
 } else if (TRIAL %in% c("covail", "covail_sanofi", "covail_tcell", "covail_frnt", "covail_xassays", 
-                        "iliad_ib202p", "iliad_ib201p", "cov2008")) {
+                        "iliad_ib202p", "iliad_ib201p", "cov2008_tcell")) {
   # do nothing
   
 } else stop("unknown study_name 3")
