@@ -122,6 +122,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail_frnt))
 	Rscript code/cor_coxph_covail_frnt.R D15to91covail_frnt
 	Rscript code/cor_coxph_covail_frnt.R D15to181covail_frnt
 	Rscript code/cor_coxph_covail_frnt.R D92to181covail_frnt
+else ifeq ($(TRIAL),$(filter $(TRIAL), cov2008_tcell))
+	Rscript code/cor_coxph_cov2008_tcell.R D15toEOS_cov2008_tcell_symp
+	Rscript code/cor_coxph_cov2008_tcell.R D15toEOS_cov2008_tcell_anyinf
 endif
 
 collate:

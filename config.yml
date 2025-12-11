@@ -2157,7 +2157,7 @@ C0iliad_ib202p_PPAI_C14only:
 ################################################################################
 # COV2008 T cell
 
-cov2008: &cov2008
+cov2008_tcell: &cov2008_tcell
   data_cleaned: /trials/covpn/p3003/cov2008/correlates/adata/cov2008_data_processed_20251211.csv
   sampling_scheme: case_cohort
   two_marker_timepoints: no
@@ -2166,7 +2166,7 @@ cov2008: &cov2008
   time_labels: [Day 01, Day 15, D15 fold-rise over D01]
   study_name: COV2008
   assay_metadata: assay_metadata/cov2008_assay_metadata.csv
-  covariates: ~.+ Senior + HighRiskInd
+  covariates: ~.+ Senior + HighRiskInd + CohortInd
   tfinal.tpeak: 156 # derived from the default rule: the last ModtoSevEventIndD15_7toEOS case in all vaccine arms
   low_efficacy: no
   num_boot_replicates: 100
