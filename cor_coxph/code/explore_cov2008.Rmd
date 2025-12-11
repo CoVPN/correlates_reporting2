@@ -107,10 +107,18 @@ mytable(dat2$Trt, dat2$AnyinfectionD1==1)
 
 ```
 
-```{r missingness pattern}
+```{r marker and covariates missingness pattern}
 
 dat.ph1 = subset(dat_mapped, PPEFL=='Y')
+mytable((dat.ph1$ModtoSevEventIndD15_7toEOS), (dat.ph1$AnyInfectionEventIndD15_7toEOS))
 
+dat.ph1 = subset(dat_proc, ph1.D15==1)
+mytable((dat.ph1$ModtoSevEventIndD15_7toEOS), (dat.ph1$AnyInfectionEventIndD15_7toEOS))
+
+
+summary(dat.ph1$ModtoSevEventIndD15_7toEOS)
+summary(dat.ph1$ModtoSevEventTimeD15_7toEOS)
+summary(dat.ph1$AnyInfectionEventIndD15_7toEOS)
 
 with(dat.ph1, table(!is.na(BCD8_Any_BA.1_IFNg_OR_IL2), !is.na(Day15CD8_Any_BA.1_IFNg_OR_IL2), AnyinfectionD1))
 
@@ -144,8 +152,6 @@ mytable(!is.na(dat.ph2$HighRiskInd))
 
 # summary(dat.ph2)
 ```
-
-
 
 ```{r boxplots base case and trt}
 

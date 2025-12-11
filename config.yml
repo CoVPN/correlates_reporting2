@@ -2167,9 +2167,12 @@ cov2008: &cov2008
   study_name: COV2008
   assay_metadata: assay_metadata/cov2008_assay_metadata.csv
   covariates: ~.+ Senior + HighRiskInd
+  tfinal.tpeak: 156 # derived from the default rule: the last ModtoSevEventIndD15_7toEOS case in all vaccine arms
   low_efficacy: no
   num_boot_replicates: 100
   num_perm_replicates: 100
+  primary_markers: [BCD4_Any_BA.1_IFNg_OR_IL2, Day15CD4_Any_BA.1_IFNg_OR_IL2, BCD8_Any_BA.1_IFNg_OR_IL2, Day15CD8_Any_BA.1_IFNg_OR_IL2]
+  secondary_markers: [BCentral_Memory_CD4_Any_BA.1_IFNg_OR_IL2, Day15Central_Memory_CD4_Any_BA.1_IFNg_OR_IL2, BCentral_Memory_CD8_Any_BA.1_IFNg_OR_IL2, Day15Central_Memory_CD8_Any_BA.1_IFNg_OR_IL2, BEffector_Memory_CD4_Any_BA.1_IFNg_OR_IL2, Day15Effector_Memory_CD4_Any_BA.1_IFNg_OR_IL2, BEffector_Memory_CD8_Any_BA.1_IFNg_OR_IL2, Day15Effector_Memory_CD8_Any_BA.1_IFNg_OR_IL2, BNaive_CD4_Any_BA.1_IFNg_OR_IL2, Day15Naive_CD4_Any_BA.1_IFNg_OR_IL2, BNaive_CD8_Any_BA.1_IFNg_OR_IL2, Day15Naive_CD8_Any_BA.1_IFNg_OR_IL2, BTerminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2, Day15Terminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2, BTerminally_Diff_CD8_Any_BA.1_IFNg_OR_IL2, Day15Terminally_Diff_CD8_Any_BA.1_IFNg_OR_IL2]
 
 D15toEOS_cov2008_tcell_symp:
   ph1: ph1.D15
@@ -2181,7 +2184,6 @@ D15toEOS_cov2008_tcell_symp:
   Earlyendpoint: 
   tpeak: 15
   tpeaklag: 7
-  tfinal.tpeak: 164 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
   txt.endpoint: Mod2Severe COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
@@ -2195,6 +2197,5 @@ D15toEOS_cov2008_tcell_anyinf:
   Earlyendpoint: 
   tpeak: 15
   tpeaklag: 7
-  tfinal.tpeak: 164 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
-  txt.endpoint: Mod2Severe COVID
+  txt.endpoint: any SARS-CoV-2 infection
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
