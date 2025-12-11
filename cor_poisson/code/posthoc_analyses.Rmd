@@ -6,6 +6,8 @@ output:
     number_sections: true
 ---
 
+<!-- Make sure the working dir is cor_poisson because it writes png files to disk. -->
+
 ```{r data, include=FALSE}
 knitr::opts_chunk$set(echo = F)
 options(kableExtra.latex.table_environment="table")
@@ -81,7 +83,7 @@ barnard.test(tab[1,1], tab[1,2], tab[2,1], tab[2,2])
 maketab=function(PPAI, trt, digit) {
   tab = sapply (panels[1:4], function (p) {
         sapply(antigens, function(a) {
-          dat.tmp = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0))[[glue("Delta28overB{a}_{p}")]]
+          dat.tmp = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI) 0))[[glue("Delta28overB{a}_{p}")]]
           out=wilcox.test(dat.tmp)
           glue("{formatDouble(10**(mean(dat.tmp)),digit)} ({formatPvalues(out$p.value)})")
         })
@@ -690,7 +692,7 @@ pc1_wilcox = function(PPAI.only, trt) {
 }
 
 tab1=pc1_wilcox (PPAI.only=T, trt="BPZE1")
-# tab2=pc1_wilcox (PPAI.only=T, trt="PBO")
+tab2=pc1_wilcox (PPAI.only=T, trt="PBO")
 tab=cbind(PBO=tab2, BPZE1=tab1)
 kable(formatPvalues(tab), align="c") 
 
@@ -724,7 +726,7 @@ kable(tab, align="c", digits=2) %>%
 
 ```{r pc1 boxplots ppai prim, fig.show='hold'}
 
-png("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png", width=9, height=15, units="in", res=300)
+png("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png", width=9, height=15, units="in", res=300)
 
 par(mfrow=c(4,3), mar = c(5,2,4,2))
 
@@ -777,7 +779,10 @@ for (p in panels[1:4]){
 
 dev.off()
 ```
-![]("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png")
+<!-- ![]("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png") -->
+
+knitr::include_graphics(normalizePath("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png"))
+
 
 ```{r pc1 prentice criterion & ve}
 
@@ -861,7 +866,7 @@ marker_names = c(FHA_Norm_Nasal_IgA="N-sIgA FHA")
 # if needed, fig.height is defined dynamically
 # knitr::opts_current$set(fig.height = 6.5 /4 * len(select_markers))
 
-png("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_marker_boxplots.png", width=9, height=15/4*len(select_markers), units="in", res=300)
+png("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_marker_boxplots.png", width=9, height=15/4*len(select_markers), units="in", res=300)
 
 par(mfrow=c(len(select_markers),3), mar = c(5,2,4,2))
 
@@ -912,7 +917,9 @@ for (a in select_markers){
 
 dev.off()
 ```
-![]("../output/iliad_ib202p/ppai_pc1_boxplots.png")
+<!-- ![]("output/iliad_ib202p/ppai_pc1_boxplots.png") -->
+knitr::include_graphics(normalizePath("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_marker_boxplots.png"))
+
 
 ```{r marker prentice criterion}
 

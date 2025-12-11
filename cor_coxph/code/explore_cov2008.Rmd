@@ -1,10 +1,15 @@
 ---
 title: "COV2008"
-output: html_document
+output: pdf_document
 ---
 
+
+<!-- Rscript -e "rmarkdown::render('code/explore_cov2008.Rmd', output_file='../explore_cov2008_$(date +%Y%m%d).pdf')" -->
+
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(results = "asis")
 
 library(copcor)
 library(survey)
@@ -13,36 +18,37 @@ library(glue)
 library(Hmisc)
 library(knitr)
 library(kableExtra)
+library(dplyr)
 
-TRIAL="cov2008tcell"
+TRIAL="cov2008"
 
 config.processing <- config::get(config = TRIAL, file="/home/yfong/correlates_processing/config.yml")
 dat_mapped=read.csv(config.processing$mapped_data)
 
-# config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml") 
-# 
-# dat_proc=read.csv(config.reporting$data_cleaned)
-# 
-# assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/{TRIAL}_assay_metadata.csv'))
-# assays=assay_metadata$assay
-# abmarkers=assays[startsWith(assays,"bind") | startsWith(assays,"pseudo")]
+config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml")
+
+dat_proc=read.csv(config.reporting$data_cleaned)
+
+assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/{TRIAL}_assay_metadata.csv'))
+assays=assay_metadata$assay
+abmarkers=assays[startsWith(assays,"bind") | startsWith(assays,"pseudo")]
 
 ```
 
-```{r}
+```{r sampling pattern}
 
 dat.ph1 = subset(dat_mapped, PPEFL=='Y')
 
-dat.ph2 = subset(dat.ph1, !is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.))
+dat.ph2 = subset(dat.ph1, !is.na(dat_mapped$BTerminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2))
 
-dat.ph1$ph2 = !is.na(dat.ph1$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.)
+dat.ph1$ph2 = !is.na(dat.ph1$BTerminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2)
 
-dat.ph1$ph2a = !is.na(dat.ph1$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.) & !is.na(dat.ph1$D15Terminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.)
+dat.ph1$ph2a = !is.na(dat.ph1$BTerminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2) & !is.na(dat.ph1$Day15Terminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2)
 
 mytable(dat.ph1$ph2, dat.ph1$ph2a)
 
-tab = cbind(table(dat.ph1$Trt, dat.ph1$ModtoSevEventIndPrimaryD15==1), 
-            table(dat.ph2$Trt, dat.ph2$ModtoSevEventIndPrimaryD15==1))
+tab = cbind(table(dat.ph1$Trt, dat.ph1$ModtoSevEventIndD15_7toEOS==1), 
+            table(dat.ph2$Trt, dat.ph2$ModtoSevEventIndD15_7toEOS==1))
 tab = tab[, c(1,3,2,4)]
 tab = cbind(tab[, 1:2], tab[,2]/tab[,1], tab[, 3:4], tab[,4]/tab[,3])
 colnames(tab) = c("Ph1", "Ph2", "Ratio", "Ph1", "Ph2", "Ratio")
@@ -73,30 +79,92 @@ mytable(dat_mapped$Bserostatus) # baseline covid status
 mytable(dat_mapped$Trt)
 mytable(dat_mapped$Sex, dat_mapped$PPEFL)
 mytable(dat_mapped$Age>65, dat_mapped$PPEFL)
-mytable(!is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.))
+mytable(!is.na(dat_mapped$BTerminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2))
 mytable(dat_mapped$Trt)
 
-mytable(dat_mapped$ModtoSevEventIndPrimaryD1, dat_mapped$PPEFL)
+mytable(dat_mapped$ModtoSevEventIndD15_7toEOS, dat_mapped$PPEFL)
 mytable(dat_mapped$AnyinfectionD1, dat_mapped$PPEFL)
 
 mytable(dat_mapped$Trt, dat_mapped$AnyinfectionD1==1)
 
 
-mytable(!is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.), dat_mapped$PPEFL)
+mytable(!is.na(dat_mapped$BTerminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2), dat_mapped$PPEFL)
 
 
-mytable(dat$Sex, dat$Trt, dat$ModtoSevEventIndPrimaryD1==1)
-mytable(dat$Age>65, dat$Trt, dat$ModtoSevEventIndPrimaryD1==1)
+# mytable(dat$Sex, dat$Trt, dat$ModtoSevEventIndD15_7toEOS==1)
+# mytable(dat$Age>65, dat$Trt, dat$ModtoSevEventIndD15_7toEOS==1)
+# 
+# 
+# mytable(dat$Trt, dat$ModtoSevEventIndD15_7toEOS==1)
+# mytable(dat$Trt, dat$AnyinfectionD1==1)
 
 
-mytable(dat$Trt, dat$ModtoSevEventIndPrimaryD1==1)
-mytable(dat$Trt, dat$AnyinfectionD1==1)
-
-
-dat2=subset(dat_mapped, !is.na(dat_mapped$BTerminally_Diff_CD4_ANY_BA.1_IFNg._OR_IL2.))
-mytable(dat2$Trt, dat2$ModtoSevEventIndPrimaryD1==1)
+dat2=subset(dat_mapped, !is.na(dat_mapped$BTerminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2))
+mytable(dat2$Trt, dat2$ModtoSevEventIndD15_7toEOS==1)
 mytable(dat2$Trt, dat2$AnyinfectionD1==1)
 
 
 
 ```
+
+```{r missingness pattern}
+
+dat.ph1 = subset(dat_mapped, PPEFL=='Y')
+
+
+with(dat.ph1, table(!is.na(BCD8_Any_BA.1_IFNg_OR_IL2), !is.na(Day15CD8_Any_BA.1_IFNg_OR_IL2), AnyinfectionD1))
+
+with(dat.ph1, table(!is.na(BTerminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2), !is.na(Day15Terminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2), AnyinfectionD1))
+
+
+with(dat.ph1, table(!is.na(BCD4_Any_BA.1_IFNg_OR_IL2), !is.na(Day15CD4_Any_BA.1_IFNg_OR_IL2), ModtoSevEventIndD15_7toEOS))
+
+with(dat.ph1, table(!is.na(BCD8_Any_BA.1_IFNg_OR_IL2), !is.na(Day15CD8_Any_BA.1_IFNg_OR_IL2), ModtoSevEventIndD15_7toEOS))
+
+with(dat.ph1, table(!is.na(BTerminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2), !is.na(Day15Terminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2), ModtoSevEventIndD15_7toEOS))
+
+with(dat.ph1, table(!is.na(BTerminally_Diff_CD4_Any_Cov2_S_IFNg_OR_IL2), !is.na(Day15Terminally_Diff_CD4_Any_Cov2_S_IFNg_OR_IL2), ModtoSevEventIndD15_7toEOS))
+
+corplot(Day15CD4_Any_BA.1_IFNg_OR_IL2~Day15Terminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2, dat.ph1)
+
+corplot(Day15CD4_Any_BA.1_IFNg_OR_IL2~Day15Terminally_Diff_CD4_Any_Cov2_S_IFNg_OR_IL2, dat.ph1)
+
+
+dat.ph1$ph2 = with(dat.ph1, !is.na(BTerminally_Diff_CD4_Any_Cov2_S_IFNg_OR_IL2) & !is.na(Day15Terminally_Diff_CD4_Any_Cov2_S_IFNg_OR_IL2))
+
+mytable(dat.ph1$ph2)
+
+dat.ph2=subset(dat.ph1, ph2)
+
+# summary(dat.ph2)
+# complete.cases(dat.ph2)
+
+mytable(!is.na(dat.ph2$Age))
+mytable(!is.na(dat.ph2$HighRiskInd))
+
+# summary(dat.ph2)
+```
+
+
+
+```{r boxplots base case and trt}
+
+
+png("../output/cov2008/D15toEOS_cov2008_tcell_symp/boxplots3_COVID_asym.png", width=9, height=15/4 * 2, units="in", res=300)
+
+dat=subset(dat_proc, ph2.D15.tcell==1)
+
+par(mfrow=c(2,3), mar = c(5,2,4,2))
+
+myboxplots3(dat, marker="CD4_Any_BA.1_IFNg_OR_IL2", timepoints=c("B","Day15","Delta15overB"), case_var="ModtoSevEventIndD15_7toEOS", case_label = "COVID", trt_var="Cohort_short")
+
+myboxplots3(dat, marker="CD4_Any_BA.1_IFNg_OR_IL2", timepoints=c("B","Day15","Delta15overB"), case_var = "AnyInfectionEventIndD15_7toEOS", case_label = "Infectn", trt_var="Cohort_short")
+
+dev.off()
+```
+
+```{r, out.width="100%", fig.align="center"}
+knitr::include_graphics(normalizePath("../output/cov2008/D15toEOS_cov2008_tcell_symp/boxplots3_COVID_asym.png"))
+```
+
+

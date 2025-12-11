@@ -2157,31 +2157,44 @@ C0iliad_ib202p_PPAI_C14only:
 ################################################################################
 # COV2008 T cell
 
-cov2008tcell: &cov2008tcell
-  data_cleaned: /trials/covpn/p3003/cov2008/correlates/adata/cov2008tcell_data_processed_20251021.csv
+cov2008: &cov2008
+  data_cleaned: /trials/covpn/p3003/cov2008/correlates/adata/cov2008_data_processed_20251211.csv
   sampling_scheme: case_cohort
   two_marker_timepoints: no
   timepoints: [15]
   times: [B, Day15, Delta15overB]
   time_labels: [Day 01, Day 15, D15 fold-rise over D01]
   study_name: COV2008
-  assay_metadata: assay_metadata/cov2008tcell_assay_metadata.csv
-  covariates: ~.+ factor(demo.stratum)
+  assay_metadata: assay_metadata/cov2008_assay_metadata.csv
+  covariates: ~.+ Senior + HighRiskInd
   low_efficacy: no
   num_boot_replicates: 100
   num_perm_replicates: 100
 
-
-D15toM12_cov2008_sera:
-  ph1: ph1.D15_7
-  ph2: ph2.D15_7
-  wt:  wt.D15_7
-  WtStratum: Wstratum
+D15toEOS_cov2008_tcell_symp:
+  ph1: ph1.D15
+  ph2: ph2.D15.tcell
+  wt:  wt.D15.tcell
+  WtStratum: Wstratum.tcell
   EventIndPrimary:  ModtoSevEventIndD15_7toEOS
   EventTimePrimary: ModtoSevEventTimeD15_7toEOS
   Earlyendpoint: 
   tpeak: 15
   tpeaklag: 7
   tfinal.tpeak: 164 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
-  txt.endpoint: COVID
+  txt.endpoint: Mod2Severe COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+D15toEOS_cov2008_tcell_anyinf:
+  ph1: ph1.D15
+  ph2: ph2.D15.tcell
+  wt:  wt.D15.tcell
+  WtStratum: Wstratum.tcell
+  EventIndPrimary:  AnyInfectionEventIndD15_7toEOS
+  EventTimePrimary: AnyInfectionEventTimeD15_7toEOS
+  Earlyendpoint: 
+  tpeak: 15
+  tpeaklag: 7
+  tfinal.tpeak: 164 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  txt.endpoint: Mod2Severe COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
