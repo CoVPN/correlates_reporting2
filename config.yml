@@ -2157,7 +2157,7 @@ C0iliad_ib202p_PPAI_C14only:
 ################################################################################
 # COV2008 T cell
 
-cov2008: &cov2008
+cov2008_tcell: &cov2008_tcell
   data_cleaned: /trials/covpn/p3003/cov2008/correlates/adata/cov2008_data_processed_20251211.csv
   sampling_scheme: case_cohort
   two_marker_timepoints: no
