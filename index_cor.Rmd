@@ -46,16 +46,12 @@ knitr::asis_output("\\AddToShipoutPictureFG{
 <!-- ``` -->
 
 
-\textbf{Disclaimers}
 
 `r if (!is_ows_trial)'<!--'`
 
 The data presented in the analysis are provided to NIAID in accordance with Clinical Trial Agreement between the parties. The study was funded in part by BARDA under Government Contract No. 75A50120C00034.
 
 
-\textbf{Statistical Analysis Plan}
-
-The SAP is available at https://doi.org/10.6084/m9.figshare.13198595
 
 `r if (!is_ows_trial)'-->'`
 
@@ -72,28 +68,3 @@ The SAP is available at https://doi.org/10.6084/m9.figshare.13198595
 
 
 
-\textbf{Reproducibility Notice}
-
-This project integrates the virtual environments framework provided by [the
-`renv` package](https://rstudio.github.io/renv/) for computational
-reproducibility. By taking this approach, all results are generated using a
-consistent versioning of both R and several R packages. This version of the
-report was built with `r R.version.string`, [pandoc](https://pandoc.org/)
-version `r rmarkdown::pandoc_version()`, and the following R packages:
-
-```{r pkg-list, echo=FALSE, results="asis"}
-# borrowed from https://github.com/tidymodels/TMwR/blob/master/index.Rmd
-deps <- desc::desc_get_deps()
-pkgs <- sort(deps$package[deps$type == "Imports"])
-pkgs <- sessioninfo::package_info(pkgs, dependencies = FALSE)
-df <- tibble::tibble(
-  package = pkgs$package,
-  version = pkgs$ondiskversion,
-  source = gsub("@", "\\\\@", pkgs$source)
-)
-knitr::kable(df, format = "markdown")
-```
-
-To get started with using this project and its `renv` package library, we
-first recommend briefly reviewing the [`renv` collaboration
-guide](https://rstudio.github.io/renv/articles/collaborating.html).

@@ -62,11 +62,24 @@ myprint(prev.vacc)
 
 ################################################################################
 
-for (trt in 1) {
-  
-  dat.1=subset(dat_proc, ph1.D15.tcell==1);    fname.suffix.0 <- trt.label <- "D15"
+marker_sets = c("primary", "secondary")
 
-  design.1 <- twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum.tcell), subset =  ~ ph2.D15.tcell, data = dat.1)
+for (iter in 1:3) {
+  
+  if (iter==1) {
+    dat.1=subset(dat_proc, ph1.D15.tcell==1);    
+    fname.suffix.0 <- trt.label <- "D15"
+    
+  } else if (iter==2) {
+    dat.1=subset(dat_proc, ph1.D15.tcell==1 & CohortInd==1);    
+    fname.suffix.0 <- trt.label <- "D15Ad26"
+    
+  } else if (iter==3) {
+    dat.1=subset(dat_proc, ph1.D15.tcell==1 & CohortInd==2);    
+    fname.suffix.0 <- trt.label <- "D15BNT"
+  } 
+  
+  design.1 <- twophase(id = list(~1,  ~1), strata = list(NULL,  ~ Wstratum.tcell), subset =  ~ ph2.D15.tcell, data = dat.1)
   
   dat.0=NULL
   
@@ -92,7 +105,7 @@ for (trt in 1) {
     
     cat("\n\n")
     cor_coxph_coef_1 (
-      form.0 = if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
+      form.0 = if (iter==1) form.0 else form.0 <- update(form.0, . ~ . - CohortInd), 
       design_or_dat = design.1,
       fname.suffix,
       save.results.to,
@@ -111,7 +124,7 @@ for (trt in 1) {
     )
     
     cor_coxph_risk_tertile_incidence_curves (
-      form.0 = if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
+      form.0 = if (iter==1) form.0 else form.0 <- update(form.0, . ~ . - CohortInd), 
       dat = dat.1,
       fname.suffix,
       save.results.to,
