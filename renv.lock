@@ -500,6 +500,13 @@
       "Repository": "CRAN",
       "Hash": "ce49bfe5bc0b3ecd43a01fe1b01c2243"
     },
+    "cobs": {
+      "Package": "cobs",
+      "Version": "1.3-8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9b09dd3e521c75149823d7ab6c0a5f15"
+    },
     "coda": {
       "Package": "coda",
       "Version": "0.19-4",
@@ -558,8 +565,8 @@
       "RemoteUsername": "CoVPN",
       "RemoteRepo": "copcor",
       "RemoteRef": "main",
-      "RemoteSha": "c619c2459fe5e56d5f2253c7afdeea6bd14d54f4",
-      "Hash": "8547868051dc2f383741df01e393b4df"
+      "RemoteSha": "14b149437a6bcca01519e1fc3471e55f8daf1f50",
+      "Hash": "0fc3bb94939899f43067579c84ff2977"
     },
     "corrplot": {
       "Package": "corrplot",
@@ -2075,6 +2082,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "9067f962730f58b14d8ae54ca885509f"
+    },
+    "simest": {
+      "Package": "simest",
+      "Version": "0.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b9acc5e39b1d8eda62c4debc7b57945c"
     },
     "skimr": {
       "Package": "skimr",
