@@ -7,7 +7,7 @@ bind_IgG_sera,2,bindSpike_IgG_sera_delta_AY.4,740,486991,NA,740,Serum Binding Ig
 bind_IgG_sera,3,bindSpike_IgG_sera_BA.5,525,305169,NA,525,Serum Binding IgG Antibody to Spike BA.5, Serum IgG Spike BA.5 (AU/ml),lloq,1,NA
 bind_IgG_sera,4,bindSpike_IgG_sera_BA.2.86,690,371214,NA,690,Serum Binding IgG Antibody to Spike BA.2.86, Serum IgG Spike BA.2.86 (AU/ml),lloq,1,NA
 bind_IgG_sera,5,bindSpike_IgG_sera_XBB.1.5,875,366762,NA,875,Serum Binding IgG Antibody to Spike XBB.1.5, Serum IgG Spike XBB.1.5 (AU/ml),lloq,1,NA
-bind_IgG_sera,6,bindSpike_IgG_sera_JN.1,665,370831,NA,665,Serum Binding IgG Antibody to Spike JN.1, Serum IgG Spike Delta-B.1.617.2 (AU/ml),lloq,1,NA
+bind_IgG_sera,6,bindSpike_IgG_sera_JN.1,665,370831,NA,665,Serum Binding IgG Antibody to Spike JN.1, Serum IgG Spike JN.1 (AU/ml),lloq,1,NA
 bind_IgG_sera,7,bindSpike_IgG_sera_KP.2,615,382728,NA,615,Serum Binding IgG Antibody to Spike KP.2, Serum IgG Spike KP.2 (AU/ml),lloq,1,NA
 bind_IgG_sera,8,bindSpike_IgG_sera_KP.3,570,362655,NA,570,Serum Binding IgG Antibody to Spike KP.3, Serum IgG Spike KP.3 (AU/ml),lloq,1,NA
 bind_IgG_sera,9,bindSpike_IgG_sera_LB.1,465,290681,NA,465,Serum Binding IgG Antibody to Spike LB.1, Serum IgG Spike LB.1 (AU/ml),lloq,1,NA
@@ -17,7 +17,7 @@ bind_IgG_nasal,12,bindSpike_IgG_nasal_delta_AY.4,740,486991,NA,740,Nasal Binding
 bind_IgG_nasal,13,bindSpike_IgG_nasal_BA.5,525,305169,NA,525,Nasal Binding IgG Antibody to Spike BA.5, Nasal IgG Spike BA.5 (AU/ml),lloq,1,NA
 bind_IgG_nasal,14,bindSpike_IgG_nasal_BA.2.86,690,371214,NA,690,Nasal Binding IgG Antibody to Spike BA.2.86, Nasal IgG Spike BA.2.86 (AU/ml),lloq,1,NA
 bind_IgG_nasal,15,bindSpike_IgG_nasal_XBB.1.5,875,366762,NA,875,Nasal Binding IgG Antibody to Spike XBB.1.5, Nasal IgG Spike XBB.1.5 (AU/ml),lloq,1,NA
-bind_IgG_nasal,16,bindSpike_IgG_nasal_JN.1,665,370831,NA,665,Nasal Binding IgG Antibody to Spike JN.1, Nasal IgG Spike Delta-B.1.617.2 (AU/ml),lloq,1,NA
+bind_IgG_nasal,16,bindSpike_IgG_nasal_JN.1,665,370831,NA,665,Nasal Binding IgG Antibody to Spike JN.1, Nasal IgG Spike JN.1 (AU/ml),lloq,1,NA
 bind_IgG_nasal,17,bindSpike_IgG_nasal_KP.2,615,382728,NA,615,Nasal Binding IgG Antibody to Spike KP.2, Nasal IgG Spike KP.2 (AU/ml),lloq,1,NA
 bind_IgG_nasal,18,bindSpike_IgG_nasal_KP.3,570,362655,NA,570,Nasal Binding IgG Antibody to Spike KP.3, Nasal IgG Spike KP.3 (AU/ml),lloq,1,NA
 bind_IgG_nasal,19,bindSpike_IgG_nasal_LB.1,465,290681,NA,465,Nasal Binding IgG Antibody to Spike LB.1, Nasal IgG Spike LB.1 (AU/ml),lloq,1,NA
@@ -27,7 +27,7 @@ bind_IgG_saliva,22,bindSpike_IgG_saliva_delta_AY.4,740,486991,NA,740,Saliva Bind
 bind_IgG_saliva,23,bindSpike_IgG_saliva_BA.5,525,305169,NA,525,Saliva Binding IgG Antibody to Spike BA.5, Saliva IgG Spike BA.5 (AU/ml),lloq,1,NA
 bind_IgG_saliva,24,bindSpike_IgG_saliva_BA.2.86,690,371214,NA,690,Saliva Binding IgG Antibody to Spike BA.2.86, Saliva IgG Spike BA.2.86 (AU/ml),lloq,1,NA
 bind_IgG_saliva,25,bindSpike_IgG_saliva_XBB.1.5,875,366762,NA,875,Saliva Binding IgG Antibody to Spike XBB.1.5, Saliva IgG Spike XBB.1.5 (AU/ml),lloq,1,NA
-bind_IgG_saliva,26,bindSpike_IgG_saliva_JN.1,665,370831,NA,665,Saliva Binding IgG Antibody to Spike JN.1, Saliva IgG Spike Delta-B.1.617.2 (AU/ml),lloq,1,NA
+bind_IgG_saliva,26,bindSpike_IgG_saliva_JN.1,665,370831,NA,665,Saliva Binding IgG Antibody to Spike JN.1, Saliva IgG Spike JN.1 (AU/ml),lloq,1,NA
 bind_IgG_saliva,27,bindSpike_IgG_saliva_KP.2,615,382728,NA,615,Saliva Binding IgG Antibody to Spike KP.2, Saliva IgG Spike KP.2 (AU/ml),lloq,1,NA
 bind_IgG_saliva,28,bindSpike_IgG_saliva_KP.3,570,362655,NA,570,Saliva Binding IgG Antibody to Spike KP.3, Saliva IgG Spike KP.3 (AU/ml),lloq,1,NA
 bind_IgG_saliva,29,bindSpike_IgG_saliva_LB.1,465,290681,NA,465,Saliva Binding IgG Antibody to Spike LB.1, Saliva IgG Spike LB.1 (AU/ml),lloq,1,NA
@@ -37,7 +37,7 @@ bind_IgA_sera,32,bindSpike_IgA_sera_delta_AY.4,209,160708,NA,209,Serum Binding I
 bind_IgA_sera,33,bindSpike_IgA_sera_BA.5,104,104376,NA,104,Serum Binding IgA Antibody to Spike BA.5, Serum IgA Spike BA.5 (AU/ml),lloq,1,NA
 bind_IgA_sera,34,bindSpike_IgA_sera_BA.2.86,86,87398,NA,86,Serum Binding IgA Antibody to Spike BA.2.86, Serum IgA Spike BA.2.86 (AU/ml),lloq,1,NA
 bind_IgA_sera,35,bindSpike_IgA_sera_XBB.1.5,43,73109,NA,43,Serum Binding IgA Antibody to Spike XBB.1.5, Serum IgA Spike XBB.1.5 (AU/ml),lloq,1,NA
-bind_IgA_sera,36,bindSpike_IgA_sera_JN.1,72,82089,NA,72,Serum Binding IgA Antibody to Spike JN.1, Serum IgA Spike Delta-B.1.617.2 (AU/ml),lloq,1,NA
+bind_IgA_sera,36,bindSpike_IgA_sera_JN.1,72,82089,NA,72,Serum Binding IgA Antibody to Spike JN.1, Serum IgA Spike JN.1 (AU/ml),lloq,1,NA
 bind_IgA_sera,37,bindSpike_IgA_sera_KP.2,35,69668,NA,35,Serum Binding IgA Antibody to Spike KP.2, Serum IgA Spike KP.2 (AU/ml),lloq,1,NA
 bind_IgA_sera,38,bindSpike_IgA_sera_KP.3,34,73020,NA,34,Serum Binding IgA Antibody to Spike KP.3, Serum IgA Spike KP.3 (AU/ml),lloq,1,NA
 bind_IgA_sera,39,bindSpike_IgA_sera_LB.1,30,64593,NA,30,Serum Binding IgA Antibody to Spike LB.1, Serum IgA Spike LB.1 (AU/ml),lloq,1,NA
@@ -47,7 +47,7 @@ bind_IgA_nasal,42,bindSpike_IgA_nasal_delta_AY.4,209,160708,NA,209,Nasal Binding
 bind_IgA_nasal,43,bindSpike_IgA_nasal_BA.5,104,104376,NA,104,Nasal Binding IgA Antibody to Spike BA.5, Nasal IgA Spike BA.5 (AU/ml),lloq,1,NA
 bind_IgA_nasal,44,bindSpike_IgA_nasal_BA.2.86,86,87398,NA,86,Nasal Binding IgA Antibody to Spike BA.2.86, Nasal IgA Spike BA.2.86 (AU/ml),lloq,1,NA
 bind_IgA_nasal,45,bindSpike_IgA_nasal_XBB.1.5,43,73109,NA,43,Nasal Binding IgA Antibody to Spike XBB.1.5, Nasal IgA Spike XBB.1.5 (AU/ml),lloq,1,NA
-bind_IgA_nasal,46,bindSpike_IgA_nasal_JN.1,72,82089,NA,72,Nasal Binding IgA Antibody to Spike JN.1, Nasal IgA Spike Delta-B.1.617.2 (AU/ml),lloq,1,NA
+bind_IgA_nasal,46,bindSpike_IgA_nasal_JN.1,72,82089,NA,72,Nasal Binding IgA Antibody to Spike JN.1, Nasal IgA Spike JN.1 (AU/ml),lloq,1,NA
 bind_IgA_nasal,47,bindSpike_IgA_nasal_KP.2,35,69668,NA,35,Nasal Binding IgA Antibody to Spike KP.2, Nasal IgA Spike KP.2 (AU/ml),lloq,1,NA
 bind_IgA_nasal,48,bindSpike_IgA_nasal_KP.3,34,73020,NA,34,Nasal Binding IgA Antibody to Spike KP.3, Nasal IgA Spike KP.3 (AU/ml),lloq,1,NA
 bind_IgA_nasal,49,bindSpike_IgA_nasal_LB.1,30,64593,NA,30,Nasal Binding IgA Antibody to Spike LB.1, Nasal IgA Spike LB.1 (AU/ml),lloq,1,NA
@@ -57,7 +57,7 @@ bind_IgA_saliva,52,bindSpike_IgA_saliva_delta_AY.4,209,160708,NA,209,Saliva Bind
 bind_IgA_saliva,53,bindSpike_IgA_saliva_BA.5,104,104376,NA,104,Saliva Binding IgA Antibody to Spike BA.5, Saliva IgA Spike BA.5 (AU/ml),lloq,1,NA
 bind_IgA_saliva,54,bindSpike_IgA_saliva_BA.2.86,86,87398,NA,86,Saliva Binding IgA Antibody to Spike BA.2.86, Saliva IgA Spike BA.2.86 (AU/ml),lloq,1,NA
 bind_IgA_saliva,55,bindSpike_IgA_saliva_XBB.1.5,43,73109,NA,43,Saliva Binding IgA Antibody to Spike XBB.1.5, Saliva IgA Spike XBB.1.5 (AU/ml),lloq,1,NA
-bind_IgA_saliva,56,bindSpike_IgA_saliva_JN.1,72,82089,NA,72,Saliva Binding IgA Antibody to Spike JN.1, Saliva IgA Spike Delta-B.1.617.2 (AU/ml),lloq,1,NA
+bind_IgA_saliva,56,bindSpike_IgA_saliva_JN.1,72,82089,NA,72,Saliva Binding IgA Antibody to Spike JN.1, Saliva IgA Spike JN.1 (AU/ml),lloq,1,NA
 bind_IgA_saliva,57,bindSpike_IgA_saliva_KP.2,35,69668,NA,35,Saliva Binding IgA Antibody to Spike KP.2, Saliva IgA Spike KP.2 (AU/ml),lloq,1,NA
 bind_IgA_saliva,58,bindSpike_IgA_saliva_KP.3,34,73020,NA,34,Saliva Binding IgA Antibody to Spike KP.3, Saliva IgA Spike KP.3 (AU/ml),lloq,1,NA
 bind_IgA_saliva,59,bindSpike_IgA_saliva_LB.1,30,64593,NA,30,Saliva Binding IgA Antibody to Spike LB.1, Saliva IgA Spike LB.1 (AU/ml),lloq,1,NA
@@ -65,18 +65,18 @@ bind_IgA_saliva,60,bindSpike_IgA_saliva_mdw,0,Inf,NA,0,Saliva Binding IgA Antibo
 pseudoneutid50_sera,1,pseudoneutid50_sera,10,5598,NA,10,Serum neutralization to D614G,Serum nAb ID50 D614G (AU/ml),lloq,1,NA
 pseudoneutid50_sera,2,pseudoneutid50_sera_XBB.1.5,10,1302,NA,10,Serum neutralization to XBB.1.5,Serum nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_sera,3,pseudoneutid50_sera_KP.2,10,1302,NA,10,Serum neutralization to KP.2,Serum nAb ID50 KP.2 (AU/ml),lloq,1,NA
-pseudoneutid50_sera,4,pseudoneutid50_sera_mdw,0,Inf,NA,0,Serum neutralization breadth score,Serum nAb ID50 ID50 breadth score,lloq,1,NA
+pseudoneutid50_sera,4,pseudoneutid50_sera_mdw,0,Inf,NA,0,Serum neutralization breadth score,Serum nAb ID50 breadth score,lloq,1,NA
 pseudoneutid50_nasal,5,pseudoneutid50_nasal,10,5598,NA,10,Nasal neutralization to D614G,Nasal nAb ID50 D614G (AU/ml),lloq,1,NA
 pseudoneutid50_nasal,6,pseudoneutid50_nasal_XBB.1.5,10,1302,NA,10,Nasal neutralization to XBB.1.5,Nasal nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_nasal,7,pseudoneutid50_nasal_KP.2,10,1302,NA,10,Nasal neutralization to KP.2,Nasal nAb ID50 KP.2 (AU/ml),lloq,1,NA
-pseudoneutid50_nasal,8,pseudoneutid50_nasal_mdw,0,Inf,NA,0,Nasal neutralization breadth score,Nasal nAb ID50 ID50 breadth score,lloq,1,NA
+pseudoneutid50_nasal,8,pseudoneutid50_nasal_mdw,0,Inf,NA,0,Nasal neutralization breadth score,Nasal nAb ID50 breadth score,lloq,1,NA
 pseudoneutid50_saliva,9,pseudoneutid50_saliva,10,5598,NA,10,Saliva neutralization to D614G,Saliva nAb ID50 D614G (AU/ml),lloq,1,NA
 pseudoneutid50_saliva,10,pseudoneutid50_saliva_XBB.1.5,10,1302,NA,10,Saliva neutralization to XBB.1.5,Saliva nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_saliva,11,pseudoneutid50_saliva_KP.2,10,1302,NA,10,Saliva neutralization to KP.2,Saliva nAb ID50 KP.2 (AU/ml),lloq,1,NA
-pseudoneutid50_saliva,12,pseudoneutid50_saliva_mdw,0,Inf,NA,0,Saliva neutralization breadth score,Saliva nAb ID50 ID50 breadth score,lloq,1,NA
+pseudoneutid50_saliva,12,pseudoneutid50_saliva_mdw,0,Inf,NA,0,Saliva neutralization breadth score,Saliva nAb ID50 breadth score,lloq,1,NA
 PBMC,1,T4_IFNg_OR_IL2_N_Index,NA,Inf,NA,NA,CD4+ T cells IFN or IL2 to N Index,CD4+ T cells IFN/IL2 to N Index,lloq,1,0.001
 PBMC,2,T4_IFNg_OR_IL2_Spike_KP.2,NA,Inf,NA,NA,CD4+ T cells IFN or IL2 to Spike KP.2,CD4+ T cells IFN/IL2 to Spike KP.2,lloq,1,0.001
 PBMC,3,T4_IFNg_OR_IL2_Spike_Index.D614,NA,Inf,NA,NA,CD4+ T cells IFN or IL2 to Spike Index/D614,CD4+ T cells IFN/IL2 to Spike Index/D614,lloq,1,0.001
-PBMC,4,T8_IFNg_OR_IL2_N_Index,NA,Inf,NA,NA,CD8+ T cells IFN or IL2 to N BA.4.5,CD8+ T cells IFN/IL2 to N Index,lloq,1,0.001
+PBMC,4,T8_IFNg_OR_IL2_N_Index,NA,Inf,NA,NA,CD8+ T cells IFN or IL2 to N Index,CD8+ T cells IFN/IL2 to N Index,lloq,1,0.001
 PBMC,5,T8_IFNg_OR_IL2_Spike_KP.2,NA,Inf,NA,NA,CD8+ T cells IFN or IL2 to Spike KP.2,CD8+ T cells IFN/IL2 to Spike KP.2,lloq,1,0.001
 PBMC,6,T8_IFNg_OR_IL2_Spike_Index.D614,NA,Inf,NA,NA,CD8+ T cells IFN or IL2 to Spike Index/D614,CD8+ T cells IFN/IL2 to Spike Index/D614,lloq,1,0.001

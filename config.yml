@@ -2166,7 +2166,7 @@ cov2008_tcell: &cov2008_tcell
   time_labels: [Day 01, Day 15, D15 fold-rise over D01]
   study_name: COV2008
   assay_metadata: assay_metadata/cov2008_assay_metadata.csv
-  covariates: ~.+ Senior + HighRiskInd + CohortInd
+  covariates: ~.+ Senior + HighRiskInd + strata(CohortInd)
   tfinal.tpeak: 156 # derived from the default rule: the last ModtoSevEventIndD15_7toEOS case in all vaccine arms
   low_efficacy: no
   num_boot_replicates: 100
