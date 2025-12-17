@@ -19,7 +19,20 @@ make
 ### Sanofi stage2 correlates
 
 ```{bash}
-export TRIAL=vat08_combined
+# a) obtaining the code
+wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/xxxxxxxxx
+unzip xxxxx
+cd xxxxx
+
+# b) restore R package dependencies
+R
+    Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    renv::restore()
+
+# c) edit config.yml so that the data_cleaned field uder vat08_combined points to a local copy of vat08_combined_data_processed_20250417.csv
+
+# d) generate report pdf
+export TRIAL=vat08_combinedv
 cd cor_tabular
 make
 ```
