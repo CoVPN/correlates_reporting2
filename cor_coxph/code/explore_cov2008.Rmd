@@ -21,18 +21,15 @@ library(kableExtra)
 library(dplyr)
 
 TRIAL="cov2008"
-
 config.processing <- config::get(config = TRIAL, file="/home/yfong/correlates_processing/config.yml")
 dat_mapped=read.csv(config.processing$mapped_data)
 
-config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml")
-
-dat_proc=read.csv(config.reporting$data_cleaned)
-
 assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/{TRIAL}_assay_metadata.csv'))
 assays=assay_metadata$assay
-abmarkers=assays[startsWith(assays,"bind") | startsWith(assays,"pseudo")]
 
+TRIAL="cov2008_tcell"
+config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml")
+dat_proc=read.csv(config.reporting$data_cleaned)
 ```
 
 ```{r sampling pattern}
@@ -174,3 +171,14 @@ knitr::include_graphics(normalizePath("../output/cov2008/D15toEOS_cov2008_tcell_
 ```
 
 
+```{r coxph}
+
+dat=subset(dat_proc, ph2.D15.tcell==1)
+
+fit = svycoxph(Surv(AnyInfectionEventTimeD15_7toEOS, AnyInfectionEventIndD15_7toEOS) ~ Senior + HighRiskInd + I(scale(BCD4_Any_BA.1_IFNg_OR_IL2)) * CohortInd, svydesign(id=~1, strata=~Wstratum.tcell, weights=~wt.D15.tcell, data=dat))
+
+fit2 = svycoxph(Surv(AnyInfectionEventTimeD15_7toEOS, AnyInfectionEventIndD15_7toEOS) ~ I(scale(BCD4_Any_BA.1_IFNg_OR_IL2)) * CohortInd, svydesign(id=~1, strata=~Wstratum.tcell, weights=~wt.D15.tcell, data=dat))
+
+getFormattedSummary(list(fit, fit2), robust=T, exp=T)
+
+```

@@ -1,10 +1,16 @@
 ---
 title: "IB-202P Posthoc Analyses"
 author: Fred Hutch Team
+date: "`r Sys.Date()`"
 output: 
   pdf_document:
     number_sections: true
+header-includes:
+  - \usepackage{chngcntr}
+  - \counterwithin{table}{section}
+  - \counterwithin{figure}{section}
 ---
+
 
 <!-- Make sure the working dir is cor_poisson because it writes png files to disk. -->
 
@@ -25,6 +31,11 @@ library(saws)
 library(kableExtra)
 library(Barnard)
 
+wilcox_test_quiet <- function(...) {
+  suppressWarnings(wilcox.test(...))
+}
+
+
 library(geepack)
 source("~/correlates_reporting2/cor_poisson/code/gee_bias_correction.R")
 
@@ -43,18 +54,15 @@ antigens = c("WCE", setdiff(unique(assay_metadata$antigen), c("WCE", NA)))
 
 panels = unique(assay_metadata$panel)
 panels = panels[c(1,2,3,4)] # "Norm_Nasal_IgA" "Nasal_IgA"      "Serum_IgA"  "Serum_IgG"
-panel_names=c("N-sIgA", "sIgA", "Serum IgA", "Serum IgG")
+panel_names=c("NS-IgA", "AS-IgA", "Serum IgA", "Serum IgG")
 ```
-
 
 ```{r DiProPerm}
 # cannot run on cosrv b/c of the package conflicts for the version of R
 # run it on https://rstudio44.scharp.org/
-
-
 ```
 
-
+# VE
 ```{r ve}
 
 dat=subset(dat_proc_202, PPAI==1)
@@ -79,12 +87,15 @@ tab=mytable(dat$EventIndC14, dat$Trt)
 barnard.test(tab[1,1], tab[1,2], tab[2,1], tab[2,2])
 ```
 
+
+\clearpage
+# Foldrise statistics
 ```{r is foldrise sig}
-maketab=function(PPAI, trt, digit) {
+maketab=function(.PPAI, trt, digit) {
   tab = sapply (panels[1:4], function (p) {
         sapply(antigens, function(a) {
-          dat.tmp = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI) 0))[[glue("Delta28overB{a}_{p}")]]
-          out=wilcox.test(dat.tmp)
+          dat.tmp = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!.PPAI) 0))[[glue("Delta28overB{a}_{p}")]]
+          out=wilcox_test_quiet(dat.tmp)
           glue("{formatDouble(10**(mean(dat.tmp)),digit)} ({formatPvalues(out$p.value)})")
         })
   })
@@ -95,15 +106,21 @@ maketab=function(PPAI, trt, digit) {
 tab1=maketab(T, "BPZE1", digit=2)
 tab2=maketab(T, "PBO", digit=3)
 tab=cbind(tab2, tab1)
-kable(tab, align="c") %>% 
+kable(tab,
+  format = "latex",
+  booktabs = TRUE,
+  align = "c",
+  caption = "Foldrise in antibody responses by treatment group") %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
-  add_header_above(c(" "=1, "Placebo"=4, "Vaccine"=4))
-
+  add_header_above(c(" "=1, "Placebo"=4, "Vaccine"=4)) %>%
+  kable_styling(latex_options = "scale_down")
 
 ```
 
 \newpage
-## Covariates selection
+
+\clearpage
+# Covariates selection
 
 ```{r covariates selection with glm, echo=F}
 
@@ -111,7 +128,7 @@ fit1 = glm(EventIndC9_11_14 ~ Sex, subset(dat_proc_202, Trt=="BPZE1"), family=po
 fit2 = glm(EventIndC9_11_14 ~ Age, subset(dat_proc_202, Trt=="BPZE1"), family=poisson(link = "log"))
 tab=getFormattedSummary(list(Sex=fit1, Age=fit2), robust=T, exp=T)[2,,drop=F]
 rownames(tab)[1]=""
-kable(tab, align="c")
+kable(tab, align="c", caption="Covariates selection.")
 ```
 
 ```{r covariates selection with two sample comparison}
@@ -120,10 +137,10 @@ kable(tab, align="c")
 
 fcov = function(v) {
   pvals = c(
-    wilcox.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
-    wilcox.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "PBO"))$p.value,
-    wilcox.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
-    wilcox.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
+    wilcox_test_quiet(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+    wilcox_test_quiet(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "PBO"))$p.value,
+    wilcox_test_quiet(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+    wilcox_test_quiet(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
 
     t.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
     t.test(as.formula(glue("{v}~EventIndC9_11_14")), subset(dat_proc_202, Trt == "PBO"))$p.value,
@@ -137,7 +154,7 @@ fcov = function(v) {
   tab
 }
 
-kable(fcov("Age"))
+kable(fcov("Age"), caption="age")
 
 
 par(mfrow=c(1,3))#, mgp = c(2, 1, 0))  # move label 1 line higher to make room for p value
@@ -170,7 +187,9 @@ getFormattedSummary(list(lm(BFHA_Norm_Nasal_IgA~Age, dat_proc_202)), robust=F)
 ```
 
 \newpage
-## Some tables
+
+\clearpage
+# Some tables
 
 
 ```{r p values table}
@@ -178,18 +197,18 @@ getFormattedSummary(list(lm(BFHA_Norm_Nasal_IgA~Age, dat_proc_202)), robust=F)
 run.tests = function(assay, test, PPAI.only=T, endpoint="EventIndC9_11_14", do.fold.change=F) {
   if (test=="w") {
     pvals = c(
-      wilcox.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
-      wilcox.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "BPZE1"))$p.value,
-      wilcox.test(as.formula(glue("Delta28overB{assay}~{endpoint}")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
-      wilcox.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, Trt == "PBO"))$p.value,
-      wilcox.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "PBO"))$p.value,
-      wilcox.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "PBO"))$p.value,
-      wilcox.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
-      wilcox.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
-      wilcox.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
-      wilcox.test(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
-      wilcox.test(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
-      wilcox.test(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value
+      wilcox_test_quiet(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+      wilcox_test_quiet(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+      wilcox_test_quiet(as.formula(glue("Delta28overB{assay}~{endpoint}")), subset(dat_proc_202, Trt == "BPZE1"))$p.value,
+      wilcox_test_quiet(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, Trt == "PBO"))$p.value,
+      wilcox_test_quiet(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "PBO"))$p.value,
+      wilcox_test_quiet(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, Trt == "PBO"))$p.value,
+      wilcox_test_quiet(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+      wilcox_test_quiet(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+      wilcox_test_quiet(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "BPZE1"))$p.value,
+      wilcox_test_quiet(as.formula(glue("Day28{assay}~{endpoint}")), subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
+      wilcox_test_quiet(as.formula(glue("B{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value,
+      wilcox_test_quiet(as.formula(glue("Delta28overB{assay}~{endpoint}")),     subset(dat_proc_202, PPAI ==1 & Trt == "PBO"))$p.value
     ); 
     tab = matrix(format.pval(pvals, digit=3), nr=3)
   
@@ -526,21 +545,40 @@ mysapply(ssase (fit), function (v) sqrt(diag(v)))
 \newpage
 
 \newpage
-## PC1 score
 
-```{r define pc1 scores, fig.height=7.5, fig.width=8}
+\clearpage
+# PC1 score
+
+```{r loadings, fig.height=7.5, fig.width=8, fig.cap="Loadings"}
 par(mfrow=c(2,2))
 
 # add PC1 for each panel
-wt.Day28.mat = NULL
-for (p in panels[1:4]) {
+for (i in 1:4) {
+  p=panels[i]
   # assays within panel p
   aa = glue("{antigens}_{p}")
   
   wt.B = princomp(dat_proc_202[, "B"%.%aa])$loadings[,1] 
   wt.Day28 = princomp(dat_proc_202[, "Day28"%.%aa])$loadings[,1] 
   
-  corplot(wt.B, wt.Day28, asp=1, main=p, xlab="Baseline PC1 loading", ylab="Day 28 PC1 loading")
+  corplot(wt.B, wt.Day28, asp=1, main=panel_names[i], xlab="Baseline PC1 loading", ylab="Day 28 PC1 loading")
+  
+}
+
+```
+
+
+```{r define pc1 scores}
+
+# add PC1 for each panel
+wt.Day28.mat = NULL
+for (i in 1:4) {
+  p=panels[i]
+  # assays within panel p
+  aa = glue("{antigens}_{p}")
+  
+  wt.B = princomp(dat_proc_202[, "B"%.%aa])$loadings[,1] 
+  wt.Day28 = princomp(dat_proc_202[, "Day28"%.%aa])$loadings[,1] 
   
   # wt = (wt.B + wt.Day28)/2
   wt = wt.Day28
@@ -555,7 +593,7 @@ for (p in panels[1:4]) {
 
 colnames(wt.Day28.mat)=panels[1:4]
 rownames(wt.Day28.mat)=antigens
-kable(wt.Day28.mat, digit=2)
+kable(wt.Day28.mat, digit=2, caption="PC1 Loading.")
 
 ```
 
@@ -579,31 +617,31 @@ corner.text="PPAI prim"
 tab1=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
 tab2=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
 tab=cbind(tab2, tab1)
-kable(tab, align="c") %>% 
+kable(tab, align="c", caption="PC1 Poisson "%.%corner.text) %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;") %>% 
   add_header_above(c(" "=1, "Placebo"=3, "Vaccine"=3))
 
 corner.text="Vaccine, alt"
 tab=pc1_reg (endpoint="EventIndC14", PPAI.only=T, trt="BPZE1")
-kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+kable(tab, align="c", col.names = NULL, caption="PC1 Poisson "%.%corner.text) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
 
 
 corner.text ="PP prim"
 tab=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=F, trt="BPZE1")
-kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+kable(tab, align="c", col.names = NULL, caption="PC1 Poisson "%.%corner.text) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
 
 corner.text="PP alt"
 tab=pc1_reg (endpoint="EventIndC14", PPAI.only=F, trt="BPZE1")
-kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+kable(tab, align="c", col.names = NULL, caption="PC1 Poisson "%.%corner.text) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
 
 corner.text="PP"
 tab=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=F, trt="PBO")
-kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+kable(tab, align="c", col.names = NULL, caption="PC1 Poisson "%.%corner.text) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
 
 
 ```
 
-```{r pc1 scatterplot, fig.height=7.5, fig.width=8}
+```{r pc1 scatterplot, fig.height=7.5, fig.width=8, fig.cap="PC1 scatterplots"}
 
 par(mfrow=c(2,2)); reduce_margin()
 
@@ -645,7 +683,7 @@ pc1_median = function(endpoint, PPAI.only, trt) {
 tab1=pc1_median (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
 tab2=pc1_median (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
 tab=cbind(tab2, tab1)
-kable(tab, align="c", digits=2) %>% 
+kable(tab, align="c", digits=2, caption="PC1 foldrise median") %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
   add_header_above(c(" "=1, "Placebo"=ncol(tab1), "Vaccine"=ncol(tab1)))
 
@@ -684,7 +722,7 @@ pc1_wilcox = function(PPAI.only, trt) {
     dat.tmp = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0))
     sapply(c("PC1",antigens), function(a) {
       tmp= glue(if (a=="PC1") "{p}_PC1" else "{a}_{p}")
-      out=wilcox.test(dat.tmp[[glue("Day28{tmp}")]], dat.tmp[[glue("B{tmp}")]], paired=T)
+      out=wilcox_test_quiet(dat.tmp[[glue("Day28{tmp}")]], dat.tmp[[glue("B{tmp}")]], paired=T)
       out$p.value
     })
   })
@@ -694,7 +732,8 @@ pc1_wilcox = function(PPAI.only, trt) {
 tab1=pc1_wilcox (PPAI.only=T, trt="BPZE1")
 tab2=pc1_wilcox (PPAI.only=T, trt="PBO")
 tab=cbind(PBO=tab2, BPZE1=tab1)
-kable(formatPvalues(tab), align="c") 
+kable(formatPvalues(tab), align="c", caption="PC1 Wilcox test between baseline and Day 28.") %>%
+  kable_styling(latex_options = "scale_down") 
 
 ```
 
@@ -703,7 +742,7 @@ kable(formatPvalues(tab), align="c")
 pc1_wilcox = function(endpoint, PPAI.only, trt) {
   tab = mysapply (c("B","Day28","Delta28overB"), function (t) {
     sapply(panels[1:4], function(p) {
-      out=wilcox.test(as.formula(glue("{t}{p}_PC1 ~ {endpoint}")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)))
+      out=wilcox_test_quiet(as.formula(glue("{t}{p}_PC1 ~ {endpoint}")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)))
       out$p.value
     })
   })
@@ -726,7 +765,7 @@ kable(tab, align="c", digits=2) %>%
 
 ```{r pc1 boxplots ppai prim, fig.show='hold'}
 
-png("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png", width=9, height=15, units="in", res=300)
+png("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png", width=9, height=15, units="in", res=300)
 
 par(mfrow=c(4,3), mar = c(5,2,4,2))
 
@@ -781,8 +820,9 @@ dev.off()
 ```
 <!-- ![]("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png") -->
 
-knitr::include_graphics(normalizePath("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png"))
-
+```{r,fig.cap="PC1 boxplots by treatment group (PPAI population)"}
+knitr::include_graphics(normalizePath("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pc1_boxplots.png"))
+```
 
 ```{r pc1 prentice criterion & ve}
 
@@ -793,15 +833,17 @@ prentice.f = function(endpoint, PPAI.only, corner.text, timepoint="Day28") {
   
   tab = getFormattedSummary(fits, robust="MBN", exp=T, type=9) [-1,]
   colnames(tab)=panels[1:4]
-  kable(tab, align="c", col.names = NULL) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+  kable(tab, align="c", col.names = NULL, caption="Prentice criterion. "%.% escape_latex(endpoint) %.% " " %.% ifelse(PPAI.only, "PPAI", "PP")) %>% 
+    column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
+    add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
 }
 
 prentice.f(PPAI.only=T, endpoint="EventIndC9_11_14", corner.text="PPAI prim")
 prentice.f(PPAI.only=T, endpoint="EventIndC14", corner.text="PPAI alt")
 prentice.f(PPAI.only=F, endpoint="EventIndC9_11_14", corner.text="PP prim")
 prentice.f(PPAI.only=F, endpoint="EventIndC14", corner.text="PP alt")
-
 prentice.f(PPAI.only=T, endpoint="EventIndC9_11_14", corner.text="PPAI prim", timepoint="B")
+
 
 tab = getFormattedSummary(list(
   geeglm(EventIndC9_11_14 ~ Trt, data  = subset(dat_proc_202, PPAI==1), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
@@ -811,14 +853,16 @@ tab = getFormattedSummary(list(
 ), robust="MBN", exp=T, type=9)[-1,,drop=F]
 colnames(tab)=c("PPAI prim", "PPAI alt", "PP prim", "PP alt")
 tab=t(tab)
-kable(tab, align="c") %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") 
+kable(tab, align="c", caption="No marker.") %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") 
 
 ```
 
 
 
 
-## Individual markers
+
+\clearpage
+# Individual markers
 
 
 ```{r wilcox}
@@ -826,8 +870,8 @@ kable(tab, align="c") %>% column_spec(1:ncol(tab), extra_css = "padding-left:20p
 marker_wilcox = function(endpoint, PPAI.only, trt, panel) {
   tab = mysapply (c("B","Day28","Delta28overB"), function (t) {
     sapply(antigens, function(a) {
-      print(as.formula(glue("{t}{a}_{panel} ~ {endpoint}")))
-      out=wilcox.test(as.formula(glue("{t}{a}_{panel} ~ {endpoint}")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)))
+      # print(as.formula(glue("{t}{a}_{panel} ~ {endpoint}")))
+      out=wilcox_test_quiet(as.formula(glue("{t}{a}_{panel} ~ {endpoint}")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)))
       out$p.value
     })
   })
@@ -866,7 +910,7 @@ marker_names = c(FHA_Norm_Nasal_IgA="N-sIgA FHA")
 # if needed, fig.height is defined dynamically
 # knitr::opts_current$set(fig.height = 6.5 /4 * len(select_markers))
 
-png("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_marker_boxplots.png", width=9, height=15/4*len(select_markers), units="in", res=300)
+png("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_marker_boxplots.png", width=9, height=15/4*len(select_markers), units="in", res=300)
 
 par(mfrow=c(len(select_markers),3), mar = c(5,2,4,2))
 
@@ -918,8 +962,10 @@ for (a in select_markers){
 dev.off()
 ```
 <!-- ![]("output/iliad_ib202p/ppai_pc1_boxplots.png") -->
-knitr::include_graphics(normalizePath("output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_marker_boxplots.png"))
 
+```{r fig.cap="Individual marker boxplots by treatment group (PPAI population)", out.width="\\textwidth", fig.align="center"}
+knitr::include_graphics(normalizePath("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_marker_boxplots.png"))
+```
 
 ```{r marker prentice criterion}
 
