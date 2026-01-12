@@ -25,10 +25,10 @@ make
 
 | Manuscript | Report                        |
 |------------|-------------------------------|
-| Table 1    | correlates_cor_poisson Figure |
-| Table 2    | posthoc_analyses Table       |
-| Table 3    | Value 3                       |
-| Figure 1   | Value 4                       |
-| Figure 2   | Value 5                       |
-| Figure 3   | Value 6                       |
-| Figure 4   | Value 7                       |
+| Table 1    | posthoc_analyses_20260103.pdf, Table 5.2 |
+| Table 2    | posthoc_analyses_20260103.pdf, Table 2.1 |
+| Table 3    | posthoc_analyses_20260103.pdf, Table 5.9, 5.14 |
+| Figure 1   | comparative_immunogenicity_20260103.pdf, Figure 4.1-4.4 |
+| Figure 2   | posthoc_analyses_20260103.pdf, Figure 5.3 |
+| Figure 3   | correlates_cor_poisson_iliad_ib202p_20260103.pdf, Figure 1.6, 1.2 |
+| Figure 4   | posthoc_analyses_20260103.pdf, Figure 6.1 |

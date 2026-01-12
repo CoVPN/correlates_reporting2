@@ -6,6 +6,10 @@ output:
     includes:
       in_header: preamble.tex
     number_sections: true
+header-includes:
+  - \usepackage{chngcntr}
+  - \counterwithin{table}{section}
+  - \counterwithin{figure}{section}
 ---
 
 ```{r setup, include=FALSE}
@@ -32,7 +36,7 @@ assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/iliad_ib202
 assays = assay_metadata$assay
 panels = unique(assay_metadata$panel)
 antigens = c("WCE", setdiff(unique(assay_metadata$antigen), c("WCE", NA)))
-panel_names=c("N-sIgA", "sIgA", "Serum IgA", "Serum IgG", "SBA")
+panel_names=c("NS-IgA", "AS-IgA", "Serum IgA", "Serum IgG", "SBA")
 
 ```
 
@@ -279,6 +283,19 @@ for (a in antigens) {
 
 ```
 
+
+```{r fig.cap="Pairs plot, one panel per plot"}
+image_files <- normalizePath((glue("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pairs_{panels[1:4]}.png")))
+knitr::include_graphics(image_files)
+```
+
+```{r fig.cap="Pairs plot, one antigen per plot"}
+image_files <- normalizePath((glue("../output/iliad_ib202p/C0iliad_ib202p_PPAI/ppai_pairs_{antigens}.png")))
+knitr::include_graphics(image_files)
+```
+
+
+
 \clearpage
 ```{r fig.show='hold', fig.width=7.7, fig.height=7, out.width='49%', echo=F,  results='asis'}
 make_pairs_in_one=function(p, vaccine.only=F) {
@@ -365,7 +382,7 @@ make_pairs2=function(a) {
   
 }
 
-make_pairs2_in_one=function(a, t="{t}") {
+make_pairs2_in_one=function(a, t) {
   tmp1 = dat_proc_201[dat_proc_201$Trt=="BPZE1_PBO",glue("{t}{a}_{panels[1:4]}")]
   tmp1 = tmp1[complete.cases(tmp1),]
   
@@ -400,11 +417,11 @@ make_pairs2_in_one=function(a, t="{t}") {
 ```
 
 ```{r fig.show='hold', fig.width=7.7, fig.height=7, echo=F,  results='asis'}
-make_pairs2_in_one (antigens[1])
-make_pairs2_in_one (antigens[2])
-make_pairs2_in_one (antigens[3])
-make_pairs2_in_one (antigens[4])
-make_pairs2_in_one (antigens[5])
+make_pairs2_in_one (antigens[1], t="Day28")
+make_pairs2_in_one (antigens[2], t="Day28")
+make_pairs2_in_one (antigens[3], t="Day28")
+make_pairs2_in_one (antigens[4], t="Day28")
+make_pairs2_in_one (antigens[5], t="Day28")
 ```
 
 ```{r fig.show='hold', fig.width=7.7, fig.height=7, echo=F,  results='asis'}
