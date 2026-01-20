@@ -1851,8 +1851,8 @@
     },
     "copcor": {
       "Package": "copcor",
-      "Version": "2024.7-31",
-      "Source": "Repository",
+      "Version": "2025.12-11",
+      "Source": "GitHub",
       "LazyLoad": "yes",
       "Title": "Correlates of Protection and Correlates of Risk Functions",
       "Authors@R": "c(person(\"Youyi\", \"Fong\", role = \"cre\", email = \"youyifong@gmail.com\"), person(\"Yiwen\", \"He\", role = \"aut\", email = \"ylu2@scharp.org\"), person(\"Chenchen\", \"Yu\", role = \"aut\", email = \"cyu@scharp.org\"), person(\"Bhavesh\", \"Borate\", role = \"aut\", email = \"bborate@scharp.org\"), person(\"Peter\", \"Gilbert\", role = \"aut\", email = \"pgilbert@fredhutch.org\"))",
@@ -1861,21 +1861,33 @@
         "kyotil"
       ],
       "Imports": [
-        "methods"
+        "methods",
+        "survival",
+        "survey",
+        "marginalizedRisk",
+        "Hmisc",
+        "assertthat",
+        "plotrix",
+        "here",
+        "future",
+        "mitools"
       ],
       "Suggests": [
         "RUnit",
         "R.rsp",
-        "survival"
+        "riskRegression"
       ],
       "Description": "Correlates of protection (CoP) and correlates of risk (CoR) study the immune biomarkers associated with an infectious disease outcome, e.g. COVID or HIV-1 infection. This package contains shared functions for analyzing CoP and CoR, including bootstrapping procedures, competing risk estimation, and bootstrapping marginalized risks.",
       "VignetteBuilder": "R.rsp",
       "License": "GPL (>= 2)",
-      "NeedsCompilation": "no",
       "Author": "Youyi Fong [cre], Yiwen He [aut], Chenchen Yu [aut], Bhavesh Borate [aut], Peter Gilbert [aut]",
       "Maintainer": "Youyi Fong <youyifong@gmail.com>",
-      "Repository": "RSPM",
-      "Encoding": "UTF-8"
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "CoVPN",
+      "RemoteRepo": "copcor",
+      "RemoteRef": "main",
+      "RemoteSha": "14b149437a6bcca01519e1fc3471e55f8daf1f50"
     },
     "corrplot": {
       "Package": "corrplot",

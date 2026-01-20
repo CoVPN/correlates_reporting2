@@ -32,6 +32,22 @@ config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_re
 dat_proc=read.csv(config.reporting$data_cleaned)
 ```
 
+```{r t cell subsets}
+
+tmp=subset(dat_proc, select=c(
+  Day15CD4_Any_BA.1_IFNg_OR_IL2, 
+  Day15Naive_CD4_Any_BA.1_IFNg_OR_IL2, 
+  Day15Central_Memory_CD4_Any_BA.1_IFNg_OR_IL2, 
+  Day15Effector_Memory_CD4_Any_BA.1_IFNg_OR_IL2, 
+  Day15Terminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2))
+tmp=tmp[!is.na(tmp[,1]),]
+
+tmp=10**tmp
+
+corplot(tmp[,1], rowSums(tmp[,-1]), xlab="Day15CD4_Any_BA.1_IFNg_OR_IL2", ylab="Sum of 4 subsets", asp=1)
+```
+
+
 ```{r sampling pattern}
 
 dat.ph1 = subset(dat_mapped, PPEFL=='Y')

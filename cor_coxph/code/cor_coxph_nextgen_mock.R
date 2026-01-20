@@ -52,6 +52,9 @@ marker_sets='pseudoneutid50_sera'
   dat.plac = subset(dat_proc, Trt == 0 & ph1)
   # dat.vacc.ph2 = subset(dat.vacc, ph2==1)
   
+  dat.vacc$ph2 = dat.vacc$ph2 == 1
+  dat.plac$ph2 = dat.plac$ph2 == 1
+  
   design.vacc <-
     twophase(
       id = list( ~ 1,  ~ 1),
