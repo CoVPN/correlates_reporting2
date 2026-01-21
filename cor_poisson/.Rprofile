@@ -1,2 +1,1 @@
-renv::activate(project = here::here(".."))
-print(getwd())
+source("renv/activate.R")
