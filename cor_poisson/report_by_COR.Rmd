@@ -73,6 +73,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 
 ```{r, echo=FALSE, results='asis'}
 
+message("one more message")
 
 # cat(concatList(rep('#',level+1)), " Forest plots\n\n")
 
