@@ -1,4 +1,4 @@
-# COR="C0iliad_ib202p"
+# COR="C0iliad_ib202p_PPAI"
 Sys.setenv(TRIAL = "iliad_ib202p")
 Sys.setenv(VERBOSE = 1)
 source(here::here("..", "_common.R")) 
@@ -54,7 +54,7 @@ all.markers.names.short=c(
   "Fold-rise "%.% sub("\\(.+\\)", "", labels.assays.short) 
 )
 
-robust = lapply(all.markers, function (a) ifelse(endsWith (a, "_SBA"), FALSE, "MBN") )
+# robust = lapply(all.markers, function (a) ifelse(endsWith (a, "_SBA"), FALSE, "MBN") )
 
 show.q=F
 
@@ -98,12 +98,12 @@ for (trt in trts) {
       
       f=update (form.0,  as.formula('~. + '%.%ifelse(i==2,"scale("%.%a%.%")", a)))
       
-      if (robust[[a]]==FALSE) {
-        # there are NA's, cannot fit gee
-        fit <- glm(f, family = poisson(link = "log"), data = dat.ph1)
-      } else {
-        fit <- geeglm(f, family = poisson(link = "log"), data = dat.ph1, id = Ptid, corstr= "independence")
-      }
+      # if (robust[[a]]==FALSE) {
+      #   # there are NA's, cannot fit gee
+      #   fit <- glm(f, family = poisson(link = "log"), data = dat.ph1)
+      # } else {
+        fit <- geeglm(f, family = poisson(link = "log"), data = dat.ph1[!is.na(dat.ph1[[a]]),], id = Ptid, corstr= "independence")
+      # }
       
       if (i==1) fits[[a]]=fit else fits.scaled[[a]]=fit
     }
@@ -115,6 +115,7 @@ for (trt in trts) {
   
   # make pretty table
   {
+  robust="MBN"
   rows=length(coef(fits[[1]]))
   est=getFormattedSummary(fits, exp=T, robust=robust, rows=rows, type=1)
   ci= getFormattedSummary(fits, exp=T, robust=robust, rows=rows, type=7, sig.level=sig.level)

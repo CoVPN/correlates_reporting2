@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 
 ## `r fname.suffix`
 
@@ -68,10 +73,11 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 
 ```{r, echo=FALSE, results='asis'}
 
+
 # cat(concatList(rep('#',level+1)), " Forest plots\n\n")
 
+# ../ is necessary because pathCoRoutput starts at corcoxph
 if(file.exists(paste0("../", pathCoRoutput, "/hr_forest_",fname.suffix,".pdf"))) {
-  # ../ is necessary because pathCoRoutput starts at corcoxph
   
   cat("
   \\clearpage
