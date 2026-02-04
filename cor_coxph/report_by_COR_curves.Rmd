@@ -36,7 +36,7 @@ if(is.null("fname.suffix")) fname.suffix = ''
 
   for (a in all.markers) {
     assay=marker.name.to.assay(a)
-    res = knitr::knit_child(c(here::here('cor_coxph', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
+    res = knitr::knit_child(c(here::here('.', 'risk_plots_by_assays.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }
 
