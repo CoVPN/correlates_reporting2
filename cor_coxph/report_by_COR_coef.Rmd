@@ -107,7 +107,7 @@ $\ast\ast$ No. at-risk = cohort size; no. cases = number of cases within this co
 
 if(TRIAL %in% c("azd1222")) {
   message ("forest plots")
-  res = knitr::knit_child(c(here::here('cor_coxph', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
+  res = knitr::knit_child(c(here::here('.', paste0('forestplots_', tolower(study_name), '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
 
 } else if(show.forestplots & file.exists(paste0("../", pathCoRoutput, "/hr_forest_",fname.suffix,".pdf"))) {
