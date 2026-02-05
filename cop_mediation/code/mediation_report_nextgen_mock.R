@@ -1,0 +1,466 @@
+# COR="D31toM12_nextgen_mock_sera";
+# COR="D31toM12_nextgen_mock_tcell";
+Sys.setenv(TRIAL = "nextgen_mock")
+Sys.setenv(VERBOSE = 1)
+source(here::here("..", "_common.R")) 
+
+
+{
+library(SuperLearner)
+library(tidyverse)
+library(dplyr)
+library(openxlsx)
+source("code/format_utils.R")
+}
+
+
+{
+dat.vacc = subset(dat_proc, Trt == 1 & ph1)
+dat.plac = subset(dat_proc, Trt == 0 & ph1)
+# dat.vacc.ph2 = subset(dat.vacc, ph2==1)
+
+dat.vacc$ph2 = dat.vacc$ph2 == 1
+dat.plac$ph2 = dat.plac$ph2 == 1
+
+covariates <- all.vars(as.formula(config$covariates))[-1] # -1 removes . from the list
+}
+
+args <- commandArgs(trailingOnly = TRUE)
+marker_set <- args[1]
+
+
+if (marker_set=='FR') {
+  # fold-change markers
+  # comment/uncomment Day43 vs. fold-rise variables
+  # Stage 1 and 2 bAbs
+  # replace measured values in bAbs with NA for obs with ph2.D43.bAb == FALSE
+  data_nonnaive$Delta43overBbindSpike[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Delta43overBbindSpike_beta[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Delta43overBbindSpike_alpha[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Delta43overBbindSpike_gamma[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Delta43overBbindSpike_delta1[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Delta43overBbindSpike_delta2[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Delta43overBbindSpike_delta3[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Delta43overBbindSpike_omicron[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Delta43overBbindSpike_mdw[!data_nonnaive$ph2.D43.bAb] <- NA
+  
+  # Stage 2 nAbs
+  # replace measured values in nAbs with NA for obs with ph2.D43.nAb == FALSE
+  data_nonnaive$Delta43overBpseudoneutid50[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Delta43overBpseudoneutid50_B.1.351[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Delta43overBpseudoneutid50_BA.1[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Delta43overBpseudoneutid50_BA.2[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Delta43overBpseudoneutid50_BA.4.5[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Delta43overBpseudoneutid50_mdw[!data_nonnaive$ph2.D43.nAb] <- NA
+  
+  # fold-change markers
+  # specify markers by stage and Ab type
+  # Stage 1 and 2 bAbs
+  markers_st1and2_bAb <- c(
+    "Delta43overBbindSpike",
+    "Delta43overBbindSpike_beta",
+    "Delta43overBbindSpike_alpha",
+    "Delta43overBbindSpike_gamma",
+    "Delta43overBbindSpike_delta1",
+    "Delta43overBbindSpike_delta2",
+    "Delta43overBbindSpike_delta3",
+    "Delta43overBbindSpike_omicron",
+    "Delta43overBbindSpike_mdw"
+  )
+  
+  # Stage 2 nAbs
+  markers_st2_nAb <- c(
+    "Delta43overBpseudoneutid50",
+    "Delta43overBpseudoneutid50_B.1.351",
+    "Delta43overBpseudoneutid50_BA.1",
+    "Delta43overBpseudoneutid50_BA.2",
+    "Delta43overBpseudoneutid50_BA.4.5",
+    "Delta43overBpseudoneutid50_mdw"
+  )
+  
+} else if (marker_set=='Day43') {
+
+  data_nonnaive$Day43bindSpike[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Day43bindSpike_beta[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Day43bindSpike_alpha[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Day43bindSpike_gamma[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Day43bindSpike_delta1[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Day43bindSpike_delta3[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Day43bindSpike_omicron[!data_nonnaive$ph2.D43.bAb] <- NA
+  data_nonnaive$Day43bindSpike_mdw[!data_nonnaive$ph2.D43.bAb] <- NA
+  
+  data_nonnaive$Day43pseudoneutid50[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Day43pseudoneutid50_B.1.351[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Day43pseudoneutid50_BA.1[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Day43pseudoneutid50_BA.2[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Day43pseudoneutid50_BA.4.5[!data_nonnaive$ph2.D43.nAb] <- NA
+  data_nonnaive$Day43pseudoneutid50_mdw[!data_nonnaive$ph2.D43.nAb] <- NA
+  
+  markers_st1and2_bAb <- c(
+    "Day43bindSpike",
+    "Day43bindSpike_beta",
+    "Day43bindSpike_alpha",
+    "Day43bindSpike_gamma",
+    "Day43bindSpike_delta1",
+    "Day43bindSpike_delta2",
+    "Day43bindSpike_delta3",
+    "Day43bindSpike_omicron",
+    "Day43bindSpike_mdw"
+  )
+  
+  markers_st2_nAb <- c(
+    "Day43pseudoneutid50",
+    "Day43pseudoneutid50_B.1.351",
+    "Day43pseudoneutid50_BA.1",
+    "Day43pseudoneutid50_BA.2",
+    "Day43pseudoneutid50_BA.4.5",
+    "Day43pseudoneutid50_mdw"
+  )
+  
+} else {
+  stop("marker_set must be either 'FR' or 'Day43'")
+}
+
+# specify variables to keep across all stage and Ab type
+vars_to_keep <- c(
+  "Ptid",
+  "Trt",
+  covariates
+)
+
+
+# Subset based on stage and Ab type
+# stage 2, bAbs
+data_st2_bAb <- data_nonnaive %>%
+  filter(ph1.D43 == TRUE & Trialstage == 2) %>%
+  select(
+    all_of(vars_to_keep),
+    "ph1.D43",
+    "ph2.D43.bAb", # to check NA's
+    # markers
+    all_of(markers_st1and2_bAb),
+    # weight
+    "wt.D43.bAb",
+    # Stage 2
+    "EventTimeOmicronD43M5hotdeck10",
+    "EventIndOmicronD43M5hotdeck10"
+  )
+
+# stage 2, nAbs
+data_st2_nAb <- data_nonnaive %>%
+  filter(ph1.D43 == TRUE & Trialstage == 2) %>%
+  select(
+    all_of(vars_to_keep),
+    "ph1.D43",
+    "ph2.D43.nAb", # to check NA's
+    # markers
+    all_of(markers_st2_nAb),
+    # weight
+    "wt.D43.nAb",
+    # Stage 2
+    "EventTimeOmicronD43M5hotdeck10",
+    "EventIndOmicronD43M5hotdeck10"
+  )
+
+# set Super Learner libraries
+sl_library <- c(
+  "SL.mean",
+  "SL.glm",
+  # "SL.glmnet",
+  # "SL.xgboost",
+  # "SL.ranger",
+  "SL.gam",
+  "SL.earth"
+)
+
+# create dataframe for markers, stages, and Ab type to index through
+index_info <- data.frame(
+  marker = c(markers_st1and2_bAb, markers_st2_nAb),
+  stage = rep(2, 15),
+  Ab_type = c(rep("bAb", 9), rep("nAb", 6))
+)
+
+# create list with all dataframes
+data_list <- list(
+  "data_st2_bAb" = data_st2_bAb, 
+  "data_st2_nAb" = data_st2_nAb)
+
+# create empty results dataframes 
+results_list <- list(
+  results_st2_bAb = data.frame(
+    Assay = markers_st1and2_bAb, 
+    Total = NA, Indirect = NA, Direct = NA, Prop_med = NA),
+  results_st2_nAb = data.frame(
+    Assay = markers_st2_nAb, 
+    Total = NA, Indirect = NA, Direct = NA, Prop_med = NA)
+)
+
+
+# save model fits
+# create empty list
+models_list <- vector("list", nrow(index_info))
+
+# for each list, create a list with three slots for the model fits
+for (j in 1:nrow(index_info)) {
+  models_list[[j]] <- list(fit_trt1_medtrt1_ = NA, fit_trt0_medtrt0_ = NA,
+                           fit_trt1_medtrt0_ = NA, fit_ = NA)
+}
+
+# create names for the list items
+names <- c()
+for (k in 1:nrow(index_info)) {
+  names[k] <- paste0("st", index_info$stage[k], "_", index_info$Ab_type[k], "_", index_info$marker[k])
+}
+names(models_list) <- names
+
+
+# iterate through index_info
+for (i in 1:nrow(index_info)) {
+
+  # print index info
+  print(index_info[i, ])
+  
+  # specify dataset
+  dat <- data_list[[
+    paste0("data_st", index_info$stage[i], "_", index_info$Ab_type[i])
+  ]]
+      
+  # P[T(1, M(1)) < tau]
+  set.seed(612)
+      
+  fit_trt1_medtrt1 <- survtmle::hazard_tmle(
+    # time to failure (COVID infection or censoring)
+    # depends on stage
+    ftime = if (index_info$stage[i] == 1) {
+      dat$EventTimeOmicronD43M6hotdeck10
+    } else if (index_info$stage[i] == 2) {
+      dat$EventTimeOmicronD43M5hotdeck10
+    },
+    # Indicator of whether or not person got COVID
+    # depends on stage
+    ftype = if (index_info$stage[i] == 1) {
+      dat$EventIndOmicronD43M6hotdeck10
+    } else if (index_info$stage[i] == 2) {
+      dat$EventIndOmicronD43M5hotdeck10
+    },
+    # treatment
+    trt = dat$Trt,
+    # adjust for covariates of interest - I think this needs to be a dataframe
+    adjustVars = dat[, covariates, drop = FALSE],
+    # mediator must be a df
+    mediator = data.frame(dat[index_info$marker[i]]),
+    # mediator trt value = M(a)
+    mediatorTrtVal = 1,
+    # trt of interest = T(a, M(1)),
+    trtOfInterest = 1,
+    # weights depend on whether marker is a bAb or nAb and stage
+    mediatorSampProb = if (index_info$Ab_type[i] == "bAb") {
+      1 / dat$wt.D43.bAb
+    } else if (index_info$stage[i] == 1 & index_info$Ab_type[i] == "nAb") {
+      1 / dat$wt.D43.st1.nAb.batch0and1
+    } else if (index_info$stage[i] == 2 & index_info$Ab_type[i] == "nAb") {
+      1 / dat$wt.D43.nAb
+    },
+    # keep these
+    mediatorInCensMod = FALSE,
+    mediatorStratify.ftime = TRUE,
+    # depends on stage
+    t0 = if (index_info$stage[i] == 1) {
+      180 - 22
+    } else if (index_info$stage[i] == 2) {
+      150 - 22
+    },
+    # get values from SL library
+    # SL.ctime = sl_library,
+    # SL.ftime = sl_library,
+    # SL.mediator = sl_library,
+    # SL.trtMediator = sl_library,
+    # SL.eif = sl_library,
+    glm.ctime = "splines::ns(t, 3) + standardized_risk_score + FOI",
+    glm.ftime = paste0("splines::ns(t, 3) + standardized_risk_score + FOI + ", index_info$marker[i]),
+    glm.mediator = "standardized_risk_score + FOI",
+    glm.trtMediator = paste0("standardized_risk_score + FOI + ", index_info$marker[i]),
+    glm.eif = ".",
+    verbose = TRUE,
+    # changing these might help with model fit
+    maxIter = 1,
+    gtol = 0.05,
+    gtolCens = 0.05,
+    truncateH = 0.9,
+    returnModels = TRUE
+  )
+      
+  # P[T(0, M(0)) < tau]
+  set.seed(828)
+  
+  fit_trt0_medtrt0 <- survtmle::hazard_tmle(
+    ftime = if (index_info$stage[i] == 1) {
+      dat$EventTimeOmicronD43M6hotdeck10
+    } else if (index_info$stage[i] == 2) {
+      dat$EventTimeOmicronD43M5hotdeck10
+    },
+    ftype = if (index_info$stage[i] == 1) {
+      dat$EventIndOmicronD43M6hotdeck10
+    } else if (index_info$stage[i] == 2) {
+      dat$EventIndOmicronD43M5hotdeck10
+    },
+    trt = dat$Trt,
+    adjustVars = dat[, covariates, drop = FALSE],
+    mediator = data.frame(dat[index_info$marker[i]]),
+    mediatorTrtVal = 0,
+    trtOfInterest = 0,
+    mediatorSampProb = if (index_info$Ab_type[i] == "bAb") {
+      1 / dat$wt.D43.bAb
+    } else if (index_info$stage[i] == 1 & index_info$Ab_type[i] == "nAb") {
+      1 / dat$wt.D43.st1.nAb.batch0and1
+    } else if (index_info$stage[i] == 2 & index_info$Ab_type[i] == "nAb") {
+      1 / dat$wt.D43.nAb
+    },
+    mediatorInCensMod = FALSE,
+    mediatorStratify.ftime = TRUE,
+    t0 = if (index_info$stage[i] == 1) {
+      180 - 22
+    } else if (index_info$stage[i] == 2) {
+      150 - 22
+    },
+    # SL.ctime = sl_library,
+    # SL.ftime = sl_library,
+    # SL.mediator = sl_library,
+    # SL.trtMediator = sl_library,
+    # SL.eif = sl_library,
+    glm.ctime = "splines::ns(t, 3) + standardized_risk_score + FOI",
+    glm.ftime = paste0("splines::ns(t, 3) + standardized_risk_score + FOI + ", index_info$marker[i]),
+    glm.mediator = "standardized_risk_score + FOI",
+    glm.trtMediator = paste0("standardized_risk_score + FOI + ", index_info$marker[i]),
+    glm.eif = ".",
+    verbose = TRUE,
+    maxIter = 1,
+    gtol = 0.05,
+    gtolCens = 0.05,
+    truncateH = 0.9,
+    returnModels = TRUE
+  )
+      
+  print(fit_trt1_medtrt1)
+  print(fit_trt0_medtrt0)
+      
+  # bind first two fits together
+  fit_trt_equal_medtrt <- list(
+    est = rbind(fit_trt0_medtrt0$est, fit_trt1_medtrt1$est),
+    ic = cbind(fit_trt0_medtrt0$ic, fit_trt1_medtrt1$ic)
+  )
+      
+  # P[T(1, M(0)) < tau]
+  # set.seed(901)
+  set.seed(777)
+  fit_trt1_medtrt0 <- survtmle::hazard_tmle(
+    ftime = if (index_info$stage[i] == 1) {
+      dat$EventTimeOmicronD43M6hotdeck10
+    } else if (index_info$stage[i] == 2) {
+      dat$EventTimeOmicronD43M5hotdeck10
+    },
+    ftype = if (index_info$stage[i] == 1) {
+      dat$EventIndOmicronD43M6hotdeck10
+    } else if (index_info$stage[i] == 2) {
+      dat$EventIndOmicronD43M5hotdeck10
+    },
+    trt = dat$Trt,
+    adjustVars = dat[, covariates, drop = FALSE],
+    mediator = data.frame(dat[index_info$marker[i]]),
+    mediatorTrtVal = 0,
+    trtOfInterest = 1,
+    mediatorSampProb = if (index_info$Ab_type[i] == "bAb") {
+      1 / dat$wt.D43.bAb
+    } else if (index_info$stage[i] == 1 & index_info$Ab_type[i] == "nAb") {
+      1 / dat$wt.D43.st1.nAb.batch0and1
+    } else if (index_info$stage[i] == 2 & index_info$Ab_type[i] == "nAb") {
+      1 / dat$wt.D43.nAb
+    },
+    mediatorInCensMod = FALSE,
+    mediatorStratify.ftime = TRUE,
+    t0 = if (index_info$stage[i] == 1) {
+      180 - 22
+    } else if (index_info$stage[i] == 2) {
+      150 - 22
+    },
+    # SL.ctime = sl_library,
+    # SL.ftime = sl_library,
+    # SL.mediator = sl_library,
+    # SL.trtMediator = sl_library,
+    # SL.eif = sl_library,
+    glm.ctime = "splines::ns(t, 3) + standardized_risk_score + FOI",
+    glm.ftime = paste0("splines::ns(t, 3) + standardized_risk_score + FOI + ", index_info$marker[i]),
+    glm.mediator = "standardized_risk_score + FOI",
+    glm.trtMediator = paste0("standardized_risk_score + FOI + ", index_info$marker[i]),
+    glm.eif = ".",
+    verbose = TRUE,
+    maxIter = 1,
+    gtol = 0.05,
+    gtolCens = 0.05,
+    truncateH = 0.9,
+    returnModels = TRUE
+  )
+      
+  print(fit_trt1_medtrt0)
+      
+  fit <- compute_mediation_params(fit_trt_equal_medtrt, fit_trt1_medtrt0)
+      
+  print(fit)
+  
+  # save results
+  results_list[[
+    paste0("results_st", index_info$stage[i], "_", 
+           index_info$Ab_type[i])
+    ]][results_list[[
+      paste0("results_st", index_info$stage[i], "_", 
+           index_info$Ab_type[i])
+    ]]$Assay == index_info$marker[i], 2:5] <- c(
+    # Total
+    paste0(round(fit$eff[1,1], 3), " (", round(fit$eff[1,2], 3), ", ", 
+           round(fit$eff[1,3], 3), ")"),
+    # Indirect
+    paste0(round(fit$eff[2,1], 3), " (", round(fit$eff[2,2], 3), ", ",
+           round(fit$eff[2,3], 3), ")"),
+    # Direct
+    paste0(round(fit$eff[3,1], 3), " (", round(fit$eff[3,2], 3), ", ",
+           round(fit$eff[3,3], 3), ")"),
+    # Prop_med
+    paste0(round(fit$eff[4,1], 3), " (", round(fit$eff[4,2], 3), ", ",
+           round(fit$eff[4,3], 3), ")")
+    )
+  
+  # save fits - uncomment if you want ti save individual fits to examine
+  # models_list[[
+  #   paste0("st", index_info$stage[i], "_", index_info$Ab_type[i], "_", index_info$marker[i])
+  #   ]]$fit_trt1_medtrt1_ <- fit_trt1_medtrt1
+  # 
+  # models_list[[
+  #   paste0("st", index_info$stage[i], "_", index_info$Ab_type[i], "_", index_info$marker[i])
+  #   ]]$fit_trt0_medtrt0_ <- fit_trt0_medtrt0
+  # 
+  # models_list[[
+  #   paste0("st", index_info$stage[i], "_", index_info$Ab_type[i], "_", index_info$marker[i])
+  #   ]]$fit_trt1_medtrt0_ <- fit_trt1_medtrt0
+  # 
+  # models_list[[
+  #   paste0("st", index_info$stage[i], "_", index_info$Ab_type[i], "_", index_info$marker[i])
+  #   ]]$fit_ <- fit
+  
+}
+
+# write to excel
+write.xlsx(
+  results_list,
+  file = paste0("sanofi_", marker_set, "_", format(Sys.Date(), "%Y%m%d"), ".xlsx")
+)
+
+
+# uncomment if saving individual fits
+# saveRDS(
+#   models_list[[i]],
+#   file = "models_20250617"
+#   )
+# 
+# models_bAb_alpha <- readRDS(file = "models_20250610_bAb_alpha")
+# models_bAb_beta <- readRDS(file = "models_20250610_bAb_beta")
+# models_nAb_BA1 <- readRDS(file = "models_20250610_nAb_BA1")

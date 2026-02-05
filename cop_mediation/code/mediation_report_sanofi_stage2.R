@@ -14,7 +14,7 @@ COR <- "D15to181"
 Sys.getenv("TRIAL") # check that setenv worked
 
 
-source("../code/format_utils.R")
+source("code/format_utils.R")
 
 
 # read in data
