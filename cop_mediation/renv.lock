@@ -3,16 +3,8 @@
     "Version": "4.4.2",
     "Repositories": [
       {
-        "Name": "http://depot.pc.scharp.org/cran/4.4.2",
-        "URL": "http://depot.pc.scharp.org/cran/4.4.2"
-      },
-      {
-        "Name": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
-        "URL": "https://packagemanager.posit.co/cran/latest"
-      },
-      {
-        "Name": "https://bioconductor.org/packages/3.20/bioc/",
-        "URL": "https://bioconductor.org/packages/3.20/bioc"
+        "Name": "CRAN",
+        "URL": "https://cran.rstudio.com"
       }
     ]
   },
@@ -157,7 +149,7 @@
       "NeedsCompilation": "yes",
       "Author": "Frank E Harrell Jr [aut, cre] (ORCID: <https://orcid.org/0000-0002-8271-5493>), Cole Beck [ctb], Charles Dupont [ctb]",
       "Maintainer": "Frank E Harrell Jr <fh@fharrell.com>",
-      "Repository": "RSPM"
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
     },
     "KernSmooth": {
       "Package": "KernSmooth",
@@ -484,7 +476,7 @@
       "Encoding": "UTF-8",
       "RoxygenNote": "7.3.1",
       "Author": "Michel Lang [cre, aut] (<https://orcid.org/0000-0001-9754-0393>), Duncan Murdoch [aut], R Core Team [aut]",
-      "Repository": "RSPM"
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2"
     },
     "base64enc": {
       "Package": "base64enc",
@@ -528,7 +520,7 @@
         "leaps"
       ],
       "NeedsCompilation": "yes",
-      "Repository": "RSPM",
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
       "Encoding": "UTF-8"
     },
     "bit": {
@@ -987,7 +979,7 @@
       "Collate": "'AssertCollection.R' 'allMissing.R' 'anyInfinite.R' 'anyMissing.R' 'anyNaN.R' 'asInteger.R' 'assert.R' 'helper.R' 'makeExpectation.R' 'makeTest.R' 'makeAssertion.R' 'checkAccess.R' 'checkArray.R' 'checkAtomic.R' 'checkAtomicVector.R' 'checkCharacter.R' 'checkChoice.R' 'checkClass.R' 'checkComplex.R' 'checkCount.R' 'checkDataFrame.R' 'checkDataTable.R' 'checkDate.R' 'checkDirectoryExists.R' 'checkDisjunct.R' 'checkDouble.R' 'checkEnvironment.R' 'checkFALSE.R' 'checkFactor.R' 'checkFileExists.R' 'checkFlag.R' 'checkFormula.R' 'checkFunction.R' 'checkInt.R' 'checkInteger.R' 'checkIntegerish.R' 'checkList.R' 'checkLogical.R' 'checkMatrix.R' 'checkMultiClass.R' 'checkNamed.R' 'checkNames.R' 'checkNull.R' 'checkNumber.R' 'checkNumeric.R' 'checkOS.R' 'checkPOSIXct.R' 'checkPathForOutput.R' 'checkPermutation.R' 'checkR6.R' 'checkRaw.R' 'checkScalar.R' 'checkScalarNA.R' 'checkSetEqual.R' 'checkString.R' 'checkSubset.R' 'checkTRUE.R' 'checkTibble.R' 'checkVector.R' 'coalesce.R' 'isIntegerish.R' 'matchArg.R' 'qassert.R' 'qassertr.R' 'vname.R' 'wfwl.R' 'zzz.R'",
       "Author": "Michel Lang [cre, aut] (ORCID: <https://orcid.org/0000-0001-9754-0393>), Bernd Bischl [ctb], Dénes Tóth [ctb] (ORCID: <https://orcid.org/0000-0003-4262-3217>)",
       "Maintainer": "Michel Lang <michellang@gmail.com>",
-      "Repository": "RSPM"
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
     },
     "cli": {
       "Package": "cli",
@@ -1124,7 +1116,7 @@
       "URL": "https://gitlab.com/luke-tierney/codetools",
       "License": "GPL",
       "NeedsCompilation": "no",
-      "Repository": "RSPM",
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2",
       "Encoding": "UTF-8"
     },
     "colorspace": {
@@ -1472,7 +1464,7 @@
       "NeedsCompilation": "yes",
       "Author": "Dirk Eddelbuettel [aut, cre] (<https://orcid.org/0000-0001-6419-907X>), Antoine Lucas [ctb], Jarek Tuszynski [ctb], Henrik Bengtsson [ctb] (<https://orcid.org/0000-0002-7579-5165>), Simon Urbanek [ctb] (<https://orcid.org/0000-0003-2297-1732>), Mario Frasca [ctb], Bryan Lewis [ctb], Murray Stokely [ctb], Hannes Muehleisen [ctb], Duncan Murdoch [ctb], Jim Hester [ctb], Wush Wu [ctb] (<https://orcid.org/0000-0001-5180-0567>), Qiang Kou [ctb] (<https://orcid.org/0000-0001-6786-5453>), Thierry Onkelinx [ctb] (<https://orcid.org/0000-0001-8804-4216>), Michel Lang [ctb] (<https://orcid.org/0000-0001-9754-0393>), Viliam Simko [ctb], Kurt Hornik [ctb] (<https://orcid.org/0000-0003-4198-9911>), Radford Neal [ctb] (<https://orcid.org/0000-0002-2473-3407>), Kendon Bell [ctb] (<https://orcid.org/0000-0002-9093-8312>), Matthew de Queljoe [ctb], Dmitry Selivanov [ctb], Ion Suruceanu [ctb], Bill Denney [ctb], Dirk Schumacher [ctb], András Svraka [ctb], Sergey Fedorov [ctb], Will Landau [ctb] (<https://orcid.org/0000-0003-1878-3253>), Floris Vanderhaeghe [ctb] (<https://orcid.org/0000-0002-6378-6229>), Kevin Tappe [ctb], Harris McGehee [ctb], Tim Mastny [ctb], Aaron Peikert [ctb] (<https://orcid.org/0000-0001-7813-818X>), Mark van der Loo [ctb] (<https://orcid.org/0000-0002-9807-4686>), Chris Muir [ctb] (<https://orcid.org/0000-0003-2555-3878>), Moritz Beller [ctb] (<https://orcid.org/0000-0003-4852-0526>), Sebastian Campbell [ctb], Winston Chang [ctb] (<https://orcid.org/0000-0002-1576-2126>), Dean Attali [ctb] (<https://orcid.org/0000-0002-5645-3493>), Michael Chirico [ctb] (<https://orcid.org/0000-0003-0787-087X>), Kevin Ushey [ctb]",
       "Maintainer": "Dirk Eddelbuettel <edd@debian.org>",
-      "Repository": "RSPM"
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2"
     },
     "dplyr": {
       "Package": "dplyr",
@@ -1686,6 +1678,108 @@
       "Maintainer": "Winston Chang <winston@posit.co>",
       "Repository": "RSPM"
     },
+    "flextable": {
+      "Package": "flextable",
+      "Version": "0.9.10",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "Functions for Tabular Reporting",
+      "Authors@R": "c( person(\"David\", \"Gohel\", , \"david.gohel@ardata.fr\", role = c(\"aut\", \"cre\")), person(\"ArData\", role = \"cph\"), person(\"Clementine\", \"Jager\", role = \"ctb\"), person(\"Eli\", \"Daniels\", role = \"ctb\"), person(\"Panagiotis\", \"Skintzos\", , \"panagiotis.skintzos@ardata.fr\", role = \"aut\"), person(\"Quentin\", \"Fazilleau\", role = \"ctb\"), person(\"Maxim\", \"Nazarov\", role = \"ctb\"), person(\"Titouan\", \"Robert\", role = \"ctb\"), person(\"Michael\", \"Barrowman\", role = \"ctb\"), person(\"Atsushi\", \"Yasumoto\", role = \"ctb\"), person(\"Paul\", \"Julian\", role = \"ctb\"), person(\"Sean\", \"Browning\", role = \"ctb\"), person(\"Rémi\", \"Thériault\", role = \"ctb\", comment = c(ORCID = \"0000-0003-4315-6788\")), person(\"Samuel\", \"Jobert\", role = \"ctb\"), person(\"Keith\", \"Newman\", role = \"ctb\") )",
+      "Description": "Use a grammar for creating and customizing pretty tables. The following formats are supported: 'HTML', 'PDF', 'RTF', 'Microsoft Word', 'Microsoft PowerPoint' and R 'Grid Graphics'.  'R Markdown', 'Quarto' and the package 'officer' can be used to produce the result files. The syntax is the same for the user regardless of the type of output to be produced. A set of functions allows the creation, definition of cell arrangement, addition of headers or footers, formatting and definition of cell content with text and or images. The package also offers a set of high-level functions that allow tabular reporting of statistical models and the creation of complex cross tabulations.",
+      "License": "GPL-3",
+      "URL": "https://ardata-fr.github.io/flextable-book/, https://davidgohel.github.io/flextable/",
+      "BugReports": "https://github.com/davidgohel/flextable/issues",
+      "Imports": [
+        "data.table (>= 1.13.0)",
+        "gdtools (>= 0.4.0)",
+        "graphics",
+        "grDevices",
+        "grid",
+        "htmltools",
+        "knitr",
+        "officer (>= 0.6.10)",
+        "ragg",
+        "rlang",
+        "rmarkdown (>= 2.0)",
+        "stats",
+        "utils",
+        "uuid (>= 0.1-4)",
+        "xml2"
+      ],
+      "Suggests": [
+        "bookdown (>= 0.40)",
+        "broom",
+        "broom.mixed",
+        "chromote",
+        "cluster",
+        "commonmark",
+        "doconv (>= 0.3.0)",
+        "equatags",
+        "ggplot2",
+        "lme4",
+        "magick",
+        "mgcv",
+        "nlme",
+        "officedown",
+        "pdftools",
+        "pkgdown (>= 2.0.0)",
+        "scales",
+        "svglite",
+        "tables (>= 0.9.17)",
+        "testthat (>= 3.0.0)",
+        "webshot2",
+        "withr",
+        "xtable"
+      ],
+      "VignetteBuilder": "knitr",
+      "Config/testthat/edition": "3",
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.2",
+      "NeedsCompilation": "no",
+      "Author": "David Gohel [aut, cre], ArData [cph], Clementine Jager [ctb], Eli Daniels [ctb], Panagiotis Skintzos [aut], Quentin Fazilleau [ctb], Maxim Nazarov [ctb], Titouan Robert [ctb], Michael Barrowman [ctb], Atsushi Yasumoto [ctb], Paul Julian [ctb], Sean Browning [ctb], Rémi Thériault [ctb] (ORCID: <https://orcid.org/0000-0003-4315-6788>), Samuel Jobert [ctb], Keith Newman [ctb]",
+      "Maintainer": "David Gohel <david.gohel@ardata.fr>",
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
+    },
+    "fontBitstreamVera": {
+      "Package": "fontBitstreamVera",
+      "Version": "0.1.1",
+      "Source": "Repository",
+      "Title": "Fonts with 'Bitstream Vera Fonts' License",
+      "Authors@R": "c( person(\"Lionel\", \"Henry\", , \"lionel.hry@gmail.com\", c(\"cre\", \"aut\")), person(\"Bitstream\", role = \"cph\"))",
+      "Description": "Provides fonts licensed under the 'Bitstream Vera Fonts' license for the 'fontquiver' package.",
+      "Depends": [
+        "R (>= 3.0.0)"
+      ],
+      "License": "file LICENCE",
+      "Encoding": "UTF-8",
+      "LazyData": "true",
+      "RoxygenNote": "5.0.1",
+      "NeedsCompilation": "no",
+      "Author": "Lionel Henry [cre, aut], Bitstream [cph]",
+      "Maintainer": "Lionel Henry <lionel.hry@gmail.com>",
+      "License_is_FOSS": "yes",
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2"
+    },
+    "fontLiberation": {
+      "Package": "fontLiberation",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Title": "Liberation Fonts",
+      "Authors@R": "c( person(\"Lionel\", \"Henry\", , \"lionel@rstudio.com\", \"cre\"), person(\"Pravin Satpute\", role = \"aut\"), person(\"Steve Matteson\", role = \"aut\"), person(\"Red Hat, Inc\", role = \"cph\"), person(\"Google Corporation\", role = \"cph\"))",
+      "Description": "A placeholder for the Liberation fontset intended for the `fontquiver` package. This fontset covers the 12 combinations of families (sans, serif, mono) and faces (plain, bold, italic, bold italic) supported in R graphics devices.",
+      "Depends": [
+        "R (>= 3.0)"
+      ],
+      "License": "file LICENSE",
+      "Encoding": "UTF-8",
+      "LazyData": "true",
+      "RoxygenNote": "5.0.1",
+      "NeedsCompilation": "no",
+      "Author": "Lionel Henry [cre], Pravin Satpute [aut], Steve Matteson [aut], Red Hat, Inc [cph], Google Corporation [cph]",
+      "Maintainer": "Lionel Henry <lionel@rstudio.com>",
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2",
+      "License_is_FOSS": "yes"
+    },
     "fontawesome": {
       "Package": "fontawesome",
       "Version": "0.5.3",
@@ -1720,6 +1814,34 @@
       "Author": "Richard Iannone [aut, cre] (<https://orcid.org/0000-0003-3925-190X>), Christophe Dervieux [ctb] (<https://orcid.org/0000-0003-4474-2498>), Winston Chang [ctb], Dave Gandy [ctb, cph] (Font-Awesome font), Posit Software, PBC [cph, fnd]",
       "Maintainer": "Richard Iannone <rich@posit.co>",
       "Repository": "RSPM"
+    },
+    "fontquiver": {
+      "Package": "fontquiver",
+      "Version": "0.2.1",
+      "Source": "Repository",
+      "Title": "Set of Installed Fonts",
+      "Authors@R": "c( person(\"Lionel\", \"Henry\", , \"lionel@rstudio.com\", c(\"cre\", \"aut\")), person(\"RStudio\", role = \"cph\"), person(\"George Douros\", role = \"cph\", comment = \"Symbola font\"))",
+      "Description": "Provides a set of fonts with permissive licences. This is useful when you want to avoid system fonts to make sure your outputs are reproducible.",
+      "Depends": [
+        "R (>= 3.0.0)"
+      ],
+      "Imports": [
+        "fontBitstreamVera (>= 0.1.0)",
+        "fontLiberation (>= 0.1.0)"
+      ],
+      "Suggests": [
+        "testthat",
+        "htmltools"
+      ],
+      "License": "GPL-3 | file LICENSE",
+      "Encoding": "UTF-8",
+      "LazyData": "true",
+      "RoxygenNote": "5.0.1",
+      "Collate": "'font-getters.R' 'fontset.R' 'fontset-bitstream-vera.R' 'fontset-dejavu.R' 'fontset-liberation.R' 'fontset-symbola.R' 'html-dependency.R' 'utils.R'",
+      "NeedsCompilation": "no",
+      "Author": "Lionel Henry [cre, aut], RStudio [cph], George Douros [cph] (Symbola font)",
+      "Maintainer": "Lionel Henry <lionel@rstudio.com>",
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2"
     },
     "forcats": {
       "Package": "forcats",
@@ -1827,7 +1949,7 @@
       "NeedsCompilation": "yes",
       "Author": "R Core Team [aut, cph, cre] (ROR: <https://ror.org/02zz1nj61>), Roger Bivand [ctb, cph], Vincent J. Carey [ctb, cph], Saikat DebRoy [ctb, cph], Stephen Eglen [ctb, cph], Rajarshi Guha [ctb, cph], Swetlana Herbrandt [ctb], Nicholas Lewin-Koh [ctb, cph], Mark Myatt [ctb, cph], Michael Nelson [ctb], Ben Pfaff [ctb], Brian Quistorff [ctb], Frank Warmerdam [ctb, cph], Stephen Weigand [ctb, cph], Free Software Foundation, Inc. [cph]",
       "Maintainer": "R Core Team <R-core@R-project.org>",
-      "Repository": "RSPM",
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
       "Encoding": "UTF-8"
     },
     "fs": {
@@ -1950,6 +2072,43 @@
       "Author": "Jennifer Bryan [aut, cre] (ORCID: <https://orcid.org/0000-0002-6983-2759>), Craig Citro [aut], Hadley Wickham [aut] (ORCID: <https://orcid.org/0000-0003-4757-117X>), Google Inc [cph], Posit Software, PBC [cph, fnd]",
       "Maintainer": "Jennifer Bryan <jenny@posit.co>",
       "Repository": "RSPM"
+    },
+    "gdtools": {
+      "Package": "gdtools",
+      "Version": "0.4.4",
+      "Source": "Repository",
+      "Title": "Utilities for Graphical Rendering and Fonts Management",
+      "Authors@R": "c( person(\"David\", \"Gohel\", , \"david.gohel@ardata.fr\", role = c(\"aut\", \"cre\")), person(\"Hadley\", \"Wickham\", , \"hadley@rstudio.com\", role = \"aut\"), person(\"Lionel\", \"Henry\", , \"lionel@rstudio.com\", role = \"aut\"), person(\"Jeroen\", \"Ooms\", , \"jeroen@berkeley.edu\", role = \"aut\", comment = c(ORCID = \"0000-0002-4035-0289\")), person(\"Yixuan\", \"Qiu\", role = \"ctb\"), person(\"R Core Team\", role = \"cph\", comment = \"Cairo code from X11 device\"), person(\"ArData\", role = \"cph\"), person(\"RStudio\", role = \"cph\") )",
+      "Description": "Tools are provided to compute metrics of formatted strings and to check the availability of a font.  Another set of functions is provided to support the collection of fonts from 'Google Fonts' in a cache. Their use is simple within 'R Markdown' documents and 'shiny' applications but also with graphic productions generated with the 'ggiraph', 'ragg' and 'svglite' packages or with tabular productions from the 'flextable' package.",
+      "License": "GPL-3 | file LICENSE",
+      "URL": "https://davidgohel.github.io/gdtools/",
+      "BugReports": "https://github.com/davidgohel/gdtools/issues",
+      "Depends": [
+        "R (>= 4.0.0)"
+      ],
+      "Imports": [
+        "fontquiver (>= 0.2.0)",
+        "htmltools",
+        "Rcpp (>= 0.12.12)",
+        "systemfonts (>= 1.3.1)",
+        "tools"
+      ],
+      "Suggests": [
+        "curl",
+        "gfonts",
+        "methods",
+        "testthat"
+      ],
+      "LinkingTo": [
+        "Rcpp"
+      ],
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.3",
+      "SystemRequirements": "cairo, freetype2, fontconfig",
+      "NeedsCompilation": "yes",
+      "Author": "David Gohel [aut, cre], Hadley Wickham [aut], Lionel Henry [aut], Jeroen Ooms [aut] (ORCID: <https://orcid.org/0000-0002-4035-0289>), Yixuan Qiu [ctb], R Core Team [cph] (Cairo code from X11 device), ArData [cph], RStudio [cph]",
+      "Maintainer": "David Gohel <david.gohel@ardata.fr>",
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
     },
     "generics": {
       "Package": "generics",
@@ -2084,7 +2243,7 @@
       "RoxygenNote": "7.3.3",
       "NeedsCompilation": "no",
       "Author": "Nan Xiao [aut, cre, cph] (ORCID: <https://orcid.org/0000-0002-0250-5673>), Joshua Cook [ctb], Clara Jégousse [ctb], Hui Chen [ctb], Miaozhu Li [ctb], iTerm2-Color-Schemes contributors [ctb, cph] (iTerm2-Color-Schemes project), Winston Chang [ctb, cph] (staticimports.R)",
-      "Repository": "RSPM"
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
     },
     "glue": {
       "Package": "glue",
@@ -2125,7 +2284,7 @@
       "NeedsCompilation": "yes",
       "Author": "Jim Hester [aut] (<https://orcid.org/0000-0002-2739-7082>), Jennifer Bryan [aut, cre] (<https://orcid.org/0000-0002-6983-2759>), Posit Software, PBC [cph, fnd]",
       "Maintainer": "Jennifer Bryan <jenny@posit.co>",
-      "Repository": "RSPM"
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2"
     },
     "googledrive": {
       "Package": "googledrive",
@@ -2934,6 +3093,60 @@
       "Maintainer": "Yihui Xie <xie@yihui.name>",
       "Repository": "CRAN"
     },
+    "kyotil": {
+      "Package": "kyotil",
+      "Version": "2025.12-12",
+      "Source": "GitHub",
+      "LazyLoad": "yes",
+      "LazyData": "yes",
+      "Title": "Utility Functions for Statistical Analysis Report Generation and Monte Carlo Studies",
+      "Authors@R": "c(person(\"Youyi\", \"Fong\", role = \"cre\", email = \"youyifong@gmail.com\"), person(\"Krisztian\", \"Sebestyen\", role = \"aut\", email = \"ksebestyen@gmail.com\"), person(\"Han\", \"Sunwoo\", role = \"aut\", email = \"sunwooya@gmail.com\"), person(\"Jason\", \"Becker\", role = \"ctb\"), person(\"Bendix\", \"Carstensen\", role = \"ctb\", email=\"bxc@steno.dk\"), person(\"Daryl\", \"Morris\", role = \"ctb\", email=\"demorris@fhcrc.org\"), person(\"Josh\", \"Pasek\", role = \"ctb\"), person(\"Dennis\", \"Chao\", email=\"dennisc@intven.com\", role = \"ctb\"), person(\"Andri\", \"Signorell\", email=\"andri@signorell.net\", role = \"ctb\"), person(\"Sue\", \"Li\", email=\"sli@fredhutch.org\", role = \"ctb\"), person(\"Jonathan\", \"Bartlett\", email=\"J.W.Bartlett@bath.ac.uk\", role = \"ctb\"), person(\"Christophe\", \"Dutang\", email=\"dutang@ceremade.dauphine.fr\", role = \"ctb\") )",
+      "Depends": [
+        "R (>= 3.6)"
+      ],
+      "Imports": [
+        "methods"
+      ],
+      "Suggests": [
+        "RUnit",
+        "R.rsp",
+        "lme4",
+        "nlme",
+        "xtable",
+        "MASS",
+        "splines",
+        "survival",
+        "abind",
+        "pracma",
+        "VGAM",
+        "copula",
+        "mvtnorm",
+        "Hmisc",
+        "RColorBrewer",
+        "zoo",
+        "doParallel",
+        "Exact",
+        "survey",
+        "magick",
+        "WeightedROC",
+        "saws",
+        "pROC",
+        "PRROC",
+        "officer"
+      ],
+      "Description": "Helper functions for creating formatted summary of regression models, writing publication-ready tables to latex files, and running Monte Carlo experiments.",
+      "VignetteBuilder": "R.rsp",
+      "License": "GPL (>= 2)",
+      "NeedsCompilation": "yes",
+      "Author": "Youyi Fong [cre], Krisztian Sebestyen [aut], Han Sunwoo [aut], Jason Becker [ctb], Bendix Carstensen [ctb], Daryl Morris [ctb], Josh Pasek [ctb], Dennis Chao [ctb], Andri Signorell [ctb], Sue Li [ctb], Jonathan Bartlett [ctb], Christophe Dutang [ctb]",
+      "Maintainer": "Youyi Fong <youyifong@gmail.com>",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "youyifong",
+      "RemoteRepo": "kyotil",
+      "RemoteRef": "master",
+      "RemoteSha": "933da0e490c3c1ad00bc8b5462e967d246f18924"
+    },
     "labeling": {
       "Package": "labeling",
       "Version": "0.4.3",
@@ -3033,7 +3246,7 @@
       "NeedsCompilation": "no",
       "Author": "Lionel Henry [aut, cre], Hadley Wickham [aut] (<https://orcid.org/0000-0003-4757-117X>), Posit Software, PBC [cph, fnd]",
       "Maintainer": "Lionel Henry <lionel@posit.co>",
-      "Repository": "RSPM"
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2"
     },
     "lubridate": {
       "Package": "lubridate",
@@ -3375,6 +3588,52 @@
       "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
       "Encoding": "UTF-8"
     },
+    "officer": {
+      "Package": "officer",
+      "Version": "0.7.3",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "Manipulation of Microsoft Word and PowerPoint Documents",
+      "Authors@R": "c( person(\"David\", \"Gohel\", , \"david.gohel@ardata.fr\", role = c(\"aut\", \"cre\")), person(\"Stefan\", \"Moog\", , \"moogs@gmx.de\", role = \"aut\"), person(\"Mark\", \"Heckmann\", , \"heckmann.mark@gmail.com\", role = \"aut\", comment = c(ORCID = \"0000-0002-0736-7417\")), person(\"ArData\", role = \"cph\"), person(\"Frank\", \"Hangler\", , \"frank@plotandscatter.com\", role = \"ctb\", comment = \"function body_replace_all_text\"), person(\"Liz\", \"Sander\", , \"lsander@civisanalytics.com\", role = \"ctb\", comment = \"several documentation fixes\"), person(\"Anton\", \"Victorson\", , \"anton@victorson.se\", role = \"ctb\", comment = \"fixes xml structures\"), person(\"Jon\", \"Calder\", , \"jonmcalder@gmail.com\", role = \"ctb\", comment = \"update vignettes\"), person(\"John\", \"Harrold\", , \"john.m.harrold@gmail.com\", role = \"ctb\", comment = \"function annotate_base\"), person(\"John\", \"Muschelli\", , \"muschellij2@gmail.com\", role = \"ctb\", comment = \"google doc compatibility\"), person(\"Bill\", \"Denney\", , \"wdenney@humanpredictions.com\", role = \"ctb\", comment = c(ORCID = \"0000-0002-5759-428X\", \"function as.matrix.rpptx\")), person(\"Nikolai\", \"Beck\", , \"beck.nikolai@gmail.com\", role = \"ctb\", comment = \"set speaker notes for .pptx documents\"), person(\"Greg\", \"Leleu\", , \"gregoire.leleu@gmail.com\", role = \"ctb\", comment = \"fields functionality in ppt\"), person(\"Majid\", \"Eismann\", role = \"ctb\"), person(\"Wahiduzzaman\", \"Khan\", role = \"ctb\", comment = \"vectorization of remove_slide\"), person(\"Hongyuan\", \"Jia\", , \"hongyuanjia@cqust.edu.cn\", role = \"ctb\", comment = c(ORCID = \"0000-0002-0075-8183\")), person(\"Michael\", \"Stackhouse\", , \"mike.stackhouse@atorusresearch.com\", role = \"ctb\") )",
+      "Description": "Access and manipulate 'Microsoft Word', 'RTF' and 'Microsoft PowerPoint' documents from R.  The package focuses on tabular and graphical reporting from R; it also provides two functions that let users get document content into data objects. A set of functions lets add and remove images, tables and paragraphs of text in new or existing documents.  The package does not require any installation of Microsoft products to be able to write Microsoft files.",
+      "License": "MIT + file LICENSE",
+      "URL": "https://ardata-fr.github.io/officeverse/, https://davidgohel.github.io/officer/",
+      "BugReports": "https://github.com/davidgohel/officer/issues",
+      "Imports": [
+        "cli",
+        "dplyr",
+        "graphics",
+        "grDevices",
+        "openssl",
+        "R6",
+        "ragg",
+        "stats",
+        "tidyr",
+        "utils",
+        "uuid",
+        "xml2 (>= 1.1.0)",
+        "zip (>= 2.1.0)"
+      ],
+      "Suggests": [
+        "devEMF",
+        "doconv (>= 0.3.0)",
+        "gdtools",
+        "ggplot2",
+        "knitr",
+        "magick",
+        "rmarkdown",
+        "rsvg",
+        "testthat",
+        "withr"
+      ],
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.3",
+      "Collate": "'core_properties.R' 'custom_properties.R' 'defunct.R' 'dev-utils.R' 'docx_add.R' 'docx_comments.R' 'docx_cursor.R' 'docx_part.R' 'docx_replace.R' 'docx_section.R' 'docx_settings.R' 'docx_styles.R' 'docx_utils_funs.R' 'empty_content.R' 'formatting_properties.R' 'fortify_docx.R' 'fortify_pptx.R' 'knitr_utils.R' 'officer.R' 'ooxml.R' 'ooxml_block_objects.R' 'ooxml_run_objects.R' 'openxml_content_type.R' 'openxml_document.R' 'pack_folder.R' 'ph_location.R' 'post-proc.R' 'ppt_class_dir_collection.R' 'ppt_classes.R' 'ppt_notes.R' 'ppt_ph_dedupe_layout.R' 'ppt_ph_manipulate.R' 'ppt_ph_rename_layout.R' 'ppt_ph_with_methods.R' 'pptx_informations.R' 'pptx_layout_helper.R' 'pptx_matrix.R' 'utils.R' 'pptx_slide_manip.R' 'read_docx.R' 'docx_write.R' 'read_docx_styles.R' 'read_pptx.R' 'read_xlsx.R' 'relationship.R' 'rtf.R' 'shape_properties.R' 'shorcuts.R' 'docx_append_context.R' 'utils-xml.R' 'deprecated.R' 'zzz.R'",
+      "NeedsCompilation": "no",
+      "Author": "David Gohel [aut, cre], Stefan Moog [aut], Mark Heckmann [aut] (ORCID: <https://orcid.org/0000-0002-0736-7417>), ArData [cph], Frank Hangler [ctb] (function body_replace_all_text), Liz Sander [ctb] (several documentation fixes), Anton Victorson [ctb] (fixes xml structures), Jon Calder [ctb] (update vignettes), John Harrold [ctb] (function annotate_base), John Muschelli [ctb] (google doc compatibility), Bill Denney [ctb] (ORCID: <https://orcid.org/0000-0002-5759-428X>, function as.matrix.rpptx), Nikolai Beck [ctb] (set speaker notes for .pptx documents), Greg Leleu [ctb] (fields functionality in ppt), Majid Eismann [ctb], Wahiduzzaman Khan [ctb] (vectorization of remove_slide), Hongyuan Jia [ctb] (ORCID: <https://orcid.org/0000-0002-0075-8183>), Michael Stackhouse [ctb]",
+      "Maintainer": "David Gohel <david.gohel@ardata.fr>",
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
+    },
     "openssl": {
       "Package": "openssl",
       "Version": "2.3.3",
@@ -3451,7 +3710,7 @@
       "NeedsCompilation": "yes",
       "Author": "Philipp Schauberger [aut], Alexander Walker [aut], Luca Braglia [ctb], Joshua Sturm [ctb], Jan Marvin Garbuszus [ctb, cre], Jordan Mark Barbone [ctb] (ORCID: <https://orcid.org/0000-0001-9788-3628>), David Zimmermann [ctb], Reinhold Kainhofer [ctb]",
       "Maintainer": "Jan Marvin Garbuszus <jan.garbuszus@ruhr-uni-bochum.de>",
-      "Repository": "RSPM"
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
     },
     "pillar": {
       "Package": "pillar",
@@ -3532,7 +3791,7 @@
       "BugReports": "https://github.com/r-lib/pkgconfig/issues",
       "Encoding": "UTF-8",
       "NeedsCompilation": "no",
-      "Repository": "RSPM"
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2"
     },
     "plyr": {
       "Package": "plyr",
@@ -4446,7 +4705,7 @@
       "License": "GPL",
       "LazyLoad": "yes",
       "NeedsCompilation": "no",
-      "Repository": "RSPM",
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest",
       "Encoding": "UTF-8"
     },
     "stringi": {
@@ -4613,7 +4872,7 @@
       "NeedsCompilation": "yes",
       "Author": "Hadley Wickham [aut], Lionel Henry [aut], Thomas Lin Pedersen [cre, aut] (ORCID: <https://orcid.org/0000-0002-5147-4711>), T Jake Luciani [aut], Matthieu Decorde [aut], Vaudor Lise [aut], Tony Plate [ctb] (Early line dashing code), David Gohel [ctb] (Line dashing code and early raster code), Yixuan Qiu [ctb] (Improved styles; polypath implementation), Håkon Malmedal [ctb] (Opacity code), Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)",
       "Maintainer": "Thomas Lin Pedersen <thomas.pedersen@posit.co>",
-      "Repository": "RSPM"
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
     },
     "sys": {
       "Package": "sys",
@@ -4685,7 +4944,7 @@
       "NeedsCompilation": "yes",
       "Author": "Thomas Lin Pedersen [aut, cre] (ORCID: <https://orcid.org/0000-0002-5147-4711>), Jeroen Ooms [aut] (ORCID: <https://orcid.org/0000-0002-4035-0289>), Devon Govett [aut] (Author of font-manager), Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)",
       "Maintainer": "Thomas Lin Pedersen <thomas.pedersen@posit.co>",
-      "Repository": "RSPM"
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
     },
     "textshaping": {
       "Package": "textshaping",
@@ -5087,7 +5346,7 @@
       "URL": "https://www.rforge.net/uuid",
       "BugReports": "https://github.com/s-u/uuid/issues",
       "NeedsCompilation": "yes",
-      "Repository": "RSPM",
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2",
       "Encoding": "UTF-8"
     },
     "vctrs": {
@@ -5135,7 +5394,7 @@
       "NeedsCompilation": "yes",
       "Author": "Hadley Wickham [aut], Lionel Henry [aut], Davis Vaughan [aut, cre], data.table team [cph] (Radix sort based on data.table's forder() and their contribution to R's order()), Posit Software, PBC [cph, fnd]",
       "Maintainer": "Davis Vaughan <davis@posit.co>",
-      "Repository": "RSPM"
+      "Repository": "http://depot.pc.scharp.org/cran/4.4.2"
     },
     "viridisLite": {
       "Package": "viridisLite",
@@ -5408,7 +5667,7 @@
       "NeedsCompilation": "yes",
       "Author": "Gábor Csárdi [aut, cre], Kuba Podgórski [ctb], Rich Geldreich [ctb], Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)",
       "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
-      "Repository": "RSPM"
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
     }
   }
 }
