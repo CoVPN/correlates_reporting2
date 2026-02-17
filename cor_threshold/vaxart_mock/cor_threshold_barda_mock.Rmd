@@ -87,14 +87,14 @@ add_weights <- function(df, hiv_event_var, ph2_var){
 This is a mock analysis of the BARDA (COVID_NextGen_mock_mapped_20250904.csv) dataset 
 using the non-parametric threshold method. 
 
-* **Covariates**: Baseline risk score (`Bstratum`)
+* **Covariates**: Baseline risk score (`HighRiskInd`, `demo.stratum`)
 * **Time variable**: Time to COVID disease endpoint after Day 31 or censoring time  (`COVIDTimeD31toM12`)
 * **Event variable**: Indicator of COVID disease endpoint after Day 31 (`COVIDIndD31_7toM12`)
 * **Marker variable**: Day 1 nAb-ID50 XBB.1.5 marker value (`Bpseudoneutid50_sera_XBB.1.5`) and 
 Day 31 nAb-ID50 XBB.1.5 marker value (`Day31pseudoneutid50_sera_XBB.1.5`)
 * **Phase 1 sampling filter**: `ph1.AB.D31_7 == 1`
 * **Phase 2 sampling filter**: `ph2.AB.D31_7 == 1`
-* **IPS weight**: Created weight variable using by using inverse probability of sampling 
+* **IPS weight**: `wt.sera.D31_7` 
 * **Timeframe**: 181 days 
 * Grid of thresholds created by segmenting the marker values at COVID-19 endpoints 
 into increments of 0.1. This grid spans from the minimum marker value to the 
@@ -104,10 +104,10 @@ value at or above that value
 ```{r}
 tf <- 181
 
-covariates <- c("Bstratum")
+covariates <- c('HighRiskInd', 'demo.stratum')
 time_var <- "COVIDTimeD31toM12"
 event_var <- "COVIDIndD31_7toM12"
-weight_var <- "weight"
+weight_var <- "wt.sera.D31_7"
 ph1_var <- "ph1.AB.D31_7"
 ph2_var <- "ph2.AB.D31_7"
 ```
@@ -129,8 +129,6 @@ run_analysis <- function(covariates,
   df_analysis <- df_barda %>% 
     filter(!!sym(ph1_var) == 1)
   
-  df_analysis <- add_weights(df_analysis, event_var, ph2_var)
-  
   df_analysis <- df_analysis %>% 
     filter(!!sym(ph2_var) == 1)
 
@@ -148,7 +146,7 @@ run_analysis <- function(covariates,
                                        tf = tf, 
                                        event_type = event_var, 
                                        marker = "Trt",
-                                       weights = "weight",
+                                       weights = weight_var,
                                        learner.treatment = Lrnr_glm$new(), 
                                        learner.event_type = Lrnr_glm$new(), 
                                        learner.failure_time = Lrnr_glm$new(), 
@@ -165,7 +163,7 @@ run_analysis <- function(covariates,
                                          tf = tf, 
                                          event_type = event_var, 
                                          marker = marker_var,
-                                         weights = "weight",
+                                         weights = weight_var,
                                          threshold_list = grid_comparison, 
                                          learner.treatment = Lrnr_glm$new(), 
                                          learner.event_type = Lrnr_glm$new(), 
