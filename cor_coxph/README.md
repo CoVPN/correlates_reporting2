@@ -63,7 +63,8 @@ R
     Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
     renv::restore()
 
-# c) edit config.yml so that the data_cleaned field uder vat08_combined points to a local copy of vat08_combined_data_processed_20250417.csv
+# c) edit config.yml so that the data_cleaned field under vat08_combined points to a local copy of
+#    vat08_combined_data_processed_20250417.csv
 
 # d) generate report pdf
 export TRIAL=vat08_combined
@@ -73,19 +74,20 @@ make
 ```
 
 
-### COV2008 correlates manuscript
+### COV2008 T cell correlates manuscript
 ```{bash}
 # a) obtaining the code
-wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/xxxxxxxxx
-unzip xxxxx
-cd xxxxx
+wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/last_release_in_R40.zip
+unzip last_release_in_R40.zip
+cd correlates_reporting2-last_release_in_R40
 
 # b) restore R package dependencies
 R
     Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
     renv::restore()
 
-# c) edit config.yml so that the data_cleaned field uder vat08_combined points to a local copy of vat08_combined_data_processed_20250417.csv
+# c) edit config.yml so that the data_cleaned field under cov2008_tcell points to a local copy of 
+#    cov2008_tcell_data_processed_20251211.csv
 
 # d) generate report pdf
 export TRIAL=cov2008_tcell
@@ -99,14 +101,15 @@ make
 # a) obtaining the code
 wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/last_release_in_R40.zip
 unzip last_release_in_R40.zip
-cd last_release_in_R40
+cd correlates_reporting2-last_release_in_R40
 
 # b) restore R package dependencies
 R
     Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
     renv::restore()
 
-# c) edit config.yml so that the data_cleaned field uder covail_tcell points to a local copy of covail_data_processed_20250818.csv
+# c) edit config.yml so that the data_cleaned field under covail_tcell points to a local copy of
+#    covail_data_processed_20250818.csv
 
 # d) generate report pdf
 export TRIAL=covail_tcell
