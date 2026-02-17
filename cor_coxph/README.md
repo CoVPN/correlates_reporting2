@@ -43,20 +43,13 @@ This module uses a repo-level renv.lock.
 2. To generate the report pdf, run the following command from the root level of the repository.
 
 
-### VaxArt mock data correlates
-
-```{bash}
-export TRIAL=nextgen_mock
-cd cor_coxph
-make 
-```
-
 ### ENSEMBLE severe correlates
 ```{bash}
 export TRIAL=janssen_pooled_partA
 cd cor_coxph
 make 
 ```
+
 
 ### Sanofi Stage 2 correlates manuscript
 ```{bash}
@@ -80,7 +73,7 @@ make
 ```
 
 
-### COV20008 correlates manuscript
+### COV2008 correlates manuscript
 ```{bash}
 # a) obtaining the code
 wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/xxxxxxxxx
@@ -96,6 +89,27 @@ R
 
 # d) generate report pdf
 export TRIAL=cov2008_tcell
+cd cor_coxph
+make 
+```
+
+
+### COVAIL T cell correlates manuscript
+```{bash}
+# a) obtaining the code
+wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/last_release_in_R40.zip
+unzip last_release_in_R40.zip
+cd last_release_in_R40
+
+# b) restore R package dependencies
+R
+    Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    renv::restore()
+
+# c) edit config.yml so that the data_cleaned field uder covail_tcell points to a local copy of covail_data_processed_20250818.csv
+
+# d) generate report pdf
+export TRIAL=covail_tcell
 cd cor_coxph
 make 
 ```
