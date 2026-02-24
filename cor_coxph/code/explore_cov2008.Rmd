@@ -21,15 +21,36 @@ library(kableExtra)
 library(dplyr)
 
 TRIAL="cov2008"
-config.processing <- config::get(config = TRIAL, file="/home/yfong/correlates_processing/config.yml")
+config.processing <- config::get(config = TRIAL, file="~/correlates_processing/config.yml")
 dat_mapped=read.csv(config.processing$mapped_data)
 
 assay_metadata=read.csv(glue('~/correlates_reporting2/assay_metadata/{TRIAL}_assay_metadata.csv'))
 assays=assay_metadata$assay
 
 TRIAL="cov2008_tcell"
-config.reporting  <- config::get(config = TRIAL, file="/home/yfong/correlates_reporting2/config.yml")
+config.reporting  <- config::get(config = TRIAL, file="~/correlates_reporting2/config.yml")
 dat_proc=read.csv(config.reporting$data_cleaned)
+```
+
+
+```{r}
+# distribution of COVID and asymptomatic infection
+
+mytable(COVID=dat_proc$ModtoSevEventIndD15_7toEOS,AnyInfection= dat_proc$AnyInfectionEventIndD15_7toEOS)
+
+out = subset(dat_proc, ModtoSevEventIndD15_7toEOS==1 & AnyInfectionEventIndD15_7toEOS==1, c(ModtoSevEventTimeD15_7toEOS, AnyInfectionEventTimeD15_7toEOS))
+
+plot(out[,1], out[,2])
+
+
+dat=subset(dat_proc, ph1.D15==1)
+
+dat$NonCOVIDInf = dat$AnyInfectionEventIndD15_7toEOS - dat$ModtoSevEventIndD15_7toEOS
+
+table.prop(dat$ModtoSevEventIndD15_7toEOS, dat$Cohort)
+table.prop(dat$AnyInfectionEventIndD15_7toEOS, dat$Cohort)
+table.prop(dat$NonCOVIDInf, dat$Cohort)
+
 ```
 
 ```{r t cell subsets}

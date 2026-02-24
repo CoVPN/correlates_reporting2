@@ -6,7 +6,7 @@ source(here::here("..", "_common.R"))
 
 marker_sets = unique(assay_metadata$panel)
 # hack, for now only work on one marker set
-marker_sets='bind_IgG_sera'
+marker_sets=c('pseudoneutid50_sera')
 
 {
   quiet_library("SuperLearner")
