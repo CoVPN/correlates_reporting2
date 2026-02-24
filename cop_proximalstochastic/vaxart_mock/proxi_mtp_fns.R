@@ -1,6 +1,9 @@
 require(caret)
 require(corpcor)
 
+# Taken from Antonio Olivas's repository here: 
+# https://github.com/aolivasm/proxi-mtp/
+
 #######################################################
 ########## NON-PARAMETRIC ESTIMATION ##################
 
