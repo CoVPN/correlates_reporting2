@@ -5,8 +5,8 @@ library(openxlsx)
 
 # process command line arguments
 args <- commandArgs(trailingOnly = TRUE)
-
 marker_set <- args[1]
+# marker_set="FR"
 
 Sys.setenv(TRIAL = "sanofi")
 COR <- "D15to181"
@@ -14,7 +14,7 @@ COR <- "D15to181"
 Sys.getenv("TRIAL") # check that setenv worked
 
 
-source("../code/format_utils.R")
+source("code/format_utils.R")
 
 
 # read in data
@@ -469,7 +469,7 @@ for (i in 1:nrow(index_info)) {
 # write to excel
 write.xlsx(
   results_list,
-  file = paste0("sanofi_", marker_set, "_", format(Sys.Date(), "%Y%m%d"), ".xlsx")
+  file = paste0("output/vat08_combined/sanofi_", marker_set, "_", format(Sys.Date(), "%Y%m%d"), ".xlsx")
 )
 
 

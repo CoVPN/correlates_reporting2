@@ -29,6 +29,7 @@ library(glue)
 ```
 
 
+
 ```{r, include = knitr::is_latex_output() & (startsWith(study_name, "Mock") | contain(tolower(data_cleaned), "mock"))}
 knitr::asis_output("\\AddToShipoutPictureFG{
   \\AtPageCenter{
