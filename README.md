@@ -58,7 +58,7 @@ The dataset corresponding to janssen_pooled_partA can be found in the config.yml
 
 * The location of the analysis data file should be in a single place in the whole module, most typically in a config.yml file (used through the R config package).
 
-* The versions of R and packages used should be managed with [`renv`](https://rstudio.github.io/renv/).
+* The versions of R and packages used should be managed with [`renv`](https://hvtn-sdmc.github.io/reproducibility-core/using_renv.html).
 
 * Either a Makefile or a bash script should be included so that the analyses and report generation can be run with a single command. 
 
