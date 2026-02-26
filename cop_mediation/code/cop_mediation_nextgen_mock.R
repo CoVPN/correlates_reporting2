@@ -161,7 +161,7 @@ for (marker_set in marker_sets) {
     # bind first two fits together
     fit_trt_equal_medtrt <- list(
       est = rbind(fit_trt0_medtrt0$est, fit_trt1_medtrt1$est),
-      ic = cbind(fit_trt0_medtrt0$ic, fit_trt1_medtrt1$ic)
+      ic  = cbind(fit_trt0_medtrt0$ic, fit_trt1_medtrt1$ic)
     )
         
     # P[T(1, M(0)) < tau]
