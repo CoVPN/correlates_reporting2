@@ -106,16 +106,8 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail_sanofi))
 	Rscript code/cor_coxph_covail_sanofi.R D15to181
 	Rscript code/cor_coxph_covail_sanofi.R D15to91
 	Rscript code/cor_coxph_covail_sanofi.R D92to181
-else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
-	Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_sera
-	Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_sera
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_saliva
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_saliva
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_nasal
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_nasal
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_tcell
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_tcell
 else ifeq ($(TRIAL),$(filter $(TRIAL), covail_tcell))
+	# if running analyses within men or women, change the R script
 	Rscript code/cor_coxph_covail_tcell.R D15to91covail_tcell
 	Rscript code/cor_coxph_covail_tcell.R D15to181covail_tcell
 else ifeq ($(TRIAL),$(filter $(TRIAL), covail_frnt))
@@ -125,6 +117,15 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail_frnt))
 else ifeq ($(TRIAL),$(filter $(TRIAL), cov2008_tcell))
 	Rscript code/cor_coxph_cov2008_tcell.R D15toEOS_cov2008_tcell_symp
 	Rscript code/cor_coxph_cov2008_tcell.R D15toEOS_cov2008_tcell_anyinf
+else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
+	Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_sera
+	Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_sera
+	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_saliva
+	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_saliva
+	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_nasal
+	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_nasal
+	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_tcell
+	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_tcell
 endif
 
 collate:

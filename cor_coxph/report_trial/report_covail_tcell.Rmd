@@ -1,6 +1,7 @@
 ```{r, echo=FALSE, results='asis'}
 
 trts=c(5:8, 1:4)
+# trts=c(5,1) # when doing men or women
 marker_sets = c("primary", "secondary", "exploratory")
 
 for (COR in c("D15to91covail_tcell", "D15to181covail_tcell")) {

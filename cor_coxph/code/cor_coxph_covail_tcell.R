@@ -4,12 +4,10 @@
 # renv::activate(project = here::here(".."))
 Sys.setenv(TRIAL = "covail_tcell"); source(here::here("..", "_common.R")); source(here::here("code", "params.R"))
 
-# hack
-# source("~/copcor/R/cor_coxph_coef_1.R")
 
 marker_sets = c("primary", "secondary", "exploratory")
-trts=1:8 
-# trt=8
+trts=1:8
+# trts=c(1,5) # when doing men or women
 
 
 {
@@ -125,6 +123,17 @@ for (trt in trts) {
   } else {
     primary = primary.ls$nonnaive; secondary = secondary.ls$nonnaive; exploratory = exploratory.ls$nonnaive
   }
+
+    
+  ###################################################
+  # restrict to gender (men or women), for manuscript revision
+  # need to set run.trichtom and show.q to F in cor_coxph_coef_1
+  # need to comment out trichotomized model because of singularity error
+
+  # dat.1 = subset(dat.1, Sex==0)
+  
+  ###################################################
+  
   
   design.1 <- twophase(id = list( ~ 1,  ~ 1), strata = list(NULL,  ~ Wstratum), subset =  ~ ph2, data = dat.1)
   dat.0=NULL
@@ -134,6 +143,7 @@ for (trt in trts) {
   names(dimnames(tab1))[2] = "Event Indicator"; print(tab1)
   
   for (marker_set in marker_sets) {
+    myprint(marker_set)
     
     fname.suffix = fname.suffix.0%.%"_"%.%marker_set
     all.markers=get(marker_set)
@@ -149,7 +159,6 @@ for (trt in trts) {
     #   dat_proc[[a%.%"centered"]] = scale(dat_proc[[a]], scale=F)
     # }
     
-    cat("\n\n")
     cor_coxph_coef_1 (
       form.0 = if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
       design_or_dat = design.1,
@@ -165,28 +174,28 @@ for (trt in trts) {
       
       forestplot.markers=NULL, 
       for.title="",
-      run.trichtom=TRUE,
+      run.trichtom=T,
       verbose = T
     )
     
     cor_coxph_risk_tertile_incidence_curves (
-      form.0 = if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0, 
+      form.0 = if(trt==1 | trt==5) update(form.0, ~.+ strata(stage)) else form.0,
       dat = dat.1,
       fname.suffix,
       save.results.to,
       config,
       config.cor,
       tfinal.tpeak,
-      
+
       markers = all.markers,
       markers.names.short = all.markers.names.short,
       markers.names.long = all.markers.names.long,
       marker.cutpoints,
       assay_metadata,
-      
+
       dat.plac = dat.0,
       for.title = "",
-      trt.label = trt.label, 
+      trt.label = trt.label,
       verbose=T
     )
     

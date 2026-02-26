@@ -16,7 +16,7 @@ if (show.ve.curves) {
 
 \clearpage
 ```{r, echo=FALSE, results='asis'}
-if (TRIAL!='covail_frnt') { # skip trichotomized because hard to compare with id50 results
+if (TRIAL!='covail_frnt' & TRIAL!='covail_tcell') { # skip trichotomized if needed
   cat(paste(concatList(rep('#',level+1)), "Trichotomized markers"))
   res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tri.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
