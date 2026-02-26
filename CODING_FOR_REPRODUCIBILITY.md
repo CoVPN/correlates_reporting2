@@ -47,73 +47,14 @@
     -	If high performance cluster/slurm is used and there are dependencies between steps, multiple scripts may be needed, e.g., https://github.com/CoVPN/correlates_reporting2/blob/master/cop_exposureproximal/ensemble_severe_correlates/README.md
 
 
-## Setting up renv
+## Using renv
 
-renv can be used at one of three levels: repo-level, module-level, and project level. 
+renv can be used at one of three levels: repo-level, module-level, and project level. We recommend the module-level.
 
-### Setting up renv at the project-level for a new project
-
-Open a new R console in the project folder in a terminal and run the following commands. The exact version of renv is not critical.
-```{r}
-# if the following does not work, it is because 1.1.5 is the current release. Then try install.packages("renv")
-install.packages(
-  "https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz",
-  repos = NULL,
-  type = "source"
-)
-
-packageVersion("renv")
-```
-
-Run the following R command at the project level to initialize:
-
-```{r}
-renv::init()
-```
-
-The call to init creates three files/folders:
-
-- renv.lock  This is a manifest file that contains the R packages and their versions used in the project. If the project is not empty, init() looks for package dependencies in the files, installs them, and writes the dependencies to renv.lock. If there are many package dependencies, this step can take a while.
-- renv/  This folder contains the local library of packages used in the project. In fact, to reduce redundancy, it contains links to the packages installed in your global R library.
-- .Rprofile  This file is sourced when the project is opened and activates the renv environment It is helpful to edit the file and add a line to show the current directory so that its content is as follows:
-  ```{r}
-  source("renv/activate.R")
-  print(getwd())
-  ```
-
-At this point, you can close the R console.
-```{r}
-q()
-```
-
-Now if you start a new R console in the project folder, you should see a message from renv, indicating that the renv environment is activated.
-
-
-### Setting up renv at the module-level for a new module
-
-This is not currently done. There seems to be little advantages of using renv at the module level.
-
-### Setting up renv at the repo-level
-
-This has already been done for the repo. For an example of using the repo-level renv, check out cor_coxph (https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md).
+See https://hvtn-sdmc.github.io/reproducibility-core/using_renv.html#/title-slide for more details on using renv.
 
 
 
 
-### General tips for using renv
-
-Use renv::install and not remotes or DevTools to install or update pacakges from CRAN, github, or a url, e.g.,
-- renv::install("github_id/package_name")
-- renv::install("survival")
-- renv::install("https://cran.r-project.org/src/contrib/Archive/kyotil/kyotil_2024.7-31.tar.gz")
-
-renv::snapshot() updates renv.lock after new or updated packages are installed.
-
-If you encounter warnings like: curl: (22) The requested URL returned error: 403 rate limit exceeded. The solution is to first authenticate with your personal github access token by running the following in R:
-```{r}
-Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxx")
-```
-
-If something inexplicable goes wrong, check the $HOME directory to see if there are .Rprofile and renv/. If yes, delete them and try again. 
 
 
