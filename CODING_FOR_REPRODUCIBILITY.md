@@ -1,5 +1,6 @@
 # Coding for Reproducibility
 
+
 1.	**Portability**. 
     -   Avoid using absolute paths because they will break if someone else downloads the code and tries to run it. 
     -	If the code sources a utility functions file, make sure that file is part of the code base, either at the project level or at the module level.

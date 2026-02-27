@@ -5,3 +5,4 @@ cop_mediation_tables_*.docx
 data_clean/*.rds
 output/*.rds
 *.pdf
+*.docx
