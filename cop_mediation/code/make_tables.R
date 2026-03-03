@@ -5,12 +5,17 @@ library(here)
 library(glue)
 library(kyotil)
 
-Sys.setenv(TRIAL = "nextgen_mock")
+# make sure TRIAL is defined. # Sys.setenv(TRIAL = "nextgen_mock")
 source(here::here("..", "_common.R")) 
 
-CORs=c("D31toM12_nextgen_mock_sera")
-
 save.results.to = glue("output/{TRIAL}")
+
+if (TRIAL=="vat08_combined"){
+  CORs="D43vat08_combined_M5_bAb"
+
+} else if (TRIAL=="nextgen_mock") {
+  CORs=c("D31toM12_nextgen_mock_sera")
+}
 
 rr2ve = function(rr) formatDouble((1-rr)*100,1)%.%'%'
 
@@ -27,15 +32,19 @@ style_my_table <- function(data) {
 
 marker_sets = unique(assay_metadata$panel)
 # hack, for now only work on one marker set
-marker_sets=c('pseudoneutid50_sera')
+# marker_sets=c('pseudoneutid50_sera')
 
 
 doc <- read_docx("table_template.docx")
 for (COR in CORs) {
 for (marker_set in marker_sets) {
     
-  res = readRDS(glue("{save.results.to}/{COR}/eff_{marker_set}.RDS"))
-  
+  if (TRIAL=="vat08_combined"){
+    res = readRDS(glue("{save.results.to}/{COR}/stage2nnaive/eff_{marker_set}.RDS"))
+  } else {
+    res = readRDS(glue("{save.results.to}/{COR}/eff_{marker_set}.RDS"))
+  }
+
   tab = mysapply (res, function (eff) {
     c(
       # # Total
