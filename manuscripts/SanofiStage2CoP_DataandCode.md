@@ -4,9 +4,9 @@
 
 **December 12, 2025**
 
-All analyses use code in this release if not otherwise specified: <https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/sanofi_stage2_correlates_R40.zip>
+All analyses use code in this release if not otherwise specified: [https://github.com/CoVPN/correlates\_reporting2/archive/refs/tags/sanofi\_stage2\_correlates\_R40.zip](https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/sanofi_stage2_correlates_R40.zip)
 
-All analyses are based on the analysis-ready data file vat08_combined_data_processed_20250417.csv. Path to the data file should be updated in config.yml in the data_cleaned field uder vat08_combined if not otherwise specified.
+All analyses are based on the analysis-ready data file vat08\_combined\_data\_processed\_20250417.csv. Path to the data file should be updated in config.yml in the data\_cleaned field under vat08\_combined if not otherwise specified.
 
 **Notes**:
 
@@ -22,9 +22,9 @@ bAb-IgG Spike and nAb-ID50 antibody marker seroresponse frequencies (when applic
 
 **Statistical reports**:
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\covpn\_correlates_cor_tabular_vat08_combined_20250520.pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\covpn\_correlates\_cor\_tabular\_vat08\_combined\_20250520.pdf
 
-To **reproduce** this report, follow instructions at <https://github.com/CoVPN/correlates_reporting2/tree/master/cor_tabular/README.md#sanofi_stage2_correlates> (level 1 reproducibility test passed)
+To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cor\_tabular/README.md#sanofi\_stage2\_correlates](https://github.com/CoVPN/correlates_reporting2/tree/master/cor_tabular/README.md#sanofi_stage2_correlates) (level 1 reproducibility test passed)
 
 Collage mapping
 
@@ -36,11 +36,11 @@ Mediation effect estimates with 95% confidence intervals (CIs) for Day 43 antibo
 
 **Statistical reports**:
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\MediationResults\sanofi\_Day43_20250617.csv
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\MediationResults\\sanofi\_Day43\_20250617.csv
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\MediationResults\sanofi\_FR_20250617.csv
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\MediationResults\\sanofi\_FR\_20250617.csv
 
-To **reproduce** this report, follow instructions at <https://github.com/CoVPN/correlates_reporting2/tree/master/cop_mediation/sanofi_stage2> (level 1 reproducibility test passed)
+To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cop\_mediation/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/master/cop_mediation/sanofi_stage2) (level 1 reproducibility test passed)
 
 No collage mapping needed
 
@@ -55,15 +55,15 @@ Analyses are based on the Per-Protocol Analysis Set and include endpoints ≥ 14
 
 **Statistical reports**:
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\OverallVaccineEfficacyOverTime\cumVE\_nonnaive.pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\cumVE\_nonnaive.pdf
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\OverallVaccineEfficacyOverTime\smoothHazVE\_nonnaive.pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\smoothHazVE\_nonnaive.pdf
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\OverallVaccineEfficacyOverTime\stage2_pp_naivecumInc.pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\stage2\_pp\_naivecumInc.pdf
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\OverallVaccineEfficacyOverTime stage2_pp_nonnaivecumInc.pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime stage2\_pp\_nonnaivecumInc.pdf
 
-To **reproduce** this report, follow the instructions at <https://github.com/CoVPN/correlates_reporting2/tree/master/cumulative_incidence/vat08_bivalent> (level 1 reproducibility test passed)
+To **reproduce** this report, follow the instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cumulative\_incidence/vat08\_bivalent](https://github.com/CoVPN/correlates_reporting2/tree/master/cumulative_incidence/vat08_bivalent) (level 1 reproducibility test passed)
 
 No collage mapping needed
 
@@ -73,9 +73,9 @@ bAb-IgG Spike and nAb-ID50 antibody marker levels by COVID-19 outcome status. Da
 
 **Statistical reports**:
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\covpn\_correlates_cor_graphical_vat08_combined_stage2_20250422.pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\covpn\_correlates\_cor\_graphical\_vat08\_combined\_stage2\_20250422.pdf
 
-To **reproduce** this report, follow instructions at <https://github.com/CoVPN/correlates_reporting2/blob/master/cor_graphical/README.md#sanofi-stage2-correlates> (level 1 reproducibility test passed)
+To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/blob/master/cor\_graphical/README.md#sanofi-stage2-correlates](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_graphical/README.md#sanofi-stage2-correlates) (level 1 reproducibility test passed)
 
 Collage mapping
 
@@ -95,13 +95,13 @@ Collage mapping
 
 ## Figure 3
 
-Covariate-adjusted hazard ratios (HRs) of Omicron COVID-19 per 10-fold increase in the designated immune marker [A, B, C, D: D43 level; E, F: fold/rise (D43/D01)] in non-naïve per-protocol A, B) placebo recipients or C, D, E, F) vaccine recipients. HRs were estimated using inverse probability sampling weighted Cox regression models; 95% confidence intervals (CIs) and Wald-based p-values are shown. Analyses adjusted for baseline risk score, sex, geographic region, and FOI score. bAb-IgG Spike, anti-Spike IgG binding antibody concentration; nAb-ID50, 50% inhibitory serum dilution neutralizing antibody titer.
+Covariate-adjusted hazard ratios (HRs) of Omicron COVID-19 per 10-fold increase in the designated immune marker \[A, B, C, D: D43 level; E, F: fold/rise (D43/D01)] in non-naïve per-protocol A, B) placebo recipients or C, D, E, F) vaccine recipients. HRs were estimated using inverse probability sampling weighted Cox regression models; 95% confidence intervals (CIs) and Wald-based p-values are shown. Analyses adjusted for baseline risk score, sex, geographic region, and FOI score. bAb-IgG Spike, anti-Spike IgG binding antibody concentration; nAb-ID50, 50% inhibitory serum dilution neutralizing antibody titer.
 
 **Statistical reports**:
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\covpn\_correlates_cor_coxph_vat08_stage2_prev_infected_20250321.pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\covpn\_correlates\_cor\_coxph\_vat08\_stage2\_prev\_infected\_20250321.pdf
 
-To **reproduce** this report, follow instructions at <https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md#sanofi-stage-2-correlates-manuscript> (level 2 reproducibility test passed)
+To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/blob/master/cor\_coxph/README.md#sanofi-stage-2-correlates-manuscript](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md#sanofi-stage-2-correlates-manuscript) (level 2 reproducibility test passed)
 
 Collage mapping
 
@@ -119,23 +119,23 @@ Collage mapping
 
 ## Figure 4
 
-Vaccine efficacy against Omicron COVID-19 through 124 days post D43 for non-naïve per-protocol vaccine recipients with A, B) D43 marker level above a threshold or C, D) D43/D01 marker fold-rise above a threshold [A, C) bAb-IgG Spike Omicron concentration; B, D) nAb-ID50 BA.1 titer] vs. the whole non-naïve per-protocol placebo arm. Vaccine efficacy is one minus the covariate-adjusted thresholded cumulative incidence in non-naïve per-protocol vaccine recipients divided by the covariate-adjusted cumulative incidence in non-naïve pre-protocol placebo recipients. Dots represent point estimates at given threshold values, with a grid of thresholds created by segmenting the marker values at COVID-19 endpoints into increments of 0.1. This grid spans from the minimum value of the marker to the highest value for which there are at least 3 COVID-19 endpoints with a marker measurement at or above that value. The solid black lines are obtained by linearly interpolating the grid points. The grey shaded area indicates pointwise 95% confidence intervals (CIs). The estimates and CIs were adjusted using the assumption that the true threshold-response vaccine efficacy is non-decreasing. The upper boundary of the green shaded area is the estimate of the reverse cumulative distribution function (CDF) of the antibody marker level in non-naïve per-protocol vaccine recipients. Blue points represent marker values for individual Omicron COVID-19 endpoints. Analyses adjusted for baseline risk score. bAb-IgG Spike, anti-Spike IgG binding antibody concentration; LLOQ, lower limit of quantitation; LOD, limit of detection; nAb-ID50, 50% inhibitory serum dilution neutralizing antibody titer.
+Vaccine efficacy against Omicron COVID-19 through 124 days post D43 for non-naïve per-protocol vaccine recipients with A, B) D43 marker level above a threshold or C, D) D43/D01 marker fold-rise above a threshold \[A, C) bAb-IgG Spike Omicron concentration; B, D) nAb-ID50 BA.1 titer] vs. the whole non-naïve per-protocol placebo arm. Vaccine efficacy is one minus the covariate-adjusted thresholded cumulative incidence in non-naïve per-protocol vaccine recipients divided by the covariate-adjusted cumulative incidence in non-naïve pre-protocol placebo recipients. Dots represent point estimates at given threshold values, with a grid of thresholds created by segmenting the marker values at COVID-19 endpoints into increments of 0.1. This grid spans from the minimum value of the marker to the highest value for which there are at least 3 COVID-19 endpoints with a marker measurement at or above that value. The solid black lines are obtained by linearly interpolating the grid points. The grey shaded area indicates pointwise 95% confidence intervals (CIs). The estimates and CIs were adjusted using the assumption that the true threshold-response vaccine efficacy is non-decreasing. The upper boundary of the green shaded area is the estimate of the reverse cumulative distribution function (CDF) of the antibody marker level in non-naïve per-protocol vaccine recipients. Blue points represent marker values for individual Omicron COVID-19 endpoints. Analyses adjusted for baseline risk score. bAb-IgG Spike, anti-Spike IgG binding antibody concentration; LLOQ, lower limit of quantitation; LOD, limit of detection; nAb-ID50, 50% inhibitory serum dilution neutralizing antibody titer.
 
 **Statistical reports**:
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\NonparametricThresholdCoRResults threshold_analysis_sanofi_updated_stage2_2025Apr24.pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\NonparametricThresholdCoRResults threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
 
-To **reproduce** this report, follow instructions at <https://github.com/CoVPN/correlates_reporting2/tree/master/cor_threshold/sanofi_stage2> (level 1 reproducibility test passed)
+To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cor\_threshold/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/master/cor_threshold/sanofi_stage2) (level 1 reproducibility test passed)
 
 Collage mapping
 
-· Panel A: page 76 in threshold_analysis_sanofi_updated_stage2_2025Apr24.pdf
+· Panel A: page 76 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
 
-· Panel B: page 117 in threshold_analysis_sanofi_updated_stage2_2025Apr24.pdf
+· Panel B: page 117 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
 
-· Panel C: page 82 in threshold_analysis_sanofi_updated_stage2_2025Apr24.pdf
+· Panel C: page 82 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
 
-· Panel D: page 122 in threshold_analysis_sanofi_updated_stage2_2025Apr24.pdf
+· Panel D: page 122 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
 
 ## Figure 5
 
@@ -143,13 +143,13 @@ Controlled risk of Omicron COVID-19 through 129 days post D43 by (A) D43 anti-Sp
 
 **Statistical reports**:
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\ControlledRiskVEResults 2025-04-18 Controlled Risk TS2 M5 (Cox + NP).pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\ControlledRiskVEResults 2025-04-18 Controlled Risk TS2 M5 (Cox + NP).pdf
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\ControlledRiskVEResults 2025-04-18 Controlled Risk V+P TS2 M5 (NP).pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\ControlledRiskVEResults 2025-04-18 Controlled Risk V+P TS2 M5 (NP).pdf
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\ControlledRiskVEResults 2025-04-18 Controlled Vaccine Efficacy TS2 M5 (Cox + NP).pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\ControlledRiskVEResults 2025-04-18 Controlled Vaccine Efficacy TS2 M5 (Cox + NP).pdf
 
-To **reproduce** this report, follow instructions at <https://github.com/Avi-Kenny/Code__IC-Pipeline/blob/main/README.md#sanofi-stage-2-correlates-manuscript> (level 1 reproducibility test passed)
+To **reproduce** this report, follow instructions at [https://github.com/Avi-Kenny/Code\_\_IC-Pipeline/blob/main/README.md#sanofi-stage-2-correlates-manuscript](https://github.com/Avi-Kenny/Code__IC-Pipeline/blob/main/README.md#sanofi-stage-2-correlates-manuscript) (level 1 reproducibility test passed)
 
 Collage mapping
 
@@ -163,28 +163,29 @@ Panel D: page 27 in 2025-04-18 Vax only Controlled Risk TS2 M5 (Cox + NP).pdf
 
 Final formatted plots for the manuscript from the above reports (harmonizing y-axis ranges and with Cox curves removed from the “Cox + NP” plots above):
 
-T:\covpn\p3005\\analysis\\correlates\\Part_A_Blinded_Phase_Data\reports\ControlledRiskVEResults\FinalResultsMay23_2025
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\ControlledRiskVEResults\\FinalResultsMay23\_2025
 
-plot_risk_5c.pdf
+plot\_risk\_5c.pdf
 
-plot_risk_5d.pdf
+plot\_risk\_5d.pdf
 
-plot_risk_S28c.pdf
+plot\_risk\_S28c.pdf
 
-plot_risk_S28d.pdf
+plot\_risk\_S28d.pdf
 
-plot_risk_S29c.pdf
+plot\_risk\_S29c.pdf
 
-plot_risk_S29d.pdf
+plot\_risk\_S29d.pdf
 
-plot_vp_5a.pdf
+plot\_vp\_5a.pdf
 
-plot_vp_5b.pdf
+plot\_vp\_5b.pdf
 
-plot_vp_S28a.pdf
+plot\_vp\_S28a.pdf
 
-plot_vp_S28b.pdf
+plot\_vp\_S28b.pdf
 
-plot_vp_S29a.pdf
+plot\_vp\_S29a.pdf
 
-plot_vp_S29b.pdf
+plot\_vp\_S29b.pdf
+
