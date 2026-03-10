@@ -24,7 +24,7 @@ bAb-IgG Spike and nAb-ID50 antibody marker seroresponse frequencies (when applic
 
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\covpn\_correlates\_cor\_tabular\_vat08\_combined\_20250520.pdf
 
-To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cor\_tabular/README.md#sanofi\_stage2\_correlates](https://github.com/CoVPN/correlates_reporting2/tree/master/cor_tabular/README.md) (level 1 reproducibility test passed)
+To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates_reporting2/tree/master/cor_tabular/README.md](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_tabular/README.md) (level 1 reproducibility test passed)
 
 Collage mapping
 
