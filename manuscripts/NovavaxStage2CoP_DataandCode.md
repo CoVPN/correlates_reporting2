@@ -130,4 +130,4 @@ Hazard ratio with reference antibody level LOD/2 (for nAb-ID50) or LLOQ/2 (for S
 
 **Statistical reports**: PreventProximalCorrelateNew.pdf
 
-To reproduce this report, follow the following instructions:
+To reproduce this report, follow the following instructions on https://github.com/yinghuang124/Exposure-Proximal
