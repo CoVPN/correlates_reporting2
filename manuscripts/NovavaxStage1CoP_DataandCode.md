@@ -4,13 +4,44 @@
 
 **March 6, 2026**
 
-All analyses use code in this release if not otherwise specified: https://github.com/CoVPN/correlates\_reporting2/archive/refs/tags/last\_release\_in\_R40.tar.gz
+- All analyses use code in this release if not otherwise specified: https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.0.tar.gz
+- All analyses are based on the analysis-ready data file prevent19_data_processed_20221016.csv unless otherwise specified.
+- A copy of statistical reports are on the SCHARP network drive T:\covpn\p3005\analysis\correlates\Part_A_Blinded_Phase_Data\reports\
 
-All analyses are based on the analysis-ready data file prevent19\_data\_processed\_20250325.csv. Path to the data file should be updated in config.yml in the data\_cleaned field under prevent19 if not otherwise specified.
 
 
 
-A copy of statistical reports are on network drives T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\
+## Figure 1
+
+D35 antibody marker level by COVID-19 outcome status in baseline SARS-CoV-2 negative per-protocol vaccine recipients (U.S. study sites).
+
+**Statistical reports**:
+
+covpn_correlates_cor_graphical_prevent19.pdf
+
+To reproduce this report, follow the following instructions:
+
+```{bash}
+# a) obtaining the code
+wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.0.zip
+unzip 2.2.0.zip
+cd correlates_reporting2-2.2.0
+
+# b) restore R package dependencies
+R
+    Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    renv::restore()
+
+# c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
+
+# d) generate report pdf
+export TRIAL=prevent19
+cd cor_graphical
+make
+cd ..
+Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_correlates_cor_graphical_$TRIAL.pdf', config_file = '_bookdown_cor_graphical.yml', output_format = bookdown::pdf_document2(toc_depth=3), quiet=TRUE)"
+
+```
 
 
 
@@ -20,170 +51,148 @@ D35 antibody marker SARS-CoV-2 seroresponse rates and geometric means in the U.S
 
 **Statistical reports**:
 
-covpn\_correlates\_cor\_tabular\_vat08\_combined\_20250520.pdf
+covpn_correlates_cor_tabular_prevent19.pdf
 
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cor\_tabular/README.md#sanofi\_stage2\_correlates](https://github.com/CoVPN/correlates_reporting2/tree/master/cor_tabular/README.md#sanofi_stage2_correlates) (level 1 reproducibility test passed)
+To reproduce this report, follow the following instructions:
 
-Collage mapping
+```{bash}
+# a) obtaining the code
+wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.0.zip
+unzip 2.2.0.zip
+cd correlates_reporting2-2.2.0
 
-· Data were extracted from pp. 75 (Table 2.57), 78 (Table 2.60), 96 (Table 2.78), and 107+108 (Table 2.84) of the report
+# b) restore R package dependencies
+R
+    Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    renv::restore()
 
-## Table 2
+# c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
 
-Mediation effect estimates with 95% confidence intervals (CIs) for Day 43 antibody marker mediation of Omicron COVID-19 through 150 days post dose 2 for the non-naïve Per-Protocol Analysis Set. FR = fold-rise. c.r. = cross-reactivity.
+# d) generate report pdf
+export TRIAL=prevent19
+cd cor_tabular
+Rscript code/make_table_all.R D35
+cd ..
+Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_correlates_cor_tabular_$TRIAL.pdf', config_file = '_bookdown_cor_tabular.yml', output_format = bookdown::pdf_document2(toc_depth=3), quiet=TRUE)"
 
-**Statistical reports**:
+```
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\MediationResults\\sanofi\_Day43\_20250617.csv
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\MediationResults\\sanofi\_FR\_20250617.csv
 
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cop\_mediation/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/master/cop_mediation/sanofi_stage2) (level 1 reproducibility test passed)
+## Figure 2 
 
-No collage mapping needed
-
-## Figure 1
-
-Analyses are based on the Per-Protocol Analysis Set and include endpoints ≥ 14 days post D22 through 360 (245) days post D22 for the cumulative (instantaneous) VE analyses. Shaded regions indicate 95% pointwise confidence intervals.
-
-(A) Cumulative incidence of Omicron COVID-19 by treatment arm for the SARS-CoV-2 naïve cohort;
-(B) Cumulative incidence of Omicron COVID-19 by treatment arm for the SARS-CoV-2 non-naïve cohort;
-(C) Cumulative incidence-based vaccine efficacy (VE) against Omicron COVID-19 for the SARS-CoV-2 non-naïve cohort;
-(D) Instantaneous smoothed hazard-based VE against Omicron COVID-19 for the SARS-CoV-2 non-naïve cohort.
-
-**Statistical reports**:
-
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\cumVE\_nonnaive.pdf
-
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\smoothHazVE\_nonnaive.pdf
-
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\stage2\_pp\_naivecumInc.pdf
-
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime stage2\_pp\_nonnaivecumInc.pdf
-
-To **reproduce** this report, follow the instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cumulative\_incidence/vat08\_bivalent](https://github.com/CoVPN/correlates_reporting2/tree/master/cumulative_incidence/vat08_bivalent) (level 1 reproducibility test passed)
-
-No collage mapping needed
-
-## Figure 2
-
-bAb-IgG Spike and nAb-ID50 antibody marker levels by COVID-19 outcome status. Data points are from eligible COVID-19 cases and non-cases in the non-naïve Per-Protocol Case-Cohort set, except that a Per-Protocol Analysis Set (PPAS) modified non-naïve (instead of whole non-naïve) Random Immunogenicity Subset (RIS) was used for plotting. This “PPAS modified non-naïve RIS” is used due to the fact that the PPAS non-naïve RIS largely oversampled the PPAS subgroup that was D01 anti-Spike positive and negative on all D01 and D22 tests for anti-N and for RNA PCR (referred to as the “S+ only” subgroup), which would make the plots misleading. The PPAS modified non-naïve RIS is the portion of the non-naïve RIS remaining after deleting a random sample of the PPAS S+only non-naive RIS selected to make the fraction of the PPAS non-naïve RIS that are PPAS S+only non-naïve RIS equal to the fraction of the PPAS non-naïve that are PPAS S+only non-naïve (see SAP Section 1). The plots show (A-F) D43 levels in the placebo group; (G-L) D43 levels in the vaccine group; (M-R) fold-rise (D43/D01) in the vaccine group, for (A, G, M) bAb-IgG Spike Index; (B, H, N) bAb-IgG Spike Beta; (C, I, O) bAb-IgG Spike Omicron; (D, J, P) nAb-ID50 Reference; (E, K, Q) nAb-ID50 Beta; (F, L, R) nAb-ID50 BA.1. The violin plots contain interior box plots with upper and lower horizontal edges representing the 25th and 75th percentiles of antibody level and middle line representing the 50th percentile. The vertical bars represent the distance from the 25th (or 75th) percentile of antibody level and the minimum (or maximum) antibody level within the 25th (or 75th) percentile of antibody level minus (or plus) 1.5 times the interquartile range. Each side shows a rotated probability density (estimated by a kernel density estimator with a default Gaussian kernel) of the data. Cases were Omicron COVID-19 endpoints ≥ 7 days post D43 through 150 days post D22. Non-cases were Per-Protocol Analysis Set participants with no evidence of SARS-CoV-2 infection (i.e., never tested nucleic acid amplification/PCR positive) after D01 up to the date by which the last enrolled participant reached 150 days post D22 (2022-07-24). The bAb-IgG Spike Index concentrations reported here in AU/ml can be converted to international units (BAU/ml) by multiplying by the conversion factor 0.009, and the nAb-ID50 Reference titers reported here can be converted to international units (IU50/ml) by multiplying by the conversion factor 0.0653. bAb-IgG Spike, anti-Spike IgG binding antibody concentration; LLOQ, lower limit of quantitation; LOD, limit of detection; nAb-ID50, 50% inhibitory serum dilution neutralizing antibody titer; ULOQ, upper limit of quantitation.
+Scatterplots of pairs ofD35 antibodymarker values (spike IgG, RBDIgG, pseudovirus nAb-ID50) for baseline SARS-CoV-2 negative per-protocol vaccine recipients in the immunogenicity subcohort (U.S. study sites).
 
 **Statistical reports**:
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\covpn\_correlates\_cor\_graphical\_vat08\_combined\_stage2\_20250422.pdf
+covpn_correlates_immuno_graphical_prevent19.pdf
 
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/blob/master/cor\_graphical/README.md#sanofi-stage2-correlates](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_graphical/README.md#sanofi-stage2-correlates) (level 1 reproducibility test passed)
+To reproduce this report, follow the following instructions:
 
-Collage mapping
+```{bash}
+# a) obtaining the code
+wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.0.zip
+unzip 2.2.0.zip
+cd correlates_reporting2-2.2.0
 
-· Panels A, B, C: extracted from page 30 (Figure 2.16)
+# b) restore R package dependencies
+R
+    Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    renv::restore()
+    
+# c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
 
-· Panels D, E, F: extracted from page 20 (Figure 2.6)
+# d) generate report pdf
+R
+    # two additional packages are needed for immuno_graphical
+    # dummies needs to installed separately from an archive
+    renv::install('https://cran.r-project.org/src/contrib/Archive/dummies/dummies_1.5.6.tar.gz')
+    renv::install('SWIM)
 
-· Panels G, H, I: extracted from page 30 (Figure 2.16)
+# edit code/descriptive_graphics_two_phase_plots.R to comment out line 23, which fails to run
 
-· Panels J, K, L: extracted from page 20 (Figure 2.6)
+export TRIAL=prevent19
+cd immuno_graphical
+make
+cd ..
+Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_correlates_immuno_graphical_$TRIAL.pdf', config_file = '_bookdown_immuno_graphical.yml', output_format = bookdown::pdf_document2(toc_depth=3), quiet=TRUE)"
 
-· Panels M, N, O: extracted from page 34 (Figure 2.20)
+```
 
-· Panels P, Q, R: extracted from page 24 (Figure 2.10)
 
-· For panels A-L, Ns and positive response frequencies were removed.
-
-## Figure 3
-
-Covariate-adjusted hazard ratios (HRs) of Omicron COVID-19 per 10-fold increase in the designated immune marker \[A, B, C, D: D43 level; E, F: fold/rise (D43/D01)] in non-naïve per-protocol A, B) placebo recipients or C, D, E, F) vaccine recipients. HRs were estimated using inverse probability sampling weighted Cox regression models; 95% confidence intervals (CIs) and Wald-based p-values are shown. Analyses adjusted for baseline risk score, sex, geographic region, and FOI score. bAb-IgG Spike, anti-Spike IgG binding antibody concentration; nAb-ID50, 50% inhibitory serum dilution neutralizing antibody titer.
-
-**Statistical reports**:
-
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\covpn\_correlates\_cor\_coxph\_vat08\_stage2\_prev\_infected\_20250321.pdf
-
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/blob/master/cor\_coxph/README.md#sanofi-stage-2-correlates-manuscript](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md#sanofi-stage-2-correlates-manuscript) (level 2 reproducibility test passed)
-
-Collage mapping
-
-· Panel A: from page 79 (Figure 3.58)
-
-· Panel B: from page 92 (Figure 3.69)
-
-· Panel C: from page 17 (Figure 3.1)
-
-· Panel D: from page 53 (Figure 3.34)
-
-· Panel E: from page 21 (Figure 3.5)
-
-· Panel F: from page 57 (Figure 3.38)
-
-## Figure 4
-
-Vaccine efficacy against Omicron COVID-19 through 124 days post D43 for non-naïve per-protocol vaccine recipients with A, B) D43 marker level above a threshold or C, D) D43/D01 marker fold-rise above a threshold \[A, C) bAb-IgG Spike Omicron concentration; B, D) nAb-ID50 BA.1 titer] vs. the whole non-naïve per-protocol placebo arm. Vaccine efficacy is one minus the covariate-adjusted thresholded cumulative incidence in non-naïve per-protocol vaccine recipients divided by the covariate-adjusted cumulative incidence in non-naïve pre-protocol placebo recipients. Dots represent point estimates at given threshold values, with a grid of thresholds created by segmenting the marker values at COVID-19 endpoints into increments of 0.1. This grid spans from the minimum value of the marker to the highest value for which there are at least 3 COVID-19 endpoints with a marker measurement at or above that value. The solid black lines are obtained by linearly interpolating the grid points. The grey shaded area indicates pointwise 95% confidence intervals (CIs). The estimates and CIs were adjusted using the assumption that the true threshold-response vaccine efficacy is non-decreasing. The upper boundary of the green shaded area is the estimate of the reverse cumulative distribution function (CDF) of the antibody marker level in non-naïve per-protocol vaccine recipients. Blue points represent marker values for individual Omicron COVID-19 endpoints. Analyses adjusted for baseline risk score. bAb-IgG Spike, anti-Spike IgG binding antibody concentration; LLOQ, lower limit of quantitation; LOD, limit of detection; nAb-ID50, 50% inhibitory serum dilution neutralizing antibody titer.
+## Figure 3, Table 2, and Figure 5
 
 **Statistical reports**:
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\NonparametricThresholdCoRResults threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+covpn_correlates_cor_coxph_prevent19.pdf
 
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cor\_threshold/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/master/cor_threshold/sanofi_stage2) (level 1 reproducibility test passed)
+To **reproduce** this report, follow the following instructions:
 
-Collage mapping
+```{bash}
+# a) obtaining the code
+wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.0.zip
+unzip 2.2.0.zip
+cd correlates_reporting2-2.2.0
 
-· Panel A: page 76 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+# b) restore R package dependencies
+R
+    Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    renv::restore()
 
-· Panel B: page 117 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+# c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
 
-· Panel C: page 82 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+# d) generate report pdf
+export TRIAL=prevent19
+cd cor_coxph
+make 
+cd ..
+Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_correlates_cor_coxph_$TRIAL.pdf', config_file = '_bookdown_cor_coxph.yml', output_format = bookdown::pdf_document2(toc_depth=3), quiet=TRUE)"
 
-· Panel D: page 122 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+```
 
-## Figure 5
+## Figure 4 
 
-Controlled risk of Omicron COVID-19 through 129 days post D43 by (A) D43 anti-Spike IgG Omicron concentration, (B) D43 nAb-ID50 BA.1 titer, (C) fold-rise (D43/D01) anti-Spike IgG Omicron concentration, and (D) fold-rise (D43/D01) nAb-ID50 BA.1 titer in non-naïve per-protocol (A, blue line; B, blue line) placebo recipients or non-naïve per-protocol (A, purple line; B, purple line; C, D) vaccine recipients. Controlled risk was estimated using a monotone-constrained nonparametric method with covariate adjustment (default implementation in the R package vaccine available at CRAN).44 Dotted lines and shading indicate pointwise 95% CIs. The upper and lower horizontal gray lines are the overall cumulative incidence of Omicron COVID-19 from 7 to 129 days post D43 in placebo and vaccine recipients, respectively. The background kernel density plots are estimates of the distribution of each antibody marker in non-naïve per-protocol recipients. Analyses adjusted for baseline risk score, sex, geographic region, and FOI score. AU, arbitrary units; bAb-IgG Spike, anti-Spike IgG binding antibody concentration; nAb-ID50, 50% inhibitory serum dilution neutralizing antibody titer.
+Analyses of D35 antibodymarkers as a correlate of risk in baseline SARSCoV-2 negative per-protocol vaccine recipients (U.S. study sites)
 
 **Statistical reports**:
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\ControlledRiskVEResults 2025-04-18 Controlled Risk TS2 M5 (Cox + NP).pdf
+covpn_correlates_cor_threshold_prevent19.pdf
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\ControlledRiskVEResults 2025-04-18 Controlled Risk V+P TS2 M5 (NP).pdf
+To reproduce this report, follow the following instructions. Notes: 1) There are extra instructions in step d). 2) The generated report pdf is located in _report_cor. 
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\ControlledRiskVEResults 2025-04-18 Controlled Vaccine Efficacy TS2 M5 (Cox + NP).pdf
+```{bash}
+# a) obtaining the code
+wget https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.0.zip
+unzip 2.2.0.zip
+cd correlates_reporting2-2.2.0
 
-To **reproduce** this report, follow instructions at [https://github.com/Avi-Kenny/Code\_\_IC-Pipeline/blob/main/README.md#sanofi-stage-2-correlates-manuscript](https://github.com/Avi-Kenny/Code__IC-Pipeline/blob/main/README.md#sanofi-stage-2-correlates-manuscript) (level 1 reproducibility test passed)
+# b) restore R package dependencies
+R
+    Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    renv::restore()
 
-Collage mapping
+# c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
 
-Panel A: page 8 in 2025-04-18 Controlled Risk V+P TS2 M5 (NP).pdf
+# d) generate report pdf
+export TRIAL=prevent19
+cd cor_threshold
+Rscript code/params.R D35
+Rscript code/clean_data.R D35
+Rscript code/Run_Threshold_analysis.R D35
 
-Panel B: page 12 in 2025-04-18 Controlled Risk V+P TS2 M5 (NP).pdf
+# modify _common.R 
+  # change line 995 to: labels <- c(" ", labels)
+# change cor_threshold/report.md:
+  # replace TRIAL <- "janssen_trial_real" with TRIAL <- Sys.getenv("TRIAL")
 
-Panel C: page 23 in 2025-04-18 Vax only Controlled Risk TS2 M5 (Cox + NP).pdf
+Rscript code/plotting.R D35
+cd ..
+Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_correlates_cor_threshold_$TRIAL.pdf', config_file = '_bookdown_cor_threshold.yml', output_format = bookdown::pdf_document2(toc_depth=3), quiet=TRUE)"
 
-Panel D: page 27 in 2025-04-18 Vax only Controlled Risk TS2 M5 (Cox + NP).pdf
+```
 
-Final formatted plots for the manuscript from the above reports (harmonizing y-axis ranges and with Cox curves removed from the “Cox + NP” plots above):
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\ControlledRiskVEResults\\FinalResultsMay23\_2025
 
-plot\_risk\_5c.pdf
+## Table 3 and Figure 6
 
-plot\_risk\_5d.pdf
-
-plot\_risk\_S28c.pdf
-
-plot\_risk\_S28d.pdf
-
-plot\_risk\_S29c.pdf
-
-plot\_risk\_S29d.pdf
-
-plot\_vp\_5a.pdf
-
-plot\_vp\_5b.pdf
-
-plot\_vp\_S28a.pdf
-
-plot\_vp\_S28b.pdf
-
-plot\_vp\_S29a.pdf
-
-plot\_vp\_S29b.pdf
-
+N/A. These tables and figures collate results from multiple manuscripts.
