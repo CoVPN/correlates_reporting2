@@ -40,7 +40,7 @@ T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\
 
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\MediationResults\\sanofi\_FR\_20250617.csv
 
-To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cop\_mediation/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/R40/cop_mediation/sanofi_stage2) (level 1 reproducibility test passed)
+To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/R40/cop\_mediation/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/R40/cop_mediation/sanofi_stage2) (level 1 reproducibility test passed)
 
 No collage mapping needed
 
