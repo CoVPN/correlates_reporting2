@@ -12,12 +12,9 @@
 
 
 ## Figure 1
-
 D35 antibody marker level by COVID-19 outcome status in baseline SARS-CoV-2 negative per-protocol vaccine recipients (U.S. study sites).
 
-**Statistical reports**:
-
-covpn_correlates_cor_graphical_prevent19.pdf
+**Statistical reports**: covpn_correlates_cor_graphical_prevent19.pdf
 
 To reproduce this report, follow the following instructions:
 
@@ -49,9 +46,7 @@ Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_
 
 D35 antibody marker SARS-CoV-2 seroresponse rates and geometric means in the U.S. cohort by COVID-19 outcome status
 
-**Statistical reports**:
-
-covpn_correlates_cor_tabular_prevent19.pdf
+**Statistical reports**: covpn_correlates_cor_tabular_prevent19.pdf
 
 To reproduce this report, follow the following instructions:
 
@@ -83,9 +78,7 @@ Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_
 
 Scatterplots of pairs ofD35 antibodymarker values (spike IgG, RBDIgG, pseudovirus nAb-ID50) for baseline SARS-CoV-2 negative per-protocol vaccine recipients in the immunogenicity subcohort (U.S. study sites).
 
-**Statistical reports**:
-
-covpn_correlates_immuno_graphical_prevent19.pdf
+**Statistical reports**: covpn_correlates_immuno_graphical_prevent19.pdf
 
 To reproduce this report, follow the following instructions:
 
@@ -122,9 +115,7 @@ Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_
 
 ## Figure 3, Table 2, and Figure 5
 
-**Statistical reports**:
-
-covpn_correlates_cor_coxph_prevent19.pdf
+**Statistical reports**: covpn_correlates_cor_coxph_prevent19.pdf
 
 To **reproduce** this report, follow the following instructions:
 
@@ -154,9 +145,7 @@ Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_
 
 Analyses of D35 antibodymarkers as a correlate of risk in baseline SARSCoV-2 negative per-protocol vaccine recipients (U.S. study sites)
 
-**Statistical reports**:
-
-covpn_correlates_cor_threshold_prevent19.pdf
+**Statistical reports**: covpn_correlates_cor_threshold_prevent19.pdf
 
 To reproduce this report, follow the following instructions. Notes: 1) There are extra instructions in step d). 2) The generated report pdf is located in _report_cor. 
 
