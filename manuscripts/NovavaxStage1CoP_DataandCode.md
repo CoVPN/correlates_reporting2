@@ -4,7 +4,6 @@
 
 **March 6, 2026**
 
-- All analyses use code in this release if not otherwise specified: https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.0.tar.gz
 - All analyses are based on the analysis-ready data file prevent19_data_processed_20221016.csv unless otherwise specified.
 - A copy of statistical reports are on the SCHARP network drive T:\covpn\p3005\analysis\correlates\Part_A_Blinded_Phase_Data\reports\
 
@@ -25,8 +24,11 @@ unzip 2.2.0.zip
 cd correlates_reporting2-2.2.0
 
 # b) restore R package dependencies
+# Assume that we have R 4.0.4 installed
 R
     Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    # Assume that we have renv 0.14.0. installed. If not, run the next line
+    # install.packages("https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz")
     renv::restore()
 
 # c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
@@ -57,8 +59,11 @@ unzip 2.2.0.zip
 cd correlates_reporting2-2.2.0
 
 # b) restore R package dependencies
+# Assume that we have R 4.0.4 installed
 R
     Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    # Assume that we have renv 0.14.0. installed. If not, run the next line
+    # install.packages("https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz")
     renv::restore()
 
 # c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
@@ -89,8 +94,11 @@ unzip 2.2.0.zip
 cd correlates_reporting2-2.2.0
 
 # b) restore R package dependencies
+# Assume that we have R 4.0.4 installed
 R
     Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    # Assume that we have renv 0.14.0. installed. If not, run the next line
+    # install.packages("https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz")
     renv::restore()
     
 # c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
@@ -126,8 +134,11 @@ unzip 2.2.0.zip
 cd correlates_reporting2-2.2.0
 
 # b) restore R package dependencies
+# Assume that we have R 4.0.4 installed
 R
     Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    # Assume that we have renv 0.14.0. installed. If not, run the next line
+    # install.packages("https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz")
     renv::restore()
 
 # c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
@@ -156,8 +167,11 @@ unzip 2.2.0.zip
 cd correlates_reporting2-2.2.0
 
 # b) restore R package dependencies
+# Assume that we have R 4.0.4 installed
 R
     Sys.setenv(GITHUB_PAT = "xxxxxxxxxxxxxxxxxxxxxxxxxx") # use your personal github access token
+    # Assume that we have renv 0.14.0. installed. If not, run the next line
+    # install.packages("https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz")
     renv::restore()
 
 # c) edit config.yml so that the data_cleaned field uder prevent19 points to a local copy of prevent19_data_processed_20221016.csv
