@@ -24,7 +24,7 @@ bAb-IgG Spike and nAb-ID50 antibody marker seroresponse frequencies (when applic
 
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\covpn\_correlates\_cor\_tabular\_vat08\_combined\_20250520.pdf
 
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cor\_tabular/README.md#sanofi\_stage2\_correlates](https://github.com/CoVPN/correlates_reporting2/tree/master/cor_tabular/README.md#sanofi_stage2_correlates) (level 1 reproducibility test passed)
+To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates_reporting2/tree/master/cor_tabular/README.md](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_tabular/README.md) (level 1 reproducibility test passed)
 
 Collage mapping
 
@@ -40,7 +40,7 @@ T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\
 
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\MediationResults\\sanofi\_FR\_20250617.csv
 
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cop\_mediation/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/master/cop_mediation/sanofi_stage2) (level 1 reproducibility test passed)
+To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/R40/cop\_mediation/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/R40/cop_mediation/sanofi_stage2) (level 1 reproducibility test passed)
 
 No collage mapping needed
 
@@ -63,7 +63,7 @@ T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\
 
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime stage2\_pp\_nonnaivecumInc.pdf
 
-To **reproduce** this report, follow the instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cumulative\_incidence/vat08\_bivalent](https://github.com/CoVPN/correlates_reporting2/tree/master/cumulative_incidence/vat08_bivalent) (level 1 reproducibility test passed)
+To reproduce this report, follow the instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cumulative\_incidence/vat08\_bivalent](https://github.com/CoVPN/correlates_reporting2/tree/master/cumulative_incidence/vat08_bivalent) (level 1 reproducibility test passed)
 
 No collage mapping needed
 
@@ -75,7 +75,7 @@ bAb-IgG Spike and nAb-ID50 antibody marker levels by COVID-19 outcome status. Da
 
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\covpn\_correlates\_cor\_graphical\_vat08\_combined\_stage2\_20250422.pdf
 
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/blob/master/cor\_graphical/README.md#sanofi-stage2-correlates](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_graphical/README.md#sanofi-stage2-correlates) (level 1 reproducibility test passed)
+To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/blob/master/cor\_graphical/README.md#sanofi-stage2-correlates](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_graphical/README.md#sanofi-stage2-correlates) (level 1 reproducibility test passed)
 
 Collage mapping
 
@@ -101,7 +101,7 @@ Covariate-adjusted hazard ratios (HRs) of Omicron COVID-19 per 10-fold increase 
 
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\covpn\_correlates\_cor\_coxph\_vat08\_stage2\_prev\_infected\_20250321.pdf
 
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/blob/master/cor\_coxph/README.md#sanofi-stage-2-correlates-manuscript](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md#sanofi-stage-2-correlates-manuscript) (level 2 reproducibility test passed)
+To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/blob/master/cor\_coxph/README.md#sanofi-stage-2-correlates-manuscript](https://github.com/CoVPN/correlates_reporting2/blob/master/cor_coxph/README.md#sanofi-stage-2-correlates-manuscript) (level 2 reproducibility test passed)
 
 Collage mapping
 
@@ -125,7 +125,7 @@ Vaccine efficacy against Omicron COVID-19 through 124 days post D43 for non-naï
 
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\NonparametricThresholdCoRResults threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
 
-To **reproduce** this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cor\_threshold/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/master/cor_threshold/sanofi_stage2) (level 1 reproducibility test passed)
+To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cor\_threshold/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/master/cor_threshold/sanofi_stage2) (level 1 reproducibility test passed)
 
 Collage mapping
 
@@ -149,7 +149,7 @@ T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\
 
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\ControlledRiskVEResults 2025-04-18 Controlled Vaccine Efficacy TS2 M5 (Cox + NP).pdf
 
-To **reproduce** this report, follow instructions at [https://github.com/Avi-Kenny/Code\_\_IC-Pipeline/blob/main/README.md#sanofi-stage-2-correlates-manuscript](https://github.com/Avi-Kenny/Code__IC-Pipeline/blob/main/README.md#sanofi-stage-2-correlates-manuscript) (level 1 reproducibility test passed)
+To reproduce this report, follow instructions at [https://github.com/Avi-Kenny/Code\_\_IC-Pipeline/blob/main/README.md#sanofi-stage-2-correlates-manuscript](https://github.com/Avi-Kenny/Code__IC-Pipeline/blob/main/README.md#sanofi-stage-2-correlates-manuscript) (level 1 reproducibility test passed)
 
 Collage mapping
 
