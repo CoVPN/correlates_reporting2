@@ -154,7 +154,7 @@ Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_
 
 **Statistical reports**: covpn_correlates_cor_npthreshold_azd1222_nAb.pdf and covpn_correlates_cor_npthreshold_azd1222_nbAb.pdf
 
-To reproduce this report, follow the following instructions. Note that the generated report pdf is located in _report_cor. 
+To reproduce this report, follow the instructions on https://github.com/Larsvanderlaan/npthreshold or the following instructions (different numerical output).
 
 ```{bash}
 # a) obtaining the code

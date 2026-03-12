@@ -47,7 +47,7 @@ Rscript -e "bookdown::render_book(input = 'index_cor.Rmd', output_file = 'covpn_
 
 CD4+ and CD8+ T-cell responses among the one-dose mRNA group, for COVID-19 endpoint cases (booster-proximal and booster-distal pooled) and non-cases and for the naïve and non-naïve cohorts. 
 
-**Statistical reports**: covpn_correlates_cor_tabular_covail_tcell.pdf
+**Statistical reports**: covpn_correlates_cor_tabular_covail_tcell_07282025.pdf
 
 To reproduce this report, follow the following instructions:
 
