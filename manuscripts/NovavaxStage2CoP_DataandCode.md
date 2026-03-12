@@ -5,7 +5,7 @@
 **March 10, 2026**
 
 - All analyses are based on the analysis-ready data file prevent19_stage2_data_processed_20250325.csv unless otherwise specified.
-- A copy of statistical reports are on the SCHARP network drive T:\covpn\p3005\analysis\correlates\stage2\reports\
+- A copy of statistical reports are on the SCHARP network drive T:\covpn\p3004\analysis\correlates\stage2\reports\
 
 
 
@@ -114,7 +114,7 @@ cd cor_coxph
 # modify code/cor_coxph_prevent19_stage2.R
   # change line 160 to:
   # dat.plac = NULL,
-# modify report.Rmd
+# modify report_prevent19_stage2.Rmd
   # change line 10 to:
   # show.q=F; has.scaled=T; has.alt=F; show.sample.size=T; show.forestplots=F; show.ve.curves=F; special.note=""; has.plac=F; plot.geq=F; show.tertile.curves=T
   # change line 20 to:

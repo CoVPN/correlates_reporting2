@@ -5,7 +5,7 @@
 **March 6, 2026**
 
 - All analyses are based on the analysis-ready data file prevent19_data_processed_20221016.csv unless otherwise specified.
-- A copy of statistical reports are on the SCHARP network drive T:\covpn\p3005\analysis\correlates\Part_A_Blinded_Phase_Data\reports\
+- A copy of statistical reports are on the SCHARP network drive T:\covpn\p3004\analysis\correlates\Part_A_Blinded_Phase_Data\reports\USG assays\
 
 
 
@@ -187,6 +187,7 @@ Rscript code/Run_Threshold_analysis.R D35
   # change line 995 to: labels <- c(" ", labels)
 # change cor_threshold/report.md:
   # replace TRIAL <- "janssen_trial_real" with TRIAL <- Sys.getenv("TRIAL")
+  # add line 92: keys='D35'
 
 Rscript code/plotting.R D35
 cd ..
