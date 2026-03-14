@@ -97,7 +97,7 @@ Scatterplot of D57 spike IgG vs. D57 pseudovirus (PsV)-nAb ID50 values for basel
 
 **Statistical reports**: pairs_Day57_Markers_BaselineNeg_vaccine_arm_AZD1222.png
 
-This is a one-off correlation plot. To reproduce this report, follow the following instructions:
+This is an adhoc figure made after code release. 
 
 
 
