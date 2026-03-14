@@ -66,7 +66,7 @@ dimnames(assay_lim) <- list(assay_immuno, times_, c("lb", "ub"))
 
 assay_lim[, !grepl("Delta", times_), "lb"] <- 
   floor(log10(lods[assay_immuno] / 2)) # lower bound same for all assays - days
-if (study_name=="AZD1222" && grepl("bind", assays)) {
+if (study_name=="AZD1222" && any(grepl("bind", assays))) {
   assay_lim["bindSpike", !grepl("Delta", times_), "lb"] <- floor(log10(lloqs["bindSpike"] / 2))
   }# prevent19 and AZ has llod for bAb as NA, use lloq instead
 if (attr(config,"config")=="prevent19") {
@@ -112,7 +112,7 @@ if (study_name=="VAT08") {assay_lim[, grepl("Delta", times_), "lb"] <- -3.5
 assay_lim[assay_immuno %in% bAb_assays, grepl("Delta", times_), "ub"] <- 
   ceiling(MaxbAb - min(log10(lods[bAb_assays] / 2), na.rm=T)) + ceiling(MaxbAb - min(log10(lods[bAb_assays] / 2), na.rm=T)) %% 2
 
-if (study_name=="AZD1222" && grepl("bind", assays)) {
+if (study_name=="AZD1222" && any(grepl("bind", assays))) {
   assay_lim[assay_immuno %in% bAb_assays, grepl("Delta", times_), "ub"] <- 
     ceiling(MaxbAb - min(log10(lloqs[bAb_assays] / 2), na.rm=T)) + ceiling(MaxbAb - min(log10(lloqs[bAb_assays] / 2), na.rm=T)) %% 2
 }# prevent19 and AZ has llod for bAb as NA, use lloq instead
