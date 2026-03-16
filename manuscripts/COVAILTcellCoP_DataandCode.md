@@ -116,7 +116,6 @@ make
 **Statistical reports**: 
 - covpn_correlates_cor_coxph_covail_tcell_20250729.pdf
 - ForestPlot_onedosemRNA_D22toD91.pdf
-- covpn_correlates_controlledrisk_covail_06132025_McElrathTcells.pdf
 - COMPASS/cyt_combination.pdf, LeidenClustering
 
 To reproduce covpn_correlates_cor_coxph_covail_tcell_20250729.pdf, follow the following instructions:
