@@ -63,17 +63,11 @@ bind_IgA_saliva,58,bindSpike_IgA_saliva_KP.3,34,73020,NA,34,Saliva Binding IgA A
 bind_IgA_saliva,59,bindSpike_IgA_saliva_LB.1,30,64593,NA,30,Saliva Binding IgA Antibody to Spike LB.1,Saliva IgA Spike LB.1 (AU/ml),lloq,1,NA
 bind_IgA_saliva,60,bindSpike_IgA_saliva_mdw,0,Inf,NA,0,Saliva Binding IgA Antibody to Spike crossreactivity score,Saliva IgA Spike crossreactivity score,lloq,1,NA
 pseudoneutid50_sera,1,pseudoneutid50_sera,10,5598,NA,10,Serum neutralization to D614G,Serum nAb ID50 D614G (AU/ml),lloq,1,NA
-pseudoneutid50_sera,2,pseudoneutid50_sera_XBB.1.5,10,1302,NA,10,Serum neutralization to XBB.1.5,Serum nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_sera,3,pseudoneutid50_sera_KP.2,10,1302,NA,10,Serum neutralization to KP.2,Serum nAb ID50 KP.2 (AU/ml),lloq,1,NA
-pseudoneutid50_sera,4,pseudoneutid50_sera_mdw,0,Inf,NA,0,Serum neutralization breadth score,Serum nAb ID50 breadth score,lloq,1,NA
 pseudoneutid50_nasal,5,pseudoneutid50_nasal,10,5598,NA,10,Nasal neutralization to D614G,Nasal nAb ID50 D614G (AU/ml),lloq,1,NA
-pseudoneutid50_nasal,6,pseudoneutid50_nasal_XBB.1.5,10,1302,NA,10,Nasal neutralization to XBB.1.5,Nasal nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_nasal,7,pseudoneutid50_nasal_KP.2,10,1302,NA,10,Nasal neutralization to KP.2,Nasal nAb ID50 KP.2 (AU/ml),lloq,1,NA
-pseudoneutid50_nasal,8,pseudoneutid50_nasal_mdw,0,Inf,NA,0,Nasal neutralization breadth score,Nasal nAb ID50 breadth score,lloq,1,NA
 pseudoneutid50_saliva,9,pseudoneutid50_saliva,10,5598,NA,10,Saliva neutralization to D614G,Saliva nAb ID50 D614G (AU/ml),lloq,1,NA
-pseudoneutid50_saliva,10,pseudoneutid50_saliva_XBB.1.5,10,1302,NA,10,Saliva neutralization to XBB.1.5,Saliva nAb ID50 XBB.1.5 (AU/ml),lloq,1,NA
 pseudoneutid50_saliva,11,pseudoneutid50_saliva_KP.2,10,1302,NA,10,Saliva neutralization to KP.2,Saliva nAb ID50 KP.2 (AU/ml),lloq,1,NA
-pseudoneutid50_saliva,12,pseudoneutid50_saliva_mdw,0,Inf,NA,0,Saliva neutralization breadth score,Saliva nAb ID50 breadth score,lloq,1,NA
 PBMC,1,T4_IFNg_OR_IL2_N_Index,NA,Inf,NA,NA,CD4+ T cells IFN or IL2 to N Index,CD4+ T cells IFN/IL2 to N Index,lloq,1,0.001
 PBMC,2,T4_IFNg_OR_IL2_Spike_KP.2,NA,Inf,NA,NA,CD4+ T cells IFN or IL2 to Spike KP.2,CD4+ T cells IFN/IL2 to Spike KP.2,lloq,1,0.001
 PBMC,3,T4_IFNg_OR_IL2_Spike_Index.D614,NA,Inf,NA,NA,CD4+ T cells IFN or IL2 to Spike Index/D614,CD4+ T cells IFN/IL2 to Spike Index/D614,lloq,1,0.001

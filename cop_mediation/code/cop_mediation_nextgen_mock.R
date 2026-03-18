@@ -6,7 +6,7 @@ source(here::here("..", "_common.R"))
 
 marker_sets = unique(assay_metadata$panel)
 # hack, for now only work on one marker set
-marker_sets=c('pseudoneutid50_sera')
+marker_sets=c('bind_IgG_sera')
 
 {
   quiet_library("SuperLearner")
@@ -200,7 +200,8 @@ for (marker_set in marker_sets) {
         
     # print(fit_trt1_medtrt0)
         
-    fit <- compute_mediation_params(fit_trt_equal_medtrt, fit_trt1_medtrt0)
+    fit <- compute_mediation_params(normal_survtmle_fit=fit_trt_equal_medtrt, 
+                                    mediation_survtmle_fit=fit_trt1_medtrt0)
         
     fit$eff
     
