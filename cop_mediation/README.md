@@ -1,30 +1,43 @@
 # Vaccine Efficacy Mediation Analyses
 
-## Contents
 
-* `code`: scripts for pre-processing and analyzing post-processed data
-* `data_clean`: post-processed data used as input to statistical analyses
-* `figs`: visualizations of exploratory and analytic results
-* `output`: results files produced by statistical analyses
-* `slurm`: scheduler scripts for submission of batch jobs (not used)
+## Reproducibility
 
-## Workflow
+This project uses a module-level renv.lock. 
 
-The analysis scripts are described below.
+**Restore renv**
 
-- `code/params.R` sets parameters for the analysis; see the
-file for documentation of these parameters.
-- `code/format_utils.R` contains various formatting functions used to create the
-tables.
-- `code/sl_screen_fn.R` defines super learner wrapper functions.
-- `code/clean_data.R` creates data sets reduced only to relevant variables
-that are used in the mediation analysis. For each requested timepoint (as given
-by the `times` variable defined in `_common.R`), a data set is created with 
-quantitative values of each requested assay (as given by the `assays` variable
-defined in `_common.R`) and a data set is created with tertile values of the
-requested assays.
-- `code/run_analysis.R` runs the mediation analysis for each assay at each time
-and saves a table of results. If there is insufficient overlap for a particular
-assay, this is recorded by filling in the table with `NA`s.
+1. Download the repository, e.g. download and unzip a release from https://github.com/CoVPN/correlates_reporting2/releases
 
-A report is included in `report.Rmd` and can be created using `make report`.
+2. Assume that we have R 4.4.2 installed (or loaded on a high performance cluster).
+
+3. Assume that we have renv 1.1.5 installed. If not, open R console at the project level (the folder containing this readme file) and run the following command.
+)
+  ```{r}
+  # if the following does not work, it is because 1.1.5 is the current release. Then try install.packages("renv")
+  install.packages(
+    "https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz",
+    repos = NULL,
+    type = "source"
+  )
+  
+  packageVersion("renv")  
+  ```
+
+4. Start R in cop_mediation and run
+  ```{R}
+  renv::restore()
+  ```
+
+### Sanofi stage 2
+
+1. Look for read.csv in code/mediation_report_sanofi_stage2.R and modify the code to point to the local copy of analysis-ready data file if needed.
+
+2. Run the following shell command in cop_mediation.
+
+```{bash}
+export TRIAL=vat08_combined
+export stage=2
+make
+```
+sanofi_Day43_20250617.csv and sanofi_FR_20250617.csv are used for Table 2 in the manuscript.

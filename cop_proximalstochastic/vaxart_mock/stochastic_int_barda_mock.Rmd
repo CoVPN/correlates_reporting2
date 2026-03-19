@@ -1,0 +1,298 @@
+---
+title: "Stochastic intervention correlates analysis: VaxArt mock data"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+---
+
+```{r echo = FALSE, warning = F, message = F, cache = F}
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F, cache = T)
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(ggpubr)
+library(purrr)
+source("proxi_mtp_fns.R")
+```
+
+```{r}
+# read data
+ANALYSIS_READY_DATA_FILE_NAME = "nextgen_mock_data_processed_20260112.csv"
+df_barda <- read.csv(ANALYSIS_READY_DATA_FILE_NAME)
+```
+
+# Summary
+
+This is a mock analysis of the BARDA (nextgen_mock_data_processed_20260112.csv) dataset 
+using the stochastic interventional proximal causal inference method. 
+
+* **Covariates**: Randomization strata and baseline risk score (`HighRiskInd`, `demo.stratum`)
+* **Time variable**: Time to COVID disease endpoint from 7 days post Day 31 or censoring time  (`COVIDTimeD31toM6`)
+* **Event variable**: Indicator of COVID disease endpoint from 7 days post Day 31 (`COVIDIndD31_7toM6`)
+* **Marker variable**: Day 31 nAb-ID50 XBB.1.5 marker value (`Day31pseudoneutid50_sera_XBB.1.5`)
+* **Negative control outcome**: Burden of respiratory symptoms unrelated to SARS-CoV-2 infection (`NC0t1`)
+* **Negative control treatment**: D31 bAb-IgG Spike XBB.1.5 (`Day31bindSpike_IgG_sera_XBB.1.5`)
+* **Phase 1 sampling filter**: `ph1.AB.D31_7 == 1`
+* **Phase 2 sampling filter**: `ph2.AB.D31_7 == 1`
+* **IPS weight**: `wt.sera.D31_7`
+* **Timeframe**: 181 days 
+* **Policies**: $\epsilon$-upper-tail tapered shift intervention with $\epsilon = 1$ 
+and $\delta = 0, 0.2, ..., 1.0$. 
+
+```{r}
+# function to make tapered shift policies 
+make_policy_tapered_shift_eps <- function(c, xmin, xmax, eps) {
+  stopifnot(is.finite(c), is.finite(xmin), is.finite(xmax), xmax > xmin)
+  stopifnot(is.finite(eps), eps > 0, eps < (xmax - xmin))
+
+  function(x) {
+    x <- as.numeric(x)
+    x0 <- pmin(x, xmax)
+
+    top_taper <- pmin(1, pmax(0, (xmax - x0) / eps))  # 1 if x <= xmax-eps, 0 at xmax
+    shift <- c * top_taper
+
+    # keep within support (usually redundant with top_taper, but safe)
+    shift <- pmin(shift, xmax - x0)
+
+    x0 + shift
+  }
+}
+
+X <- df_barda$Day31pseudoneutid50_sera_XBB.1.5
+xmin <- min(X, na.rm = TRUE)
+xmax <- max(X, na.rm = TRUE)
+
+eps <- 1
+
+policy_q0 <- make_policy_tapered_shift_eps(0.0, xmin, xmax, eps)
+policy_q1 <- make_policy_tapered_shift_eps(0.2, xmin, xmax, eps)
+policy_q2 <- make_policy_tapered_shift_eps(0.4, xmin, xmax, eps)
+policy_q3 <- make_policy_tapered_shift_eps(0.6, xmin, xmax, eps)
+policy_q4 <- make_policy_tapered_shift_eps(0.8, xmin, xmax, eps)
+policy_q5 <- make_policy_tapered_shift_eps(1.0, xmin, xmax, eps)
+
+```
+
+```{r}
+# Grid of exposure values
+x_grid <- seq(xmin, xmax, length.out = 500)
+
+# List policies with labels
+policy_list <- list(
+  policy_q0 = policy_q0,
+  policy_q1 = policy_q1,
+  policy_q2 = policy_q2,
+  policy_q3 = policy_q3,
+  policy_q4 = policy_q4,
+  policy_q5 = policy_q5
+)
+
+# Apply each policy and compute shift
+df_shift <- imap_dfr(
+  policy_list,
+  ~ tibble(
+    x = x_grid,
+    shift = .x(x_grid) - x_grid,
+    policy = .y
+  )
+)
+
+```
+
+```{r, cache = T, results = "hide"}
+# Analysis parameters
+tf <- 181
+
+covariates_var <- c('HighRiskInd', 'demo.stratum')
+time_var <- "COVIDTimeD31toM6"
+event_var <- "COVIDIndD31_7toM6"
+weight_var <- "wt.sera.D31_7"
+outcome_var <- "event"
+ph1_var <- "ph1.AB.D31_7"
+ph2_var <- "ph2.AB.D31_7"
+nct_var <- "Day31bindSpike_IgG_sera_XBB.1.5"
+nco_var <- "NC0t1"
+
+# Filter for Phase 1 / Phase 2 data 
+df_analysis <- df_barda %>% 
+  filter(!!sym(ph1_var) == 1) %>% 
+  mutate(event = ifelse(!!sym(event_var) == 1 & !!sym(time_var) <= 181, 1, 0))
+  
+df_analysis <- df_analysis %>% 
+  filter(!!sym(ph2_var) == 1)
+
+obj.pmtp_0 = pmtp(data = df_analysis,
+                trt = "Day31pseudoneutid50_sera_XBB.1.5",
+                outcome = outcome_var,
+                covariates = covariates_var,
+                nct = nct_var,
+                nco = nco_var,
+                weights = weight_var,
+                ind_S = as.numeric(df_analysis$Trt == 0),
+                policy = list(policy_q0, 
+                              policy_q1, 
+                              policy_q2, 
+                              policy_q3, 
+                              policy_q4, 
+                              policy_q5),
+                lm_G_list  = 10^seq(-1, 0, by = 1),
+                theta = 1, 
+                control.folds = TRUE, inf.fun = T)
+
+
+obj.pmtp_1 = pmtp(data = df_analysis,
+                trt = "Day31pseudoneutid50_sera_XBB.1.5",
+                outcome = outcome_var,
+                covariates = covariates_var,
+                nct = nct_var,
+                nco = nco_var,
+                weights = weight_var,
+                ind_S = as.numeric(df_analysis$Trt == 1),
+                policy = list(policy_q0, 
+                              policy_q1, 
+                              policy_q2, 
+                              policy_q3, 
+                              policy_q4, 
+                              policy_q5),
+                lm_G_list  = 10^seq(-1, 0, by = 1),
+                theta = 1, 
+                control.folds = TRUE, inf.fun = T)
+
+```
+
+```{r}
+#' Tidy a proximal.mtp object into a results data.frame (with SEs + CIs)
+#'
+#' @param obj A pmtp() output (class "proximal.mtp")
+#' @param alpha Significance level (0.05 gives 95% CIs)
+#' @return A tidy data.frame: Policy, Estimator, Estimate, Std.Error, CI.Lower, CI.Upper
+tidy_pmtp <- function(obj, alpha = 0.05) {
+  stopifnot(!is.null(obj$Estimators), !is.null(obj$Var.est), !is.null(obj$n))
+  
+  est <- as.data.frame(obj$Estimators)
+  var <- as.data.frame(obj$Var.est)
+  
+  # Make sure the columns line up
+  if (!identical(colnames(est), colnames(var))) {
+    stop("Column names of obj$Estimators and obj$Var.est do not match.")
+  }
+  
+  # Standard errors: sqrt(Var / n)
+  se <- sqrt(as.matrix(var) / obj$n)
+  
+  z <- qnorm(1 - alpha / 2)
+  
+  out <- data.frame(
+    Policy = rep(colnames(est), times = nrow(est)),
+    Estimator = rep(rownames(est), each = ncol(est)),
+    Estimate = as.vector(t(as.matrix(est))),
+    Std.Error = as.vector(t(se)),
+    stringsAsFactors = FALSE
+  )
+  
+  out$CI.Lower <- out$Estimate - z * out$Std.Error
+  out$CI.Upper <- out$Estimate + z * out$Std.Error
+  
+  out <- out %>% 
+   mutate(shift = c(0, 0.2, 0.4, 0.6, 0.8, 1))
+  
+  out
+}
+```
+
+# Figure 37  
+
+```{r}
+df_res0 <- tidy_pmtp(obj.pmtp_0)
+df_res1 <- tidy_pmtp(obj.pmtp_1)
+
+
+plt1 <- ggplot(df_res0, aes(x = factor(shift), y = Estimate, ymin = CI.Lower, ymax = CI.Upper)) + 
+  geom_point() + 
+  geom_errorbar() + 
+  xlab("Shift in D31 nAb-ID50 titer against XBB.1.5 (log10 scale)") + 
+  ylab("Counterfactual probability\nof COVID-19") + 
+  ylim(0, 0.045) + 
+  theme_minimal() + 
+  ggtitle("(A) Investigational Vaccine") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plt2 <- ggplot(df_res1, aes(x = factor(shift), y = Estimate, ymin = CI.Lower, ymax = CI.Upper)) + 
+  geom_point() + 
+  geom_errorbar() + 
+  xlab("Shift in D31 nAb-ID50 titer against XBB.1.5 (log10 scale)") + 
+  ylab("Counterfactual probability\nof COVID-19") + 
+  ylim(0, 0.045) + 
+  theme_minimal() + 
+  ggtitle("(A) Comparator Vaccine") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggarrange(plt1, plt2, ncol = 1)
+
+```
+
+Figure 37. For nAb ID50 XBB.1.5 at D31, observed and counterfactual probabilities of COVID-19 from 7 days post D31 through 181 days post D31 based on sera for (A) Investigational Vaccine arm and (B) Comparator Vaccine arm participants for $\epsilon$-upper-tail tapered shift interventions with $\epsilon = 1$ and $\delta = 0, 0.2, 0.4, 0.6, 0.8,$ and $1.0$ (on the base-10 logarithm scale) applied to observed D31 marker levels. Analyses adjust for the randomization strata and baseline risk score and use a negative control outcome (the burden of respiratory symptoms unrelated to SARS-CoV-2 infection during trial follow-up) and a negative control treatment (D31 bAb-IgG Spike XBB.1.5) (ccIAS-sera). ID50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody.  
+
+# Figure 38 
+
+
+```{r}
+# --- Pull comparator from df_res0 at shift == 0 ---
+comp <- df_res0 %>%
+  filter(shift == 0) %>%
+  summarise(
+    comparator_risk = first(Estimate),
+    comparator_se   = first(Std.Error)
+  )
+
+comp_risk <- comp$comparator_risk
+comp_se   <- comp$comparator_se
+
+z <- qnorm(0.975)  # 95% CI
+
+df_incidence <- df_res1 %>%
+  mutate(
+    comparator_risk = comp_risk,
+    comparator_se   = comp_se,
+
+    RR = Estimate / comparator_risk
+  )
+
+df_incidence <- df_incidence %>%
+  mutate(
+    se_logRR = sqrt( (Std.Error / Estimate)^2 + (comparator_se / comparator_risk)^2 ),
+    CI.Lower = exp(log(RR) - z * se_logRR),
+    CI.Upper = exp(log(RR) + z * se_logRR)
+  )
+
+plt_incidence <- ggplot(
+  df_incidence,
+  aes(x = factor(shift), y = RR, ymin = CI.Lower, ymax = CI.Upper)
+) +
+  geom_point() +
+  geom_errorbar(width = 0.15) +
+  xlab("Shift in D31 nAb-ID50 titer against XBB.1.5 (log10 scale)") +
+  ylab("Counterfactual incidence ratio against COVID-19\n(scaled by comparator risk)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  ylim(0, 1.4)
+
+plt_incidence
+
+
+```
+
+Figure 38. For nAb ID50 XBB.1.5 at D31, observed and counterfactual cumulative incidence ratio of COVID-19 from 7 days post D31 through {t0} days post D31 based on sera for $\epsilon$-upper-tail tapered shift interventions with $\epsilon = 1$ and $\delta = 0, 0.2, 0.4, 0.6, 0.8,$ and $1.0$ (on the base-10 logarithm scale) applied to observed D31 marker levels, scaled by the overall covariate-adjusted cumulative incidence of COVID-19 for the Comparator Vaccine arm.  Analyses adjust for the randomization strata and baseline risk score and use a negative control outcome (the burden of respiratory symptoms unrelated to SARS-CoV-2 infection during trial follow-up) and a negative control treatment (D31 bAb-IgG Spike XBB.1.5) (ccIAS-sera). ID50, 50% inhibitory serum dilution neutralizing antibody titer. nAb, neutralizing antibody. 
+
+# Appendix
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results='asis'}
+commit_hash <- system("git rev-parse HEAD", intern = TRUE)
+git_url <- sub("\\.git$", paste0("/commits/", commit_hash), system("git remote get-url origin", intern = TRUE))
+cat("This report was built with ", sprintf("**[code](%s)**", git_url), " and ", sprintf("**[data](%s)**", ANALYSIS_READY_DATA_FILE_NAME), ".", sep="")
+```

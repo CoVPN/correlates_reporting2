@@ -22,7 +22,7 @@ $\dagger$ q-value and FWER (family-wide error rate) are computed over the set of
 ```{r, echo=FALSE, results='asis'}
 if (show.tertile.curves) {
   cat("\\newpage")
-  res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
+  res = knitr::knit_child(c(here::here('.', 'report_by_COR_tertilecurves.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```

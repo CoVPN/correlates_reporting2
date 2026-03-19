@@ -1,6 +1,6 @@
 ```{r, echo=FALSE, results='asis'}
 if (!TRIAL %in% c("nextgen_mock")) { # some trials are organized differently, e.g. may have tables from two treatment arms together
-  res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_coef.Rmd')), quiet = TRUE)
+  res = knitr::knit_child(c(here::here('.', 'report_by_COR_coef.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```
@@ -8,7 +8,7 @@ if (!TRIAL %in% c("nextgen_mock")) { # some trials are organized differently, e.
 
 ```{r, echo=FALSE, results='asis'}
 if (show.ve.curves) {
-  res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_curves.Rmd')), quiet = TRUE)
+  res = knitr::knit_child(c(here::here('.', 'report_by_COR_curves.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```
@@ -18,7 +18,7 @@ if (show.ve.curves) {
 ```{r, echo=FALSE, results='asis'}
 if (TRIAL!='covail_frnt') { # skip trichotomized because hard to compare with id50 results
   cat(paste(concatList(rep('#',level+1)), "Trichotomized markers"))
-  res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR_tri.Rmd')), quiet = TRUE)
+  res = knitr::knit_child(c(here::here('.', 'report_by_COR_tri.Rmd')), quiet = TRUE)
   cat(res, sep = '\n')
 }
 ```
@@ -33,7 +33,7 @@ if (TRIAL!='covail_frnt') { # skip trichotomized because hard to compare with id
   if (!is.null(tmp)) {
     cat("## Multivariate Cox Models of Risk\n\n")
     for (i in 1:length(tmp)) {
-      res = knitr::knit_child(c(here::here('cor_coxph', 'multiple_regression.Rmd')), quiet = TRUE)
+      res = knitr::knit_child(c(here::here('.', 'multiple_regression.Rmd')), quiet = TRUE)
       cat(res, sep = '\n')
     }
   }
@@ -72,7 +72,7 @@ if (TRIAL!='covail_frnt') { # skip trichotomized because hard to compare with id
 <!--   if (!is.null(config$additional_models)) { -->
 <!--   cat("## Additional posthoc Cox Models of Risk") -->
 <!--     for (i in 1:length(config$additional_models)) { -->
-<!--       res = knitr::knit_child(c(here::here('cor_coxph', 'additional_model.Rmd')), quiet = TRUE) -->
+<!--       res = knitr::knit_child(c(here::here('.', 'additional_model.Rmd')), quiet = TRUE) -->
 <!--       cat(res, sep = '\n') -->
 <!--     } -->
 <!--   } -->
@@ -98,7 +98,7 @@ if (TRIAL!='covail_frnt') { # skip trichotomized because hard to compare with id
 <!--       tmp=trim(strsplit(ab, " *\\* *")[[1]]) -->
 <!--       a=tmp[1] -->
 <!--       b=tmp[2] -->
-<!--       res = knitr::knit_child(c(here::here('cor_coxph', 'itxn_by_assays.Rmd')), quiet = TRUE) -->
+<!--       res = knitr::knit_child(c(here::here('.', 'itxn_by_assays.Rmd')), quiet = TRUE) -->
 <!--       cat(res, sep = '\n') -->
 <!--   } -->
 <!-- } -->

@@ -1,4 +1,4 @@
-# Sanofi Stage 2 CoP manuscript Mediation Code 
+# VaxArt SAP mock analysis NP threshold code 
 
 ## Reproducibility
 
@@ -32,7 +32,7 @@ This project uses a project-level renv.lock.
 
 1. Look for read.csv in all R/Rmd scripts and modify the code to point to the local copy of analysis-ready data file if needed.
 
-2. To generate the output xlsx files, run the following shell command at the project level.
+2. To render the report html, run the following shell command at the project level.
 ```{bash}
-make
+Rscript -e "rmarkdown::render('stochastic_int_barda_mock.Rmd', output_file='stochastic_int_barda_mock_$(date +%Y%m%d).pdf')"
 ```
