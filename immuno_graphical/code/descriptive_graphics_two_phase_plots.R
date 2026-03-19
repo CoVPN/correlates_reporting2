@@ -16,7 +16,7 @@ library(stringr)
 library(ggplot2)
 library(ggpubr)
 library(GGally)
-library(spatstat.geom)
+remotes::install_version("spatstat.geom", version = "2.4-0") #library(spatstat.geom)
 library(scales)
 library(grid) # textGrob
 library(gridExtra)
