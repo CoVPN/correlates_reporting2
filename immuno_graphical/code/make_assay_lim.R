@@ -177,7 +177,9 @@ if (attr(config,"config")=="nextgen_mock") {
   assay_lim[, , "ub"] = 7
   assay_lim[, , "lb"] = 2
   
-  assay_lim[c("pseudoneutid50_sera", "pseudoneutid50_sera_XBB.1.5", "pseudoneutid50_sera_KP.2", "pseudoneutid50_sera_mdw"), , "ub"] = 6
+  assay_lim[c("pseudoneutid50_sera", #"pseudoneutid50_sera_XBB.1.5", 
+              "pseudoneutid50_sera_KP.2"#, "pseudoneutid50_sera_mdw"
+              ), , "ub"] = 6
   
   assay_lim[c("T4_IFNg_OR_IL2_N_Index", "T4_IFNg_OR_IL2_Spike_KP.2", "T4_IFNg_OR_IL2_Spike_Index.D614", "T8_IFNg_OR_IL2_N_Index", "T8_IFNg_OR_IL2_Spike_KP.2", "T8_IFNg_OR_IL2_Spike_Index.D614"), c("B", "Day31", "Day91", "Day181", "Day366"), "ub"] = 1
   

@@ -1249,7 +1249,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
   
   # setup pdf file
   for (ab in if(study_name == "VaxArt_Mock") {
-    c("bind.*sera", "bind.*nasal", "bind.*saliva", "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", "T4", "T8")
+    c("bind.*sera", "bind.*nasal", "bind.*saliva", #"pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", 
+      "T4", "T8")
     } else {c("bind", "pseudo")}) {
     
     for (tm in c(if(attr(config,"config") != "nextgen_mock") "Day", 
