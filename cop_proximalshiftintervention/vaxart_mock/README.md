@@ -34,5 +34,5 @@ This project uses a project-level renv.lock.
 
 2. To render the report html, run the following shell command at the project level.
 ```{bash}
-Rscript -e "rmarkdown::render('stochastic_int_barda_mock.Rmd', output_file='stochastic_int_barda_mock_$(date +%Y%m%d).pdf')"
+Rscript -e "rmarkdown::render('shift_int_barda_mock.Rmd', output_file='shift_int_barda_mock_$(date +%Y%m%d).pdf')"
 ```
