@@ -558,15 +558,15 @@
     },
     "copcor": {
       "Package": "copcor",
-      "Version": "2025.12-11",
+      "Version": "2026.3-25",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "CoVPN",
       "RemoteRepo": "copcor",
       "RemoteRef": "main",
-      "RemoteSha": "14b149437a6bcca01519e1fc3471e55f8daf1f50",
-      "Hash": "0fc3bb94939899f43067579c84ff2977"
+      "RemoteSha": "251869fa5d15e28e3c5429330e3baab2c971f5e5",
+      "Hash": "01b0fe7e52395f5832c5ac5099d9d8d7"
     },
     "corrplot": {
       "Package": "corrplot",
@@ -1065,7 +1065,7 @@
       "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "16350cc39b68e61566f03a11f633e08073405355",
-      "Hash": "1b5958df7bd05b48da50266f92a1d327"
+      "Hash": "47c34f41535fb9c16bd44e760d61cb67"
     },
     "haven": {
       "Package": "haven",
@@ -2316,7 +2316,7 @@
       "RemoteUsername": "nhejazi",
       "RemoteRef": "master",
       "RemoteSha": "c0f572a638b019c057aee83c9f59f56acf1398db",
-      "Hash": "362ae555812ded051554a1136577d20f"
+      "Hash": "154f62a760f3f43838ea629efec3e5ae"
     },
     "usethis": {
       "Package": "usethis",
