@@ -59,8 +59,8 @@ version `r rmarkdown::pandoc_version()`, and the following R packages:
 
 ```{r pkg-list, echo=FALSE, results="asis"}
 # borrowed from https://github.com/tidymodels/TMwR/blob/master/index.Rmd
-deps <- desc::desc_get_deps()
-pkgs <- sort(deps$package[deps$type == "Imports"])
+#deps <- desc::desc_get_deps()
+#pkgs <- sort(deps$package[deps$type == "Imports"])
 pkgs <- sessioninfo::package_info(pkgs, dependencies = FALSE)
 df <- tibble::tibble(
   package = pkgs$package,
