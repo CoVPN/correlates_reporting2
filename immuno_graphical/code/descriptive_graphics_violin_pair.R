@@ -224,7 +224,7 @@ for (panel in if (study_name == "VaxArt_Mock") {
        "bindSpike_IgA_sera_KP.2$|bindSpike_IgA_sera_KP.3$",
        "bindSpike_IgA_sera_LB.1$",
        
-       "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera_XBB.1.5$", 
+       "pseudoneutid50_sera_KP.2$|pseudoneutid50_sera$", 
        
        "bindSpike_IgG_nasal$|bindSpike_IgG_nasal_delta_AY.4$",
        "bindSpike_IgG_nasal_BA.5$|bindSpike_IgG_nasal_BA.2.86$",
@@ -238,7 +238,7 @@ for (panel in if (study_name == "VaxArt_Mock") {
        "bindSpike_IgA_nasal_KP.2$|bindSpike_IgA_nasal_KP.3$",
        "bindSpike_IgA_nasal_LB.1$",
        
-       "pseudoneutid50_nasal_KP.2$|pseudoneutid50_nasal_XBB.1.5$",
+       "pseudoneutid50_nasal_KP.2$|pseudoneutid50_nasal$",
        
        "bindSpike_IgG_saliva$|bindSpike_IgG_saliva_delta_AY.4$",
        "bindSpike_IgG_saliva_BA.5$|bindSpike_IgG_saliva_BA.2.86$",
@@ -252,7 +252,7 @@ for (panel in if (study_name == "VaxArt_Mock") {
        "bindSpike_IgA_saliva_KP.2$|bindSpike_IgA_saliva_KP.3$",
        "bindSpike_IgA_saliva_LB.1$",
        
-       "pseudoneutid50_saliva_KP.2$|pseudoneutid50_saliva_XBB.1.5$",
+       "pseudoneutid50_saliva_KP.2$|pseudoneutid50_saliva$",
        
        "T4_IFNg_OR_IL2_N_Index$",
        

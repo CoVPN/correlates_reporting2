@@ -16,7 +16,7 @@ library(stringr)
 library(ggplot2)
 library(ggpubr)
 library(GGally)
-library(spatstat.geom)
+remotes::install_version("spatstat.geom", version = "2.4-0") #library(spatstat.geom)
 library(scales)
 library(grid) # textGrob
 library(gridExtra)
@@ -167,8 +167,8 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
           subdat_ <- dat.twophase.sample %>%
             dplyr::filter(Bserostatus == bserostatus & Trt == trt)
           
-          if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat=subset(subdat, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
-          if(attr(config,"config")=="janssen_partA_VL") {subdat=subset(subdat, Region==country)} # janssen_partA_VL Region: (Northern America = 0, Latin America = 1, Southern Africa = 2)
+          if(attr(config,"config")=="prevent19" & country=="Nvx_US") {subdat_=subset(subdat_, Country==0)} # Nvx Country: (USA = 0, MEX  = 1)
+          if(attr(config,"config")=="janssen_partA_VL") {subdat_=subset(subdat_, Region==country)} # janssen_partA_VL Region: (Northern America = 0, Latin America = 1, Southern Africa = 2)
           
           for (asy in c("*", 
                         if (attr(config,"config") %in% c("janssen_partA_VL","vat08_combined")) "bind", 
@@ -209,7 +209,7 @@ for (country in if(attr(config,"config")=="prevent19") {c("Nvx_US_Mex","Nvx_US")
                 assay_immuno_ = assay_immuno[grepl(asy, assay_metadata$assay_label_short)]
               } else {assay_immuno_ = assay_immuno}
             
-            if (sum(complete.cases(subdat[, paste0(tp, assay_immuno_)]))==0) next # skip if no assay data available
+            if (sum(complete.cases(subdat_[, paste0(tp, assay_immuno_)]))==0) next # skip if no assay data available
             
             if (asy %in% c("Mu","Gamma","Lambda") & country == 2) next # don't need these figures for janssen_partA_VL
             if (asy %in% c("Delta","Beta") & country == 1) next # don't need these figures for janssen_partA_VL
@@ -1249,7 +1249,8 @@ if(attr(config,"config") %in% c("vat08_combined", "janssen_partA_VL", "nextgen_m
   
   # setup pdf file
   for (ab in if(study_name == "VaxArt_Mock") {
-    c("bind.*sera", "bind.*nasal", "bind.*saliva", "pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", "T4", "T8")
+    c("bind.*sera", "bind.*nasal", "bind.*saliva", #"pseudo.*sera", "pseudo.*nasal", "pseudo.*saliva", 
+      "T4", "T8")
     } else {c("bind", "pseudo")}) {
     
     for (tm in c(if(attr(config,"config") != "nextgen_mock") "Day", 

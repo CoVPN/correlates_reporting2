@@ -100,7 +100,7 @@ if (is.null(uloqs)) {
 
 
 # Depends on the incoming data
-if(include_bindN && grepl("bind", assays) && !grepl("bindN", assays) && !grepl("janssen_.+partA.*", attr(config,"config"))){
+if(include_bindN && any(grepl("bind", assays)) && !any(grepl("bindN", assays)) && !grepl("janssen_.+partA.*", attr(config,"config"))){
   assay_immuno <- assays[assays %in% c(assays, "bindN")]
   labels.assays.all <- c("Binding Antibody to N", labels.assays)
   names(labels.assays.all)[1] <- "bindN"

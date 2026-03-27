@@ -91,7 +91,7 @@ get_desc_by_group <- function(data,
                num = ifelse(study_name == "VaxArt_Mock", sum(response * wt * as.numeric(Track == "A"), na.rm=T), sum(response * wt, na.rm=T)),
                denom = ifelse(study_name == "VaxArt_Mock", sum(wt * as.numeric(Track == "A"), na.rm=T), sum(wt, na.rm=T)),
                #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
-               RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+               RespRate = ifelse(!grepl("Delta", time) & !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
                min = min(value, na.rm=T),
                q1 = quantile(value, 0.25, na.rm=T),
                median = median(value, na.rm=T),
@@ -108,7 +108,7 @@ get_desc_by_group <- function(data,
                    num = sum(response * wt2, na.rm=T),
                    denom = sum(wt2, na.rm=T),
                    #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
-                   RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+                   RespRate = ifelse(!grepl("Delta", time) & !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
                    min = min(value, na.rm=T),
                    q1 = quantile(value, 0.25, na.rm=T),
                    median = median(value, na.rm=T),
@@ -121,7 +121,7 @@ get_desc_by_group <- function(data,
                                  num = sum(response * wt, na.rm=T),
                                  denom = sum(wt, na.rm=T),
                                  #N_RespRate = paste0(counts, "\n",round(num/denom*100, 1),"%"),
-                                 RespRate = ifelse(!grepl("Delta", time) && !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
+                                 RespRate = ifelse(!grepl("Delta", time) & !is.na(pos.cutoffs), paste0(counts, "\n", round(num/denom*100, 1),"%"), ""), # RespRate at Delta timepoints will be ""
                                  min = min(value, na.rm=T),
                                  q1 = quantile(value, 0.25, na.rm=T),
                                  median = median(value, na.rm=T),
