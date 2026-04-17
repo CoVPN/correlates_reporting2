@@ -66,6 +66,8 @@ bind_IgA_saliva,9,bindSpike_IgA_saliva_LB.1,3,303,NA,3,Saliva Binding IgA Antibo
 bind_IgA_saliva,10,bindSpike_IgA_saliva_mdw,0,Inf,NA,0,Saliva Binding IgA Antibody to Spike crossreactivity score,Saliva IgA Spike crossreactivity score,lloq,1,NA
 bind_IgA_saliva,11,bindN_IgA_saliva,NA,NA,NA,NA,Not measured,Not measured,lloq,1,NA
 pseudoneutid50_sera,3,pseudoneutid50_sera_KP.2,19,1040,NA,10,Serum neutralization to KP.2,Serum nAb ID50 KP.2 (AU/ml),lloq,1,NA
+pseudoneutid50_nasal,5,pseudoneutid50_nasal_KP.2,,,NA,10,Nasal neutralization to KP.2,Nasal nAb ID50 KP.2 (AU/ml),lloq,1,NA
+pseudoneutid50_saliva,9,pseudoneutid50_saliva_KP.2,,,NA,10,Saliva neutralization to KP.2,Saliva nAb ID50 KP.2 (AU/ml),lloq,1,NA
 pseudoneutid50_sera,1,pseudoneutid50_sera,10,5598,NA,10,Serum neutralization to D614G,Serum nAb ID50 D614G (AU/ml),lloq,1,NA
 pseudoneutid50_nasal,5,pseudoneutid50_nasal,21,874,NA,10,Nasal neutralization to D614G,Nasal nAb ID50 D614G (AU/ml),lloq,1,NA
 pseudoneutid50_saliva,9,pseudoneutid50_saliva,14,927,NA,10,Saliva neutralization to D614G,Saliva nAb ID50 D614G (AU/ml),lloq,1,NA
