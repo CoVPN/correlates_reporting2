@@ -1657,7 +1657,7 @@ D31toM12_nextgen_mock_COVID_sera:
   Earlyendpoint: 
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 336
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
   multivariate_assays_2: [
@@ -1672,15 +1672,33 @@ D31toM5_nextgen_mock_COVID_sera:
   WtStratum: Wstratum
   EventIndPrimary: COVIDIndD31_7toM5
   EventTimePrimary: COVIDTimeD31toM5
-  Earlyendpoint: 
+  Earlyendpoint:
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 151
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
   multivariate_assays_2: [
-    ~.+ Day31pseudoneutid50_sera + Bpseudoneutid50_sera + Bpseudoneutid50_sera * Day31pseudoneutid50_sera, 
-    ~.+ Day31pseudoneutid50_sera + Day31bindSpike_IgA_sera + Day31bindSpike_IgA_sera * Day31pseudoneutid50_sera 
+    ~.+ Day31pseudoneutid50_sera + Bpseudoneutid50_sera + Bpseudoneutid50_sera * Day31pseudoneutid50_sera,
+    ~.+ Day31pseudoneutid50_sera + Day31bindSpike_IgA_sera + Day31bindSpike_IgA_sera * Day31pseudoneutid50_sera
+  ]
+
+M5toM12_nextgen_mock_COVID_sera:
+  ph1: ph1.D31_7
+  ph2: ph2.covid.sera.D31_7
+  wt:  wt.covid.sera.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndM5toM12
+  EventTimePrimary: COVIDTimeM5toM12
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 336
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+  multivariate_assays_2: [
+    ~.+ Day31pseudoneutid50_sera + Bpseudoneutid50_sera + Bpseudoneutid50_sera * Day31pseudoneutid50_sera,
+    ~.+ Day31pseudoneutid50_sera + Day31bindSpike_IgA_sera + Day31bindSpike_IgA_sera * Day31pseudoneutid50_sera
   ]
 
 D31toM12_nextgen_mock_COVID_saliva:
@@ -1693,7 +1711,35 @@ D31toM12_nextgen_mock_COVID_saliva:
   Earlyendpoint: 
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 336 
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+D31toM5_nextgen_mock_COVID_saliva:
+  ph1: ph1.D31_7
+  ph2: ph2.covid.saliva.D31_7
+  wt:  wt.covid.saliva.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD31_7toM5
+  EventTimePrimary: COVIDTimeD31toM5
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 151
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+M5toM12_nextgen_mock_COVID_saliva:
+  ph1: ph1.D31_7
+  ph2: ph2.covid.saliva.D31_7
+  wt:  wt.covid.saliva.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndM5toM12
+  EventTimePrimary: COVIDTimeM5toM12
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 336
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
@@ -1707,7 +1753,35 @@ D31toM12_nextgen_mock_COVID_nasal:
   Earlyendpoint: 
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 336 
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+D31toM5_nextgen_mock_COVID_nasal:
+  ph1: ph1.D31_7
+  ph2: ph2.covid.nasal.D31_7
+  wt:  wt.covid.nasal.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndD31_7toM5
+  EventTimePrimary: COVIDTimeD31toM5
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 151
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+M5toM12_nextgen_mock_COVID_nasal:
+  ph1: ph1.D31_7
+  ph2: ph2.covid.nasal.D31_7
+  wt:  wt.covid.nasal.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: COVIDIndM5toM12
+  EventTimePrimary: COVIDTimeM5toM12
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 336
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
@@ -1721,40 +1795,12 @@ D31toM12_nextgen_mock_COVID_PBMC:
   Earlyendpoint: 
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 336 
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
   multivariate_assays2: [
     ~.+ Day31pseudoneutid50_sera + BT8_IFNg_OR_IL2_N_Index
   ]
-
-D31toM5_nextgen_mock_COVID_saliva:
-  ph1: ph1.D31_7
-  ph2: ph2.covid.saliva.D31_7
-  wt:  wt.covid.saliva.D31_7
-  WtStratum: Wstratum
-  EventIndPrimary: COVIDIndD31_7toM5
-  EventTimePrimary: COVIDTimeD31toM5
-  Earlyendpoint: 
-  tpeak: 31
-  tpeaklag: 7
-  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
-
-D31toM5_nextgen_mock_COVID_nasal:
-  ph1: ph1.D31_7
-  ph2: ph2.covid.nasal.D31_7
-  wt:  wt.covid.nasal.D31_7
-  WtStratum: Wstratum
-  EventIndPrimary: COVIDIndD31_7toM5
-  EventTimePrimary: COVIDTimeD31toM5
-  Earlyendpoint: 
-  tpeak: 31
-  tpeaklag: 7
-  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
-  txt.endpoint: COVID
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
 D31toM5_nextgen_mock_COVID_PBMC:
   ph1: ph1.AB.D31_7
@@ -1766,9 +1812,26 @@ D31toM5_nextgen_mock_COVID_PBMC:
   Earlyendpoint:
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 151
   txt.endpoint: COVID
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+M5toM12_nextgen_mock_COVID_PBMC:
+  ph1: ph1.AB.D31_7
+  ph2: ph2.covid.AB.D31_7
+  wt:  wt.covid.AB.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary:  COVIDIndM5toM12
+  EventTimePrimary: COVIDTimeM5toM12
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 336
+  txt.endpoint: COVID
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+  multivariate_assays2: [
+    ~.+ Day31pseudoneutid50_sera + BT8_IFNg_OR_IL2_N_Index
+  ]
 
 D31toM12_nextgen_mock_Infection_sera:
   ph1: ph1.D31_7
@@ -1780,7 +1843,7 @@ D31toM12_nextgen_mock_Infection_sera:
   Earlyendpoint:
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 336 
   txt.endpoint: Infection
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
   multivariate_assays_2: [
@@ -1798,7 +1861,25 @@ D31toM5_nextgen_mock_Infection_sera:
   Earlyendpoint:
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 151
+  txt.endpoint: Infection
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+  multivariate_assays_2: [
+    ~.+ Day31pseudoneutid50_sera + Bpseudoneutid50_sera + Bpseudoneutid50_sera * Day31pseudoneutid50_sera,
+    ~.+ Day31pseudoneutid50_sera + Day31bindSpike_IgA_sera + Day31bindSpike_IgA_sera * Day31pseudoneutid50_sera
+  ]
+
+M5toM12_nextgen_mock_Infection_sera:
+  ph1: ph1.D31_7
+  ph2: ph2.inf.sera.D31_7
+  wt:  wt.inf.sera.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: InfectionIndM5toM12
+  EventTimePrimary: InfectionTimeM5toM12
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 336
   txt.endpoint: Infection
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
   multivariate_assays_2: [
@@ -1816,7 +1897,35 @@ D31toM12_nextgen_mock_Infection_saliva:
   Earlyendpoint:
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 336 
+  txt.endpoint: Infection
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+D31toM5_nextgen_mock_Infection_saliva:
+  ph1: ph1.D31_7
+  ph2: ph2.inf.saliva.D31_7
+  wt:  wt.inf.saliva.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: InfectionIndD31_7toM5
+  EventTimePrimary: InfectionTimeD31toM5
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 151
+  txt.endpoint: Infection
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+M5toM12_nextgen_mock_Infection_saliva:
+  ph1: ph1.D31_7
+  ph2: ph2.inf.saliva.D31_7
+  wt:  wt.inf.saliva.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: InfectionIndM5toM12
+  EventTimePrimary: InfectionTimeM5toM12
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 336
   txt.endpoint: Infection
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
@@ -1830,38 +1939,7 @@ D31toM12_nextgen_mock_Infection_nasal:
   Earlyendpoint:
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
-  txt.endpoint: Infection
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
-
-D31toM12_nextgen_mock_Infection_PBMC:
-  ph1: ph1.AB.D31_7
-  ph2: ph2.AB.D31_7
-  wt:  wt.AB.D31_7
-  WtStratum: Wstratum
-  EventIndPrimary:  InfectionIndD31_7toM12
-  EventTimePrimary: InfectionTimeD31toM12
-  Earlyendpoint:
-  tpeak: 31
-  tpeaklag: 7
-  tfinal.tpeak: 339 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
-  txt.endpoint: Infection
-  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
-  multivariate_assays2: [
-    ~.+ Day31pseudoneutid50_sera + BT8_IFNg_OR_IL2_N_Index
-  ]
-
-D31toM5_nextgen_mock_Infection_saliva:
-  ph1: ph1.D31_7
-  ph2: ph2.inf.saliva.D31_7
-  wt:  wt.inf.saliva.D31_7
-  WtStratum: Wstratum
-  EventIndPrimary: InfectionIndD31_7toM5
-  EventTimePrimary: InfectionTimeD31toM5
-  Earlyendpoint:
-  tpeak: 31
-  tpeaklag: 7
-  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 336 
   txt.endpoint: Infection
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
 
@@ -1875,9 +1953,40 @@ D31toM5_nextgen_mock_Infection_nasal:
   Earlyendpoint:
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 151
   txt.endpoint: Infection
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+M5toM12_nextgen_mock_Infection_nasal:
+  ph1: ph1.D31_7
+  ph2: ph2.inf.nasal.D31_7
+  wt:  wt.inf.nasal.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary: InfectionIndM5toM12
+  EventTimePrimary: InfectionTimeM5toM12
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 336
+  txt.endpoint: Infection
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+D31toM12_nextgen_mock_Infection_PBMC:
+  ph1: ph1.AB.D31_7
+  ph2: ph2.AB.D31_7
+  wt:  wt.AB.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary:  InfectionIndD31_7toM12
+  EventTimePrimary: InfectionTimeD31toM12
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 336 
+  txt.endpoint: Infection
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+  multivariate_assays2: [
+    ~.+ Day31pseudoneutid50_sera + BT8_IFNg_OR_IL2_N_Index
+  ]
 
 D31toM5_nextgen_mock_Infection_PBMC:
   ph1: ph1.AB.D31_7
@@ -1889,9 +1998,26 @@ D31toM5_nextgen_mock_Infection_PBMC:
   Earlyendpoint:
   tpeak: 31
   tpeaklag: 7
-  tfinal.tpeak: 151 # derived from the default rule for ph2.D31_7 - the last case in ph2 in vaccine arm
+  tfinal.tpeak: 151
   txt.endpoint: Infection
   txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+
+M5toM12_nextgen_mock_Infection_PBMC:
+  ph1: ph1.AB.D31_7
+  ph2: ph2.AB.D31_7
+  wt:  wt.AB.D31_7
+  WtStratum: Wstratum
+  EventIndPrimary:  InfectionIndM5toM12
+  EventTimePrimary: InfectionTimeM5toM12
+  Earlyendpoint:
+  tpeak: 31
+  tpeaklag: 7
+  tfinal.tpeak: 336
+  txt.endpoint: Infection
+  txt.coxph.note2: No. at-risk = estimated number in the population for analysis.
+  multivariate_assays2: [
+    ~.+ Day31pseudoneutid50_sera + BT8_IFNg_OR_IL2_N_Index
+  ]
 
 
 
