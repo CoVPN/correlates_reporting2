@@ -57,6 +57,17 @@ if (TRIAL=="vat08_combined") {
   }
   
   
+} else if(TRIAL=="nextgen_mock") {
+  
+  endpoint="COVID"
+  res = knitr::knit_child(c(here::here('./report_trial', paste0('report_', TRIAL, '.Rmd'))), quiet = TRUE)
+  cat(res, sep = '\n')
+
+  endpoint="Infection"
+  res = knitr::knit_child(c(here::here('./report_trial', paste0('report_', TRIAL, '.Rmd'))), quiet = TRUE)
+  cat(res, sep = '\n')
+
+  
 } else if(file.exists(here::here('./report_trial', paste0('report_', TRIAL, '.Rmd')))
    & attr(config,"config")!="profiscov_lvmn" # profiscov uses special template but lvmn does not because it does not have D43start48
 ) {
@@ -65,6 +76,7 @@ if (TRIAL=="vat08_combined") {
   res = knitr::knit_child(c(here::here('./report_trial', paste0('report_', TRIAL, '.Rmd'))), quiet = TRUE)
   cat(res, sep = '\n')
 
+  
 } else if(file.exists(here::here('./report_trial', paste0('report_', tolower(study_name), '.Rmd')))
    & attr(config,"config")!="profiscov_lvmn" # profiscov uses special template but lvmn does not because it does not have D43start48
 ) {

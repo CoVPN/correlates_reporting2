@@ -1,21 +1,31 @@
-```{r params}
+```{r}
+# all chunks are unnamed b/c this Rmd is called twice.
+
+# these are partial CORs, to be appended with sera etc conditioning on the marker_set
+CORs = c(
+  "D31toM5_nextgen_mock", 
+  "D31toM12_nextgen_mock",
+  "M5toM12_nextgen_mock"
+)
+CORs = paste0(CORs, "_", endpoint)
+
 labels <- c(
-  "M6, Investigational vaccine", 
-  "M6, Comparator vaccine", 
+  "M5, Investigational vaccine", 
+  "M5, Comparator vaccine", 
   "M12, Investigational vaccine", 
-  "M12, Comparator vaccine")
+  "M12, Comparator vaccine",
+  "VxDistal, Investigational vaccine", 
+  "VxDistal, Comparator vaccine"
+)
 
 fname.suffixes <- c(
         "InvVacc_",
         "CtlVacc_",
         "InvVacc_",
+        "CtlVacc_",
+        "InvVacc_",
         "CtlVacc_"
       )
-
-# these are partial CORs, to be appended with sera etc conditioning on the marker_set
-CORs = c(
-  "D31toM6_nextgen_mock", 
-  "D31toM12_nextgen_mock")
 
 # get tfinal.tpeak
 get.tfinal.tpeak=function(x) config::get(config = x)$tfinal.tpeak
@@ -36,7 +46,7 @@ message(paste(marker_sets, collapse = "\n"))
 
 # Cox model forest plots for continuous markers
 
-```{r forestplot, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis'}
 for (marker_set in marker_sets) {
   fig_parts <- c("\\newpage\n\\begin{figure}[H]\n\\centering\n")
   tfinal.tpeaks=c()
@@ -49,12 +59,7 @@ for (marker_set in marker_sets) {
     
     tfinal.tpeaks=c(tfinal.tpeaks, tfinal.tpeak)
     
-    fname.suffix <- c(
-      "InvVacc_",
-      "CtlVacc_",
-      "InvVacc_",
-      "CtlVacc_"
-    )[i] %.% marker_set
+    fname.suffix <- fname.suffixes[i] %.% marker_set
     
     file <- paste0(pathCoRoutput, "/hr_forest_", fname.suffix, ".pdf")
     entry <- paste0("\\subfloat[\\textbf{", label, "}]{\n\\includegraphics[width=0.45\\textwidth]{", file, "}}")
@@ -80,7 +85,7 @@ for (marker_set in marker_sets) {
 
 # Cox model tables for continuous markers (two arms side-by-side)
 
-```{r cox cont, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis'}
 
 for (i in 1:len(CORs)) {
   cat ("## ", CORs[i], "\n \\newpage\n")
@@ -124,7 +129,7 @@ for (i in 1:len(CORs)) {
 
 \newpage
 
-```{r trichotomized cumulative incidence curves, echo=FALSE, results='asis'}
+```{r, echo=FALSE, results='asis'}
 for (i in 1:len(CORs)) { #
   
   cat ("## ", CORs[i], "\n\n")
@@ -211,7 +216,7 @@ for (i in 1:len(CORs)) { #
 
 ```{r, echo=FALSE, results='asis'}
 CORs2 = c(
-  "D31toM6_nextgen_mock_sera", 
+  "D31toM5_nextgen_mock_sera", 
   "D31toM12_nextgen_mock_sera")
 
 for (i in 1:len(CORs2)) { 

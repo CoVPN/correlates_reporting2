@@ -1,5 +1,4 @@
-# COR="D31toM12_nextgen_mock_sera";
-# COR="D31toM12_nextgen_mock_tcell";
+# COR="D31toM12_nextgen_mock_COVID_sera";
 Sys.setenv(TRIAL = "nextgen_mock")
 Sys.setenv(VERBOSE = 1)
 source(here::here("..", "_common.R")) 
