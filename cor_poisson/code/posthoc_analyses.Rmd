@@ -91,21 +91,25 @@ barnard.test(tab[1,1], tab[1,2], tab[2,1], tab[2,2])
 \clearpage
 # Foldrise statistics
 ```{r is foldrise sig}
+
 maketab=function(.PPAI, trt, digit) {
-  tab = sapply (panels[1:4], function (p) {
+  tab = sapply(panels[1:4], function(p) {
         sapply(antigens, function(a) {
           dat.tmp = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!.PPAI) 0))[[glue("Delta28overB{a}_{p}")]]
-          out=wilcox_test_quiet(dat.tmp)
-          glue("{formatDouble(10**(mean(dat.tmp)),digit)} ({formatPvalues(out$p.value)})")
+          out  = wilcox_test_quiet(dat.tmp, conf.int=TRUE)
+          ci   = out$conf.int
+          stars = ifelse(out$p.value < 0.001, "***", ifelse(out$p.value < 0.01, "**", ifelse(out$p.value < 0.05, "*", "")))
+          glue("{formatDouble(10**(mean(dat.tmp)),digit)}{stars} ({formatDouble(10**(ci[1]),digit)}, {formatDouble(10**(ci[2]),digit)})")
         })
   })
   colnames(tab)=panel_names[1:4]
   tab
 }
 
+
 tab1=maketab(T, "BPZE1", digit=2)
-tab2=maketab(T, "PBO", digit=3)
-tab=cbind(tab2, tab1)
+tab2=maketab(T, "PBO", digit=2)
+tab=cbind(tab1, tab2)
 kable(tab,
   format = "latex",
   booktabs = TRUE,
@@ -114,9 +118,12 @@ kable(tab,
   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
   add_header_above(c(" "=1, "Placebo"=4, "Vaccine"=4)) %>%
   kable_styling(latex_options = "scale_down")
+print(tab)
+
+# impossible to install packages to write tables to Word because R is too old
+mywrite.csv(tab, file="Table1", row.names=T)
 
 ```
-
 \newpage
 
 \clearpage
@@ -601,7 +608,7 @@ kable(wt.Day28.mat, digit=2, caption="PC1 Loading.")
 pc1_reg = function(endpoint, PPAI.only, trt) {
   tab = mysapply (c("B","Day28","Delta28overB"), function (t) {
     fits = lapply(panels[1:4], function(p) geeglm(as.formula(glue("{endpoint} ~ {t}{p}_PC1")), data  = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!PPAI.only) 0)), family= poisson(link = "log"), id = Ptid, corstr= "independence"))
-    getFormattedSummary(fits, robust="MBN", exp=T, type=6, sig.level=0.1)[2,,drop=F]
+    getFormattedSummary(fits, robust="MBN", exp=T, sig.level=0.1)[2,,drop=F]
   })
   
   colnames(tab)=panels[1:4]
@@ -620,10 +627,12 @@ tab=cbind(tab2, tab1)
 kable(tab, align="c", caption="PC1 Poisson "%.%corner.text) %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;") %>% 
   add_header_above(c(" "=1, "Placebo"=3, "Vaccine"=3))
+mywrite.csv(tab, row.names=T, file="Table_2_1")
 
 corner.text="Vaccine, alt"
 tab=pc1_reg (endpoint="EventIndC14", PPAI.only=T, trt="BPZE1")
 kable(tab, align="c", col.names = NULL, caption="PC1 Poisson "%.%corner.text) %>% column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% add_header_above(c(setNames(1, corner.text), setNames(rep(1,ncol(tab)), colnames(tab)))) # add text in corner cell
+mywrite.csv(tab, row.names=T, file="Table_S2_1")
 
 
 corner.text ="PP prim"
@@ -682,11 +691,15 @@ pc1_median = function(endpoint, PPAI.only, trt) {
 
 tab1=pc1_median (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
 tab2=pc1_median (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
-tab=cbind(tab2, tab1)
+tab=cbind(tab1, tab2)
 kable(tab, align="c", digits=2, caption="PC1 foldrise median") %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
-  add_header_above(c(" "=1, "Placebo"=ncol(tab1), "Vaccine"=ncol(tab1)))
+  add_header_above(c(" "=1, "Placebo"=ncol(tab1), "BPZE1"=ncol(tab1)))
 
+# save a version to csv
+# remove B_Day28
+tab=tab[,c(1,2,4,5,6,8)]
+mywrite.csv(tab, row.names = T, file="tab_foldrise_median", digits = 2)
 ```
 
 ```{r pc1 auc}
@@ -799,20 +812,20 @@ for (p in panels[1:4]){
   myboxplot(as.formula(glue("B{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Baseline {panel_names[which(p==panels)]} PC1"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "BPZE1"), line=2, col="white")
   if (p==panels[1] | p==panels[2]) add_sig_bar(1, 2, ylim)
 
   myboxplot(as.formula(glue("Day28{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Day 28 {panel_names[which(p==panels)]} PC1"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "BPZE1"), line=2, col="white")
   if (p==panels[1]) add_sig_bar(1, 2, ylim)
   if (p==panels[1] | p==panels[3]) add_sig_bar(3, 4, ylim)
   
   myboxplot(as.formula(glue("Delta28overB{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim1, 
             names=c("Non-cases","Cases", "Non-cases","Cases"), ylab="",
             main=glue("Foldrise {panel_names[which(p==panels)]} PC1"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "BPZE1"), line=2, col="white")
 
 }
 
@@ -942,20 +955,20 @@ for (a in select_markers){
   myboxplot(as.formula(glue("B{a}~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Baseline {marker_names[a]}"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "BPZE1"), line=2, col="white")
   if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(1, 2, ylim)
 
   myboxplot(as.formula(glue("Day28{a}~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Day 28 {marker_names[a]}"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "BPZE1"), line=2, col="white")
   if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(1, 2, ylim)
   if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(3, 4, ylim)
   
   myboxplot(as.formula(glue("Delta28overB{a}~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim1, 
             names=c("Non-cases","Cases", "Non-cases","Cases"), ylab="",
             main=glue("Foldrise {marker_names[a]}"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "BPZE1"), line=2, col="white")
 
 }
 
