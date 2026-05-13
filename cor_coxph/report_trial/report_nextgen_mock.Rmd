@@ -3,15 +3,15 @@
 
 # these are partial CORs, to be appended with sera etc conditioning on the marker_set
 CORs = c(
-  "D31toM5_nextgen_mock", 
+  "D31toM6_nextgen_mock", 
   "D31toM12_nextgen_mock",
-  "M5toM12_nextgen_mock"
+  "M6toM12_nextgen_mock"
 )
 CORs = paste0(CORs, "_", endpoint)
 
 labels <- c(
-  "M5, Investigational vaccine", 
-  "M5, Comparator vaccine", 
+  "M6, Investigational vaccine", 
+  "M6, Comparator vaccine", 
   "M12, Investigational vaccine", 
   "M12, Comparator vaccine",
   "VxDistal, Investigational vaccine", 
@@ -216,7 +216,7 @@ for (i in 1:len(CORs)) { #
 
 ```{r, echo=FALSE, results='asis'}
 CORs2 = c(
-  "D31toM5_nextgen_mock_sera", 
+  "D31toM6_nextgen_mock_sera", 
   "D31toM12_nextgen_mock_sera")
 
 for (i in 1:len(CORs2)) { 
