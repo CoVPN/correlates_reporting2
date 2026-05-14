@@ -25,8 +25,8 @@ make
 
 | Manuscript | Report                        |
 |------------|-------------------------------|
-| Table 1    | posthoc_analyses_20260103.pdf, Table 5.2 |
-| Table 2    | posthoc_analyses_20260103.pdf, Table 2.1 |
+| Table 1    | posthoc_analyses_20260103.pdf, Table 2.1 |
+| Table 2    | posthoc_analyses_20260103.pdf, Table 5.2 |
 | Table 3    | posthoc_analyses_20260103.pdf, Table 5.9, 5.14 |
 | Figure 1   | comparative_immunogenicity_20260103.pdf, Figure 4.1-4.4 |
 | Figure 2   | posthoc_analyses_20260103.pdf, Figure 5.3 |
