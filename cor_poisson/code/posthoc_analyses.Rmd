@@ -11,6 +11,10 @@ header-includes:
   - \counterwithin{figure}{section}
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
 
 <!-- Make sure the working dir is cor_poisson because it writes png files to disk. -->
 
