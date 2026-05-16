@@ -70,16 +70,29 @@ mytable(dat_proc$SamplingStep, dat_proc$nAbBatch, dat_proc$Trialstage)
 #If Day 01 titer < LOD, call sero-positive if Day 43 titer > 4-fold LOD.
 #If Day 01 titer > LOD, call sero-positive if Day 43 titer > 4-fold D01 value.
 
-dat=subset(dat_proc, Trialstage==2 & EventIndOmicronD43M5hotdeck10==0 & Trt==0 & ph2.D43.nAb); nrow(dat)
-
-for (a in nassays) {
-  dat[[glue("pos_{a}")]] = dat[[glue("B{a}")]] < 1.4 & dat[[glue("Day43{a}")]] > log10(160) |
-                           dat[[glue("B{a}")]] > 1.4 & dat[[glue("Day43{a}")]] > dat[[glue("B{a}")]] + log10(4)
+for (trt in 0:1) {
+  myprint(trt)
+  dat=subset(dat_proc, Trialstage==2 & Trt==trt & Bserostatus==1 & ph2.D43.nAb); nrow(dat)
+  
+  for (a in nassays) {
+    dat[[glue("pos_{a}")]] = dat[[glue("B{a}")]] < 1.4 & dat[[glue("Day43{a}")]] > log10(160) | # replace log10(160) with 1.4 to reproduce results from the original def
+                             dat[[glue("B{a}")]] > 1.4 & dat[[glue("Day43{a}")]] > dat[[glue("B{a}")]] + log10(4)
+  }
+  
+  sapply(nassays, function (a) {
+    formatDouble(wtd.mean(dat[[glue("pos_{a}")]], weights=dat$wt.D43.nAb)*100, 1)
+  })
+  
+  # by case status
+  print(mysapply(c("pseudoneutid50", "pseudoneutid50_B.1.351", "pseudoneutid50_BA.1"), function (a) {
+    c(
+      with (dat[dat$EventIndOmicronD43M5hotdeck10==1,], formatDouble(wtd.mean(get(glue("pos_{a}")), weights=wt.D43.nAb)*100, 1)%.%"%"),
+      with (dat[dat$EventIndOmicronD43M5hotdeck10==0,], formatDouble(wtd.mean(get(glue("pos_{a}")), weights=wt.D43.nAb)*100, 1)%.%"%")
+    )
+  }))
+  
 }
 
-sapply(nassays, function (a) {
-  formatDouble(wtd.mean(dat[[glue("pos_{a}")]], weights=dat$wt.D43.nAb)*100, 1)
-})
 
 ```
 
