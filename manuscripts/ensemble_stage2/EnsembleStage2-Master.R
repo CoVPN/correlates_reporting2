@@ -1,7 +1,9 @@
 require(renv)
 # renv::load()
-dir <- "/Volumes/trials/covpn/p3003/analysis/correlates/stage2/code"
-renv::restore(dir)
+spath <- "/Volumes/trials/covpn/p3003/analysis/correlates/stage2"
+data.path <- "/Volumes/trials/covpn/p3003/analysis/correlates/stage2/adata/COVID_ENSEMBLE_stage2_mapped_20251203.csv"
+dir.create(paste0(spath, "/reports"), showWarnings = FALSE, recursive=TRUE)
+renv::restore(paste0(spath, "/code"))
 
 require(lubridate)
 require(survminer)
@@ -21,9 +23,6 @@ require(hal9001)
 require(CFsurvival)
 
 set.seed(206)
-spath <- "/Volumes/trials/covpn/p3003/analysis/correlates/stage2"
-data.path <- "/Volumes/trials/covpn/p3003/analysis/correlates/stage2/adata/COVID_ENSEMBLE_stage2_mapped_20251203.csv"
-dir.create(paste0(spath, "/reports"), showWarnings = FALSE, recursive=TRUE)
 
 
 source(paste0(spath, "/code/Methods-CausalCumulativeIncidence.R"))
