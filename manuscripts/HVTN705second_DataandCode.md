@@ -12,7 +12,7 @@
 
 Threshold analysis.
 
-**Statistical reports**: cor_threshold_hvtn705second.pdf
+**Statistical reports**: cor_threshold_hvtn705second.pdf The generated report looks slightly different from the figure in the paper. To exactly reproduce the paper figure, find the version of report used for the manuscript and replace the commit in the instructions below with the commit in the appendix of that report.
 
 To reproduce this report, follow the following instructions:
 
