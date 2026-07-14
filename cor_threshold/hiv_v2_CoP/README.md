@@ -2,7 +2,7 @@
 
 This folder contains code for the non-parametric threshold analysis in the HIV V2 Antibody correlates of protection manuscript. 
 
-The report is the HTML file. 
+The report is the HTML file.
 
 The code to create the report is in the Rmd file. 
 
@@ -16,5 +16,7 @@ Also, be sure to change the directory of the data file in this line:
 ```{r}
 df_hvtn702 <- read.csv("data/controlledVEdata702.csv")
 ```
+
+The analysis was performed using R 4.4.2. 
 
 For any questions, please email jpspeng@uw.edu. 
