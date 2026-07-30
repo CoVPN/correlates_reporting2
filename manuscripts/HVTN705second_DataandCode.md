@@ -7,12 +7,16 @@
 - All analyses are based on the analysis-ready data file HVTN705_secondcasecontrolprocesseddata_v12.csv unless otherwise specified.
 - A copy of statistical reports are on the SCHARP network drive /trials/vaccine/p705/analysis/lab/cc/copcor/correlates_reports
 
+## Magnitude breadth plots
+
+/trials/vaccine/p705/analysis/lab/cc/descriptive/lum_bama_breadth_iga/code/v705_bama_breadth_iga_cc_report.Rmd
+
+Note: code for making magnitude-breadth score and mdw score is in /trials/vaccine/p705/analysis/lab/cc/pdata/lum_bama/HVTN705_LUM05_20221223_casecontrol/code
+
 
 ## Fig 1 Violin plots by case status
 
-/trials/vaccine/p705/analysis/lab/cc/descriptive/*
-
-e.g., lum_bama_iga/code/v705_cc_lum_iga_pt_report.Rmd
+/trials/vaccine/p705/analysis/lab/cc/descriptive/lum_bama_iga/code/v705_cc_lum_iga_pt_report.Rmd
 
 ## Fig 3A 3C
 
