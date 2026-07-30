@@ -8,6 +8,12 @@
 - A copy of statistical reports are on the SCHARP network drive /trials/vaccine/p705/analysis/lab/cc/copcor/correlates_reports
 
 
+## Fig 1 Violin plots by case status
+
+/trials/vaccine/p705/analysis/lab/cc/descriptive/*
+
+e.g., lum_bama_iga/code/v705_cc_lum_iga_pt_report.Rmd
+
 ## Fig 3A 3C
 
 Threshold analysis.
