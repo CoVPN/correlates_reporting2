@@ -1,6 +1,4 @@
-# HIV V2 Antibody CoP manuscript NP threshold code
-
-This folder contains code for the non-parametric threshold analysis in the HIV V2 Antibody correlates of protection manuscript.
+# AMP Trial NP threshold code
 
 ## Reproducibility
 
@@ -8,7 +6,7 @@ This project uses a project-level `renv.lock`. Setup:
 
 - Download the repository, for example by downloading and unzipping a release from https://github.com/CoVPN/correlates_reporting2/releases.
 - Use R 4.4.2.
-- Place `controlledVEdata702.csv`, `HVTN705_secondcasecontrolprocesseddata_v14.csv`, `controlledVEdata505_lab.csv`, and `controlledVEdataRV144_v2.csv` directly in this `hiv_v2_CoP/` folder.
+- Place `dt703new.csv`, `dt704new.csv`, and `amp_sieve_pooled_marks_final_v9.csv` directly in this `amp/` folder.
 - Open an R console in this folder.
 - Run the following commands to install and verify the package dependencies:
 
@@ -24,13 +22,12 @@ renv::snapshot()
 renv::status()
 ```
 
-The following shell command should be run from the `hiv_v2_CoP/` folder.
+The following shell command should be run from the `amp/` folder.
 
 To render the report:
 
 ```bash
-Rscript -e "rmarkdown::render('threshold_analysis_hiv_2026Aug25.Rmd', output_file = 'threshold_analysis_hiv_$(date +%Y%m%d).html')"
+Rscript -e "rmarkdown::render('amp_threshold_report_2026Aug25.Rmd', output_file = 'amp_threshold_report_$(date +%Y%m%d).pdf')"
 ```
 
 For questions, please email jpspeng@uw.edu.
-

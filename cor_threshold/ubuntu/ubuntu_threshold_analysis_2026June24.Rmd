@@ -1,0 +1,853 @@
+---
+title: "UBUNTU Trial Threshold Correlates Analysis"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+```{r, include = F, warning = F, message = F}
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F, cache = T)
+
+set.seed(10)
+
+# devtools::install_github("jpspeng/npthreshold")
+library(npthreshold)
+library(SuperLearner)
+library(dplyr)
+library(ggplot2)
+library(sl3)
+library(DT)
+library(knitr)
+library(msm)
+library(data.table)
+
+analysis_data_files <- c(
+  primary = "COVID_realdata_ics_bama_nab_bcp20241210_processed_with_riskscore.csv",
+  spike_BA4_5 = "dt_COMPASS_Spike BA4-5.csv",
+  spike_ancestral = "dt_COMPASS_Spike Ancestral.csv"
+)
+```
+
+```{r}
+df_ubuntu <- read.csv(analysis_data_files[["primary"]])
+dt_FS <- read.csv(analysis_data_files[["spike_BA4_5"]])
+dt_FS_index <- read.csv(analysis_data_files[["spike_ancestral"]])
+
+# copied from Bo's email 
+dt_B = dt_FS %>%
+  mutate(PTID = paste0('C3008-', PTID),
+         VISITNO = ifelse(VISITNO == 2, 'B', 'M1')) %>%
+  dplyr::rename(Subjectid = PTID) %>%
+  filter(VISITNO == 'B') %>%
+  mutate(B_FS_final = FS_final,
+         B_PFS_final = PFS_final) %>%
+    dplyr::select(Subjectid, B_FS_final, B_PFS_final)
+
+dt_M1 = dt_FS %>%
+  mutate(PTID = paste0('C3008-', PTID),
+         VISITNO = ifelse(VISITNO == 2, 'B', 'M1')) %>%
+  dplyr::rename(Subjectid = PTID) %>%
+  filter(VISITNO == 'M1') %>%
+  mutate(M1_FS_final = FS_final,
+         M1_PFS_final = PFS_final) %>%
+  dplyr::select(Subjectid, M1_FS_final, M1_PFS_final)
+
+df_ubuntu = merge(df_ubuntu, dt_B, by = 'Subjectid', all.x = TRUE)  
+df_ubuntu = merge(df_ubuntu, dt_M1, by = 'Subjectid', all.x = TRUE)  
+
+dt_B_Index = dt_FS_index %>%
+  mutate(PTID = paste0('C3008-', PTID),
+         VISITNO = ifelse(VISITNO == 2, 'B', 'M1')) %>%
+  dplyr::rename(Subjectid = PTID) %>%
+  filter(VISITNO == 'B') %>%
+  mutate(B_FS_final_Index = FS_final,
+         B_PFS_final_Index = PFS_final) %>%
+    dplyr::select(Subjectid, B_FS_final_Index, B_PFS_final_Index)
+
+dt_M1_Index = dt_FS_index %>%
+  mutate(PTID = paste0('C3008-', PTID),
+         VISITNO = ifelse(VISITNO == 2, 'B', 'M1')) %>%
+  dplyr::rename(Subjectid = PTID) %>%
+  filter(VISITNO == 'M1') %>%
+  mutate(M1_FS_final_Index = FS_final,
+         M1_PFS_final_Index = PFS_final) %>%
+  dplyr::select(Subjectid, M1_FS_final_Index, M1_PFS_final_Index)
+
+df_ubuntu = merge(df_ubuntu, dt_B_Index, by = 'Subjectid', all.x = T)  
+df_ubuntu = merge(df_ubuntu, dt_M1_Index, by = 'Subjectid', all.x = T)  
+
+```
+
+
+```{r}
+# pre-processing 
+df_ubuntu <- df_ubuntu %>% 
+  mutate(HIVBL = factor(HIVBL), 
+         enrollment_period = ifelse(CalendarDateEnrollment <= 90, "early", 
+                                    ifelse(CalendarDateEnrollment <= 180, "mid", "late")), 
+         Country = factor(Country), 
+         hybrid = AGRP2N %in% c(2.1, 4.1) + 0)
+
+```
+
+
+```{r}
+# helper functions to select quantiles
+select_quants <- function(df, event_var, marker_var){
+  
+  max_thresh <- df %>% 
+    filter(.data[[event_var]] == 1) %>% 
+    arrange(desc(.data[[marker_var]])) %>% 
+    slice(3) %>% 
+    pull(.data[[marker_var]]) 
+  
+  quants <- c(seq(min(df[,marker_var], na.rm = T), max_thresh, 0.1), max_thresh)
+  
+  quants
+}
+
+```
+
+```{r}
+# modified thresholdSurv function to allow for differing weights for the rcdf and
+# the estimation 
+thresholdSurv <- function(data,
+                          covariates,
+                          failure_time,
+                          event_type,
+                          marker,
+                          tf,
+                          weights = NULL,
+                          weights_cdf = NULL,
+                          threshold_list = NULL,
+                          nbins_time = 20,
+                          # nbins_threshold = 20,
+                          verbose = FALSE,
+                          learner.treatment = NULL,
+                          learner.event_type = NULL,
+                          learner.failure_time = NULL,
+                          learner.censoring_time = NULL,
+                          placebo_risk = NULL,
+                          placebo_se = NULL,
+                          modify_left_point = F,
+                          left_estimate = NA,
+                          left_se = NA
+) {
+
+  data <- data.table::as.data.table(data)
+  tf <- as.numeric(tf)
+
+  # set all weights to equal 1 if weights are NULL
+  if (is.null(weights)){
+    data$weights <- 1
+    weights <- "weights"
+  }
+  if (is.null(weights_cdf)){
+    data$weights_cdf <- 1
+    weights_cdf <- "weights_cdf"
+  }
+
+  # subset to relevant variables
+  data_select <- data[, c(covariates, failure_time,
+                          event_type, marker, weights), with = FALSE]
+
+  tmp_marker <- ifelse(data_select[[weights]] == 0, 0, data_select[[marker]])
+  data.table::set(data_select, , marker, tmp_marker)
+
+  if (any(is.na(data_select[[marker]]))) {
+    stop("NAs in marker for threshold CR")
+  }
+
+  # discretize
+  time_grid <- unique(quantile(data_select[[failure_time]],
+                               seq(0, 1,length = nbins_time+1),
+                               type = 1))
+
+  # add time of interest to grid
+  time_grid <- sort(union(time_grid, tf))
+  failure_time_discrete <- findInterval(data_select[[failure_time]],
+                                        time_grid, all.inside = TRUE)
+  tf_discrete <- findInterval(tf, time_grid, all.inside = FALSE)
+  data_select[[failure_time]] <- failure_time_discrete
+
+  # if threshold list is null, then estimate on whole dataset
+  if (is.null(threshold_list)){
+    threshold_list <- min(data_select[[marker]], na.rm = T)
+  }
+
+  out_list <- list()
+
+  covariates_matrix <- model.matrix(~ . - 1, data = data_select[, covariates, with = FALSE])
+
+
+  for(threshold in threshold_list ) {
+    if (verbose) print(paste0("THRESHOLD: ", threshold))
+
+    try({
+      data_select[["trt_temp"]] <- 1*(data_select[[marker]] >= threshold)
+      if(sum(data_select[["trt_temp"]]) == 0){
+        stop(sprintf("There were zero observations above the threshold %s.",
+                     threshold))
+      }
+
+      survout <- survtmle3_discrete(data_select[[failure_time]],
+                                    data_select[[event_type]],
+                                    data_select[["trt_temp"]],
+                                    covariates_matrix,
+                                    weights = data_select[[weights]],
+                                    learner.treatment =  learner.treatment,
+                                    learner.failure_time =  learner.failure_time,
+                                    learner.censoring_time = learner.censoring_time,
+                                    learner.event_type = learner.event_type,
+                                    target_failure_time = tf_discrete,
+                                    target_treatment = c(1),
+                                    target_event_type = 1,
+                                    failure_time.stratify_by_time = FALSE,
+                                    censoring_time.stratify_by_time = FALSE,
+                                    cross_fit = FALSE,
+                                    cross_validate = FALSE,
+                                    calibrate = FALSE,
+                                    verbose = verbose,
+                                    max_iter = 100,
+                                    tol = 1e-7
+      )
+    })
+
+    if (is.null(threshold_list)){
+      survout$threshold <- NA
+    }
+    else{
+      survout$threshold <- threshold
+    }
+    out_list[[paste0(threshold)]] <- survout
+  }
+
+  res <- rbindlist(out_list)
+
+  # make results table
+  res$estimate <- unlist(res$estimates )
+  res$se <- unlist(res$se )
+  res$times <- tf
+
+  n_in_bin <- sapply(threshold_list, function(thresh) {
+    sum( data_select[[marker]] >= thresh)
+  })
+
+  n_events_in_bin <- sapply(threshold_list, function(thresh) {
+    sum(data_select[data_select[[marker]] >= thresh , event_type, with = FALSE] == 1)
+  })
+
+  if (modify_left_point){
+    res[1,"estimate"] <- left_estimate
+    res[1, "se"] <- left_se
+    res[1, "ci_lo"] <- left_estimate - (1.96 * left_se)
+    res[1, "ci_hi"] <- left_estimate + (1.96 * left_se)
+
+  }
+
+  RCDF <- function(a) {
+    sum(data[[weights_cdf]] * (data[[marker]] >= a)) /
+      sum(data[[weights_cdf]])
+  }
+
+  RCDF <- Vectorize(RCDF)
+
+  res$rcdf <- RCDF(res$threshold)
+
+  res$n_in_bin <- n_in_bin
+  res$n_events_in_bin <- n_events_in_bin
+
+  n_event_cutoff <- 10
+
+  weights_for_iso <- sqrt(n_in_bin)
+  weights_for_iso[n_events_in_bin < n_event_cutoff] <- 0.01
+  weights_for_iso <- weights_for_iso / sum(weights_for_iso)
+
+  res$estimate_monotone <- -isotone::gpava(res$threshold,
+                                               -res$estimate,
+                                               weights = weights_for_iso)$x
+
+  res$ci_lo <- unlist(res$CI)[ c(TRUE,FALSE) ]
+  res$ci_hi <- unlist(res$CI)[ c(FALSE,TRUE) ]
+
+  res$ci_lo_monotone <- res$estimate_monotone - (1.96 * res$se)
+  res$ci_hi_monotone <- res$estimate_monotone + (1.96 * res$se)
+
+  res <- res[,c("threshold", "rcdf", "n_in_bin", "n_events_in_bin", "estimate", "se",
+                "ci_lo", "ci_hi", "estimate_monotone", "ci_lo_monotone", "ci_hi_monotone")]
+
+  if (!is.null(placebo_risk) & !is.null(placebo_se)){
+    res <- res %>%
+      mutate(ve_monotone = 1 - (estimate_monotone / placebo_risk))
+
+    res$ve_se <- apply(res, 1, calc_delta_method,
+                       placebo_risk = placebo_risk,
+                       placebo_se = placebo_se)
+
+    res <- res %>%
+      mutate(ve_monotone_ci_lo = ve_monotone - (1.96 * ve_se),
+             ve_monotone_ci_hi = ve_monotone + (1.96 * ve_se))
+  }
+
+  res
+
+}
+
+calc_delta_method <- function(row, placebo_risk, placebo_se) {
+  # Extract values from the row
+  estimate_monotone <- row['estimate_monotone']
+  estimate_se  <- row['se']
+
+  # Variance-covariance matrix (assuming no covariance)
+  cov_matrix <- matrix(c(estimate_se^2, 0, 0, placebo_se^2), nrow = 2)
+
+  # Calculate the standard error using the delta method
+  se_ratio <- deltamethod(~ x1 / x2, mean = c(estimate_monotone, placebo_risk),
+                          cov = cov_matrix)
+
+  return(se_ratio)
+}
+
+
+```
+
+
+# Overview 
+
+# Serum markers 
+
+* **Covariates**: Risk score, HIVBL, Country (excluding enrollment_period)
+* **Time variable**: EventTimePrimary
+* **Event variable**: EventIndPrimary1
+* **Marker variables**: BA45ID50, IGGSpikeIndex, IGGSpikeBA45, IGGN (for each, baseline, peak, and fold-rise)
+* **Phase 1 filter**: ph1.m1.sera == 1
+* **Phase 2 (sampling) filter**: ph2.m1.sera == 1
+* **Weight variable**: wt.m1.sera
+* **Timeframe**: 160 days (tried 165 days, but for the vaccine immunity group, latest observed timepoint was 161 days). 
+  * Included 92 days for the M1 marker for the vaccine immunity group (adjusted for risk score only)
+  * Risk graphs of with timeframe 92 days truncated above at 0.025 (monotone) and above 0.1 (for raw)
+* Performed the analysis separately for the hybrid immunity and vaccine immunity groups 
+* M0 = baseline, M1 = peak 
+* Treatment learner: GLM
+* Event type learner, failure time learner, censoring time learner: superlearner with 
+glm, gam, and mean learners 
+* Ignore the "Number in Bin" and "Events in Bin" columns in the table for now. These include 
+censored observations (those with events after the specified timeframe). 
+
+```{r}
+# serum dataframe 
+df_serum <- df_ubuntu %>%
+  filter(ph1.m1.sera == 1) %>%
+  mutate(log10M1BA45ID50 = log10(M1BA45ID50),
+         log10BBA45ID50 = log10(BBA45ID50),
+         frBA45ID50 = log10M1BA45ID50 - log10BBA45ID50,
+         log10M1IGGSpikeIndex = log10(M1IGGMSDA16AU), #A16 = IgG S Index
+         log10BIGGSpikeIndex = log10(BIGGMSDA16AU), 
+         frIGGSpikeIndex = log10M1IGGSpikeIndex - log10BIGGSpikeIndex,
+         log10M1IGGSpikeBA45 = log10(M1IGGMSDA23AU), # A23 = IgG S BA.4/5
+         log10BIGGSpikeBA45 = log10(BIGGMSDA23AU), 
+         frIGGSpikeBA45 = log10M1IGGSpikeBA45 - log10BIGGSpikeBA45,
+         log10M1IGGN = log10(M1IGGMSDA15AU),
+         log10BIGGN = log10(BIGGMSDA15AU))
+
+# define serum variables 
+antigen_vec = c('BA45ID50', 'IGGSpikeIndex', 'IGGSpikeBA45', 'IGGN')
+antigen_names_vec = c('nAb ID50 BA.4/5', 'IgG S Index',  
+                      'IgG S BA.4/5', 'IgG N Index')
+
+mk_vec_b = paste0('log10B', antigen_vec)
+names_vec_b = c('M0 nAb-ID50 BA.4/5 (AU/ml)',
+              'M0 IgG S Index (AU/ml)',
+              'M0 IgG S BA.4/5 (AU/ml)',
+              'M0 IgG N Index (AU/ml)')
+ 
+mk_vec_p = paste0('log10M1', antigen_vec)
+names_vec_p = c('M1 nAb-ID50 BA.4/5 (AU/ml)',
+              'M1 IgG S Index (AU/ml)',
+              'M1 IgG S BA.4/5 (AU/ml)',
+              'M1 IgG N Index (AU/ml)')
+ 
+mk_vec_fr = c('frBA45ID50', 'frIGGSpikeIndex', 'frIGGSpikeBA45')
+names_vec_fr = c('Fold-rise nAb-ID50 BA.4/5 (AU/ml)',
+              'Fold-rise IgG S Index (AU/ml)',
+              'Fold-rise IgG S BA.4/5 (AU/ml)')
+
+serum_marker_list <- list(
+  "nAb ID50 BA.4/5" = list(
+    "M0" = mk_vec_b[1],
+    "M1" = mk_vec_p[1],
+    "Fold-rise" = mk_vec_fr[1]
+  ),
+  "IgG S Index" = list(
+    "M0" = mk_vec_b[2],
+    "M1" = mk_vec_p[2],
+    "Fold-rise" = mk_vec_fr[2]
+  ),
+  "IgG S BA.4/5" = list(
+    "M0" = mk_vec_b[3],
+    "M1" = mk_vec_p[3],
+    "Fold-rise" = mk_vec_fr[3]
+  ),
+  "IgG N Index" = list(
+    "M0" = mk_vec_b[4],
+    "M1" = mk_vec_p[4]
+  )
+)
+```
+
+```{r}
+print_analysis_helper <- function(df, 
+                                  covariates, 
+                                  time_var, 
+                                  event_var, 
+                                  marker_var,
+                                  weight_var,
+                                  weight_cdf_var, 
+                                  tf, 
+                                  learner.treatment = Lrnr_glm$new(),
+                                  learner.event_type = Lrnr_glm$new(),
+                                  learner.failure_time = Lrnr_glm$new(),
+                                  learner.censoring_time = Lrnr_glm$new(),
+                                  readable_name = "", 
+                                  header_level = "#####", 
+                                  cutoff_risk_monotone = c(0,1), 
+                                  cutoff_risk_raw = c(0,1),
+                                  cutoff_rr = c(0,10),
+                                  comparison_risk = NULL, 
+                                  comparison_se = NULL, 
+                                  ylim_monotone = NULL, 
+                                  ylim_rr = NULL){
+  
+  cat(sprintf("Marker variable: %s \n", marker_var))
+  cat(sprintf("Timeframe: %s \n", tf))
+  
+  quants <- select_quants(df, event_var, marker_var)
+  
+  res_temp <- thresholdSurv(data = df , 
+                          covariates = covariates,
+                          failure_time = time_var, 
+                          tf = tf, 
+                          event_type = event_var, 
+                          marker = marker_var,
+                          weights = weight_var,
+                          weights_cdf = weight_cdf_var,
+                          threshold_list = quants, 
+                          learner.treatment = learner.treatment,
+                          learner.event_type = learner.event_type, 
+                          learner.failure_time = learner.failure_time, 
+                          learner.censoring_time = learner.censoring_time,
+                          verbose = F, 
+                          placebo_risk = comparison_risk,
+                          placebo_se = comparison_se)
+  
+    cat(sprintf("\n\n%s Monotone \n", header_level))
+
+    g1 <- graphthresh(data.frame(res_temp), 
+                      type = "monotone",
+                      ylabel = sprintf("Probability of COVID disease by %s days", tf),
+                      xlabel = sprintf("%s (AU/ml) Thresholds", readable_name),
+                      cutoffs = cutoff_risk_monotone,
+                      plot_density = T,
+                      plot_endpoints = T, 
+                      data = df_filter,
+                      weights = weight_cdf_var,
+                      marker = marker_var,
+                      event = event_var,
+                      time_var = time_var,
+                      tf = tf, 
+                      exp10 = T, 
+                      ylim = ylim_monotone) 
+    
+    g1 %>% 
+      print()
+    
+    data.frame(res_temp) %>%
+      rename(Thresholdlog10 = threshold, 
+             Estimate = estimate_monotone, 
+             SE = se, 
+             `Lower CI` = ci_lo_monotone, 
+             `Upper CI` = ci_hi_monotone) %>% 
+      mutate(Threshold = 10^Thresholdlog10) %>% 
+      rename(`Threshold (log10)` = Thresholdlog10) %>% 
+      select(`Threshold (log10)`, Threshold, rcdf, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))) %>% kable() %>% print()
+
+    cat(sprintf("\n\n%s Not Monotone \n", header_level))
+    
+    g2 <- graphthresh(data.frame(res_temp), 
+                type = "raw",
+                ylabel = sprintf("Probability of COVID disease by %s days", tf),
+                xlabel = sprintf("%s (AU/ml) Thresholds", readable_name),
+                cutoffs = cutoff_risk_raw,
+                plot_density = T,
+                plot_endpoints = T, 
+                data = df_filter,
+                weights = weight_cdf_var,
+                marker = marker_var,
+                event = event_var,
+                time_var = time_var,
+                tf = tf, 
+                exp10 = T) 
+    
+    g2 %>% 
+      print()
+
+    data.frame(res_temp) %>%
+      rename(Thresholdlog10 = threshold, 
+             Estimate = estimate, 
+             SE = se, 
+             `Lower CI` = ci_lo, 
+             `Upper CI` = ci_hi) %>% 
+      mutate(Threshold = 10^Thresholdlog10) %>% 
+      rename(`Threshold (log10)` = Thresholdlog10) %>% 
+      select(`Threshold (log10)`, Threshold, rcdf, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))) %>% kable() %>% print()
+  
+    if (!is.null(comparison_risk)){
+      
+      cat(sprintf("\n\n%s Relative risk (compared to vaccine immunity) \n", header_level))
+    
+      res_temp <- res_temp %>% 
+        mutate(ve_monotone = 1 - ve_monotone, 
+               ci_lo = 1 - ve_monotone_ci_hi, 
+               ci_hi = 1 - ve_monotone_ci_lo, 
+               ve_monotone_ci_hi = ci_hi, 
+               ve_monotone_ci_lo = ci_lo) 
+  
+      graphthresh(data.frame(res_temp), 
+                  type = "ve",
+                  ylabel = "Relative risk compared to vaccine immunity group",
+                  xlabel = sprintf("%s (AU/ml) Thresholds", readable_name),
+                  cutoffs = cutoff_rr,
+                  plot_density = T,
+                  plot_endpoints = T, 
+                  data = df_filter,
+                  weights = weight_cdf_var,
+                  marker = marker_var,
+                  event = event_var,
+                  time_var = time_var,
+                  tf = tf, 
+                  exp10 = T, 
+                  ylim = ylim_rr)  %>% 
+        print()
+      
+    data.frame(res_temp) %>%
+      rename(Thresholdlog10 = threshold, 
+             Estimate = ve_monotone, 
+             SE = ve_se, 
+             `Lower CI` = ve_monotone_ci_lo, 
+             `Upper CI` = ve_monotone_ci_hi) %>% 
+      mutate(Threshold = 10^Thresholdlog10) %>% 
+      rename(`Threshold (log10)` = Thresholdlog10) %>% 
+      select(`Threshold (log10)`, Threshold, rcdf, Estimate, SE, `Lower CI`, 
+             `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))) %>% kable() %>% print()
+      
+    }
+
+}
+
+```
+
+```{r, results = "asis", fig.align='center'}
+df_serum_p2 <- df_serum %>% 
+  filter(ph2.m1.sera == 1)
+
+weight_var <- "wt.m1.sera"
+covariates <- c("riskscore", "HIVBL", "Country")
+time_var <- "EventTimePrimary"
+event_var <- "EventIndPrimary1"
+tf <- 160
+
+res_comparison_overall <- thresholdSurv(data = df_serum %>% filter(hybrid == 0), 
+                                        covariates = covariates,
+                                        failure_time = time_var, 
+                                        tf = tf, 
+                                        event_type = event_var, 
+                                        marker = "hybrid",
+                                        learner.treatment = Lrnr_glm$new(),
+                                        learner.event_type = Lrnr_sl$new(
+                                          learners = list(Lrnr_glm$new(), 
+                                                          Lrnr_mean$new(), 
+                                                          Lrnr_gam$new())),
+                                        learner.failure_time = Lrnr_sl$new(
+                                          learners = list(Lrnr_glm$new(), 
+                                                          Lrnr_mean$new(), 
+                                                          Lrnr_gam$new())),
+                                        learner.censoring_time = Lrnr_sl$new(
+                                          learners = list(Lrnr_glm$new(), 
+                                                          Lrnr_mean$new(), 
+                                                          Lrnr_gam$new())),
+                                        verbose = F)
+
+for (serum_readable_name in names(serum_marker_list)){
+  cat(sprintf("\n\n## %s {.tabset .tabset-fade} \n", serum_readable_name))
+  
+  for (var_type in names(serum_marker_list[[serum_readable_name]])){
+    
+    cat(sprintf("\n\n### %s  {.tabset .tabset-fade} \n", var_type))
+    
+      full_readable_name <- sprintf("%s %s", var_type, serum_readable_name)
+      
+      marker_var <- serum_marker_list[[serum_readable_name]][[var_type]]
+      
+      if (var_type == "M1"){
+        groups <- c("hybrid", "vaccine1", "vaccine2")
+      }
+      else{
+        groups <- c("hybrid", "vaccine1")
+      }
+      
+      for (group in groups){
+        
+        if (group == "hybrid"){
+          group_num <- 1
+        }
+        else{
+          group_num <- 0
+        }
+        
+        df_filter <- df_serum_p2 %>% filter(hybrid == group_num)
+        
+        if (group == "hybrid"){
+         cat("\n\n#### Hybrid immunity  {.tabset .tabset-fade} \n")
+          tf_to_use <- tf 
+          covariates_to_use <- covariates 
+          risk_comparison <- res_comparison_overall$estimate
+          se_comparison <- res_comparison_overall$se
+          cutoff_risk_monotone = c(0,0.16)
+          cutoff_risk_raw = c(0,1)
+          cutoff_rr = c(0,1.6)
+          ylim_monotone <- c(0, 0.16, 0.02)
+          ylim_rr <- c(0, 1.6, 0.2)
+        }
+        else if (group == "vaccine1"){
+         cat("\n\n#### Vaccine immunity  {.tabset .tabset-fade} \n")
+          tf_to_use <- tf 
+          covariates_to_use <- covariates 
+          risk_comparison <- NULL
+          se_comparison <- NULL
+          cutoff_risk_monotone = c(0,1)
+          cutoff_risk_raw = c(0,1)
+          cutoff_rr = c(0,10)
+          ylim_rr <- NULL
+          if (var_type == "M0"){
+            ylim_monotone <- NULL 
+          }
+          else{
+            ylim_monotone <- c(0,0.55, 0.05) 
+          }
+        }
+        else{
+         cat("\n\n#### Vaccine immunity (92 days)  {.tabset .tabset-fade} \n")
+          tf_to_use <- 92
+          covariates_to_use <- "riskscore" 
+          risk_comparison <- NULL
+          se_comparison <- NULL
+          cutoff_risk_monotone = c(0,0.025)
+          cutoff_risk_raw = c(0,0.1)
+          cutoff_rr = c(0,10)
+          ylim_rr <- NULL
+          if (var_type == "M0"){
+            ylim_monotone <- NULL 
+          }
+          else{
+            ylim_monotone <- c(0,0.025, 0.005) 
+          }
+        }
+        print_analysis_helper(df_filter, 
+                              covariates = covariates_to_use,
+                              time_var = time_var,
+                              event_var = event_var, 
+                              marker_var = marker_var,
+                              weight_var = weight_var, 
+                              weight_cdf_var = weight_var,
+                              tf = tf_to_use, 
+                              learner.treatment = Lrnr_glm$new(),
+                              learner.event_type = Lrnr_sl$new(
+                                          learners = list(Lrnr_glm$new(), 
+                                                          Lrnr_mean$new(), 
+                                                          Lrnr_gam$new())),
+                              learner.failure_time = Lrnr_sl$new(
+                                          learners = list(Lrnr_glm$new(), 
+                                                          Lrnr_mean$new(), 
+                                                          Lrnr_gam$new())),
+                              learner.censoring_time = Lrnr_sl$new(
+                                          learners = list(Lrnr_glm$new(), 
+                                                          Lrnr_mean$new(), 
+                                                          Lrnr_gam$new())),
+                              readable_name = full_readable_name,
+                              cutoff_risk_monotone = cutoff_risk_monotone, 
+                              cutoff_risk_raw = cutoff_risk_raw,
+                              cutoff_rr = cutoff_rr,
+                              comparison_risk = risk_comparison,
+                              comparison_se = se_comparison, 
+                              ylim_monotone = ylim_monotone, 
+                              ylim_rr = ylim_rr)
+        }
+      }
+}
+
+```
+
+# T-cell markers
+
+* **Covariates**: Risk Score 
+* **Time variable**: EventTimePrimary
+* **Event variable**: EventIndPrimary1
+* **Marker variables**: (IFNg OR IL-2, IFNg OR IL-2 OR CD154) x (N BA.4/5, N Index, S BA.4/5, S Index) (for each, baseline and peak). 
+  * If less than 0.01%, then set it to be 0.01
+* **Phase 1 filter**: ph1.m1.ics == 1
+* **Phase 2 (sampling) filter**: ph2.m1.ics == 1
+* **Weight variable**: wt.m2.ics
+* **Timeframe**: 160 days 
+* Performed analysis for hybrid immunity group only 
+* M0 = baseline, M1 = peak 
+* All learners: GLM
+
+```{r}
+T_vec = c('T4')
+T_names_vec = c('CD4+')
+C_vec = c('C03', 'C04')
+C_names_vec = c('IFNg OR IL-2', 'IFNg OR IL-2 OR CD154')
+A_vec = c('A02', 'A08', 'A11', 'A13')
+A_names_vec = c('N BA.4/5', 'N Index', 'S BA.4/5', 'S Index')
+ 
+ 
+antigen_vec = NULL
+antigen_names_vec = NULL
+for (i in 1:length(T_vec)) {
+  for (j in 1:length(C_vec)) {
+    for (k in 1:length(A_vec)) {
+      antigen_vec = c(antigen_vec,
+                      paste0(T_vec[i], C_vec[j], A_vec[k]))
+      antigen_names_vec = c(antigen_names_vec,
+                            paste0(T_names_vec[i], ' ', C_names_vec[j], A_names_vec[k]))
+    }
+  }
+}
+ 
+mk_vec_b = paste0('B', antigen_vec)
+names_vec_b = paste0('M0 ', antigen_names_vec, ' (%)')
+
+mk_vec_p = paste0('M1', antigen_vec)
+names_vec_p = paste0('M1 ', antigen_names_vec, ' (%)')
+
+fs_markers <- c("B_FS_final", "M1_FS_final", "B_PFS_final", "M1_PFS_final", 
+                "B_FS_final_Index", "M1_FS_final_Index", "B_PFS_final_Index", 
+                "M1_PFS_final_Index")
+
+process <- function(x) log10(ifelse(x < 0.01, 0.01, x))
+
+df_tcell <-  df_ubuntu %>%
+  filter(ph1.m1.ics == 1)
+
+df_tcell_p2 <- df_ubuntu %>%
+  filter(ph2.m1.ics == 1)  %>%
+  mutate_at(mk_vec_b, process) %>%
+  mutate_at(mk_vec_p, process) %>% 
+  mutate_at(fs_markers, process) %>% 
+  
+  # change 6/13/25 - reweighting
+  mutate(wt.m1.ics_new = ifelse(EventIndPrimary1 == 0 & AGRP2N == 2.1, 106.5, 
+                                ifelse(EventIndPrimary1 == 1 & AGRP2N == 2.1, 1.285714, wt.m1.ics)))
+
+tcell_marker_list <- setNames(lapply(seq_along(antigen_names_vec), 
+                               function(i) list(M0 = mk_vec_b[i], M1 = mk_vec_p[i])),
+                        antigen_names_vec)
+
+tcell_marker_list[["FS BA4-5"]] <- list(
+  "M0" = "B_FS_final", 
+  "M1" = "M1_FS_final"
+)
+
+tcell_marker_list[["PFS BA4-5"]] <- list(
+  "M0" = "B_PFS_final", 
+  "M1" = "M1_PFS_final"
+)
+
+tcell_marker_list[["FS Ancestral"]] <- list(
+  "M0" = "B_FS_final_Index", 
+  "M1" = "M1_FS_final_Index"
+)
+tcell_marker_list[["PFS Ancestral"]] <- list(
+  "M0" = "B_PFS_final_Index", 
+  "M1" = "M1_PFS_final_Index"
+)
+```
+
+
+```{r, results = "asis", fig.align='center'}
+weight_var <- "wt.m1.ics_new"
+weight_cdf_var <- "wt.m1.ics"
+covariates <- c("riskscore")
+time_var <- "EventTimePrimary"
+event_var <- "EventIndPrimary1"
+tf <- 160
+
+res_comparison_overall <- thresholdSurv(data = df_tcell %>% filter(hybrid == 0), 
+                                        covariates = covariates,
+                                        failure_time = time_var, 
+                                        tf = tf, 
+                                        event_type = event_var, 
+                                        marker = "hybrid",
+                                        learner.treatment = Lrnr_glm$new(),
+                                        learner.event_type = Lrnr_glm$new(),
+                                        learner.failure_time = Lrnr_glm$new(),
+                                        learner.censoring_time = Lrnr_glm$new(),
+                                        verbose = F)
+
+risk_comparison <- res_comparison_overall$estimate
+se_comparison <- res_comparison_overall$se
+
+
+for (tcell_readable_name in names(tcell_marker_list)){
+  cat(sprintf("\n\n## %s {.tabset .tabset-fade} \n", tcell_readable_name))
+  
+  for (var_type in names(tcell_marker_list[[tcell_readable_name]])){
+    
+    cat(sprintf("\n\n### %s  {.tabset .tabset-fade} \n", var_type))
+    
+      full_readable_name <- sprintf("%s %s", var_type, tcell_readable_name)
+      
+      marker_var <- tcell_marker_list[[tcell_readable_name]][[var_type]]
+      
+        df_filter <- df_tcell_p2 %>% filter(hybrid == 1)
+
+          print_analysis_helper(df_filter, 
+                                covariates = covariates,
+                                time_var = time_var,
+                                event_var = event_var, 
+                                marker_var = marker_var,
+                                weight_var = weight_var, 
+                                weight_cdf_var = weight_cdf_var,
+                                tf = tf, 
+                                learner.treatment = Lrnr_glm$new(),
+                                learner.event_type = Lrnr_glm$new(),
+                                learner.failure_time = Lrnr_glm$new(),
+                                learner.censoring_time = Lrnr_glm$new(),
+                                readable_name = full_readable_name, 
+                                header_level = "####", 
+                                comparison_risk = risk_comparison, 
+                                comparison_se = se_comparison)
+        }
+}
+
+```
+
+# Reproducibility Information
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis"}
+commit_hash <- system("git rev-parse HEAD", intern = TRUE)
+data_paths <- normalizePath(analysis_data_files, mustWork = TRUE)
+
+cat(sprintf("- **Code commit:** `%s`\n", commit_hash))
+for (i in seq_along(data_paths)) {
+  cat(sprintf("- **%s data:** `%s`\n", names(data_paths)[[i]], data_paths[[i]]))
+}
+```
