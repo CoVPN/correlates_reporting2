@@ -1,0 +1,820 @@
+---
+title: "AMP Trial Threshold Correlate Analysis"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+```{r, include = F, warning = F, message = F}
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F, cache = T)
+
+set.seed(10)
+
+# devtools::install_github("jpspeng/npthreshold")
+library(npthreshold)
+library(SuperLearner)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(sl3)
+library(DT)
+library(knitr)
+library(msm)
+library(data.table)
+
+analysis_data_files <- c(
+  HVTN703 = "dt703new.csv",
+  HVTN704 = "dt704new.csv",
+  pooled_marks = "amp_sieve_pooled_marks_final_v9.csv"
+)
+```
+
+```{r}
+df_v703 <- read.csv(analysis_data_files[["HVTN703"]])
+df_v704 <- read.csv(analysis_data_files[["HVTN704"]])
+
+df_amp_marks <- read.csv(analysis_data_files[["pooled_marks"]])
+
+df_v703 <- df_v703 %>% 
+  merge(df_amp_marks %>% 
+          select(pub_id, pred.ic80.mf),
+        by = "pub_id", all.x = T) 
+
+df_v704 <- df_v704 %>% 
+  merge(df_amp_marks %>% 
+          select(pub_id, pred.ic80.mf),
+        by = "pub_id", all.x = T) 
+
+```
+
+```{r}
+graphthresh <- function(res,
+                        type = "raw",
+                        ylabel = "Estimate",
+                        xlabel = "Thresholds",
+                        cutoffs = NULL,
+                        exp10 = FALSE,
+                        plot_density = FALSE,
+                        plot_endpoints = FALSE,
+                        data = NA,
+                        weights = NA,
+                        marker = NA,
+                        annotate = NA,
+                        event = NA,
+                        time_var = NA,
+                        tf = NA,
+                        ylimit = NULL,
+                        xlimit = NULL,
+                        yright_endpoint = "min",
+                        pt_flag = FALSE) {
+
+  res <- data.frame(res)
+
+  if (type == "monotone") {
+    y_var <- "estimate_monotone"
+    ci_lo_var <- "ci_lo_monotone"
+    ci_hi_var <- "ci_hi_monotone"
+  } else if (type == "raw") {
+    y_var <- "estimate"
+    ci_lo_var <- "ci_lo"
+    ci_hi_var <- "ci_hi"
+  } else if (type == "ve") {
+    y_var <- "ve_monotone"
+    ci_lo_var <- "ve_monotone_ci_lo"
+    ci_hi_var <- "ve_monotone_ci_hi"
+  } else {
+    stop("type must be one of 'raw', 'monotone', or 've'")
+  }
+
+  if (!is.null(cutoffs)) {
+    res[, ci_lo_var] <- pmax(res[, ci_lo_var], cutoffs[1])
+    res[, ci_hi_var] <- pmin(res[, ci_hi_var], cutoffs[2])
+  }
+
+  shift_coef <- 0
+
+  if (type == "ve") {
+    if (!is.null(ylimit)) {
+      scale_coef <- ylimit[2]
+    } else {
+      scale_coef <- max(res[[ci_hi_var]], na.rm = TRUE)
+    }
+  } else {
+    if (is.null(ylimit)) {
+      scale_coef <- max(res[[ci_hi_var]], na.rm = TRUE)
+    } else {
+      scale_coef <- ylimit[2]
+    }
+  }
+
+  if (yright_endpoint == "min") {
+    yright <- min(res[[y_var]], na.rm = TRUE)
+  } else {
+    yright <- max(res[[y_var]], na.rm = TRUE)
+  }
+
+  ggthresh <- ggplot(res, aes(x = threshold, y = !!rlang::sym(y_var))) +
+    geom_point(size = 0.7) +
+    geom_line() +
+    geom_ribbon(aes(ymin = !!rlang::sym(ci_lo_var),
+                    ymax = !!rlang::sym(ci_hi_var)),
+                alpha = 0.3, color = NA) +
+    labs(x = xlabel, y = ylabel) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5))
+
+  if (plot_density) {
+
+    if (all(is.na(data)) || all(is.na(weights)) || all(is.na(marker))) {
+      stop("When plot_density = TRUE, data, weights, and marker must be supplied.")
+    }
+
+    data <- data[!is.na(data[[marker]]) & !is.na(data[[weights]]), , drop = FALSE]
+
+    RCDF <- function(a) {
+      (sum(data[[weights]] * (data[[marker]] >= a), na.rm = TRUE) /
+         sum(data[[weights]], na.rm = TRUE)) * scale_coef
+    }
+
+    RCDF_pt_0.5 <- function(a) {
+      (sum(data[[weights]] * ((data[[marker]] / 0.5) >= a), na.rm = TRUE) /
+         sum(data[[weights]], na.rm = TRUE)) * scale_coef
+    }
+
+    RCDF_pt_3.0 <- function(a) {
+      (sum(data[[weights]] * ((data[[marker]] / 3.0) >= a), na.rm = TRUE) /
+         sum(data[[weights]], na.rm = TRUE)) * scale_coef
+    }
+
+    RCDF <- Vectorize(RCDF)
+    RCDF_pt_0.5 <- Vectorize(RCDF_pt_0.5)
+    RCDF_pt_3.0 <- Vectorize(RCDF_pt_3.0)
+
+    col_main <- grDevices::rgb(grDevices::col2rgb("olivedrab3")[1],
+                               grDevices::col2rgb("olivedrab3")[2],
+                               grDevices::col2rgb("olivedrab3")[3],
+                               alpha = 255, maxColorValue = 255)
+
+    col_pt1 <- grDevices::rgb(grDevices::col2rgb("steelblue3")[1],
+                              grDevices::col2rgb("steelblue3")[2],
+                              grDevices::col2rgb("steelblue3")[3],
+                              alpha = 255, maxColorValue = 255)
+
+    col_pt2 <- grDevices::rgb(grDevices::col2rgb("firebrick3")[1],
+                              grDevices::col2rgb("firebrick3")[2],
+                              grDevices::col2rgb("firebrick3")[3],
+                              alpha = 255, maxColorValue = 255)
+
+    if (!pt_flag) {
+      ggthresh <- ggthresh +
+        stat_function(fun = RCDF, color = col_main, geom = "line")
+    } else {
+      ggthresh <- ggthresh +
+        stat_function(aes(color = "IC80 = 0.5 mcg/mL"),
+                      fun = RCDF_pt_0.5,
+                      geom = "line",
+                      linetype = "dashed") +
+        stat_function(aes(color = "IC80 = 3.0 mcg/mL"),
+                      fun = RCDF_pt_3.0,
+                      geom = "line",
+                      linetype = "dotdash")    }
+  }
+
+  right_breaks <- seq(0, 1, by = 0.25)
+
+  if (!is.null(ylimit)) {
+ggthresh <- ggthresh +
+  scale_y_continuous(
+    breaks = seq(ylimit[1], ylimit[2], by = ylimit[3]),
+    sec.axis = sec_axis(~ (. - shift_coef) / scale_coef,
+                        name = "Reverse CDF",
+                        breaks = right_breaks,
+                        labels = sprintf("%.2f", right_breaks))
+  ) +
+  coord_cartesian(
+    ylim = c(ylimit[1], ylimit[2]),
+    clip = "on"
+  ) +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1),
+        axis.text.y = element_text(angle = 0, hjust = 1))  } else {
+    ggthresh <- ggthresh +
+      scale_y_continuous(
+        n.breaks = 10,
+        sec.axis = sec_axis(~ . / scale_coef,
+                            name = "Reverse CDF",
+                            breaks = right_breaks,
+                            labels = sprintf("%.2f", right_breaks))
+      ) +
+      theme(axis.text.x = element_text(angle = 0, hjust = 1),
+            axis.text.y = element_text(angle = 0, hjust = 1))
+  }
+
+  if (plot_endpoints) {
+
+    if (all(is.na(data)) || all(is.na(event)) || all(is.na(time_var)) || all(is.na(tf))) {
+      stop("When plot_endpoints = TRUE, data, event, time_var, tf, and marker must be supplied.")
+    }
+
+    threshold_min <- min(res$threshold, na.rm = TRUE)
+    threshold_max <- max(res$threshold, na.rm = TRUE)
+
+    data_event <- data %>%
+      dplyr::filter(
+        .data[[event]] == 1,
+        .data[[time_var]] <= tf,
+        !is.na(.data[[marker]]),
+        .data[[marker]] >= threshold_min,
+        .data[[marker]] <= threshold_max
+      )
+
+    data_event$y_inter <- approx(res$threshold, res[[y_var]],
+                                 xout = data_event[[marker]],
+                                 yright = yright)$y
+
+    ggthresh <- ggthresh +
+      geom_point(aes_string(x = marker, y = "y_inter"),
+                 data = data_event,
+                 color = "blue")
+    }
+
+  min_value <- min(data[, marker], na.rm = TRUE)
+max_value <- max(data[, marker], na.rm = TRUE)
+
+if (exp10) {
+  if (ceiling(min_value) == floor(max_value) || (max_value - min_value) < 1) {
+    breaks <- seq(ceiling(min_value * 10) / 10,
+                  floor(max_value * 10) / 10,
+                  by = 0.1)
+  } else {
+    breaks <- seq(ceiling(min_value), floor(max_value), by = 1)
+  }
+
+  if (!is.null(xlimit)) {
+    xlims <- c(xlimit[1], xlimit[2])
+    xbreaks <- breaks
+  } else {
+    xlims <- c(min_value, max_value)
+    xbreaks <- breaks
+  }
+
+  if (pt_flag) {
+    ggthresh <- ggthresh +
+      scale_x_continuous(
+        limits = xlims,
+        breaks = xbreaks,
+        labels = parse(text = paste0("10^", xbreaks)),
+        sec.axis = dup_axis(
+          name = "VRC01 PT80 against viruses with IC80 = 0.5 or 3.0 mcg/mL"
+        )
+      )
+  } else {
+    ggthresh <- ggthresh +
+      scale_x_continuous(
+        limits = xlims,
+        breaks = xbreaks,
+        labels = parse(text = paste0("10^", xbreaks))
+      )
+  }
+
+} else {
+  if (!is.null(xlimit)) {
+    if (pt_flag) {
+      ggthresh <- ggthresh +
+        scale_x_continuous(
+          limits = c(xlimit[1], xlimit[2]),
+          breaks = seq(xlimit[1], xlimit[2], xlimit[3]),
+          sec.axis = dup_axis(
+            name = "VRC01 PT80 against viruses with IC80 = 0.5 or 3.0 mcg/mL"
+          )
+        )
+    } else {
+      ggthresh <- ggthresh +
+        scale_x_continuous(
+          limits = c(xlimit[1], xlimit[2]),
+          breaks = seq(xlimit[1], xlimit[2], xlimit[3])
+        )
+    }
+  } else if (pt_flag) {
+    ggthresh <- ggthresh +
+      scale_x_continuous(
+        sec.axis = dup_axis(
+          name = "VRC01 PT80 against viruses with IC80 = 0.5 or 3.0 mcg/mL"
+        )
+      )
+  }
+}
+
+  if (!is.na(annotate)[1]) {
+    x_annotate_loc <- max(data[, marker], na.rm = TRUE) * 0.85
+
+    ggthresh <- ggthresh +
+      annotate("text",
+               x = x_annotate_loc,
+               y = max(res[, ci_hi_var], na.rm = TRUE) * 0.95,
+               label = annotate)
+  }
+  
+  if (pt_flag){
+  ggthresh <- ggthresh +
+  scale_color_manual(
+    name = "Neutralization Titer (PT80)",
+    values = c(
+      "IC80 = 0.5 mcg/mL" = "steelblue3",
+      "IC80 = 3.0 mcg/mL" = "firebrick3"
+    )
+  ) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 9)
+  )
+  }
+
+  ggthresh
+}
+```
+
+
+# Overview 
+
+* **Covariates**: Body weight (weight) and trial  (only for pooled 703 and 704 analyses)
+* **Time variable**: fudays61towk80
+* **Event variable**: status61towk80
+* **Marker variables**: Day61conc
+* **Phase 2 (sampling) filter**: ph2ind == 1
+* **Weight variable**: IPSweight
+* **Timeframe**: 534 days 
+* Performed analysis for six groups: 1) 703 trial arms (T1 and T2 pooled), 2) 
+704 trial arms (T1 and T2 pooled), 3) Pooled 703 and 704 trials arms (T1 and T2 pooled), 4) 703 trial arms 
+(All arms pooled), 5) 704 trial arms (All arms pooled), 6) Pooled 703 and 704 trials arms (All arms pooled)
+* All learners: GLM
+
+# 703 trial arms (T1 and T2 pooled) {.tabset .tabset-fade}
+
+```{r}
+# helper functions to select quantiles
+select_quants <- function(df, event_var, marker_var){
+  
+  max_thresh <- df %>% 
+    filter(.data[[event_var]] == 1) %>% 
+    arrange(desc(.data[[marker_var]])) %>% 
+    slice(3) %>% 
+    pull(.data[[marker_var]]) 
+  
+  quants <- c(seq(min(df[,marker_var], na.rm = T), max_thresh, 10),
+                     max_thresh)
+  quants <- unique(round(quants))
+  
+  quants
+}
+
+```
+
+```{r}
+gen_res <- function(df, 
+                    covariates, 
+                    time_var, 
+                    tf, 
+                    event_var, 
+                    marker_var, 
+                    weight_var, 
+                    trt_filter = c("T1+T2"),
+                    learner.treatment = Lrnr_glm$new(), 
+                    learner.event_type = Lrnr_glm$new(), 
+                    learner.failure_time = Lrnr_glm$new(), 
+                    learner.censoring_time = Lrnr_glm$new(), 
+                    pt_flag = T){
+  
+  df_analysis <- df %>% filter(rx_pool %in% trt_filter)
+  df_placebo <- df %>% filter(rx_pool == "C3")
+
+  quants <- select_quants(df, event_var, marker_var)
+
+  res_placebo_overall <- thresholdSurv(data = df_placebo , 
+                                       covariates = covariates,
+                                       failure_time = time_var, 
+                                       tf = tf, 
+                                       event_type = event_var, 
+                                       marker = "rx_pool",
+                                       learner.treatment = learner.treatment, 
+                                       learner.event_type = learner.event_type,
+                                       learner.failure_time = learner.failure_time, 
+                                       learner.censoring_time = learner.censoring_time, 
+                                       verbose = F)
+  
+  if ("C3" %in% trt_filter){
+    risk_placebo <- NULL
+    se_placebo <- NULL
+  }
+  else{
+    risk_placebo <- res_placebo_overall$estimate
+    se_placebo <- res_placebo_overall$se
+  }
+  
+  res <- thresholdSurv(data = df_analysis , 
+                            covariates = covariates,
+                            failure_time = time_var, 
+                            tf = tf, 
+                            event_type = event_var, 
+                            marker = marker_var,
+                            weights = weight_var,
+                            threshold_list = quants, 
+                            learner.treatment = learner.treatment,
+                            learner.event_type = learner.event_type, 
+                            learner.failure_time = learner.failure_time, 
+                            learner.censoring_time = learner.censoring_time,
+                            placebo_risk = risk_placebo,
+                           placebo_se = se_placebo, 
+                            verbose = F)
+  
+  g1 <- graphthresh(data.frame(res), 
+                  type = "monotone",
+                  ylabel = sprintf("Probability of HIV diagnosis by %s days", tf),
+                  xlabel = "VRC01 serum concentration (ucg/ml) Thresholds",
+                  plot_density = T,
+                  plot_endpoints = T, 
+                  data = df_analysis,
+                  weights = weight_var,
+                  marker = marker_var,
+                  event = event_var,
+                  time_var = time_var,
+                  tf = tf, 
+                  exp10 = F, 
+                  cutoffs = c(0, 0.1), 
+                  xlimit = c(0, 200, 50), 
+                  pt_flag = pt_flag) 
+  
+  g2 <- graphthresh(data.frame(res), 
+                  type = "raw",
+                  ylabel = sprintf("Probability of HIV diagnosis by %s days", tf),
+                  xlabel = "VRC01 serum concentration (ucg/ml) Thresholds",
+                  plot_density = T,
+                  plot_endpoints = T, 
+                  data = df_analysis,
+                  weights = weight_var,
+                  marker = marker_var,
+                  event = event_var,
+                  time_var = time_var,
+                  tf = tf, 
+                  cutoffs = c(0, 0.1),
+                  exp10 = F, 
+                  xlimit = c(0, 200, 50), 
+                  pt_flag = pt_flag) 
+
+    g3 <- graphthresh(data.frame(res), 
+                  type = "monotone",
+                  ylabel = sprintf("Probability of HIV diagnosis by %s days", tf),
+                  xlabel = "VRC01 serum concentration (ucg/ml) Thresholds",
+                  plot_density = T,
+                  plot_endpoints = T, 
+                  data = df_analysis,
+                  weights = weight_var,
+                  marker = marker_var,
+                  event = event_var,
+                  time_var = time_var,
+                  tf = tf, 
+                  exp10 = F, 
+                  cutoffs = c(0, 0.1), 
+                  ylimit = c(0, 0.07, 0.01), 
+                  xlimit = c(0, 200, 50), 
+                  pt_flag = pt_flag) 
+  
+  cat("\n\n## Monotone {.tabset .tabset-fade} \n")
+
+  g1 %>% 
+    print()
+  
+  data.frame(res) %>%
+      mutate(ifelse(ci_hi_monotone > 1, 1, ci_hi_monotone)) %>% 
+      rename(Threshold = threshold, 
+             Estimate = estimate_monotone, 
+             SE = se, 
+             `Lower CI` = ci_lo_monotone, 
+             `Upper CI` = ci_hi_monotone) %>% 
+      select(Threshold, rcdf, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))) %>% kable() %>% print()
+
+  
+  cat("\n\n## Not Monotone {.tabset .tabset-fade} \n")
+
+  g2 %>% 
+    print()
+  
+  data.frame(res) %>%
+      rename(Threshold = threshold,
+             Estimate = estimate, 
+             SE = se, 
+             `Lower CI` = ci_lo, 
+             `Upper CI` = ci_hi) %>% 
+      select(Threshold, rcdf, Estimate, SE, 
+             `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))) %>% kable() %>% print()
+  
+  cat("\n\n## Monotone Harmonized Y-Axes {.tabset .tabset-fade} \n")
+
+  g3 %>% 
+    print()
+  
+    if (!("C3" %in% trt_filter)){
+    g4 <- graphthresh(data.frame(res), 
+                  type = "ve",
+                  ylabel ="Prevention efficacy",
+                  xlabel = "VRC01 serum concentration (ucg/ml) Thresholds",
+                  plot_density = T,
+                  plot_endpoints = T, 
+                  data = df_analysis,
+                  weights = weight_var,
+                  marker = marker_var,
+                  event = event_var,
+                  time_var = time_var,
+                  tf = tf, 
+                  exp10 = F, 
+                  cutoffs = c(-10, 1),
+                  ylimit = c(-0.5, 1, 0.25),
+                  xlimit = c(0, 200, 50), 
+                  pt_flag = pt_flag) 
+  cat("\n\n## Prevention efficacy {.tabset .tabset-fade} \n")
+
+  g4 %>% 
+    print()
+
+  data.frame(res) %>%
+      rename(Threshold = threshold, 
+             Estimate = ve_monotone, 
+             SE = ve_se, 
+             `Lower CI` = ve_monotone_ci_lo, 
+             `Upper CI` = ve_monotone_ci_hi) %>% 
+      select(Threshold, rcdf, Estimate, SE, `Lower CI`, `Upper CI`) %>%
+      mutate(across(where(is.numeric), ~ signif(.x, 3))) %>% kable() %>% print()
+    }
+}
+```
+
+
+```{r, results = "asis", fig.align='center'}
+df <- df_v703 %>% 
+  filter(ph2ind == 1)
+covariates <- c("weight")
+time_var <- "fudays61towk80"
+tf <- 533
+event_var <- "status61towk80"
+marker_var <- "Day61conc"
+weight_var <- "IPSweight"
+
+gen_res(df, 
+        covariates, 
+        time_var, 
+        tf, 
+        event_var, 
+        marker_var, 
+        weight_var, 
+        trt_filter = c("T1+T2"),
+        learner.treatment = Lrnr_glm$new(), 
+        learner.event_type = Lrnr_glm$new(), 
+        learner.failure_time = Lrnr_glm$new(), 
+        learner.censoring_time = Lrnr_glm$new())
+
+
+```
+
+# 704 trial arms (T1 and T2 pooled) {.tabset .tabset-fade}
+
+```{r, results = "asis", fig.align='center'}
+df <- df_v704 %>% 
+  filter(ph2ind == 1) 
+covariates <- c("weight")
+time_var <- "fudays61towk80"
+tf <- 533
+event_var <- "status61towk80"
+marker_var <- "Day61conc"
+weight_var <- "IPSweight"
+
+gen_res(df, 
+        covariates, 
+        time_var, 
+        tf, 
+        event_var, 
+        marker_var, 
+        weight_var, 
+        trt_filter = c("T1+T2"),
+        learner.treatment = Lrnr_glm$new(), 
+        learner.event_type = Lrnr_glm$new(), 
+        learner.failure_time = Lrnr_glm$new(), 
+        learner.censoring_time = Lrnr_glm$new())
+
+
+```
+
+# Pooled 703 and 704 trials arms (T1 and T2 pooled) {.tabset .tabset-fade}
+
+```{r, results = "asis", fig.align='center'}
+df <- df_v703 %>%
+  mutate(trial = 0) %>% 
+  rbind.fill(df_v704 %>% 
+               mutate(trial = 1)) %>% 
+  filter(ph2ind == 1) %>% 
+  mutate(trial = factor(trial))
+covariates <- c("weight", "trial")
+time_var <- "fudays61towk80"
+tf <- 533
+event_var <- "status61towk80"
+marker_var <- "Day61conc"
+weight_var <- "IPSweight"
+
+gen_res(df, 
+        covariates, 
+        time_var, 
+        tf, 
+        event_var, 
+        marker_var, 
+        weight_var, 
+        trt_filter = c("T1+T2"),
+        learner.treatment = Lrnr_glm$new(), 
+        learner.event_type = Lrnr_glm$new(), 
+        learner.failure_time = Lrnr_glm$new(), 
+        learner.censoring_time = Lrnr_glm$new())
+
+
+```
+
+# Pooled 703 and 704 trials arms (T1 and T2 pooled, IC80 < 3) {.tabset .tabset-fade}
+
+```{r, results = "asis", fig.align='center'}
+df <- df_v703 %>%
+  mutate(trial = 0) %>% 
+  rbind.fill(df_v704 %>% 
+               mutate(trial = 1)) %>% 
+  filter(ph2ind == 1) %>% 
+  mutate(trial = factor(trial)) %>% 
+  mutate(event_new = ifelse(!is.na(pred.ic80.mf) & 
+                              pred.ic80.mf < 3 & 
+                              status61towk80 == 1, 1, 0))
+
+
+covariates <- c("weight", "trial")
+time_var <- "fudays61towk80"
+tf <- 533
+event_var <- "event_new"
+marker_var <- "Day61conc"
+weight_var <- "IPSweight"
+
+gen_res(df, 
+        covariates, 
+        time_var, 
+        tf, 
+        event_var, 
+        marker_var, 
+        weight_var, 
+        trt_filter = c("T1+T2"),
+        learner.treatment = Lrnr_glm$new(), 
+        learner.event_type = Lrnr_glm$new(), 
+        learner.failure_time = Lrnr_glm$new(), 
+        learner.censoring_time = Lrnr_glm$new(), 
+        pt_flag = F)
+
+
+```
+
+
+# Pooled 703 and 704 trials arms (T1 and T2 pooled, IC80 >= 3) {.tabset .tabset-fade}
+
+```{r, results = "asis", fig.align='center'}
+df <- df_v703 %>%
+  mutate(trial = 0) %>% 
+  rbind.fill(df_v704 %>% 
+               mutate(trial = 1)) %>% 
+  filter(ph2ind == 1) %>% 
+  mutate(trial = factor(trial)) %>% 
+  mutate(event_new = ifelse(!is.na(pred.ic80.mf) & 
+                              pred.ic80.mf >= 3 & 
+                              status61towk80 == 1, 1, 0))
+
+
+covariates <- c("weight", "trial")
+time_var <- "fudays61towk80"
+tf <- 533
+event_var <- "event_new"
+marker_var <- "Day61conc"
+weight_var <- "IPSweight"
+
+gen_res(df, 
+        covariates, 
+        time_var, 
+        tf, 
+        event_var, 
+        marker_var, 
+        weight_var, 
+        trt_filter = c("T1+T2"),
+        learner.treatment = Lrnr_glm$new(), 
+        learner.event_type = Lrnr_glm$new(), 
+        learner.failure_time = Lrnr_glm$new(), 
+        learner.censoring_time = Lrnr_glm$new(), 
+        pt_flag = F)
+
+
+```
+
+# 703 trial arms (All arms pooled) {.tabset .tabset-fade}
+
+```{r, results = "asis", fig.align='center'}
+df <- df_v703 %>% 
+  filter(ph2ind == 1)
+covariates <- c("weight")
+time_var <- "fudays61towk80"
+tf <- 533
+event_var <- "status61towk80"
+marker_var <- "Day61conc"
+weight_var <- "IPSweight"
+
+gen_res(df, 
+        covariates, 
+        time_var, 
+        tf, 
+        event_var, 
+        marker_var, 
+        weight_var, 
+        trt_filter = c("T1+T2", "C3"),
+        learner.treatment = Lrnr_glm$new(), 
+        learner.event_type = Lrnr_glm$new(), 
+        learner.failure_time = Lrnr_glm$new(), 
+        learner.censoring_time = Lrnr_glm$new())
+
+
+```
+
+# 704 trial arms (All arms pooled) {.tabset .tabset-fade}
+
+
+```{r, results = "asis", fig.align='center'}
+df <- df_v704 %>% 
+  filter(ph2ind == 1) 
+covariates <- c("weight")
+time_var <- "fudays61towk80"
+tf <- 533
+event_var <- "status61towk80"
+marker_var <- "Day61conc"
+weight_var <- "IPSweight"
+
+gen_res(df, 
+        covariates, 
+        time_var, 
+        tf, 
+        event_var, 
+        marker_var, 
+        weight_var, 
+        trt_filter = c("T1+T2", "C3"),
+        learner.treatment = Lrnr_glm$new(), 
+        learner.event_type = Lrnr_glm$new(), 
+        learner.failure_time = Lrnr_glm$new(), 
+        learner.censoring_time = Lrnr_glm$new())
+
+
+```
+
+# Pooled 703 and 704 trials arms (All arms pooled) {.tabset .tabset-fade}
+
+```{r, results = "asis", fig.align='center'}
+df <- df_v703 %>%
+  mutate(trial = 0) %>% 
+  rbind.fill(df_v704 %>% 
+               mutate(trial = 1)) %>% 
+  filter(ph2ind == 1) %>% 
+  mutate(trial = factor(trial))
+covariates <- c("weight", "trial")
+time_var <- "fudays61towk80"
+tf <- 533
+event_var <- "status61towk80"
+marker_var <- "Day61conc"
+weight_var <- "IPSweight"
+
+gen_res(df, 
+        covariates, 
+        time_var, 
+        tf, 
+        event_var, 
+        marker_var, 
+        weight_var, 
+        trt_filter = c("T1+T2", "C3"),
+        learner.treatment = Lrnr_glm$new(), 
+        learner.event_type = Lrnr_glm$new(), 
+        learner.failure_time = Lrnr_glm$new(), 
+        learner.censoring_time = Lrnr_glm$new())
+
+
+```
+
+# Reproducibility Information
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis"}
+commit_hash <- system("git rev-parse HEAD", intern = TRUE)
+data_paths <- normalizePath(analysis_data_files, mustWork = TRUE)
+
+cat(sprintf("- **Code commit:** `%s`\n", commit_hash))
+for (i in seq_along(data_paths)) {
+  cat(sprintf("- **%s data:** `%s`\n", names(data_paths)[[i]], data_paths[[i]]))
+}
+```
