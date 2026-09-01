@@ -2,4 +2,7 @@ nohup.out
 report.knit.md
 report.utf8.md
 *.pdf
+*.tex
+renv/
+code/diproperm_run.tex
 output/*

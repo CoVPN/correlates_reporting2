@@ -1,29 +1,38 @@
 # ENSEMBLE severe COVID exposure-proximal correlate analysis
 
-
 ## Reproduciblity
 
-This project uses a project-level renv.lock. Setup:
-- Download the repository, e.g. download and unzip a release from https://github.com/CoVPN/correlates_reporting2/releases
-- Assume that we have R 4.4.2 installed.
-- Assume that we have renv 0.13.2 installed. If not, open R console at the project level (the folder containing this readme file), and run the following commands. Note that we use renv 0.13.2, which uses renv/activate.R, instead of newer versions because of some errors with the newer versions. (If in a slurm env, load an appropriate R module and a CMmake module. The latter is needed to install some packages, e.g., nloptr, lme4.
+This project uses a project-level renv.lock. 
+
+**Setup steps:**
+
+1. Download and unzip the files from https://github.com/CoVPN/correlates_reporting2/releases/tag/2.2.7
+
+2. Assume that we have R 4.4.2 installed (or loaded on a high performance cluster).
+
+3. Assume that we have renv 1.1.5 installed. If not, open R console at the project level (the folder containing this readme file) and run the following command.
+)
   ```{r}
+  # if the following does not work, it is because 1.1.5 is the current release. Then try install.packages("renv")
   install.packages(
-    "https://cran.r-project.org/src/contrib/Archive/renv/renv_0.13.2.tar.gz",
+    "https://cran.r-project.org/src/contrib/Archive/renv/renv_1.1.5.tar.gz",
     repos = NULL,
     type = "source"
   )
   
-  packageVersion("renv")  # should show ‘0.13.2’
+  packageVersion("renv")  
   ```
-- Run the following R command at the project level to install package dependencies:
+
+4. Run the following R command at the project level to install package dependencies:
   ```{R}
   renv::restore()
   ```
-- Open the repo config.yml in an editor, look for iliad_ib202p, and modify the line below to point to the local copy of analysis-ready data file.
 
+**Running the code:**
 
-The following shell commands are to be run at the project level.
+1. Look for read.csv in all R/Rmd scripts and modify the code to point to the local copy of analysis-ready data file if needed.
+
+2. To reproduce VE2_Scale_LRT2_event.pdf, run the following shell commands at the project level. The first four steps use sbatch to run jobs on a high performance cluster. 
 
 - Run the following and wait till all the jobs finish (squeue). Estimated time minutes.
     ```{bash}
@@ -33,12 +42,17 @@ The following shell commands are to be run at the project level.
     ```{bash}
     bash ./run_step_2.sh
     ```
-- Run the following and wait till all the jobs finish (squeue). Estimated time 1 day, depending on the availability of the nodes.
+- Run the following and wait till all the jobs finish (squeue). Estimated time 4 days, depending on the availability of the nodes.
     ```{bash}
     bash ./run_step_3.sh
     ```
+- Run the following and wait till all the jobs finish. Estimated time 1 hour.
+    ```{bash}
+    bash ./run_step_4.sh
+    ```
 - Run the following:
     ```{bash}
-    Rscript ComputeSimVE_Scale.R
+    Rscript computeSimVE_Scale.R
     Rscript PlotFig5Revision.R
     ```
+

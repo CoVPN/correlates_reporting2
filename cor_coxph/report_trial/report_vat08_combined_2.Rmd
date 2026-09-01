@@ -46,6 +46,7 @@ for (tpeak in c(43)) {
     show.sample.size = T
     show.ve.curves = F
     show.tertile.curves = T
+    show.forestplots = T
     res = knitr::knit_child(c(here::here('cor_coxph', 'report_by_COR.Rmd')), quiet = TRUE)
     cat(res, sep = '\n')
   }

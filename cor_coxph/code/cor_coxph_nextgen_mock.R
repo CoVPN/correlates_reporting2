@@ -1,5 +1,4 @@
-# COR="D31toM12_nextgen_mock_sera";
-# COR="D31toM12_nextgen_mock_tcell";
+# COR="D31toM12_nextgen_mock_COVID_sera";
 Sys.setenv(TRIAL = "nextgen_mock")
 Sys.setenv(VERBOSE = 1)
 source(here::here("..", "_common.R")) 
@@ -51,6 +50,9 @@ marker_sets='pseudoneutid50_sera'
   dat.vacc = subset(dat_proc, Trt == 1 & ph1)
   dat.plac = subset(dat_proc, Trt == 0 & ph1)
   # dat.vacc.ph2 = subset(dat.vacc, ph2==1)
+  
+  dat.vacc$ph2 = dat.vacc$ph2 == 1
+  dat.plac$ph2 = dat.plac$ph2 == 1
   
   design.vacc <-
     twophase(
@@ -169,7 +171,7 @@ for (trt in trts) {
       markers.names.short = all.markers.names.short,
   
       dat.plac = dat.0,
-      show.q = F,
+      show.q = T,
       
       forestplot.markers=NULL, 
       for.title="",

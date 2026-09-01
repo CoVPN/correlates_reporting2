@@ -219,6 +219,18 @@
       "Repository": "CRAN",
       "Hash": "9fcb189926d93c636dea94fbe4f44480"
     },
+    "kyotil": {
+      "Package": "kyotil",
+      "Version": "2025.6-7",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "youyifong",
+      "RemoteRepo": "kyotil",
+      "RemoteRef": "master",
+      "RemoteSha": "4ea09ce9b60966d968dd6185cc0a36703a7af065",
+      "Hash": "4408442ac492eaf8e3842cabc44a0355"
+    },
     "lattice": {
       "Package": "lattice",
       "Version": "0.22-7",

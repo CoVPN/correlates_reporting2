@@ -1,41 +1,34 @@
 # Poisson Regression Modeling of Correlates of Risk
 
 
-## Reproducibility 
 
-This project uses the repo-level renv.lock. 
+## Reproduce ILiAD phase 2 correlates results
 
-
-### ILiAD phase 2 correlates
-
-Setup:
+**Setup**
 - Download and unzip the release
 https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.6.zip
-- Run the following R command at the repo root level to install package dependencies:
+- Run the following R command at the repo root level to install package dependencies as this project uses the repo-level renv.lock:
 ```{R}
 renv::restore()
 ```
 - Open config.yml in an editor, look for iliad_ib202p, and modify the line below to point to the local copy of analysis-ready data file.
 
-
-
-To generate covpn_correlates_cor_poisson_iliad_ib202p.pdf, run the following commands in a bash shell:
+**Analysis**
+- This produces two pdfs: correlates_cor_poisson_iliad_ib202p_{datestring}.pdf and posthoc_analyses_{datestring}.pdf:
 ```{bash}
 export TRIAL=iliad_ib202p
 cd cor_poisson
 make 
 ```
 
-To render the R markdown files, run the following commands in a bash shell:
-```{bash}
-cd cor_poisson
-Rscript -e "rmarkdown::render('code/comparative_immunogenicity.Rmd')"
-Rscript -e "rmarkdown::render('code/diproperm_run.Rmd')"
-Rscript -e "rmarkdown::render('code/posthoc_analyses.Rmd')"
-```
+**Mapping between mansucript TLFs and reports**
 
-To run Yutong's code to generated the heatmap pdf files, run the following commands in a bash shell:
-```{bash}
-cd cor_poisson
-Rscript code/Plotting_Main_YutongJin.R
-```
+| Manuscript | Report                        |
+|------------|-------------------------------|
+| Table 1    | posthoc_analyses_20260103.pdf, Table 5.2 |
+| Table 2    | posthoc_analyses_20260103.pdf, Table 2.1 |
+| Table 3    | posthoc_analyses_20260103.pdf, Table 5.9, 5.14 |
+| Figure 1   | comparative_immunogenicity_20260103.pdf, Figure 4.1-4.4, or ppai_pairs_Norm_Nasal_IgA.png etc. |
+| Figure 2   | posthoc_analyses_20260103.pdf, Figure 5.3 |
+| Figure 3   | correlates_cor_poisson_iliad_ib202p_20260103.pdf, Figure 1.6, 1.2 |
+| Figure 4   | posthoc_analyses_20260103.pdf, Figure 6.1 |

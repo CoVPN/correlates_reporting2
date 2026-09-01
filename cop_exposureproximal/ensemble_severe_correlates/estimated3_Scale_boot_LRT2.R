@@ -450,12 +450,12 @@ weights=weight
 
 
 #load(file=paste("~/TND/Ensemble/Result/ES_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
-load(file=paste("~/TND/Ensemble/Result/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
+load(file=paste("output/outd3_Scale_LRT2_event",ind.event,"_marker",ind.marker,"_region",ind.region,".Rdata",sep=''))
   
   low=-10;up=10
   
   if (ind.region==3){
-  source(file="~/TND/code/May2021/MethodFund_forEnsemble3TieFull.R")
+  source(file="MethodFund_forEnsemble3TieFull.R")
 #  B1E=-.8;B2E=-.8;B3E=0
 #  parm1=B1E;parm2=B2E;parm3=B3E
  
@@ -490,7 +490,7 @@ load(file=paste("~/TND/Ensemble/Result/outd3_Scale_LRT2_event",ind.event,"_marke
 ##  
 #  fit23.b<-optim(c(B00,B2E,B3E,B4E,B5E,B6E),nloglik.M1.b.Cal.23)
 } else {
- source(file="~/TND/code/May2021/MethodFund_forEnsemble3STieFull.R")
+ source(file="MethodFund_forEnsemble3STieFull.R")
 #  B1E=-.8;B2E=-.8;B3E=0
 #  parm1=B1E;parm2=B2E;parm3=B3E
  

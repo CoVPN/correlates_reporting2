@@ -107,14 +107,14 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail_sanofi))
 	Rscript code/cor_coxph_covail_sanofi.R D15to91
 	Rscript code/cor_coxph_covail_sanofi.R D92to181
 else ifeq ($(TRIAL),$(filter $(TRIAL), nextgen_mock))
-	Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_sera
-	Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_sera
+	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_COVID_sera
+	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_COVID_sera
+	#Rscript code/cor_coxph_nextgen_mock.R M6toM12_nextgen_mock_COVID_sera
+	Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_Infection_sera
+	Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_Infection_sera
+	Rscript code/cor_coxph_nextgen_mock.R M6toM12_nextgen_mock_Infection_sera
 	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_saliva
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_saliva
 	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_nasal
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_nasal
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM12_nextgen_mock_tcell
-	#Rscript code/cor_coxph_nextgen_mock.R D31toM6_nextgen_mock_tcell
 else ifeq ($(TRIAL),$(filter $(TRIAL), covail_tcell))
 	Rscript code/cor_coxph_covail_tcell.R D15to91covail_tcell
 	Rscript code/cor_coxph_covail_tcell.R D15to181covail_tcell
@@ -122,6 +122,9 @@ else ifeq ($(TRIAL),$(filter $(TRIAL), covail_frnt))
 	Rscript code/cor_coxph_covail_frnt.R D15to91covail_frnt
 	Rscript code/cor_coxph_covail_frnt.R D15to181covail_frnt
 	Rscript code/cor_coxph_covail_frnt.R D92to181covail_frnt
+else ifeq ($(TRIAL),$(filter $(TRIAL), cov2008_tcell))
+	Rscript code/cor_coxph_cov2008_tcell.R D15toEOS_cov2008_tcell_symp
+	Rscript code/cor_coxph_cov2008_tcell.R D15toEOS_cov2008_tcell_anyinf
 endif
 
 collate:

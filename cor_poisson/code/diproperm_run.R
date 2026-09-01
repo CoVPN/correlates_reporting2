@@ -1,6 +1,3 @@
-# remotes::install_github("elbamos/clusteringdatasets")
-# remotes::install_github("jiadongm/diproperm")
-
 library(glue)
 library(diproperm)
 library(config)
@@ -9,8 +6,6 @@ file = config::get(config = "iliad_ib202p", file="~/correlates_reporting2/config
 dat_proc_202=read.csv(file)
 dat_proc_202$Ptid = as.factor(dat_proc_202$Ptid) # need to make it a factor to use as id
 dat_proc_202$Trt = factor(dat_proc_202$Trt, levels = c("PBO","BPZE1")) 
-
-
 
 dat = subset(dat_proc_202, Trt == "BPZE1" & PPAI==1)
 
@@ -27,3 +22,6 @@ sapply(c("Day28", "B", "Delta28overB"), function (t) {
   })
 })
 pvals
+
+
+

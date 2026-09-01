@@ -1,6 +1,7 @@
 # setwd("C:/Users/yhuang/OneDrive - Fred Hutchinson Cancer Research Center/Documents/All_Files/1yingsstuff/TND/Ensemble")
 source(file="../FunctionCall.R")
 
+library(kyotil)
 
 transf=function(y) -log(1-y) 
 
@@ -17,7 +18,7 @@ ind.event<-1
 ind.marker<-1
 ind.region<-0
 
-pdf(file=paste0("Graph/VE2_Scale_LRT2_event.pdf"),width=7, height=7)
+pdf(file=paste0("VE2_Scale_LRT2_event.pdf"),width=7, height=7)
 
 
 par(mfcol=c(2,2))

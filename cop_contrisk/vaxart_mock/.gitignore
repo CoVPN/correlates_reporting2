@@ -1,0 +1,9 @@
+output/
+*.html
+*.pdf
+.Rhistory
+.RData
+.Rproj.user
+renv/
+*_cache/
+*_files/

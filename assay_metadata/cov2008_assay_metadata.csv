@@ -1,0 +1,21 @@
+panel,order_in_panel,assay,lloq,uloq,lod,pos.cutoff,assay_label,assay_label_short,llox_label,for_correlates,trunc
+tcell,1,CD4_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,CD4+ T cells expressing IFNg and/or IL-2 to BA.1.S,CD4+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,2,CD8_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,CD8+ T cells expressing IFNg and/or IL-2 to BA.1.S,CD8+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,3,Central_Memory_CD4_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,Central memory CD4+ T cells expressing IFNg and/or IL-2 to BA.1.S,Central memory CD4+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,4,Central_Memory_CD8_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,Central memory CD8+ T cells expressing IFNg and/or IL-2 to BA.1.S,Central memory CD8+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,5,Effector_Memory_CD4_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,Effector memory CD4+ T cells expressing IFNg and/or IL-2 to BA.1.S,Effector memory CD4+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,6,Effector_Memory_CD8_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,Effector memory CD8+ T cells expressing IFNg and/or IL-2 to BA.1.S,Effector memory CD8+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,7,Naive_CD4_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,Naive memory CD4+ T cells expressing IFNg and/or IL-2 to BA.1.S,Naive memory CD4+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,8,Naive_CD8_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,Naive memory CD8+ T cells expressing IFNg and/or IL-2 to BA.1.S,Naive memory CD8+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,9,Terminally_Diff_CD4_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,Terminally differentiated CD4+ T cells expressing IFNg and/or IL-2 to BA.1.S,Terminally differentiated CD4+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,10,Terminally_Diff_CD8_Any_BA.1_IFNg_OR_IL2,NA,Inf,NA,NA,Terminally differentiated CD8+ T cells expressing IFNg and/or IL-2 to BA.1.S,Terminally differentiated CD8+ T cells IFNg and/or IL-2 BA.1.S (%),lod,1,0.001
+tcell,11,CD4_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,CD4+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,CD4+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
+tcell,12,CD8_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,CD8+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,CD8+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
+tcell,13,Central_Memory_CD4_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,Central memory CD4+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,Central memory CD4+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
+tcell,14,Central_Memory_CD8_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,Central memory CD8+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,Central memory CD8+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
+tcell,15,Effector_Memory_CD4_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,Effector memory CD4+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,Effector memory CD4+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
+tcell,16,Effector_Memory_CD8_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,Effector memory CD8+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,Effector memory CD8+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
+tcell,17,Naive_CD4_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,Naive memory CD4+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,Naive memory CD4+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
+tcell,18,Naive_CD8_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,Naive memory CD8+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,Naive memory CD8+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
+tcell,19,Terminally_Diff_CD4_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,Terminally differentiated CD4+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,Terminally differentiated CD4+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
+tcell,20,Terminally_Diff_CD8_Any_Cov2_S_IFNg_OR_IL2,NA,Inf,NA,NA,Terminally differentiated CD8+ T cells expressing IFNg and/or IL-2 to COV2.CON.S,Terminally differentiated CD8+ T cells IFNg and/or IL-2 COV2.CON.S (%),lod,1,0.001
