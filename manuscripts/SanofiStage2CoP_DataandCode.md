@@ -2,7 +2,7 @@
 
 **Youyi Fong, Peter Gilbert, Lindsay Carpp**
 
-**December 12, 2025**
+**September 1, 2026**
 
 All analyses use code in this release if not otherwise specified: [https://github.com/CoVPN/correlates\_reporting2/archive/refs/tags/sanofi\_stage2\_correlates\_R40.zip](https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/sanofi_stage2_correlates_R40.zip)
 
@@ -55,13 +55,21 @@ Analyses are based on the Per-Protocol Analysis Set and include endpoints ≥ 14
 
 **Statistical reports**:
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\cumVE\_nonnaive.pdf
-
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\smoothHazVE\_nonnaive.pdf
-
+(A)
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\stage2\_pp\_naivecumInc.pdf
 
+(B)
 T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime stage2\_pp\_nonnaivecumInc.pdf
+
+(C)
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\cumVE\_nonnaive.pdf
+
+(D)
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\OverallVaccineEfficacyOverTime\\smoothHazVE\_nonnaive.pdf
+
+
+
+
 
 To reproduce this report, follow the instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cumulative\_incidence/vat08\_bivalent](https://github.com/CoVPN/correlates_reporting2/tree/master/cumulative_incidence/vat08_bivalent) (level 1 reproducibility test passed)
 
@@ -123,19 +131,19 @@ Vaccine efficacy against Omicron COVID-19 through 124 days post D43 for non-naï
 
 **Statistical reports**:
 
-T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\NonparametricThresholdCoRResults threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+T:\\covpn\\p3005\\analysis\\correlates\\Part\_A\_Blinded\_Phase\_Data\\reports\\NonparametricThresholdCoRResults threshold_analysis_only_standardized_add_rcdf_2026Aug25.pdf
 
 To reproduce this report, follow instructions at [https://github.com/CoVPN/correlates\_reporting2/tree/master/cor\_threshold/sanofi\_stage2](https://github.com/CoVPN/correlates_reporting2/tree/master/cor_threshold/sanofi_stage2) (level 1 reproducibility test passed)
 
 Collage mapping
 
-· Panel A: page 76 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+· Panel A: page 76 in threshold_analysis_only_standardized_add_rcdf_2026Aug25.pdf
 
-· Panel B: page 117 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+· Panel B: page 117 in threshold_analysis_only_standardized_add_rcdf_2026Aug25.pdf
 
-· Panel C: page 82 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+· Panel C: page 82 in threshold_analysis_only_standardized_add_rcdf_2026Aug25.pdf
 
-· Panel D: page 122 in threshold\_analysis\_sanofi\_updated\_stage2\_2025Apr24.pdf
+· Panel D: page 122 in threshold_analysis_only_standardized_add_rcdf_2026Aug25.pdf
 
 ## Figure 5
 
