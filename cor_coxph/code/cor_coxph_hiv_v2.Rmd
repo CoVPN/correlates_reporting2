@@ -1,0 +1,268 @@
+---
+title: "Cox Interaction Models for a Cross-Protocol V2 Ab Correlates Study"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r, include = F, warning = F, message = F}
+
+library(tidyverse)
+library(data.table)
+library(survey)
+library(kyotil)
+
+
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F)
+
+
+analysis_data_files <- c(
+  # HVTN702 = "controlledVEdata702.csv",
+  HVTN705 = "/trials/vaccine/p705/analysis/lab/cc/copcor/HVTN705_secondcasecontrolprocesseddata_v14.csv",
+  # HVTN505 = "controlledVEdata505_lab.csv",
+  RV144 = "/trials/vaccine/thai_trial_rv144/adhoc/Moodie_Correlates_May2024/adata/controlledVEdataRV144_v2.csv"
+)
+```
+
+```{r, cache=T}
+# df_hvtn702 <- read.csv(analysis_data_files[["HVTN702"]])
+df_hvtn705 <- read.csv(analysis_data_files[["HVTN705"]])
+# df_hvtn505 <- read.csv(analysis_data_files[["HVTN505"]])
+df_rv144 <- read.csv(analysis_data_files[["RV144"]])
+
+# data processing 
+df_hvtn705 <- df_hvtn705 %>% 
+  mutate(RSA = factor(RSA), 
+         Delta.D210.is.169K = ifelse(hxb169.is.k == 1 & Delta.D210 == 1, 1, 0),
+         Delta.D210.not.169K = ifelse(hxb169.is.not.k == 1 & Delta.D210 == 1, 1, 0)) %>% 
+  filter(!is.na(Ttilde.D210)) %>% 
+  
+  # change 11/19 
+  mutate(
+    Day210IgGgp70.B.CaseA.V1.V250delta = Day210IgGgp70.B.CaseA.V1.V250delta -log10(2),
+    Day210IgGAE.A244.V1V2.Tags_293F50delta = Day210IgGAE.A244.V1V2.Tags_293F50delta -log10(2),
+    Day210IgGC.1086C.V1.V2.Tags50delta = Day210IgGC.1086C.V1.V2.Tags50delta -log10(2),
+    Day210IgGgp70_Ce1086.B2.V1V250delta = Day210IgGgp70_Ce1086.B2.V1V250delta -log10(2))
+
+
+# df_hvtn702 <- df_hvtn702 %>% 
+#   mutate(AGELE25 = factor(AGELE25))
+
+df_rv144 <- df_rv144 %>% 
+  mutate(trt = ifelse(trt == "VACCINE", 1, 0), 
+         HIVm42.is.169K = ifelse(hxb169.is.k == 1 & HIVm42 == 1, 1, 0), 
+         HIVm42.not.169K = ifelse(hxb169.is.not.k == 1 & HIVm42 == 1, 1, 0), 
+         HIVwk26.is.169K = ifelse(hxb169.is.k == 1 & HIVwk26 == 1, 1, 0), 
+         HIVwk26.not.169K = ifelse(hxb169.is.not.k == 1 & HIVwk26 == 1, 1, 0)
+         )
+
+```
+
+
+
+
+# Combined HVTN 705 + RV144 analyses (24 month)
+
+* **Adjustment covariates**: Region (RV144, South Africa, Outside South Africa), 
+age above or below 26
+* **Event time variable**: HIVwk26fu (RV144) and Ttilde.D210 (HVTN 705)
+* **Event type variable**: HIVwk26 (RV144) and Delta.D210 (HVTN 705)
+* **Weight variable**: sample_weight (RV144) and wt.D210 (HVTN 705)
+* **Filter for HVTN 705**: !is.na(Ttilde.D210)
+
+```{r}
+# process HVTN 705 dataframe to look like RV 144 dataframe
+df_hvtn705_new <- df_hvtn705 %>%
+  filter(!is.na(Ttilde.D210)) %>% 
+  rename(pub_id = Subjectid, 
+         trt = Trt,
+         HIVwk26fu = Ttilde.D210, 
+         HIVwk26 = Delta.D210,
+         HIVwk26.is.169K = Delta.D210.is.169K, 
+         HIVwk26.not.169K = Delta.D210.not.169K,
+         sample_weight = wt.D210,
+         IgG_gp70_B.CaseA_V1V2 = Day210IgGgp70.B.CaseA.V1.V250delta, 
+         IgG_AE.A244_V1V2_Tags_293F = Day210IgGAE.A244.V1V2.Tags_293F50delta,
+         IgG_C.1086C_V1V2_Tags = Day210IgGC.1086C.V1.V2.Tags50delta,
+         IgG_gp70_C.1086C_V1V2_293F = Day210IgGgp70_Ce1086.B2.V1V250delta,
+         IgG3_gp70_B.CaseA_V1V2 = Day210IgG3gp70.B.CaseA.V1.V240delta,
+         IgG3_AE.A244_V1V2_Tags_293F = Day210IgG3AE.A244.V1V2.Tags_293F40delta,
+         IgG3_C.1086C_V1V2_Tags = Day210IgG3C.1086C.V1.V2.Tags40delta, 
+         IgG3_gp70_C.1086C_V1V2_293F = Day210IgG3gp70.Ce1086.B2.V1V240delta) %>% 
+  mutate(study_region = ifelse(RSA == "1", "HVTN705_SA", "HVTN705_Not_SA"),
+         age_ge_26 = ifelse(Age >= 26, ">=26", "<26")) %>% 
+  select(pub_id, trt, study_region, age_ge_26, HIVwk26fu, HIVwk26, HIVwk26.is.169K, 
+         HIVwk26.not.169K, 
+         sample_weight, IgG_gp70_B.CaseA_V1V2,
+         IgG_AE.A244_V1V2_Tags_293F, IgG_C.1086C_V1V2_Tags, IgG_gp70_C.1086C_V1V2_293F, 
+         IgG3_gp70_B.CaseA_V1V2, IgG3_AE.A244_V1V2_Tags_293F, IgG3_C.1086C_V1V2_Tags,
+         IgG3_gp70_C.1086C_V1V2_293F)
+
+df_combined <- df_rv144 %>% 
+  mutate(study_region = "RV144", 
+         age_ge_26 = ifelse(agecat == "Age >=26", ">=26", "<26")) %>% 
+  select(pub_id, trt, study_region, age_ge_26, HIVwk26fu, HIVwk26, HIVwk26.is.169K, 
+         HIVwk26.not.169K, sample_weight, IgG_gp70_B.CaseA_V1V2,
+         IgG_AE.A244_V1V2_Tags_293F, IgG_C.1086C_V1V2_Tags, IgG_gp70_C.1086C_V1V2_293F, 
+         IgG3_gp70_B.CaseA_V1V2, IgG3_AE.A244_V1V2_Tags_293F, IgG3_C.1086C_V1V2_Tags,
+         IgG3_gp70_C.1086C_V1V2_293F) %>% 
+  rbind(df_hvtn705_new)
+```
+
+```{r, results = "asis", cache=T, fig.align='center'}
+# runs analysis and prints out three tabs: Vaccine, Placebo, and VE 
+print_analysis_helper <- function(df, 
+                                  covariates, 
+                                  trt_var,
+                                  time_var, 
+                                  event_var, 
+                                  marker_var,
+                                  weight_var, 
+                                  tf, 
+                                  learner.treatment = Lrnr_glm$new(),
+                                  learner.event_type = Lrnr_glm$new(),
+                                  learner.failure_time = Lrnr_glm$new(),
+                                  learner.censoring_time = Lrnr_glm$new(),
+                                  filter = NULL, 
+                                  itxn = NULL, 
+                                  ylim_cutoffs  = c(-1, 1, 0.2)){
+  
+  # filter for vaccine 
+  df_vaccine <- df %>% 
+    filter(!!sym(trt_var) == 1 & !is.na(!!sym(marker_var)))
+  
+  des <- svydesign(ids = ~1, weights = as.formula(paste0("~", weight_var)), data = df_vaccine)
+  
+  if (itxn==0) {
+    # no interaction
+    f <- as.formula(paste("Surv(", time_var, ",", event_var, ") ~", paste(c(marker_var%.%"+study_region", covariates), collapse = " + ")))
+    
+  } else if (itxn==1) {
+    # interaction
+    f <- as.formula(paste("Surv(", time_var, ",", event_var, ") ~", paste(c(marker_var%.%"*I(study_region=='RV144')", covariates), collapse = " + ")))
+    
+  } else if (itxn==2) {
+    # rv144 only
+    f <- as.formula(paste("Surv(", time_var, ",", event_var, ") ~", paste(c(marker_var, covariates), collapse = " + ")))
+    
+  } else if (itxn==3) {
+    # 705 only
+    f <- as.formula(paste("Surv(", time_var, ",", event_var, ") ~", paste(c(marker_var%.%"+study_region", covariates), collapse = " + ")))
+    
+  }
+  
+  fit <- svycoxph(f, design = des)
+  return(fit)
+
+}
+
+covariates <- c("age_ge_26") # , "study_region"
+time_var <- "HIVwk26fu"
+tf <- 459 
+event_var <- "HIVwk26"
+trt_var <- "trt"
+named_markers <- c(
+  "IgG_gp70_B.CaseA_V1V2" = "IgG V1V2 B.CaseA-gp70",
+  "IgG_AE.A244_V1V2_Tags_293F" = "IgG V1V2 AE.A244-Tags",
+  "IgG_C.1086C_V1V2_Tags" = "IgG V1V2 C.1086-Tags",
+  "IgG_gp70_C.1086C_V1V2_293F" = "IgG V1V2 C.1086-gp70",
+  "IgG3_gp70_B.CaseA_V1V2" = "IgG3 V1V2 B.CaseA-gp70",
+  "IgG3_AE.A244_V1V2_Tags_293F" = "IgG3 V1V2 AE.A244-Tags",
+  "IgG3_C.1086C_V1V2_Tags" = "IgG3 V1V2 C.1086-Tags",
+  "IgG3_gp70_C.1086C_V1V2_293F" = "IgG3 V1V2 C.1086-gp70"
+)
+
+weight_var <- "sample_weight"
+
+
+# RV144
+cat("RV144\n")
+fits=list()
+for (marker_var in names(named_markers)){
+  readable_name <- named_markers[[marker_var]]
+  # cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  fits[[marker_var]]=print_analysis_helper(subset(df_combined, study_region=='RV144'), 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf, 
+                        itxn = 2)
+}
+tab=getFormattedSummary(fits, robust=T)
+knitr::kable(tab)
+
+
+# 705
+cat("705\n")
+fits=list()
+for (marker_var in names(named_markers)){
+  readable_name <- named_markers[[marker_var]]
+  # cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  fits[[marker_var]]=print_analysis_helper(subset(df_combined, study_region!='RV144'), 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf, 
+                        itxn = 3)
+}
+tab=getFormattedSummary(fits, robust=T)
+knitr::kable(tab)
+
+
+# no interaction
+cat("Pooled, no interaction\n")
+fits=list()
+for (marker_var in names(named_markers)){
+  readable_name <- named_markers[[marker_var]]
+  # cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  fits[[marker_var]]=print_analysis_helper(df_combined, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf, 
+                        itxn = 0)
+}
+tab=getFormattedSummary(fits, robust=T)
+knitr::kable(tab)
+
+
+# interaction
+cat("Pooled, interaction\n")
+fits=list()
+for (marker_var in names(named_markers)){
+  readable_name <- named_markers[[marker_var]]
+  # cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
+  
+  fits[[marker_var]]=print_analysis_helper(df_combined, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf, 
+                        itxn = 1)
+}
+tab=getFormattedSummary(fits, robust=T)
+knitr::kable(tab)
+```
+
+
+
+
