@@ -15,6 +15,8 @@ library(tidyverse)
 library(data.table)
 library(survey)
 library(kyotil)
+library(vaccine)
+library(WeightedROC)
 
 
 knitr::opts_chunk$set(echo = FALSE, warning = F, message = F)
@@ -26,9 +28,7 @@ analysis_data_files <- c(
   # HVTN505 = "controlledVEdata505_lab.csv",
   RV144 = "/trials/vaccine/thai_trial_rv144/adhoc/Moodie_Correlates_May2024/adata/controlledVEdataRV144_v2.csv"
 )
-```
 
-```{r, cache=T}
 # df_hvtn702 <- read.csv(analysis_data_files[["HVTN702"]])
 df_hvtn705 <- read.csv(analysis_data_files[["HVTN705"]])
 # df_hvtn505 <- read.csv(analysis_data_files[["HVTN505"]])
@@ -59,22 +59,8 @@ df_rv144 <- df_rv144 %>%
          HIVwk26.is.169K = ifelse(hxb169.is.k == 1 & HIVwk26 == 1, 1, 0), 
          HIVwk26.not.169K = ifelse(hxb169.is.not.k == 1 & HIVwk26 == 1, 1, 0)
          )
+df_rv144$age_ge_26 = ifelse(df_rv144$agecat == "Age >=26", ">=26", "<26")
 
-```
-
-
-
-
-# Combined HVTN 705 + RV144 analyses (24 month)
-
-* **Adjustment covariates**: Region (RV144, South Africa, Outside South Africa), 
-age above or below 26
-* **Event time variable**: HIVwk26fu (RV144) and Ttilde.D210 (HVTN 705)
-* **Event type variable**: HIVwk26 (RV144) and Delta.D210 (HVTN 705)
-* **Weight variable**: sample_weight (RV144) and wt.D210 (HVTN 705)
-* **Filter for HVTN 705**: !is.na(Ttilde.D210)
-
-```{r}
 # process HVTN 705 dataframe to look like RV 144 dataframe
 df_hvtn705_new <- df_hvtn705 %>%
   filter(!is.na(Ttilde.D210)) %>% 
@@ -111,11 +97,25 @@ df_combined <- df_rv144 %>%
          IgG3_gp70_B.CaseA_V1V2, IgG3_AE.A244_V1V2_Tags_293F, IgG3_C.1086C_V1V2_Tags,
          IgG3_gp70_C.1086C_V1V2_293F) %>% 
   rbind(df_hvtn705_new)
+
 ```
 
+
+
+
+# Combined HVTN 705 + RV144 analyses (24 months)
+
+* **Adjustment covariates**: Region (RV144, South Africa, Outside South Africa), 
+age above or below 26
+* **Event time variable**: HIVwk26fu (RV144) and Ttilde.D210 (HVTN 705)
+* **Event type variable**: HIVwk26 (RV144) and Delta.D210 (HVTN 705)
+* **Weight variable**: sample_weight (RV144) and wt.D210 (HVTN 705)
+* **Filter for HVTN 705**: !is.na(Ttilde.D210)
+
+
+
 ```{r, results = "asis", cache=T, fig.align='center'}
-# runs analysis and prints out three tabs: Vaccine, Placebo, and VE 
-print_analysis_helper <- function(df, 
+fit_svycoxph <- function(df, 
                                   covariates, 
                                   trt_var,
                                   time_var, 
@@ -123,10 +123,6 @@ print_analysis_helper <- function(df,
                                   marker_var,
                                   weight_var, 
                                   tf, 
-                                  learner.treatment = Lrnr_glm$new(),
-                                  learner.event_type = Lrnr_glm$new(),
-                                  learner.failure_time = Lrnr_glm$new(),
-                                  learner.censoring_time = Lrnr_glm$new(),
                                   filter = NULL, 
                                   itxn = NULL, 
                                   ylim_cutoffs  = c(-1, 1, 0.2)){
@@ -161,8 +157,8 @@ print_analysis_helper <- function(df,
 }
 
 covariates <- c("age_ge_26") # , "study_region"
-time_var <- "HIVwk26fu"
 tf <- 459 
+time_var <- "HIVwk26fu"
 event_var <- "HIVwk26"
 trt_var <- "trt"
 named_markers <- c(
@@ -186,7 +182,7 @@ for (marker_var in names(named_markers)){
   readable_name <- named_markers[[marker_var]]
   # cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
   
-  fits[[marker_var]]=print_analysis_helper(subset(df_combined, study_region=='RV144'), 
+  fits[[marker_var]]=fit_svycoxph(subset(df_combined, study_region=='RV144'), 
                         covariates = covariates, 
                         trt_var = trt_var, 
                         time_var = time_var,
@@ -207,7 +203,7 @@ for (marker_var in names(named_markers)){
   readable_name <- named_markers[[marker_var]]
   # cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
   
-  fits[[marker_var]]=print_analysis_helper(subset(df_combined, study_region!='RV144'), 
+  fits[[marker_var]]=fit_svycoxph(subset(df_combined, study_region!='RV144'), 
                         covariates = covariates, 
                         trt_var = trt_var, 
                         time_var = time_var,
@@ -228,7 +224,7 @@ for (marker_var in names(named_markers)){
   readable_name <- named_markers[[marker_var]]
   # cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
   
-  fits[[marker_var]]=print_analysis_helper(df_combined, 
+  fits[[marker_var]]=fit_svycoxph(df_combined, 
                         covariates = covariates, 
                         trt_var = trt_var, 
                         time_var = time_var,
@@ -249,7 +245,7 @@ for (marker_var in names(named_markers)){
   readable_name <- named_markers[[marker_var]]
   # cat(sprintf("\n\n### %s {.tabset .tabset-fade} \n", readable_name))
   
-  fits[[marker_var]]=print_analysis_helper(df_combined, 
+  fits[[marker_var]]=fit_svycoxph(df_combined, 
                         covariates = covariates, 
                         trt_var = trt_var, 
                         time_var = time_var,
@@ -264,5 +260,447 @@ knitr::kable(tab)
 ```
 
 
+# RV144 Sieve (24 months) 
 
 
+```{r, results = "asis", cache=T, fig.align='center'}
+
+# med_vaccine <- function(df, 
+#                                   covariates, 
+#                                   trt_var,
+#                                   time_var, 
+#                                   event_var, 
+#                                   marker_var,
+#                                   weight_var, 
+#                                   tf, 
+#                                   filter = NULL, 
+#                                   itxn = NULL, 
+#                                   ylim_cutoffs  = c(-1, 1, 0.2)){
+#   
+# 
+#   df$ph2 = !is.na(df$IgG3_AE.A244_V1V2_Tags_293F)
+#   
+#   dat <- load_data(
+#     time       = time_var,
+#     event      = event_var,
+#     vacc       = trt_var,
+#     marker     = marker_var,
+#     covariates = covariates,
+#     weights    = weight_var,
+#     ph2        = "ph2",
+#     data       = df
+#   )
+#   
+#   fit  = est_med(dat = dat, type = "Cox", t_0 = tf, params_cox = params_med_cox(edge_ind = TRUE))
+#   print(fit)
+# 
+#   fit2 = est_med(dat = dat, type = "Cox", t_0 = tf)
+#   print(fit2)
+# 
+#   fit1 = est_med(dat = dat, type = "NP", t_0 = tf)
+#   print(fit1)
+#   
+# }
+
+
+
+get_C_index <- function(df, 
+                                  covariates, 
+                                  trt_var,
+                                  time_var, 
+                                  event_var, 
+                                  marker_var,
+                                  weight_var, 
+                                  tf, 
+                                  filter = NULL, 
+                                  itxn = NULL, 
+                                  ylim_cutoffs  = c(-1, 1, 0.2)){
+  
+  # filter for vaccine and ph2
+  df_vaccine <- df %>% 
+    filter(!!sym(trt_var) == 1 & !is.na(!!sym(marker_var)))
+  
+  des <- svydesign(ids = ~1, weights = as.formula(paste0("~", weight_var)), data = df_vaccine)
+  
+  f1 <- as.formula("Surv(HIVwk26fu, HIVwk26)         ~ "%.%marker_var%.%" + age_ge_26")
+  f2 <- as.formula("Surv(HIVwk26fu, HIVwk26.is.169K) ~ "%.%marker_var%.%" + age_ge_26")
+  
+  fit1 <- svycoxph(f1, design = des)
+  fit2 <- svycoxph(f2, design = des)
+  
+  c(
+    HIVwk26=paste0(formatDouble(summary(fit1)$concordance["C"],3), " (", formatDouble(summary(fit1)$concordance['se(C)'],3), ")"),
+    HIVwk26.is.169K=paste0(formatDouble(summary(fit2)$concordance["C"],3), " (", formatDouble(summary(fit1)$concordance['se(C)'],3), ")"))
+
+}
+
+
+get_AUC <- function(df, 
+                                  covariates, 
+                                  trt_var,
+                                  time_var, 
+                                  event_var, 
+                                  marker_var,
+                                  weight_var, 
+                                  tf, 
+                                  filter = NULL, 
+                                  itxn = NULL, 
+                                  ylim_cutoffs  = c(-1, 1, 0.2)){
+  
+  # filter for vaccine and ph2
+  df_vaccine <- df %>% 
+    filter(!!sym(trt_var) == 1 & !is.na(!!sym(marker_var)))
+  
+  des <- svydesign(ids = ~1, weights = as.formula(paste0("~", weight_var)), data = df_vaccine)
+  
+  f1 <- as.formula("HIVwk26         ~ "%.%marker_var%.%" + age_ge_26")
+  f2 <- as.formula("HIVwk26.is.169K ~ "%.%marker_var%.%" + age_ge_26")
+  
+  fit1 <- svyglm(f1,
+              design = des,
+              family = quasibinomial())
+  p1 <- predict(fit1, type = "link")
+  roc1 <- WeightedROC(p1, df_vaccine$HIVwk26, df_vaccine[[weight_var]])
+  
+  fit2 <- svyglm(f2,
+              design = des,
+              family = quasibinomial())
+  p2 <- predict(fit2, type = "link")
+  roc2 <- WeightedROC(p2, df_vaccine$HIVwk26.is.169K[!is.na(df_vaccine$HIVwk26.is.169K)], df_vaccine[[weight_var]][!is.na(df_vaccine$HIVwk26.is.169K)])
+
+  c(
+    HIVwk26=        paste0(formatDouble(WeightedAUC(roc1),3)),
+    HIVwk26.is.169K=paste0(formatDouble(WeightedAUC(roc2),3)))
+
+}
+
+
+covariates <- c("age_ge_26") # , "study_region"
+time_var <- "HIVwk26fu"
+tf <- 459 
+event_var <- "HIVwk26"
+trt_var <- "trt"
+named_markers <- c(
+  "IgG_gp70_B.CaseA_V1V2" = "IgG V1V2 B.CaseA-gp70",
+  "IgG_AE.A244_V1V2_Tags_293F" = "IgG V1V2 AE.A244-Tags",
+  "IgG_C.1086C_V1V2_Tags" = "IgG V1V2 C.1086-Tags",
+  "IgG_gp70_C.1086C_V1V2_293F" = "IgG V1V2 C.1086-gp70",
+  "IgG3_gp70_B.CaseA_V1V2" = "IgG3 V1V2 B.CaseA-gp70",
+  "IgG3_AE.A244_V1V2_Tags_293F" = "IgG3 V1V2 AE.A244-Tags",
+  "IgG3_C.1086C_V1V2_Tags" = "IgG3 V1V2 C.1086-Tags",
+  "IgG3_gp70_C.1086C_V1V2_293F" = "IgG3 V1V2 C.1086-gp70"
+)
+
+weight_var <- "sample_weight"
+
+
+cat("svycoxph fits C-index\n")
+
+tab=sapply (names(named_markers), function(marker_var){
+  
+  fits[[marker_var]]=get_C_index(subset(df_combined, study_region=='RV144'), 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf)
+})
+knitr::kable(tab)
+
+
+cat("svyglm fits AUC\n")
+
+tab=sapply (names(named_markers), function(marker_var){
+  
+  fits[[marker_var]]=get_AUC(subset(df_combined, study_region=='RV144'), 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf)
+})
+knitr::kable(tab)
+
+
+```
+
+
+# RV144 Sieve (42 months) 
+
+```{r, results = "asis", cache=T, fig.align='center'}
+
+get_C_index <- function(df, 
+                                  covariates, 
+                                  trt_var,
+                                  time_var, 
+                                  event_var, 
+                                  marker_var,
+                                  weight_var, 
+                                  tf, 
+                                  filter = NULL, 
+                                  itxn = NULL, 
+                                  ylim_cutoffs  = c(-1, 1, 0.2)){
+  
+  # filter for vaccine and ph2
+  df_vaccine <- df %>% 
+    filter(!!sym(trt_var) == 1 & !is.na(!!sym(marker_var)))
+  
+  des <- svydesign(ids = ~1, weights = as.formula(paste0("~", weight_var)), data = df_vaccine)
+  
+  f1 <- as.formula("Surv(HIVm42fu, HIVm42)         ~ "%.%marker_var%.%" + age_ge_26")
+  f2 <- as.formula("Surv(HIVm42fu, HIVm42.is.169K) ~ "%.%marker_var%.%" + age_ge_26")
+  
+  fit1 <- svycoxph(f1, design = des)
+  fit2 <- svycoxph(f2, design = des)
+  
+  c(
+    HIVm42=paste0(formatDouble(summary(fit1)$concordance["C"],3), " (", formatDouble(summary(fit1)$concordance["C"]-1.96*summary(fit1)$concordance['se(C)'],3), ", ", formatDouble(summary(fit1)$concordance["C"]+1.96*summary(fit1)$concordance['se(C)'],3), ")"),
+    HIVm42.is.169K=paste0(formatDouble(summary(fit2)$concordance["C"],3), " (", formatDouble(summary(fit2)$concordance["C"]-1.96*summary(fit2)$concordance['se(C)'],3), ", ", formatDouble(summary(fit2)$concordance["C"]+1.96*summary(fit2)$concordance['se(C)'],3), ")"))
+
+}
+
+
+get_AUC <- function(df, 
+                                  covariates, 
+                                  trt_var,
+                                  time_var, 
+                                  event_var, 
+                                  marker_var,
+                                  weight_var, 
+                                  tf, 
+                                  filter = NULL, 
+                                  itxn = NULL, 
+                                  ylim_cutoffs  = c(-1, 1, 0.2)){
+  
+  # filter for vaccine and ph2
+  df_vaccine <- df %>% 
+    filter(!!sym(trt_var) == 1 & !is.na(!!sym(marker_var)))
+  
+  des <- svydesign(ids = ~1, weights = as.formula(paste0("~", weight_var)), data = df_vaccine)
+  
+  f1 <- as.formula("HIVm42         ~ "%.%marker_var%.%" + age_ge_26")
+  f2 <- as.formula("HIVm42.is.169K ~ "%.%marker_var%.%" + age_ge_26")
+  
+  fit1 <- svyglm(f1,
+              design = des,
+              family = quasibinomial())
+  p1 <- predict(fit1, type = "link")
+  roc1 <- WeightedROC(p1, df_vaccine$HIVm42, df_vaccine[[weight_var]])
+  
+  fit2 <- svyglm(f2,
+              design = des,
+              family = quasibinomial())
+  p2 <- predict(fit2, type = "link")
+  roc2 <- WeightedROC(p2, df_vaccine$HIVm42.is.169K[!is.na(df_vaccine$HIVm42.is.169K)], df_vaccine[[weight_var]][!is.na(df_vaccine$HIVm42.is.169K)])
+
+  c(
+    HIVm42=        paste0(formatDouble(WeightedAUC(roc1),3)),
+    HIVm42.is.169K=paste0(formatDouble(WeightedAUC(roc2),3)))
+
+}
+
+
+covariates <- c("age_ge_26") # , "study_region"
+time_var <- "HIVm42fu"
+tf <- 459 
+event_var <- "HIVm42"
+trt_var <- "trt"
+named_markers <- c(
+  "IgG_gp70_B.CaseA_V1V2" = "IgG V1V2 B.CaseA-gp70",
+  "IgG_AE.A244_V1V2_Tags_293F" = "IgG V1V2 AE.A244-Tags",
+  "IgG_C.1086C_V1V2_Tags" = "IgG V1V2 C.1086-Tags",
+  "IgG_gp70_C.1086C_V1V2_293F" = "IgG V1V2 C.1086-gp70",
+  "IgG3_gp70_B.CaseA_V1V2" = "IgG3 V1V2 B.CaseA-gp70",
+  "IgG3_AE.A244_V1V2_Tags_293F" = "IgG3 V1V2 AE.A244-Tags",
+  "IgG3_C.1086C_V1V2_Tags" = "IgG3 V1V2 C.1086-Tags",
+  "IgG3_gp70_C.1086C_V1V2_293F" = "IgG3 V1V2 C.1086-gp70"
+)
+
+weight_var <- "sample_weight"
+
+cat("svycoxph fits C-index\n")
+tab=sapply (names(named_markers), function(marker_var){
+  
+  get_C_index(df_rv144, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf)
+})
+knitr::kable(tab)
+
+cat("svyglm fits AUC\n")
+tab=sapply (names(named_markers), function(marker_var){
+  
+  get_AUC(df_rv144, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var, 
+                        tf = tf)
+})
+knitr::kable(tab)
+
+
+```
+
+# RV144 Ab + T cell (24 and 42 months) 
+
+V1V2 markres are in the same order as in previous sections.
+
+
+```{r}
+rv144_tcell = read.csv("/trials/vaccine/thai_trial_rv144/case_control_analysis/pdata/mcelrath_ics_92TH023EnvCD4.csv")
+# mcelrath_ics_imputed.csv
+
+rv144_tcell = subset(rv144_tcell, outcome=="92TH023Env.CD4+.Average_polyfunctionality")
+
+# rv144_tcell$ptid matches id_map$pin
+id_map = read.csv("/trials/vaccine/thai_trial_rv144/adhoc/Moodie_Correlates_May2024/adata/rv144_pubids_v2.csv")
+rv144_tcell$pub_id = id_map$pub_id_v2[match(rv144_tcell$ptid, id_map$pin)]
+
+df_rv144$CD4.Average_polyfunctionality.92TH023Env = rv144_tcell$y[match(df_rv144$pub_id, rv144_tcell$pub_id)]
+
+
+```
+
+```{r}
+
+
+get_ab_tcell <- function(df, 
+                                  covariates, 
+                                  trt_var,
+                                  time_var, 
+                                  event_var, 
+                                  marker_var,
+                                  weight_var, 
+                                  filter = NULL, 
+                                  itxn = NULL, 
+                                  ylim_cutoffs  = c(-1, 1, 0.2)){
+  
+  # filter for vaccine and ph2
+  df_vaccine <- df %>% 
+    filter(!!sym(trt_var) == 1 & !is.na(!!sym(marker_var)))
+  
+  des <- svydesign(ids = ~1, weights = as.formula(paste0("~", weight_var)), data = df_vaccine)
+  
+  f1 <- as.formula("Surv("%.%time_var%.%", "%.%event_var%.%")         ~ I(scale(CD4.Average_polyfunctionality.92TH023Env))+"%.%marker_var%.%" + age_ge_26")
+
+  svycoxph(f1, design = des)
+
+}
+
+get_tcell <- function(df, 
+                                  covariates, 
+                                  trt_var,
+                                  time_var, 
+                                  event_var, 
+                                  marker_var,
+                                  weight_var, 
+                                  filter = NULL, 
+                                  itxn = NULL, 
+                                  ylim_cutoffs  = c(-1, 1, 0.2)){
+  
+  # filter for vaccine and ph2
+  df_vaccine <- df %>% 
+    filter(!!sym(trt_var) == 1 & !is.na(!!sym(marker_var)))
+  
+  des <- svydesign(ids = ~1, weights = as.formula(paste0("~", weight_var)), data = df_vaccine)
+  
+  f1 <- as.formula("Surv("%.%time_var%.%", "%.%event_var%.%") ~ I(scale(CD4.Average_polyfunctionality.92TH023Env)) + age_ge_26")
+
+  svycoxph(f1, design = des)
+
+}
+
+
+covariates <- c("age_ge_26") # , "study_region"
+trt_var <- "trt"
+weight_var <- "sample_weight"
+
+named_markers <- c(
+  "IgG_gp70_B.CaseA_V1V2" = "IgG V1V2 B.CaseA-gp70",
+  "IgG_AE.A244_V1V2_Tags_293F" = "IgG V1V2 AE.A244-Tags",
+  "IgG_C.1086C_V1V2_Tags" = "IgG V1V2 C.1086-Tags",
+  "IgG_gp70_C.1086C_V1V2_293F" = "IgG V1V2 C.1086-gp70",
+  "IgG3_gp70_B.CaseA_V1V2" = "IgG3 V1V2 B.CaseA-gp70",
+  "IgG3_AE.A244_V1V2_Tags_293F" = "IgG3 V1V2 AE.A244-Tags",
+  "IgG3_C.1086C_V1V2_Tags" = "IgG3 V1V2 C.1086-Tags",
+  "IgG3_gp70_C.1086C_V1V2_293F" = "IgG3 V1V2 C.1086-gp70"
+)
+
+
+cat("24 months\n")
+time_var <- "HIVwk26fu"
+event_var <- "HIVwk26"
+fits=lapply (names(named_markers), function(marker_var){
+  get_ab_tcell(df_rv144, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var)
+})
+
+tab=getFormattedSummary(fits, robust=T)
+rownames(tab)[2]="V1V2"
+knitr::kable(tab)
+
+
+cat("42 months\n")
+time_var  <- "HIVm42fu"
+event_var <- "HIVm42"
+fits=lapply (names(named_markers), function(marker_var){
+  get_ab_tcell(df_rv144, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var)
+})
+
+
+cat("24 months t cell only\n")
+time_var <- "HIVwk26fu"
+event_var <- "HIVwk26"
+fits=lapply (names(named_markers)[1], function(marker_var){
+  get_tcell(df_rv144, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var)
+})
+
+tab=getFormattedSummary(fits, robust=T)
+tab
+
+cat("42 months t cell only\n")
+time_var  <- "HIVm42fu"
+event_var <- "HIVm42"
+fits=lapply (names(named_markers)[1], function(marker_var){
+  get_tcell(df_rv144, 
+                        covariates = covariates, 
+                        trt_var = trt_var, 
+                        time_var = time_var,
+                        event_var = event_var,
+                        marker_var = marker_var, 
+                        weight_var = weight_var)
+})
+
+tab=getFormattedSummary(fits, robust=T)
+tab
+
+```
