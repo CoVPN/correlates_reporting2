@@ -95,8 +95,8 @@ maketab=function(.PPAI, trt, digit) {
   tab = sapply (panels[1:4], function (p) {
         sapply(antigens, function(a) {
           dat.tmp = subset(dat_proc_202, Trt == trt & PPAI %in% c(1, if(!.PPAI) 0))[[glue("Delta28overB{a}_{p}")]]
-          out=wilcox_test_quiet(dat.tmp)
-          glue("{formatDouble(10**(mean(dat.tmp)),digit)} ({formatPvalues(out$p.value)})")
+          out=wilcox_test_quiet(dat.tmp, conf.int=T)
+          glue("{formatDouble(10**(mean(dat.tmp)),digit)} ({formatDouble(10**out$conf.int[1],digit)}, {formatDouble(10**out$conf.int[2],digit)}, p={formatPvalues(out$p.value)})")
         })
   })
   colnames(tab)=panel_names[1:4]
@@ -105,7 +105,7 @@ maketab=function(.PPAI, trt, digit) {
 
 tab1=maketab(T, "BPZE1", digit=2)
 tab2=maketab(T, "PBO", digit=3)
-tab=cbind(tab2, tab1)
+tab=cbind(tab1, tab2)
 kable(tab,
   format = "latex",
   booktabs = TRUE,
