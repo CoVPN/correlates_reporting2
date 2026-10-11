@@ -4,7 +4,7 @@
 - Use R 4.4
 
 - Download and unzip the release
-https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.6.zip
+https://github.com/CoVPN/correlates_reporting2/archive/refs/tags/2.2.9.zip
 - Run the following R command at the repo root level to install package dependencies as this project uses the repo-level renv.lock:
 ```{R}
 renv::restore()
