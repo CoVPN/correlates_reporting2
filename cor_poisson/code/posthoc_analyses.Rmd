@@ -43,6 +43,10 @@ dat_mapped_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/c
 dat_proc_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
 dat_proc_202$Ptid = as.factor(dat_proc_202$Ptid) # need to make it a factor to use as id
 dat_proc_202$Trt = factor(dat_proc_202$Trt, levels = c("BPZE1","PBO")) 
+# Trt is BPZE1-first so that tables and figures lead with the vaccine arm. Model
+# fits take their data through ref_pbo() instead, which makes PBO the reference
+# level so a treatment effect reads as BPZE1 vs PBO.
+ref_pbo = function(dat) {dat$Trt = relevel(dat$Trt, ref="PBO"); dat}
 
 dat_mapped_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_processing/config.yml")$mapped_data)
 dat_proc_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
@@ -828,7 +832,7 @@ knitr::include_graphics(normalizePath("../output/iliad_ib202p/C0iliad_ib202p_PPA
 
 prentice.f = function(endpoint, PPAI.only, corner.text, timepoint="Day28") {
   fits = lapply (panels[1:4], function (p) {
-    geeglm(as.formula(glue("{endpoint} ~ Trt + {timepoint}{p}_PC1")), data  = subset(dat_proc_202, PPAI %in% c(1, if(!PPAI.only) 0)), family= poisson(link = "log"), id = Ptid, corstr= "independence")
+    geeglm(as.formula(glue("{endpoint} ~ Trt + {timepoint}{p}_PC1")), data  = ref_pbo(subset(dat_proc_202, PPAI %in% c(1, if(!PPAI.only) 0))), family= poisson(link = "log"), id = Ptid, corstr= "independence")
   })
   
   tab = getFormattedSummary(fits, robust="MBN", exp=T, type=9) [-1,]
@@ -846,10 +850,10 @@ prentice.f(PPAI.only=T, endpoint="EventIndC9_11_14", corner.text="PPAI prim", ti
 
 
 tab = getFormattedSummary(list(
-  geeglm(EventIndC9_11_14 ~ Trt, data  = subset(dat_proc_202, PPAI==1), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
-  geeglm(EventIndC14 ~ Trt,      data  = subset(dat_proc_202, PPAI==1), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
-  geeglm(EventIndC9_11_14 ~ Trt, data  = subset(dat_proc_202), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
-  geeglm(EventIndC14 ~ Trt,      data  = subset(dat_proc_202), family= poisson(link = "log"), id = Ptid, corstr= "independence")
+  geeglm(EventIndC9_11_14 ~ Trt, data  = ref_pbo(subset(dat_proc_202, PPAI==1)), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
+  geeglm(EventIndC14 ~ Trt,      data  = ref_pbo(subset(dat_proc_202, PPAI==1)), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
+  geeglm(EventIndC9_11_14 ~ Trt, data  = ref_pbo(subset(dat_proc_202)), family= poisson(link = "log"), id = Ptid, corstr= "independence"),
+  geeglm(EventIndC14 ~ Trt,      data  = ref_pbo(subset(dat_proc_202)), family= poisson(link = "log"), id = Ptid, corstr= "independence")
 ), robust="MBN", exp=T, type=9)[-1,,drop=F]
 colnames(tab)=c("PPAI prim", "PPAI alt", "PP prim", "PP alt")
 tab=t(tab)
@@ -976,10 +980,10 @@ timepoint="Day28"
 aa=c("Norm_Nasal_IgA_PC1", "FHA_Norm_Nasal_IgA")
 names(aa) = c("Day 28 N-sIgA PC1", "Day 28 N-sIgA FHA")
 
-fit = geeglm(as.formula(glue("{endpoint} ~ Trt")), data  = subset(dat_proc_202, PPAI %in% c(1, if(!PPAI.only) 0)), family= poisson(link = "log"), id = Ptid, corstr= "independence")
+fit = geeglm(as.formula(glue("{endpoint} ~ Trt")), data  = ref_pbo(subset(dat_proc_202, PPAI %in% c(1, if(!PPAI.only) 0))), family= poisson(link = "log"), id = Ptid, corstr= "independence")
 
 fits = lapply (aa, function (a) {
-  geeglm(as.formula(glue("{endpoint} ~ Trt + {timepoint}{a}")), data  = subset(dat_proc_202, PPAI %in% c(1, if(!PPAI.only) 0)), family= poisson(link = "log"), id = Ptid, corstr= "independence")
+  geeglm(as.formula(glue("{endpoint} ~ Trt + {timepoint}{a}")), data  = ref_pbo(subset(dat_proc_202, PPAI %in% c(1, if(!PPAI.only) 0))), family= poisson(link = "log"), id = Ptid, corstr= "independence")
 })
 
 tab = getFormattedSummary(c(list(fit), fits), robust="MBN", exp=T, type=9) 
@@ -990,7 +994,7 @@ tab[2,3] = tab[3,3]
 tab = tab[1:2, ]
 
 tab=t(tab)
-colnames(tab) = c("PBO vs BPZE1", "Marker")
+colnames(tab) = c("BPZE1 vs PBO", "Marker")
 rownames(tab)[1] = c("No marker")
 
 kable(tab, align="c") %>% 
