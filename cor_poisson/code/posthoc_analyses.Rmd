@@ -42,7 +42,7 @@ source("~/correlates_reporting2/cor_poisson/code/gee_bias_correction.R")
 dat_mapped_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/correlates_processing/config.yml")$mapped_data)
 dat_proc_202=read.csv(config::get(config = "iliad_ib202p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
 dat_proc_202$Ptid = as.factor(dat_proc_202$Ptid) # need to make it a factor to use as id
-dat_proc_202$Trt = factor(dat_proc_202$Trt, levels = c("PBO","BPZE1")) 
+dat_proc_202$Trt = factor(dat_proc_202$Trt, levels = c("BPZE1","PBO")) 
 
 dat_mapped_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_processing/config.yml")$mapped_data)
 dat_proc_201=read.csv(config::get(config = "iliad_ib201p", file="/home/yfong/correlates_reporting2/config.yml")$data_cleaned)
@@ -112,7 +112,7 @@ kable(tab,
   align = "c",
   caption = "Foldrise in antibody responses by treatment group") %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
-  add_header_above(c(" "=1, "Placebo"=4, "Vaccine"=4)) %>%
+  add_header_above(c(" "=1, "Vaccine"=4, "Placebo"=4)) %>%
   kable_styling(latex_options = "scale_down")
 
 ```
@@ -616,10 +616,10 @@ pc1_reg = function(endpoint, PPAI.only, trt) {
 corner.text="PPAI prim"
 tab1=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
 tab2=pc1_reg (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
-tab=cbind(tab2, tab1)
+tab=cbind(tab1, tab2)
 kable(tab, align="c", caption="PC1 Poisson "%.%corner.text) %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:10px; padding-right:10px;") %>% 
-  add_header_above(c(" "=1, "Placebo"=3, "Vaccine"=3))
+  add_header_above(c(" "=1, "Vaccine"=3, "Placebo"=3))
 
 corner.text="Vaccine, alt"
 tab=pc1_reg (endpoint="EventIndC14", PPAI.only=T, trt="BPZE1")
@@ -648,18 +648,18 @@ par(mfrow=c(2,2)); reduce_margin()
 dat = subset(dat_proc_202, PPAI==1)
 
 plot(Day28Norm_Nasal_IgA_PC1 ~ BNorm_Nasal_IgA_PC1, dat, main="PPAI prim", col= ifelse(dat$EventIndC9_11_14==1, 2, 4), pch= ifelse(dat$Trt=="PBO", 1, 2), asp=1)
-mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZE1 non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
+mylegend(pch=c(2,2,1,1), legend=c("BPZE1 cases","BPZE1 non-cases","PBO cases","PBO non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
 
 plot(Day28Norm_Nasal_IgA_PC1 ~ BNorm_Nasal_IgA_PC1, dat, main="PPAI alt", col= ifelse(dat$EventIndC14==1, 2, 4), pch= ifelse(dat$Trt=="PBO", 1, 2), asp=1)
-mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZE1 non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
+mylegend(pch=c(2,2,1,1), legend=c("BPZE1 cases","BPZE1 non-cases","PBO cases","PBO non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
 
 dat = subset(dat_proc_202)
 
 plot(Day28Norm_Nasal_IgA_PC1 ~ BNorm_Nasal_IgA_PC1, dat, main="PP prim", col= ifelse(dat$EventIndC9_11_14==1, 2, 4), pch= ifelse(dat$Trt=="PBO", 1, 2), asp=1)
-mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZE1 non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
+mylegend(pch=c(2,2,1,1), legend=c("BPZE1 cases","BPZE1 non-cases","PBO cases","PBO non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
 
 plot(Day28Norm_Nasal_IgA_PC1 ~ BNorm_Nasal_IgA_PC1, dat, main="PP alt", col= ifelse(dat$EventIndC14==1, 2, 4), pch= ifelse(dat$Trt=="PBO", 1, 2), asp=1)
-mylegend(pch=c(1,1,2,2), legend=c("PBO cases","PBO non-cases","BPZE1 cases","BPZE1 non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
+mylegend(pch=c(2,2,1,1), legend=c("BPZE1 cases","BPZE1 non-cases","PBO cases","PBO non-cases"), x=9, col=c(2,4,2,4), bty="y", cex=0.8); abline(0,1)
 
 ```
 
@@ -682,10 +682,10 @@ pc1_median = function(endpoint, PPAI.only, trt) {
 
 tab1=pc1_median (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
 tab2=pc1_median (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
-tab=cbind(tab2, tab1)
+tab=cbind(tab1, tab2)
 kable(tab, align="c", digits=2, caption="PC1 foldrise median") %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
-  add_header_above(c(" "=1, "Placebo"=ncol(tab1), "Vaccine"=ncol(tab1)))
+  add_header_above(c(" "=1, "Vaccine"=ncol(tab1), "Placebo"=ncol(tab1)))
 
 ```
 
@@ -708,10 +708,10 @@ pc1_auc = function(endpoint, PPAI.only, trt) {
 
 tab1=pc1_auc (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
 tab2=pc1_auc (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
-tab=cbind(tab2, tab1)
+tab=cbind(tab1, tab2)
 kable(tab, align="c", digits=2) %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
-  add_header_above(c(" "=1, "Placebo"=3, "Vaccine"=3))
+  add_header_above(c(" "=1, "Vaccine"=3, "Placebo"=3))
 
 ```
 
@@ -731,7 +731,7 @@ pc1_wilcox = function(PPAI.only, trt) {
 
 tab1=pc1_wilcox (PPAI.only=T, trt="BPZE1")
 tab2=pc1_wilcox (PPAI.only=T, trt="PBO")
-tab=cbind(PBO=tab2, BPZE1=tab1)
+tab=cbind(BPZE1=tab1, PBO=tab2)
 kable(formatPvalues(tab), align="c", caption="PC1 Wilcox test between baseline and Day 28.") %>%
   kable_styling(latex_options = "scale_down") 
 
@@ -756,10 +756,10 @@ pc1_wilcox = function(endpoint, PPAI.only, trt) {
 
 tab1=pc1_wilcox (endpoint="EventIndC9_11_14", PPAI.only=T, trt="BPZE1")
 tab2=pc1_wilcox (endpoint="EventIndC9_11_14", PPAI.only=T, trt="PBO")
-tab=cbind(tab2, tab1)
+tab=cbind(tab1, tab2)
 kable(tab, align="c", digits=2) %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
-  add_header_above(c(" "=1, "Placebo"=3, "Vaccine"=3))
+  add_header_above(c(" "=1, "Vaccine"=3, "Placebo"=3))
 
 ```
 
@@ -799,20 +799,20 @@ for (p in panels[1:4]){
   myboxplot(as.formula(glue("B{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Baseline {panel_names[which(p==panels)]} PC1"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
-  if (p==panels[1] | p==panels[2]) add_sig_bar(1, 2, ylim)
+  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
+  if (p==panels[1] | p==panels[2]) add_sig_bar(3, 4, ylim)
 
   myboxplot(as.formula(glue("Day28{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Day 28 {panel_names[which(p==panels)]} PC1"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
-  if (p==panels[1]) add_sig_bar(1, 2, ylim)
-  if (p==panels[1] | p==panels[3]) add_sig_bar(3, 4, ylim)
+  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
+  if (p==panels[1]) add_sig_bar(3, 4, ylim)
+  if (p==panels[1] | p==panels[3]) add_sig_bar(1, 2, ylim)
   
   myboxplot(as.formula(glue("Delta28overB{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim1, 
             names=c("Non-cases","Cases", "Non-cases","Cases"), ylab="",
             main=glue("Foldrise {panel_names[which(p==panels)]} PC1"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
 
 }
 
@@ -884,10 +884,10 @@ marker_wilcox = function(endpoint, PPAI.only, trt, panel) {
 
 tab1=marker_wilcox (endpoint="EventIndC9_11_14", PPAI.only=T, panel="Serum_IgG", trt="BPZE1")
 tab2=marker_wilcox (endpoint="EventIndC9_11_14", PPAI.only=T, panel="Serum_IgG", trt="PBO")
-tab=cbind(tab2, tab1)
+tab=cbind(tab1, tab2)
 kable(tab, align="c", digits=2) %>% 
   column_spec(1:ncol(tab), extra_css = "padding-left:20px; padding-right:20px;") %>% 
-  add_header_above(c(" "=1, "Placebo"=3, "Vaccine"=3))
+  add_header_above(c(" "=1, "Vaccine"=3, "Placebo"=3))
 
 ```
 
@@ -942,20 +942,20 @@ for (a in select_markers){
   myboxplot(as.formula(glue("B{a}~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Baseline {marker_names[a]}"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
-  if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(1, 2, ylim)
+  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
+  if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(3, 4, ylim)
 
   myboxplot(as.formula(glue("Day28{a}~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Day 28 {marker_names[a]}"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
   if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(1, 2, ylim)
   if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(3, 4, ylim)
   
   myboxplot(as.formula(glue("Delta28overB{a}~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim1, 
             names=c("Non-cases","Cases", "Non-cases","Cases"), ylab="",
             main=glue("Foldrise {marker_names[a]}"))
-  axis(1, at=c(1.5, 3.5), labels=c("Placebo", "Vaccine"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
 
 }
 
@@ -990,7 +990,7 @@ tab[2,3] = tab[3,3]
 tab = tab[1:2, ]
 
 tab=t(tab)
-colnames(tab) = c("BPZE1 vs PBO", "Marker")
+colnames(tab) = c("PBO vs BPZE1", "Marker")
 rownames(tab)[1] = c("No marker")
 
 kable(tab, align="c") %>% 
