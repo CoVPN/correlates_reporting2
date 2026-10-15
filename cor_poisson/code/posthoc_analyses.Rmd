@@ -803,20 +803,20 @@ for (p in panels[1:4]){
   myboxplot(as.formula(glue("B{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Baseline {panel_names[which(p==panels)]} PC1"))
-  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("BPZE1", "Placebo"), line=2, col="white")
   if (p==panels[1] | p==panels[2]) add_sig_bar(3, 4, ylim)
 
   myboxplot(as.formula(glue("Day28{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Day 28 {panel_names[which(p==panels)]} PC1"))
-  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("BPZE1", "Placebo"), line=2, col="white")
   if (p==panels[1]) add_sig_bar(3, 4, ylim)
   if (p==panels[1] | p==panels[3]) add_sig_bar(1, 2, ylim)
   
   myboxplot(as.formula(glue("Delta28overB{p}_PC1~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim1, 
             names=c("Non-cases","Cases", "Non-cases","Cases"), ylab="",
             main=glue("Foldrise {panel_names[which(p==panels)]} PC1"))
-  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("BPZE1", "Placebo"), line=2, col="white")
 
 }
 
@@ -946,20 +946,20 @@ for (a in select_markers){
   myboxplot(as.formula(glue("B{a}~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Baseline {marker_names[a]}"))
-  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("BPZE1", "Placebo"), line=2, col="white")
   if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(3, 4, ylim)
 
   myboxplot(as.formula(glue("Day28{a}~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim, ylab="",
             names=c("Non-cases","Cases", "Non-cases","Cases"), 
             main=glue("Day 28 {marker_names[a]}"))
-  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("BPZE1", "Placebo"), line=2, col="white")
   if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(1, 2, ylim)
   if (a=="FHA_Norm_Nasal_IgA") add_sig_bar(3, 4, ylim)
   
   myboxplot(as.formula(glue("Delta28overB{a}~EventIndC9_11_14 + Trt")), dat, col.points = ifelse(dat$EventIndC9_11_14==1, 2, 4), pch=ifelse(dat$Trt=="PBO", 1, 2), cex=1, col="white", ylim=ylim1, 
             names=c("Non-cases","Cases", "Non-cases","Cases"), ylab="",
             main=glue("Foldrise {marker_names[a]}"))
-  axis(1, at=c(1.5, 3.5), labels=c("Vaccine", "Placebo"), line=2, col="white")
+  axis(1, at=c(1.5, 3.5), labels=c("BPZE1", "Placebo"), line=2, col="white")
 
 }
 
