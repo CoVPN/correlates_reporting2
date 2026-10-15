@@ -909,7 +909,7 @@ select_markers = "FHA_Norm_Nasal_IgA"
 #   "PT_Serum_IgG"
 # )
 
-marker_names = c(FHA_Norm_Nasal_IgA="N-sIgA FHA")
+marker_names = c(FHA_Norm_Nasal_IgA="NS-IgA FHA")
 
 # if needed, fig.height is defined dynamically
 # knitr::opts_current$set(fig.height = 6.5 /4 * len(select_markers))
@@ -978,7 +978,7 @@ endpoint="EventIndC9_11_14"
 timepoint="Day28"
 
 aa=c("Norm_Nasal_IgA_PC1", "FHA_Norm_Nasal_IgA")
-names(aa) = c("Day 28 N-sIgA PC1", "Day 28 N-sIgA FHA")
+names(aa) = c("Day 28 NS-IgA PC1", "Day 28 NS-IgA FHA")
 
 fit = geeglm(as.formula(glue("{endpoint} ~ Trt")), data  = ref_pbo(subset(dat_proc_202, PPAI %in% c(1, if(!PPAI.only) 0))), family= poisson(link = "log"), id = Ptid, corstr= "independence")
 
